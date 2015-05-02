@@ -25,6 +25,7 @@ int main(int argc, char **argv)
         test2->SetTime(2);
         test3->SetBehavior(Failure);
         test4->SetBehavior(Success);
+        test4->SetTime(5);
 
         selector1->AddChild(test1);
         selector1->AddChild(test2);
