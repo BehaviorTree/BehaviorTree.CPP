@@ -32,8 +32,8 @@ int main(int argc, char **argv)
 
         dec->AddChild(test1);
 
-        root->AddChild(test2);
-        root->AddChild(dec);
+        root->AddChild(test3);
+        root->AddChild(selector1);
 
         Execute(root, TickPeriod_milliseconds);//from BehaviorTree.cpp
 }
