@@ -1,6 +1,6 @@
 BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
-![Version](https://img.shields.io/badge/version-v1.1-orange.svg) <br/>
+![Version](https://img.shields.io/badge/version-v1.1-orange.svg) ![Open issues](https://img.shields.io/github/issues/Behavior-Tree/shields.svg) <br/> 
 A behavior tree library in `C++`.
 
 Build Status
