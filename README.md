@@ -46,11 +46,11 @@ DEPENDENCIES
 ------------
 
 Regarding visualization purposes:
-* [Opengl](www.opengl.org)
-* [Glut](www.opengl.org/resources/libraries/glut)
+* [Opengl](https://www.opengl.org/)
+* [Glut](https://www.opengl.org/resources/libraries/glut/)
 
 Regarding thread usage:
-* [Boost](www.boost.org)
+* [Boost](http://www.boost.org/)
 
 BT NODES SUPPORT
 ----------------
