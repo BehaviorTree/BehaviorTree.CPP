@@ -1,13 +1,22 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(BTpp)
 
-# Needed for using threads
+set(CMAKE_BUILD_TYPE Release)
+
 # Needed for using threads
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-FIND_PACKAGE(Boost REQUIRED system thread)
-
+#########################################################
+# FIND BOOST
+#########################################################
+find_package(Boost REQUIRED system thread)
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+add_definitions(${Boost_DEFINITIONS})
+if(NOT Boost_FOUND)
+    message(ERROR " Boost not found!")
+endif(NOT Boost_FOUND)
+    
 add_definitions(-Wall -lglut -lGL)
-
 
 #########################################################
 # FIND GLUT
@@ -32,35 +41,45 @@ if(NOT OPENGL_FOUND)
 endif(NOT OPENGL_FOUND)
 
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/src/example/include/)
 
-file(GLOB_RECURSE BTHeadLibrary include/*.h)
-
+file(GLOB_RECURSE BTHeadLibrary include/*.h src/example/include/*.h)
 
 set(BTSrcLibrary
-src/ActionNode.cpp
-src/BehaviorTree.cpp
-src/ConditionNode.cpp
-src/ControlNode.cpp
-src/DecoratorRetryNode.cpp
-src/DecoratorNegationNode.cpp
-src/Draw.cpp
-src/Exceptions.cpp
-src/LeafNode.cpp
-src/NodeSemaphore.cpp
-src/ParallelNode.cpp
-src/SelectorNode.cpp
-src/SelectorStarNode.cpp
-src/SequenceStarNode.cpp
-src/SequenceNode.cpp
-src/TreeNode.cpp
-src/Actions/ActionTestNode.cpp
-src/Conditions/ConditionTestNode.cpp
+    src/lib/ActionNode.cpp
+    src/lib/BehaviorTree.cpp
+    src/lib/ConditionNode.cpp
+    src/lib/ControlNode.cpp
+    src/lib/DecoratorRetryNode.cpp
+    src/lib/DecoratorNegationNode.cpp
+    src/lib/Draw.cpp
+    src/lib/Exceptions.cpp
+    src/lib/LeafNode.cpp
+    src/lib/NodeSemaphore.cpp
+    src/lib/ParallelNode.cpp
+    src/lib/SelectorNode.cpp
+    src/lib/SelectorStarNode.cpp
+    src/lib/SequenceStarNode.cpp
+    src/lib/SequenceNode.cpp
+    src/lib/TreeNode.cpp
+    src/example/src/ActionNodeExample.cpp
+    src/example/src/ConditionNodeExample.cpp
 )
-add_executable(main src/main.cpp ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(main  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_THREAD_LIBRARY} )
 
-add_executable(test src/test.cpp ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(test  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_THREAD_LIBRARY} )
+######################################################
+# SETTING BINARIES AND LIBRARY OUTPUT LOCATIONS
+######################################################
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/sample)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+######################################################
+# COMPILING SAMPLE EXAMPLE
+######################################################
+add_executable(example src/example/src/main.cpp ${BTSrcLibrary} ${BTHeadLibrary})
+target_link_libraries(example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_LIBRARIES})
 
+######################################################
+# COMPILING LIBRARY
+######################################################
+add_library(btpp SHARED ${BTSrcLibrary} ${BTHeadLibrary})
+target_link_libraries(btpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_LIBRARIES})

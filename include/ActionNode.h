@@ -3,8 +3,7 @@
 
 #include "LeafNode.h"
 
-namespace BT
-{
+namespace BT{
 
     class ActionNode : public LeafNode
     {

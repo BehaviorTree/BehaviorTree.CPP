@@ -12,9 +12,13 @@
 #include <DecoratorRetryNode.h>
 #include <DecoratorNegationNode.h>
 
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
+#include <GLUT/glut.h>
 
-#include <Actions/ActionTestNode.h>
-#include <Conditions/ConditionTestNode.h>
 #include <Exceptions.h>
 
 #include <string>

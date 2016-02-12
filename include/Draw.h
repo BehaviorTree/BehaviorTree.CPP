@@ -1,8 +1,7 @@
 #ifndef DRAWTREE_H
 #define DRAWTREE_H
 #include <cstdlib>
-#include <GL/glut.h>
-#include <GL/glut.h>
+#include <GLUT/glut.h>
 #include <math.h>
 #include<iostream>
 #include<string>

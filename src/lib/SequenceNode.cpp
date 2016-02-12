@@ -1,4 +1,5 @@
 #include <SequenceNode.h>
+#include <boost/thread.hpp>
 
 using namespace BT;
 
