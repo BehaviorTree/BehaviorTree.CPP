@@ -12,12 +12,16 @@
 #include <DecoratorRetryNode.h>
 #include <DecoratorNegationNode.h>
 
+/* System idependent includes */
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
+#include <GLUT/glut.h>
 #else
 #include <GL/gl.h>
+#include <GL/glut.h>
 #endif
-#include <GLUT/glut.h>
+/******************************/
+
 
 #include <Exceptions.h>
 

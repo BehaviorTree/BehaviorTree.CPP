@@ -1,7 +1,17 @@
 #ifndef DRAWTREE_H
 #define DRAWTREE_H
 #include <cstdlib>
+
+/* System idependent includes */
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
 #include <GLUT/glut.h>
+#else
+#include <GL/gl.h>
+#include <GL/glut.h>
+#endif
+/******************************/
+
 #include <math.h>
 #include<iostream>
 #include<string>

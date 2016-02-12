@@ -16,7 +16,7 @@ BUILD STATUS
   <tr>
     <td><b>Debug</b></td>
     <td align="center">
-      <img src="https://img.shields.io/badge/build-unknown-red.svg"/>
+      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
     </td>
     
     <td align="center">
@@ -24,20 +24,20 @@ BUILD STATUS
     </td>
       
     <td align="center">
-      <center><img src="https://img.shields.io/badge/build-unknown-red.svg"/></center>
+      <img src="https://img.shields.io/badge/build-unknown-red.svg"/>
     </td>
   </tr>
   <tr>
     <td><b>Release</b></td>
     <td align="center">
-      <img src="https://img.shields.io/badge/build-unknown-red.svg"/>
+      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
     </td>
     <td align="center">
       <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
     </td>
     
     <td align="center">
-      <center><img src="https://img.shields.io/badge/build-unknown-red.svg"/></center>
+      <img src="https://img.shields.io/badge/build-unknown-red.svg"/>
     </td>
 </tr>
 </table>
