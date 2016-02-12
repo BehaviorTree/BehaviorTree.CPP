@@ -1,6 +1,6 @@
 BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
-![Version](https://img.shields.io/badge/version-v1.1-orange.svg) ![Open issues](https://img.shields.io/github/issues/Behavior-Tree/shields.svg) <br/> 
+![Version](https://img.shields.io/badge/version-v1.1-orange.svg) <br/> 
 A behavior tree library in `C++`.
 
 BUILD STATUS
@@ -46,11 +46,11 @@ DEPENDENCIES
 ------------
 
 Regarding visualization purposes:
-* [Opengl](www.opengl.org)
-* [Glut](www.opengl.org/resources/libraries/glut)
+* [Opengl](https://www.opengl.org/)
+* [Glut](https://www.opengl.org/resources/libraries/glut/)
 
 Regarding thread usage:
-* [Boost](www.boost.org)
+* [Boost](http://www.boost.org/)
 
 BT NODES SUPPORT
 ----------------
