@@ -1,7 +1,56 @@
-BT++ ![License MIT](https://go-shields.herokuapp.com/license-MIT-blue.png)
+BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
-
+![Version](https://img.shields.io/badge/version-v1.1-orange.svg) <br/>
 A behavior tree library in `C++`.
+
+Build Status
+------------
+
+<table align="center">
+  <tr>
+    <th width="9%" />
+    <th width="13%">Ubuntu 14.04</th>
+    <th width="13%">Max OS X</th>
+    <th width="13%">Windows</th>
+  </tr>
+  <tr>
+    <td><b>Debug</b></td>
+    <td align="center">
+      <center><img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/></center>
+    </td>
+    
+    <td align="center">
+      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
+    </td>
+      
+    <td align="center">
+      <center><img src="https://img.shields.io/badge/build-unknown-red.svg"/></center>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Release</b></td>
+    <td align="center">
+      <center><img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/></center>
+    </td>
+    <td align="center">
+      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
+    </td>
+    
+    <td align="center">
+      <center><img src="https://img.shields.io/badge/build-unknown-red.svg"/></center>
+    </td>
+</tr>
+</table>
+
+DEPENDENCIES
+------------
+
+Regarding visualization purposes:
+* [Opengl](www.opengl.org)
+* [Glut](www.opengl.org/resources/libraries/glut)
+
+Regarding thread usage:
+* [Boost](www.boost.org)
 
 SUPPORTING NODES
 ----------------
@@ -16,16 +65,6 @@ SUPPORTING NODES
 **Action:** An Action node performs an action, and returns Success if the action is completed, Failure if it can not be completed and Running if completion is under way.
 
 **Condition:** A Condition node determines if a desired condition `c` has been met. Conditions are technically a subset of the Actions, but are given a separate category and graphical symbol to improve readability of the BT and emphasize the fact that they never return running and do not change any internal states/variables of the BT.
-
-DEPENDENCIES
-------------
-
-Regarding visualization purposes:
-* [Opengl](www.opengl.org)
-* [Glut](www.opengl.org/resources/libraries/glut)
-
-Regarding thread usage:
-* [Boost](www.boost.org)
 
 INSTALATION
 -----------
