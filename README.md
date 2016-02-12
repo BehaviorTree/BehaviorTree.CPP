@@ -52,7 +52,7 @@ Regarding visualization purposes:
 Regarding thread usage:
 * [Boost](www.boost.org)
 
-SUPPORTING NODES
+BT NODES SUPPORT
 ----------------
 **Selector:** Selector nodes are used to find and execute the first child that does not fail. A Selector node will return immediately with a status code of success or running when one of its children returns success or running. The children are ticked in order of importance, from `left` to `right`.
 
