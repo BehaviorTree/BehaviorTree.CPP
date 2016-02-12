@@ -3,7 +3,7 @@ BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ![Version](https://img.shields.io/badge/version-v1.1-orange.svg) ![Open issues](https://img.shields.io/github/issues/Behavior-Tree/shields.svg) <br/> 
 A behavior tree library in `C++`.
 
-Build Status
+BUILD STATUS
 ------------
 
 <table align="center">
@@ -89,6 +89,8 @@ Check the installation by running a example sample.
 
 `$ cd build/sample` <br/>
 `$ ./test` <br/>
+
+Note the installation generates the shared library in `/build/lib` and the sample conde in `/build/sample`.
 
 LICENSE
 -------
