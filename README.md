@@ -1,4 +1,4 @@
-BT++
+BT++ ![License MIT](https://go-shields.herokuapp.com/license-MIT-blue.png)
 ====
 
 A behavior tree library in `C++`.
