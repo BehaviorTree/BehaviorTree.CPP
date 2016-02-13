@@ -67,7 +67,7 @@ BT NODES SUPPORT
 **Condition:** A Condition node determines if a desired condition `c` has been met. Conditions are technically a subset of the Actions, but are given a separate category and graphical symbol to improve readability of the BT and emphasize the fact that they never return running and do not change any internal states/variables of the BT.
 
 
-User manual available in the projecy (BTUserManual.pdf):
+User manual available in the project folder (BTUserManual.pdf):
 
 
 
