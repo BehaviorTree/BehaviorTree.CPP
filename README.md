@@ -24,7 +24,7 @@ BUILD STATUS
     </td>
       
     <td align="center">
-      <img src="https://img.shields.io/badge/build-unknown-red.svg"/>
+      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
     </td>
   </tr>
   <tr>
@@ -37,7 +37,7 @@ BUILD STATUS
     </td>
     
     <td align="center">
-      <img src="https://img.shields.io/badge/build-unknown-red.svg"/>
+      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
     </td>
 </tr>
 </table>
