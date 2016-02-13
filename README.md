@@ -83,8 +83,8 @@ here (https://github.com/miccol/Behavior-Tree) or clone the repository:
 Once you have the repository. Compile the library:
 
 `$ cd /path/to/folder/` <br/>
-`$ mv Behavior−Tree behavior tree` <br/>
-`$ cd behavior tree` <br/>
+`$ mv Behavior−Tree behavior_tree` <br/>
+`$ cd behavior_tree` <br/>
 `$ mkdir ./build` <br/>
 `$ cd build` <br/>
 `$ cmake ..` <br/>
@@ -93,7 +93,7 @@ Once you have the repository. Compile the library:
 Check the installation by running a example sample.
 
 `$ cd build/sample` <br/>
-`$ ./test` <br/>
+`$ ./example` <br/>
 
 Note the installation generates the shared library in `/build/lib` and the sample conde in `/build/sample`.
 
