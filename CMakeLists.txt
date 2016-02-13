@@ -41,29 +41,29 @@ if(NOT OPENGL_FOUND)
 endif(NOT OPENGL_FOUND)
 
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/src/example/include/)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/lib/include/)
 
-file(GLOB_RECURSE BTHeadLibrary include/*.h src/example/include/*.h)
+file(GLOB_RECURSE BTHeadLibrary include/*.h lib/include/*.h)
 
 set(BTSrcLibrary
-    src/lib/ActionNode.cpp
-    src/lib/BehaviorTree.cpp
-    src/lib/ConditionNode.cpp
-    src/lib/ControlNode.cpp
-    src/lib/DecoratorRetryNode.cpp
-    src/lib/DecoratorNegationNode.cpp
-    src/lib/Draw.cpp
-    src/lib/Exceptions.cpp
-    src/lib/LeafNode.cpp
-    src/lib/NodeSemaphore.cpp
-    src/lib/ParallelNode.cpp
-    src/lib/SelectorNode.cpp
-    src/lib/SelectorStarNode.cpp
-    src/lib/SequenceStarNode.cpp
-    src/lib/SequenceNode.cpp
-    src/lib/TreeNode.cpp
-    src/example/src/ActionNodeExample.cpp
-    src/example/src/ConditionNodeExample.cpp
+    lib/src/ActionNode.cpp
+    lib/src/BehaviorTree.cpp
+    lib/src/ConditionNode.cpp
+    lib/src/ControlNode.cpp
+    lib/src/DecoratorRetryNode.cpp
+    lib/src/DecoratorNegationNode.cpp
+    lib/src/Draw.cpp
+    lib/src/Exceptions.cpp
+    lib/src/LeafNode.cpp
+    lib/src/NodeSemaphore.cpp
+    lib/src/ParallelNode.cpp
+    lib/src/SelectorNode.cpp
+    lib/src/SelectorStarNode.cpp
+    lib/src/SequenceStarNode.cpp
+    lib/src/SequenceNode.cpp
+    lib/src/TreeNode.cpp
+    src/ActionNodeExample.cpp
+    src/ConditionNodeExample.cpp
 )
 
 ######################################################
@@ -75,7 +75,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 ######################################################
 # COMPILING SAMPLE EXAMPLE
 ######################################################
-add_executable(example src/example/src/main.cpp ${BTSrcLibrary} ${BTHeadLibrary})
+add_executable(example src/main.cpp ${BTSrcLibrary} ${BTHeadLibrary})
 target_link_libraries(example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_LIBRARIES})
 
 ######################################################
