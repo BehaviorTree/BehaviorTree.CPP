@@ -10,8 +10,8 @@ BUILD STATUS
   <tr>
     <th width="9%" />
     <th width="13%">Ubuntu 14.04</th>
-    <th width="13%">Max OS X</th>
-    <th width="13%">Windows</th>
+    <th width="13%">Mac OS X El Capitan</th>
+    <th width="13%">Windows 7</th>
   </tr>
   <tr>
     <td><b>Debug</b></td>
