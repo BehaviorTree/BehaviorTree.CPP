@@ -66,7 +66,12 @@ BT NODES SUPPORT
 
 **Condition:** A Condition node determines if a desired condition `c` has been met. Conditions are technically a subset of the Actions, but are given a separate category and graphical symbol to improve readability of the BT and emphasize the fact that they never return running and do not change any internal states/variables of the BT.
 
-INSTALATION
+
+User manual available in the projecy (BTUserManual.pdf):
+
+
+
+SETUP
 -----------
 
 The first step to use BT++ is to retrieve its source code. You can either download it 
@@ -96,7 +101,7 @@ LICENSE
 -------
 The MIT License (MIT)
 
-Copyright (c) 2015 Michele Colledanchise
+Copyright (c) 2014-2016 Michele Colledanchise
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
