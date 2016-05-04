@@ -75,11 +75,19 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 ######################################################
 # COMPILING SAMPLE EXAMPLE
 ######################################################
-add_executable(example src/main.cpp ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_LIBRARIES})
+add_executable(btpp_example src/main.cpp ${BTSrcLibrary} ${BTHeadLibrary})
+target_link_libraries(btpp_example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_LIBRARIES})
 
 ######################################################
 # COMPILING LIBRARY
 ######################################################
 add_library(btpp SHARED ${BTSrcLibrary} ${BTHeadLibrary})
 target_link_libraries(btpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${Boost_LIBRARIES})
+
+######################################################
+# INSTALLATION OF LIBRARY AND EXECUTABLE TO /usr/local
+######################################################
+install (TARGETS btpp_example DESTINATION bin)
+install (TARGETS btpp DESTINATION lib)
+#install (FILES "${PROJECT_BINARY_DIR???}/???.h"
+#         DESTINATION include)
