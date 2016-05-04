@@ -66,7 +66,7 @@ BT NODES SUPPORT
 
 **Condition:** A Condition node determines if a desired condition `c` has been met. Conditions are technically a subset of the Actions, but are given a separate category and graphical symbol to improve readability of the BT and emphasize the fact that they never return running and do not change any internal states/variables of the BT.
 
-A user manual is available in the project folder [BTUserManual.pdf](https://github.com/miccol/Behavior-Tree/blob/master/BTUserManual.pdf).
+A user manual is available in the project folder ([BTUserManual.pdf](https://github.com/miccol/Behavior-Tree/blob/master/BTUserManual.pdf)).
 
 SETUP
 -----------
@@ -93,11 +93,12 @@ Check the installation by running a sample example.
 `$ cd behavior_tree/build/sample` <br/>
 `$ ./btpp_example` <br/>
 
-Note that the local installation generates the shared library in `/build/lib` and the sample code in `/build/sample`.
+Note that the local installation generates the shared library in `behavior_tree/build/lib` and the sample code in `behavior_tree/build/sample`.
 
 If you would like to install the library system-wide, then run:
+
 `$ cd /path/to/folder/` <br/>
-`$ cd behavior_tree/build/sample` <br/>
+`$ cd behavior_tree/build` <br/>
 `$ sudo make install` <br/>
 
 On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib` and the sample executable (btpp_example) in `/usr/local/bin`.
