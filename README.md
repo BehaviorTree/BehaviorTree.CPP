@@ -33,7 +33,6 @@ BUILD STATUS
     <td align="center">
       <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
     </td>
-    
     <td align="center">
       <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
     </td>
@@ -52,7 +51,7 @@ Regarding thread usage:
 
 BT NODES SUPPORT
 ----------------
-**Selector:** Selector nodes are used to find and execute the first child that does not fail. A Selector node will return immediately with a status code of success or running when one of its children returns success or running. The children are ticked in order of importance, from `left` to `right`.
+**Fallback:** Fallback nodes are used to find and execute the first child that does not fail. A Selector node will return immediately with a status code of success or running when one of its children returns success or running. The children are ticked in order of importance, from `left` to `right`.
 
 **Sequence:** Sequence nodes are used to find and execute the first child that has not yet succeeded. A sequence node will return immediately with a status code of `failure` or `running` when one of its children returns failure or running. The children are ticked in order, from `left` to `right`.
 
@@ -64,7 +63,7 @@ BT NODES SUPPORT
 
 **Condition:** A Condition node determines if a desired condition `c` has been met. Conditions are technically a subset of the Actions, but are given a separate category and graphical symbol to improve readability of the BT and emphasize the fact that they never return running and do not change any internal states/variables of the BT.
 
-A user manual is available in the project folder ([BTUserManual.pdf](https://github.com/miccol/Behavior-Tree/blob/master/BTUserManual.pdf)).
+A user manual is available in the project folder ([BTppUserManual.pdf](https://github.com/miccol/Behavior-Tree/blob/master/BTppUserManual.pdf)).
 
 SETUP
 -----------
@@ -105,7 +104,7 @@ LICENSE
 -------
 The MIT License (MIT)
 
-Copyright (c) 2014-2016 Michele Colledanchise
+Copyright (c) 2014-2017 Michele Colledanchise
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
