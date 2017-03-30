@@ -1,9 +1,9 @@
-#include <ActionNodeExample.h>
-#include <ConditionNodeExample.h>
-#include "BehaviorTree.h"
+
+#include "actions/action_test_node.h"
+#include "conditions/condition_test_node.h"
+#include "behavior_tree.h"
 #include <iostream>
 
-using namespace BTExample;
 
 int main(int argc, char **argv)
 {
@@ -11,19 +11,14 @@ int main(int argc, char **argv)
     {
         int TickPeriod_milliseconds = 1000;
 
-        ActionNodeExample* action1 = new ActionNodeExample("A1");
-        ActionNodeExample* action2 = new ActionNodeExample("A2");
+        BT::ActionTestNode* action1 = new BT::ActionTestNode("Action1");
+        BT::ConditionTestNode* condition1 = new BT::ConditionTestNode("Condition1");
+        action1->set_time(5);
+        BT::SequenceNodeWithMemory* sequence1 = new BT::SequenceNodeWithMemory("seq1");
 
-        ConditionNodeExample* condition1 = new ConditionNodeExample("C1");
-        BT::DecoratorNegationNode* dec = new BT::DecoratorNegationNode("dec");
-
-        action1->SetTime(5);
-        BT::SequenceStarNode* sequence1 = new BT::SequenceStarNode("seq1");
-
-        condition1->SetBehavior(BT::Failure);
-        dec->AddChild(action1);
-        sequence1->AddChild(dec);
-        sequence1->AddChild(action2);
+        condition1->set_boolean_value(true);
+        sequence1->AddChild(condition1);
+        sequence1->AddChild(action1);
 
         Execute(sequence1, TickPeriod_milliseconds);//from BehaviorTree.cpp
     }
