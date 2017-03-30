@@ -46,8 +46,8 @@ Regarding visualization purposes:
 * [Opengl](https://www.opengl.org/)
 * [Glut](https://www.opengl.org/resources/libraries/glut/)
 
-Regarding thread usage:
-* [Boost](http://www.boost.org/)
+Regarding tests:
+* [GTests](https://github.com/google/googletest)
 
 BT NODES SUPPORT
 ----------------
