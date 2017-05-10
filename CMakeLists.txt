@@ -47,8 +47,6 @@ lib/src/action_node.cpp
 lib/src/behavior_tree.cpp
 lib/src/condition_node.cpp
 lib/src/control_node.cpp
-#src/decorator_retry_node.cpp
-#src/decorator_negation_node.cpp
 lib/src/draw.cpp
 lib/src/exceptions.cpp
 lib/src/leaf_node.cpp
@@ -61,8 +59,6 @@ lib/src/sequence_node_with_memory.cpp
 lib/src/tree_node.cpp
 lib/src/actions/action_test_node.cpp
 lib/src/conditions/condition_test_node.cpp
-#src/actions/ros_action.cpp
-#src/conditions/ros_condition.cpp
 )
 
 
