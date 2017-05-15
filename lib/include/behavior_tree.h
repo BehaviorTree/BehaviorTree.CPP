@@ -33,8 +33,6 @@
 #include <typeinfo>
 #include <math.h>       /* pow */
 
-#include "ros/ros.h"
-#include "std_msgs/UInt8.h"
 
 #include <thread>
 #include <chrono>
