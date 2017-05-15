@@ -72,14 +72,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # COMPILING GTEST
 ######################################################
 if(GTEST_FOUND)
-    add_executable(btpp_gtest lib/gtest//gtest_tree.cpp ${BTSrcLibrary} ${BTHeadLibrary})
+    add_executable(btpp_gtest gtest/gtest_tree.cpp ${BTSrcLibrary} ${BTHeadLibrary})
     target_link_libraries(btpp_gtest  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
 endif(GTEST_FOUND)
 
 ######################################################
 # COMPILING SAMPLE EXAMPLE
 ######################################################
-add_executable(btpp_example src/main.cpp ${BTSrcLibrary} ${BTHeadLibrary})
+add_executable(btpp_example src/example.cpp ${BTSrcLibrary} ${BTHeadLibrary})
 target_link_libraries(btpp_example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
 
 ######################################################
