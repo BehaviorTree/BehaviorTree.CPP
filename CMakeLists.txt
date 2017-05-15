@@ -43,22 +43,22 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/lib/inc
 file(GLOB_RECURSE BTHeadLibrary include/*.h lib/include/*.h)
 
 set(BTSrcLibrary
-lib/src/action_node.cpp
-lib/src/behavior_tree.cpp
-lib/src/condition_node.cpp
-lib/src/control_node.cpp
-lib/src/draw.cpp
-lib/src/exceptions.cpp
-lib/src/leaf_node.cpp
-lib/src/tick_engine.cpp
-lib/src/parallel_node.cpp
-lib/src/fallback_node.cpp
-lib/src/sequence_node.cpp
-lib/src/fallback_node_with_memory.cpp
-lib/src/sequence_node_with_memory.cpp
-lib/src/tree_node.cpp
-lib/src/actions/action_test_node.cpp
-lib/src/conditions/condition_test_node.cpp
+src/action_node.cpp
+src/behavior_tree.cpp
+src/condition_node.cpp
+src/control_node.cpp
+src/draw.cpp
+src/exceptions.cpp
+src/leaf_node.cpp
+src/tick_engine.cpp
+src/parallel_node.cpp
+src/fallback_node.cpp
+src/sequence_node.cpp
+src/fallback_node_with_memory.cpp
+src/sequence_node_with_memory.cpp
+src/tree_node.cpp
+src/action_test_node.cpp
+src/condition_test_node.cpp
 )
 
 
@@ -91,6 +91,11 @@ target_link_libraries(btpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
 ######################################################
 # INSTALLATION OF LIBRARY AND EXECUTABLE TO /usr/local
 ######################################################
-install (TARGETS btpp_example DESTINATION bin)
-install (TARGETS btpp DESTINATION lib)
+install(TARGETS btpp
+        EXPORT btpp-targets
+        DESTINATION lib/btpp
+)
+
+install(FILES ${BTHeadLibrary} DESTINATION include/btpp)
+
 
