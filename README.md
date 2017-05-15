@@ -92,6 +92,9 @@ Check the installation by running a sample example.
 
 Note that the local installation generates the shared library in `behavior_tree/build/lib` and the sample code in `behavior_tree/build/sample`.
 
+INSTALL THE LIBRARY SYSTEM-WIDE
+-------------------------------
+
 If you would like to install the library system-wide, then run:
 
 `$ cd /path/to/folder/` <br/>
