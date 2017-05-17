@@ -105,14 +105,14 @@ On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/loca
 CREATE YOUR OWN ACTION NODE
 ------
 1) Implement your action node class inheriting the abstract class`BT::ActionNode`.
-2) Implement the method `BT::ReturnStatus Tick()` with the code you want to execute while the action is running. Use the method `is_halted()` to check if the action has been prempted. When the execution of your action finished, return BT::SUCCESS or BT::FAILURE accordingly.  
+2) Implement the method `BT::ReturnStatus Tick()` with the code you want to execute while the action is running. Use the method `is_halted()` to check if the action has been prempted. When the execution of your action finished, return `BT::SUCCESS` or `BT::FAILURE` accordingly.  
 3) Implement the method `void Halt()` with the code you want to execute when the action get preempted (halted).
 See the file `example.cpp` for an example.
 
 CREATE YOUR OWN CONDITION NODE
 ------
 1) Implement your condition node class inheriting the abstract class`BT::ConditionNode`.
-2) Implement the method `Tick()` with the code you want to execute to check the condition. Return BT::SUCCESS or BT::FAILURE accordingly.  
+2) Implement the method `Tick()` with the code you want to execute to check the condition. Return `BT::SUCCESS` or `BT::FAILURE` accordingly.  
 See the file `example.cpp` for an example.
 
 LICENSE
