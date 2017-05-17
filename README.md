@@ -76,9 +76,7 @@ here (https://github.com/miccol/Behavior-Tree) or clone the repository:
 
 Once you have the repository, compile the library:
 
-`$ cd /path/to/folder/` <br/>
-`$ mv Behavior−Tree behavior_tree` <br/>
-`$ cd behavior_tree` <br/>
+`$ cd /path/to/src/folder/` <br/>
 `$ mkdir ./build` <br/>
 `$ cd build` <br/>
 `$ cmake ..` <br/>
@@ -87,7 +85,7 @@ Once you have the repository, compile the library:
 Check the installation by running a sample example.
 
 `$ cd /path/to/folder/` <br/>
-`$ cd behavior_tree/build/sample` <br/>
+`$ cd build/sample` <br/>
 `$ ./btpp_example` <br/>
 
 Note that the local installation generates the shared library in `behavior_tree/build/lib` and the sample code in `behavior_tree/build/sample`.
