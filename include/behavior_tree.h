@@ -11,13 +11,12 @@
 #include <fallback_node.h>
 #include <sequence_node.h>
 
+#include <action_node.h>
+#include <condition_node.h>
+
+
 #include <sequence_node_with_memory.h>
 #include <fallback_node_with_memory.h>
-
-
-#include <action_test_node.h>
-#include <condition_test_node.h>
-
 
 #include <exceptions.h>
 

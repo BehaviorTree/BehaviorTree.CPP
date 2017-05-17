@@ -113,8 +113,6 @@ namespace BT
         float x_shift_, x_pose_;
 
     public:
-
-
         // The thread that will execute the node
         std::thread thread_;
 

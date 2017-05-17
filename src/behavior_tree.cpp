@@ -30,7 +30,6 @@ void Execute(BT::ControlNode* root, int TickPeriod_milliseconds)
         // Ticking the root node
         root->Tick();
         // Printing its state
-        // root->GetNodeState();
 
         if (root->get_status() != BT::RUNNING)
         {

@@ -12,6 +12,8 @@
 
 
 #include <gtest/gtest.h>
+#include <action_test_node.h>
+#include <condition_test_node.h>
 #include <behavior_tree.h>
 
 
