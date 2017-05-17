@@ -88,7 +88,7 @@ Check the installation by running a sample example.
 `$ cd build/sample` <br/>
 `$ ./btpp_example` <br/>
 
-Note that the local installation generates the shared library in `behavior_tree/build/lib` and the sample code in `behavior_tree/build/sample`.
+Note that the local installation generates the shared library in `behavior_tree/build/lib`.
 
 INSTALL THE LIBRARY SYSTEM-WIDE
 -------------------------------
