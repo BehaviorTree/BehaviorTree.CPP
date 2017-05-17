@@ -43,7 +43,7 @@ DEPENDENCIES
 ------------
 
 Regarding visualization purposes:
-* [Opengl](https://www.opengl.org/)
+* [OpenGL](https://www.opengl.org/)
 * [Glut](https://www.opengl.org/resources/libraries/glut/)
 
 Regarding tests:
