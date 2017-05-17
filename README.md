@@ -90,7 +90,7 @@ Check the installation by running a sample example.
 
 Note that the local installation generates the shared library in `behavior_tree/build/lib`.
 
-INSTALL THE LIBRARY SYSTEM-WIDE
+INSTALL THE LIBRARY SYSTEM-WIDE (tested on Ubuntu 14.04 only)
 -------------------------------
 
 If you would like to install the library system-wide, then run:
