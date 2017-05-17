@@ -79,6 +79,8 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
             // 2) if it's not an action:
             // Send the tick and wait for the response;
             child_i_status_ = children_nodes_[current_child_idx_]->Tick();
+            children_nodes_[current_child_idx_]->set_status(child_i_status_);
+
         }
 
         if (child_i_status_ == BT::SUCCESS ||child_i_status_ == BT::FAILURE )

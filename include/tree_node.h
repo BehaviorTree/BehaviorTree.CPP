@@ -28,10 +28,10 @@
 
 #endif
 
-//#define DEBUG //uncomment this line if you want to print debug messages
+  // #define DEBUG //uncomment this line if you want to print debug messages
 
 #ifdef DEBUG
-//#define DEBUG_STDERR(x) (std::cerr << (x))
+  // #define DEBUG_STDERR(x) (std::cerr << (x))
 #define DEBUG_STDOUT(str) do { std::cout << str << std::endl; } while( false )
 
 #else
@@ -168,7 +168,7 @@ namespace BT
 
         NodeType get_type();
 
-
+        bool is_halted();
     };
 }
 

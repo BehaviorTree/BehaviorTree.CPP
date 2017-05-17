@@ -17,20 +17,31 @@
 BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
 {
     type_ = BT::ACTION_NODE;
+    thread_ = std::thread(&ActionNode::WaitForTick, this);
 }
 
 BT::ActionNode::~ActionNode() {}
 
 
-BT::ReturnStatus BT::ActionNode::Tick()
+void BT::ActionNode::WaitForTick()
 {
-    return BT::EXIT;   // not used in action node.
-}
 
+    while (true)
+    {
+        // Waiting for the tick to come
+        DEBUG_STDOUT(get_name() << " WAIT FOR TICK");
+
+        tick_engine.Wait();
+        DEBUG_STDOUT(get_name() << " TICK RECEIVED");
+
+        // Running state
+        set_status(BT::RUNNING);
+        BT::ReturnStatus status = Tick();
+        set_status(status);
+    }
+}
 
 int BT::ActionNode::DrawType()
 {
-    // Lock acquistion
-
     return BT::ACTION;
 }

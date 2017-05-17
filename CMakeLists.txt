@@ -38,9 +38,12 @@ if(NOT OPENGL_FOUND)
 endif(NOT OPENGL_FOUND)
 
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/lib/include/)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/gtest/include/)
 
-file(GLOB_RECURSE BTHeadLibrary include/*.h lib/include/*.h)
+#INCLUDE_DIRECTORIES(/usr/local/include/btpp/)
+
+file(GLOB_RECURSE BTHeadLibrary include/*.h)
 
 set(BTSrcLibrary
 src/action_node.cpp
@@ -57,8 +60,9 @@ src/sequence_node.cpp
 src/fallback_node_with_memory.cpp
 src/sequence_node_with_memory.cpp
 src/tree_node.cpp
-src/action_test_node.cpp
-src/condition_test_node.cpp
+
+gtest/src/action_test_node.cpp
+gtest/src/condition_test_node.cpp
 )
 
 
@@ -96,6 +100,6 @@ install(TARGETS btpp
         DESTINATION lib/btpp
 )
 
-install(FILES ${BTHeadLibrary} DESTINATION include/btpp)
+install(FILES ${BTHeadLibrary} DESTINATION include/)
 
 

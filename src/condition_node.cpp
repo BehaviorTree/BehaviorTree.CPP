@@ -24,7 +24,5 @@ void BT::ConditionNode::Halt() {}
 
 int BT::ConditionNode::DrawType()
 {
-    // Lock acquistion
-
     return BT::CONDITION;
 }

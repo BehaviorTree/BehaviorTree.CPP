@@ -100,3 +100,8 @@ BT::NodeType BT::TreeNode::get_type()
 {
     return type_;
 }
+
+bool BT::TreeNode::is_halted()
+{
+    return get_status()==BT::HALTED;
+}

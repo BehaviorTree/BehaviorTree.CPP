@@ -14,8 +14,8 @@ namespace BT
         ~ActionNode();
 
         // The method that is going to be executed by the thread
-        virtual void WaitForTick() = 0;
-        BT::ReturnStatus Tick();
+        void WaitForTick();
+        virtual BT::ReturnStatus Tick() = 0;
 
         // The method used to interrupt the execution of the node
         virtual void Halt() = 0;
