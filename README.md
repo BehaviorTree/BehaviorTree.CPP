@@ -1,6 +1,6 @@
 BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
-![Version](https://img.shields.io/badge/version-v1.3-orange.svg) <br/> 
+![Version](https://img.shields.io/badge/version-v1.4-green.svg) <br/> 
 A behavior tree library in `C++`.
 
 BUILD STATUS
@@ -43,7 +43,7 @@ DEPENDENCIES
 ------------
 
 Regarding visualization purposes:
-* [Opengl](https://www.opengl.org/)
+* [OpenGL](https://www.opengl.org/)
 * [Glut](https://www.opengl.org/resources/libraries/glut/)
 
 Regarding tests:
@@ -77,8 +77,6 @@ here (https://github.com/miccol/Behavior-Tree) or clone the repository:
 Once you have the repository, compile the library:
 
 `$ cd /path/to/folder/` <br/>
-`$ mv Behavior−Tree behavior_tree` <br/>
-`$ cd behavior_tree` <br/>
 `$ mkdir ./build` <br/>
 `$ cd build` <br/>
 `$ cmake ..` <br/>
@@ -87,21 +85,35 @@ Once you have the repository, compile the library:
 Check the installation by running a sample example.
 
 `$ cd /path/to/folder/` <br/>
-`$ cd behavior_tree/build/sample` <br/>
+`$ cd build/sample` <br/>
 `$ ./btpp_example` <br/>
 
-Note that the local installation generates the shared library in `behavior_tree/build/lib` and the sample code in `behavior_tree/build/sample`.
+Note that the local installation generates the shared library in `behavior_tree/build/lib`.
 
-INSTALL THE LIBRARY SYSTEM-WIDE
+INSTALL THE LIBRARY SYSTEM-WIDE (tested on Ubuntu 14.04 only)
 -------------------------------
 
 If you would like to install the library system-wide, then run:
 
 `$ cd /path/to/folder/` <br/>
-`$ cd behavior_tree/build` <br/>
+`$ cd build` <br/>
 `$ sudo make install` <br/>
 
 On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib` and the sample executable (btpp_example) in `/usr/local/bin`.
+
+
+CREATE YOUR OWN ACTION NODE
+------
+1) Implement your action node class inheriting the abstract class`BT::ActionNode`.
+2) Implement the method `BT::ReturnStatus Tick()` with the code you want to execute while the action is running. Use the method `is_halted()` to check if the action has been prempted. When the execution of your action finished, return `BT::SUCCESS` or `BT::FAILURE` accordingly.  
+3) Implement the method `void Halt()` with the code you want to execute when the action get preempted (halted).
+See the file `src/example.cpp` for an example.
+
+CREATE YOUR OWN CONDITION NODE
+------
+1) Implement your condition node class inheriting the abstract class`BT::ConditionNode`.
+2) Implement the method `Tick()` with the code you want to execute to check the condition. Return `BT::SUCCESS` or `BT::FAILURE` accordingly.  
+See the file `src/example.cpp` for an example.
 
 LICENSE
 -------
