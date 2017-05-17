@@ -76,7 +76,7 @@ here (https://github.com/miccol/Behavior-Tree) or clone the repository:
 
 Once you have the repository, compile the library:
 
-`$ cd /path/to/src/folder/` <br/>
+`$ cd /path/to/folder/` <br/>
 `$ mkdir ./build` <br/>
 `$ cd build` <br/>
 `$ cmake ..` <br/>
@@ -96,7 +96,7 @@ INSTALL THE LIBRARY SYSTEM-WIDE
 If you would like to install the library system-wide, then run:
 
 `$ cd /path/to/folder/` <br/>
-`$ cd behavior_tree/build` <br/>
+`$ cd build` <br/>
 `$ sudo make install` <br/>
 
 On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib` and the sample executable (btpp_example) in `/usr/local/bin`.
