@@ -1,8 +1,13 @@
 #ifndef DRAWTREE_H
 #define DRAWTREE_H
 #include <cstdlib>
+
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
-#include <GL/glut.h>
+#endif
+
 #include <math.h>
 #include<iostream>
 #include<string>

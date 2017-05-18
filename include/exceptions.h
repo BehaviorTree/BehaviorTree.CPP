@@ -13,7 +13,6 @@ namespace BT
         const char* Message;
     public:
         BehaviorTreeException(const std::string Message);
-        const char* what();
     };
 }
 

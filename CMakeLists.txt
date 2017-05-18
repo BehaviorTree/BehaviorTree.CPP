@@ -1,14 +1,20 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 project(BTpp)
 
 set(CMAKE_BUILD_TYPE Release)
-add_definitions(-Wall -lglut -lGL -lgtest -std=c++11)
+add_definitions(-Wall -lglut -lGL -lgtest -std=c++11 -lX11)
 
 # Needed for using threads
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+
 #########################################################
-# FIND GTest
+# FIND X11
 #########################################################
+find_package(X11 REQUIRED)
+include_directories(${X11_INCLUDE_DIR})
+link_directories(${X11_LIBRARIES})
+
 find_package(GTest)
 include_directories(${GTEST_INCLUDE_DIRS})
 if(NOT GTEST_FOUND)
@@ -41,7 +47,14 @@ endif(NOT OPENGL_FOUND)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/gtest/include/)
 
-#INCLUDE_DIRECTORIES(/usr/local/include/btpp/)
+if(APPLE)
+   include_directories(AFTER "/opt/X11/include")
+    set(CMAKE_OSX_ARCHITECTURES "x86_64")
+    if(CMAKE_GENERATOR STREQUAL Xcode)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8")
+    endif()
+endif()
+
 
 file(GLOB_RECURSE BTHeadLibrary include/*.h)
 
@@ -84,13 +97,13 @@ endif(GTEST_FOUND)
 # COMPILING SAMPLE EXAMPLE
 ######################################################
 add_executable(btpp_example src/example.cpp ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(btpp_example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+target_link_libraries(btpp_example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
 
 ######################################################
 # COMPILING LIBRARY
 ######################################################
 add_library(btpp SHARED ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(btpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+target_link_libraries(btpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
 
 ######################################################
 # INSTALLATION OF LIBRARY AND EXECUTABLE TO /usr/local
