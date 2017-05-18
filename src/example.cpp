@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
 {
 
     BT::SequenceNode* seq = new BT::SequenceNode("Sequence");
-    MyCondition* my_con_1 = new MyCondition("My condition");
-    MyAction* my_act_1 = new MyAction("My action");
+    MyCondition* my_con_1 = new MyCondition("Condition");
+    MyAction* my_act_1 = new MyAction("Action");
     int tick_time_milliseconds = 1000;
 
     seq->AddChild(my_con_1);
