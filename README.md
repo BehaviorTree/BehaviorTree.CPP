@@ -99,7 +99,8 @@ If you would like to install the library system-wide, then run:
 `$ cd build` <br/>
 `$ sudo make install` <br/>
 
-On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib` and the sample executable (btpp_example) in `/usr/local/bin`.
+On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib`.
+The repository [my-behavior-tree-project](https://github.com/miccol/my-behavior-tree-project) shows an example on how to use the library once syste-wide installed.
 
 
 CREATE YOUR OWN ACTION NODE
