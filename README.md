@@ -99,7 +99,7 @@ If you would like to install the library system-wide, then run:
 `$ cd build` <br/>
 `$ sudo make install` <br/>
 
-On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib`.
+On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib`. <br/>
 The repository [my-behavior-tree-project](https://github.com/miccol/my-behavior-tree-project) shows an example on how to use the library once syste-wide installed.
 
 
