@@ -95,7 +95,6 @@ std::string BT::TreeNode::get_name()
     return name_;
 }
 
-
 BT::NodeType BT::TreeNode::get_type()
 {
     return type_;
@@ -103,5 +102,5 @@ BT::NodeType BT::TreeNode::get_type()
 
 bool BT::TreeNode::is_halted()
 {
-    return get_status()==BT::HALTED;
+    return get_status() == BT::HALTED;
 }

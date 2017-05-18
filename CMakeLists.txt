@@ -97,9 +97,9 @@ target_link_libraries(btpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
 ######################################################
 install(TARGETS btpp
         EXPORT btpp-targets
-        DESTINATION lib/btpp
+        DESTINATION lib
 )
 
-install(FILES ${BTHeadLibrary} DESTINATION include/)
+#install(FILES ${BTHeadLibrary} DESTINATION include/)
 
 

@@ -146,6 +146,7 @@ namespace BT
         virtual int DrawType() = 0;
         virtual void ResetColorState() = 0;
         virtual int Depth() = 0;
+        bool is_halted();
 
 
         //Getters and setters
@@ -166,7 +167,6 @@ namespace BT
 
         NodeType get_type();
 
-        bool is_halted();
     };
 }
 
