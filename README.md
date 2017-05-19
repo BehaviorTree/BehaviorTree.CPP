@@ -24,43 +24,6 @@ doi={10.1109/TRO.2016.2633567},
 ISSN={1552-3098}, 
 month={April},}`
 
-
-BUILD STATUS
-------------
-
-<table align="center">
-  <tr>
-    <th width="9%" />
-    <th width="13%">Ubuntu 14.04</th>
-    <th width="13%">Mac OS X El Capitan</th>
-    <th width="13%">Windows 7</th>
-  </tr>
-  <tr>
-    <td><b>Debug</b></td>
-    <td align="center">
-      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
-    </td>
-    <td align="center">
-      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
-    </td>  
-    <td align="center">
-      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
-    </td>
-  </tr>
-  <tr>
-    <td><b>Release</b></td>
-    <td align="center">
-      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
-    </td>
-    <td align="center">
-      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
-    </td>
-    <td align="center">
-      <img src="https://img.shields.io/shippable/54d119db5ab6cc13528ab183.svg"/>
-    </td>
-</tr>
-</table>
-
 DEPENDENCIES
 ------------
 
@@ -122,7 +85,7 @@ If you would like to install the library system-wide, then run:
 `$ sudo make install` <br/>
 
 On Ubuntu 14.04, this will install the shared library (libbtpp.so) in `/usr/local/lib`. <br/>
-The repository [my-behavior-tree-project](https://github.com/miccol/my-behavior-tree-project) shows an example on how to use the library once syste-wide installed.
+The repository [my-behavior-tree-project](https://github.com/miccol/my-behavior-tree-project) shows an example on how to use the library once system-wide installed.
 
 
 CREATE YOUR OWN ACTION NODE
