@@ -11,18 +11,19 @@ Please refer to the following paper when using the library:
 
 bibtex entry:
 
-`@ARTICLE{7790863, 
-author={M. Colledanchise and P. Ögren}, 
-journal={IEEE Transactions on Robotics}, 
-title={How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture, and Decision Trees}, 
-year={2017}, 
-volume={33}, 
-number={2}, 
-pages={372-389}, 
-keywords={Computer architecture;Decision trees;High definition video;Robot control;Switches;Behavior trees (BTs);decision trees;finite state machines (FSMs);hybrid dynamical systems (HDSs);modularity;sequential behavior compositions;subsumption architecture}, 
-doi={10.1109/TRO.2016.2633567}, 
-ISSN={1552-3098}, 
-month={April},}`
+`@ARTICLE{TRO17Colledanchise,` <br/>
+`author={M. Colledanchise and P. Ögren},` <br/>
+`journal={IEEE Transactions on Robotics},` <br/>
+`title={{How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture, and Decision Trees}},` <br/> 
+`year={2017},` <br/>
+`volume={33},` <br/>
+`number={2},` <br/>
+`pages={372-389},` <br/>
+`keywords={Computer architecture;Decision trees;High definition video;Robot control;Switches;Behavior trees (BTs);decision trees;finite state machines (FSMs);hybrid dynamical systems (HDSs);modularity;sequential behavior compositions;subsumption architecture}, ` <br/>
+`doi={10.1109/TRO.2016.2633567},` <br/>
+`ISSN={1552-3098},` <br/>
+`month={April},}`<br/>
+
 
 DEPENDENCIES
 ------------
