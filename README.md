@@ -1,4 +1,4 @@
-BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
+![Logo](http://francky.me/images/quora001.png) BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
 ![Version](https://img.shields.io/badge/version-v1.4-green.svg) <br/> 
 A behavior tree library in `C++`.
