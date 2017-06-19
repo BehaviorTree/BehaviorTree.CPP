@@ -1,4 +1,4 @@
-![Logo](http://michelecolledanchise.com/BTPPLOGO.png | width=100)<br/> 
+![Logo](http://michelecolledanchise.com/BTPPLOGO.png){:height="700px" width="400px"} 
 BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
 ![Version](https://img.shields.io/badge/version-v1.4-green.svg) <br/> 
