@@ -1,5 +1,4 @@
-<img width="100" alt="portfolio_view" src="http://michelecolledanchise.com/BTPPLOGO.png">
-BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
+<img width="100" alt="portfolio_view" src="http://michelecolledanchise.com/BTPPLOGO.png"> BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
 ![Version](https://img.shields.io/badge/version-v1.4-green.svg) <br/> 
 A behavior tree library in `C++`.
