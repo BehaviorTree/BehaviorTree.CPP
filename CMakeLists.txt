@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 project(BTpp)
 
 set(CMAKE_BUILD_TYPE Release)
-add_definitions(-Wall -lglut -lGL -lgtest -std=c++11 -lX11)
-
+add_definitions(-lX11 -Wall -lglut -lGL -lgtest -std=c++11  -pthread -lrt )
 # Needed for using threads
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+
 
 
 #########################################################
@@ -15,6 +15,9 @@ find_package(X11 REQUIRED)
 include_directories(${X11_INCLUDE_DIR})
 link_directories(${X11_LIBRARIES})
 
+#########################################################
+# FIND GTest
+#########################################################
 find_package(GTest)
 include_directories(${GTEST_INCLUDE_DIRS})
 if(NOT GTEST_FOUND)
@@ -90,7 +93,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 ######################################################
 if(GTEST_FOUND)
     add_executable(btpp_gtest gtest/gtest_tree.cpp ${BTSrcLibrary} ${BTHeadLibrary})
-    target_link_libraries(btpp_gtest  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
+    target_link_libraries(btpp_gtest  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} ${X11_LIBRARIES})
 endif(GTEST_FOUND)
 
 ######################################################
@@ -102,17 +105,27 @@ target_link_libraries(btpp_example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LI
 ######################################################
 # COMPILING LIBRARY
 ######################################################
-add_library(btpp SHARED ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(btpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
+add_library(BTpp STATIC ${BTSrcLibrary} ${BTHeadLibrary})
+target_link_libraries(BTpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
 
 ######################################################
 # INSTALLATION OF LIBRARY AND EXECUTABLE TO /usr/local
 ######################################################
-install(TARGETS btpp
-        EXPORT btpp-targets
-        DESTINATION lib
+install(TARGETS BTpp
+        EXPORT  btpp-targets
+        DESTINATION lib/BTpp
 )
 
-#install(FILES ${BTHeadLibrary} DESTINATION include/)
+export(PACKAGE BTpp)
+
+ install(EXPORT btpp-targets DESTINATION lib/BTpp)
+
+ install(FILES btpp-config.cmake DESTINATION lib/BTpp)
+#set(btpp_INCLUDE_DIRS /usr/local/include/BTpp)
+#set(btpp_LIBRARY /usr/local/lib/BTpp/libbtpp.a)
+#message("the value of btpp_INCLUDE_DIRS: " ${btpp_INCLUDE_DIRS})
+#message("the value of btpp_LIBRARY: " ${btpp_LIBRARY})
+
+
 
 
