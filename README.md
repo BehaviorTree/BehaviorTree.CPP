@@ -1,4 +1,4 @@
-![NEWS](https://img.shields.io/badge/NEWS--green.svg) <br/> 
+NEWS!
 -----------
 The Preprint of our book titled "**Behavior Trees in Robotics and AI**" is available here: https://arxiv.org/abs/1709.00084
 
