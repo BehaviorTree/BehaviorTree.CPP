@@ -1,3 +1,5 @@
+NEWS! The Preprint of book "Behavior Trees in Robotics and AI" is available here: https://arxiv.org/abs/1709.00084
+
 <img width="100" alt="portfolio_view" src="http://michelecolledanchise.com/BTPPLOGO.png"> BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ====
 ![Version](https://img.shields.io/badge/version-v1.4-green.svg) <br/> 
