@@ -27,7 +27,7 @@ endif(NOT GTEST_FOUND)
 #########################################################
 # FIND GLUT
 #########################################################
-find_package(GLUT REQUIRED)
+find_package(GLUT)
 include_directories(${GLUT_INCLUDE_DIRS})
 link_directories(${GLUT_LIBRARY_DIRS})
 add_definitions(${GLUT_DEFINITIONS})
@@ -59,6 +59,20 @@ if(APPLE)
 endif()
 
 
+#########################################################
+# Make relative paths absolute (needed later on)
+#########################################################
+
+foreach(p LIB BIN INCLUDE CMAKE)
+  set(var INSTALL_${p}_DIR)
+  if(NOT IS_ABSOLUTE "${${var}}")
+    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif()
+endforeach()
+
+
+
+
 file(GLOB_RECURSE BTHeadLibrary include/*.h)
 
 set(BTSrcLibrary
@@ -66,7 +80,7 @@ src/action_node.cpp
 src/behavior_tree.cpp
 src/condition_node.cpp
 src/control_node.cpp
-src/draw.cpp
+#src/draw.cpp
 src/exceptions.cpp
 src/leaf_node.cpp
 src/tick_engine.cpp
@@ -105,27 +119,59 @@ target_link_libraries(btpp_example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LI
 ######################################################
 # COMPILING LIBRARY
 ######################################################
-add_library(BTpp STATIC ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(BTpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
+add_library(BTppLib STATIC ${BTSrcLibrary} ${BTHeadLibrary})
+target_link_libraries(BTppLib ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
 
 ######################################################
-# INSTALLATION OF LIBRARY AND EXECUTABLE TO /usr/local
+# INSTALLATION OF LIBRARY AND EXECUTABLE
 ######################################################
-install(TARGETS BTpp
-        EXPORT  btpp-targets
-        DESTINATION lib/BTpp
-)
 
+
+
+# Add all targets to the build-tree export set
+export(TARGETS BTppLib
+  FILE "${PROJECT_BINARY_DIR}/BTppTargets.cmake")
+
+# Export the package for use from the build-tree
+# (this registers the build-tree with a global CMake-registry)
 export(PACKAGE BTpp)
 
- install(EXPORT btpp-targets DESTINATION lib/BTpp)
 
- install(FILES btpp-config.cmake DESTINATION lib/BTpp)
-#set(btpp_INCLUDE_DIRS /usr/local/include/BTpp)
-#set(btpp_LIBRARY /usr/local/lib/BTpp/libbtpp.a)
-#message("the value of btpp_INCLUDE_DIRS: " ${btpp_INCLUDE_DIRS})
-#message("the value of btpp_LIBRARY: " ${btpp_LIBRARY})
+install(TARGETS BTppLib
+  # IMPORTANT: Add the foo library to the "export-set"
+  EXPORT BTppTargets
+  ARCHIVE DESTINATION "${PROJECT_BINARY_DIR}/arc"
+  RUNTIME DESTINATION "${PROJECT_BINARY_DIR}/bin" COMPONENT ${PROJECT_SOURCE_DIR}/bin
+  LIBRARY DESTINATION "${PROJECT_BINARY_DIR}/lib" COMPONENT ${PROJECT_SOURCE_DIR}/shlib
+  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/BTpp"
+    COMPONENT dev)
 
 
+# Create the FooBarConfig.cmake and FooBarConfigVersion files
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+   "${INSTALL_INCLUDE_DIR}")
+# ... for the build tree
+
+
+set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}")
+configure_file(conf/BTppConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/BTppConfig.cmake" @ONLY)
+# ... for the install tree
+set(CONF_INCLUDE_DIRS "\${BTpp_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(conf/BTppConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/BTppConfig.cmake" @ONLY)
+# ... for both
+configure_file(conf/BTppConfigVersion.cmake.in
+  "${PROJECT_BINARY_DIR}/BTppConfigVersion.cmake" @ONLY)
+
+# Install the YARPBTCoreConfig.cmake and YARPBTCoreConfigVersion.cmake
+install(FILES
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/BTppConfig.cmake"
+  "${PROJECT_BINARY_DIR}/BTppConfigVersion.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+# Install the export set for use with the install-tree
+install(EXPORT BTppTargets DESTINATION
+  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 
