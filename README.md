@@ -72,6 +72,17 @@ Once you have the repository, compile the library:
 `$ cmake ..` <br/>
 `$ make` <br/>
 
+
+**NOTE**
+In case you get the following error:
+
+`CMake Error: The following variables are used in this project, but they are set to NOTFOUND.
+Please set them or make sure they are set and tested correctly in the CMake files:
+GLUT_Xmu_LIBRARY (ADVANCED)`
+
+please see solution [here](https://ubuntuforums.org/archive/index.php/t-1703770.html). Thanks [miquelramirez](https://github.com/miquelramirez) for this.
+
+
 Check the installation by running a sample example.
 
 `$ cd /path/to/folder/` <br/>
