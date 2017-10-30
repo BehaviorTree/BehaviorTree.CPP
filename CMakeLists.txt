@@ -27,7 +27,7 @@ endif(NOT GTEST_FOUND)
 #########################################################
 # FIND GLUT
 #########################################################
-find_package(GLUT)
+find_package(GLUT REQUIRED)
 include_directories(${GLUT_INCLUDE_DIRS})
 link_directories(${GLUT_LIBRARY_DIRS})
 add_definitions(${GLUT_DEFINITIONS})
@@ -80,7 +80,7 @@ src/action_node.cpp
 src/behavior_tree.cpp
 src/condition_node.cpp
 src/control_node.cpp
-#src/draw.cpp
+src/draw.cpp
 src/exceptions.cpp
 src/leaf_node.cpp
 src/tick_engine.cpp
