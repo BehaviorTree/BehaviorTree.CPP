@@ -1,3 +1,5 @@
+sudo: required
+
 dist: trusty
 language: cpp
 
@@ -10,3 +12,18 @@ os:
 compiler:
   - gcc
   - clang
+  
+ addons:
+  apt:
+    packages:
+      - build-essential
+      - freeglut3-dev
+  
+  before_script:
+  # Prepare build directory
+  - mkdir -p build
+  
+  
+  script:
+  # Build BTpp
+  - (cd build; cmake .. ;cmake --build . )
