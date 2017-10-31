@@ -10,7 +10,7 @@ compiler:
   - clang
   
 before_install:
-  - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential freeglut3-dev
+  - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential freeglut3-dev libxmu-dev libxi-dev
 
 before_script:
   # Prepare build directory
