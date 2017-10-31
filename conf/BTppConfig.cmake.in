@@ -1,0 +1,10 @@
+get_filename_component(BTpp_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(BTpp_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET BTpp AND NOT BTpp_BINARY_DIR)
+  include("${BTpp_CMAKE_DIR}/BTppTargets.cmake")
+endif()
+ 
+# These are IMPORTED targets created by YARPBTCoreargets.cmake
+set(BTpp_LIBRARIES BTppLib)

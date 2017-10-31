@@ -1,12 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 project(BTpp)
 
 set(CMAKE_BUILD_TYPE Release)
-add_definitions(-lX11 -Wall -lglut -lGL -lgtest -std=c++11  -pthread -lrt )
+add_definitions(-lX11 -Wall -lglut -lGL -lgtest -std=c++11 -lrt )
 # Needed for using threads
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-
-
 
 #########################################################
 # FIND X11
@@ -59,6 +57,20 @@ if(APPLE)
 endif()
 
 
+#########################################################
+# Make relative paths absolute (needed later on)
+#########################################################
+
+foreach(p LIB BIN INCLUDE CMAKE)
+  set(var INSTALL_${p}_DIR)
+  if(NOT IS_ABSOLUTE "${${var}}")
+    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif()
+endforeach()
+
+
+
+
 file(GLOB_RECURSE BTHeadLibrary include/*.h)
 
 set(BTSrcLibrary
@@ -92,8 +104,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # COMPILING GTEST
 ######################################################
 if(GTEST_FOUND)
-    add_executable(btpp_gtest gtest/gtest_tree.cpp ${BTSrcLibrary} ${BTHeadLibrary})
-    target_link_libraries(btpp_gtest  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} ${X11_LIBRARIES})
+    #add_executable(btpp_gtest gtest/gtest_tree.cpp ${BTSrcLibrary} ${BTHeadLibrary})
+    #target_link_libraries(btpp_gtest  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} ${X11_LIBRARIES})
 endif(GTEST_FOUND)
 
 ######################################################
@@ -105,27 +117,61 @@ target_link_libraries(btpp_example  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LI
 ######################################################
 # COMPILING LIBRARY
 ######################################################
-add_library(BTpp STATIC ${BTSrcLibrary} ${BTHeadLibrary})
-target_link_libraries(BTpp ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
+add_library(BTppLib STATIC ${BTSrcLibrary} ${BTHeadLibrary})
+target_link_libraries(BTppLib ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${X11_LIBRARIES})
 
 ######################################################
-# INSTALLATION OF LIBRARY AND EXECUTABLE TO /usr/local
+# INSTALLATION OF LIBRARY AND EXECUTABLE
 ######################################################
-install(TARGETS BTpp
-        EXPORT  btpp-targets
-        DESTINATION lib/BTpp
-)
 
+
+
+# Add all targets to the build-tree export set
+export(TARGETS BTppLib
+  FILE "${PROJECT_BINARY_DIR}/BTppTargets.cmake")
+
+# Export the package for use from the build-tree
+# (this registers the build-tree with a global CMake-registry)
 export(PACKAGE BTpp)
 
- install(EXPORT btpp-targets DESTINATION lib/BTpp)
 
- install(FILES btpp-config.cmake DESTINATION lib/BTpp)
-#set(btpp_INCLUDE_DIRS /usr/local/include/BTpp)
-#set(btpp_LIBRARY /usr/local/lib/BTpp/libbtpp.a)
-#message("the value of btpp_INCLUDE_DIRS: " ${btpp_INCLUDE_DIRS})
-#message("the value of btpp_LIBRARY: " ${btpp_LIBRARY})
+install(FILES ${BTHeadLibrary} DESTINATION ${INSTALL_INCLUDE_DIR}/include/BTpp)
 
 
+install(TARGETS BTppLib
+  # IMPORTANT: Add the  library to the "export-set"
+  EXPORT BTppTargets
+  ARCHIVE DESTINATION "${INSTALL_CMAKE_DIR}/BTpp/lib"
+  RUNTIME DESTINATION "${PROJECT_BINARY_DIR}/bin" COMPONENT ${PROJECT_BINARY_DIR}/bin
+  LIBRARY DESTINATION "${PROJECT_BINARY_DIR}/lib" COMPONENT ${PROJECT_BINARY_DIR}/shlib
+  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/include/BTpp"
+    COMPONENT ${INSTALL_CMAKE_DIR}"include/BTpp")
 
 
+# Create the BTppConfig.cmake and BTppConfigVersion files
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+   "${INSTALL_INCLUDE_DIR}")
+# ... for the build tree
+
+
+set(CONF_INCLUDE_DIRS "${INSTALL_INCLUDE_DIR}include/BTpp")
+configure_file(conf/BTppConfig.cmake.in
+  "${PROJECT_BINARY_DIR}/BTppConfig.cmake" @ONLY)
+
+# ... for the install tree
+#set(CONF_INCLUDE_DIRS "\${BTpp_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(conf/BTppConfig.cmake.in
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/BTppConfig.cmake" @ONLY)
+# ... for both
+configure_file(conf/BTppConfigVersion.cmake.in
+  "${PROJECT_BINARY_DIR}/BTppConfigVersion.cmake" @ONLY)
+
+# Install the BTppConfig.cmake and BTppConfigVersion.cmake
+install(FILES
+  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/BTppConfig.cmake"
+  "${PROJECT_BINARY_DIR}/BTppConfigVersion.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+
+# Install the export set for use with the install-tree
+install(EXPORT BTppTargets DESTINATION
+  "${INSTALL_CMAKE_DIR}" COMPONENT dev)
