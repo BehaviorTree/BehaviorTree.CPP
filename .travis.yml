@@ -17,3 +17,14 @@ compiler:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq build-essential freeglut3-dev
+  
+  before_script:
+  # Prepare build directory
+  - mkdir -p build
+  
+  
+  script:
+  # Build BTpp
+  - (cd build; cmake .. ;cmake --build . )
+
+ 
