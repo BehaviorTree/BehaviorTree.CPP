@@ -2,9 +2,10 @@ NEWS!
 -----------
 The Preprint of our book titled "**Behavior Trees in Robotics and AI**" is available here: https://arxiv.org/abs/1709.00084
 
-<img width="100" alt="portfolio_view" src="http://michelecolledanchise.com/BTPPLOGO.png"> BT++ ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
+<img width="100" alt="portfolio_view" src="http://michelecolledanchise.com/BTPPLOGO.png"> BT++ 
 ====
-![Version](https://img.shields.io/badge/version-v1.4-green.svg) <br/> 
+![License MIT](https://img.shields.io/dub/l/vibe-d.svg) ![Version](https://img.shields.io/badge/version-v1.4-green.svg) <img src="https://travis-ci.org/miccol/Behavior-Tree.svg?branch=master"/>
+ <br/>       
 A behavior tree library in `C++`.
 
 REFERENCE
@@ -27,7 +28,6 @@ bibtex entry:
 `doi={10.1109/TRO.2016.2633567},` <br/>
 `ISSN={1552-3098},` <br/>
 `month={April},}`<br/>
-
 
 DEPENDENCIES
 ------------
