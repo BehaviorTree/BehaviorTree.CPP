@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 project(BTpp)
 
 set(CMAKE_BUILD_TYPE Release)
-add_definitions(-lX11 -Wall -lglut -lGL -lgtest -std=c++11  -pthread -lrt )
+add_definitions(-lX11 -Wall -lglut -lGL -lgtest -std=c++11 -lrt )
 # Needed for using threads
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 
 
@@ -106,8 +106,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # COMPILING GTEST
 ######################################################
 if(GTEST_FOUND)
-    add_executable(btpp_gtest gtest/gtest_tree.cpp ${BTSrcLibrary} ${BTHeadLibrary})
-    target_link_libraries(btpp_gtest  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} ${X11_LIBRARIES})
+    #add_executable(btpp_gtest gtest/gtest_tree.cpp ${BTSrcLibrary} ${BTHeadLibrary})
+    #target_link_libraries(btpp_gtest  ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} ${X11_LIBRARIES})
 endif(GTEST_FOUND)
 
 ######################################################
@@ -136,35 +136,40 @@ export(TARGETS BTppLib
 # (this registers the build-tree with a global CMake-registry)
 export(PACKAGE BTpp)
 
+message("******************" ${INSTALL_INCLUDE_DIR})
+
+install(FILES ${BTHeadLibrary} DESTINATION ${INSTALL_INCLUDE_DIR}/include/BTpp)
+
 
 install(TARGETS BTppLib
-  # IMPORTANT: Add the foo library to the "export-set"
+  # IMPORTANT: Add the  library to the "export-set"
   EXPORT BTppTargets
-  ARCHIVE DESTINATION "${PROJECT_BINARY_DIR}/arc"
-  RUNTIME DESTINATION "${PROJECT_BINARY_DIR}/bin" COMPONENT ${PROJECT_SOURCE_DIR}/bin
-  LIBRARY DESTINATION "${PROJECT_BINARY_DIR}/lib" COMPONENT ${PROJECT_SOURCE_DIR}/shlib
-  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/BTpp"
-    COMPONENT dev)
+  ARCHIVE DESTINATION "${INSTALL_CMAKE_DIR}/BTpp/lib"
+  RUNTIME DESTINATION "${PROJECT_BINARY_DIR}/bin" COMPONENT ${PROJECT_BINARY_DIR}/bin
+  LIBRARY DESTINATION "${PROJECT_BINARY_DIR}/lib" COMPONENT ${PROJECT_BINARY_DIR}/shlib
+  PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/include/BTpp"
+    COMPONENT ${INSTALL_CMAKE_DIR}"include/BTpp")
 
 
-# Create the FooBarConfig.cmake and FooBarConfigVersion files
+# Create the BTppConfig.cmake and BTppConfigVersion files
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
    "${INSTALL_INCLUDE_DIR}")
 # ... for the build tree
 
 
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}")
+set(CONF_INCLUDE_DIRS "${INSTALL_INCLUDE_DIR}include/BTpp")
 configure_file(conf/BTppConfig.cmake.in
   "${PROJECT_BINARY_DIR}/BTppConfig.cmake" @ONLY)
+
 # ... for the install tree
-set(CONF_INCLUDE_DIRS "\${BTpp_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+#set(CONF_INCLUDE_DIRS "\${BTpp_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 configure_file(conf/BTppConfig.cmake.in
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/BTppConfig.cmake" @ONLY)
 # ... for both
 configure_file(conf/BTppConfigVersion.cmake.in
   "${PROJECT_BINARY_DIR}/BTppConfigVersion.cmake" @ONLY)
 
-# Install the YARPBTCoreConfig.cmake and YARPBTCoreConfigVersion.cmake
+# Install the BTppConfig.cmake and BTppConfigVersion.cmake
 install(FILES
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/BTppConfig.cmake"
   "${PROJECT_BINARY_DIR}/BTppConfigVersion.cmake"
@@ -175,3 +180,4 @@ install(EXPORT BTppTargets DESTINATION
   "${INSTALL_CMAKE_DIR}" COMPONENT dev)
 
 
+message("******************" ${CONF_INCLUDE_DIRS})
