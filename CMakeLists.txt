@@ -1,12 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 project(BTpp)
 
 set(CMAKE_BUILD_TYPE Release)
 add_definitions(-lX11 -Wall -lglut -lGL -lgtest -std=c++11 -lrt )
 # Needed for using threads
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 #########################################################
 # FIND X11
@@ -136,7 +134,6 @@ export(TARGETS BTppLib
 # (this registers the build-tree with a global CMake-registry)
 export(PACKAGE BTpp)
 
-message("******************" ${INSTALL_INCLUDE_DIR})
 
 install(FILES ${BTHeadLibrary} DESTINATION ${INSTALL_INCLUDE_DIR}/include/BTpp)
 
@@ -178,6 +175,3 @@ install(FILES
 # Install the export set for use with the install-tree
 install(EXPORT BTppTargets DESTINATION
   "${INSTALL_CMAKE_DIR}" COMPONENT dev)
-
-
-message("******************" ${CONF_INCLUDE_DIRS})

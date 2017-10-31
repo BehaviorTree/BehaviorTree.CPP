@@ -11,7 +11,7 @@
 */
 
 #include <action_node.h>
-//#include <string>
+#include <string>
 
 
 BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
