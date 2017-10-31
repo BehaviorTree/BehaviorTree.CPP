@@ -29,6 +29,24 @@ bibtex entry:
 `month={April},}`<br/>
 
 
+BUILD STATUS
+------------
+
+<table align="center">
+  <tr>
+    <th width="9%" />
+    <th width="13%">Ubuntu 14.04 trusty</th>
+
+</tr>
+    <td><b>Release</b></td>
+    <td align="center">
+      <img src="https://travis-ci.org/miccol/Behavior-Tree.svg?branch=master"/>
+    </td>
+</tr>
+</table>
+
+
+
 DEPENDENCIES
 ------------
 
