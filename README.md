@@ -99,8 +99,8 @@ If you would like to install the library system-wide, then run:
 `$ sudo make install` <br/>
 
 On Ubuntu, this will install the library (libbtpp.so) in `/usr/local/lib`. <br/>
-In an external project, just call in your CMakeLists 'find_package(BTpp)' to find the library. 
-The include directory is defined as `BTpp_INCLUDE_DIRS` and the libraries to link as `BTpp_LIBRARIES`.
+In an external project, just call in your CMakeLists 'find_package(BTpp)' to find the library. <br/>
+The include directory is defined as `BTpp_INCLUDE_DIRS` and the libraries to link as `BTpp_LIBRARIES`.<br/>
 The repository [my-behavior-tree-project](https://github.com/miccol/my-behavior-tree-project) shows an example on how to use the library once system-wide installed.
 
 
