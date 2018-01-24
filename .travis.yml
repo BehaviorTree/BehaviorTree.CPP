@@ -20,5 +20,5 @@ script:
   # Build BTpp
   - (cd build; cmake .. ;cmake --build . )
   #Install BTpp
-  - (cd build; sudo cmake --build . --target install)
+  - (cd build; sudo make install)
 
