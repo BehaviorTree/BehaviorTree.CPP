@@ -117,6 +117,11 @@ CREATE YOUR OWN CONDITION NODE
 2) Implement the method `BT::ReturnStatus Tick()` with the code you want to execute to check the condition. Return `BT::SUCCESS` or `BT::FAILURE` accordingly.  
 See the file `src/example.cpp` for an example.
 
+
+NOTES
+-------
+In case you are puzzled about why a sequence (or fallback) node with 2 or more actions as children never get past the first action, see [this](https://github.com/miccol/ROS-Behavior-Tree/issues/16) discussion.
+
 LICENSE
 -------
 The MIT License (MIT)
