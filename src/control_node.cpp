@@ -17,14 +17,10 @@
 
 BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
 {
-    type_ = BT::CONTROL_NODE;
-
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
     // ReturnStatus child_i_status_ = BT::IDLE;  // commented out as unused
 }
-
-BT::ControlNode::~ControlNode() {}
 
 void BT::ControlNode::AddChild(TreeNode* child)
 {
@@ -50,7 +46,7 @@ void BT::ControlNode::Halt()
 {
     DEBUG_STDOUT("HALTING: "<< get_name());
     HaltChildren(0);
-    set_status(BT::HALTED);
+    SetStatus(BT::HALTED);
 }
 
 std::vector<BT::TreeNode*> BT::ControlNode::GetChildren()
@@ -58,51 +54,19 @@ std::vector<BT::TreeNode*> BT::ControlNode::GetChildren()
     return children_nodes_;
 }
 
-void BT::ControlNode::ResetColorState()
-{
-    set_color_status(BT::IDLE);
-    for (unsigned int i = 0; i < children_nodes_.size(); i++)
-    {
-        children_nodes_[i]->ResetColorState();
-    }
-}
-
 void BT::ControlNode::HaltChildren(int i)
 {
     for (unsigned int j=i; j < children_nodes_.size(); j++)
     {
-        if (children_nodes_[j]->get_type() == BT::CONDITION_NODE)
+        if (children_nodes_[j]->Status() == BT::RUNNING)
         {
-            children_nodes_[i]->ResetColorState();
+            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]-> get_name());
+            children_nodes_[j]->Halt();
         }
-        else
-        {
-            if (children_nodes_[j]->get_status() == BT::RUNNING)
-            {
-                DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]-> get_name());
-                children_nodes_[j]->Halt();
-            }
-            else
-            {
-                DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]-> get_name()
-                             << "STATUS" << children_nodes_[j]->get_status());
-            }
+        else{
+            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]-> get_name()
+                         << "STATUS" << children_nodes_[j]->Status());
         }
     }
-}
-
-int BT::ControlNode::Depth()
-{
-    int depMax = 0;
-    int dep = 0;
-    for (unsigned int i = 0; i < children_nodes_.size(); i++)
-    {
-        dep = (children_nodes_[i]->Depth());
-        if (dep > depMax)
-        {
-            depMax = dep;
-        }
-    }
-    return 1 + depMax;
 }
 

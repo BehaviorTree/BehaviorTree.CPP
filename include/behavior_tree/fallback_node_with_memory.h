@@ -11,11 +11,11 @@ public:
     // Constructor
     FallbackNodeWithMemory(std::string name);
     FallbackNodeWithMemory(std::string name, int reset_policy);
-    ~FallbackNodeWithMemory();
-    int DrawType();
+    ~FallbackNodeWithMemory() = default;
+
     // The method that is going to be executed by the thread
-    BT::ReturnStatus Tick();
-    void Halt();
+    virtual BT::ReturnStatus Tick() override;
+    virtual void Halt() override;
 private:
     unsigned int current_child_idx_;
     unsigned int reset_policy_;

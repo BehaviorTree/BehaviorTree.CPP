@@ -24,23 +24,23 @@ namespace BT
     public:
         // Constructor
         ControlNode(std::string name);
-        ~ControlNode();
+        ~ControlNode() = default;
 
         // The method used to fill the child vector
         void AddChild(TreeNode* child);
 
         // The method used to know the number of children
         unsigned int GetChildrenNumber();
-	std::vector<TreeNode*> GetChildren();
+        std::vector<TreeNode*> GetChildren();
         // The method used to interrupt the execution of the node
-        void Halt();
-        void ResetColorState();
+        virtual void Halt() override;
         void HaltChildren(int i);
-        int Depth();
 
         // Methods used to access the node state without the
         // conditional waiting (only mutual access)
         bool WriteState(ReturnStatus new_state);
+
+        virtual NodeType Type() const override { return CONTROL_NODE; }
     };
 }
 

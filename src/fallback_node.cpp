@@ -15,7 +15,6 @@
 
 BT::FallbackNode::FallbackNode(std::string name) : ControlNode::ControlNode(name) {}
 
-BT::FallbackNode::~FallbackNode() {}
 
 BT::ReturnStatus BT::FallbackNode::Tick()
 {
@@ -32,10 +31,10 @@ BT::ReturnStatus BT::FallbackNode::Tick()
                     Hence we cannot just call the method Tick() from the action as doing so will block the execution of the tree.
                     For this reason if a child of this node is an action, then we send the tick using the tick engine. Otherwise we call the method Tick() and wait for the response.
             */
-            if (children_nodes_[i]->get_type() == BT::ACTION_NODE)
+            if (children_nodes_[i]->Type() == BT::ACTION_NODE)
             {
                 // 1) If the child i is an action, read its state.
-                child_i_status_ = children_nodes_[i]->get_status();
+                child_i_status_ = children_nodes_[i]->Status();
 
                 if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
                 {
@@ -46,7 +45,7 @@ BT::ReturnStatus BT::FallbackNode::Tick()
                     // waits for the tick to arrive to the child
                     do
                     {
-                        child_i_status_ = children_nodes_[i]->get_status();
+                        child_i_status_ = children_nodes_[i]->Status();
                         std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     }
                     while (child_i_status_ != BT::RUNNING && child_i_status_ != BT::SUCCESS
@@ -58,7 +57,7 @@ BT::ReturnStatus BT::FallbackNode::Tick()
                 // 2) if it's not an action:
                 // Send the tick and wait for the response;
                 child_i_status_ = children_nodes_[i]->Tick();
-                children_nodes_[i]->set_status(child_i_status_);
+                children_nodes_[i]->SetStatus(child_i_status_);
 
             }
             // Ponderate on which status to send to the parent
@@ -66,23 +65,23 @@ BT::ReturnStatus BT::FallbackNode::Tick()
             {
                 if (child_i_status_ == BT::SUCCESS)
                 {
-                    children_nodes_[i]->set_status(BT::IDLE);  // the child goes in idle if it has returned success.
+                    children_nodes_[i]->SetStatus(BT::IDLE);  // the child goes in idle if it has returned success.
                 }
                 // If the  child status is not failure, halt the next children and return the status to your parent.
                 DEBUG_STDOUT(get_name() << " is HALTING children from " << (i+1));
                 HaltChildren(i+1);
-                set_status(child_i_status_);
+                SetStatus(child_i_status_);
                 return child_i_status_;
             }
             else
             {
                 // the child returned failure.
-                children_nodes_[i]->set_status(BT::IDLE);
+                children_nodes_[i]->SetStatus(BT::IDLE);
                 if (i == N_of_children_ - 1)
                 {
                     // If the  child status is failure, and it is the last child to be ticked,
                     // then the sequence has failed.
-                    set_status(BT::FAILURE);
+                    SetStatus(BT::FAILURE);
                     return BT::FAILURE;
                 }
             }
@@ -91,9 +90,3 @@ BT::ReturnStatus BT::FallbackNode::Tick()
     return BT::EXIT;
 }
 
-int BT::FallbackNode::DrawType()
-{
-    // Lock acquistion
-
-    return BT::SELECTOR;
-}

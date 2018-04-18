@@ -27,12 +27,12 @@ BT::ReturnStatus BT::ConditionTestNode::Tick()
 
         if (boolean_value_)
         {
-            set_status(BT::SUCCESS);
+            SetStatus(BT::SUCCESS);
             return BT::SUCCESS;
         }
         else
         {
-            set_status(BT::FAILURE);
+            SetStatus(BT::FAILURE);
             return BT::FAILURE;
         }
 }

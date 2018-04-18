@@ -10,13 +10,13 @@ namespace BT
     public:
         // Constructor
         DecoratorRetryNode(std::string name, unsigned int NTries);
-        ~DecoratorRetryNode();
-    int DrawType();
+        ~DecoratorRetryNode() = default;
+
         // The method that is going to be executed by the thread
         void Exec();
     private:
-	unsigned int NTries_;
-	unsigned int TryIndx_;
+      unsigned int NTries_;
+      unsigned int TryIndx_;
     };
 }
 

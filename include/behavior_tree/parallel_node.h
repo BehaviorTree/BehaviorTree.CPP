@@ -10,11 +10,11 @@ class ParallelNode : public ControlNode
 public:
     // Constructor
     ParallelNode(std::string name, int threshold_M);
-    ~ParallelNode();
-    int DrawType();
+    ~ParallelNode() = default;
+
     // The method that is going to be executed by the thread
-    BT::ReturnStatus Tick();
-    void Halt();
+    virtual BT::ReturnStatus Tick() override;
+    virtual void Halt() override;
 
     unsigned int get_threshold_M();
     void set_threshold_M(unsigned int threshold_M);

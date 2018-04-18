@@ -12,9 +12,8 @@ namespace BT
     protected:
     public:
         LeafNode(std::string name);
-        ~LeafNode();
-    void ResetColorState();
-    int Depth();
+        ~LeafNode() = default;
+
     };
 }
 

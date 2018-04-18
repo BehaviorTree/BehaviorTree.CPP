@@ -30,9 +30,6 @@ BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, int reset_p
 }
 
 
-BT::SequenceNodeWithMemory::~SequenceNodeWithMemory() {}
-
-
 BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
 {
     DEBUG_STDOUT(get_name() << " ticked, memory counter: "<< current_child_idx_);
@@ -49,12 +46,12 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
                 For this reason if a child of this node is an action, then we send the tick using the tick engine. Otherwise we call the method Tick() and wait for the response.
         */
 
-        if (children_nodes_[current_child_idx_]->get_type() == BT::ACTION_NODE)
+        if (children_nodes_[current_child_idx_]->Type() == BT::ACTION_NODE)
         {
             // 1) If the child i is an action, read its state.
             // Action nodes runs in another thread, hence you cannot retrieve the status just by executing it.
 
-            child_i_status_ = children_nodes_[current_child_idx_]->get_status();
+            child_i_status_ = children_nodes_[current_child_idx_]->Status();
             DEBUG_STDOUT(get_name() << " It is an action " << children_nodes_[current_child_idx_]->get_name()
                          << " with status: " << child_i_status_);
 
@@ -67,7 +64,7 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
                 // waits for the tick to arrive to the child
                 do
                 {
-                    child_i_status_ = children_nodes_[current_child_idx_]->get_status();
+                    child_i_status_ = children_nodes_[current_child_idx_]->Status();
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
                 while (child_i_status_ != BT::RUNNING && child_i_status_ != BT::SUCCESS
@@ -79,14 +76,14 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
             // 2) if it's not an action:
             // Send the tick and wait for the response;
             child_i_status_ = children_nodes_[current_child_idx_]->Tick();
-            children_nodes_[current_child_idx_]->set_status(child_i_status_);
+            children_nodes_[current_child_idx_]->SetStatus(child_i_status_);
 
         }
 
         if (child_i_status_ == BT::SUCCESS ||child_i_status_ == BT::FAILURE )
         {
              // the child goes in idle if it has returned success or failure.
-            children_nodes_[current_child_idx_]->set_status(BT::IDLE);
+            children_nodes_[current_child_idx_]->SetStatus(BT::IDLE);
         }
 
         if (child_i_status_ != BT::SUCCESS)
@@ -98,7 +95,7 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
             {
                 current_child_idx_ = 0;
             }
-            set_status(child_i_status_);
+            SetStatus(child_i_status_);
             return child_i_status_;
         }
         else if (current_child_idx_ != N_of_children_ - 1)
@@ -115,17 +112,11 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
                 // if it the last child and it has returned SUCCESS, reset the memory
                 current_child_idx_ = 0;
             }
-            set_status(child_i_status_);
+            SetStatus(child_i_status_);
             return child_i_status_;
         }
     }
     return BT::EXIT;
-}
-
-
-int BT::SequenceNodeWithMemory::DrawType()
-{
-    return BT::SEQUENCESTAR;
 }
 
 

@@ -13,16 +13,11 @@
 #include "behavior_tree/condition_node.h"
 #include <string>
 
-BT::ConditionNode::ConditionNode(std::string name) : LeafNode::LeafNode(name)
+BT::ConditionNode::ConditionNode(std::string name) :
+  LeafNode::LeafNode(name)
 {
-    type_ = BT::CONDITION_NODE;
-}
 
-BT::ConditionNode::~ConditionNode() {}
+}
 
 void BT::ConditionNode::Halt() {}
 
-int BT::ConditionNode::DrawType()
-{
-    return BT::CONDITION;
-}

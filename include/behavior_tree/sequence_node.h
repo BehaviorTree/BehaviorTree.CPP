@@ -10,10 +10,10 @@ class SequenceNode : public ControlNode
 public:
     // Constructor
     SequenceNode(std::string name);
-    ~SequenceNode();
-    int DrawType();
+    ~SequenceNode() = default;
+
     // The method that is going to be executed by the thread
-    BT::ReturnStatus Tick();
+    virtual BT::ReturnStatus Tick() override;
 };
 }
 

@@ -10,10 +10,10 @@ namespace BT
     public:
         // Constructor
         FallbackNode(std::string name);
-        ~FallbackNode();
-        int DrawType();
+        ~FallbackNode() = default;
+
         // The method that is going to be executed by the thread
-        BT::ReturnStatus Tick();
+        virtual BT::ReturnStatus Tick() override;
     };
 }
 

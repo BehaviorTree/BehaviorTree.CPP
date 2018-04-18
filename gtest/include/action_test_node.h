@@ -11,14 +11,14 @@ namespace BT
     public:
         // Constructor
         ActionTestNode(std::string Name);
-        ~ActionTestNode();
+        virtual ~ActionTestNode() = default;
 
         // The method that is going to be executed by the thread
-        BT::ReturnStatus Tick();
+        virtual BT::ReturnStatus Tick() override;
         void set_time(int time);
 	
         // The method used to interrupt the execution of the node
-        void Halt();
+        virtual void Halt() override;
         void set_boolean_value(bool boolean_value);
     private:
         int time_;

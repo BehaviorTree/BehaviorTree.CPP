@@ -16,11 +16,8 @@
 
 BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
 {
-    type_ = BT::ACTION_NODE;
     thread_ = std::thread(&ActionNode::WaitForTick, this);
 }
-
-BT::ActionNode::~ActionNode() {}
 
 
 void BT::ActionNode::WaitForTick()
@@ -35,13 +32,8 @@ void BT::ActionNode::WaitForTick()
         DEBUG_STDOUT(get_name() << " TICK RECEIVED");
 
         // Running state
-        set_status(BT::RUNNING);
+        SetStatus(BT::RUNNING);
         BT::ReturnStatus status = Tick();
-        set_status(status);
+        SetStatus(status);
     }
-}
-
-int BT::ActionNode::DrawType()
-{
-    return BT::ACTION;
 }
