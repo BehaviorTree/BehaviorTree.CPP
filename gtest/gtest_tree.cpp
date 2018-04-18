@@ -365,7 +365,7 @@ TEST_F(SimpleSequenceTest, ConditionTrue)
     // Ticking the root node
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action->get_status());
+    ASSERT_EQ(BT::RUNNING, action->Status());
     ASSERT_EQ(BT::RUNNING, state);
     root->Halt();
 }
@@ -378,7 +378,7 @@ TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
 
     state = root->Tick();
     ASSERT_EQ(BT::FAILURE, state);
-    ASSERT_EQ(BT::HALTED, action->get_status());
+    ASSERT_EQ(BT::HALTED, action->Status());
     root->Halt();
 }
 
@@ -387,7 +387,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
 {
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
     ASSERT_EQ(BT::RUNNING, state);
     root->Halt();
 }
@@ -403,12 +403,11 @@ TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
     state = root->Tick();
     state = root->Tick();
 
-
     ASSERT_EQ(BT::RUNNING, state);
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::RUNNING, seq_1->get_status());
-    ASSERT_EQ(BT::HALTED, seq_2->get_status());
-    ASSERT_EQ(BT::HALTED, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::RUNNING, seq_1->Status());
+    ASSERT_EQ(BT::HALTED, seq_2->Status());
+    ASSERT_EQ(BT::HALTED, action_2->Status());
 
     root->Halt();
 }
@@ -422,7 +421,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions1ToFalse)
     state = root->Tick();
 
     ASSERT_EQ(BT::FAILURE, state);
-    ASSERT_EQ(BT::HALTED, action_1->get_status());
+    ASSERT_EQ(BT::HALTED, action_1->Status());
     root->Halt();
 }
 
@@ -435,7 +434,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)
     state = root->Tick();
 
     ASSERT_EQ(BT::FAILURE, state);
-    ASSERT_EQ(BT::HALTED, action_1->get_status());
+    ASSERT_EQ(BT::HALTED, action_1->Status());
     root->Halt();
 }
 
@@ -448,7 +447,7 @@ TEST_F(SimpleFallbackTest, ConditionTrue)
     condition->set_boolean_value(true);
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, action->get_status());
+    ASSERT_EQ(BT::IDLE, action->Status());
     ASSERT_EQ(BT::SUCCESS, state);
     root->Halt();
 }
@@ -465,7 +464,7 @@ TEST_F(SimpleFallbackTest, ConditionToFalse)
     state = root->Tick();
 
     ASSERT_EQ(BT::SUCCESS, state);
-    ASSERT_EQ(BT::HALTED, action->get_status());
+    ASSERT_EQ(BT::HALTED, action->Status());
     root->Halt();
 }
 
@@ -483,7 +482,7 @@ TEST_F(ComplexFallbackTest, Condition1ToTrue)
 
     ASSERT_EQ(BT::SUCCESS, state);
 
-    ASSERT_EQ(BT::HALTED, action_1->get_status());
+    ASSERT_EQ(BT::HALTED, action_1->Status());
     root->Halt();
 }
 
@@ -499,7 +498,7 @@ TEST_F(ComplexFallbackTest, Condition2ToTrue)
     state = root->Tick();
 
     ASSERT_EQ(BT::SUCCESS, state);
-    ASSERT_EQ(BT::HALTED, action_1->get_status());
+    ASSERT_EQ(BT::HALTED, action_1->Status());
     root->Halt();
 }
 
@@ -513,7 +512,7 @@ TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
     BT::ReturnStatus state = root->Tick();
 
     ASSERT_EQ(BT::RUNNING, state);
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
 
     root->Halt();
 }
@@ -526,7 +525,7 @@ TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
     BT::ReturnStatus state = root->Tick();
 
     ASSERT_EQ(BT::RUNNING, state);
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
 
     root->Halt();
 }
@@ -539,7 +538,7 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
     BT::ReturnStatus state = root->Tick();
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    ASSERT_EQ(BT::RUNNING, action->get_status());
+    ASSERT_EQ(BT::RUNNING, action->Status());
     ASSERT_EQ(BT::RUNNING, state);
     root->Halt();
 }
@@ -554,7 +553,7 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTurnToFalse)
     state = root->Tick();
 
     ASSERT_EQ(BT::RUNNING, state);
-    ASSERT_EQ(BT::RUNNING, action->get_status());
+    ASSERT_EQ(BT::RUNNING, action->Status());
 
     root->Halt();
 }
@@ -564,8 +563,8 @@ TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
 {
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -580,8 +579,8 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFalse)
 
     state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
     root->Halt();
 }
@@ -594,8 +593,8 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions2ToFalse)
 
     state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -611,7 +610,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Action1Done)
     std::this_thread::sleep_for(std::chrono::seconds(10));
     root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_2->Status());
 
     root->Halt();
 }
@@ -624,7 +623,7 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
     BT::ReturnStatus state = root->Tick();
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    ASSERT_EQ(BT::RUNNING, action->get_status());
+    ASSERT_EQ(BT::RUNNING, action->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -641,7 +640,7 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
     state = root->Tick();
 
     ASSERT_EQ(BT::RUNNING, state);
-    ASSERT_EQ(BT::RUNNING, action->get_status());
+    ASSERT_EQ(BT::RUNNING, action->Status());
 
     root->Halt();
 }
@@ -652,8 +651,8 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsTrue)
 {
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::IDLE, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::SUCCESS, state);
 
     root->Halt();
@@ -664,8 +663,8 @@ TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
     condition_1->set_boolean_value(false);
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::IDLE, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::SUCCESS, state);
 
     root->Halt();
@@ -678,8 +677,8 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
     condition_2->set_boolean_value(false);
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -697,8 +696,8 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
 
     state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -716,8 +715,8 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 
     state = root->Tick();
 
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -735,8 +734,8 @@ TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
     std::this_thread::sleep_for(std::chrono::seconds(5));
     state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, action_1->get_status());
-    ASSERT_EQ(BT::RUNNING, action_2->get_status());
+    ASSERT_EQ(BT::IDLE, action_1->Status());
+    ASSERT_EQ(BT::RUNNING, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -747,10 +746,10 @@ TEST_F(SimpleParallelTest, ConditionsTrue)
 {
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, condition_1->get_status());
-    ASSERT_EQ(BT::IDLE, condition_2->get_status());
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::RUNNING, action_2->get_status());
+    ASSERT_EQ(BT::IDLE, condition_1->Status());
+    ASSERT_EQ(BT::IDLE, condition_2->Status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::RUNNING, action_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -765,10 +764,10 @@ TEST_F(SimpleParallelTest, Threshold_3)
     std::this_thread::sleep_for(std::chrono::seconds(5));
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, condition_1->get_status());
-    ASSERT_EQ(BT::IDLE, condition_2->get_status());
-    ASSERT_EQ(BT::IDLE, action_1->get_status());
-    ASSERT_EQ(BT::HALTED, action_2->get_status());
+    ASSERT_EQ(BT::IDLE, condition_1->Status());
+    ASSERT_EQ(BT::IDLE, condition_2->Status());
+    ASSERT_EQ(BT::IDLE, action_1->Status());
+    ASSERT_EQ(BT::HALTED, action_2->Status());
     ASSERT_EQ(BT::SUCCESS, state);
 
     root->Halt();
@@ -780,10 +779,10 @@ TEST_F(SimpleParallelTest, Threshold_1)
     root->set_threshold_M(1);
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, condition_1->get_status());
-    ASSERT_EQ(BT::IDLE, condition_2->get_status());
-    ASSERT_EQ(BT::IDLE, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_2->get_status());
+    ASSERT_EQ(BT::IDLE, condition_1->Status());
+    ASSERT_EQ(BT::IDLE, condition_2->Status());
+    ASSERT_EQ(BT::IDLE, action_1->Status());
+    ASSERT_EQ(BT::IDLE, action_2->Status());
     ASSERT_EQ(BT::SUCCESS, state);
 
     root->Halt();
@@ -792,14 +791,14 @@ TEST_F(ComplexParallelTest, ConditionsTrue)
 {
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, condition_1->get_status());
-    ASSERT_EQ(BT::IDLE, condition_2->get_status());
-    ASSERT_EQ(BT::IDLE, condition_3->get_status());
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::RUNNING, action_2->get_status());
-    ASSERT_EQ(BT::IDLE, action_3->get_status());
-    ASSERT_EQ(BT::RUNNING, parallel_1->get_status());
-    ASSERT_EQ(BT::IDLE, parallel_2->get_status());
+    ASSERT_EQ(BT::IDLE, condition_1->Status());
+    ASSERT_EQ(BT::IDLE, condition_2->Status());
+    ASSERT_EQ(BT::IDLE, condition_3->Status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::RUNNING, action_2->Status());
+    ASSERT_EQ(BT::IDLE, action_3->Status());
+    ASSERT_EQ(BT::RUNNING, parallel_1->Status());
+    ASSERT_EQ(BT::IDLE, parallel_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -812,14 +811,14 @@ TEST_F(ComplexParallelTest, Condition3False)
     condition_3->set_boolean_value(false);
     BT::ReturnStatus state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, condition_1->get_status());
-    ASSERT_EQ(BT::IDLE, condition_2->get_status());
-    ASSERT_EQ(BT::IDLE, condition_3->get_status());
-    ASSERT_EQ(BT::RUNNING, action_1->get_status());
-    ASSERT_EQ(BT::RUNNING, action_2->get_status());
-    ASSERT_EQ(BT::RUNNING, action_3->get_status());
-    ASSERT_EQ(BT::RUNNING, parallel_1->get_status());
-    ASSERT_EQ(BT::RUNNING, parallel_2->get_status());
+    ASSERT_EQ(BT::IDLE, condition_1->Status());
+    ASSERT_EQ(BT::IDLE, condition_2->Status());
+    ASSERT_EQ(BT::IDLE, condition_3->Status());
+    ASSERT_EQ(BT::RUNNING, action_1->Status());
+    ASSERT_EQ(BT::RUNNING, action_2->Status());
+    ASSERT_EQ(BT::RUNNING, action_3->Status());
+    ASSERT_EQ(BT::RUNNING, parallel_1->Status());
+    ASSERT_EQ(BT::RUNNING, parallel_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
     root->Halt();
@@ -836,19 +835,19 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
 
-    ASSERT_EQ(BT::IDLE, condition_1->get_status());
-    ASSERT_EQ(BT::IDLE, condition_2->get_status());
-    ASSERT_EQ(BT::IDLE, condition_3->get_status());
-    ASSERT_EQ(BT::SUCCESS, action_1->get_status());  // success not read yet by the node parallel_1
-    ASSERT_EQ(BT::RUNNING, parallel_1->get_status());  // parallel_1 hasn't realize (yet) that action_1 has succeeded
+    ASSERT_EQ(BT::IDLE, condition_1->Status());
+    ASSERT_EQ(BT::IDLE, condition_2->Status());
+    ASSERT_EQ(BT::IDLE, condition_3->Status());
+    ASSERT_EQ(BT::SUCCESS, action_1->Status());  // success not read yet by the node parallel_1
+    ASSERT_EQ(BT::RUNNING, parallel_1->Status());  // parallel_1 hasn't realize (yet) that action_1 has succeeded
 
     state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, parallel_1->get_status());
-    ASSERT_EQ(BT::HALTED, action_2->get_status());
-    ASSERT_EQ(BT::RUNNING, action_3->get_status());
-    ASSERT_EQ(BT::RUNNING, parallel_2->get_status());
+    ASSERT_EQ(BT::IDLE, action_1->Status());
+    ASSERT_EQ(BT::IDLE, parallel_1->Status());
+    ASSERT_EQ(BT::HALTED, action_2->Status());
+    ASSERT_EQ(BT::RUNNING, action_3->Status());
+    ASSERT_EQ(BT::RUNNING, parallel_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
 
 
@@ -856,11 +855,11 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     std::this_thread::sleep_for(std::chrono::seconds(15));
     state = root->Tick();
 
-    ASSERT_EQ(BT::IDLE, parallel_2->get_status());
-    ASSERT_EQ(BT::IDLE, action_1->get_status());
-    ASSERT_EQ(BT::IDLE, parallel_1->get_status());
-    ASSERT_EQ(BT::IDLE, action_3->get_status());
-    ASSERT_EQ(BT::IDLE, parallel_2->get_status());
+    ASSERT_EQ(BT::IDLE, parallel_2->Status());
+    ASSERT_EQ(BT::IDLE, action_1->Status());
+    ASSERT_EQ(BT::IDLE, parallel_1->Status());
+    ASSERT_EQ(BT::IDLE, action_3->Status());
+    ASSERT_EQ(BT::IDLE, parallel_2->Status());
     ASSERT_EQ(BT::SUCCESS, state);
 
     root->Halt();
