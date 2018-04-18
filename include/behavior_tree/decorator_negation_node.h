@@ -1,7 +1,7 @@
 #ifndef DECORATORNEGATIONNODE_H
 #define DECORATORNEGATIONNODE_H
 
-#include <control_node.h>
+#include "behavior_tree/control_node.h"
 
 namespace BT
 {

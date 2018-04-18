@@ -1,7 +1,7 @@
 #ifndef FALLBACKNODE_H
 #define FALLBACKNODE_H
 
-#include <control_node.h>
+#include "behavior_tree/control_node.h"
 
 namespace BT
 {

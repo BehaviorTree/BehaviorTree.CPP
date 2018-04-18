@@ -1,7 +1,7 @@
 #ifndef PARALLEL_NODE_H
 #define PARALLEL_NODE_H
 
-#include <control_node.h>
+#include "behavior_tree/control_node.h"
 
 namespace BT
 {

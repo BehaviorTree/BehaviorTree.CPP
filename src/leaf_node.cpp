@@ -11,7 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <leaf_node.h>
+#include "behavior_tree/leaf_node.h"
 #include <string>
 
 BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}

@@ -50,8 +50,8 @@
 #include <condition_variable>
 
 
-#include <tick_engine.h>
-#include <exceptions.h>
+#include "behavior_tree/tick_engine.h"
+#include "behavior_tree/exceptions.h"
 
 namespace BT
 {

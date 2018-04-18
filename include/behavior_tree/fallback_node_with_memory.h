@@ -1,6 +1,6 @@
 #ifndef FALLBACK_NODE_WITH_MEMORY_H
 #define FALLBACK_NODE_WITH_MEMORY_H
-#include <control_node.h>
+#include "behavior_tree/control_node.h"
 
 
 namespace BT

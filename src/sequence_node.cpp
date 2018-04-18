@@ -12,7 +12,7 @@
 */
 
 
-#include <sequence_node.h>
+#include "behavior_tree/sequence_node.h"
 #include <string>
 
 
