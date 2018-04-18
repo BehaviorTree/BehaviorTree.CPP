@@ -15,6 +15,8 @@ namespace BT
         // The method that is going to be executed by the thread
         void Exec();
         void AddChild(TreeNode* child);
+
+        virtual NodeType Type() const override { return DECORATOR_NODE; }
     };
 }
 

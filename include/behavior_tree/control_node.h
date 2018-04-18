@@ -30,10 +30,13 @@ namespace BT
         void AddChild(TreeNode* child);
 
         // The method used to know the number of children
-        unsigned int GetChildrenNumber();
-        std::vector<TreeNode*> GetChildren();
+        unsigned int ChildrenCount() const;
+
+        const std::vector<TreeNode*>& Children() const;
+
         // The method used to interrupt the execution of the node
         virtual void Halt() override;
+
         void HaltChildren(int i);
 
         // Methods used to access the node state without the

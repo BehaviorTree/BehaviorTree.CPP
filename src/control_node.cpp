@@ -37,7 +37,7 @@ void BT::ControlNode::AddChild(TreeNode* child)
     children_states_.push_back(BT::IDLE);
 }
 
-unsigned int BT::ControlNode::GetChildrenNumber()
+unsigned int BT::ControlNode::ChildrenCount() const
 {
     return children_nodes_.size();
 }
@@ -49,7 +49,7 @@ void BT::ControlNode::Halt()
     SetStatus(BT::HALTED);
 }
 
-std::vector<BT::TreeNode*> BT::ControlNode::GetChildren()
+const std::vector<BT::TreeNode *> &BT::ControlNode::Children() const
 {
     return children_nodes_;
 }
