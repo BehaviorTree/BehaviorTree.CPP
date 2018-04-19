@@ -3,7 +3,7 @@ project(behavior_tree_core)
 
 set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -Werror=return-type")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -Werror=return-type")
 
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/

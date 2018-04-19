@@ -23,6 +23,15 @@ matrix:
 
 before_install:
   - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential
+# see motivation here https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
+  - sudo apt-get --reinstall install -qq libgtest-dev cmake
+  - cd /usr/src/gtest
+  - sudo cmake CMakeLists.txt
+  - sudo make
+  - sudo cp *.a /usr/lib
+ 
+# copy or symlink libgtest.a and libgtest_main.a to your /usr/lib folder
+sudo cp *.a /usr/lib
 
 install:
   - if [ "$ROS_DISTRO" != "none" ]; then git clone https://github.com/ros-industrial/industrial_ci.git .ci_config; fi
