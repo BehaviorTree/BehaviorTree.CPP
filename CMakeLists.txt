@@ -51,6 +51,7 @@ set(BT_Source
 	src/fallback_node_with_memory.cpp
 	src/sequence_node_with_memory.cpp
 	src/tree_node.cpp
+        src/bt_factory.cpp
 )
 include_directories(include)
 
