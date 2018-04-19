@@ -11,7 +11,7 @@
 */
 
 
-#include "behavior_tree/control_node.h"
+#include "behavior_tree_core/control_node.h"
 #include <string>
 #include <vector>
 

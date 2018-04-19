@@ -20,8 +20,8 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "behavior_tree/tick_engine.h"
-#include "behavior_tree/exceptions.h"
+#include "behavior_tree_core/tick_engine.h"
+#include "behavior_tree_core/exceptions.h"
 
 namespace BT
 {
@@ -81,7 +81,7 @@ namespace BT
 
         // The constructor and the distructor
         TreeNode(std::string name);
-        ~TreeNode();
+        virtual ~TreeNode();
 
         // The method that is going to be executed when the node receive a tick
         virtual BT::ReturnStatus Tick() = 0;

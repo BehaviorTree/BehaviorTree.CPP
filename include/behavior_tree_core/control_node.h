@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "behavior_tree/tree_node.h"
+#include "behavior_tree_core/tree_node.h"
 
 namespace BT
 {

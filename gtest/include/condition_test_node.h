@@ -1,7 +1,7 @@
 #ifndef CONDITIONTEST_H
 #define CONDITIONTEST_H
 
-#include "behavior_tree/condition_node.h"
+#include "behavior_tree_core/condition_node.h"
 
 namespace BT
 {

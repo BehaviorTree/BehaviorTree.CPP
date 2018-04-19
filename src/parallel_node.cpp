@@ -12,7 +12,7 @@
 */
 
 
-#include "behavior_tree/parallel_node.h"
+#include "behavior_tree_core/parallel_node.h"
 #include <string>
 
 BT::ParallelNode::ParallelNode(std::string name, int threshold_M) : ControlNode::ControlNode(name)

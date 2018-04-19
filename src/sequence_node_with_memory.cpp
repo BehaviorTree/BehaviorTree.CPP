@@ -12,7 +12,7 @@
 */
 
 
-#include "behavior_tree/sequence_node_with_memory.h"
+#include "behavior_tree_core/sequence_node_with_memory.h"
 #include <string>
 
 

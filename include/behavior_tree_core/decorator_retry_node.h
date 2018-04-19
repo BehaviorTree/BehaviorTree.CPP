@@ -1,7 +1,7 @@
 #ifndef DECORATORRETRYNODE_H
 #define DECORATORRETRYNODE_H
 
-#include "behavior_tree/control_node.h"
+#include "behavior_tree_core/control_node.h"
 
 namespace BT
 {
