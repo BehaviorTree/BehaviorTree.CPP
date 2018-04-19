@@ -34,7 +34,7 @@ public:
     // conditional waiting (only mutual access)
     bool WriteState(ReturnStatus new_state);
 
-    virtual NodeType Type() const override { return ACTION_NODE; }
+    virtual NodeType Type() const override final { return ACTION_NODE; }
 
 protected:
     // The thread that will execute the node

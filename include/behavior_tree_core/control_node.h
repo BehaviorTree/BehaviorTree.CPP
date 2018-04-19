@@ -56,7 +56,7 @@ namespace BT
         // conditional waiting (only mutual access)
         bool WriteState(ReturnStatus new_state);
 
-        virtual NodeType Type() const override { return CONTROL_NODE; }
+        virtual NodeType Type() const override final { return CONTROL_NODE; }
     };
 }
 

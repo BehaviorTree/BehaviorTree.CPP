@@ -1,5 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -12,62 +11,54 @@
 */
 
 
-#include "behavior_tree_core/control_node.h"
+#include "behavior_tree_core/decorator_node.h"
 #include <string>
 #include <vector>
 
-BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
+BT::DecoratorNode::DecoratorNode(std::string name) :
+    TreeNode::TreeNode(name),
+    child_node_(nullptr),
+    child_state_(BT::IDLE)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
     // ReturnStatus child_i_status_ = BT::IDLE;  // commented out as unused
 }
 
-void BT::ControlNode::AddChild(TreeNode* child)
+void BT::DecoratorNode::AddChild(TreeNode* child)
 {
-    // Checking if the child is not already present
-    for (auto node: children_nodes_)
+    if (child_node_ )
     {
-        if (node == child)
-        {
-            throw BehaviorTreeException("'" + child->Name() + "' is already a '" + Name() + "' child.");
-        }
+        throw BehaviorTreeException("Decorator '" + Name() + "' has already a child assigned");
     }
 
-    children_nodes_.push_back(child);
-    children_states_.push_back(BT::IDLE);
+    child_node_  = child;
+    child_state_ = BT::IDLE;
 }
 
-unsigned int BT::ControlNode::ChildrenCount() const
-{
-    return children_nodes_.size();
-}
 
-void BT::ControlNode::Halt()
+void BT::DecoratorNode::Halt()
 {
     DEBUG_STDOUT("HALTING: "<< Name());
-    HaltChildren(0);
+    HaltChild();
     SetStatus(BT::HALTED);
 }
 
-const std::vector<BT::TreeNode *> &BT::ControlNode::Children() const
+const BT::TreeNode* BT::DecoratorNode::Child() const
 {
-    return children_nodes_;
+    return child_node_;
 }
 
-void BT::ControlNode::HaltChildren(int i)
+void BT::DecoratorNode::HaltChild()
 {
-    for (unsigned int j=i; j < children_nodes_.size(); j++)
+    if (child_node_->Status() == BT::RUNNING)
     {
-        if (children_nodes_[j]->Status() == BT::RUNNING)
-        {
-            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]->Name());
-            children_nodes_[j]->Halt();
-        }
-        else{
-            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]->Name()
-                         << "STATUS" << children_nodes_[j]->Status());
-        }
+        DEBUG_STDOUT("SENDING HALT TO CHILD " << child_node_->Name());
+        child_node_->Halt();
+    }
+    else{
+        DEBUG_STDOUT("NO NEED TO HALT " << child_node_->Name()
+                     << "STATUS" << child_node_->Status());
     }
 }
 

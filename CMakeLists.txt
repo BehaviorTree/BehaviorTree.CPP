@@ -39,6 +39,7 @@ endif(catkin_FOUND)
 
 set(BT_Source
 	src/action_node.cpp
+        src/decorator_node.cpp
 	src/condition_node.cpp
 	src/control_node.cpp
 	src/exceptions.cpp

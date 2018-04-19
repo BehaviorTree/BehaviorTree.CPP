@@ -14,11 +14,11 @@
 #ifndef DECORATORNEGATIONNODE_H
 #define DECORATORNEGATIONNODE_H
 
-#include "behavior_tree_core/control_node.h"
+#include "behavior_tree_core/decorator_node.h"
 
 namespace BT
 {
-    class DecoratorNegationNode : public ControlNode
+    class DecoratorNegationNode : public DecoratorNode
     {
     public:
         // Constructor
@@ -29,7 +29,6 @@ namespace BT
         void Exec();
         void AddChild(TreeNode* child);
 
-        virtual NodeType Type() const override { return DECORATOR_NODE; }
     };
 }
 
