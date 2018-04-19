@@ -32,7 +32,7 @@ BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, int reset_p
 
 BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
 {
-    DEBUG_STDOUT(get_name() << " ticked, memory counter: "<< current_child_idx_);
+    DEBUG_STDOUT(Name() << " ticked, memory counter: "<< current_child_idx_);
 
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     N_of_children_ = children_nodes_.size();
@@ -52,13 +52,13 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
             // Action nodes runs in another thread, hence you cannot retrieve the status just by executing it.
 
             child_i_status_ = children_nodes_[current_child_idx_]->Status();
-            DEBUG_STDOUT(get_name() << " It is an action " << children_nodes_[current_child_idx_]->get_name()
+            DEBUG_STDOUT(Name() << " It is an action " << children_nodes_[current_child_idx_]->Name()
                          << " with status: " << child_i_status_);
 
             if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
             {
                 // 1.1) If the action status is not running, the sequence node sends a tick to it.
-                DEBUG_STDOUT(get_name() << "NEEDS TO TICK " << children_nodes_[current_child_idx_]->get_name());
+                DEBUG_STDOUT(Name() << "NEEDS TO TICK " << children_nodes_[current_child_idx_]->Name());
                 children_nodes_[current_child_idx_]->tick_engine.Tick();
 
                 // waits for the tick to arrive to the child
@@ -89,7 +89,7 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
         if (child_i_status_ != BT::SUCCESS)
         {
             // If the  child status is not success, return the status
-            DEBUG_STDOUT("the status of: " << get_name() << " becomes " << child_i_status_);
+            DEBUG_STDOUT("the status of: " << Name() << " becomes " << child_i_status_);
             if (child_i_status_ == BT::FAILURE && (reset_policy_ == BT::ON_FAILURE
                                                    || reset_policy_ == BT::ON_SUCCESS_OR_FAILURE))
             {

@@ -30,7 +30,7 @@ BT::ReturnStatus BT::ParallelNode::Tick()
     // Routing the tree according to the sequence node's logic:
     for (unsigned int i = 0; i < N_of_children_; i++)
     {
-        DEBUG_STDOUT(get_name() << "TICKING " << children_nodes_[i]->get_name());
+        DEBUG_STDOUT(Name() << "TICKING " << children_nodes_[i]->Name());
 
         if (children_nodes_[i]->Type() == BT::ACTION_NODE)
         {
@@ -41,7 +41,7 @@ BT::ReturnStatus BT::ParallelNode::Tick()
             if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
             {
                 // 1.1 If the action status is not running, the sequence node sends a tick to it.
-                DEBUG_STDOUT(get_name() << "NEEDS TO TICK " << children_nodes_[i]->get_name());
+                DEBUG_STDOUT(Name() << "NEEDS TO TICK " << children_nodes_[i]->Name());
                 children_nodes_[i]->tick_engine.Tick();
 
                 // waits for the tick to arrive to the child
@@ -75,7 +75,7 @@ BT::ReturnStatus BT::ParallelNode::Tick()
             children_nodes_[i]->SetStatus(BT::IDLE);  // the child goes in idle if it has returned failure.
             if (++failure_childred_num_ > N_of_children_- threshold_M_)
             {
-                DEBUG_STDOUT("*******PARALLEL" << get_name()
+                DEBUG_STDOUT("*******PARALLEL" << Name()
                              << " FAILED****** failure_childred_num_:" << failure_childred_num_);
 
                 success_childred_num_ = 0;

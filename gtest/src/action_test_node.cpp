@@ -28,19 +28,19 @@ BT::ReturnStatus BT::ActionTestNode::Tick()
     int i = 0;
     while (Status() != BT::HALTED && i++ < time_)
     {
-        DEBUG_STDOUT(" Action " << get_name() << "running! Thread id:" << std::this_thread::get_id());
+        DEBUG_STDOUT(" Action " << Name() << "running! Thread id:" << std::this_thread::get_id());
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     if (Status() != BT::HALTED)
     {
         if (boolean_value_)
         {
-            DEBUG_STDOUT(" Action " << get_name() << " Done!");
+            DEBUG_STDOUT(" Action " << Name() << " Done!");
             return BT::SUCCESS;
         }
         else
         {
-            DEBUG_STDOUT(" Action " << get_name() << " FAILED!");
+            DEBUG_STDOUT(" Action " << Name() << " FAILED!");
             return BT::FAILURE;
         }
     }

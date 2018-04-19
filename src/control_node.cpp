@@ -29,7 +29,7 @@ void BT::ControlNode::AddChild(TreeNode* child)
 //    {
 //        if (children_nodes_[i] == child)
 //        {
-//            throw BehaviorTreeException("'" + child->get_name() + "' is already a '" + get_name() + "' child.");
+//            throw BehaviorTreeException("'" + child->Name() + "' is already a '" + get_name() + "' child.");
 //        }
 //    }
 
@@ -44,7 +44,7 @@ unsigned int BT::ControlNode::ChildrenCount() const
 
 void BT::ControlNode::Halt()
 {
-    DEBUG_STDOUT("HALTING: "<< get_name());
+    DEBUG_STDOUT("HALTING: "<< Name());
     HaltChildren(0);
     SetStatus(BT::HALTED);
 }
@@ -60,11 +60,11 @@ void BT::ControlNode::HaltChildren(int i)
     {
         if (children_nodes_[j]->Status() == BT::RUNNING)
         {
-            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]-> get_name());
+            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]->Name());
             children_nodes_[j]->Halt();
         }
         else{
-            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]-> get_name()
+            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]->Name()
                          << "STATUS" << children_nodes_[j]->Status());
         }
     }

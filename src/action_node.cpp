@@ -26,10 +26,10 @@ void BT::ActionNode::WaitForTick()
     while (true)
     {
         // Waiting for the tick to come
-        DEBUG_STDOUT(get_name() << " WAIT FOR TICK");
+        DEBUG_STDOUT(Name() << " WAIT FOR TICK");
 
         tick_engine.Wait();
-        DEBUG_STDOUT(get_name() << " TICK RECEIVED");
+        DEBUG_STDOUT(Name() << " TICK RECEIVED");
 
         // Running state
         SetStatus(BT::RUNNING);

@@ -39,7 +39,7 @@ BT::ReturnStatus BT::FallbackNode::Tick()
                 if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
                 {
                     // 1.1) If the action status is not running, the sequence node sends a tick to it.
-                    DEBUG_STDOUT(get_name() << "NEEDS TO TICK " << children_nodes_[i]->get_name());
+                    DEBUG_STDOUT(Name() << "NEEDS TO TICK " << children_nodes_[i]->Name());
                     children_nodes_[i]->tick_engine.Tick();
 
                     // waits for the tick to arrive to the child
@@ -68,7 +68,7 @@ BT::ReturnStatus BT::FallbackNode::Tick()
                     children_nodes_[i]->SetStatus(BT::IDLE);  // the child goes in idle if it has returned success.
                 }
                 // If the  child status is not failure, halt the next children and return the status to your parent.
-                DEBUG_STDOUT(get_name() << " is HALTING children from " << (i+1));
+                DEBUG_STDOUT(Name() << " is HALTING children from " << (i+1));
                 HaltChildren(i+1);
                 SetStatus(child_i_status_);
                 return child_i_status_;
