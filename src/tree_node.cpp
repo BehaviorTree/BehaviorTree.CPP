@@ -25,14 +25,16 @@ BT::TreeNode::~TreeNode() {}
 
 void BT::TreeNode::SetStatus(ReturnStatus new_status)
 {
-    std::unique_lock<std::mutex> UniqueLock(state_mutex_);
-    status_ = new_status;
+    {
+        std::unique_lock<std::mutex> UniqueLock(state_mutex_);
+        is_state_updated_ = (status_!= new_status);
+        status_ = new_status;
+    }
+    state_condition_variable_.notify_all();
 }
 
 BT::ReturnStatus BT::TreeNode::Status() const
 {
-    DEBUG_STDOUT(Name() << " is setting its status to " << status_);
-
     std::lock_guard<std::mutex> LockGuard(state_mutex_);
     return status_;
 }
@@ -40,6 +42,18 @@ BT::ReturnStatus BT::TreeNode::Status() const
 void BT::TreeNode::SetName(const std::string &new_name)
 {
     name_ = new_name;
+}
+
+BT::ReturnStatus BT::TreeNode::waitValidStatus()
+{
+    std::unique_lock<std::mutex> lk( state_mutex_ );
+
+    state_condition_variable_.wait(lk, [&](){
+        return (status_ == BT::RUNNING ||
+                status_ == BT::SUCCESS ||
+                status_ != BT::FAILURE);
+    });
+    return status_;
 }
 
 const std::string& BT::TreeNode::Name() const

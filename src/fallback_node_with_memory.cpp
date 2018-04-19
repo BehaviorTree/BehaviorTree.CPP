@@ -55,16 +55,7 @@ BT::ReturnStatus BT::FallbackNodeWithMemory::Tick()
                 DEBUG_STDOUT(Name() << "NEEDS TO TICK " << children_nodes_[current_child_idx_]->Name());
                 children_nodes_[current_child_idx_]->tick_engine.Tick();
 
-                // waits for the tick to arrive to the child
-                do
-                {
-                    child_i_status_ = children_nodes_[current_child_idx_]->Status();
-
-                    // TODO / FIXME. Use a condition_variable instead
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
-                while (child_i_status_ != BT::RUNNING && child_i_status_ != BT::SUCCESS
-                      && child_i_status_ != BT::FAILURE);
+                child_i_status_ = children_nodes_[current_child_idx_]->waitValidStatus();
             }
         }
         else

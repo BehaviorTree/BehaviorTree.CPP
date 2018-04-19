@@ -77,11 +77,11 @@ namespace BT
     private:
         // Node name
         std::string name_;
+        ReturnStatus status_;
 
     protected:
         // The node state that must be treated in a thread-safe way
         bool is_state_updated_;
-        ReturnStatus status_;
 
         mutable std::mutex state_mutex_;
         std::condition_variable state_condition_variable_;
@@ -109,6 +109,9 @@ namespace BT
 
         const std::string& Name() const;
         void SetName(const std::string& new_name);
+
+
+        BT::ReturnStatus waitValidStatus();
 
         virtual NodeType Type() const = 0;
 
