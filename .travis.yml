@@ -29,7 +29,7 @@ before_install:
   - sudo cmake CMakeLists.txt
   - sudo make
   - sudo cp *.a /usr/lib
-
+  - cd $TRAVIS_BUILD_DIR
 
 install:
   - if [ "$ROS_DISTRO" != "none" ]; then git clone https://github.com/ros-industrial/industrial_ci.git .ci_config; fi
