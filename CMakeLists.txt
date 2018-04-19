@@ -81,7 +81,7 @@ elseif(GTEST_FOUND)
     include_directories(gtest/include)
 
     add_executable(behavior_tree_core_test ${BT_Tests} )
-    target_link_libraries(btpp_test 
+    target_link_libraries(behavior_tree_core_test
         behavior_tree_core
         ${GTEST_LIBRARIES}
         ${GTEST_MAIN_LIBRARIES} )
