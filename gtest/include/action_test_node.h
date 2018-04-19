@@ -14,7 +14,7 @@ namespace BT
         virtual ~ActionTestNode() = default;
 
         // The method that is going to be executed by the thread
-        virtual BT::ReturnStatus Tick() override;
+        virtual BT::NodeStatus Tick() override;
         void set_time(int time);
 	
         // The method used to interrupt the execution of the node

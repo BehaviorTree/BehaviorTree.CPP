@@ -24,7 +24,7 @@ BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, ResetPolity
 }
 
 
-BT::ReturnStatus BT::FallbackNodeWithMemory::Tick()
+BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
 {
     DEBUG_STDOUT(Name() << " ticked, memory counter: "<< current_child_idx_);
 

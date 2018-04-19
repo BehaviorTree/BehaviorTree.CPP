@@ -27,7 +27,7 @@ public:
     ~SequenceNodeWithMemory() = default;
 
     // The method that is going to be executed by the thread
-    virtual BT::ReturnStatus Tick() override;
+    virtual BT::NodeStatus Tick() override;
     virtual void Halt() override;
 private:
     unsigned int current_child_idx_;

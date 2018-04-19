@@ -30,7 +30,7 @@ namespace BT
 
         // Methods used to access the node state without the
         // conditional waiting (only mutual access)
-        bool WriteState(ReturnStatus new_state);
+        bool WriteState(NodeStatus new_state);
 
         virtual NodeType Type() const override final { return CONDITION_NODE; }
 

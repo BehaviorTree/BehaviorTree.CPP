@@ -31,13 +31,13 @@ bool BehaviorTreeFactory::unregisterBuilder(const std::string &ID)
 }
 
 void BehaviorTreeFactory::registerSimpleAction(const std::string &ID,
-                                               std::function<ReturnStatus()> tick_functor)
+                                               std::function<NodeStatus()> tick_functor)
 {
 
 }
 
 void BehaviorTreeFactory::registerSimpleDecorator(const std::string &ID,
-                                                  std::function<ReturnStatus(ReturnStatus)> tick_functor)
+                                                  std::function<NodeStatus(NodeStatus)> tick_functor)
 {
 
 }

@@ -32,7 +32,7 @@ void BT::ActionNode::WaitForTick()
 
         // Running state
         SetStatus(BT::RUNNING);
-        BT::ReturnStatus status = Tick();
+        BT::NodeStatus status = Tick();
         SetStatus(status);
     }
 }

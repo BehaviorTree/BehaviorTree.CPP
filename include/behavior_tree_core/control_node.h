@@ -26,7 +26,7 @@ namespace BT
         std::vector<TreeNode*> children_nodes_;
 
         //child i status. Used to rout the ticks
-        ReturnStatus child_i_status_;
+        NodeStatus child_i_status_;
 
     public:
         // Constructor
@@ -48,7 +48,7 @@ namespace BT
 
         // Methods used to access the node state without the
         // conditional waiting (only mutual access)
-        bool WriteState(ReturnStatus new_state);
+        bool WriteState(NodeStatus new_state);
 
         virtual NodeType Type() const override final { return CONTROL_NODE; }
     };

@@ -15,15 +15,15 @@
 
 BT::TreeNode::TreeNode(std::string name) :
     name_(name),
-    is_state_updated_(false),
     status_(BT::IDLE),
+    is_state_updated_(false),
     tick_engine(0)
 {
 }
 
 BT::TreeNode::~TreeNode() {}
 
-void BT::TreeNode::SetStatus(ReturnStatus new_status)
+void BT::TreeNode::SetStatus(NodeStatus new_status)
 {
     {
         std::unique_lock<std::mutex> UniqueLock(state_mutex_);
@@ -33,7 +33,7 @@ void BT::TreeNode::SetStatus(ReturnStatus new_status)
     state_condition_variable_.notify_all();
 }
 
-BT::ReturnStatus BT::TreeNode::Status() const
+BT::NodeStatus BT::TreeNode::Status() const
 {
     std::lock_guard<std::mutex> LockGuard(state_mutex_);
     return status_;
@@ -44,7 +44,7 @@ void BT::TreeNode::SetName(const std::string &new_name)
     name_ = new_name;
 }
 
-BT::ReturnStatus BT::TreeNode::waitValidStatus()
+BT::NodeStatus BT::TreeNode::waitValidStatus()
 {
     std::unique_lock<std::mutex> lk( state_mutex_ );
 

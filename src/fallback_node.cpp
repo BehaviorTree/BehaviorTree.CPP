@@ -19,11 +19,11 @@ BT::FallbackNode::FallbackNode(std::string name) :
 {}
 
 
-BT::ReturnStatus BT::FallbackNode::Tick()
+BT::NodeStatus BT::FallbackNode::Tick()
 {
     {
         // gets the number of children. The number could change if, at runtime, one edits the tree.
-        const int N_of_children = children_nodes_.size();
+        const unsigned N_of_children = children_nodes_.size();
 
         // Routing the ticks according to the fallback node's logic:
 

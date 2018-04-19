@@ -51,7 +51,7 @@ namespace BT
     //   time step, but the task is not yet complete;
     // - "Idle" indicates that the node hasn't run yet.
     // - "Halted" indicates that the node has been halted by its father.
-    enum ReturnStatus {RUNNING, SUCCESS, FAILURE, IDLE, HALTED, EXIT};
+    enum NodeStatus {RUNNING, SUCCESS, FAILURE, IDLE, HALTED, EXIT};
 
     // Enumerates the options for when a parallel node is considered to have failed:
     // - "FAIL_ON_ONE" indicates that the node will return failure as soon as one of
@@ -77,7 +77,7 @@ namespace BT
     private:
         // Node name
         std::string name_;
-        ReturnStatus status_;
+        NodeStatus status_;
 
     protected:
         // The node state that must be treated in a thread-safe way
@@ -97,21 +97,21 @@ namespace BT
         virtual ~TreeNode();
 
         // The method that is going to be executed when the node receive a tick
-        virtual BT::ReturnStatus Tick() = 0;
+        virtual BT::NodeStatus Tick() = 0;
 
         // The method used to interrupt the execution of the node
         virtual void Halt() = 0;
 
         bool IsHalted() const;
 
-        ReturnStatus Status() const;
-        void SetStatus(ReturnStatus new_status);
+        NodeStatus Status() const;
+        void SetStatus(NodeStatus new_status);
 
         const std::string& Name() const;
         void SetName(const std::string& new_name);
 
 
-        BT::ReturnStatus waitValidStatus();
+        BT::NodeStatus waitValidStatus();
 
         virtual NodeType Type() const = 0;
 

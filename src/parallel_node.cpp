@@ -20,7 +20,7 @@ BT::ParallelNode::ParallelNode(std::string name, int threshold_M) :
 {
 }
 
-BT::ReturnStatus BT::ParallelNode::Tick()
+BT::NodeStatus BT::ParallelNode::Tick()
 {
     success_childred_num_ = 0;
     failure_childred_num_ = 0;

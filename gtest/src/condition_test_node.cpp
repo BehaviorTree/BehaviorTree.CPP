@@ -21,7 +21,7 @@ BT::ConditionTestNode::ConditionTestNode(std::string name) : ConditionNode::Cond
 
 BT::ConditionTestNode::~ConditionTestNode() {}
 
-BT::ReturnStatus BT::ConditionTestNode::Tick()
+BT::NodeStatus BT::ConditionTestNode::Tick()
 {
         // Condition checking and state update
 

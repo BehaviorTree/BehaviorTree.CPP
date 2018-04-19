@@ -48,9 +48,9 @@ class BehaviorTreeFactory
     template <typename T>
     void registerBuilder(const std::string& ID);
 
-    void registerSimpleAction(const std::string& ID, std::function<BT::ReturnStatus()> tick_functor);
+    void registerSimpleAction(const std::string& ID, std::function<BT::NodeStatus()> tick_functor);
 
-    void registerSimpleDecorator(const std::string& ID, std::function<BT::ReturnStatus(BT::ReturnStatus)> tick_functor);
+    void registerSimpleDecorator(const std::string& ID, std::function<BT::NodeStatus(BT::NodeStatus)> tick_functor);
 
     std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const NodeParameters& params);
 

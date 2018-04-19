@@ -23,7 +23,7 @@ BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolity
 }
 
 
-BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
+BT::NodeStatus BT::SequenceNodeWithMemory::Tick()
 {
     DEBUG_STDOUT(Name() << " ticked, memory counter: "<< current_child_idx_);
 

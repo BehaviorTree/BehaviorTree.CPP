@@ -26,7 +26,7 @@ public:
     ~ParallelNode() = default;
 
     // The method that is going to be executed by the thread
-    virtual BT::ReturnStatus Tick() override;
+    virtual BT::NodeStatus Tick() override;
     virtual void Halt() override;
 
     unsigned int get_threshold_M();

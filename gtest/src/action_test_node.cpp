@@ -23,7 +23,7 @@ BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode::ActionNode(na
 }
 
 
-BT::ReturnStatus BT::ActionTestNode::Tick()
+BT::NodeStatus BT::ActionTestNode::Tick()
 {
 
     int i = 0;
