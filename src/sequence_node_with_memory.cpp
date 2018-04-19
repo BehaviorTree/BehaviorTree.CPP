@@ -14,20 +14,12 @@
 
 
 #include "behavior_tree_core/sequence_node_with_memory.h"
-#include <string>
 
-
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name) : ControlNode::ControlNode(name)
+BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolity reset_policy) :
+    ControlNode::ControlNode(name),
+    current_child_idx_(0),
+    reset_policy_(reset_policy)
 {
-    reset_policy_ = BT::ON_SUCCESS_OR_FAILURE;
-    current_child_idx_ = 0;  // initialize the current running child
-}
-
-
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, int reset_policy) : ControlNode::ControlNode(name)
-{
-    reset_policy_ = reset_policy;
-    current_child_idx_ = 0;  // initialize the current running child
 }
 
 
@@ -66,6 +58,8 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
                 do
                 {
                     child_i_status_ = children_nodes_[current_child_idx_]->Status();
+
+                    // TODO / FIXME. Use a condition_variable instead
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
                 while (child_i_status_ != BT::RUNNING && child_i_status_ != BT::SUCCESS

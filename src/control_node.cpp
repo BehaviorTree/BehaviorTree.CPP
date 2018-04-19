@@ -13,8 +13,7 @@
 
 
 #include "behavior_tree_core/control_node.h"
-#include <string>
-#include <vector>
+
 
 BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
 {
@@ -35,7 +34,6 @@ void BT::ControlNode::AddChild(TreeNode* child)
     }
 
     children_nodes_.push_back(child);
-    children_states_.push_back(BT::IDLE);
 }
 
 unsigned int BT::ControlNode::ChildrenCount() const

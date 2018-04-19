@@ -13,11 +13,11 @@
 
 
 #include "behavior_tree_core/parallel_node.h"
-#include <string>
 
-BT::ParallelNode::ParallelNode(std::string name, int threshold_M) : ControlNode::ControlNode(name)
+BT::ParallelNode::ParallelNode(std::string name, int threshold_M) :
+    ControlNode::ControlNode(name),
+    threshold_M_( threshold_M )
 {
-    threshold_M_ = threshold_M;
 }
 
 BT::ReturnStatus BT::ParallelNode::Tick()
@@ -48,6 +48,8 @@ BT::ReturnStatus BT::ParallelNode::Tick()
                 do
                 {
                     child_i_status_ = children_nodes_[i]->Status();
+
+                    // TODO / FIXME. Use a condition_variable instead
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
                 while (child_i_status_ != BT::RUNNING && child_i_status_ != BT::SUCCESS

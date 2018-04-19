@@ -12,13 +12,11 @@
 
 
 #include "behavior_tree_core/decorator_node.h"
-#include <string>
-#include <vector>
+
 
 BT::DecoratorNode::DecoratorNode(std::string name) :
     TreeNode::TreeNode(name),
-    child_node_(nullptr),
-    child_state_(BT::IDLE)
+    child_node_(nullptr)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
@@ -33,7 +31,6 @@ void BT::DecoratorNode::AddChild(TreeNode* child)
     }
 
     child_node_  = child;
-    child_state_ = BT::IDLE;
 }
 
 

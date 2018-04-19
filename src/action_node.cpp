@@ -13,8 +13,6 @@
 
 
 #include "behavior_tree_core/action_node.h"
-#include <string>
-
 
 BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
 {
@@ -24,7 +22,6 @@ BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
 
 void BT::ActionNode::WaitForTick()
 {
-
     while (true)
     {
         // Waiting for the tick to come

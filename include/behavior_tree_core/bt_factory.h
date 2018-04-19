@@ -14,7 +14,7 @@
 #ifndef BT_FACTORY_H
 #define BT_FACTORY_H
 
-#include <string>
+
 #include <functional>
 #include <memory>
 #include <map>

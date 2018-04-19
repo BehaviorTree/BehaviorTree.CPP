@@ -13,9 +13,10 @@
 
 
 #include "behavior_tree_core/fallback_node.h"
-#include <string>
 
-BT::FallbackNode::FallbackNode(std::string name) : ControlNode::ControlNode(name) {}
+BT::FallbackNode::FallbackNode(std::string name) :
+    ControlNode::ControlNode(name)
+{}
 
 
 BT::ReturnStatus BT::FallbackNode::Tick()
@@ -48,6 +49,8 @@ BT::ReturnStatus BT::FallbackNode::Tick()
                     do
                     {
                         child_i_status_ = children_nodes_[i]->Status();
+
+                        // TODO / FIXME. Use a condition_variable instead
                         std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     }
                     while (child_i_status_ != BT::RUNNING && child_i_status_ != BT::SUCCESS

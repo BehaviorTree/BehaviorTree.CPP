@@ -11,40 +11,31 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/tree_node.h"
-#include <string>
 
-
-BT::TreeNode::TreeNode(std::string name) : tick_engine(0)
+BT::TreeNode::TreeNode(std::string name) :
+    name_(name),
+    is_state_updated_(false),
+    status_(BT::IDLE),
+    tick_engine(0)
 {
-    // Initialization
-    name_ = name;
-    is_state_updated_ = false;
-    SetStatus(BT::IDLE);
 }
 
 BT::TreeNode::~TreeNode() {}
 
 void BT::TreeNode::SetStatus(ReturnStatus new_status)
 {
-    // Lock acquistion
     std::unique_lock<std::mutex> UniqueLock(state_mutex_);
-
-    // state_ update
     status_ = new_status;
 }
 
 BT::ReturnStatus BT::TreeNode::Status() const
 {
-    // Lock acquistion
     DEBUG_STDOUT(Name() << " is setting its status to " << status_);
 
     std::lock_guard<std::mutex> LockGuard(state_mutex_);
     return status_;
 }
-
-
 
 void BT::TreeNode::SetName(const std::string &new_name)
 {

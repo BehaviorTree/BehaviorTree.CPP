@@ -14,8 +14,6 @@
 #ifndef LEAFNODE_H
 #define LEAFNODE_H
 
-#include <vector>
-
 #include "behavior_tree_core/tree_node.h"
 
 namespace BT
@@ -26,7 +24,6 @@ namespace BT
     public:
         LeafNode(std::string name);
         ~LeafNode() = default;
-
     };
 }
 

@@ -15,7 +15,6 @@
 #define CONTROLNODE_H
 
 #include <vector>
-
 #include "behavior_tree_core/tree_node.h"
 
 namespace BT
@@ -25,9 +24,6 @@ namespace BT
     protected:
         // Children vector
         std::vector<TreeNode*> children_nodes_;
-
-        // Children states
-        std::vector<ReturnStatus> children_states_;
 
         // Vector size
         unsigned int N_of_children_;

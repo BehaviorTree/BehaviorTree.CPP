@@ -1,8 +1,6 @@
 #ifndef DECORATORNODE_H
 #define DECORATORNODE_H
 
-#include <vector>
-
 #include "behavior_tree_core/tree_node.h"
 
 namespace BT
@@ -12,7 +10,6 @@ namespace BT
     protected:
 
         TreeNode* child_node_;
-        ReturnStatus child_state_;
 
     public:
         // Constructor

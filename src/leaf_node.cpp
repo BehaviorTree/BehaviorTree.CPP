@@ -13,7 +13,6 @@
 
 
 #include "behavior_tree_core/leaf_node.h"
-#include <string>
 
 BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}
 

@@ -13,8 +13,6 @@
 
 
 #include "behavior_tree_core/sequence_node.h"
-#include <string>
-
 
 BT::SequenceNode::SequenceNode(std::string name) : ControlNode::ControlNode(name) {}
 
@@ -48,6 +46,8 @@ BT::ReturnStatus BT::SequenceNode::Tick()
                 do
                 {
                     child_i_status_ = children_nodes_[i]->Status();
+
+                    // TODO / FIXME. Use a condition_variable instead
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
                 while (child_i_status_ != BT::RUNNING && child_i_status_ != BT::SUCCESS
