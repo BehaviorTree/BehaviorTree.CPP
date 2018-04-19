@@ -28,7 +28,7 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
     DEBUG_STDOUT(Name() << " ticked, memory counter: "<< current_child_idx_);
 
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
-    N_of_children_ = children_nodes_.size();
+    const unsigned N_of_children_ = children_nodes_.size();
 
     // Routing the ticks according to the sequence node's (with memory) logic:
     while (current_child_idx_ < N_of_children_)
@@ -38,38 +38,39 @@ BT::ReturnStatus BT::SequenceNodeWithMemory::Tick()
                 Hence we cannot just call the method Tick() from the action as doing so will block the execution of the tree.
                 For this reason if a child of this node is an action, then we send the tick using the tick engine. Otherwise we call the method Tick() and wait for the response.
         */
+        const auto& current_child_node = children_nodes_[current_child_idx_];
 
-        if (children_nodes_[current_child_idx_]->Type() == BT::ACTION_NODE)
+        if (current_child_node->Type() == BT::ACTION_NODE)
         {
             // 1) If the child i is an action, read its state.
             // Action nodes runs in another thread, hence you cannot retrieve the status just by executing it.
 
-            child_i_status_ = children_nodes_[current_child_idx_]->Status();
-            DEBUG_STDOUT(Name() << " It is an action " << children_nodes_[current_child_idx_]->Name()
+            child_i_status_ = current_child_node->Status();
+            DEBUG_STDOUT(Name() << " It is an action " << child_node->Name()
                          << " with status: " << child_i_status_);
 
             if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
             {
                 // 1.1) If the action status is not running, the sequence node sends a tick to it.
-                DEBUG_STDOUT(Name() << "NEEDS TO TICK " << children_nodes_[current_child_idx_]->Name());
-                children_nodes_[current_child_idx_]->tick_engine.Tick();
+                DEBUG_STDOUT(Name() << "NEEDS TO TICK " << child_node->Name());
+                current_child_node->tick_engine.Tick();
 
-                child_i_status_ = children_nodes_[current_child_idx_]->waitValidStatus();
+                child_i_status_ = current_child_node->waitValidStatus();
             }
         }
         else
         {
             // 2) if it's not an action:
             // Send the tick and wait for the response;
-            child_i_status_ = children_nodes_[current_child_idx_]->Tick();
-            children_nodes_[current_child_idx_]->SetStatus(child_i_status_);
+            child_i_status_ = current_child_node->Tick();
+            current_child_node->SetStatus(child_i_status_);
 
         }
 
-        if (child_i_status_ == BT::SUCCESS ||child_i_status_ == BT::FAILURE )
+        if (child_i_status_ == BT::SUCCESS || child_i_status_ == BT::FAILURE )
         {
              // the child goes in idle if it has returned success or failure.
-            children_nodes_[current_child_idx_]->SetStatus(BT::IDLE);
+            current_child_node->SetStatus(BT::IDLE);
         }
 
         if (child_i_status_ != BT::SUCCESS)

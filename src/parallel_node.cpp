@@ -25,10 +25,10 @@ BT::ReturnStatus BT::ParallelNode::Tick()
     success_childred_num_ = 0;
     failure_childred_num_ = 0;
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
-    N_of_children_ = children_nodes_.size();
+    const unsigned N_of_children = children_nodes_.size();
 
     // Routing the tree according to the sequence node's logic:
-    for (unsigned int i = 0; i < N_of_children_; i++)
+    for (unsigned int i = 0; i < N_of_children; i++)
     {
         DEBUG_STDOUT(Name() << "TICKING " << children_nodes_[i]->Name());
 
@@ -66,7 +66,7 @@ BT::ReturnStatus BT::ParallelNode::Tick()
             break;
         case BT::FAILURE:
             children_nodes_[i]->SetStatus(BT::IDLE);  // the child goes in idle if it has returned failure.
-            if (++failure_childred_num_ > N_of_children_- threshold_M_)
+            if (++failure_childred_num_ > N_of_children - threshold_M_)
             {
                 DEBUG_STDOUT("*******PARALLEL" << Name()
                              << " FAILED****** failure_childred_num_:" << failure_childred_num_);
