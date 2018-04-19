@@ -1,4 +1,5 @@
-/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+ * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,17 +11,15 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <action_node.h>
+
+#include "behavior_tree_core/action_node.h"
 #include <string>
 
 
 BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
 {
-    type_ = BT::ACTION_NODE;
     thread_ = std::thread(&ActionNode::WaitForTick, this);
 }
-
-BT::ActionNode::~ActionNode() {}
 
 
 void BT::ActionNode::WaitForTick()
@@ -29,19 +28,14 @@ void BT::ActionNode::WaitForTick()
     while (true)
     {
         // Waiting for the tick to come
-        DEBUG_STDOUT(get_name() << " WAIT FOR TICK");
+        DEBUG_STDOUT(Name() << " WAIT FOR TICK");
 
         tick_engine.Wait();
-        DEBUG_STDOUT(get_name() << " TICK RECEIVED");
+        DEBUG_STDOUT(Name() << " TICK RECEIVED");
 
         // Running state
-        set_status(BT::RUNNING);
+        SetStatus(BT::RUNNING);
         BT::ReturnStatus status = Tick();
-        set_status(status);
+        SetStatus(status);
     }
-}
-
-int BT::ActionNode::DrawType()
-{
-    return BT::ACTION;
 }

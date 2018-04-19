@@ -11,9 +11,23 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef SEQUENCENODE_H
+#define SEQUENCENODE_H
 
-#include "behavior_tree_core/leaf_node.h"
-#include <string>
+#include "behavior_tree_core/control_node.h"
 
-BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}
+namespace BT
+{
+class SequenceNode : public ControlNode
+{
+public:
+    // Constructor
+    SequenceNode(std::string name);
+    ~SequenceNode() = default;
 
+    // The method that is going to be executed by the thread
+    virtual BT::ReturnStatus Tick() override;
+};
+}
+
+#endif

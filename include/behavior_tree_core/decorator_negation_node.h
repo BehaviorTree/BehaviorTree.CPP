@@ -11,9 +11,26 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef DECORATORNEGATIONNODE_H
+#define DECORATORNEGATIONNODE_H
 
-#include "behavior_tree_core/leaf_node.h"
-#include <string>
+#include "behavior_tree_core/control_node.h"
 
-BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}
+namespace BT
+{
+    class DecoratorNegationNode : public ControlNode
+    {
+    public:
+        // Constructor
+        DecoratorNegationNode(std::string name);
+        ~DecoratorNegationNode() = default;
 
+        // The method that is going to be executed by the thread
+        void Exec();
+        void AddChild(TreeNode* child);
+
+        virtual NodeType Type() const override { return DECORATOR_NODE; }
+    };
+}
+
+#endif

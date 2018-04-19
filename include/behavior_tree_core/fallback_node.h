@@ -1,4 +1,5 @@
-/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+ * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,32 +11,23 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef FALLBACKNODE_H
+#define FALLBACKNODE_H
 
-#include<behavior_tree.h>
+#include "behavior_tree_core/control_node.h"
 
-
-
-void Execute(BT::ControlNode* root, int TickPeriod_milliseconds)
+namespace BT
 {
-    std::cout << "Start Drawing!" << std::endl;
-    // Starts in another thread the drawing of the BT
-    std::thread t(&drawTree, root);
-
-    root->ResetColorState();
-
-    while (true)
+    class FallbackNode : public ControlNode
     {
-        DEBUG_STDOUT("Ticking the root node !");
+    public:
+        // Constructor
+        FallbackNode(std::string name);
+        ~FallbackNode() = default;
 
-        // Ticking the root node
-        root->Tick();
-        // Printing its state
-
-        if (root->get_status() != BT::RUNNING)
-        {
-            // when the root returns a status it resets the colors of the tree
-            root->ResetColorState();
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(TickPeriod_milliseconds));
-    }
+        // The method that is going to be executed by the thread
+        virtual BT::ReturnStatus Tick() override;
+    };
 }
+
+#endif

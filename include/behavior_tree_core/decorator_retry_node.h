@@ -11,9 +11,29 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef DECORATORRETRYNODE_H
+#define DECORATORRETRYNODE_H
 
-#include "behavior_tree_core/leaf_node.h"
-#include <string>
+#include "behavior_tree_core/control_node.h"
 
-BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}
+namespace BT
+{
+    class DecoratorRetryNode : public ControlNode
+    {
+    public:
+        // Constructor
+        DecoratorRetryNode(std::string name, unsigned int NTries);
+        ~DecoratorRetryNode() = default;
 
+        // The method that is going to be executed by the thread
+        void Exec();
+
+        virtual NodeType Type() const override { return DECORATOR_NODE; }
+
+    private:
+      unsigned int NTries_;
+      unsigned int TryIndx_;
+    };
+}
+
+#endif

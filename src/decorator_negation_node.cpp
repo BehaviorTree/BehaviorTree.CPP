@@ -166,14 +166,6 @@ void BT::DecoratorNegationNode::Exec()
     }
 }
 
-int BT::DecoratorNegationNode::DrawType()
-{
-    // Lock acquistion
-
-    return BT::DECORATOR;
-}
-
-
 void BT::DecoratorNegationNode::AddChild(BT::TreeNode* child)
 {
     // Checking if the child is not already present

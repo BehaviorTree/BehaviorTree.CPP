@@ -11,9 +11,23 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef LEAFNODE_H
+#define LEAFNODE_H
 
-#include "behavior_tree_core/leaf_node.h"
-#include <string>
+#include <vector>
 
-BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}
+#include "behavior_tree_core/tree_node.h"
 
+namespace BT
+{
+    class LeafNode : public TreeNode
+    {
+    protected:
+    public:
+        LeafNode(std::string name);
+        ~LeafNode() = default;
+
+    };
+}
+
+#endif

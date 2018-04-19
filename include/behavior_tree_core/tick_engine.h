@@ -11,9 +11,25 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef TICK_ENGINE_H
+#define TICK_ENGINE_H
 
-#include "behavior_tree_core/leaf_node.h"
-#include <string>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <condition_variable>
 
-BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}
+class TickEngine
+{
+private:
+    int value_;
+    std::mutex mutex_;
+    std::condition_variable condition_variable_;
+public:
+    TickEngine(int initial_value);
+    ~TickEngine();
+    void Wait();
+    void Tick();
+};
 
+#endif

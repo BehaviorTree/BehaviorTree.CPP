@@ -11,9 +11,29 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef SEQUENCE_NODE_WITH_MEMORY_H
+#define SEQUENCE_NODE_WITH_MEMORY_H
 
-#include "behavior_tree_core/leaf_node.h"
-#include <string>
+#include "behavior_tree_core/control_node.h"
 
-BT::LeafNode::LeafNode(std::string name) : TreeNode(name) {}
+namespace BT
+{
+class SequenceNodeWithMemory : public ControlNode
+{
+public:
+    // Constructor
+    SequenceNodeWithMemory(std::string name);
+    SequenceNodeWithMemory(std::string name, int reset_policy);
+    ~SequenceNodeWithMemory() = default;
 
+    // The method that is going to be executed by the thread
+    virtual BT::ReturnStatus Tick() override;
+    virtual void Halt() override;
+private:
+    unsigned int current_child_idx_;
+    unsigned int reset_policy_;
+
+};
+}
+
+#endif // SEQUENCE_NODE_WITH_MEMORY_H

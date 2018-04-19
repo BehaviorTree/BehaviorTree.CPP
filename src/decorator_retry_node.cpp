@@ -174,10 +174,3 @@ void BT::DecoratorRetryNode::Exec()
     }
 }
 
-int BT::DecoratorRetryNode::DrawType()
-{
-    // Lock acquistion
-
-    return BT::DECORATOR;
-}
-

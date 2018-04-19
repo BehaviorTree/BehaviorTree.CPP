@@ -1,4 +1,5 @@
-/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+ * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,19 +11,15 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <condition_node.h>
+
+#include "behavior_tree_core/condition_node.h"
 #include <string>
 
-BT::ConditionNode::ConditionNode(std::string name) : LeafNode::LeafNode(name)
+BT::ConditionNode::ConditionNode(std::string name) :
+  LeafNode::LeafNode(name)
 {
-    type_ = BT::CONDITION_NODE;
-}
 
-BT::ConditionNode::~ConditionNode() {}
+}
 
 void BT::ConditionNode::Halt() {}
 
-int BT::ConditionNode::DrawType()
-{
-    return BT::CONDITION;
-}
