@@ -13,37 +13,25 @@
 
 #include "behavior_tree_core/tick_engine.h"
 
-TickEngine::TickEngine(int initial_value)
-{
-    value_ = initial_value;
-}
+// find how condition_variables work here http://es.cppreference.com/w/cpp/thread/condition_variable/wait
 
-TickEngine::~TickEngine()
+TickEngine::TickEngine(bool start_ready) : ready_(start_ready)
 {
 }
 
-void TickEngine::Wait()
+void TickEngine::wait()
 {
-    // Lock acquire (need a unique lock for the condition variable usage)
     std::unique_lock<std::mutex> UniqueLock(mutex_);
-
-    // If the state is 0 then we have to wait for a signal
-    if (value_ == 0)
+    while (!ready_)
+    {
         condition_variable_.wait(UniqueLock);
-
-    // Once here we decrement the state
-    value_--;
+    }
+    ready_ = false;
 }
 
-void TickEngine::Tick()
+void TickEngine::notify()
 {
-    // Lock acquire
-
     std::lock_guard<std::mutex> LockGuard(mutex_);
-
-    // State increment
-    value_++;
-
-    // Notification
+    ready_ = true;
     condition_variable_.notify_all();
 }
