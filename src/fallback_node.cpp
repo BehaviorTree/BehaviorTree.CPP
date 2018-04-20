@@ -11,13 +11,11 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/fallback_node.h"
 
-BT::FallbackNode::FallbackNode(std::string name) :
-    ControlNode::ControlNode(name)
-{}
-
+BT::FallbackNode::FallbackNode(std::string name) : ControlNode::ControlNode(name)
+{
+}
 
 BT::NodeStatus BT::FallbackNode::Tick()
 {
@@ -27,7 +25,7 @@ BT::NodeStatus BT::FallbackNode::Tick()
 
         // Routing the ticks according to the fallback node's logic:
 
-        for ( int i=0; i < N_of_children; i++)
+        for (int i = 0; i < N_of_children; i++)
         {
             auto& child_node = children_nodes_[i];
 
@@ -56,18 +54,17 @@ BT::NodeStatus BT::FallbackNode::Tick()
                 // Send the tick and wait for the response;
                 child_i_status_ = child_node->Tick();
                 child_node->SetStatus(child_i_status_);
-
             }
             // Ponderate on which status to send to the parent
             if (child_i_status_ != BT::FAILURE)
             {
                 if (child_i_status_ == BT::SUCCESS)
                 {
-                    child_node->SetStatus(BT::IDLE);  // the child goes in idle if it has returned success.
+                    child_node->SetStatus(BT::IDLE);   // the child goes in idle if it has returned success.
                 }
                 // If the  child status is not failure, halt the next children and return the status to your parent.
-                DEBUG_STDOUT(Name() << " is HALTING children from " << (i+1));
-                HaltChildren(i+1);
+                DEBUG_STDOUT(Name() << " is HALTING children from " << (i + 1));
+                HaltChildren(i + 1);
                 SetStatus(child_i_status_);
                 return child_i_status_;
             }
@@ -87,4 +84,3 @@ BT::NodeStatus BT::FallbackNode::Tick()
     }
     return BT::EXIT;
 }
-

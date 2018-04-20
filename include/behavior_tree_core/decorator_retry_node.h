@@ -18,20 +18,20 @@
 
 namespace BT
 {
-    class DecoratorRetryNode : public DecoratorNode
-    {
-    public:
-        // Constructor
-        DecoratorRetryNode(std::string name, unsigned int NTries);
-        ~DecoratorRetryNode() = default;
+class DecoratorRetryNode : public DecoratorNode
+{
+  public:
+    // Constructor
+    DecoratorRetryNode(std::string name, unsigned int NTries);
+    ~DecoratorRetryNode() = default;
 
-        // The method that is going to be executed by the thread
-        void Exec();
+    // The method that is going to be executed by the thread
+    void Exec();
 
-    private:
-      unsigned int NTries_;
-      unsigned int TryIndx_;
-    };
+  private:
+    unsigned int NTries_;
+    unsigned int TryIndx_;
+};
 }
 
 #endif

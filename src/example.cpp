@@ -1,11 +1,9 @@
 #include <iostream>
 #include <behavior_tree.h>
 
-
-
 class MyCondition : public BT::ConditionNode
 {
-public:
+  public:
     MyCondition(std::string name);
     ~MyCondition();
     BT::ReturnStatus Tick();
@@ -13,7 +11,6 @@ public:
 
 MyCondition::MyCondition(std::string name) : BT::ConditionNode::ConditionNode(name)
 {
-
 }
 
 BT::ReturnStatus MyCondition::Tick()
@@ -23,10 +20,9 @@ BT::ReturnStatus MyCondition::Tick()
     return BT::SUCCESS;
 }
 
-
 class MyAction : public BT::ActionNode
 {
-public:
+  public:
     MyAction(std::string name);
     ~MyAction();
     BT::ReturnStatus Tick();
@@ -35,9 +31,7 @@ public:
 
 MyAction::MyAction(std::string name) : ActionNode::ActionNode(name)
 {
-
 }
-
 
 BT::ReturnStatus MyAction::Tick()
 {
@@ -68,13 +62,10 @@ BT::ReturnStatus MyAction::Tick()
 
 void MyAction::Halt()
 {
-
 }
 
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-
     BT::SequenceNode* seq = new BT::SequenceNode("Sequence");
     MyCondition* my_con_1 = new MyCondition("Condition");
     MyAction* my_act_1 = new MyAction("Action");

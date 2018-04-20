@@ -21,11 +21,12 @@
 
 class TickEngine
 {
-private:
+  private:
     int value_;
     std::mutex mutex_;
     std::condition_variable condition_variable_;
-public:
+
+  public:
     TickEngine(int initial_value);
     ~TickEngine();
     void Wait();

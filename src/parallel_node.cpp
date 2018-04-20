@@ -11,12 +11,10 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/parallel_node.h"
 
-BT::ParallelNode::ParallelNode(std::string name, int threshold_M) :
-    ControlNode::ControlNode(name),
-    threshold_M_( threshold_M )
+BT::ParallelNode::ParallelNode(std::string name, int threshold_M)
+  : ControlNode::ControlNode(name), threshold_M_(threshold_M)
 {
 }
 
@@ -53,36 +51,36 @@ BT::NodeStatus BT::ParallelNode::Tick()
         }
         switch (child_i_status_)
         {
-        case BT::SUCCESS:
-            children_nodes_[i]->SetStatus(BT::IDLE);  // the child goes in idle if it has returned success.
-            if (++success_childred_num_ == threshold_M_)
-            {
-                success_childred_num_ = 0;
-                failure_childred_num_ = 0;
-                HaltChildren(0);  // halts all running children. The execution is done.
-                SetStatus(child_i_status_);
-                return child_i_status_;
-            }
-            break;
-        case BT::FAILURE:
-            children_nodes_[i]->SetStatus(BT::IDLE);  // the child goes in idle if it has returned failure.
-            if (++failure_childred_num_ > N_of_children - threshold_M_)
-            {
-                DEBUG_STDOUT("*******PARALLEL" << Name()
-                             << " FAILED****** failure_childred_num_:" << failure_childred_num_);
+            case BT::SUCCESS:
+                children_nodes_[i]->SetStatus(BT::IDLE);   // the child goes in idle if it has returned success.
+                if (++success_childred_num_ == threshold_M_)
+                {
+                    success_childred_num_ = 0;
+                    failure_childred_num_ = 0;
+                    HaltChildren(0);   // halts all running children. The execution is done.
+                    SetStatus(child_i_status_);
+                    return child_i_status_;
+                }
+                break;
+            case BT::FAILURE:
+                children_nodes_[i]->SetStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
+                if (++failure_childred_num_ > N_of_children - threshold_M_)
+                {
+                    DEBUG_STDOUT("*******PARALLEL" << Name()
+                                                   << " FAILED****** failure_childred_num_:" << failure_childred_num_);
 
-                success_childred_num_ = 0;
-                failure_childred_num_ = 0;
-                HaltChildren(0);  // halts all running children. The execution is hopeless.
+                    success_childred_num_ = 0;
+                    failure_childred_num_ = 0;
+                    HaltChildren(0);   // halts all running children. The execution is hopeless.
+                    SetStatus(child_i_status_);
+                    return child_i_status_;
+                }
+                break;
+            case BT::RUNNING:
                 SetStatus(child_i_status_);
-                return child_i_status_;
-            }
-            break;
-        case BT::RUNNING:
-            SetStatus(child_i_status_);
-            break;
-        default:
-            break;
+                break;
+            default:
+                break;
         }
     }
     return BT::RUNNING;
@@ -95,7 +93,6 @@ void BT::ParallelNode::Halt()
     BT::ControlNode::Halt();
 }
 
-
 unsigned int BT::ParallelNode::get_threshold_M()
 {
     return threshold_M_;
@@ -105,6 +102,3 @@ void BT::ParallelNode::set_threshold_M(unsigned int threshold_M)
 {
     threshold_M_ = threshold_M;
 }
-
-
-

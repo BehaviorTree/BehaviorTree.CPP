@@ -30,7 +30,7 @@ PenaltyBreakString: 1
 PenaltyBreakFirstLessLess: 1000
 PenaltyExcessCharacter: 1000
 PenaltyReturnTypeOnItsOwnLine: 90
-SpacesBeforeTrailingComments: 2
+SpacesBeforeTrailingComments: 3
 Cpp11BracedListStyle: true
 Standard:        Auto
 IndentWidth:     4
@@ -46,6 +46,7 @@ SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 4
 SortIncludes: false
 SpaceAfterCStyleCast: false
+ReflowComments: false
 
 # Configure each individual brace in BraceWrapping
 BreakBeforeBraces: Custom

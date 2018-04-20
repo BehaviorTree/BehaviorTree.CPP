@@ -20,8 +20,7 @@ namespace BT
 {
 class SequenceNodeWithMemory : public ControlNode
 {
-public:
-
+  public:
     SequenceNodeWithMemory(std::string name, ResetPolity reset_policy = BT::ON_SUCCESS_OR_FAILURE);
 
     ~SequenceNodeWithMemory() = default;
@@ -29,11 +28,11 @@ public:
     // The method that is going to be executed by the thread
     virtual BT::NodeStatus Tick() override;
     virtual void Halt() override;
-private:
+
+  private:
     unsigned int current_child_idx_;
     ResetPolity reset_policy_;
-
 };
 }
 
-#endif // SEQUENCE_NODE_WITH_MEMORY_H
+#endif   // SEQUENCE_NODE_WITH_MEMORY_H

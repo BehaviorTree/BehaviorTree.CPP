@@ -11,11 +11,11 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/sequence_node.h"
 
-BT::SequenceNode::SequenceNode(std::string name) : ControlNode::ControlNode(name) {}
-
+BT::SequenceNode::SequenceNode(std::string name) : ControlNode::ControlNode(name)
+{
+}
 
 BT::NodeStatus BT::SequenceNode::Tick()
 {
@@ -59,11 +59,11 @@ BT::NodeStatus BT::SequenceNode::Tick()
             // If the  child status is not success, halt the next children and return the status to your parent.
             if (child_i_status_ == BT::FAILURE)
             {
-                child_node->SetStatus(BT::IDLE);  // the child goes in idle if it has returned failure.
+                child_node->SetStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
             }
 
-            DEBUG_STDOUT(Name() << " is HALTING children from " << (i+1));
-            HaltChildren(i+1);
+            DEBUG_STDOUT(Name() << " is HALTING children from " << (i + 1));
+            HaltChildren(i + 1);
             SetStatus(child_i_status_);
             return child_i_status_;
         }

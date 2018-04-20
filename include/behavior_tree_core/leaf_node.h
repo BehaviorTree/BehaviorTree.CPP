@@ -18,13 +18,13 @@
 
 namespace BT
 {
-    class LeafNode : public TreeNode
-    {
-    protected:
-    public:
-        LeafNode(std::string name);
-        ~LeafNode() = default;
-    };
+class LeafNode : public TreeNode
+{
+  protected:
+  public:
+    LeafNode(std::string name);
+    ~LeafNode() = default;
+};
 }
 
 #endif

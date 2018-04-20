@@ -10,7 +10,6 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "condition_test_node.h"
 #include <string>
 
@@ -19,29 +18,27 @@ BT::ConditionTestNode::ConditionTestNode(std::string name) : ConditionNode::Cond
     boolean_value_ = true;
 }
 
-BT::ConditionTestNode::~ConditionTestNode() {}
+BT::ConditionTestNode::~ConditionTestNode()
+{
+}
 
 BT::NodeStatus BT::ConditionTestNode::Tick()
 {
-        // Condition checking and state update
+    // Condition checking and state update
 
-        if (boolean_value_)
-        {
-            SetStatus(BT::SUCCESS);
-            return BT::SUCCESS;
-        }
-        else
-        {
-            SetStatus(BT::FAILURE);
-            return BT::FAILURE;
-        }
+    if (boolean_value_)
+    {
+        SetStatus(BT::SUCCESS);
+        return BT::SUCCESS;
+    }
+    else
+    {
+        SetStatus(BT::FAILURE);
+        return BT::FAILURE;
+    }
 }
-
-
-
 
 void BT::ConditionTestNode::set_boolean_value(bool boolean_value)
 {
     boolean_value_ = boolean_value;
 }
-

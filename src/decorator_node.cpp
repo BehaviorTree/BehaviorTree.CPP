@@ -10,13 +10,9 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/decorator_node.h"
 
-
-BT::DecoratorNode::DecoratorNode(std::string name) :
-    TreeNode::TreeNode(name),
-    child_node_(nullptr)
+BT::DecoratorNode::DecoratorNode(std::string name) : TreeNode::TreeNode(name), child_node_(nullptr)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
@@ -25,18 +21,17 @@ BT::DecoratorNode::DecoratorNode(std::string name) :
 
 void BT::DecoratorNode::AddChild(TreeNode* child)
 {
-    if (child_node_ )
+    if (child_node_)
     {
         throw BehaviorTreeException("Decorator '" + Name() + "' has already a child assigned");
     }
 
-    child_node_  = child;
+    child_node_ = child;
 }
-
 
 void BT::DecoratorNode::Halt()
 {
-    DEBUG_STDOUT("HALTING: "<< Name());
+    DEBUG_STDOUT("HALTING: " << Name());
     HaltChild();
     SetStatus(BT::HALTED);
 }
@@ -53,9 +48,8 @@ void BT::DecoratorNode::HaltChild()
         DEBUG_STDOUT("SENDING HALT TO CHILD " << child_node_->Name());
         child_node_->Halt();
     }
-    else{
-        DEBUG_STDOUT("NO NEED TO HALT " << child_node_->Name()
-                     << "STATUS" << child_node_->Status());
+    else
+    {
+        DEBUG_STDOUT("NO NEED TO HALT " << child_node_->Name() << "STATUS" << child_node_->Status());
     }
 }
-

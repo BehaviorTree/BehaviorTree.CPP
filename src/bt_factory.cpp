@@ -19,10 +19,10 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 {
 }
 
-bool BehaviorTreeFactory::unregisterBuilder(const std::string &ID)
+bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
 {
     auto it = builders_.find(ID);
-    if( it == builders_.end())
+    if (it == builders_.end())
     {
         return false;
     }
@@ -30,27 +30,23 @@ bool BehaviorTreeFactory::unregisterBuilder(const std::string &ID)
     return true;
 }
 
-void BehaviorTreeFactory::registerSimpleAction(const std::string &ID,
-                                               std::function<NodeStatus()> tick_functor)
+void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, std::function<NodeStatus()> tick_functor)
 {
-
 }
 
-void BehaviorTreeFactory::registerSimpleDecorator(const std::string &ID,
+void BehaviorTreeFactory::registerSimpleDecorator(const std::string& ID,
                                                   std::function<NodeStatus(NodeStatus)> tick_functor)
 {
-
 }
 
-std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::string &ID,
-                                                                   const NodeParameters &params)
+std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::string& ID, const NodeParameters& params)
 {
     auto it = builders_.find(ID);
-    if( it == builders_.end())
+    if (it == builders_.end())
     {
         throw BehaviorTreeException("ID '" + ID + "' not registered");
     }
     return it->second(ID, params);
 }
 
-}  // end namespace
+}   // end namespace

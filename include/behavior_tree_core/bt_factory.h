@@ -14,7 +14,6 @@
 #ifndef BT_FACTORY_H
 #define BT_FACTORY_H
 
-
 #include <functional>
 #include <memory>
 #include <map>
@@ -27,7 +26,6 @@
 
 namespace BT
 {
-
 typedef std::set<std::string> RequiredParameters;
 
 // We call Parameters the set of Key/Values that canbe read from file and are
@@ -35,12 +33,11 @@ typedef std::set<std::string> RequiredParameters;
 typedef std::map<std::string, std::string> NodeParameters;
 
 // The term "Builder" refers to the Builder Ppattern (https://en.wikipedia.org/wiki/Builder_pattern)
-typedef std::function<std::unique_ptr<TreeNode>(const std::string&,  const NodeParameters&)> NodeBuilder;
+typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
 
 class BehaviorTreeFactory
 {
   public:
-
     BehaviorTreeFactory();
 
     bool unregisterBuilder(const std::string& ID);
@@ -54,61 +51,57 @@ class BehaviorTreeFactory
 
     std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const NodeParameters& params);
 
-    const std::map<std::string, NodeBuilder> & builders() const
+    const std::map<std::string, NodeBuilder>& builders() const
     {
         return builders_;
     }
 
-private:
-
+  private:
     std::map<std::string, NodeBuilder> builders_;
 };
 
-
 //-----------------------------------------------
 
-template<typename T> inline
-void BehaviorTreeFactory::registerBuilder(const std::string &ID)
+template <typename T>
+inline void BehaviorTreeFactory::registerBuilder(const std::string& ID)
 {
-    static_assert(std::is_base_of<ActionNode, T>::value ||
-                  std::is_base_of<ControlNode, T>::value ||
-                  std::is_base_of<DecoratorNode, T>::value ||
-                  std::is_base_of<ConditionNode, T>::value,
-                  "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, ControlNode or ConditionNode");
+    static_assert(std::is_base_of<ActionNode, T>::value || std::is_base_of<ControlNode, T>::value ||
+                      std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
+                  "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, ControlNode "
+                  "or ConditionNode");
 
-    constexpr bool default_constructable = std::is_constructible<T, const std::string& >::value;
-    constexpr bool param_constructable   = std::is_constructible<T, const std::string&, const NodeParameters&>::value;
+    constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
+    constexpr bool param_constructable = std::is_constructible<T, const std::string&, const NodeParameters&>::value;
 
-    static_assert( param_constructable || param_constructable ,
+    static_assert(param_constructable || param_constructable,
                   "[registerBuilder]: the registered class must have a Constructor with signature:\n\n"
                   "  (const std::string&, const NodeParameters&)\n"
                   " or\n"
-                  "  (const std::string&)" );
+                  "  (const std::string&)");
 
     auto it = builders_.find(ID);
-    if( it != builders_.end())
+    if (it != builders_.end())
     {
         throw BehaviorTreeException("ID '" + ID + "' already registered");
     }
 
-    NodeBuilder builder = [default_constructable, ID](const std::string& name,  const NodeParameters& params)
-    {
-        if( default_constructable && params.empty() )
+    NodeBuilder builder = [default_constructable, ID](const std::string& name, const NodeParameters& params) {
+        if (default_constructable && params.empty())
         {
-            return std::unique_ptr<TreeNode>(new T(name) );
+            return std::unique_ptr<TreeNode>(new T(name));
         }
-        if( !param_constructable && !params.empty() )
+        if (!param_constructable && !params.empty())
         {
-            throw BehaviorTreeException("Trying to instantiate a TreeNode that can NOT accept NodeParameters in the Constructor: ["
-                                        + ID + " / " + name +"]");
+            throw BehaviorTreeException("Trying to instantiate a TreeNode that can NOT accept NodeParameters in the "
+                                        "Constructor: [" +
+                                        ID + " / " + name + "]");
         }
-        return std::unique_ptr<TreeNode>(new T(name, params) );
+        return std::unique_ptr<TreeNode>(new T(name, params));
 
     };
 
-    builders_.insert( std::make_pair(ID,builder) );
+    builders_.insert(std::make_pair(ID, builder));
 }
 
-
-}  // end namespace
-#endif  // BT_FACTORY_H
+}   // end namespace
+#endif   // BT_FACTORY_H

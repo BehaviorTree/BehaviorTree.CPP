@@ -1,6 +1,5 @@
 #include <decorator_retry_node.h>
 
-
 BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, unsigned int NTries) : ControlNode::ControlNode(name)
 {
     // thread_ start
@@ -8,7 +7,9 @@ BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, unsigned int NTries
     thread_ = boost::thread(&DecoratorRetryNode::Exec, this);
 }
 
-BT::DecoratorRetryNode::~DecoratorRetryNode() {}
+BT::DecoratorRetryNode::~DecoratorRetryNode()
+{
+}
 
 void BT::DecoratorRetryNode::Exec()
 {
@@ -23,12 +24,12 @@ void BT::DecoratorRetryNode::Exec()
     // Simulating a tick for myself
     tick_engine.tick();
 
-    while(true)
+    while (true)
     {
         // Waiting for a tick to come
         tick_engine.wait();
 
-        if(ReadState() == BT::EXIT)
+        if (ReadState() == BT::EXIT)
         {
             // The behavior tree is going to be destroied
             return;
@@ -86,7 +87,7 @@ void BT::DecoratorRetryNode::Exec()
                 }
 
                 // 3) if the child state is not a success:
-                if(children_states_[0] == BT::SUCCESS)
+                if (children_states_[0] == BT::SUCCESS)
                 {
                     SetNodeState(BT::SUCCESS);
 
@@ -97,14 +98,13 @@ void BT::DecoratorRetryNode::Exec()
                 }
                 else
                 {
-                    if(children_states_[0] == BT::FAILURE)
+                    if (children_states_[0] == BT::FAILURE)
                     {
                         children_nodes_[0]->ResetColorState();
                         TryIndx_++;
-
                     }
 
-                    if(children_states_[0] == BT::FAILURE && TryIndx_ < NTries_)
+                    if (children_states_[0] == BT::FAILURE && TryIndx_ < NTries_)
                     {
                         // 3.1) the node state is equal to running since I am rerunning the child
                         SetNodeState(BT::RUNNING);
@@ -117,60 +117,61 @@ void BT::DecoratorRetryNode::Exec()
                         // 3.2) state reset;
                         WriteState(BT::IDLE);
                         std::cout << get_name() << " returning " << children_states_[0] << "!" << std::endl;
-
                     }
                 }
             }
-
         }
         else
         {
             // If it was halted, all the "busy" children must be halted too
             std::cout << get_name() << " halted! Halting all the children..." << std::endl;
 
-                if (children_nodes_[0]->get_type() != BT::ACTION_NODE && children_states_[0] == BT::RUNNING)
-                {
-                    // if the control node was running:
-                    // halting it;
-                    children_nodes_[0]->Halt();
+            if (children_nodes_[0]->get_type() != BT::ACTION_NODE && children_states_[0] == BT::RUNNING)
+            {
+                // if the control node was running:
+                // halting it;
+                children_nodes_[0]->Halt();
 
-                    // sync with it (it's waiting on the semaphore);
+                // sync with it (it's waiting on the semaphore);
+                children_nodes_[0]->tick_engine.tick();
+
+                std::cout << get_name() << " halting child  "
+                          << "!" << std::endl;
+            }
+            else if (children_nodes_[0]->get_type() == BT::ACTION_NODE &&
+                     children_nodes_[0]->ReadState() == BT::RUNNING)
+            {
+                std::cout << get_name() << " trying halting child  "
+                          << "..." << std::endl;
+
+                // if it's a action node that hasn't finished its job:
+                // trying to halt it:
+                if (children_nodes_[0]->Halt() == false)
+                {
+                    // this means that, before this node could set its child state
+                    // to "Halted", the child had already written the action outcome;
+                    // sync with him ignoring its state;
                     children_nodes_[0]->tick_engine.tick();
 
-                    std::cout << get_name() << " halting child  "  << "!" << std::endl;
-                }
-                else if (children_nodes_[0]->get_type() == BT::ACTION_NODE && children_nodes_[0]->ReadState() == BT::RUNNING)
-                {
-                    std::cout << get_name() << " trying halting child  "  << "..." << std::endl;
-
-                    // if it's a action node that hasn't finished its job:
-                    // trying to halt it:
-                    if (children_nodes_[0]->Halt() == false)
-                    {
-                        // this means that, before this node could set its child state
-                        // to "Halted", the child had already written the action outcome;
-                        // sync with him ignoring its state;
-                        children_nodes_[0]->tick_engine.tick();
-
-                        std::cout << get_name() << " halting of child  "  << " failed!" << std::endl;
-                    }
-
-                    std::cout << get_name() << " halting of child  "  << " succedeed!" << std::endl;
-                }
-                else if (children_nodes_[0]->get_type() == BT::ACTION_NODE && children_nodes_[0]->ReadState() != BT::IDLE)
-                {
-                    // if it's a action node that has finished its job:
-                    // ticking it without saving its returning state;
-                    children_nodes_[0]->tick_engine.tick();
+                    std::cout << get_name() << " halting of child  "
+                              << " failed!" << std::endl;
                 }
 
-                // updating its vector cell
-                children_states_[0] = BT::IDLE;
+                std::cout << get_name() << " halting of child  "
+                          << " succedeed!" << std::endl;
+            }
+            else if (children_nodes_[0]->get_type() == BT::ACTION_NODE && children_nodes_[0]->ReadState() != BT::IDLE)
+            {
+                // if it's a action node that has finished its job:
+                // ticking it without saving its returning state;
+                children_nodes_[0]->tick_engine.tick();
+            }
 
+            // updating its vector cell
+            children_states_[0] = BT::IDLE;
 
             // Resetting the node state
             WriteState(BT::IDLE);
         }
     }
 }
-

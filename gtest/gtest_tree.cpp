@@ -10,17 +10,14 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include <gtest/gtest.h>
 #include "action_test_node.h"
 #include "condition_test_node.h"
 #include "behavior_tree_core/behavior_tree.h"
 
-
-
 struct SimpleSequenceTest : testing::Test
 {
-    BT:: SequenceNode* root;
+    BT::SequenceNode* root;
     BT::ActionTestNode* action;
     BT::ConditionTestNode* condition;
     SimpleSequenceTest()
@@ -35,15 +32,14 @@ struct SimpleSequenceTest : testing::Test
     }
 };
 
-
 struct ComplexSequenceTest : testing::Test
 {
-    BT:: SequenceNode* root;
+    BT::SequenceNode* root;
     BT::ActionTestNode* action_1;
     BT::ConditionTestNode* condition_1;
     BT::ConditionTestNode* condition_2;
 
-    BT:: SequenceNode* seq_conditions;
+    BT::SequenceNode* seq_conditions;
 
     ComplexSequenceTest()
     {
@@ -62,18 +58,17 @@ struct ComplexSequenceTest : testing::Test
     }
 };
 
-
 struct ComplexSequence2ActionsTest : testing::Test
 {
-    BT:: SequenceNode* root;
+    BT::SequenceNode* root;
     BT::ActionTestNode* action_1;
     BT::ActionTestNode* action_2;
 
     BT::ConditionTestNode* condition_1;
     BT::ConditionTestNode* condition_2;
 
-    BT:: SequenceNode* seq_1;
-    BT:: SequenceNode* seq_2;
+    BT::SequenceNode* seq_1;
+    BT::SequenceNode* seq_2;
 
     ComplexSequence2ActionsTest()
     {
@@ -91,17 +86,15 @@ struct ComplexSequence2ActionsTest : testing::Test
         seq_2->AddChild(condition_2);
         seq_2->AddChild(action_2);
 
-
         root = new BT::SequenceNode("root");
         root->AddChild(seq_1);
         root->AddChild(seq_2);
     }
 };
 
-
 struct SimpleFallbackTest : testing::Test
 {
-    BT:: FallbackNode* root;
+    BT::FallbackNode* root;
     BT::ActionTestNode* action;
     BT::ConditionTestNode* condition;
     SimpleFallbackTest()
@@ -116,15 +109,14 @@ struct SimpleFallbackTest : testing::Test
     }
 };
 
-
 struct ComplexFallbackTest : testing::Test
 {
-    BT:: FallbackNode* root;
+    BT::FallbackNode* root;
     BT::ActionTestNode* action_1;
     BT::ConditionTestNode* condition_1;
     BT::ConditionTestNode* condition_2;
 
-    BT:: FallbackNode* sel_conditions;
+    BT::FallbackNode* sel_conditions;
 
     ComplexFallbackTest()
     {
@@ -142,17 +134,14 @@ struct ComplexFallbackTest : testing::Test
     }
 };
 
-
-
-
 struct BehaviorTreeTest : testing::Test
 {
-    BT:: SequenceNode* root;
+    BT::SequenceNode* root;
     BT::ActionTestNode* action_1;
     BT::ConditionTestNode* condition_1;
     BT::ConditionTestNode* condition_2;
 
-    BT:: FallbackNode* sel_conditions;
+    BT::FallbackNode* sel_conditions;
 
     BehaviorTreeTest()
     {
@@ -170,12 +159,9 @@ struct BehaviorTreeTest : testing::Test
     }
 };
 
-
-
-
 struct SimpleSequenceWithMemoryTest : testing::Test
 {
-    BT:: SequenceNodeWithMemory* root;
+    BT::SequenceNodeWithMemory* root;
     BT::ActionTestNode* action;
     BT::ConditionTestNode* condition;
     SimpleSequenceWithMemoryTest()
@@ -192,7 +178,7 @@ struct SimpleSequenceWithMemoryTest : testing::Test
 
 struct ComplexSequenceWithMemoryTest : testing::Test
 {
-    BT:: SequenceNodeWithMemory* root;
+    BT::SequenceNodeWithMemory* root;
 
     BT::ActionTestNode* action_1;
     BT::ActionTestNode* action_2;
@@ -200,14 +186,13 @@ struct ComplexSequenceWithMemoryTest : testing::Test
     BT::ConditionTestNode* condition_1;
     BT::ConditionTestNode* condition_2;
 
-    BT:: SequenceNodeWithMemory* seq_conditions;
-    BT:: SequenceNodeWithMemory* seq_actions;
+    BT::SequenceNodeWithMemory* seq_conditions;
+    BT::SequenceNodeWithMemory* seq_actions;
 
     ComplexSequenceWithMemoryTest()
     {
         action_1 = new BT::ActionTestNode("action 1");
         action_2 = new BT::ActionTestNode("action 2");
-
 
         condition_1 = new BT::ConditionTestNode("condition 1");
         condition_2 = new BT::ConditionTestNode("condition 2");
@@ -246,7 +231,7 @@ struct SimpleFallbackWithMemoryTest : testing::Test
 
 struct ComplexFallbackWithMemoryTest : testing::Test
 {
-    BT:: FallbackNodeWithMemory* root;
+    BT::FallbackNodeWithMemory* root;
 
     BT::ActionTestNode* action_1;
     BT::ActionTestNode* action_2;
@@ -254,8 +239,8 @@ struct ComplexFallbackWithMemoryTest : testing::Test
     BT::ConditionTestNode* condition_1;
     BT::ConditionTestNode* condition_2;
 
-    BT:: FallbackNodeWithMemory* fal_conditions;
-    BT:: FallbackNodeWithMemory* fal_actions;
+    BT::FallbackNodeWithMemory* fal_conditions;
+    BT::FallbackNodeWithMemory* fal_actions;
 
     ComplexFallbackWithMemoryTest()
     {
@@ -279,7 +264,6 @@ struct ComplexFallbackWithMemoryTest : testing::Test
     }
 };
 
-
 struct SimpleParallelTest : testing::Test
 {
     BT::ParallelNode* root;
@@ -294,7 +278,6 @@ struct SimpleParallelTest : testing::Test
         action_1 = new BT::ActionTestNode("action 1");
         condition_1 = new BT::ConditionTestNode("condition 1");
 
-
         action_2 = new BT::ActionTestNode("action 2");
         condition_2 = new BT::ConditionTestNode("condition 2");
 
@@ -306,7 +289,6 @@ struct SimpleParallelTest : testing::Test
         root->AddChild(action_2);
     }
 };
-
 
 struct ComplexParallelTest : testing::Test
 {
@@ -328,10 +310,8 @@ struct ComplexParallelTest : testing::Test
         action_1 = new BT::ActionTestNode("action 1");
         condition_1 = new BT::ConditionTestNode("condition 1");
 
-
         action_2 = new BT::ActionTestNode("action 2");
         condition_2 = new BT::ConditionTestNode("condition 2");
-
 
         action_3 = new BT::ActionTestNode("action 3");
         condition_3 = new BT::ConditionTestNode("condition 3");
@@ -353,11 +333,7 @@ struct ComplexParallelTest : testing::Test
     }
 };
 
-
-
 /****************TESTS START HERE***************************/
-
-
 
 TEST_F(SimpleSequenceTest, ConditionTrue)
 {
@@ -370,7 +346,6 @@ TEST_F(SimpleSequenceTest, ConditionTrue)
     root->Halt();
 }
 
-
 TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
 {
     BT::NodeStatus state = root->Tick();
@@ -382,7 +357,6 @@ TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
     root->Halt();
 }
 
-
 TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
 {
     BT::NodeStatus state = root->Tick();
@@ -391,7 +365,6 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
     ASSERT_EQ(BT::RUNNING, state);
     root->Halt();
 }
-
 
 TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
 {
@@ -438,8 +411,6 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)
     root->Halt();
 }
 
-
-
 TEST_F(SimpleFallbackTest, ConditionTrue)
 {
     std::cout << "Ticking the root node !" << std::endl << std::endl;
@@ -452,7 +423,6 @@ TEST_F(SimpleFallbackTest, ConditionTrue)
     root->Halt();
 }
 
-
 TEST_F(SimpleFallbackTest, ConditionToFalse)
 {
     condition->set_boolean_value(false);
@@ -460,14 +430,12 @@ TEST_F(SimpleFallbackTest, ConditionToFalse)
     BT::NodeStatus state = root->Tick();
     condition->set_boolean_value(true);
 
-
     state = root->Tick();
 
     ASSERT_EQ(BT::SUCCESS, state);
     ASSERT_EQ(BT::HALTED, action->Status());
     root->Halt();
 }
-
 
 TEST_F(ComplexFallbackTest, Condition1ToTrue)
 {
@@ -502,8 +470,6 @@ TEST_F(ComplexFallbackTest, Condition2ToTrue)
     root->Halt();
 }
 
-
-
 TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
 {
     condition_1->set_boolean_value(false);
@@ -530,7 +496,6 @@ TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
     root->Halt();
 }
 
-
 TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
 {
     std::cout << "Ticking the root node !" << std::endl << std::endl;
@@ -542,7 +507,6 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
     ASSERT_EQ(BT::RUNNING, state);
     root->Halt();
 }
-
 
 TEST_F(SimpleSequenceWithMemoryTest, ConditionTurnToFalse)
 {
@@ -558,7 +522,6 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTurnToFalse)
     root->Halt();
 }
 
-
 TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
 {
     BT::NodeStatus state = root->Tick();
@@ -569,7 +532,6 @@ TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
 
     root->Halt();
 }
-
 
 TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFalse)
 {
@@ -629,7 +591,6 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
     root->Halt();
 }
 
-
 TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
 {
     condition->set_boolean_value(false);
@@ -644,8 +605,6 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
 
     root->Halt();
 }
-
-
 
 TEST_F(ComplexFallbackWithMemoryTest, ConditionsTrue)
 {
@@ -670,7 +629,6 @@ TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
     root->Halt();
 }
 
-
 TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
 {
     condition_1->set_boolean_value(false);
@@ -683,9 +641,6 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
 
     root->Halt();
 }
-
-
-
 
 TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
 {
@@ -741,7 +696,6 @@ TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
     root->Halt();
 }
 
-
 TEST_F(SimpleParallelTest, ConditionsTrue)
 {
     BT::NodeStatus state = root->Tick();
@@ -754,7 +708,6 @@ TEST_F(SimpleParallelTest, ConditionsTrue)
 
     root->Halt();
 }
-
 
 TEST_F(SimpleParallelTest, Threshold_3)
 {
@@ -772,7 +725,6 @@ TEST_F(SimpleParallelTest, Threshold_3)
 
     root->Halt();
 }
-
 
 TEST_F(SimpleParallelTest, Threshold_1)
 {
@@ -804,8 +756,6 @@ TEST_F(ComplexParallelTest, ConditionsTrue)
     root->Halt();
 }
 
-
-
 TEST_F(ComplexParallelTest, Condition3False)
 {
     condition_3->set_boolean_value(false);
@@ -824,7 +774,6 @@ TEST_F(ComplexParallelTest, Condition3False)
     root->Halt();
 }
 
-
 TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
 {
     action_2->set_time(10);
@@ -834,12 +783,11 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     BT::NodeStatus state = root->Tick();
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
-
     ASSERT_EQ(BT::IDLE, condition_1->Status());
     ASSERT_EQ(BT::IDLE, condition_2->Status());
     ASSERT_EQ(BT::IDLE, condition_3->Status());
-    ASSERT_EQ(BT::SUCCESS, action_1->Status());  // success not read yet by the node parallel_1
-    ASSERT_EQ(BT::RUNNING, parallel_1->Status());  // parallel_1 hasn't realize (yet) that action_1 has succeeded
+    ASSERT_EQ(BT::SUCCESS, action_1->Status());     // success not read yet by the node parallel_1
+    ASSERT_EQ(BT::RUNNING, parallel_1->Status());   // parallel_1 hasn't realize (yet) that action_1 has succeeded
 
     state = root->Tick();
 
@@ -849,7 +797,6 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     ASSERT_EQ(BT::RUNNING, action_3->Status());
     ASSERT_EQ(BT::RUNNING, parallel_2->Status());
     ASSERT_EQ(BT::RUNNING, state);
-
 
     state = root->Tick();
     std::this_thread::sleep_for(std::chrono::seconds(15));
@@ -865,10 +812,8 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     root->Halt();
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-
-

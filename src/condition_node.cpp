@@ -11,14 +11,12 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/condition_node.h"
 
-BT::ConditionNode::ConditionNode(std::string name) :
-  LeafNode::LeafNode(name)
+BT::ConditionNode::ConditionNode(std::string name) : LeafNode::LeafNode(name)
 {
-
 }
 
-void BT::ConditionNode::Halt() {}
-
+void BT::ConditionNode::Halt()
+{
+}

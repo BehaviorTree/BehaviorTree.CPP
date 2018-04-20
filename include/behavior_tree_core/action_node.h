@@ -11,7 +11,6 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #ifndef BEHAVIORTREECORE_ACTIONNODE_H
 #define BEHAVIORTREECORE_ACTIONNODE_H
 
@@ -19,10 +18,9 @@
 
 namespace BT
 {
-
 class ActionNode : public LeafNode
 {
-public:
+  public:
     // Constructor
     ActionNode(std::string name);
     ~ActionNode() = default;
@@ -34,12 +32,14 @@ public:
     // conditional waiting (only mutual access)
     bool WriteState(NodeStatus new_state);
 
-    virtual NodeType Type() const override final { return ACTION_NODE; }
+    virtual NodeType Type() const override final
+    {
+        return ACTION_NODE;
+    }
 
-protected:
+  protected:
     // The thread that will execute the node
     std::thread thread_;
-
 };
 }
 

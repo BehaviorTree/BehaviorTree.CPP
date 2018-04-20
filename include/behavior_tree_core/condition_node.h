@@ -18,23 +18,25 @@
 
 namespace BT
 {
-    class ConditionNode : public LeafNode
+class ConditionNode : public LeafNode
+{
+  public:
+    // Constructor
+    ConditionNode(std::string name);
+    ~ConditionNode() = default;
+
+    // The method used to interrupt the execution of the node
+    virtual void Halt() override;
+
+    // Methods used to access the node state without the
+    // conditional waiting (only mutual access)
+    bool WriteState(NodeStatus new_state);
+
+    virtual NodeType Type() const override final
     {
-    public:
-        // Constructor
-        ConditionNode(std::string name);
-        ~ConditionNode() = default;
-
-        // The method used to interrupt the execution of the node
-        virtual void Halt() override;
-
-        // Methods used to access the node state without the
-        // conditional waiting (only mutual access)
-        bool WriteState(NodeStatus new_state);
-
-        virtual NodeType Type() const override final { return CONDITION_NODE; }
-
-    };
+        return CONDITION_NODE;
+    }
+};
 }
 
 #endif

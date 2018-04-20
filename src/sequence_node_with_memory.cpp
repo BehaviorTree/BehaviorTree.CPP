@@ -11,21 +11,16 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
-
 #include "behavior_tree_core/sequence_node_with_memory.h"
 
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolity reset_policy) :
-    ControlNode::ControlNode(name),
-    current_child_idx_(0),
-    reset_policy_(reset_policy)
+BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolity reset_policy)
+  : ControlNode::ControlNode(name), current_child_idx_(0), reset_policy_(reset_policy)
 {
 }
 
-
 BT::NodeStatus BT::SequenceNodeWithMemory::Tick()
 {
-    DEBUG_STDOUT(Name() << " ticked, memory counter: "<< current_child_idx_);
+    DEBUG_STDOUT(Name() << " ticked, memory counter: " << current_child_idx_);
 
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children_ = children_nodes_.size();
@@ -46,8 +41,7 @@ BT::NodeStatus BT::SequenceNodeWithMemory::Tick()
             // Action nodes runs in another thread, hence you cannot retrieve the status just by executing it.
 
             child_i_status_ = current_child_node->Status();
-            DEBUG_STDOUT(Name() << " It is an action " << child_node->Name()
-                         << " with status: " << child_i_status_);
+            DEBUG_STDOUT(Name() << " It is an action " << child_node->Name() << " with status: " << child_i_status_);
 
             if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
             {
@@ -64,12 +58,11 @@ BT::NodeStatus BT::SequenceNodeWithMemory::Tick()
             // Send the tick and wait for the response;
             child_i_status_ = current_child_node->Tick();
             current_child_node->SetStatus(child_i_status_);
-
         }
 
-        if (child_i_status_ == BT::SUCCESS || child_i_status_ == BT::FAILURE )
+        if (child_i_status_ == BT::SUCCESS || child_i_status_ == BT::FAILURE)
         {
-             // the child goes in idle if it has returned success or failure.
+            // the child goes in idle if it has returned success or failure.
             current_child_node->SetStatus(BT::IDLE);
         }
 
@@ -77,8 +70,8 @@ BT::NodeStatus BT::SequenceNodeWithMemory::Tick()
         {
             // If the  child status is not success, return the status
             DEBUG_STDOUT("the status of: " << Name() << " becomes " << child_i_status_);
-            if (child_i_status_ == BT::FAILURE && (reset_policy_ == BT::ON_FAILURE
-                                                   || reset_policy_ == BT::ON_SUCCESS_OR_FAILURE))
+            if (child_i_status_ == BT::FAILURE &&
+                (reset_policy_ == BT::ON_FAILURE || reset_policy_ == BT::ON_SUCCESS_OR_FAILURE))
             {
                 current_child_idx_ = 0;
             }
@@ -105,7 +98,6 @@ BT::NodeStatus BT::SequenceNodeWithMemory::Tick()
     }
     return BT::EXIT;
 }
-
 
 void BT::SequenceNodeWithMemory::Halt()
 {

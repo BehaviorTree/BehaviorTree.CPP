@@ -18,18 +18,17 @@
 
 namespace BT
 {
-    class DecoratorNegationNode : public DecoratorNode
-    {
-    public:
-        // Constructor
-        DecoratorNegationNode(std::string name);
-        ~DecoratorNegationNode() = default;
+class DecoratorNegationNode : public DecoratorNode
+{
+  public:
+    // Constructor
+    DecoratorNegationNode(std::string name);
+    ~DecoratorNegationNode() = default;
 
-        // The method that is going to be executed by the thread
-        void Exec();
-        void AddChild(TreeNode* child);
-
-    };
+    // The method that is going to be executed by the thread
+    void Exec();
+    void AddChild(TreeNode* child);
+};
 }
 
 #endif

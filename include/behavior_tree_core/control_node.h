@@ -19,39 +19,42 @@
 
 namespace BT
 {
-    class ControlNode : public TreeNode
+class ControlNode : public TreeNode
+{
+  protected:
+    // Children vector
+    std::vector<TreeNode*> children_nodes_;
+
+    //child i status. Used to rout the ticks
+    NodeStatus child_i_status_;
+
+  public:
+    // Constructor
+    ControlNode(std::string name);
+    ~ControlNode() = default;
+
+    // The method used to fill the child vector
+    void AddChild(TreeNode* child);
+
+    // The method used to know the number of children
+    unsigned int ChildrenCount() const;
+
+    const std::vector<TreeNode*>& Children() const;
+
+    // The method used to interrupt the execution of the node
+    virtual void Halt() override;
+
+    void HaltChildren(int i);
+
+    // Methods used to access the node state without the
+    // conditional waiting (only mutual access)
+    bool WriteState(NodeStatus new_state);
+
+    virtual NodeType Type() const override final
     {
-    protected:
-        // Children vector
-        std::vector<TreeNode*> children_nodes_;
-
-        //child i status. Used to rout the ticks
-        NodeStatus child_i_status_;
-
-    public:
-        // Constructor
-        ControlNode(std::string name);
-        ~ControlNode() = default;
-
-        // The method used to fill the child vector
-        void AddChild(TreeNode* child);
-
-        // The method used to know the number of children
-        unsigned int ChildrenCount() const;
-
-        const std::vector<TreeNode*>& Children() const;
-
-        // The method used to interrupt the execution of the node
-        virtual void Halt() override;
-
-        void HaltChildren(int i);
-
-        // Methods used to access the node state without the
-        // conditional waiting (only mutual access)
-        bool WriteState(NodeStatus new_state);
-
-        virtual NodeType Type() const override final { return CONTROL_NODE; }
-    };
+        return CONTROL_NODE;
+    }
+};
 }
 
 #endif

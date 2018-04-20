@@ -20,7 +20,7 @@ namespace BT
 {
 class SequenceNode : public ControlNode
 {
-public:
+  public:
     // Constructor
     SequenceNode(std::string name);
     ~SequenceNode() = default;

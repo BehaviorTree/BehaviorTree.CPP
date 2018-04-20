@@ -11,22 +11,16 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/fallback_node_with_memory.h"
 
-
-BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, ResetPolity reset_policy) :
-    ControlNode::ControlNode(name),
-    current_child_idx_(0),
-    reset_policy_( reset_policy )
+BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, ResetPolity reset_policy)
+  : ControlNode::ControlNode(name), current_child_idx_(0), reset_policy_(reset_policy)
 {
-
 }
-
 
 BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
 {
-    DEBUG_STDOUT(Name() << " ticked, memory counter: "<< current_child_idx_);
+    DEBUG_STDOUT(Name() << " ticked, memory counter: " << current_child_idx_);
 
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
@@ -49,7 +43,7 @@ BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
 
             child_i_status_ = current_child_node->Status();
             DEBUG_STDOUT(Name() << " It is an action " << current_child_node->Name()
-                         << " with status: " << child_i_status_);
+                                << " with status: " << child_i_status_);
 
             if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
             {
@@ -68,9 +62,9 @@ BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
             current_child_node->SetStatus(child_i_status_);
         }
 
-        if (child_i_status_ == BT::SUCCESS ||child_i_status_ == BT::FAILURE )
+        if (child_i_status_ == BT::SUCCESS || child_i_status_ == BT::FAILURE)
         {
-             // the child goes in idle if it has returned success or failure.
+            // the child goes in idle if it has returned success or failure.
             current_child_node->SetStatus(BT::IDLE);
         }
 
@@ -78,8 +72,8 @@ BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
         {
             // If the  child status is not success, return the status
             DEBUG_STDOUT("the status of: " << Name() << " becomes " << child_i_status_);
-            if (child_i_status_ == BT::SUCCESS && (reset_policy_ == BT::ON_SUCCESS
-                                                  || reset_policy_ == BT::ON_SUCCESS_OR_FAILURE))
+            if (child_i_status_ == BT::SUCCESS &&
+                (reset_policy_ == BT::ON_SUCCESS || reset_policy_ == BT::ON_SUCCESS_OR_FAILURE))
             {
                 current_child_idx_ = 0;
             }
@@ -107,11 +101,8 @@ BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
     return BT::EXIT;
 }
 
-
 void BT::FallbackNodeWithMemory::Halt()
 {
     current_child_idx_ = 0;
     BT::ControlNode::Halt();
 }
-
-

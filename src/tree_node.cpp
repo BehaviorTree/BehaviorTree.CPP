@@ -13,21 +13,19 @@
 
 #include "behavior_tree_core/tree_node.h"
 
-BT::TreeNode::TreeNode(std::string name) :
-    name_(name),
-    status_(BT::IDLE),
-    is_state_updated_(false),
-    tick_engine(0)
+BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE), is_state_updated_(false), tick_engine(0)
 {
 }
 
-BT::TreeNode::~TreeNode() {}
+BT::TreeNode::~TreeNode()
+{
+}
 
 void BT::TreeNode::SetStatus(NodeStatus new_status)
 {
     {
         std::unique_lock<std::mutex> UniqueLock(state_mutex_);
-        is_state_updated_ = (status_!= new_status);
+        is_state_updated_ = (status_ != new_status);
         status_ = new_status;
     }
     state_condition_variable_.notify_all();
@@ -39,20 +37,17 @@ BT::NodeStatus BT::TreeNode::Status() const
     return status_;
 }
 
-void BT::TreeNode::SetName(const std::string &new_name)
+void BT::TreeNode::SetName(const std::string& new_name)
 {
     name_ = new_name;
 }
 
 BT::NodeStatus BT::TreeNode::waitValidStatus()
 {
-    std::unique_lock<std::mutex> lk( state_mutex_ );
+    std::unique_lock<std::mutex> lk(state_mutex_);
 
-    state_condition_variable_.wait(lk, [&](){
-        return (status_ == BT::RUNNING ||
-                status_ == BT::SUCCESS ||
-                status_ != BT::FAILURE);
-    });
+    state_condition_variable_.wait(
+        lk, [&]() { return (status_ == BT::RUNNING || status_ == BT::SUCCESS || status_ != BT::FAILURE); });
     return status_;
 }
 
