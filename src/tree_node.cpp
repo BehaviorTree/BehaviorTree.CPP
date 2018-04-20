@@ -47,7 +47,7 @@ BT::NodeStatus BT::TreeNode::waitValidStatus()
     std::unique_lock<std::mutex> lk(state_mutex_);
 
     state_condition_variable_.wait(
-        lk, [&]() { return (status_ == BT::RUNNING || status_ == BT::SUCCESS || status_ != BT::FAILURE); });
+        lk, [&]() { return (status_ == BT::RUNNING || status_ == BT::SUCCESS || status_ == BT::FAILURE); });
     return status_;
 }
 
