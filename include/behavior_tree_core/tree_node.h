@@ -79,7 +79,7 @@ enum FailurePolicy
     FAIL_ON_ONE,
     FAIL_ON_ALL
 };
-enum ResetPolity
+enum ResetPolicy
 {
     ON_SUCCESS_OR_FAILURE,
     ON_SUCCESS,

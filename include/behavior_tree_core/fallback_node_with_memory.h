@@ -21,7 +21,7 @@ namespace BT
 class FallbackNodeWithMemory : public ControlNode
 {
   public:
-    FallbackNodeWithMemory(std::string name, ResetPolity reset_policy = BT::ON_SUCCESS_OR_FAILURE);
+    FallbackNodeWithMemory(std::string name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
 
     ~FallbackNodeWithMemory() = default;
 
@@ -32,7 +32,7 @@ class FallbackNodeWithMemory : public ControlNode
 
   private:
     unsigned int current_child_idx_;
-    ResetPolity reset_policy_;
+    ResetPolicy reset_policy_;
 };
 }
 

@@ -13,7 +13,7 @@
 
 #include "behavior_tree_core/fallback_node_with_memory.h"
 
-BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, ResetPolity reset_policy)
+BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, ResetPolicy reset_policy)
   : ControlNode::ControlNode(name), current_child_idx_(0), reset_policy_(reset_policy)
 {
 }

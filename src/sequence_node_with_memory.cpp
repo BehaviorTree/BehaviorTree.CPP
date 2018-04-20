@@ -13,7 +13,7 @@
 
 #include "behavior_tree_core/sequence_node_with_memory.h"
 
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolity reset_policy)
+BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolicy reset_policy)
   : ControlNode::ControlNode(name), current_child_idx_(0), reset_policy_(reset_policy)
 {
 }
