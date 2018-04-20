@@ -25,7 +25,7 @@ BT::NodeStatus BT::FallbackNode::Tick()
 
         // Routing the ticks according to the fallback node's logic:
 
-        for (int i = 0; i < N_of_children; i++)
+        for (unsigned i = 0; i < N_of_children; i++)
         {
             auto& child_node = children_nodes_[i];
 
