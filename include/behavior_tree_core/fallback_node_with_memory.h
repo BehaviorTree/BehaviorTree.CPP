@@ -26,9 +26,9 @@ class FallbackNodeWithMemory : public ControlNode
     ~FallbackNodeWithMemory() = default;
 
     // The method that is going to be executed by the thread
-    virtual BT::NodeStatus Tick() override;
+    virtual BT::NodeStatus tick() override;
 
-    virtual void Halt() override;
+    virtual void halt() override;
 
   private:
     unsigned int current_child_idx_;

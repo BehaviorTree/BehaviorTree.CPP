@@ -14,6 +14,8 @@
 #ifndef BEHAVIORTREECORE_TREENODE_H
 #define BEHAVIORTREECORE_TREENODE_H
 
+#define DEBUG
+
 #ifdef DEBUG
 // #define DEBUG_STDERR(x) (std::cerr << (x))
 #define DEBUG_STDOUT(str)                                                                                              \
@@ -122,25 +124,25 @@ class TreeNode
 
     // The constructor and the distructor
     TreeNode(std::string name);
-    virtual ~TreeNode();
+    virtual ~TreeNode() = default;
 
     // The method that is going to be executed when the node receive a tick
-    virtual BT::NodeStatus Tick() = 0;
+    virtual BT::NodeStatus tick() = 0;
 
     // The method used to interrupt the execution of the node
-    virtual void Halt() = 0;
+    virtual void halt() = 0;
 
-    bool IsHalted() const;
+    bool isHalted() const;
 
-    NodeStatus Status() const;
-    void SetStatus(NodeStatus new_status);
+    NodeStatus status() const;
+    void setStatus(NodeStatus new_status);
 
-    const std::string& Name() const;
-    void SetName(const std::string& new_name);
+    const std::string& name() const;
+    void setName(const std::string& new_name);
 
     BT::NodeStatus waitValidStatus();
 
-    virtual NodeType Type() const = 0;
+    virtual NodeType type() const = 0;
 };
 }
 

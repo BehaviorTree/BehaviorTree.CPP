@@ -15,10 +15,10 @@ void BT::CLASSNAME::WaitForTick()
     while (true)
     {
         // Waiting for the first tick to come
-        DEBUG_STDOUT(Name() << " WAIT FOR TICK");
+        DEBUG_STDOUT(name() << " WAIT FOR TICK");
 
         tick_engine.Wait();
-        DEBUG_STDOUT(Name() << " TICK RECEIVED");
+        DEBUG_STDOUT(name() << " TICK RECEIVED");
 
         // Running state
         SetStatus(BT::RUNNING);

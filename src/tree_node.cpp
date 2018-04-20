@@ -13,15 +13,14 @@
 
 #include "behavior_tree_core/tree_node.h"
 
-BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE), is_state_updated_(false), tick_engine(0)
+BT::TreeNode::TreeNode(std::string name) :
+    name_(name),
+    status_(BT::IDLE),
+    is_state_updated_(false)
 {
 }
 
-BT::TreeNode::~TreeNode()
-{
-}
-
-void BT::TreeNode::SetStatus(NodeStatus new_status)
+void BT::TreeNode::setStatus(NodeStatus new_status)
 {
     {
         std::unique_lock<std::mutex> UniqueLock(state_mutex_);
@@ -31,13 +30,13 @@ void BT::TreeNode::SetStatus(NodeStatus new_status)
     state_condition_variable_.notify_all();
 }
 
-BT::NodeStatus BT::TreeNode::Status() const
+BT::NodeStatus BT::TreeNode::status() const
 {
     std::lock_guard<std::mutex> LockGuard(state_mutex_);
     return status_;
 }
 
-void BT::TreeNode::SetName(const std::string& new_name)
+void BT::TreeNode::setName(const std::string& new_name)
 {
     name_ = new_name;
 }
@@ -51,12 +50,12 @@ BT::NodeStatus BT::TreeNode::waitValidStatus()
     return status_;
 }
 
-const std::string& BT::TreeNode::Name() const
+const std::string& BT::TreeNode::name() const
 {
     return name_;
 }
 
-bool BT::TreeNode::IsHalted() const
+bool BT::TreeNode::isHalted() const
 {
-    return Status() == BT::HALTED;
+    return status() == BT::HALTED;
 }

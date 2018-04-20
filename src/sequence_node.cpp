@@ -17,7 +17,7 @@ BT::SequenceNode::SequenceNode(std::string name) : ControlNode::ControlNode(name
 {
 }
 
-BT::NodeStatus BT::SequenceNode::Tick()
+BT::NodeStatus BT::SequenceNode::tick()
 {
     // gets the number of children. The number could change if, at runtime, one edits the tree.
     const unsigned N_of_children = children_nodes_.size();
@@ -32,16 +32,16 @@ BT::NodeStatus BT::SequenceNode::Tick()
                 Hence we cannot just call the method Tick() from the action as doing so will block the execution of the tree.
                 For this reason if a child of this node is an action, then we send the tick using the tick engine. Otherwise we call the method Tick() and wait for the response.
         */
-        if (child_node->Type() == BT::ACTION_NODE)
+        if (child_node->type() == BT::ACTION_NODE)
         {
             // 1) If the child i is an action, read its state.
-            child_i_status_ = child_node->Status();
+            child_i_status_ = child_node->status();
 
             if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
             {
                 // 1.1) If the action status is not running, the sequence node sends a tick to it.
-                DEBUG_STDOUT(Name() << "NEEDS TO TICK " << child_node->Name());
-                child_node->tick_engine.Tick();
+                DEBUG_STDOUT(name() << "NEEDS TO TICK " << child_node->name());
+                child_node->tick_engine.notify();
 
                 child_i_status_ = child_node->waitValidStatus();
             }
@@ -50,8 +50,8 @@ BT::NodeStatus BT::SequenceNode::Tick()
         {
             // 2) if it's not an action:
             // Send the tick and wait for the response;
-            child_i_status_ = child_node->Tick();
-            child_node->SetStatus(child_i_status_);
+            child_i_status_ = child_node->tick();
+            child_node->setStatus(child_i_status_);
         }
         // Ponderate on which status to send to the parent
         if (child_i_status_ != BT::SUCCESS)
@@ -59,24 +59,24 @@ BT::NodeStatus BT::SequenceNode::Tick()
             // If the  child status is not success, halt the next children and return the status to your parent.
             if (child_i_status_ == BT::FAILURE)
             {
-                child_node->SetStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
+                child_node->setStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
             }
 
-            DEBUG_STDOUT(Name() << " is HALTING children from " << (i + 1));
-            HaltChildren(i + 1);
-            SetStatus(child_i_status_);
+            DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
+            haltChildren(i + 1);
+            setStatus(child_i_status_);
             return child_i_status_;
         }
         else
         {
             // the child returned success.
-            child_node->SetStatus(BT::IDLE);
+            child_node->setStatus(BT::IDLE);
 
             if (i == N_of_children - 1)
             {
                 // If the  child status is success, and it is the last child to be ticked,
                 // then the sequence has succeeded.
-                SetStatus(BT::SUCCESS);
+                setStatus(BT::SUCCESS);
                 return BT::SUCCESS;
             }
         }

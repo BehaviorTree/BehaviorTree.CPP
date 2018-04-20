@@ -19,37 +19,37 @@ BT::DecoratorNode::DecoratorNode(std::string name) : TreeNode::TreeNode(name), c
     // ReturnStatus child_i_status_ = BT::IDLE;  // commented out as unused
 }
 
-void BT::DecoratorNode::AddChild(TreeNode* child)
+void BT::DecoratorNode::setChild(TreeNode* child)
 {
     if (child_node_)
     {
-        throw BehaviorTreeException("Decorator '" + Name() + "' has already a child assigned");
+        throw BehaviorTreeException("Decorator '" + name() + "' has already a child assigned");
     }
 
     child_node_ = child;
 }
 
-void BT::DecoratorNode::Halt()
+void BT::DecoratorNode::halt()
 {
-    DEBUG_STDOUT("HALTING: " << Name());
-    HaltChild();
-    SetStatus(BT::HALTED);
+    DEBUG_STDOUT("HALTING: " << name());
+    haltChild();
+    setStatus(BT::HALTED);
 }
 
-const BT::TreeNode* BT::DecoratorNode::Child() const
+const BT::TreeNode* BT::DecoratorNode::child() const
 {
     return child_node_;
 }
 
-void BT::DecoratorNode::HaltChild()
+void BT::DecoratorNode::haltChild()
 {
-    if (child_node_->Status() == BT::RUNNING)
+    if (child_node_->status() == BT::RUNNING)
     {
-        DEBUG_STDOUT("SENDING HALT TO CHILD " << child_node_->Name());
-        child_node_->Halt();
+        DEBUG_STDOUT("SENDING HALT TO CHILD " << child_node_->name());
+        child_node_->halt();
     }
     else
     {
-        DEBUG_STDOUT("NO NEED TO HALT " << child_node_->Name() << "STATUS" << child_node_->Status());
+        DEBUG_STDOUT("NO NEED TO HALT " << child_node_->name() << "STATUS" << child_node_->status());
     }
 }

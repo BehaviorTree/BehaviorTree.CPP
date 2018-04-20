@@ -17,6 +17,6 @@ BT::ConditionNode::ConditionNode(std::string name) : LeafNode::LeafNode(name)
 {
 }
 
-void BT::ConditionNode::Halt()
+void BT::ConditionNode::halt()
 {
 }

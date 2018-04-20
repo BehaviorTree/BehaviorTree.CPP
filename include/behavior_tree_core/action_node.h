@@ -26,13 +26,13 @@ class ActionNode : public LeafNode
     ~ActionNode() = default;
 
     // The method that is going to be executed by the thread
-    void WaitForTick();
+    void waitForTick();
 
     // Methods used to access the node state without the
     // conditional waiting (only mutual access)
-    bool WriteState(NodeStatus new_state);
+    bool writeState(NodeStatus new_state);
 
-    virtual NodeType Type() const override final
+    virtual NodeType type() const override final
     {
         return ACTION_NODE;
     }

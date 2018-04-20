@@ -26,7 +26,7 @@ class DecoratorRetryNode : public DecoratorNode
     ~DecoratorRetryNode() = default;
 
     // The method that is going to be executed by the thread
-    void Exec();
+    void exec();
 
   private:
     unsigned int NTries_;

@@ -26,7 +26,7 @@ class FallbackNode : public ControlNode
     ~FallbackNode() = default;
 
     // The method that is going to be executed by the thread
-    virtual BT::NodeStatus Tick() override;
+    virtual BT::NodeStatus tick() override;
 };
 }
 

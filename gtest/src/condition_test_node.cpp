@@ -22,18 +22,18 @@ BT::ConditionTestNode::~ConditionTestNode()
 {
 }
 
-BT::NodeStatus BT::ConditionTestNode::Tick()
+BT::NodeStatus BT::ConditionTestNode::tick()
 {
     // Condition checking and state update
 
     if (boolean_value_)
     {
-        SetStatus(BT::SUCCESS);
+        setStatus(BT::SUCCESS);
         return BT::SUCCESS;
     }
     else
     {
-        SetStatus(BT::FAILURE);
+        setStatus(BT::FAILURE);
         return BT::FAILURE;
     }
 }

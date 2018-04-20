@@ -26,8 +26,9 @@ class DecoratorNegationNode : public DecoratorNode
     ~DecoratorNegationNode() = default;
 
     // The method that is going to be executed by the thread
-    void Exec();
-    void AddChild(TreeNode* child);
+    void exec();
+
+    void setChild(TreeNode* child);
 };
 }
 

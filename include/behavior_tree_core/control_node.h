@@ -34,23 +34,23 @@ class ControlNode : public TreeNode
     ~ControlNode() = default;
 
     // The method used to fill the child vector
-    void AddChild(TreeNode* child);
+    void addChild(TreeNode* child);
 
     // The method used to know the number of children
-    unsigned int ChildrenCount() const;
+    unsigned int childrenCount() const;
 
-    const std::vector<TreeNode*>& Children() const;
+    const std::vector<TreeNode*>& children() const;
 
     // The method used to interrupt the execution of the node
-    virtual void Halt() override;
+    virtual void halt() override;
 
-    void HaltChildren(int i);
+    void haltChildren(int i);
 
     // Methods used to access the node state without the
     // conditional waiting (only mutual access)
-    bool WriteState(NodeStatus new_state);
+    bool writeState(NodeStatus new_state);
 
-    virtual NodeType Type() const override final
+    virtual NodeType type() const override final
     {
         return CONTROL_NODE;
     }

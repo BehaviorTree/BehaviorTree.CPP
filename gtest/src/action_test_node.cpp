@@ -20,24 +20,24 @@ BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode::ActionNode(na
     time_ = 3;
 }
 
-BT::NodeStatus BT::ActionTestNode::Tick()
+BT::NodeStatus BT::ActionTestNode::tick()
 {
     int i = 0;
-    while (Status() != BT::HALTED && i++ < time_)
+    while (status() != BT::HALTED && i++ < time_)
     {
-        DEBUG_STDOUT(" Action " << Name() << "running! Thread id:" << std::this_thread::get_id());
+        DEBUG_STDOUT(" Action " << name() << "running! Thread id:" << std::this_thread::get_id());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    if (Status() != BT::HALTED)
+    if (status() != BT::HALTED)
     {
         if (boolean_value_)
         {
-            DEBUG_STDOUT(" Action " << Name() << " Done!");
+            DEBUG_STDOUT(" Action " << name() << " Done!");
             return BT::SUCCESS;
         }
         else
         {
-            DEBUG_STDOUT(" Action " << Name() << " FAILED!");
+            DEBUG_STDOUT(" Action " << name() << " FAILED!");
             return BT::FAILURE;
         }
     }
@@ -47,9 +47,9 @@ BT::NodeStatus BT::ActionTestNode::Tick()
     }
 }
 
-void BT::ActionTestNode::Halt()
+void BT::ActionTestNode::halt()
 {
-    SetStatus(BT::HALTED);
+    setStatus(BT::HALTED);
     DEBUG_STDOUT("HALTED state set!");
 }
 

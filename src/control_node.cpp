@@ -20,49 +20,49 @@ BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
     // ReturnStatus child_i_status_ = BT::IDLE;  // commented out as unused
 }
 
-void BT::ControlNode::AddChild(TreeNode* child)
+void BT::ControlNode::addChild(TreeNode* child)
 {
     // Checking if the child is not already present
     for (auto node : children_nodes_)
     {
         if (node == child)
         {
-            throw BehaviorTreeException("'" + child->Name() + "' is already a '" + Name() + "' child.");
+            throw BehaviorTreeException("'" + child->name() + "' is already a '" + name() + "' child.");
         }
     }
 
     children_nodes_.push_back(child);
 }
 
-unsigned int BT::ControlNode::ChildrenCount() const
+unsigned int BT::ControlNode::childrenCount() const
 {
     return children_nodes_.size();
 }
 
-void BT::ControlNode::Halt()
+void BT::ControlNode::halt()
 {
-    DEBUG_STDOUT("HALTING: " << Name());
-    HaltChildren(0);
-    SetStatus(BT::HALTED);
+    DEBUG_STDOUT("HALTING: " << name());
+    haltChildren(0);
+    setStatus(BT::HALTED);
 }
 
-const std::vector<BT::TreeNode*>& BT::ControlNode::Children() const
+const std::vector<BT::TreeNode*>& BT::ControlNode::children() const
 {
     return children_nodes_;
 }
 
-void BT::ControlNode::HaltChildren(int i)
+void BT::ControlNode::haltChildren(int i)
 {
     for (unsigned int j = i; j < children_nodes_.size(); j++)
     {
-        if (children_nodes_[j]->Status() == BT::RUNNING)
+        if (children_nodes_[j]->status() == BT::RUNNING)
         {
-            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]->Name());
-            children_nodes_[j]->Halt();
+            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]->name());
+            children_nodes_[j]->halt();
         }
         else
         {
-            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]->Name() << "STATUS" << children_nodes_[j]->Status());
+            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]->name() << "STATUS" << children_nodes_[j]->status());
         }
     }
 }

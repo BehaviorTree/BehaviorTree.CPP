@@ -18,9 +18,9 @@ BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, ResetPolicy
 {
 }
 
-BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
+BT::NodeStatus BT::FallbackNodeWithMemory::tick()
 {
-    DEBUG_STDOUT(Name() << " ticked, memory counter: " << current_child_idx_);
+    DEBUG_STDOUT(name() << " ticked, memory counter: " << current_child_idx_);
 
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
@@ -36,20 +36,20 @@ BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
                 For this reason if a child of this node is an action, then we send the tick using the tick engine. Otherwise we call the method Tick() and wait for the response.
         */
 
-        if (current_child_node->Type() == BT::ACTION_NODE)
+        if (current_child_node->type() == BT::ACTION_NODE)
         {
             // 1) If the child i is an action, read its state.
             // Action nodes runs in another thread, hence you cannot retrieve the status just by executing it.
 
-            child_i_status_ = current_child_node->Status();
-            DEBUG_STDOUT(Name() << " It is an action " << current_child_node->Name()
+            child_i_status_ = current_child_node->status();
+            DEBUG_STDOUT(name() << " It is an action " << current_child_node->name()
                                 << " with status: " << child_i_status_);
 
             if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
             {
                 // 1.1) If the action status is not running, the sequence node sends a tick to it.
-                DEBUG_STDOUT(Name() << "NEEDS TO TICK " << current_child_node->Name());
-                current_child_node->tick_engine.Tick();
+                DEBUG_STDOUT(name() << "NEEDS TO TICK " << current_child_node->name());
+                current_child_node->tick_engine.notify();
 
                 child_i_status_ = current_child_node->waitValidStatus();
             }
@@ -58,26 +58,26 @@ BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
         {
             // 2) if it's not an action:
             // Send the tick and wait for the response;
-            child_i_status_ = current_child_node->Tick();
-            current_child_node->SetStatus(child_i_status_);
+            child_i_status_ = current_child_node->tick();
+            current_child_node->setStatus(child_i_status_);
         }
 
         if (child_i_status_ == BT::SUCCESS || child_i_status_ == BT::FAILURE)
         {
             // the child goes in idle if it has returned success or failure.
-            current_child_node->SetStatus(BT::IDLE);
+            current_child_node->setStatus(BT::IDLE);
         }
 
         if (child_i_status_ != BT::FAILURE)
         {
             // If the  child status is not success, return the status
-            DEBUG_STDOUT("the status of: " << Name() << " becomes " << child_i_status_);
+            DEBUG_STDOUT("the status of: " << name() << " becomes " << child_i_status_);
             if (child_i_status_ == BT::SUCCESS &&
                 (reset_policy_ == BT::ON_SUCCESS || reset_policy_ == BT::ON_SUCCESS_OR_FAILURE))
             {
                 current_child_idx_ = 0;
             }
-            SetStatus(child_i_status_);
+            setStatus(child_i_status_);
             return child_i_status_;
         }
         else if (current_child_idx_ != N_of_children - 1)
@@ -94,15 +94,15 @@ BT::NodeStatus BT::FallbackNodeWithMemory::Tick()
                 // if it the last child and it has returned failure, reset the memory
                 current_child_idx_ = 0;
             }
-            SetStatus(child_i_status_);
+            setStatus(child_i_status_);
             return child_i_status_;
         }
     }
     return BT::EXIT;
 }
 
-void BT::FallbackNodeWithMemory::Halt()
+void BT::FallbackNodeWithMemory::halt()
 {
     current_child_idx_ = 0;
-    BT::ControlNode::Halt();
+    BT::ControlNode::halt();
 }
