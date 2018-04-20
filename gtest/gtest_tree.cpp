@@ -372,7 +372,7 @@ TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
 
     state = root->Tick();
 
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     state = root->Tick();
     state = root->Tick();
 
@@ -501,7 +501,7 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
     std::cout << "Ticking the root node !" << std::endl << std::endl;
     // Ticking the root node
     BT::NodeStatus state = root->Tick();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     ASSERT_EQ(BT::RUNNING, action->Status());
     ASSERT_EQ(BT::RUNNING, state);
@@ -569,7 +569,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Action1Done)
     condition_2->set_boolean_value(false);
 
     root->Tick();
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     root->Tick();
 
     ASSERT_EQ(BT::RUNNING, action_2->Status());
@@ -583,7 +583,7 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
     // Ticking the root node
     condition->set_boolean_value(false);
     BT::NodeStatus state = root->Tick();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     ASSERT_EQ(BT::RUNNING, action->Status());
     ASSERT_EQ(BT::RUNNING, state);
@@ -686,7 +686,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
     BT::NodeStatus state = root->Tick();
 
     state = root->Tick();
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     state = root->Tick();
 
     ASSERT_EQ(BT::IDLE, action_1->Status());
@@ -714,7 +714,7 @@ TEST_F(SimpleParallelTest, Threshold_3)
     root->set_threshold_M(3);
     action_2->set_time(200);
     root->Tick();
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     BT::NodeStatus state = root->Tick();
 
     ASSERT_EQ(BT::IDLE, condition_1->Status());
@@ -781,7 +781,7 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
 
     condition_3->set_boolean_value(false);
     BT::NodeStatus state = root->Tick();
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     ASSERT_EQ(BT::IDLE, condition_1->Status());
     ASSERT_EQ(BT::IDLE, condition_2->Status());
@@ -799,7 +799,7 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     ASSERT_EQ(BT::RUNNING, state);
 
     state = root->Tick();
-    std::this_thread::sleep_for(std::chrono::seconds(15));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     state = root->Tick();
 
     ASSERT_EQ(BT::IDLE, parallel_2->Status());

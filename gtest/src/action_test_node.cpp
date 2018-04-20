@@ -26,7 +26,7 @@ BT::NodeStatus BT::ActionTestNode::Tick()
     while (Status() != BT::HALTED && i++ < time_)
     {
         DEBUG_STDOUT(" Action " << Name() << "running! Thread id:" << std::this_thread::get_id());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     if (Status() != BT::HALTED)
     {
