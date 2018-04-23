@@ -18,6 +18,14 @@ BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name), loop_(t
     thread_ = std::thread(&ActionNode::waitForTick, this);
 }
 
+BT::ActionNode::~ActionNode()
+{
+    if( thread_.joinable())
+    {
+        stopAndJoinThread();
+    }
+}
+
 void BT::ActionNode::waitForTick()
 {
     while (loop_.load())

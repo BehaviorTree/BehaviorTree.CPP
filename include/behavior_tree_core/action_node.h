@@ -24,7 +24,7 @@ class ActionNode : public LeafNode
   public:
     // Constructor
     ActionNode(std::string name);
-    ~ActionNode() = default;
+    virtual ~ActionNode();
 
     // The method that is going to be executed by the thread
     void waitForTick();

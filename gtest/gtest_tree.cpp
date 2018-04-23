@@ -17,319 +17,319 @@
 
 struct SimpleSequenceTest : testing::Test
 {
-    BT::SequenceNode* root;
-    BT::ActionTestNode* action;
-    BT::ConditionTestNode* condition;
+    std::unique_ptr<BT::SequenceNode> root;
+    std::unique_ptr<BT::ActionTestNode> action;
+    std::unique_ptr<BT::ConditionTestNode> condition;
     SimpleSequenceTest()
     {
-        action = new BT::ActionTestNode("action");
-        condition = new BT::ConditionTestNode("condition");
+        action.reset(new BT::ActionTestNode("action"));
+        condition.reset(  new BT::ConditionTestNode("condition") );
 
-        root = new BT::SequenceNode("seq1");
+        root.reset(  new BT::SequenceNode("seq1") );
 
-        root->addChild(condition);
-        root->addChild(action);
+        root->addChild(condition.get());
+        root->addChild(action.get());
     }
 };
 
 struct ComplexSequenceTest : testing::Test
 {
-    BT::SequenceNode* root;
-    BT::ActionTestNode* action_1;
-    BT::ConditionTestNode* condition_1;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::SequenceNode> root;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
-    BT::SequenceNode* seq_conditions;
+    std::unique_ptr<BT::SequenceNode> seq_conditions;
 
     ComplexSequenceTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
 
-        condition_1 = new BT::ConditionTestNode("condition 1");
-        condition_2 = new BT::ConditionTestNode("condition 2");
-        seq_conditions = new BT::SequenceNode("sequence_conditions");
+        condition_1.reset(  new BT::ConditionTestNode("condition 1" ));
+        condition_2.reset(  new BT::ConditionTestNode("condition 2" ));
+        seq_conditions.reset(  new BT::SequenceNode("sequence_conditions") );
 
-        seq_conditions->addChild(condition_1);
-        seq_conditions->addChild(condition_2);
+        seq_conditions->addChild(condition_1.get());
+        seq_conditions->addChild(condition_2.get());
 
-        root = new BT::SequenceNode("root");
-        root->addChild(seq_conditions);
-        root->addChild(action_1);
+        root.reset(  new BT::SequenceNode("root") );
+        root->addChild(seq_conditions.get());
+        root->addChild(action_1.get());
     }
 };
 
 struct ComplexSequence2ActionsTest : testing::Test
 {
-    BT::SequenceNode* root;
-    BT::ActionTestNode* action_1;
-    BT::ActionTestNode* action_2;
+    std::unique_ptr<BT::SequenceNode> root;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ActionTestNode> action_2;
 
-    BT::ConditionTestNode* condition_1;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
-    BT::SequenceNode* seq_1;
-    BT::SequenceNode* seq_2;
+    std::unique_ptr<BT::SequenceNode> seq_1;
+    std::unique_ptr<BT::SequenceNode> seq_2;
 
     ComplexSequence2ActionsTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
-        action_2 = new BT::ActionTestNode("action 2");
-        seq_1 = new BT::SequenceNode("sequence_1");
-        seq_2 = new BT::SequenceNode("sequence_c2");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
+        action_2.reset(  new BT::ActionTestNode("action 2") );
+        seq_1.reset(  new BT::SequenceNode("sequence_1") );
+        seq_2.reset(  new BT::SequenceNode("sequence_c2") );
 
-        condition_1 = new BT::ConditionTestNode("condition 1");
-        condition_2 = new BT::ConditionTestNode("condition 2");
+        condition_1.reset(  new BT::ConditionTestNode("condition 1") );
+        condition_2.reset(  new BT::ConditionTestNode("condition 2") );
 
-        seq_1->addChild(condition_1);
-        seq_1->addChild(action_1);
+        seq_1->addChild(condition_1.get());
+        seq_1->addChild(action_1.get());
 
-        seq_2->addChild(condition_2);
-        seq_2->addChild(action_2);
+        seq_2->addChild(condition_2.get());
+        seq_2->addChild(action_2.get());
 
-        root = new BT::SequenceNode("root");
-        root->addChild(seq_1);
-        root->addChild(seq_2);
+        root.reset(  new BT::SequenceNode("root") );
+        root->addChild(seq_1.get());
+        root->addChild(seq_2.get());
     }
 };
 
 struct SimpleFallbackTest : testing::Test
 {
-    BT::FallbackNode* root;
-    BT::ActionTestNode* action;
-    BT::ConditionTestNode* condition;
+    std::unique_ptr<BT::FallbackNode> root;
+    std::unique_ptr<BT::ActionTestNode> action;
+    std::unique_ptr<BT::ConditionTestNode> condition;
     SimpleFallbackTest()
     {
-        action = new BT::ActionTestNode("action");
-        condition = new BT::ConditionTestNode("condition");
+        action.reset(  new BT::ActionTestNode("action") );
+        condition.reset(  new BT::ConditionTestNode("condition") );
 
-        root = new BT::FallbackNode("seq1");
+        root.reset(  new BT::FallbackNode("seq1") );
 
-        root->addChild(condition);
-        root->addChild(action);
+        root->addChild(condition.get());
+        root->addChild(action.get());
     }
 };
 
 struct ComplexFallbackTest : testing::Test
 {
-    BT::FallbackNode* root;
-    BT::ActionTestNode* action_1;
-    BT::ConditionTestNode* condition_1;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::FallbackNode> root;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
-    BT::FallbackNode* sel_conditions;
+    std::unique_ptr<BT::FallbackNode> sel_conditions;
 
     ComplexFallbackTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
-        condition_1 = new BT::ConditionTestNode("condition 1");
-        condition_2 = new BT::ConditionTestNode("condition 2");
-        sel_conditions = new BT::FallbackNode("fallback_conditions");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
+        condition_1.reset(  new BT::ConditionTestNode("condition 1") );
+        condition_2.reset(  new BT::ConditionTestNode("condition 2") );
+        sel_conditions.reset(  new BT::FallbackNode("fallback_conditions") );
 
-        sel_conditions->addChild(condition_1);
-        sel_conditions->addChild(condition_2);
+        sel_conditions->addChild(condition_1.get());
+        sel_conditions->addChild(condition_2.get());
 
-        root = new BT::FallbackNode("root");
-        root->addChild(sel_conditions);
-        root->addChild(action_1);
+        root.reset(  new BT::FallbackNode("root") );
+        root->addChild(sel_conditions.get());
+        root->addChild(action_1.get());
     }
 };
 
 struct BehaviorTreeTest : testing::Test
 {
-    BT::SequenceNode* root;
-    BT::ActionTestNode* action_1;
-    BT::ConditionTestNode* condition_1;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::SequenceNode> root;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
-    BT::FallbackNode* sel_conditions;
+    std::unique_ptr<BT::FallbackNode> sel_conditions;
 
     BehaviorTreeTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
-        condition_1 = new BT::ConditionTestNode("condition 1");
-        condition_2 = new BT::ConditionTestNode("condition 2");
-        sel_conditions = new BT::FallbackNode("fallback_conditions");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
+        condition_1.reset(  new BT::ConditionTestNode("condition 1") );
+        condition_2.reset(  new BT::ConditionTestNode("condition 2") );
+        sel_conditions.reset(  new BT::FallbackNode("fallback_conditions") );
 
-        sel_conditions->addChild(condition_1);
-        sel_conditions->addChild(condition_2);
+        sel_conditions->addChild(condition_1.get());
+        sel_conditions->addChild(condition_2.get());
 
-        root = new BT::SequenceNode("root");
-        root->addChild(sel_conditions);
-        root->addChild(action_1);
+        root.reset(  new BT::SequenceNode("root") );
+        root->addChild(sel_conditions.get());
+        root->addChild(action_1.get());
     }
 };
 
 struct SimpleSequenceWithMemoryTest : testing::Test
 {
-    BT::SequenceNodeWithMemory* root;
-    BT::ActionTestNode* action;
-    BT::ConditionTestNode* condition;
+    std::unique_ptr<BT::SequenceNodeWithMemory> root;
+    std::unique_ptr<BT::ActionTestNode> action;
+    std::unique_ptr<BT::ConditionTestNode> condition;
     SimpleSequenceWithMemoryTest()
     {
-        action = new BT::ActionTestNode("action");
-        condition = new BT::ConditionTestNode("condition");
+        action.reset(  new BT::ActionTestNode("action") );
+        condition.reset(  new BT::ConditionTestNode("condition") );
 
-        root = new BT::SequenceNodeWithMemory("seq1");
+        root.reset(  new BT::SequenceNodeWithMemory("seq1") );
 
-        root->addChild(condition);
-        root->addChild(action);
+        root->addChild(condition.get());
+        root->addChild(action.get());
     }
 };
 
 struct ComplexSequenceWithMemoryTest : testing::Test
 {
-    BT::SequenceNodeWithMemory* root;
+    std::unique_ptr<BT::SequenceNodeWithMemory> root;
 
-    BT::ActionTestNode* action_1;
-    BT::ActionTestNode* action_2;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ActionTestNode> action_2;
 
-    BT::ConditionTestNode* condition_1;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
-    BT::SequenceNodeWithMemory* seq_conditions;
-    BT::SequenceNodeWithMemory* seq_actions;
+    std::unique_ptr<BT::SequenceNodeWithMemory> seq_conditions;
+    std::unique_ptr<BT::SequenceNodeWithMemory> seq_actions;
 
     ComplexSequenceWithMemoryTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
-        action_2 = new BT::ActionTestNode("action 2");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
+        action_2.reset(  new BT::ActionTestNode("action 2") );
 
-        condition_1 = new BT::ConditionTestNode("condition 1");
-        condition_2 = new BT::ConditionTestNode("condition 2");
+        condition_1.reset(  new BT::ConditionTestNode("condition 1") );
+        condition_2.reset(  new BT::ConditionTestNode("condition 2") );
 
-        seq_conditions = new BT::SequenceNodeWithMemory("sequence_conditions");
-        seq_actions = new BT::SequenceNodeWithMemory("sequence_actions");
+        seq_conditions.reset(  new BT::SequenceNodeWithMemory("sequence_conditions") );
+        seq_actions.reset(  new BT::SequenceNodeWithMemory("sequence_actions") );
 
-        seq_actions->addChild(action_1);
-        seq_actions->addChild(action_2);
+        seq_actions->addChild(action_1.get());
+        seq_actions->addChild(action_2.get());
 
-        seq_conditions->addChild(condition_1);
-        seq_conditions->addChild(condition_2);
+        seq_conditions->addChild(condition_1.get());
+        seq_conditions->addChild(condition_2.get());
 
-        root = new BT::SequenceNodeWithMemory("root");
-        root->addChild(seq_conditions);
-        root->addChild(seq_actions);
+        root.reset(  new BT::SequenceNodeWithMemory("root") );
+        root->addChild(seq_conditions.get());
+        root->addChild(seq_actions.get());
     }
 };
 
 struct SimpleFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackNodeWithMemory* root;
-    BT::ActionTestNode* action;
-    BT::ConditionTestNode* condition;
+    std::unique_ptr<BT::FallbackNodeWithMemory> root;
+    std::unique_ptr<BT::ActionTestNode> action;
+    std::unique_ptr<BT::ConditionTestNode> condition;
     SimpleFallbackWithMemoryTest()
     {
-        action = new BT::ActionTestNode("action");
-        condition = new BT::ConditionTestNode("condition");
+        action.reset(  new BT::ActionTestNode("action") );
+        condition.reset(  new BT::ConditionTestNode("condition") );
 
-        root = new BT::FallbackNodeWithMemory("seq1");
+        root.reset(  new BT::FallbackNodeWithMemory("seq1") );
 
-        root->addChild(condition);
-        root->addChild(action);
+        root->addChild(condition.get());
+        root->addChild(action.get());
     }
 };
 
 struct ComplexFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackNodeWithMemory* root;
+    std::unique_ptr<BT::FallbackNodeWithMemory> root;
 
-    BT::ActionTestNode* action_1;
-    BT::ActionTestNode* action_2;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ActionTestNode> action_2;
 
-    BT::ConditionTestNode* condition_1;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
-    BT::FallbackNodeWithMemory* fal_conditions;
-    BT::FallbackNodeWithMemory* fal_actions;
+    std::unique_ptr<BT::FallbackNodeWithMemory> fal_conditions;
+    std::unique_ptr<BT::FallbackNodeWithMemory> fal_actions;
 
     ComplexFallbackWithMemoryTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
-        action_2 = new BT::ActionTestNode("action 2");
-        condition_1 = new BT::ConditionTestNode("condition 1");
-        condition_2 = new BT::ConditionTestNode("condition 2");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
+        action_2.reset(  new BT::ActionTestNode("action 2") );
+        condition_1.reset(  new BT::ConditionTestNode("condition 1") );
+        condition_2.reset(  new BT::ConditionTestNode("condition 2") );
 
-        fal_conditions = new BT::FallbackNodeWithMemory("fallback_conditions");
-        fal_actions = new BT::FallbackNodeWithMemory("fallback_actions");
+        fal_conditions.reset(  new BT::FallbackNodeWithMemory("fallback_conditions") );
+        fal_actions.reset(  new BT::FallbackNodeWithMemory("fallback_actions") );
 
-        fal_actions->addChild(action_1);
-        fal_actions->addChild(action_2);
+        fal_actions->addChild(action_1.get());
+        fal_actions->addChild(action_2.get());
 
-        fal_conditions->addChild(condition_1);
-        fal_conditions->addChild(condition_2);
+        fal_conditions->addChild(condition_1.get());
+        fal_conditions->addChild(condition_2.get());
 
-        root = new BT::FallbackNodeWithMemory("root");
-        root->addChild(fal_conditions);
-        root->addChild(fal_actions);
+        root.reset(  new BT::FallbackNodeWithMemory("root") );
+        root->addChild(fal_conditions.get());
+        root->addChild(fal_actions.get());
     }
 };
 
 struct SimpleParallelTest : testing::Test
 {
-    BT::ParallelNode* root;
-    BT::ActionTestNode* action_1;
-    BT::ConditionTestNode* condition_1;
+    std::unique_ptr<BT::ParallelNode> root;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
 
-    BT::ActionTestNode* action_2;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::ActionTestNode> action_2;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
     SimpleParallelTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
-        condition_1 = new BT::ConditionTestNode("condition 1");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
+        condition_1.reset(  new BT::ConditionTestNode("condition 1") );
 
-        action_2 = new BT::ActionTestNode("action 2");
-        condition_2 = new BT::ConditionTestNode("condition 2");
+        action_2.reset(  new BT::ActionTestNode("action 2") );
+        condition_2.reset(  new BT::ConditionTestNode("condition 2") );
 
-        root = new BT::ParallelNode("par", 4);
+        root.reset(  new BT::ParallelNode("par", 4) );
 
-        root->addChild(condition_1);
-        root->addChild(action_1);
-        root->addChild(condition_2);
-        root->addChild(action_2);
+        root->addChild(condition_1.get());
+        root->addChild(action_1.get());
+        root->addChild(condition_2.get());
+        root->addChild(action_2.get());
     }
 };
 
 struct ComplexParallelTest : testing::Test
 {
-    BT::ParallelNode* root;
-    BT::ParallelNode* parallel_1;
-    BT::ParallelNode* parallel_2;
+    std::unique_ptr<BT::ParallelNode> root;
+    std::unique_ptr<BT::ParallelNode> parallel_1;
+    std::unique_ptr<BT::ParallelNode> parallel_2;
 
-    BT::ActionTestNode* action_1;
-    BT::ConditionTestNode* condition_1;
+    std::unique_ptr<BT::ActionTestNode> action_1;
+    std::unique_ptr<BT::ConditionTestNode> condition_1;
 
-    BT::ActionTestNode* action_2;
-    BT::ConditionTestNode* condition_2;
+    std::unique_ptr<BT::ActionTestNode> action_2;
+    std::unique_ptr<BT::ConditionTestNode> condition_2;
 
-    BT::ActionTestNode* action_3;
-    BT::ConditionTestNode* condition_3;
+    std::unique_ptr<BT::ActionTestNode> action_3;
+    std::unique_ptr<BT::ConditionTestNode> condition_3;
 
     ComplexParallelTest()
     {
-        action_1 = new BT::ActionTestNode("action 1");
-        condition_1 = new BT::ConditionTestNode("condition 1");
+        action_1.reset(  new BT::ActionTestNode("action 1") );
+        condition_1.reset(  new BT::ConditionTestNode("condition 1") );
 
-        action_2 = new BT::ActionTestNode("action 2");
-        condition_2 = new BT::ConditionTestNode("condition 2");
+        action_2.reset(  new BT::ActionTestNode("action 2") );
+        condition_2.reset(  new BT::ConditionTestNode("condition 2") );
 
-        action_3 = new BT::ActionTestNode("action 3");
-        condition_3 = new BT::ConditionTestNode("condition 3");
+        action_3.reset(  new BT::ActionTestNode("action 3") );
+        condition_3.reset(  new BT::ConditionTestNode("condition 3") );
 
-        root = new BT::ParallelNode("root", 2);
-        parallel_1 = new BT::ParallelNode("par1", 3);
-        parallel_2 = new BT::ParallelNode("par2", 1);
+        root.reset(  new BT::ParallelNode("root", 2) );
+        parallel_1.reset(  new BT::ParallelNode("par1", 3) );
+        parallel_2.reset(  new BT::ParallelNode("par2", 1) );
 
-        parallel_1->addChild(condition_1);
-        parallel_1->addChild(action_1);
-        parallel_1->addChild(condition_2);
-        parallel_1->addChild(action_2);
+        parallel_1->addChild(condition_1.get());
+        parallel_1->addChild(action_1.get());
+        parallel_1->addChild(condition_2.get());
+        parallel_1->addChild(action_2.get());
 
-        parallel_2->addChild(condition_3);
-        parallel_2->addChild(action_3);
+        parallel_2->addChild(condition_3.get());
+        parallel_2->addChild(action_3.get());
 
-        root->addChild(parallel_1);
-        root->addChild(parallel_2);
+        root->addChild(parallel_1.get());
+        root->addChild(parallel_2.get());
     }
 };
 
