@@ -19,7 +19,6 @@
 #include <mutex>
 #include <condition_variable>
 
-
 class TickEngine
 {
   private:
@@ -36,7 +35,5 @@ class TickEngine
 
     void notify();
 };
-
-
 
 #endif

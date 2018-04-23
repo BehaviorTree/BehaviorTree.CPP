@@ -22,14 +22,14 @@ BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
 
 void BT::ControlNode::addChild(TreeNode* child)
 {
-    // Checking if the child is not already present
-    for (auto node : children_nodes_)
-    {
-        if (node == child)
-        {
-            throw BehaviorTreeException("'" + child->name() + "' is already a '" + name() + "' child.");
-        }
-    }
+    //    Checking if the child is not already present
+    //    for (auto node : children_nodes_)
+    //    {
+    //        if (node == child)
+    //        {
+    //            throw BehaviorTreeException("'" + child->name() + "' is already a '" + name() + "' child.");
+    //        }
+    //    }
 
     children_nodes_.push_back(child);
 }
