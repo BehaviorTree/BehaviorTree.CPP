@@ -11,7 +11,7 @@ class ActionTestNode : public AsyncActionNode
     // Constructor
     ActionTestNode(std::string name);
 
-    virtual ~ActionTestNode() = default;
+    ~ActionTestNode();
 
     // The method that is going to be executed by the thread
     virtual BT::NodeStatus asyncTick() override;

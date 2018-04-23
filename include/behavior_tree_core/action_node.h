@@ -17,11 +17,8 @@
 #include <atomic>
 #include "leaf_node.h"
 
-
 namespace BT
 {
-
-
 class ActionNode : public LeafNode
 {
   public:
@@ -34,7 +31,6 @@ class ActionNode : public LeafNode
         return ACTION_NODE;
     }
 };
-
 
 /**
  * @brief The SimpleActionNode provides a easy to use ActionNode.
@@ -51,7 +47,6 @@ class ActionNode : public LeafNode
 class SimpleActionNode : public ActionNode
 {
   public:
-
     typedef std::function<NodeStatus()> TickFunctor;
 
     // Constructor: you must provide the funtion to call when tick() is invoked
@@ -61,12 +56,13 @@ class SimpleActionNode : public ActionNode
 
     virtual NodeStatus tick() override;
 
-    virtual void halt() override {
+    virtual void halt() override
+    {
         // not supported
     }
 
   protected:
-     TickFunctor tick_functor_;
+    TickFunctor tick_functor_;
 };
 
 /**
@@ -80,6 +76,7 @@ class SimpleActionNode : public ActionNode
  * RUNNING, SUCCESS or FAILURE, otherwise the execution of the Behavior Tree is blocked!
  *
  */
+
 class AsyncActionNode : public ActionNode
 {
   public:
@@ -93,9 +90,17 @@ class AsyncActionNode : public ActionNode
     // This method triggers the TickEngine. Do NOT remove the "final" keyword.
     virtual NodeStatus tick() override final;
 
-    // method to be implemented by the user.
-    virtual NodeStatus asyncTick() = 0;
+    // This method MUST to be overriden by the user.
+    virtual NodeStatus asyncTick()
+    {
+        return BT::HALTED;
+    }
 
+    // This method MUST to be overriden by the user.
+    virtual void halt() override
+    {
+        setStatus(BT::HALTED);
+    }
 
     void stopAndJoinThread();
 
@@ -110,6 +115,6 @@ class AsyncActionNode : public ActionNode
     std::atomic<bool> loop_;
 };
 
-}//end namespace
+}   //end namespace
 
 #endif
