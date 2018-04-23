@@ -20,7 +20,7 @@ BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode::ActionNode(na
     time_ = 3;
 }
 
-BT::NodeStatus BT::ActionTestNode::tick()
+BT::NodeStatus BT::ActionTestNode::asyncTick()
 {
     int i = 0;
     while (status() != BT::HALTED && i++ < time_)

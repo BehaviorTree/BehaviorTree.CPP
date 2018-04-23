@@ -13,21 +13,22 @@
 
 #include "behavior_tree_core/tree_node.h"
 
-BT::TreeNode::TreeNode(std::string name) :
-    name_(name),
-    status_(BT::IDLE),
-    is_state_updated_(false)
+BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE)
 {
 }
 
 void BT::TreeNode::setStatus(NodeStatus new_status)
 {
+    bool is_state_updated = false;
     {
         std::unique_lock<std::mutex> UniqueLock(state_mutex_);
-        is_state_updated_ = (status_ != new_status);
+        is_state_updated = (status_ != new_status);
         status_ = new_status;
     }
-    state_condition_variable_.notify_all();
+    if (is_state_updated)
+    {
+        state_condition_variable_.notify_all();
+    }
 }
 
 BT::NodeStatus BT::TreeNode::status() const

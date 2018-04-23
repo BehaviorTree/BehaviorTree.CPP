@@ -14,8 +14,6 @@
 #ifndef BEHAVIORTREECORE_TREENODE_H
 #define BEHAVIORTREECORE_TREENODE_H
 
-#define DEBUG
-
 #ifdef DEBUG
 // #define DEBUG_STDERR(x) (std::cerr << (x))
 #define DEBUG_STDOUT(str)                                                                                              \
@@ -29,13 +27,7 @@
 #endif
 
 #include <iostream>
-//#include <unistd.h>
-
 #include <string>
-#include <thread>
-#include <chrono>
-#include <mutex>
-#include <condition_variable>
 
 #include "behavior_tree_core/tick_engine.h"
 #include "behavior_tree_core/exceptions.h"
@@ -111,17 +103,10 @@ class TreeNode
     NodeStatus status_;
 
   protected:
-    // The node state that must be treated in a thread-safe way
-    bool is_state_updated_;
-
     mutable std::mutex state_mutex_;
     std::condition_variable state_condition_variable_;
 
   public:
-    // Node semaphore to simulate the tick
-    // (and to synchronize fathers and children)
-    TickEngine tick_engine;
-
     // The constructor and the distructor
     TreeNode(std::string name);
     virtual ~TreeNode() = default;

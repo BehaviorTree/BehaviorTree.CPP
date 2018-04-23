@@ -28,42 +28,28 @@ BT::NodeStatus BT::ParallelNode::tick()
     // Routing the tree according to the sequence node's logic:
     for (unsigned int i = 0; i < N_of_children; i++)
     {
-        DEBUG_STDOUT(name() << "TICKING " << children_nodes_[i]->name());
+        TreeNode* child_node = children_nodes_[i];
 
-        if (children_nodes_[i]->type() == BT::ACTION_NODE)
-        {
-            // 1) If the child i is an action, read its state.
-            // Action nodes runs in another parallel, hence you cannot retrieve the status just by executing it.
-            child_i_status_ = children_nodes_[i]->status();
+        DEBUG_STDOUT(name() << "TICKING " << child_node);
 
-            if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
-            {
-                // 1.1 If the action status is not running, the sequence node sends a tick to it.
-                DEBUG_STDOUT(name() << "NEEDS TO TICK " << children_nodes_[i]->name());
-                children_nodes_[i]->tick_engine.notify();
+        NodeStatus child_status = child_node->tick();
+        child_node->setStatus(child_status);
 
-                child_i_status_ = children_nodes_[i]->waitValidStatus();
-            }
-        }
-        else
-        {
-            child_i_status_ = children_nodes_[i]->tick();
-        }
-        switch (child_i_status_)
+        switch (child_status)
         {
             case BT::SUCCESS:
-                children_nodes_[i]->setStatus(BT::IDLE);   // the child goes in idle if it has returned success.
+                child_node->setStatus(BT::IDLE);   // the child goes in idle if it has returned success.
                 if (++success_childred_num_ == threshold_M_)
                 {
                     success_childred_num_ = 0;
                     failure_childred_num_ = 0;
                     haltChildren(0);   // halts all running children. The execution is done.
-                    setStatus(child_i_status_);
-                    return child_i_status_;
+                    setStatus(child_status);
+                    return child_status;
                 }
                 break;
             case BT::FAILURE:
-                children_nodes_[i]->setStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
+                child_node->setStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
                 if (++failure_childred_num_ > N_of_children - threshold_M_)
                 {
                     DEBUG_STDOUT("*******PARALLEL" << name()
@@ -72,12 +58,12 @@ BT::NodeStatus BT::ParallelNode::tick()
                     success_childred_num_ = 0;
                     failure_childred_num_ = 0;
                     haltChildren(0);   // halts all running children. The execution is hopeless.
-                    setStatus(child_i_status_);
-                    return child_i_status_;
+                    setStatus(child_status);
+                    return child_status;
                 }
                 break;
             case BT::RUNNING:
-                setStatus(child_i_status_);
+                setStatus(child_status);
                 break;
             default:
                 break;

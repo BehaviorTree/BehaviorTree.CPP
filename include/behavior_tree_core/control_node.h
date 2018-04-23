@@ -25,9 +25,6 @@ class ControlNode : public TreeNode
     // Children vector
     std::vector<TreeNode*> children_nodes_;
 
-    //child i status. Used to rout the ticks
-    NodeStatus child_i_status_;
-
   public:
     // Constructor
     ControlNode(std::string name);

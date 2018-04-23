@@ -14,6 +14,7 @@
 #ifndef BEHAVIORTREECORE_ACTIONNODE_H
 #define BEHAVIORTREECORE_ACTIONNODE_H
 
+#include <atomic>
 #include "leaf_node.h"
 
 namespace BT
@@ -28,18 +29,28 @@ class ActionNode : public LeafNode
     // The method that is going to be executed by the thread
     void waitForTick();
 
-    // Methods used to access the node state without the
-    // conditional waiting (only mutual access)
-    bool writeState(NodeStatus new_state);
+    // This method triggers the TickEngine. Do NOT remove the "final" keyword.
+    virtual NodeStatus tick() override final;
+
+    // method to be implemented by the user.
+    virtual NodeStatus asyncTick() = 0;
 
     virtual NodeType type() const override final
     {
         return ACTION_NODE;
     }
 
+    void stopAndJoinThread();
+
   protected:
     // The thread that will execute the node
     std::thread thread_;
+
+    // Node semaphore to simulate the tick
+    // (and to synchronize fathers and children)
+    TickEngine tick_engine_;
+
+    std::atomic<bool> loop_;
 };
 }
 

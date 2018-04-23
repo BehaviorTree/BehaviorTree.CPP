@@ -10,14 +10,17 @@ class ActionTestNode : public ActionNode
   public:
     // Constructor
     ActionTestNode(std::string name);
+
     virtual ~ActionTestNode() = default;
 
     // The method that is going to be executed by the thread
-    virtual BT::NodeStatus tick() override;
+    virtual BT::NodeStatus asyncTick() override;
+
     void set_time(int time);
 
     // The method used to interrupt the execution of the node
     virtual void halt() override;
+
     void set_boolean_value(bool boolean_value);
 
   private:

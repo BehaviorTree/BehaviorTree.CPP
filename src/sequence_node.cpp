@@ -27,45 +27,23 @@ BT::NodeStatus BT::SequenceNode::tick()
     for (unsigned int i = 0; i < N_of_children; i++)
     {
         auto& child_node = children_nodes_[i];
-        /*      Ticking an action is different from ticking a condition. An action executed some portion of code in another thread.
-                We want this thread detached so we can cancel its execution (when the action no longer receive ticks).
-                Hence we cannot just call the method Tick() from the action as doing so will block the execution of the tree.
-                For this reason if a child of this node is an action, then we send the tick using the tick engine. Otherwise we call the method Tick() and wait for the response.
-        */
-        if (child_node->type() == BT::ACTION_NODE)
-        {
-            // 1) If the child i is an action, read its state.
-            child_i_status_ = child_node->status();
 
-            if (child_i_status_ == BT::IDLE || child_i_status_ == BT::HALTED)
-            {
-                // 1.1) If the action status is not running, the sequence node sends a tick to it.
-                DEBUG_STDOUT(name() << "NEEDS TO TICK " << child_node->name());
-                child_node->tick_engine.notify();
+        const NodeStatus child_status = child_node->tick();
+        child_node->setStatus(child_status);
 
-                child_i_status_ = child_node->waitValidStatus();
-            }
-        }
-        else
-        {
-            // 2) if it's not an action:
-            // Send the tick and wait for the response;
-            child_i_status_ = child_node->tick();
-            child_node->setStatus(child_i_status_);
-        }
         // Ponderate on which status to send to the parent
-        if (child_i_status_ != BT::SUCCESS)
+        if (child_status != BT::SUCCESS)
         {
             // If the  child status is not success, halt the next children and return the status to your parent.
-            if (child_i_status_ == BT::FAILURE)
+            if (child_status == BT::FAILURE)
             {
                 child_node->setStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
             }
 
             DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
             haltChildren(i + 1);
-            setStatus(child_i_status_);
-            return child_i_status_;
+            setStatus(child_status);
+            return child_status;
         }
         else
         {

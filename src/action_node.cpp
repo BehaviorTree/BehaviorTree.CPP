@@ -13,24 +13,46 @@
 
 #include "behavior_tree_core/action_node.h"
 
-BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
+BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name), loop_(true)
 {
     thread_ = std::thread(&ActionNode::waitForTick, this);
 }
 
 void BT::ActionNode::waitForTick()
 {
-    while (true)
+    while (loop_.load())
     {
-        // Waiting for the tick to come
         DEBUG_STDOUT(name() << " WAIT FOR TICK");
-
-        tick_engine.wait();
+        tick_engine_.wait();
         DEBUG_STDOUT(name() << " TICK RECEIVED");
 
-        // Running state
-        setStatus(BT::RUNNING);
-        BT::NodeStatus status = tick();
-        setStatus(status);
+        // check this again because the tick_engine_ could be
+        // notified from the method stopAndJoinThread
+        if (loop_.load())
+        {
+            setStatus(BT::RUNNING);
+            BT::NodeStatus status = asyncTick();
+            setStatus(status);
+        }
     }
+}
+
+BT::NodeStatus BT::ActionNode::tick()
+{
+    NodeStatus stat = status();
+
+    if (stat == BT::IDLE || stat == BT::HALTED)
+    {
+        DEBUG_STDOUT("NEEDS TO TICK " << name());
+        tick_engine_.notify();
+        stat = waitValidStatus();
+    }
+    return stat;
+}
+
+void BT::ActionNode::stopAndJoinThread()
+{
+    loop_ = false;
+    tick_engine_.notify();
+    thread_.join();
 }
