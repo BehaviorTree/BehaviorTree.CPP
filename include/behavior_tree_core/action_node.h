@@ -17,14 +17,71 @@
 #include <atomic>
 #include "leaf_node.h"
 
+
 namespace BT
 {
+
+
 class ActionNode : public LeafNode
 {
   public:
     // Constructor
     ActionNode(std::string name);
-    virtual ~ActionNode();
+    ~ActionNode() = default;
+
+    virtual NodeType type() const override final
+    {
+        return ACTION_NODE;
+    }
+};
+
+
+/**
+ * @brief The SimpleActionNode provides a easy to use ActionNode.
+ * The user should simply provide a callback with this signature
+ *
+ *    BT::NodeStatus funtionName(void)
+ *
+ * This avoids the hassle of inheriting from a ActionNode.
+ *
+ * Using lambdas or std::bind it is easy to pass a pointer to a method too.
+ * For the time being, this class of Actions can not carry use the BT::NodeParameters
+ * This may change in the future.
+ */
+class SimpleActionNode : public ActionNode
+{
+  public:
+
+    typedef std::function<NodeStatus()> TickFunctor;
+
+    // Constructor: you must provide the funtion to call when tick() is invoked
+    SimpleActionNode(std::string name, TickFunctor tick_functor);
+
+    ~SimpleActionNode() = default;
+
+    virtual NodeStatus tick() override;
+
+  protected:
+     TickFunctor tick_functor_;
+};
+
+/**
+ * @brief The AsyncActionNode a different thread where the action will be
+ * executed.
+ *
+ * The user must implement the method asyncTick() instead of tick() and
+ * the method halt() as usual.
+ *
+ * Remember, though, that the method asyncTick() must update the state to either
+ * RUNNING, SUCCESS or FAILURE, otherwise the execution of the Behavior Tree is blocked!
+ *
+ */
+class AsyncActionNode : public ActionNode
+{
+  public:
+    // Constructor
+    AsyncActionNode(std::string name);
+    virtual ~AsyncActionNode();
 
     // The method that is going to be executed by the thread
     void waitForTick();
@@ -35,10 +92,6 @@ class ActionNode : public LeafNode
     // method to be implemented by the user.
     virtual NodeStatus asyncTick() = 0;
 
-    virtual NodeType type() const override final
-    {
-        return ACTION_NODE;
-    }
 
     void stopAndJoinThread();
 
@@ -52,6 +105,7 @@ class ActionNode : public LeafNode
 
     std::atomic<bool> loop_;
 };
-}
+
+}//end namespace
 
 #endif

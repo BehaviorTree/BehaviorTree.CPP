@@ -5,7 +5,7 @@
 
 namespace BT
 {
-class ActionTestNode : public ActionNode
+class ActionTestNode : public AsyncActionNode
 {
   public:
     // Constructor
