@@ -352,7 +352,7 @@ TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
     condition->set_boolean_value(false);
 
     state = root->tick();
-    ASSERT_EQ(BT::FAILURE, state);
+    ASSERT_EQ(BT::SUCCESS, state);
     ASSERT_EQ(BT::HALTED, action->status());
     root->halt();
 }
