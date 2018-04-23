@@ -11,31 +11,26 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "behavior_tree_core/action_node.h"
-#include <string>
-
 
 BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
 {
-    thread_ = std::thread(&ActionNode::WaitForTick, this);
+    thread_ = std::thread(&ActionNode::waitForTick, this);
 }
 
-
-void BT::ActionNode::WaitForTick()
+void BT::ActionNode::waitForTick()
 {
-
     while (true)
     {
         // Waiting for the tick to come
-        DEBUG_STDOUT(Name() << " WAIT FOR TICK");
+        DEBUG_STDOUT(name() << " WAIT FOR TICK");
 
-        tick_engine.Wait();
-        DEBUG_STDOUT(Name() << " TICK RECEIVED");
+        tick_engine.wait();
+        DEBUG_STDOUT(name() << " TICK RECEIVED");
 
         // Running state
-        SetStatus(BT::RUNNING);
-        BT::ReturnStatus status = Tick();
-        SetStatus(status);
+        setStatus(BT::RUNNING);
+        BT::NodeStatus status = tick();
+        setStatus(status);
     }
 }

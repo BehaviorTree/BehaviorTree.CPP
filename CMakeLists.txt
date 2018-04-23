@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(behavior_tree_core)
 
-set(CMAKE_BUILD_TYPE Release)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -Werror=return-type")
 
 #############################################################
@@ -39,6 +37,7 @@ endif(catkin_FOUND)
 
 set(BT_Source
 	src/action_node.cpp
+        src/decorator_node.cpp
 	src/condition_node.cpp
 	src/control_node.cpp
 	src/exceptions.cpp
@@ -50,6 +49,7 @@ set(BT_Source
 	src/fallback_node_with_memory.cpp
 	src/sequence_node_with_memory.cpp
 	src/tree_node.cpp
+        src/bt_factory.cpp
 )
 include_directories(include)
 

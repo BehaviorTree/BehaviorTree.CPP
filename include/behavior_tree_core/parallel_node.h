@@ -20,23 +20,22 @@ namespace BT
 {
 class ParallelNode : public ControlNode
 {
-public:
+  public:
     // Constructor
     ParallelNode(std::string name, int threshold_M);
     ~ParallelNode() = default;
 
     // The method that is going to be executed by the thread
-    virtual BT::ReturnStatus Tick() override;
-    virtual void Halt() override;
+    virtual BT::NodeStatus tick() override;
+    virtual void halt() override;
 
-    unsigned int get_threshold_M();
-    void set_threshold_M(unsigned int threshold_M);
+    unsigned int thresholdM();
+    void setThresholdM(unsigned int threshold_M);
 
-private:
+  private:
     unsigned int threshold_M_;
     unsigned int success_childred_num_;
     unsigned int failure_childred_num_;
-
 };
 }
-#endif // PARALLEL_NODE_H
+#endif   // PARALLEL_NODE_H

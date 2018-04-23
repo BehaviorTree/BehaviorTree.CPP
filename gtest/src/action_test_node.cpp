@@ -11,10 +11,8 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include "action_test_node.h"
 #include <string>
-
 
 BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode::ActionNode(name)
 {
@@ -22,26 +20,24 @@ BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode::ActionNode(na
     time_ = 3;
 }
 
-
-BT::ReturnStatus BT::ActionTestNode::Tick()
+BT::NodeStatus BT::ActionTestNode::tick()
 {
-
     int i = 0;
-    while (Status() != BT::HALTED && i++ < time_)
+    while (status() != BT::HALTED && i++ < time_)
     {
-        DEBUG_STDOUT(" Action " << Name() << "running! Thread id:" << std::this_thread::get_id());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        DEBUG_STDOUT(" Action " << name() << "running! Thread id:" << std::this_thread::get_id());
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    if (Status() != BT::HALTED)
+    if (status() != BT::HALTED)
     {
         if (boolean_value_)
         {
-            DEBUG_STDOUT(" Action " << Name() << " Done!");
+            DEBUG_STDOUT(" Action " << name() << " Done!");
             return BT::SUCCESS;
         }
         else
         {
-            DEBUG_STDOUT(" Action " << Name() << " FAILED!");
+            DEBUG_STDOUT(" Action " << name() << " FAILED!");
             return BT::FAILURE;
         }
     }
@@ -51,23 +47,18 @@ BT::ReturnStatus BT::ActionTestNode::Tick()
     }
 }
 
-void BT::ActionTestNode::Halt()
+void BT::ActionTestNode::halt()
 {
-    SetStatus(BT::HALTED);
+    setStatus(BT::HALTED);
     DEBUG_STDOUT("HALTED state set!");
 }
-
 
 void BT::ActionTestNode::set_time(int time)
 {
     time_ = time;
 }
 
-
-
 void BT::ActionTestNode::set_boolean_value(bool boolean_value)
 {
     boolean_value_ = boolean_value;
 }
-
-

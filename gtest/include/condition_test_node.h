@@ -5,19 +5,20 @@
 
 namespace BT
 {
-    class ConditionTestNode : public ConditionNode
-    {
-    public:
-        // Constructor
-        ConditionTestNode(std::string Name);
-        ~ConditionTestNode();
-        void set_boolean_value(bool boolean_value);
+class ConditionTestNode : public ConditionNode
+{
+  public:
+    // Constructor
+    ConditionTestNode(std::string name);
+    ~ConditionTestNode();
+    void set_boolean_value(bool boolean_value);
 
-        // The method that is going to be executed by the thread
-        virtual BT::ReturnStatus Tick() override;
-    private:
-        bool boolean_value_;
-    };
+    // The method that is going to be executed by the thread
+    virtual BT::NodeStatus tick() override;
+
+  private:
+    bool boolean_value_;
+};
 }
 
 #endif

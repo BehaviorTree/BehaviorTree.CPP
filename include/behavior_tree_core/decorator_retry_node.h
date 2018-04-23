@@ -14,26 +14,24 @@
 #ifndef DECORATORRETRYNODE_H
 #define DECORATORRETRYNODE_H
 
-#include "behavior_tree_core/control_node.h"
+#include "behavior_tree_core/decorator_node.h"
 
 namespace BT
 {
-    class DecoratorRetryNode : public ControlNode
-    {
-    public:
-        // Constructor
-        DecoratorRetryNode(std::string name, unsigned int NTries);
-        ~DecoratorRetryNode() = default;
+class DecoratorRetryNode : public DecoratorNode
+{
+  public:
+    // Constructor
+    DecoratorRetryNode(std::string name, unsigned int NTries);
+    ~DecoratorRetryNode() = default;
 
-        // The method that is going to be executed by the thread
-        void Exec();
+    // The method that is going to be executed by the thread
+    void exec();
 
-        virtual NodeType Type() const override { return DECORATOR_NODE; }
-
-    private:
-      unsigned int NTries_;
-      unsigned int TryIndx_;
-    };
+  private:
+    unsigned int NTries_;
+    unsigned int TryIndx_;
+};
 }
 
 #endif

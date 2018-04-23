@@ -10,11 +10,9 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
 #include <behavior_tree.h>
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     ros::init(argc, argv, "BehaviorTree");
     try
@@ -23,23 +21,20 @@ int main(int argc, char **argv)
 
         BT::ActionTestNode* action1 = new BT::ActionTestNode("Action 1");
         // BT::ConditionTestNode* condition1 = new BT::ConditionTestNode("Condition 1");  // commented-out as unused
-        BT:: SequenceNode* sequence1 = new BT::SequenceNode("seq1");
-
+        BT::SequenceNode* sequence1 = new BT::SequenceNode("seq1");
 
         BT::ActionTestNode* action2 = new BT::ActionTestNode("Action 2");
         BT::ConditionTestNode* condition2 = new BT::ConditionTestNode("Condition 2");
-        BT:: SequenceNode* sequence2 = new BT::SequenceNode("seq1");
+        BT::SequenceNode* sequence2 = new BT::SequenceNode("seq1");
 
         BT::ActionTestNode* action3 = new BT::ActionTestNode("Action 3");
         BT::ConditionTestNode* condition3 = new BT::ConditionTestNode("Condition 3");
-        BT:: SequenceNode* sequence3 = new BT::SequenceNode("seq1");
-
+        BT::SequenceNode* sequence3 = new BT::SequenceNode("seq1");
 
         // Commented-out as unused variables
         // BT::ActionTestNode* action4 = new BT::ActionTestNode("Action 4");
         // BT::ConditionTestNode* condition4 = new BT::ConditionTestNode("Condition 4");
         // BT:: SequenceNode* sequence4 = new BT::SequenceNode("seq1");
-
 
         sequence1->AddChild(condition2);
         sequence1->AddChild(action1);
@@ -53,7 +48,7 @@ int main(int argc, char **argv)
         sequence3->AddChild(condition3);
         sequence3->AddChild(action3);
 
-        Execute(sequence1, TickPeriod_milliseconds);  // from BehaviorTree.cpp
+        Execute(sequence1, TickPeriod_milliseconds);   // from BehaviorTree.cpp
     }
     catch (BT::BehaviorTreeException& Exception)
     {
@@ -62,5 +57,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-

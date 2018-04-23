@@ -20,13 +20,13 @@ namespace BT
 {
 class SequenceNode : public ControlNode
 {
-public:
+  public:
     // Constructor
     SequenceNode(std::string name);
     ~SequenceNode() = default;
 
     // The method that is going to be executed by the thread
-    virtual BT::ReturnStatus Tick() override;
+    virtual BT::NodeStatus tick() override;
 };
 }
 

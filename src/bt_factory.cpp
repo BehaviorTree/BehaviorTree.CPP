@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+/* Copyright (C) 2018 Michele Colledanchise -  All Rights Reserved
  * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -11,32 +11,42 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef CONDITIONNODE_H
-#define CONDITIONNODE_H
-
-#include "leaf_node.h"
+#include "behavior_tree_core/bt_factory.h"
 
 namespace BT
 {
-class ConditionNode : public LeafNode
+BehaviorTreeFactory::BehaviorTreeFactory()
 {
-  public:
-    // Constructor
-    ConditionNode(std::string name);
-    ~ConditionNode() = default;
-
-    // The method used to interrupt the execution of the node
-    virtual void halt() override;
-
-    // Methods used to access the node state without the
-    // conditional waiting (only mutual access)
-    bool WriteState(NodeStatus new_state);
-
-    virtual NodeType type() const override final
-    {
-        return CONDITION_NODE;
-    }
-};
 }
 
-#endif
+bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
+{
+    auto it = builders_.find(ID);
+    if (it == builders_.end())
+    {
+        return false;
+    }
+    builders_.erase(ID);
+    return true;
+}
+
+void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, std::function<NodeStatus()> tick_functor)
+{
+}
+
+void BehaviorTreeFactory::registerSimpleDecorator(const std::string& ID,
+                                                  std::function<NodeStatus(NodeStatus)> tick_functor)
+{
+}
+
+std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::string& ID, const NodeParameters& params)
+{
+    auto it = builders_.find(ID);
+    if (it == builders_.end())
+    {
+        throw BehaviorTreeException("ID '" + ID + "' not registered");
+    }
+    return it->second(ID, params);
+}
+
+}   // end namespace
