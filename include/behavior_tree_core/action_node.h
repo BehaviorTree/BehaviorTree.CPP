@@ -61,6 +61,10 @@ class SimpleActionNode : public ActionNode
 
     virtual NodeStatus tick() override;
 
+    virtual void halt() override {
+        // not supported
+    }
+
   protected:
      TickFunctor tick_functor_;
 };
