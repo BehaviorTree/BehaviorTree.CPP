@@ -5,7 +5,7 @@
 
 namespace BT
 {
-class ActionTestNode : public AsyncActionNode
+class ActionTestNode : public ActionNode
 {
   public:
     // Constructor
@@ -14,7 +14,7 @@ class ActionTestNode : public AsyncActionNode
     ~ActionTestNode();
 
     // The method that is going to be executed by the thread
-    virtual BT::NodeStatus asyncTick() override;
+    BT::NodeStatus asyncTick() override;
 
     void set_time(int time);
 

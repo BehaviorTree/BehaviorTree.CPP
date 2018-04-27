@@ -65,7 +65,7 @@ class BehaviorTreeFactory
 template <typename T>
 inline void BehaviorTreeFactory::registerBuilder(const std::string& ID)
 {
-    static_assert(std::is_base_of<ActionNode, T>::value || std::is_base_of<ControlNode, T>::value ||
+    static_assert(std::is_base_of<ActionNodeBase, T>::value || std::is_base_of<ControlNode, T>::value ||
                       std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
                   "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, ControlNode "
                   "or ConditionNode");

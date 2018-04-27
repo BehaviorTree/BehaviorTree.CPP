@@ -19,12 +19,12 @@
 
 namespace BT
 {
-class ActionNode : public LeafNode
+class ActionNodeBase : public LeafNode
 {
   public:
     // Constructor
-    ActionNode(std::string name);
-    ~ActionNode() = default;
+    ActionNodeBase(std::string name);
+    ~ActionNodeBase() = default;
 
     virtual NodeType type() const override final
     {
@@ -44,7 +44,7 @@ class ActionNode : public LeafNode
  * For the time being, this class of Actions can not carry use the BT::NodeParameters
  * This may change in the future.
  */
-class SimpleActionNode : public ActionNode
+class SimpleActionNode : public ActionNodeBase
 {
   public:
     typedef std::function<NodeStatus()> TickFunctor;
@@ -77,12 +77,13 @@ class SimpleActionNode : public ActionNode
  *
  */
 
-class AsyncActionNode : public ActionNode
+
+class ActionNode : public ActionNodeBase
 {
   public:
     // Constructor
-    AsyncActionNode(std::string name);
-    virtual ~AsyncActionNode();
+    ActionNode(std::string name);
+    virtual ~ActionNode();
 
     // The method that is going to be executed by the thread
     void waitForTick();

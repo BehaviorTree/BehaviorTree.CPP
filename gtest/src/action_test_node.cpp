@@ -14,7 +14,7 @@
 #include "action_test_node.h"
 #include <string>
 
-BT::ActionTestNode::ActionTestNode(std::string name) : AsyncActionNode(name)
+BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode(name)
 {
     boolean_value_ = true;
     time_ = 3;

@@ -13,14 +13,14 @@
 
 #include "behavior_tree_core/action_node.h"
 
-BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
+BT::ActionNodeBase::ActionNodeBase(std::string name) : LeafNode::LeafNode(name)
 {
 }
 
 //-------------------------------------------------------
 
 BT::SimpleActionNode::SimpleActionNode(std::string name, BT::SimpleActionNode::TickFunctor tick_functor)
-  : ActionNode(name), tick_functor_(tick_functor)
+  : ActionNodeBase(name), tick_functor_(tick_functor)
 {
 }
 
@@ -28,7 +28,7 @@ BT::NodeStatus BT::SimpleActionNode::tick()
 {
     NodeStatus prev_status = status();
 
-    if (prev_status == BT::IDLE || BT::HALTED)
+    if (prev_status == BT::IDLE || prev_status == BT::HALTED)
     {
         setStatus(BT::RUNNING);
         prev_status = BT::RUNNING;
@@ -44,12 +44,12 @@ BT::NodeStatus BT::SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-BT::AsyncActionNode::AsyncActionNode(std::string name) : ActionNode(name), loop_(true)
+BT::ActionNode::ActionNode(std::string name) : ActionNodeBase(name), loop_(true)
 {
-    thread_ = std::thread(&AsyncActionNode::waitForTick, this);
+    thread_ = std::thread(&ActionNode::waitForTick, this);
 }
 
-BT::AsyncActionNode::~AsyncActionNode()
+BT::ActionNode::~ActionNode()
 {
     if (thread_.joinable())
     {
@@ -57,7 +57,7 @@ BT::AsyncActionNode::~AsyncActionNode()
     }
 }
 
-void BT::AsyncActionNode::waitForTick()
+void BT::ActionNode::waitForTick()
 {
     while (loop_.load())
     {
@@ -76,7 +76,7 @@ void BT::AsyncActionNode::waitForTick()
     }
 }
 
-BT::NodeStatus BT::AsyncActionNode::tick()
+BT::NodeStatus BT::ActionNode::tick()
 {
     NodeStatus stat = status();
 
@@ -89,7 +89,7 @@ BT::NodeStatus BT::AsyncActionNode::tick()
     return stat;
 }
 
-void BT::AsyncActionNode::stopAndJoinThread()
+void BT::ActionNode::stopAndJoinThread()
 {
     loop_.store(false);
     tick_engine_.notify();
