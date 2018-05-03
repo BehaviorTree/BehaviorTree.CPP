@@ -25,13 +25,13 @@ class SequenceNodeWithMemory : public ControlNode
 
     ~SequenceNodeWithMemory() = default;
 
-    // The method that is going to be executed by the thread
-    virtual BT::NodeStatus tick() override;
     virtual void halt() override;
 
   private:
     unsigned int current_child_idx_;
     ResetPolicy reset_policy_;
+
+    virtual BT::NodeStatus tick() override;
 };
 }
 

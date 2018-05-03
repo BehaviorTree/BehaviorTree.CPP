@@ -25,7 +25,7 @@ class SequenceNode : public ControlNode
     SequenceNode(std::string name);
     ~SequenceNode() = default;
 
-    // The method that is going to be executed by the thread
+private:
     virtual BT::NodeStatus tick() override;
 };
 }

@@ -54,14 +54,14 @@ class SimpleActionNode : public ActionNodeBase
 
     ~SimpleActionNode() = default;
 
-    virtual NodeStatus tick() override;
-
     virtual void halt() override
     {
         // not supported
     }
 
   protected:
+    virtual NodeStatus tick() override;
+
     TickFunctor tick_functor_;
 };
 
