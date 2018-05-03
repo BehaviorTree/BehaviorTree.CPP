@@ -14,7 +14,7 @@ class ActionTestNode : public ActionNode
     ~ActionTestNode();
 
     // The method that is going to be executed by the thread
-    BT::NodeStatus asyncTick() override;
+    BT::NodeStatus tick() override;
 
     void set_time(int time);
 

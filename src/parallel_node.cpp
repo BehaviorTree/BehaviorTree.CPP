@@ -32,7 +32,7 @@ BT::NodeStatus BT::ParallelNode::tick()
 
         DEBUG_STDOUT(name() << "TICKING " << child_node);
 
-        NodeStatus child_status = child_node->tick();
+        NodeStatus child_status = child_node->executeTick();
         child_node->setStatus(child_status);
 
         switch (child_status)

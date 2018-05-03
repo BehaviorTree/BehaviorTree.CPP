@@ -70,13 +70,13 @@ void BT::ActionNode::waitForTick()
         if (loop_.load())
         {
             setStatus(BT::RUNNING);
-            BT::NodeStatus status = asyncTick();
+            BT::NodeStatus status = tick();
             setStatus(status);
         }
     }
 }
 
-BT::NodeStatus BT::ActionNode::tick()
+BT::NodeStatus BT::ActionNode::executeTick()
 {
     NodeStatus stat = status();
 

@@ -25,7 +25,7 @@ BT::ActionTestNode::~ActionTestNode()
     halt();
 }
 
-BT::NodeStatus BT::ActionTestNode::asyncTick()
+BT::NodeStatus BT::ActionTestNode::tick()
 {
     int i = 0;
     while (status() != BT::HALTED && i++ < time_)

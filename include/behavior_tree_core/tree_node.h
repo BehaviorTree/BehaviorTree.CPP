@@ -106,13 +106,16 @@ class TreeNode
     mutable std::mutex state_mutex_;
     std::condition_variable state_condition_variable_;
 
+    // Method to be implemented by the user
+    virtual BT::NodeStatus tick() = 0;
+
   public:
     // The constructor and the distructor
     TreeNode(std::string name);
     virtual ~TreeNode() = default;
 
     // The method that is going to be executed when the node receive a tick
-    virtual BT::NodeStatus tick() = 0;
+    virtual BT::NodeStatus executeTick();
 
     // The method used to interrupt the execution of the node
     virtual void halt() = 0;

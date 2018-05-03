@@ -17,6 +17,11 @@ BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE)
 {
 }
 
+BT::NodeStatus BT::TreeNode::executeTick()
+{
+    return tick();
+}
+
 void BT::TreeNode::setStatus(NodeStatus new_status)
 {
     bool is_state_updated = false;

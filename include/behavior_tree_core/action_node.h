@@ -89,10 +89,10 @@ class ActionNode : public ActionNodeBase
     void waitForTick();
 
     // This method triggers the TickEngine. Do NOT remove the "final" keyword.
-    virtual NodeStatus tick() override final;
+    virtual NodeStatus executeTick() override final;
 
     // This method MUST to be overriden by the user.
-    virtual NodeStatus asyncTick()
+    virtual NodeStatus tick() override
     {
         return BT::HALTED;
     }

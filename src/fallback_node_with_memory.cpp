@@ -30,7 +30,7 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
     {
         auto& current_child_node = children_nodes_[current_child_idx_];
 
-        const NodeStatus child_status = current_child_node->tick();
+        const NodeStatus child_status = current_child_node->executeTick();
         current_child_node->setStatus(child_status);
 
         if (child_status == BT::SUCCESS || child_status == BT::FAILURE)

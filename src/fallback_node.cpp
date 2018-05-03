@@ -29,7 +29,7 @@ BT::NodeStatus BT::FallbackNode::tick()
         {
             auto& child_node = children_nodes_[i];
 
-            const NodeStatus child_status = child_node->tick();
+            const NodeStatus child_status = child_node->executeTick();
             child_node->setStatus(child_status);
 
             // Ponderate on which status to send to the parent
