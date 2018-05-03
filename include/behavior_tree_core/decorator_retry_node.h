@@ -25,12 +25,12 @@ class DecoratorRetryNode : public DecoratorNode
     DecoratorRetryNode(std::string name, unsigned int NTries);
     ~DecoratorRetryNode() = default;
 
-    // The method that is going to be executed by the thread
-    void exec();
 
   private:
     unsigned int NTries_;
     unsigned int TryIndx_;
+
+    virtual BT::NodeStatus tick() override;
 };
 }
 

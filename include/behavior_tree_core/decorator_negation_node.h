@@ -23,8 +23,11 @@ class DecoratorNegationNode : public DecoratorNode
   public:
     // Constructor
     DecoratorNegationNode(std::string name);
-    ~DecoratorNegationNode() = default;
+ 
+    virtual ~DecoratorNegationNode() = default;
 
+  private:
+    virtual BT::NodeStatus tick() override;
 };
 }
 

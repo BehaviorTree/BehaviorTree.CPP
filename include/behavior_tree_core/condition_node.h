@@ -28,10 +28,6 @@ class ConditionNode : public LeafNode
     // The method used to interrupt the execution of the node
     virtual void halt() override;
 
-    // Methods used to access the node state without the
-    // conditional waiting (only mutual access)
-    bool WriteState(NodeStatus new_state);
-
     virtual NodeType type() const override final
     {
         return CONDITION_NODE;

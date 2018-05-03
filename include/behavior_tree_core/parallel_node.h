@@ -25,7 +25,6 @@ class ParallelNode : public ControlNode
     ParallelNode(std::string name, int threshold_M);
     ~ParallelNode() = default;
 
-    // The method that is going to be executed by the thread
     virtual void halt() override;
 
     unsigned int thresholdM();

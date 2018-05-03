@@ -25,15 +25,12 @@ class DecoratorNode : public TreeNode
 
     void haltChild();
 
-    // Methods used to access the node state without the
-    // conditional waiting (only mutual access)
-    bool writeState(NodeStatus new_state);
-
     virtual NodeType type() const override final
     {
         return DECORATOR_NODE;
     }
 };
+
 }
 
 #endif

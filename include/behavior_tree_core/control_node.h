@@ -38,14 +38,15 @@ class ControlNode : public TreeNode
 
     const std::vector<TreeNode*>& children() const;
 
+    const TreeNode* child(unsigned index) const
+    {
+        return children().at(index);
+    }
+
     // The method used to interrupt the execution of the node
     virtual void halt() override;
 
     void haltChildren(int i);
-
-    // Methods used to access the node state without the
-    // conditional waiting (only mutual access)
-    bool writeState(NodeStatus new_state);
 
     virtual NodeType type() const override final
     {
