@@ -25,8 +25,6 @@ class ParallelNode : public ControlNode
     ParallelNode(std::string name, int threshold_M);
     ~ParallelNode() = default;
 
-    // The method that is going to be executed by the thread
-    virtual BT::NodeStatus tick() override;
     virtual void halt() override;
 
     unsigned int thresholdM();
@@ -36,6 +34,8 @@ class ParallelNode : public ControlNode
     unsigned int threshold_M_;
     unsigned int success_childred_num_;
     unsigned int failure_childred_num_;
+
+    virtual BT::NodeStatus tick() override;
 };
 }
 #endif   // PARALLEL_NODE_H

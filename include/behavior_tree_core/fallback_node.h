@@ -25,9 +25,10 @@ class FallbackNode : public ControlNode
     FallbackNode(std::string name);
     ~FallbackNode() = default;
 
-    // The method that is going to be executed by the thread
+private:
     virtual BT::NodeStatus tick() override;
 };
+
 }
 
 #endif

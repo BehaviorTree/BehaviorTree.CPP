@@ -17,7 +17,7 @@ BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
-    // ReturnStatus child_i_status_ = BT::IDLE;  // commented out as unused
+    // ReturnStatus const NodeStatus child_status = BT::IDLE;  // commented out as unused
 }
 
 void BT::ControlNode::addChild(TreeNode* child)

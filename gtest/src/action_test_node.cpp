@@ -14,10 +14,15 @@
 #include "action_test_node.h"
 #include <string>
 
-BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode::ActionNode(name)
+BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode(name)
 {
     boolean_value_ = true;
     time_ = 3;
+}
+
+BT::ActionTestNode::~ActionTestNode()
+{
+    halt();
 }
 
 BT::NodeStatus BT::ActionTestNode::tick()

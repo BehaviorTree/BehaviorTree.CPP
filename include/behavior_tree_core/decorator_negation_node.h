@@ -23,12 +23,11 @@ class DecoratorNegationNode : public DecoratorNode
   public:
     // Constructor
     DecoratorNegationNode(std::string name);
-    ~DecoratorNegationNode() = default;
+ 
+    virtual ~DecoratorNegationNode() = default;
 
-    // The method that is going to be executed by the thread
-    void exec();
-
-    void setChild(TreeNode* child);
+  private:
+    virtual BT::NodeStatus tick() override;
 };
 }
 
