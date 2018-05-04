@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <string>
+#include <map>
 
 #include "behavior_tree_core/tick_engine.h"
 #include "behavior_tree_core/exceptions.h"
@@ -42,8 +43,33 @@ enum NodeType
     ACTION_NODE,
     CONDITION_NODE,
     CONTROL_NODE,
-    DECORATOR_NODE
+    DECORATOR_NODE,
+    SUBTREE_NODE,
+    UNDEFINED
 };
+
+inline const char* toStr(const BT::NodeType& type)
+{
+    switch (type)
+    {
+        case NodeType::ACTION_NODE:
+            return "Action";
+        case NodeType::DECORATOR_NODE:
+            return "Decorator";
+        case NodeType::CONTROL_NODE:
+            return "Control";
+        case NodeType::SUBTREE_NODE:
+            return "SubTree";
+        default:
+            return "Undefined";
+    }
+}
+
+inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
+{
+    os << toStr(type);
+    return os;
+}
 
 // Enumerates the states every node can be in after execution during a particular
 // time step:
@@ -62,6 +88,32 @@ enum NodeStatus
     FAILURE,
     EXIT
 };
+
+inline const char* toStr(const BT::NodeStatus& status)
+{
+    switch (status)
+    {
+        case NodeStatus::SUCCESS:
+            return "SUCCESS";
+        case NodeStatus::FAILURE:
+            return "FAILURE";
+        case NodeStatus::RUNNING:
+            return "RUNNING";
+        case NodeStatus::IDLE:
+            return "IDLE";
+        case NodeStatus::HALTED:
+            return "HALTED";
+        default:
+            return "Undefined";
+    }
+}
+
+
+inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
+{
+    os << toStr(status);
+    return os;
+}
 
 // Enumerates the options for when a parallel node is considered to have failed:
 // - "FAIL_ON_ONE" indicates that the node will return failure as soon as one of
@@ -93,6 +145,10 @@ enum SuccessPolicy
 
 // If "BT::FAIL_ON_ONE" and "BT::SUCCEED_ON_ONE" are both active and are both trigerred in the
 // same time step, failure will take precedence.
+
+// We call Parameters the set of Key/Values that can be read from file and are
+// used to parametrize an object. It is up to the user's code to parse the string.
+typedef std::map<std::string, std::string> NodeParameters;
 
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
@@ -152,6 +208,11 @@ private:
   StatusChangeSignal state_change_signal_;
 
 };
+
+typedef std::shared_ptr<TreeNode> TreeNodePtr;
+
+// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
+typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
 }
 
 #endif

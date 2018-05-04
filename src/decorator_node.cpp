@@ -41,6 +41,7 @@ const BT::TreeNode* BT::DecoratorNode::child() const
     return child_node_;
 }
 
+
 void BT::DecoratorNode::haltChild()
 {
     if (child_node_->status() == BT::RUNNING)

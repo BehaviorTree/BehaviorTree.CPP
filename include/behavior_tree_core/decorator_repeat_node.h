@@ -24,6 +24,8 @@ class DecoratorRepeatNode : public DecoratorNode
     // Constructor
     DecoratorRepeatNode(std::string name, unsigned int NTries);
 
+    DecoratorRepeatNode(std::string name, const NodeParameters& params);
+
     ~DecoratorRepeatNode() = default;
 
   private:

@@ -19,21 +19,11 @@
 #include <map>
 #include <set>
 
-#include "behavior_tree_core/action_node.h"
-#include "behavior_tree_core/control_node.h"
-#include "behavior_tree_core/condition_node.h"
-#include "behavior_tree_core/decorator_node.h"
+#include "behavior_tree_core/behavior_tree.h"
 
 namespace BT
 {
 typedef std::set<std::string> RequiredParameters;
-
-// We call Parameters the set of Key/Values that canbe read from file and are
-// used to parametrize an object. it is up to the user's code to parse the string.
-typedef std::map<std::string, std::string> NodeParameters;
-
-// The term "Builder" refers to the Builder Ppattern (https://en.wikipedia.org/wiki/Builder_pattern)
-typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
 
 class BehaviorTreeFactory
 {
@@ -42,66 +32,75 @@ class BehaviorTreeFactory
 
     bool unregisterBuilder(const std::string& ID);
 
-    template <typename T>
-    void registerBuilder(const std::string& ID);
+    void registerBuilder(const std::string& ID, NodeBuilder builder);
 
-    void registerSimpleAction(const std::string& ID, std::function<BT::NodeStatus()> tick_functor);
+    void registerSimpleAction(const std::string& ID, std::function<NodeStatus()> tick_functor);
 
-    void registerSimpleDecorator(const std::string& ID, std::function<BT::NodeStatus(BT::NodeStatus)> tick_functor);
-
-    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const NodeParameters& params);
+    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
+                                                  const NodeParameters& params) const;
 
     const std::map<std::string, NodeBuilder>& builders() const
     {
         return builders_;
     }
 
-  private:
-    std::map<std::string, NodeBuilder> builders_;
-};
-
-//-----------------------------------------------
-
-template <typename T>
-inline void BehaviorTreeFactory::registerBuilder(const std::string& ID)
-{
-    static_assert(std::is_base_of<ActionNodeBase, T>::value || std::is_base_of<ControlNode, T>::value ||
-                      std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
-                  "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, ControlNode "
-                  "or ConditionNode");
-
-    constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
-    constexpr bool param_constructable = std::is_constructible<T, const std::string&, const NodeParameters&>::value;
-
-    static_assert(param_constructable || param_constructable,
-                  "[registerBuilder]: the registered class must have a Constructor with signature:\n\n"
-                  "  (const std::string&, const NodeParameters&)\n"
-                  " or\n"
-                  "  (const std::string&)");
-
-    auto it = builders_.find(ID);
-    if (it != builders_.end())
+    template <typename T>
+    void registerNodeType(const std::string& ID)
     {
-        throw BehaviorTreeException("ID '" + ID + "' already registered");
+        static_assert(std::is_base_of<ActionNode, T>::value || std::is_base_of<ControlNode, T>::value ||
+                          std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
+                      "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, "
+                      "ControlNode "
+                      "or ConditionNode");
+
+        constexpr bool default_constructable = std::is_constructible<T, std::string>::value;
+        constexpr bool param_constructable = std::is_constructible<T, std::string, const NodeParameters&>::value;
+
+        static_assert(default_constructable || param_constructable,
+                      "[registerBuilder]: the registered class must have a Constructor with signature: "
+                      "  (const std::string&, const NodeParameters&) or (const std::string&)");
+
+        registerNodeTypeImpl<T>(ID);
     }
 
-    NodeBuilder builder = [default_constructable, ID](const std::string& name, const NodeParameters& params) {
-        if (default_constructable && params.empty())
-        {
-            return std::unique_ptr<TreeNode>(new T(name));
-        }
-        if (!param_constructable && !params.empty())
-        {
-            throw BehaviorTreeException("Trying to instantiate a TreeNode that can NOT accept NodeParameters in the "
-                                        "Constructor: [" +
-                                        ID + " / " + name + "]");
-        }
-        return std::unique_ptr<TreeNode>(new T(name, params));
+  private:
+    std::map<std::string, NodeBuilder> builders_;
 
+    // template specialization + SFINAE + black magic
+    struct default_constructable
+    {
+    };
+    struct param_constructable
+    {
     };
 
-    builders_.insert(std::make_pair(ID, builder));
-}
+    template <typename T>
+    using enable_if_default_constructable =
+        typename std::enable_if<std::is_constructible<T, std::string>::value, struct default_constructable>;
+
+    template <typename T>
+    using enable_if_param_constructable =
+        typename std::enable_if<std::is_constructible<T, std::string, const NodeParameters&>::value,
+                                struct param_constructable>;
+
+    template <typename T, typename enable_if_default_constructable<T>::type* = nullptr>
+    void registerNodeTypeImpl(const std::string& ID)
+    {
+        NodeBuilder builder = [](const std::string& name, const NodeParameters&) {
+            return std::unique_ptr<TreeNode>(new T(name));
+        };
+        registerBuilder(ID, builder);
+    }
+
+    template <typename T, typename enable_if_param_constructable<T>::type* = nullptr>
+    void registerNodeTypeImpl(const std::string& ID)
+    {
+        NodeBuilder builder = [](const std::string& name, const NodeParameters& params) {
+            return std::unique_ptr<TreeNode>(new T(name, params));
+        };
+        registerBuilder(ID, builder);
+    }
+};
 
 }   // end namespace
 #endif   // BT_FACTORY_H

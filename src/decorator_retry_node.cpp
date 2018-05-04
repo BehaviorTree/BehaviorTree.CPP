@@ -18,11 +18,21 @@ BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, unsigned int NTries
 {
 }
 
+BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, const BT::NodeParameters& params)
+  : DecoratorNode(name), NTries_(1), TryIndx_(0)
+{
+    auto it = params.find("num_attempts");
+    if (it == params.end())
+    {
+        throw std::runtime_error("[DecoratorRetryNode] requires a parameter callen 'num_attempts'");
+    }
+    NTries_ = std::stoul(it->second);
+}
 
 BT::NodeStatus BT::DecoratorRetryNode::tick()
 {
     setStatus(BT::RUNNING);
-    BT::NodeStatus child_state = child_node_->tick();
+    BT::NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {

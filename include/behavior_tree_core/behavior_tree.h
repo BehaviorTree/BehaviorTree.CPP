@@ -26,7 +26,17 @@
 
 #include "behavior_tree_core/decorator_negation_node.h"
 #include "behavior_tree_core/decorator_retry_node.h"
+#include "behavior_tree_core/decorator_repeat_node.h"
+#include "behavior_tree_core/decorator_subtree_node.h"
 
-#include "behavior_tree_core/exceptions.h"
+namespace BT
+{
+void RecursiveVisitor(const TreeNode *node, const std::function<void(const TreeNode*)> visitor);
+
+/**
+ * Debug function to print on a stream
+ */
+void PrintTreeRecursively(const TreeNode* root_node);
+}
 
 #endif   // BEHAVIOR_TREE_H
