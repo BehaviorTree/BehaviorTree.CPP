@@ -23,6 +23,9 @@ class SequenceNodeWithMemory : public ControlNode
   public:
     SequenceNodeWithMemory(std::string name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
 
+    // Reset policy passed by parameter [reset_policy]
+    SequenceNodeWithMemory(std::string name, const NodeParameters& params);
+
     ~SequenceNodeWithMemory() = default;
 
     virtual void halt() override;

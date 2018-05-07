@@ -18,6 +18,33 @@ BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolicy
 {
 }
 
+BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, const NodeParameters& params)
+  : ControlNode::ControlNode(name), current_child_idx_(0)
+{
+    auto it = params.find("reset_policy");
+    if( it == params.end())
+    {
+        throw std::runtime_error("SequenceNodeWithMemory requires the parameter [reset_policy]");
+    }
+    const std::string& policy = it->second;
+
+    if(policy == "ON_SUCCESS_OR_FAILURE")
+    {
+        reset_policy_ = ON_SUCCESS_OR_FAILURE;
+    }
+    else if(policy == "ON_SUCCESS")
+    {
+        reset_policy_ = ON_SUCCESS;
+    }
+    else if(policy == "ON_FAILURE")
+    {
+        reset_policy_ = ON_FAILURE;
+    }
+    else{
+        throw std::runtime_error("SequenceNodeWithMemory has a [reset_policy] that doesn't match.");
+    }
+}
+
 BT::NodeStatus BT::SequenceNodeWithMemory::tick()
 {
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
