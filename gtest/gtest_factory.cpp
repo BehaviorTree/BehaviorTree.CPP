@@ -100,7 +100,7 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
     BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
 
-    BT::PrintTreeRecursively(root_node.get());
+    BT::printTreeRecursively(root_node.get());
 
     ASSERT_EQ(root_node->name(), "root_selector");
 
@@ -155,7 +155,7 @@ TEST(BehaviorTreeFactory, Subtree)
     CrossDoor cross_door(factory);
 
     BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
-    BT::PrintTreeRecursively(root_node.get());
+    BT::printTreeRecursively(root_node.get());
 
     ASSERT_EQ(root_node->name(), "root_selector");
 

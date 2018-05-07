@@ -54,6 +54,8 @@ inline const char* toStr(const BT::NodeType& type)
     {
         case NodeType::ACTION_NODE:
             return "Action";
+        case NodeType::CONDITION_NODE:
+            return "Condition";
         case NodeType::DECORATOR_NODE:
             return "Decorator";
         case NodeType::CONTROL_NODE:

@@ -31,12 +31,12 @@
 
 namespace BT
 {
-void RecursiveVisitor(const TreeNode *node, const std::function<void(const TreeNode*)> visitor);
+void recursiveVisitor(const TreeNode *node, const std::function<void(const TreeNode*)> visitor);
 
 /**
  * Debug function to print on a stream
  */
-void PrintTreeRecursively(const TreeNode* root_node);
+void printTreeRecursively(const TreeNode* root_node);
 }
 
 #endif   // BEHAVIOR_TREE_H
