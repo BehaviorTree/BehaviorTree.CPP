@@ -2,7 +2,7 @@
 
 namespace BT
 {
-void RecursiveVisitor(const TreeNode* node, const std::function<void(const TreeNode*)> visitor)
+void recursiveVisitor(const TreeNode* node, const std::function<void(const TreeNode*)> visitor)
 {
     if (!node)
     {
@@ -16,17 +16,17 @@ void RecursiveVisitor(const TreeNode* node, const std::function<void(const TreeN
     {
         for (const auto& child : control->children())
         {
-            RecursiveVisitor(child, visitor);
+            recursiveVisitor(child, visitor);
         }
     }
     auto decorator = dynamic_cast<const BT::DecoratorNode*>(node);
     if (decorator)
     {
-        RecursiveVisitor(decorator->child(), visitor);
+        recursiveVisitor(decorator->child(), visitor);
     }
 }
 
-void PrintTreeRecursively(const TreeNode* root_node)
+void printTreeRecursively(const TreeNode* root_node)
 {
     std::function<void(int, const BT::TreeNode*)> recursivePrint;
 
