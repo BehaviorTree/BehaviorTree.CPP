@@ -69,12 +69,12 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         return false;
     }
     //-------------------------------------------------
-    auto meta_root = xml_root->FirstChildElement("BehaviorTreeMetaModel");
-    auto meta_sibling = meta_root ? meta_root->NextSiblingElement("BehaviorTreeMetaModel") : nullptr;
+    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
+    auto meta_sibling = meta_root ? meta_root->NextSiblingElement("TreeNodesModel") : nullptr;
 
     if (meta_sibling)
     {
-        AppendError(meta_sibling->GetLineNum(), " Only a single node <BehaviorTreeMetaModel> is supported");
+        AppendError(meta_sibling->GetLineNum(), " Only a single node <TreeNodesModel> is supported");
     }
     if (meta_root)
     {

@@ -32,8 +32,8 @@ const std::string xml_text = R"(
         </Fallback>
     </BehaviorTree>
 
-    <!-- BehaviorTreeMetaModel is used only by the Graphic interface -->
-    <BehaviorTreeMetaModel>
+    <!-- TreeNodesModel is used only by the Graphic interface -->
+    <TreeNodesModel>
         <Action ID="IsDoorOpen" />
         <Action ID="PassThroughDoor" />
         <Action ID="CloseDoor" />
@@ -46,7 +46,7 @@ const std::string xml_text = R"(
         <Decorator ID="Repeat">
             <Parameter label="num_cycles" type="Int" />
         </Decorator>
-    </BehaviorTreeMetaModel>
+    </TreeNodesModel>
 </root>
         )";
 
