@@ -23,20 +23,19 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
     DEBUG_STDOUT(name() << " ticked, memory counter: " << current_child_idx_);
 
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
-    const unsigned N_of_children_ = children_nodes_.size();
+    const unsigned N_of_children = children_nodes_.size();
 
     // Routing the ticks according to the sequence node's (with memory) logic:
-    while (current_child_idx_ < N_of_children_)
+    while (current_child_idx_ < N_of_children)
     {
         /*      Ticking an action is different from ticking a condition. An action executed some portion of code in another thread.
                 We want this thread detached so we can cancel its execution (when the action no longer receive ticks).
                 Hence we cannot just call the method Tick() from the action as doing so will block the execution of the tree.
                 For this reason if a child of this node is an action, then we send the tick using the tick engine. Otherwise we call the method Tick() and wait for the response.
         */
-        const auto& current_child_node = children_nodes_[current_child_idx_];
+        TreeNode* current_child_node = children_nodes_[current_child_idx_];
 
         const NodeStatus child_status = current_child_node->executeTick();
-        current_child_node->setStatus(child_status);
 
         if (child_status == BT::SUCCESS || child_status == BT::FAILURE)
         {
@@ -53,10 +52,9 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
             {
                 current_child_idx_ = 0;
             }
-            setStatus(child_status);
             return child_status;
         }
-        else if (current_child_idx_ != N_of_children_ - 1)
+        else if (current_child_idx_ != N_of_children - 1)
         {
             // If the  child status is success, continue to the next child
             // (if any, hence if(current_child_ != N_of_children_ - 1) ) in the for loop (if any).
@@ -70,7 +68,6 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
                 // if it the last child and it has returned SUCCESS, reset the memory
                 current_child_idx_ = 0;
             }
-            setStatus(child_status);
             return child_status;
         }
     }

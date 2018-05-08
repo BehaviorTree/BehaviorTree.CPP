@@ -28,10 +28,9 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
     // Routing the ticks according to the fallback node's (with memory) logic:
     while (current_child_idx_ < N_of_children)
     {
-        auto& current_child_node = children_nodes_[current_child_idx_];
+        TreeNode* current_child_node = children_nodes_[current_child_idx_];
 
         const NodeStatus child_status = current_child_node->executeTick();
-        current_child_node->setStatus(child_status);
 
         if (child_status == BT::SUCCESS || child_status == BT::FAILURE)
         {
@@ -48,7 +47,6 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
             {
                 current_child_idx_ = 0;
             }
-            setStatus(child_status);
             return child_status;
         }
         else if (current_child_idx_ != N_of_children - 1)
@@ -65,7 +63,6 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
                 // if it the last child and it has returned failure, reset the memory
                 current_child_idx_ = 0;
             }
-            setStatus(child_status);
             return child_status;
         }
     }

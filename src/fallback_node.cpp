@@ -27,10 +27,9 @@ BT::NodeStatus BT::FallbackNode::tick()
 
         for (unsigned i = 0; i < N_of_children; i++)
         {
-            auto& child_node = children_nodes_[i];
+            TreeNode* child_node = children_nodes_[i];
 
             const NodeStatus child_status = child_node->executeTick();
-            child_node->setStatus(child_status);
 
             // Ponderate on which status to send to the parent
             if (child_status != BT::FAILURE)
@@ -42,7 +41,6 @@ BT::NodeStatus BT::FallbackNode::tick()
                 // If the  child status is not failure, halt the next children and return the status to your parent.
                 DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
                 haltChildren(i + 1);
-                setStatus(child_status);
                 return child_status;
             }
             else
@@ -53,7 +51,6 @@ BT::NodeStatus BT::FallbackNode::tick()
                 {
                     // If the  child status is failure, and it is the last child to be ticked,
                     // then the sequence has failed.
-                    setStatus(BT::FAILURE);
                     return BT::FAILURE;
                 }
             }

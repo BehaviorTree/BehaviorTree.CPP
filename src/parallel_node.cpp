@@ -33,7 +33,6 @@ BT::NodeStatus BT::ParallelNode::tick()
         DEBUG_STDOUT(name() << "TICKING " << child_node);
 
         NodeStatus child_status = child_node->executeTick();
-        child_node->setStatus(child_status);
 
         switch (child_status)
         {
@@ -44,7 +43,6 @@ BT::NodeStatus BT::ParallelNode::tick()
                     success_childred_num_ = 0;
                     failure_childred_num_ = 0;
                     haltChildren(0);   // halts all running children. The execution is done.
-                    setStatus(child_status);
                     return child_status;
                 }
                 break;
@@ -58,7 +56,6 @@ BT::NodeStatus BT::ParallelNode::tick()
                     success_childred_num_ = 0;
                     failure_childred_num_ = 0;
                     haltChildren(0);   // halts all running children. The execution is hopeless.
-                    setStatus(child_status);
                     return child_status;
                 }
                 break;
