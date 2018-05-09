@@ -24,7 +24,7 @@ void BT::CLASSNAME::WaitForTick()
         SetStatus(BT::RUNNING);
         // Perform action...
 
-        while (Status() != BT::HALTED)
+        while (Status() != BT::IDLE)
         {
             /*HERE THE CODE TO EXECUTE FOR THE ACTION.
 	 wHEN THE ACTION HAS FINISHED CORRECLTY, CALL set_status(BT::SUCCESS)
@@ -36,6 +36,6 @@ void BT::CLASSNAME::WaitForTick()
 void BT::CLASSNAME::Halt()
 {
     /*HERE THE CODE TO PERFORM WHEN THE ACTION IS HALTED*/
-    SetStatus(BT::HALTED);
+    SetStatus(BT::IDLE);
     DEBUG_STDOUT("HALTED state set!");
 }
