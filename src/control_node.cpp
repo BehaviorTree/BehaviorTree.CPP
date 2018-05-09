@@ -43,7 +43,7 @@ void BT::ControlNode::halt()
 {
     DEBUG_STDOUT("HALTING: " << name());
     haltChildren(0);
-    setStatus(BT::HALTED);
+    setStatus(BT::IDLE);
 }
 
 const std::vector<BT::TreeNode*>& BT::ControlNode::children() const

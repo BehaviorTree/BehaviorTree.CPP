@@ -94,13 +94,13 @@ class ActionNode : public ActionNodeBase
     // This method MUST to be overriden by the user.
     virtual NodeStatus tick() override
     {
-        return BT::HALTED;
+        return BT::IDLE;
     }
 
     // This method MUST to be overriden by the user.
     virtual void halt() override
     {
-        setStatus(BT::HALTED);
+        setStatus(BT::IDLE);
     }
 
     void stopAndJoinThread();

@@ -19,40 +19,44 @@ BT::FallbackNode::FallbackNode(std::string name) : ControlNode::ControlNode(name
 
 BT::NodeStatus BT::FallbackNode::tick()
 {
+    // gets the number of children. The number could change if, at runtime, one edits the tree.
+    const unsigned N_of_children = children_nodes_.size();
+
+    // Routing the ticks according to the fallback node's logic:
+
+    for (unsigned i = 0; i < N_of_children; i++)
     {
-        // gets the number of children. The number could change if, at runtime, one edits the tree.
-        const unsigned N_of_children = children_nodes_.size();
+        TreeNode* child_node = children_nodes_[i];
 
-        // Routing the ticks according to the fallback node's logic:
+        const NodeStatus child_status = child_node->executeTick();
 
-        for (unsigned i = 0; i < N_of_children; i++)
+        // Ponderate on which status to send to the parent
+        if (child_status != BT::FAILURE)
         {
-            TreeNode* child_node = children_nodes_[i];
-
-            const NodeStatus child_status = child_node->executeTick();
-
-            // Ponderate on which status to send to the parent
-            if (child_status != BT::FAILURE)
+            if (child_status == BT::SUCCESS)
             {
-                if (child_status == BT::SUCCESS)
+                for (unsigned t=0; t<=i; t++)
                 {
-                    child_node->setStatus(BT::IDLE);   // the child goes in idle if it has returned success.
+                    children_nodes_[t]->setStatus(BT::IDLE);
                 }
-                // If the  child status is not failure, halt the next children and return the status to your parent.
-                DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
-                haltChildren(i + 1);
-                return child_status;
             }
-            else
+            // If the  child status is not failure, halt the next children and return the status to your parent.
+            DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
+            haltChildren(i + 1);
+            return child_status;
+        }
+        else
+        {
+            // the child returned failure.
+            if (i == N_of_children - 1)
             {
-                // the child returned failure.
-                child_node->setStatus(BT::IDLE);
-                if (i == N_of_children - 1)
+                // If the  child status is failure, and it is the last child to be ticked,
+                // then the sequence has failed.
+                for (unsigned t=0; t<=i; t++)
                 {
-                    // If the  child status is failure, and it is the last child to be ticked,
-                    // then the sequence has failed.
-                    return BT::FAILURE;
+                    children_nodes_[t]->setStatus(BT::IDLE);
                 }
+                return BT::FAILURE;
             }
         }
     }

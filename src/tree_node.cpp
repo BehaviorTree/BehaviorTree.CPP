@@ -65,5 +65,5 @@ const std::string& BT::TreeNode::name() const
 
 bool BT::TreeNode::isHalted() const
 {
-    return status() == BT::HALTED;
+    return status() == BT::IDLE;
 }

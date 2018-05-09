@@ -114,19 +114,19 @@ struct ComplexFallbackTest : testing::Test
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
 
-    BT::FallbackNode sel_conditions;
+    BT::FallbackNode fal_conditions;
 
     ComplexFallbackTest():
         root("root_fallback"),
         action_1("action_1"),
         condition_1("condition_1"),
         condition_2("condition_2"),
-        sel_conditions("fallback_conditions")
+        fal_conditions("fallback_conditions")
     {
-        root.addChild(&sel_conditions);
+        root.addChild(&fal_conditions);
         {
-            sel_conditions.addChild(&condition_1);
-            sel_conditions.addChild(&condition_2);
+            fal_conditions.addChild(&condition_1);
+            fal_conditions.addChild(&condition_2);
         }
         root.addChild(&action_1);
     }
@@ -139,20 +139,20 @@ struct BehaviorTreeTest : testing::Test
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
 
-    BT::FallbackNode sel_conditions;
+    BT::FallbackNode fal_conditions;
 
     BehaviorTreeTest():
         root("root_sequence"),
         action_1("action_1"),
         condition_1("condition_1"),
         condition_2("condition_2"),
-        sel_conditions("fallback_conditions")
+        fal_conditions("fallback_conditions")
     {
 
-        root.addChild(&sel_conditions);
+        root.addChild(&fal_conditions);
         {
-            sel_conditions.addChild(&condition_1);
-            sel_conditions.addChild(&condition_2);
+            fal_conditions.addChild(&condition_1);
+            fal_conditions.addChild(&condition_2);
         }
         root.addChild(&action_1);
     }
@@ -196,7 +196,6 @@ struct ComplexSequenceWithMemoryTest : testing::Test
         seq_conditions("sequence_conditions"),
         seq_actions("sequence_actions")
     {
-
         root.addChild(&seq_conditions);
         {
             seq_conditions.addChild(&condition_1);
@@ -345,7 +344,8 @@ TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
 
     state = root.executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, state);
-    ASSERT_EQ(NodeStatus::HALTED, action.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition.status());
+    ASSERT_EQ(NodeStatus::IDLE, action.status());
     root.halt();
 }
 
@@ -353,8 +353,11 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
 {
     BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     root.halt();
 }
 
@@ -364,15 +367,28 @@ TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
 
     state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::RUNNING, seq_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    state = root.executeTick();
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, seq_1.status());
-    ASSERT_EQ(NodeStatus::HALTED, seq_2.status());
-    ASSERT_EQ(NodeStatus::HALTED, action_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+
+    state = root.executeTick();
+
+    // TODO: what is a reasonable behavior in this case?
 
     root.halt();
 }
@@ -386,7 +402,10 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions1ToFalse)
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::FAILURE, state);
-    ASSERT_EQ(NodeStatus::HALTED, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     root.halt();
 }
 
@@ -399,7 +418,10 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::FAILURE, state);
-    ASSERT_EQ(NodeStatus::HALTED, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     root.halt();
 }
 
@@ -410,8 +432,9 @@ TEST_F(SimpleFallbackTest, ConditionTrue)
     condition.set_boolean_value(true);
     BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::IDLE, action.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::IDLE, condition.status());
+    ASSERT_EQ(NodeStatus::IDLE, action.status());
     root.halt();
 }
 
@@ -425,7 +448,8 @@ TEST_F(SimpleFallbackTest, ConditionToFalse)
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::HALTED, action.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition.status());
+    ASSERT_EQ(NodeStatus::IDLE, action.status());
     root.halt();
 }
 
@@ -436,13 +460,21 @@ TEST_F(ComplexFallbackTest, Condition1ToTrue)
 
     BT::NodeStatus state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+
     condition_1.set_boolean_value(true);
 
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
-
-    ASSERT_EQ(NodeStatus::HALTED, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     root.halt();
 }
 
@@ -453,12 +485,21 @@ TEST_F(ComplexFallbackTest, Condition2ToTrue)
 
     BT::NodeStatus state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+
     condition_2.set_boolean_value(true);
 
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::HALTED, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     root.halt();
 }
 
@@ -470,6 +511,9 @@ TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
     root.halt();
@@ -483,6 +527,9 @@ TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
     root.halt();
@@ -490,13 +537,12 @@ TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
 
 TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
 {
-    std::cout << "Ticking the root node !" << std::endl << std::endl;
-    // Ticking the root node
     BT::NodeStatus state = root.executeTick();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    ASSERT_EQ(NodeStatus::RUNNING, action.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, condition.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action.status());
     root.halt();
 }
 
@@ -504,11 +550,15 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTurnToFalse)
 {
     BT::NodeStatus state = root.executeTick();
 
-    condition.set_boolean_value(false);
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, condition.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
+    condition.set_boolean_value(false);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
     root.halt();
@@ -518,24 +568,33 @@ TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
 {
     BT::NodeStatus state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, state);
 
     root.halt();
 }
 
-TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFalse)
+TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFase)
 {
     BT::NodeStatus state = root.executeTick();
 
     condition_1.set_boolean_value(false);
-
     state = root.executeTick();
-
+    // change in condition_1 does not affect the state of the tree,
+    // since the seq_conditions was executed already
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, state);
+
     root.halt();
 }
 
@@ -544,41 +603,69 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions2ToFalse)
     BT::NodeStatus state = root.executeTick();
 
     condition_2.set_boolean_value(false);
-
     state = root.executeTick();
-
+    // change in condition_2 does not affect the state of the tree,
+    // since the seq_conditions was executed already
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, state);
 
     root.halt();
 }
 
-TEST_F(ComplexSequenceWithMemoryTest, Action1Done)
+TEST_F(ComplexSequenceWithMemoryTest, Action1DoneSeq)
 {
     root.executeTick();
 
     condition_2.set_boolean_value(false);
-
-    root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     root.executeTick();
 
+    // change in condition_2 does not affect the state of the tree,
+    // since the seq_conditions was executed already
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    root.executeTick();
+
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    root.executeTick();
+
+    ASSERT_EQ(NodeStatus::SUCCESS, root.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_actions.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
     root.halt();
 }
 
 TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 {
-    std::cout << "Ticking the root node !" << std::endl << std::endl;
-    // Ticking the root node
     condition.set_boolean_value(false);
     BT::NodeStatus state = root.executeTick();
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    ASSERT_EQ(NodeStatus::RUNNING, action.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
     root.halt();
 }
@@ -586,13 +673,17 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
 {
     condition.set_boolean_value(false);
-
     BT::NodeStatus state = root.executeTick();
-    condition.set_boolean_value(true);
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action.status());
+
+    condition.set_boolean_value(true);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
     root.halt();
@@ -602,9 +693,13 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsTrue)
 {
     BT::NodeStatus state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, fal_actions.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
 
     root.halt();
 }
@@ -614,9 +709,13 @@ TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
     condition_1.set_boolean_value(false);
     BT::NodeStatus state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, fal_actions.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
 
     root.halt();
 }
@@ -627,9 +726,13 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
     condition_2.set_boolean_value(false);
     BT::NodeStatus state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, state);
 
     root.halt();
 }
@@ -639,13 +742,17 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
     condition_1.set_boolean_value(false);
     condition_2.set_boolean_value(false);
     BT::NodeStatus state = root.executeTick();
-    condition_1.set_boolean_value(true);
 
+    condition_1.set_boolean_value(true);
     state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, state);
 
     root.halt();
 }
@@ -653,18 +760,19 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
 TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 {
     condition_1.set_boolean_value(false);
-
     condition_2.set_boolean_value(false);
-
     BT::NodeStatus state = root.executeTick();
 
     condition_2.set_boolean_value(true);
-
     state = root.executeTick();
 
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, state);
 
     root.halt();
 }
@@ -681,9 +789,13 @@ TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
+    ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 
     root.halt();
 }
@@ -712,7 +824,7 @@ TEST_F(SimpleParallelTest, Threshold_3)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::HALTED, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 
     root.halt();
@@ -785,7 +897,7 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
 
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, parallel_1.status());
-    ASSERT_EQ(NodeStatus::HALTED, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_3.status());
     ASSERT_EQ(NodeStatus::RUNNING, parallel_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);

@@ -36,7 +36,10 @@ BT::NodeStatus BT::SequenceNode::tick()
             // If the  child status is not success, halt the next children and return the status to your parent.
             if (child_status == BT::FAILURE)
             {
-                child_node->setStatus(BT::IDLE);   // the child goes in idle if it has returned failure.
+                for(unsigned t=0; t<=i; t++)
+                {
+                    children_nodes_[t]->setStatus( BT::IDLE );
+                }
             }
 
             DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
@@ -45,13 +48,14 @@ BT::NodeStatus BT::SequenceNode::tick()
         }
         else
         {
-            // the child returned success.
-            child_node->setStatus(BT::IDLE);
-
             if (i == N_of_children - 1)
             {
                 // If the  child status is success, and it is the last child to be ticked,
                 // then the sequence has succeeded.
+                for(auto &ch: children_nodes_)
+                {
+                    ch->setStatus( BT::IDLE );
+                }
                 return BT::SUCCESS;
             }
         }
