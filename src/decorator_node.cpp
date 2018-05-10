@@ -33,7 +33,7 @@ void BT::DecoratorNode::halt()
 {
     DEBUG_STDOUT("HALTING: " << name());
     haltChild();
-    setStatus(BT::HALTED);
+    setStatus(BT::IDLE);
 }
 
 const BT::TreeNode* BT::DecoratorNode::child() const

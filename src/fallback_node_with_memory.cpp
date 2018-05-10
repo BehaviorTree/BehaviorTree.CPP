@@ -28,27 +28,22 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
     // Routing the ticks according to the fallback node's (with memory) logic:
     while (current_child_idx_ < N_of_children)
     {
-        auto& current_child_node = children_nodes_[current_child_idx_];
+        TreeNode* current_child_node = children_nodes_[current_child_idx_];
 
         const NodeStatus child_status = current_child_node->executeTick();
-        current_child_node->setStatus(child_status);
-
-        if (child_status == BT::SUCCESS || child_status == BT::FAILURE)
-        {
-            // the child goes in idle if it has returned success or failure.
-            current_child_node->setStatus(BT::IDLE);
-        }
 
         if (child_status != BT::FAILURE)
         {
             // If the  child status is not success, return the status
             DEBUG_STDOUT("the status of: " << name() << " becomes " << child_status);
-            if (child_status == BT::SUCCESS &&
-                (reset_policy_ == BT::ON_SUCCESS || reset_policy_ == BT::ON_SUCCESS_OR_FAILURE))
+            if (child_status == BT::SUCCESS && reset_policy_ != BT::ON_FAILURE)
             {
+                for (unsigned t=0; t<=current_child_idx_; t++)
+                {
+                    children_nodes_[t]->setStatus(BT::IDLE);
+                }
                 current_child_idx_ = 0;
             }
-            setStatus(child_status);
             return child_status;
         }
         else if (current_child_idx_ != N_of_children - 1)
@@ -60,12 +55,15 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
         else
         {
             // If it the last child.
-            if (child_status == BT::FAILURE)
+            if (child_status == BT::FAILURE && reset_policy_ != BT::ON_SUCCESS )
             {
+                for (unsigned t=0; t<=current_child_idx_; t++)
+                {
+                    children_nodes_[t]->setStatus(BT::IDLE);
+                }
                 // if it the last child and it has returned failure, reset the memory
                 current_child_idx_ = 0;
             }
-            setStatus(child_status);
             return child_status;
         }
     }

@@ -19,7 +19,9 @@ BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE)
 
 BT::NodeStatus BT::TreeNode::executeTick()
 {
-    return tick();
+    const NodeStatus status = tick();
+    setStatus(status);
+    return status;
 }
 
 void BT::TreeNode::setStatus(NodeStatus new_status)
@@ -63,5 +65,5 @@ const std::string& BT::TreeNode::name() const
 
 bool BT::TreeNode::isHalted() const
 {
-    return status() == BT::HALTED;
+    return status() == BT::IDLE;
 }

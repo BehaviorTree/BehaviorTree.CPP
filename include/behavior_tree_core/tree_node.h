@@ -59,7 +59,6 @@ enum NodeStatus
     SUCCESS,
     FAILURE,
     IDLE,
-    HALTED,
     EXIT
 };
 
