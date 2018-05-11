@@ -26,16 +26,17 @@ BT::NodeStatus BT::TreeNode::executeTick()
 
 void BT::TreeNode::setStatus(NodeStatus new_status)
 {
-    bool is_state_updated = false;
+    NodeStatus prev_status;
     {
         std::unique_lock<std::mutex> UniqueLock(state_mutex_);
-        is_state_updated = (status_ != new_status);
+        prev_status = status_;
         status_ = new_status;
     }
-    if (is_state_updated)
+    if (prev_status != new_status)
     {
         state_condition_variable_.notify_all();
-    }
+        state_change_signal_.notify(*this, prev_status, new_status);
+}
 }
 
 BT::NodeStatus BT::TreeNode::status() const
@@ -66,4 +67,9 @@ const std::string& BT::TreeNode::name() const
 bool BT::TreeNode::isHalted() const
 {
     return status() == BT::IDLE;
+}
+
+BT::TreeNode::StatusChangeSubscriber BT::TreeNode::subscribeToStatusChange(BT::TreeNode::StatusChangeCallback callback)
+{
+    return state_change_signal_.subscribe(callback);
 }

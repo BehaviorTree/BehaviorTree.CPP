@@ -31,6 +31,7 @@
 
 #include "behavior_tree_core/tick_engine.h"
 #include "behavior_tree_core/exceptions.h"
+#include "behavior_tree_core/signal.h"
 
 namespace BT
 {
@@ -55,10 +56,10 @@ enum NodeType
 // - "Halted" indicates that the node has been halted by its father.
 enum NodeStatus
 {
+    IDLE,
     RUNNING,
     SUCCESS,
     FAILURE,
-    IDLE,
     EXIT
 };
 
@@ -100,10 +101,10 @@ class TreeNode
     // Node name
     std::string name_;
     NodeStatus status_;
+    std::condition_variable state_condition_variable_;
+    mutable std::mutex state_mutex_;
 
   protected:
-    mutable std::mutex state_mutex_;
-    std::condition_variable state_condition_variable_;
 
     // Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
@@ -130,6 +131,26 @@ class TreeNode
     BT::NodeStatus waitValidStatus();
 
     virtual NodeType type() const = 0;
+
+    using StatusChangeSignal = Signal<const TreeNode&, NodeStatus,NodeStatus>;
+    using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
+    using StatusChangeCallback   = StatusChangeSignal::CallableFunction;
+
+    /**
+     * @brief subscribeToStatusChange is used to attach a callback to a status change.
+     * AS soon as StatusChangeSubscriber goes out of scope (it is a shared_ptr) the callback
+     * is unsubscribed
+     *
+     * @param callback. Must have signature void funcname(NodeStatus prev_status, NodeStatus new_status)
+     *
+     * @return the subscriber.
+     */
+     StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
+
+private:
+
+  StatusChangeSignal state_change_signal_;
+
 };
 }
 
