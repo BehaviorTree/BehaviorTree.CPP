@@ -28,7 +28,7 @@ BT::NodeStatus BT::SimpleActionNode::tick()
 {
     NodeStatus prev_status = status();
 
-    if (prev_status == BT::IDLE || prev_status == BT::IDLE)
+    if (prev_status == BT::IDLE)
     {
         setStatus(BT::RUNNING);
         prev_status = BT::RUNNING;
@@ -69,6 +69,10 @@ void BT::ActionNode::waitForTick()
         // notified from the method stopAndJoinThread
         if (loop_.load())
         {       
+            if (status() == BT::IDLE)
+            {
+                setStatus(BT::RUNNING);
+            }
             setStatus( tick() );
         }
     }
@@ -76,14 +80,15 @@ void BT::ActionNode::waitForTick()
 
 BT::NodeStatus BT::ActionNode::executeTick()
 {
-    NodeStatus stat = status();
-    tick_engine_.notify();
-
-    if (stat == BT::IDLE)
+    //send signal to other thread.
+    // The other thread is in charge for changing the status
+    if (status() == BT::IDLE)
     {
-        setStatus(BT::RUNNING);
+        tick_engine_.notify();
     }
-    stat = waitValidStatus();
+
+    // block as long as the state is BT::IDLE
+    const NodeStatus stat = waitValidStatus();
     return stat;
 }
 
