@@ -26,8 +26,7 @@ class ActionTestNode : public ActionNode
   private:
     int time_;
     bool boolean_value_;
-
-    ///ReturnStatus status_;
+    std::atomic_bool stop_loop_;
 };
 }
 

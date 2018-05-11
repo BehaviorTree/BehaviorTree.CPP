@@ -18,6 +18,7 @@ BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode(name)
 {
     boolean_value_ = true;
     time_ = 3;
+    stop_loop_ = false;
 }
 
 BT::ActionTestNode::~ActionTestNode()
@@ -27,13 +28,15 @@ BT::ActionTestNode::~ActionTestNode()
 
 BT::NodeStatus BT::ActionTestNode::tick()
 {
+    stop_loop_ = false;
     int i = 0;
-    while (status() != BT::IDLE && i++ < time_)
+    while ( !stop_loop_ && i++ < time_)
     {
         DEBUG_STDOUT(" Action " << name() << "running! Thread id:" << std::this_thread::get_id());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    if (status() != BT::IDLE)
+
+    if ( !stop_loop_ )
     {
         if (boolean_value_)
         {
@@ -54,6 +57,7 @@ BT::NodeStatus BT::ActionTestNode::tick()
 
 void BT::ActionTestNode::halt()
 {
+    stop_loop_ = true;
     setStatus(BT::IDLE);
     DEBUG_STDOUT("HALTED state set!");
 }
