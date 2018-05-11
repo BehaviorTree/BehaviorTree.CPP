@@ -103,8 +103,6 @@ inline const char* toStr(const BT::NodeStatus& status)
             return "RUNNING";
         case NodeStatus::IDLE:
             return "IDLE";
-        case NodeStatus::HALTED:
-            return "HALTED";
         default:
             return "Undefined";
     }
