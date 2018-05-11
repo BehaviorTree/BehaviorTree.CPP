@@ -58,6 +58,27 @@ struct ComplexSequenceTest : testing::Test
     }
 };
 
+struct SequenceTripleActionTest : testing::Test
+{
+    BT::SequenceNode root;
+    BT::ActionTestNode action_1;
+    BT::ActionTestNode action_2;
+    BT::ActionTestNode action_3;
+
+    SequenceTripleActionTest():
+        root("root_sequence"),
+        action_1("action_1"),
+        action_2("action_2"),
+        action_3("action_3")
+    {
+        root.addChild(&action_1);
+        root.addChild(&action_2);
+        root.addChild(&action_3);
+
+    }
+};
+
+
 struct ComplexSequence2ActionsTest : testing::Test
 {
     BT::SequenceNode root;
@@ -360,6 +381,65 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     root.halt();
 }
+
+TEST_F(SequenceTripleActionTest, TripleAction)
+{
+    using namespace BT;
+    using namespace std::chrono;
+    const auto timeout = system_clock::now() + milliseconds(650);
+
+    action_1.set_time(2);
+    action_2.set_time(2);
+    action_3.set_time(2);
+    // the sequence is supposed to finish in (200 ms * 3) = 600 ms
+
+    bool done_1 = false,  done_2 = false,  done_3 = false;
+
+    auto sub1 = action_1.subscribeToStatusChange(
+                [&done_1](const TreeNode& , NodeStatus,NodeStatus status)
+    {
+       if( status == NodeStatus::SUCCESS) done_1 = true;
+    });
+
+    auto sub2 = action_2.subscribeToStatusChange(
+                [&done_2](const TreeNode& , NodeStatus,NodeStatus status)
+    {
+       if( status == NodeStatus::SUCCESS) done_2 = true;
+    });
+
+    auto sub3 = action_3.subscribeToStatusChange(
+                [&done_3](const TreeNode& , NodeStatus,NodeStatus status)
+    {
+       if( status == NodeStatus::SUCCESS) done_3 = true;
+    });
+
+    // first tick
+    NodeStatus state = root.executeTick();
+
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_3.status());
+
+    // continue until succesfull
+    while ( state != NodeStatus::SUCCESS && system_clock::now() < timeout)
+    {
+        std::this_thread::sleep_for( milliseconds( 20) );
+        state = root.executeTick();
+    }
+
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_TRUE(done_1);
+    ASSERT_TRUE(done_2);
+    ASSERT_TRUE(done_3);
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_3.status());
+    ASSERT_TRUE(system_clock::now() < timeout); // no timeout should occur
+
+    root.halt();
+}
+
 
 TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
 {
