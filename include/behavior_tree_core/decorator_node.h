@@ -19,6 +19,7 @@ class DecoratorNode : public TreeNode
     void setChild(TreeNode* child);
 
     const TreeNode* child() const;
+    TreeNode* child();
 
     // The method used to interrupt the execution of the node
     virtual void halt() override;

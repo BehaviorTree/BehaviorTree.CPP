@@ -38,6 +38,9 @@ endif(catkin_FOUND)
 set(BT_Source
 	src/action_node.cpp
         src/decorator_node.cpp
+        src/decorator_negation_node.cpp
+        src/decorator_repeat_node.cpp
+        src/decorator_retry_node.cpp
 	src/condition_node.cpp
 	src/control_node.cpp
 	src/exceptions.cpp
@@ -50,8 +53,12 @@ set(BT_Source
 	src/sequence_node_with_memory.cpp
 	src/tree_node.cpp
         src/bt_factory.cpp
+        src/behavior_tree.cpp
+
+        src/xml_parsing.cpp
+        3rdparty/tinyXML2/tinyxml2.cpp
 )
-include_directories(include)
+include_directories(include 3rdparty/)
 
 
 ######################################################
@@ -67,6 +74,7 @@ set(BT_Tests
         gtest/src/action_test_node.cpp
         gtest/src/condition_test_node.cpp
         gtest/gtest_tree.cpp
+        gtest/gtest_factory.cpp
 )
 
 if(catkin_FOUND AND CATKIN_ENABLE_TESTING)

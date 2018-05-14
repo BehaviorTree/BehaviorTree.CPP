@@ -17,6 +17,16 @@ namespace BT
 {
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
+    registerNodeType<FallbackNode>("Fallback");
+    registerNodeType<FallbackNodeWithMemory>("FallbackStar");
+    registerNodeType<SequenceNode>("Sequence");
+    registerNodeType<SequenceNodeWithMemory>("SequenceStar");
+
+    registerNodeType<DecoratorNegationNode>("Negation");
+    registerNodeType<DecoratorRetryNode>("RetryUntilSuccesful");
+    registerNodeType<DecoratorRetryNode>("Repeat");
+
+    registerNodeType<DecoratorSubtreeNode>("SubTree");
 }
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
@@ -30,23 +40,35 @@ bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
     return true;
 }
 
+void BehaviorTreeFactory::registerBuilder(const std::string& ID, NodeBuilder builder)
+{
+    auto it = builders_.find(ID);
+    if (it != builders_.end())
+    {
+        throw BehaviorTreeException("ID '" + ID + "' already registered");
+    }
+
+    builders_.insert(std::make_pair(ID, builder));
+}
+
 void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, std::function<NodeStatus()> tick_functor)
 {
+    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
+        return std::unique_ptr<TreeNode>(new SimpleActionNode(name, tick_functor));
+    };
+
+    registerBuilder(ID, builder);
 }
 
-void BehaviorTreeFactory::registerSimpleDecorator(const std::string& ID,
-                                                  std::function<NodeStatus(NodeStatus)> tick_functor)
-{
-}
-
-std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::string& ID, const NodeParameters& params)
+std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::string& ID, const std::string& name,
+                                                                   const NodeParameters& params) const
 {
     auto it = builders_.find(ID);
     if (it == builders_.end())
     {
         throw BehaviorTreeException("ID '" + ID + "' not registered");
     }
-    return it->second(ID, params);
+    return it->second(name, params);
 }
 
 }   // end namespace

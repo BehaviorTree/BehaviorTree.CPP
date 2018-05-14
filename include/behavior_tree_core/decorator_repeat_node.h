@@ -11,41 +11,29 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/decorator_negation_node.h"
+#ifndef DECORATOR_REPEAT_NODE_H
+#define DECORATOR_REPEAT_NODE_H
 
-BT::DecoratorNegationNode::DecoratorNegationNode(std::string name) : DecoratorNode(name)
+#include "behavior_tree_core/decorator_node.h"
+
+namespace BT
 {
+class DecoratorRepeatNode : public DecoratorNode
+{
+  public:
+    // Constructor
+    DecoratorRepeatNode(std::string name, unsigned int NTries);
+
+    DecoratorRepeatNode(std::string name, const NodeParameters& params);
+
+    ~DecoratorRepeatNode() = default;
+
+  private:
+    unsigned NTries_;
+    unsigned TryIndx_;
+
+    virtual BT::NodeStatus tick() override;
+};
 }
 
-BT::NodeStatus BT::DecoratorNegationNode::tick()
-{
-    setStatus(BT::RUNNING);
-    const NodeStatus child_state = child_node_->executeTick();
-
-    switch (child_state)
-    {
-        case BT::SUCCESS:
-        {
-            setStatus(BT::FAILURE);
-        }
-        break;
-
-        case BT::FAILURE:
-        {
-            setStatus(BT::SUCCESS);
-        }
-        break;
-
-        case BT::RUNNING:
-        {
-            setStatus(BT::RUNNING);
-        }
-        break;
-
-        default:
-        {
-            // TODO throw?
-        }
-    }
-    return status();
-}
+#endif

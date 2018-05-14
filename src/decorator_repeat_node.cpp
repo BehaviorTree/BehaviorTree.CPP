@@ -11,25 +11,25 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/decorator_retry_node.h"
+#include "behavior_tree_core/decorator_repeat_node.h"
 
-BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, unsigned int NTries)
+BT::DecoratorRepeatNode::DecoratorRepeatNode(std::string name, unsigned int NTries)
   : DecoratorNode(name), NTries_(NTries), TryIndx_(0)
 {
 }
 
-BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, const BT::NodeParameters& params)
+BT::DecoratorRepeatNode::DecoratorRepeatNode(std::string name, const BT::NodeParameters& params)
   : DecoratorNode(name), NTries_(1), TryIndx_(0)
 {
-    auto it = params.find("num_attempts");
+    auto it = params.find("num_cycles");
     if (it == params.end())
     {
-        throw std::runtime_error("[DecoratorRetryNode] requires a parameter callen 'num_attempts'");
+        throw std::runtime_error("[DecoratorRepeatNode] requires a parameter callen 'num_cycles'");
     }
     NTries_ = std::stoul(it->second);
 }
 
-BT::NodeStatus BT::DecoratorRetryNode::tick()
+BT::NodeStatus BT::DecoratorRepeatNode::tick()
 {
     setStatus(BT::RUNNING);
     BT::NodeStatus child_state = child_node_->executeTick();
@@ -38,19 +38,18 @@ BT::NodeStatus BT::DecoratorRetryNode::tick()
     {
         case BT::SUCCESS:
         {
-            TryIndx_ = 0;
-            setStatus(BT::SUCCESS);
+            TryIndx_++;
+            if (TryIndx_ >= NTries_)
+            {
+                setStatus(BT::SUCCESS);
+            }
         }
         break;
 
         case BT::FAILURE:
         {
-            TryIndx_++;
-            if (TryIndx_ >= NTries_)
-            {
-                TryIndx_ = 0;
-                setStatus(BT::FAILURE);
-            }
+            TryIndx_ = 0;
+            setStatus(BT::FAILURE);
         }
         break;
 
