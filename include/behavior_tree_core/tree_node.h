@@ -29,6 +29,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <set>
 
 #include "behavior_tree_core/tick_engine.h"
 #include "behavior_tree_core/exceptions.h"
@@ -203,9 +204,14 @@ class TreeNode
      */
      StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
 
+     // get an unique identifier of this instance of treeNode
+     uint16_t UID() const;
+
 private:
 
   StatusChangeSignal state_change_signal_;
+
+  const uint16_t _uid;
 
 };
 

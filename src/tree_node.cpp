@@ -13,7 +13,13 @@
 
 #include "behavior_tree_core/tree_node.h"
 
-BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE)
+static uint8_t getUID()
+{
+    static uint8_t uid = 0;
+    return uid++;
+}
+
+BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE), _uid( getUID() )
 {
 }
 
@@ -72,4 +78,9 @@ bool BT::TreeNode::isHalted() const
 BT::TreeNode::StatusChangeSubscriber BT::TreeNode::subscribeToStatusChange(BT::TreeNode::StatusChangeCallback callback)
 {
     return state_change_signal_.subscribe(callback);
+}
+
+uint16_t BT::TreeNode::UID() const
+{
+    return _uid;
 }
