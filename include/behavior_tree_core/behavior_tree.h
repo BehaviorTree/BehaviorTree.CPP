@@ -37,6 +37,22 @@ void recursiveVisitor(const TreeNode *node, const std::function<void(const TreeN
  * Debug function to print on a stream
  */
 void printTreeRecursively(const TreeNode* root_node);
+
+
+/**
+ * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
+ * (or sent to a client application) to know the status of all the nodes of a tree.
+ * It is not "human readable".
+ *
+ * @param root_node
+ * @param serialized_buffer
+ */
+
+typedef std::vector<std::pair<uint16_t,uint8_t>> SerializedTreeStatus;
+
+void buildSerializedStatusSnapshot(const TreeNode *root_node, SerializedTreeStatus& serialized_buffer);
+
+
 }
 
 #endif   // BEHAVIOR_TREE_H
