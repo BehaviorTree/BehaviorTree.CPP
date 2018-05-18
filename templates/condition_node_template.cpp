@@ -14,12 +14,12 @@ BT::ReturnStatus BT::CLASSNAME::Tick()
 
     if (/*CONDITION TO CHECK*/)
     {
-        SetStatus(BT::SUCCESS);
-        return BT::SUCCESS;
+        SetStatus(NodeStatus::SUCCESS);
+        return NodeStatus::SUCCESS;
     }
     else
     {
-        SetStatus(BT::FAILURE);
-        return BT::FAILURE;
+        SetStatus(NodeStatus::FAILURE);
+        return NodeStatus::FAILURE;
     }
 }

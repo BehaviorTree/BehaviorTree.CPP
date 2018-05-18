@@ -19,9 +19,9 @@ class DecoratorSubtreeNode : public DecoratorNode
     virtual BT::NodeStatus tick()
     {
         NodeStatus prev_status = status();
-        if ( prev_status== BT::IDLE)
+        if ( prev_status== NodeStatus::IDLE)
         {
-            setStatus(BT::RUNNING);
+            setStatus(NodeStatus::RUNNING);
         }
         auto status = child_node_->executeTick();
         setStatus(status);

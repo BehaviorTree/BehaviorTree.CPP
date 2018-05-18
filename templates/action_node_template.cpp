@@ -21,14 +21,14 @@ void BT::CLASSNAME::WaitForTick()
         DEBUG_STDOUT(name() << " TICK RECEIVED");
 
         // Running state
-        SetStatus(BT::RUNNING);
+        SetStatus(NodeStatus::RUNNING);
         // Perform action...
 
-        while (Status() != BT::IDLE)
+        while (Status() != NodeStatus::IDLE)
         {
             /*HERE THE CODE TO EXECUTE FOR THE ACTION.
-	 wHEN THE ACTION HAS FINISHED CORRECLTY, CALL set_status(BT::SUCCESS)
-	IF THE ACTION FAILS, CALL set_status(BT::FAILURE)*/
+	 wHEN THE ACTION HAS FINISHED CORRECLTY, CALL set_status(NodeStatus::SUCCESS)
+	IF THE ACTION FAILS, CALL set_status(NodeStatus::FAILURE)*/
         }
     }
 }
@@ -36,6 +36,6 @@ void BT::CLASSNAME::WaitForTick()
 void BT::CLASSNAME::Halt()
 {
     /*HERE THE CODE TO PERFORM WHEN THE ACTION IS HALTED*/
-    SetStatus(BT::IDLE);
+    SetStatus(NodeStatus::IDLE);
     DEBUG_STDOUT("HALTED state set!");
 }

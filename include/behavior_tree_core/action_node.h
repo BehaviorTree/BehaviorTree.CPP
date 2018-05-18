@@ -28,7 +28,7 @@ class ActionNodeBase : public LeafNode
 
     virtual NodeType type() const override final
     {
-        return ACTION_NODE;
+        return NodeType::ACTION;
     }
 };
 
@@ -94,13 +94,13 @@ class ActionNode : public ActionNodeBase
     // This method MUST to be overriden by the user.
     virtual NodeStatus tick() override
     {
-        return BT::IDLE;
+        return NodeStatus::IDLE;
     }
 
     // This method MUST to be overriden by the user.
     virtual void halt() override
     {
-        setStatus(BT::IDLE);
+        setStatus(NodeStatus::IDLE);
     }
 
     void stopAndJoinThread();

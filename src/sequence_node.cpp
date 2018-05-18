@@ -31,14 +31,14 @@ BT::NodeStatus BT::SequenceNode::tick()
         const NodeStatus child_status = child_node->executeTick();
 
         // Ponderate on which status to send to the parent
-        if (child_status != BT::SUCCESS)
+        if (child_status != NodeStatus::SUCCESS)
         {
             // If the  child status is not success, halt the next children and return the status to your parent.
-            if (child_status == BT::FAILURE)
+            if (child_status == NodeStatus::FAILURE)
             {
                 for(unsigned t=0; t<=i; t++)
                 {
-                    children_nodes_[t]->setStatus( BT::IDLE );
+                    children_nodes_[t]->setStatus( NodeStatus::IDLE );
                 }
             }
 
@@ -54,11 +54,11 @@ BT::NodeStatus BT::SequenceNode::tick()
                 // then the sequence has succeeded.
                 for(auto &ch: children_nodes_)
                 {
-                    ch->setStatus( BT::IDLE );
+                    ch->setStatus( NodeStatus::IDLE );
                 }
-                return BT::SUCCESS;
+                return NodeStatus::SUCCESS;
             }
         }
     }
-    return BT::EXIT;
+    throw std::runtime_error("This is not supposed to happen");
 }

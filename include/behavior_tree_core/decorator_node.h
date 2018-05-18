@@ -28,7 +28,7 @@ class DecoratorNode : public TreeNode
 
     virtual NodeType type() const override final
     {
-        return DECORATOR_NODE;
+        return NodeType::DECORATOR;
     }
 };
 

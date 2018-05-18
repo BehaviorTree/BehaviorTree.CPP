@@ -39,29 +39,29 @@ namespace BT
 {
 // Enumerates the possible types of a node, for drawinf we have do discriminate whoich control node it is:
 
-enum NodeType
+enum class NodeType
 {
-    ACTION_NODE,
-    CONDITION_NODE,
-    CONTROL_NODE,
-    DECORATOR_NODE,
-    SUBTREE_NODE,
-    UNDEFINED
+    UNDEFINED = 0,
+    ACTION,
+    CONDITION,
+    CONTROL,
+    DECORATOR,
+    SUBTREE
 };
 
 inline const char* toStr(const BT::NodeType& type)
 {
     switch (type)
     {
-        case NodeType::ACTION_NODE:
+        case NodeType::ACTION:
             return "Action";
-        case NodeType::CONDITION_NODE:
+        case NodeType::CONDITION:
             return "Condition";
-        case NodeType::DECORATOR_NODE:
+        case NodeType::DECORATOR:
             return "Decorator";
-        case NodeType::CONTROL_NODE:
+        case NodeType::CONTROL:
             return "Control";
-        case NodeType::SUBTREE_NODE:
+        case NodeType::SUBTREE:
             return "SubTree";
         default:
             return "Undefined";
@@ -83,13 +83,12 @@ inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
 //   time step, but the task is not yet complete;
 // - "Idle" indicates that the node hasn't run yet.
 // - "Halted" indicates that the node has been halted by its father.
-enum NodeStatus
+enum class NodeStatus
 {
-    IDLE,
+    IDLE = 0,
     RUNNING,
     SUCCESS,
-    FAILURE,
-    EXIT
+    FAILURE
 };
 
 inline const char* toStr(const BT::NodeStatus& status)

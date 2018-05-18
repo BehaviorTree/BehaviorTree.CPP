@@ -41,24 +41,24 @@ BT::NodeStatus BT::ActionTestNode::tick()
         if (boolean_value_)
         {
             DEBUG_STDOUT(" Action " << name() << " Done!");
-            return BT::SUCCESS;
+            return NodeStatus::SUCCESS;
         }
         else
         {
             DEBUG_STDOUT(" Action " << name() << " FAILED!");
-            return BT::FAILURE;
+            return NodeStatus::FAILURE;
         }
     }
     else
     {
-        return BT::IDLE;
+        return NodeStatus::IDLE;
     }
 }
 
 void BT::ActionTestNode::halt()
 {
     stop_loop_ = true;
-    setStatus(BT::IDLE);
+    setStatus(NodeStatus::IDLE);
     DEBUG_STDOUT("HALTED state set!");
 }
 

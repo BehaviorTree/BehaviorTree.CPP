@@ -31,31 +31,31 @@ BT::DecoratorRepeatNode::DecoratorRepeatNode(std::string name, const BT::NodePar
 
 BT::NodeStatus BT::DecoratorRepeatNode::tick()
 {
-    setStatus(BT::RUNNING);
+    setStatus(NodeStatus::RUNNING);
     BT::NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {
-        case BT::SUCCESS:
+        case NodeStatus::SUCCESS:
         {
             TryIndx_++;
             if (TryIndx_ >= NTries_)
             {
-                setStatus(BT::SUCCESS);
+                setStatus(NodeStatus::SUCCESS);
             }
         }
         break;
 
-        case BT::FAILURE:
+        case NodeStatus::FAILURE:
         {
             TryIndx_ = 0;
-            setStatus(BT::FAILURE);
+            setStatus(NodeStatus::FAILURE);
         }
         break;
 
-        case BT::RUNNING:
+        case NodeStatus::RUNNING:
         {
-            setStatus(BT::RUNNING);
+            setStatus(NodeStatus::RUNNING);
         }
         break;
 

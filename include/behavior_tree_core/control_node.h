@@ -50,7 +50,7 @@ class ControlNode : public TreeNode
 
     virtual NodeType type() const override final
     {
-        return CONTROL_NODE;
+        return NodeType::CONTROL;
     }
 };
 }

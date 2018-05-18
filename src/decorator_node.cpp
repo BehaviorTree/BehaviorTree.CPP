@@ -16,7 +16,7 @@ BT::DecoratorNode::DecoratorNode(std::string name) : TreeNode::TreeNode(name), c
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
-    // ReturnStatus const NodeStatus child_status = BT::IDLE;  // commented out as unused
+    // ReturnStatus const NodeStatus child_status = NodeStatus::IDLE;  // commented out as unused
 }
 
 void BT::DecoratorNode::setChild(TreeNode* child)
@@ -33,7 +33,7 @@ void BT::DecoratorNode::halt()
 {
     DEBUG_STDOUT("HALTING: " << name());
     haltChild();
-    setStatus(BT::IDLE);
+    setStatus(NodeStatus::IDLE);
 }
 
 const BT::TreeNode* BT::DecoratorNode::child() const
@@ -44,7 +44,7 @@ const BT::TreeNode* BT::DecoratorNode::child() const
 
 void BT::DecoratorNode::haltChild()
 {
-    if (child_node_->status() == BT::RUNNING)
+    if (child_node_->status() == NodeStatus::RUNNING)
     {
         DEBUG_STDOUT("SENDING HALT TO CHILD " << child_node_->name());
         child_node_->halt();
