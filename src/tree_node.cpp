@@ -42,7 +42,7 @@ void BT::TreeNode::setStatus(NodeStatus new_status)
     {
         state_condition_variable_.notify_all();
         state_change_signal_.notify(*this, prev_status, new_status);
-}
+    }
 }
 
 BT::NodeStatus BT::TreeNode::status() const
