@@ -100,8 +100,10 @@ endif()
 # COMPILING EXAMPLES
 ######################################################
 
-#TODO
 
+add_executable(crossdoor_example gtest/crossdoor_example.cpp )
+target_link_libraries(crossdoor_example
+    behavior_tree_core )
 
 ######################################################
 # INSTALLATION OF LIBRARY AND EXECUTABLE
