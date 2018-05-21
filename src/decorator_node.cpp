@@ -31,7 +31,6 @@ void BT::DecoratorNode::setChild(TreeNode* child)
 
 void BT::DecoratorNode::halt()
 {
-    DEBUG_STDOUT("HALTING: " << name());
     haltChild();
     setStatus(NodeStatus::IDLE);
 }
@@ -50,11 +49,6 @@ void BT::DecoratorNode::haltChild()
 {
     if (child_node_->status() == NodeStatus::RUNNING)
     {
-        DEBUG_STDOUT("SENDING HALT TO CHILD " << child_node_->name());
         child_node_->halt();
-    }
-    else
-    {
-        DEBUG_STDOUT("NO NEED TO HALT " << child_node_->name() << "STATUS" << child_node_->status());
     }
 }

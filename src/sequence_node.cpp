@@ -44,7 +44,6 @@ BT::NodeStatus BT::SequenceNode::tick()
                 }
             }
 
-            DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
             haltChildren(i + 1);
             return child_status;
         }

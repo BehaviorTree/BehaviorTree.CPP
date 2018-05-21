@@ -14,18 +14,6 @@
 #ifndef BEHAVIORTREECORE_TREENODE_H
 #define BEHAVIORTREECORE_TREENODE_H
 
-#ifdef DEBUG
-// #define DEBUG_STDERR(x) (std::cerr << (x))
-#define DEBUG_STDOUT(str)                                                                                              \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << str << std::endl;                                                                                 \
-    } while (false)
-
-#else
-#define DEBUG_STDOUT(str)
-#endif
-
 #include <iostream>
 #include <string>
 #include <map>
@@ -95,7 +83,7 @@ enum SuccessPolicy
     SUCCEED_ON_ALL
 };
 
-// If "BT::FAIL_ON_ONE" and "BT::SUCCEED_ON_ONE" are both active and are both trigerred in the
+// If "BT::FAIL_vON_ONE" and "BT::SUCCEED_ON_ONE" are both active and are both trigerred in the
 // same time step, failure will take precedence.
 
 // We call Parameters the set of Key/Values that can be read from file and are

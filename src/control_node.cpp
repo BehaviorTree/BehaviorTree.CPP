@@ -41,7 +41,6 @@ unsigned int BT::ControlNode::childrenCount() const
 
 void BT::ControlNode::halt()
 {
-    DEBUG_STDOUT("HALTING: " << name());
     haltChildren(0);
     setStatus(NodeStatus::IDLE);
 }
@@ -57,12 +56,7 @@ void BT::ControlNode::haltChildren(int i)
     {
         if (children_nodes_[j]->status() == NodeStatus::RUNNING)
         {
-            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]->name());
             children_nodes_[j]->halt();
-        }
-        else
-        {
-            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]->name() << "STATUS" << children_nodes_[j]->status());
         }
     }
 }

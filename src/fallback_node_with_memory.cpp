@@ -48,8 +48,6 @@ BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, const NodeP
 
 BT::NodeStatus BT::FallbackNodeWithMemory::tick()
 {
-    DEBUG_STDOUT(name() << " ticked, memory counter: " << current_child_idx_);
-
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
 
@@ -65,7 +63,6 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
         if (child_status != NodeStatus::FAILURE)
         {
             // If the  child status is not success, return the status
-            DEBUG_STDOUT("the status of: " << name() << " becomes " << child_status);
             if (child_status == NodeStatus::SUCCESS && reset_policy_ != BT::ON_FAILURE)
             {
                 for (unsigned t=0; t<=current_child_idx_; t++)

@@ -43,7 +43,6 @@ BT::NodeStatus BT::FallbackNode::tick()
                 }
             }
             // If the  child status is not failure, halt the next children and return the status to your parent.
-            DEBUG_STDOUT(name() << " is HALTING children from " << (i + 1));
             haltChildren(i + 1);
             return child_status;
         }

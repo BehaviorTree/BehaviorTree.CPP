@@ -30,8 +30,6 @@ BT::NodeStatus BT::ParallelNode::tick()
     {
         TreeNode* child_node = children_nodes_[i];
 
-        DEBUG_STDOUT(name() << "TICKING " << child_node);
-
         NodeStatus child_status = child_node->executeTick();
 
         switch (child_status)
@@ -50,9 +48,6 @@ BT::NodeStatus BT::ParallelNode::tick()
                 child_node->setStatus(NodeStatus::IDLE);   // the child goes in idle if it has returned failure.
                 if (++failure_childred_num_ > N_of_children - threshold_M_)
                 {
-                    DEBUG_STDOUT("*******PARALLEL" << name()
-                                                   << " FAILED****** failure_childred_num_:" << failure_childred_num_);
-
                     success_childred_num_ = 0;
                     failure_childred_num_ = 0;
                     haltChildren(0);   // halts all running children. The execution is hopeless.

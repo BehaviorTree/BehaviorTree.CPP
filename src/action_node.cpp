@@ -55,9 +55,7 @@ void BT::ActionNode::waitForTick()
 {
     while (loop_.load())
     {
-        DEBUG_STDOUT(name() << " WAIT FOR TICK");
         tick_engine_.wait();
-        DEBUG_STDOUT(name() << " TICK RECEIVED");
 
         // check this again because the tick_engine_ could be
         // notified from the method stopAndJoinThread
