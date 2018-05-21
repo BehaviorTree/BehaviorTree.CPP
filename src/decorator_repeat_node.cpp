@@ -42,6 +42,7 @@ BT::NodeStatus BT::DecoratorRepeatNode::tick()
             if (TryIndx_ >= NTries_)
             {
                 setStatus(NodeStatus::SUCCESS);
+                child_node_->setStatus(NodeStatus::IDLE);
             }
         }
         break;
@@ -50,6 +51,7 @@ BT::NodeStatus BT::DecoratorRepeatNode::tick()
         {
             TryIndx_ = 0;
             setStatus(NodeStatus::FAILURE);
+            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
