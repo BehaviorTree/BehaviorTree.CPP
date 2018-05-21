@@ -53,6 +53,8 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
 
+    setStatus(NodeStatus::RUNNING);
+
     // Routing the ticks according to the fallback node's (with memory) logic:
     while (current_child_idx_ < N_of_children)
     {

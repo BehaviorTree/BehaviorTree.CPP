@@ -24,6 +24,8 @@ BT::NodeStatus BT::SequenceNode::tick()
 
     // Routing the ticks according to the sequence node's logic:
 
+    setStatus(NodeStatus::RUNNING);
+
     for (unsigned int i = 0; i < N_of_children; i++)
     {
         TreeNode* child_node = children_nodes_[i];
