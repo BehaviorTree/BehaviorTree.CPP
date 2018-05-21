@@ -49,31 +49,6 @@ enum class NodeType
     SUBTREE
 };
 
-inline const char* toStr(const BT::NodeType& type)
-{
-    switch (type)
-    {
-        case NodeType::ACTION:
-            return "Action";
-        case NodeType::CONDITION:
-            return "Condition";
-        case NodeType::DECORATOR:
-            return "Decorator";
-        case NodeType::CONTROL:
-            return "Control";
-        case NodeType::SUBTREE:
-            return "SubTree";
-        default:
-            return "Undefined";
-    }
-}
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
-{
-    os << toStr(type);
-    return os;
-}
-
 // Enumerates the states every node can be in after execution during a particular
 // time step:
 // - "Success" indicates that the node has completed running during this time step;
@@ -91,29 +66,6 @@ enum class NodeStatus
     FAILURE
 };
 
-inline const char* toStr(const BT::NodeStatus& status)
-{
-    switch (status)
-    {
-        case NodeStatus::SUCCESS:
-            return "SUCCESS";
-        case NodeStatus::FAILURE:
-            return "FAILURE";
-        case NodeStatus::RUNNING:
-            return "RUNNING";
-        case NodeStatus::IDLE:
-            return "IDLE";
-        default:
-            return "Undefined";
-    }
-}
-
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
-{
-    os << toStr(status);
-    return os;
-}
 
 // Enumerates the options for when a parallel node is considered to have failed:
 // - "FAIL_ON_ONE" indicates that the node will return failure as soon as one of

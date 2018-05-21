@@ -41,6 +41,10 @@ const BT::TreeNode* BT::DecoratorNode::child() const
     return child_node_;
 }
 
+BT::TreeNode* BT::DecoratorNode::child()
+{
+    return child_node_;
+}
 
 void BT::DecoratorNode::haltChild()
 {
