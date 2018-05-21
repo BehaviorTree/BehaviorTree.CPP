@@ -26,7 +26,13 @@ BT::SimpleActionNode::SimpleActionNode(std::string name, BT::SimpleActionNode::T
 
 BT::NodeStatus BT::SimpleActionNode::tick()
 {
-    const NodeStatus prev_status = status();
+    NodeStatus prev_status = status();
+
+    if ( prev_status == NodeStatus::IDLE)
+    {
+        setStatus(NodeStatus::RUNNING);
+        prev_status = NodeStatus::RUNNING;
+    }
 
     NodeStatus status = tick_functor_();
     if (status != prev_status)
