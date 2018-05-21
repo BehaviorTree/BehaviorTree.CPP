@@ -20,15 +20,22 @@ public:
 
     bool enabled() const          { return _enabled; }
 
+    // false by default.
+    bool showsTransitionToIdle() const { return _show_transition_to_idle; }
+
+    void enableTransitionToIdle(bool enable ) { _show_transition_to_idle = enable; }
+
 private:
     bool _enabled;
+    bool _show_transition_to_idle;
     std::vector<TreeNode::StatusChangeSubscriber> _subscribers;
 };
 
 //--------------------------------------------
 
 StatusChangeLogger::StatusChangeLogger(TreeNode *root_node):
-    _enabled(true)
+    _enabled(true),
+    _show_transition_to_idle(false)
 {
     recursiveVisitor(root_node, [this](TreeNode* node)
     {
@@ -37,7 +44,7 @@ StatusChangeLogger::StatusChangeLogger(TreeNode *root_node):
                                     NodeStatus prev,
                                     NodeStatus status)
         {
-            if(_enabled)
+            if(_enabled && ( status != NodeStatus::IDLE || _show_transition_to_idle))
             {
                 this->callback(node,prev,status);
             }

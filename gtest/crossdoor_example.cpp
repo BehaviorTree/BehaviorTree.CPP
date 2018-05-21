@@ -52,6 +52,10 @@ int main(int argc, char** argv)
 
     StdCoutLogger logger(root_node.get());
 
+    cross_door.CloseDoor();
+
+    std::cout << "---------------" << std::endl;
+    root_node->executeTick();
     std::cout << "---------------" << std::endl;
     root_node->executeTick();
     std::cout << "---------------" << std::endl;
