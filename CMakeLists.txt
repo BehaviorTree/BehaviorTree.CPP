@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 2.8)
 project(behavior_tree_core)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -Werror=return-type")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
+#
+# This variable MUST NOT be set by the user manually, it will be detected
+# automatically if you compile using catkin
 if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(catkin_FOUND 1)
     add_definitions( -DUSING_ROS )
@@ -56,10 +60,26 @@ set(BT_Source
         src/behavior_tree.cpp
 
         src/xml_parsing.cpp
+        src/bt_file_logger.cpp
         3rdparty/tinyXML2/tinyxml2.cpp
+
+        3rdparty/minitrace/minitrace.cpp
 )
 include_directories(include 3rdparty/)
 
+set(BEHAVIOR_TRE_LIBRARIES behavior_tree_core)
+
+find_package(ZMQ)
+
+if( ZMQ_FOUND )
+    message(STATUS "ZeroMQ found.")
+    add_definitions( -DZMQ_FOUND )
+    set(BT_Source ${BT_Source} src/bt_zmq_publisher.cpp )
+
+    set(BEHAVIOR_TRE_LIBRARIES behavior_tree_core zmq)
+else()
+    message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
+endif()
 
 ######################################################
 # COMPILING LIBRARY
@@ -97,13 +117,24 @@ elseif(GTEST_FOUND)
 endif()
 
 ######################################################
-# COMPILING EXAMPLES
+# COMPILING EXAMPLES and TOOLS
 ######################################################
 
 
 add_executable(crossdoor_example gtest/crossdoor_example.cpp )
-target_link_libraries(crossdoor_example
-    behavior_tree_core )
+target_link_libraries(crossdoor_example ${BEHAVIOR_TRE_LIBRARIES} )
+
+add_executable(bt_log_cat         tools/bt_log_cat.cpp )
+target_link_libraries(bt_log_cat  behavior_tree_core )
+
+if( ZMQ_FOUND )
+    add_executable(bt_recorder         tools/bt_recorder.cpp )
+    target_link_libraries(bt_recorder  ${BEHAVIOR_TRE_LIBRARIES} )
+endif()
+
+add_executable(simple_example gtest/simple_example.cpp )
+target_link_libraries(simple_example ${BEHAVIOR_TRE_LIBRARIES} )
+
 
 ######################################################
 # INSTALLATION OF LIBRARY AND EXECUTABLE

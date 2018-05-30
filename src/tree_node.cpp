@@ -15,7 +15,7 @@
 
 static uint8_t getUID()
 {
-    static uint8_t uid = 0;
+    static uint8_t uid = 1;
     return uid++;
 }
 
@@ -41,7 +41,8 @@ void BT::TreeNode::setStatus(NodeStatus new_status)
     if (prev_status != new_status)
     {
         state_condition_variable_.notify_all();
-        state_change_signal_.notify(*this, prev_status, new_status);
+        state_change_signal_.notify( std::chrono::high_resolution_clock::now(),
+                                     *this, prev_status, new_status);
     }
 }
 
@@ -83,4 +84,14 @@ BT::TreeNode::StatusChangeSubscriber BT::TreeNode::subscribeToStatusChange(BT::T
 uint16_t BT::TreeNode::UID() const
 {
     return _uid;
+}
+
+void BT::TreeNode::setRegistrationName(const std::string &registration_name)
+{
+    _registration_name = registration_name;
+}
+
+const std::string &BT::TreeNode::registrationName() const
+{
+    return _registration_name;
 }

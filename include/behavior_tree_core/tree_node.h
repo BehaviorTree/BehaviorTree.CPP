@@ -90,6 +90,8 @@ enum SuccessPolicy
 // used to parametrize an object. It is up to the user's code to parse the string.
 typedef std::map<std::string, std::string> NodeParameters;
 
+typedef std::chrono::high_resolution_clock::time_point TimePoint;
+
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
 {
@@ -106,7 +108,7 @@ class TreeNode
     virtual BT::NodeStatus tick() = 0;
 
   public:
-    // The constructor and the distructor
+    // The constructor and the destructor
     TreeNode(std::string name);
     virtual ~TreeNode() = default;
 
@@ -128,7 +130,7 @@ class TreeNode
 
     virtual NodeType type() const = 0;
 
-    using StatusChangeSignal = Signal<const TreeNode&, NodeStatus,NodeStatus>;
+    using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus,NodeStatus>;
     using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
     using StatusChangeCallback   = StatusChangeSignal::CallableFunction;
 
@@ -146,11 +148,17 @@ class TreeNode
      // get an unique identifier of this instance of treeNode
      uint16_t UID() const;
 
+     void setRegistrationName(const std::string& registration_name);
+
+     const std::string& registrationName() const;
+
 private:
 
   StatusChangeSignal state_change_signal_;
 
   const uint16_t _uid;
+
+  std::string _registration_name;
 
 };
 

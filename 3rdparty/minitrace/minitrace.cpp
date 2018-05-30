@@ -56,7 +56,7 @@ static volatile int count;
 static int is_tracing = 0;
 static int64_t time_offset;
 static int first_line = 1;
-static FILE *f;
+static FILE *file;
 static __thread int cur_thread_id;	// Thread local storage
 static pthread_mutex_t mutex;
 
@@ -138,8 +138,8 @@ static void termination_handler(int signum) {
 	if (is_tracing) {
 		printf("Ctrl-C detected! Flushing trace and shutting down.\n\n");
 		mtr_flush();
-		fwrite("\n]}\n", 1, 4, f);
-		fclose(f);
+        fwrite("\n]}\n", 1, 4, file);
+        fclose(file);
 	}
 	exit(1);
 }
@@ -162,10 +162,10 @@ void mtr_init(const char *json_file) {
 	buffer = (raw_event_t *)malloc(INTERNAL_MINITRACE_BUFFER_SIZE * sizeof(raw_event_t));
 	is_tracing = 1;
 	count = 0;
-	f = fopen(json_file, "wb");
+    file = fopen(json_file, "wb");
 	const char *header = "{\"traceEvents\":[\n";
-	fwrite(header, 1, strlen(header), f);
-  time_offset = mtr_time_usec();
+    fwrite(header, 1, strlen(header), file);
+    time_offset = mtr_time_usec();
 	first_line = 1;
 	pthread_mutex_init(&mutex, 0);
 }
@@ -177,10 +177,10 @@ void mtr_shutdown() {
 #endif
 	is_tracing = 0;
 	mtr_flush();
-	fwrite("\n]}\n", 1, 4, f);
-	fclose(f);
+    fwrite("\n]}\n", 1, 4, file);
+    fclose(file);
 	pthread_mutex_destroy(&mutex);
-	f = 0;
+    file = 0;
 	free(buffer);
 	buffer = 0;
 	for (i = 0; i < STRING_POOL_SIZE; i++) {
@@ -291,7 +291,8 @@ void mtr_flush() {
 		len = snprintf(linebuf, ARRAY_SIZE(linebuf), "%s{\"cat\":\"%s\",\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64 ",\"ph\":\"%c\",\"name\":\"%s\",\"args\":{%s}%s}",
 				first_line ? "" : ",\n",
 				cat, raw->pid, raw->tid, raw->ts - time_offset, raw->ph, raw->name, arg_buf, id_buf);
-		fwrite(linebuf, 1, len, f);
+        fwrite(linebuf, 1, len, file);
+        fflush(file);
 		first_line = 0;
 	}
 	count = 0;

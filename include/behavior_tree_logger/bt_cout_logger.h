@@ -22,23 +22,33 @@ namespace BT{
 class StdCoutLogger: public StatusChangeLogger {
 
 public:
+
     StdCoutLogger(TreeNode* root_node):
         StatusChangeLogger(root_node)
-    {}
+    {
+        static bool first_instance = true;
+        if( first_instance )
+        {
+            first_instance = false;
+        }
+        else{
+            throw std::logic_error("Only one instance of StdCoutLogger shall be created");
+        }
+    }
 
     virtual ~StdCoutLogger() = default;
 
-    virtual void callback(const TreeNode& node,
+    virtual void callback(TimePoint timestamp,
+                          const TreeNode& node,
                           NodeStatus prev_status,
-                          NodeStatus status)
+                          NodeStatus status) override
     {
         using namespace std::chrono;
-        auto now = high_resolution_clock::now();
 
-        constexpr const char* whitespaces = "                    ";
-        constexpr const size_t ws_count = 20;
+        constexpr const char* whitespaces = "                         ";
+        constexpr const size_t ws_count = 25;
 
-        double since_epoch =  duration<double>( now.time_since_epoch() ).count();
+        double since_epoch =  duration<double>( timestamp.time_since_epoch() ).count();
         printf("[%.3f]: %s%s %s -> %s\n",
                since_epoch,
                node.name().c_str(),
@@ -46,6 +56,8 @@ public:
                 toStr(prev_status, true),
                 toStr(status, true) );
     }
+
+    virtual void flush() override { std::cout << std::flush; }
 };
 
 

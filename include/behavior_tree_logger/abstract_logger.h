@@ -9,12 +9,16 @@ namespace BT{
 class StatusChangeLogger {
 
 public:
+
     StatusChangeLogger(TreeNode* root_node);
     virtual ~StatusChangeLogger() = default;
 
-    virtual void callback(const TreeNode& node,
+    virtual void callback(BT::TimePoint timestamp,
+                          const TreeNode& node,
                           NodeStatus prev_status,
                           NodeStatus status) = 0;
+
+    virtual void flush() = 0;
 
     void setEnabled(bool enabled) { _enabled = enabled; }
 
@@ -33,20 +37,21 @@ private:
 
 //--------------------------------------------
 
-StatusChangeLogger::StatusChangeLogger(TreeNode *root_node):
+inline StatusChangeLogger::StatusChangeLogger(TreeNode *root_node):
     _enabled(true),
-    _show_transition_to_idle(false)
+    _show_transition_to_idle(true)
 {
     recursiveVisitor(root_node, [this](TreeNode* node)
     {
         _subscribers.push_back( node->subscribeToStatusChange(
-                                    [this](const TreeNode& node,
+                                    [this](TimePoint timestamp,
+                                    const TreeNode& node,
                                     NodeStatus prev,
                                     NodeStatus status)
         {
             if(_enabled && ( status != NodeStatus::IDLE || _show_transition_to_idle))
             {
-                this->callback(node,prev,status);
+                this->callback(timestamp, node,prev,status);
             }
         }));
     });
