@@ -50,11 +50,11 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
 
+    setStatus(NodeStatus::RUNNING);
+
     // Routing the ticks according to the sequence node's (with memory) logic:
     while (current_child_idx_ < N_of_children)
     {
-        DEBUG_STDOUT(name() << " ticked, memory counter: " << current_child_idx_);
-
         /*      Ticking an action is different from ticking a condition. An action executed some portion of code in another thread.
                 We want this thread detached so we can cancel its execution (when the action no longer receive ticks).
                 Hence we cannot just call the method Tick() from the action as doing so will block the execution of the tree.
@@ -64,16 +64,14 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
 
         const NodeStatus child_status = current_child_node->executeTick();
 
-        if (child_status != BT::SUCCESS)
+        if (child_status != NodeStatus::SUCCESS)
         {
             // If the  child status is not success, return the status
-            DEBUG_STDOUT("the status of: " << name() << " becomes " << child_status);
-
-            if (child_status == BT::FAILURE && reset_policy_ != BT::ON_SUCCESS )
+            if (child_status == NodeStatus::FAILURE && reset_policy_ != BT::ON_SUCCESS )
             {        
                 for (unsigned t=0; t<=current_child_idx_; t++)
                 {
-                    children_nodes_[t]->setStatus(BT::IDLE);
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
                 current_child_idx_ = 0;
             }
@@ -88,19 +86,19 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
         else
         {
             // if it the last child.
-            if (child_status == BT::SUCCESS || reset_policy_ != BT::ON_FAILURE)
+            if (child_status == NodeStatus::SUCCESS || reset_policy_ != BT::ON_FAILURE)
             {
                 // if it the last child and it has returned SUCCESS, reset the memory
                 for (unsigned t=0; t<=current_child_idx_; t++)
                 {
-                    children_nodes_[t]->setStatus(BT::IDLE);
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
                 current_child_idx_ = 0;
             }
             return child_status;
         }
     }
-    return BT::EXIT;
+    throw std::runtime_error("This is not supposed to happen");
 }
 
 void BT::SequenceNodeWithMemory::halt()

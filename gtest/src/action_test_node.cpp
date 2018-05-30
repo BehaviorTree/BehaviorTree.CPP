@@ -32,34 +32,23 @@ BT::NodeStatus BT::ActionTestNode::tick()
     int i = 0;
     while ( !stop_loop_ && i++ < time_)
     {
-        DEBUG_STDOUT(" Action " << name() << "running! Thread id:" << std::this_thread::get_id());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     if ( !stop_loop_ )
     {
-        if (boolean_value_)
-        {
-            DEBUG_STDOUT(" Action " << name() << " Done!");
-            return BT::SUCCESS;
-        }
-        else
-        {
-            DEBUG_STDOUT(" Action " << name() << " FAILED!");
-            return BT::FAILURE;
-        }
+        return boolean_value_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
     else
     {
-        return BT::IDLE;
+        return NodeStatus::IDLE;
     }
 }
 
 void BT::ActionTestNode::halt()
 {
     stop_loop_ = true;
-    setStatus(BT::IDLE);
-    DEBUG_STDOUT("HALTED state set!");
+    setStatus(NodeStatus::IDLE);
 }
 
 void BT::ActionTestNode::set_time(int time)

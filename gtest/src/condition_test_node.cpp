@@ -28,13 +28,13 @@ BT::NodeStatus BT::ConditionTestNode::tick()
 
     if (boolean_value_)
     {
-        setStatus(BT::SUCCESS);
-        return BT::SUCCESS;
+        setStatus(NodeStatus::SUCCESS);
+        return NodeStatus::SUCCESS;
     }
     else
     {
-        setStatus(BT::FAILURE);
-        return BT::FAILURE;
+        setStatus(NodeStatus::FAILURE);
+        return NodeStatus::FAILURE;
     }
 }
 

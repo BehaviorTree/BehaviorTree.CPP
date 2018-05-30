@@ -19,26 +19,27 @@ BT::DecoratorNegationNode::DecoratorNegationNode(std::string name) : DecoratorNo
 
 BT::NodeStatus BT::DecoratorNegationNode::tick()
 {
-    setStatus(BT::RUNNING);
     const NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {
-        case BT::SUCCESS:
+        case NodeStatus::SUCCESS:
         {
-            setStatus(BT::FAILURE);
+            setStatus(NodeStatus::FAILURE);
+            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
-        case BT::FAILURE:
+        case NodeStatus::FAILURE:
         {
-            setStatus(BT::SUCCESS);
+            setStatus(NodeStatus::SUCCESS);
+            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
-        case BT::RUNNING:
+        case NodeStatus::RUNNING:
         {
-            setStatus(BT::RUNNING);
+            setStatus(NodeStatus::RUNNING);
         }
         break;
 

@@ -13,7 +13,13 @@
 
 #include "behavior_tree_core/tree_node.h"
 
-BT::TreeNode::TreeNode(std::string name) : name_(name), status_(BT::IDLE)
+static uint8_t getUID()
+{
+    static uint8_t uid = 0;
+    return uid++;
+}
+
+BT::TreeNode::TreeNode(std::string name) : name_(name), status_(NodeStatus::IDLE), _uid( getUID() )
 {
 }
 
@@ -36,7 +42,7 @@ void BT::TreeNode::setStatus(NodeStatus new_status)
     {
         state_condition_variable_.notify_all();
         state_change_signal_.notify(*this, prev_status, new_status);
-}
+    }
 }
 
 BT::NodeStatus BT::TreeNode::status() const
@@ -55,7 +61,7 @@ BT::NodeStatus BT::TreeNode::waitValidStatus()
     std::unique_lock<std::mutex> lk(state_mutex_);
 
     state_condition_variable_.wait(
-        lk, [&]() { return (status_ == BT::RUNNING || status_ == BT::SUCCESS || status_ == BT::FAILURE); });
+        lk, [&]() { return (status_ == NodeStatus::RUNNING || status_ == NodeStatus::SUCCESS || status_ == NodeStatus::FAILURE); });
     return status_;
 }
 
@@ -66,10 +72,15 @@ const std::string& BT::TreeNode::name() const
 
 bool BT::TreeNode::isHalted() const
 {
-    return status() == BT::IDLE;
+    return status() == NodeStatus::IDLE;
 }
 
 BT::TreeNode::StatusChangeSubscriber BT::TreeNode::subscribeToStatusChange(BT::TreeNode::StatusChangeCallback callback)
 {
     return state_change_signal_.subscribe(callback);
+}
+
+uint16_t BT::TreeNode::UID() const
+{
+    return _uid;
 }

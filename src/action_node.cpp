@@ -28,10 +28,10 @@ BT::NodeStatus BT::SimpleActionNode::tick()
 {
     NodeStatus prev_status = status();
 
-    if (prev_status == BT::IDLE)
+    if ( prev_status == NodeStatus::IDLE)
     {
-        setStatus(BT::RUNNING);
-        prev_status = BT::RUNNING;
+        setStatus(NodeStatus::RUNNING);
+        prev_status = NodeStatus::RUNNING;
     }
 
     NodeStatus status = tick_functor_();
@@ -61,17 +61,15 @@ void BT::ActionNode::waitForTick()
 {
     while (loop_.load())
     {
-        DEBUG_STDOUT(name() << " WAIT FOR TICK");
         tick_engine_.wait();
-        DEBUG_STDOUT(name() << " TICK RECEIVED");
 
         // check this again because the tick_engine_ could be
         // notified from the method stopAndJoinThread
         if (loop_.load())
         {       
-            if (status() == BT::IDLE)
+            if (status() == NodeStatus::IDLE)
             {
-                setStatus(BT::RUNNING);
+                setStatus(NodeStatus::RUNNING);
             }
             setStatus( tick() );
         }
@@ -82,12 +80,12 @@ BT::NodeStatus BT::ActionNode::executeTick()
 {
     //send signal to other thread.
     // The other thread is in charge for changing the status
-    if (status() == BT::IDLE)
+    if (status() == NodeStatus::IDLE)
     {
         tick_engine_.notify();
     }
 
-    // block as long as the state is BT::IDLE
+    // block as long as the state is NodeStatus::IDLE
     const NodeStatus stat = waitValidStatus();
     return stat;
 }

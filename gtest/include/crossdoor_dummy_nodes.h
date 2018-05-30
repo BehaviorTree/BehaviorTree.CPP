@@ -1,5 +1,7 @@
 #include "behavior_tree_core/bt_factory.h"
 
+using namespace BT;
+
 class CrossDoor
 {
   public:
@@ -19,36 +21,36 @@ class CrossDoor
 
     BT::NodeStatus IsDoorOpen()
     {
-        return door_open_ ? BT::SUCCESS : BT::FAILURE;
+        return door_open_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
 
     BT::NodeStatus IsDoorLocked()
     {
-        return door_locked_ ? BT::SUCCESS : BT::FAILURE;
+        return door_locked_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
 
     BT::NodeStatus UnlockDoor()
     {
         door_locked_ = false;
-        return BT::SUCCESS;
+        return NodeStatus::SUCCESS;
     }
 
     BT::NodeStatus PassThroughDoor()
     {
-        return door_open_ ? BT::SUCCESS : BT::FAILURE;
+        return door_open_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
 
     BT::NodeStatus PassThroughWindow()
     {
-        return BT::SUCCESS;
+        return NodeStatus::SUCCESS;
     }
 
     BT::NodeStatus OpenDoor()
     {
         if (door_locked_)
-            return BT::FAILURE;
+            return NodeStatus::FAILURE;
         door_open_ = true;
-        return BT::SUCCESS;
+        return NodeStatus::SUCCESS;
     }
 
     BT::NodeStatus CloseDoor()
@@ -56,11 +58,11 @@ class CrossDoor
         if (door_open_)
         {
             door_open_ = false;
-            return BT::SUCCESS;
+            return NodeStatus::SUCCESS;
         }
         else
         {
-            return BT::FAILURE;
+            return NodeStatus::FAILURE;
         }
     }
 

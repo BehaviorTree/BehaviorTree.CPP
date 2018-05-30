@@ -48,10 +48,10 @@ BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, const NodeP
 
 BT::NodeStatus BT::FallbackNodeWithMemory::tick()
 {
-    DEBUG_STDOUT(name() << " ticked, memory counter: " << current_child_idx_);
-
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
+
+    setStatus(NodeStatus::RUNNING);
 
     // Routing the ticks according to the fallback node's (with memory) logic:
     while (current_child_idx_ < N_of_children)
@@ -60,15 +60,14 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
 
         const NodeStatus child_status = current_child_node->executeTick();
 
-        if (child_status != BT::FAILURE)
+        if (child_status != NodeStatus::FAILURE)
         {
             // If the  child status is not success, return the status
-            DEBUG_STDOUT("the status of: " << name() << " becomes " << child_status);
-            if (child_status == BT::SUCCESS && reset_policy_ != BT::ON_FAILURE)
+            if (child_status == NodeStatus::SUCCESS && reset_policy_ != BT::ON_FAILURE)
             {
                 for (unsigned t=0; t<=current_child_idx_; t++)
                 {
-                    children_nodes_[t]->setStatus(BT::IDLE);
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
                 current_child_idx_ = 0;
             }
@@ -83,11 +82,11 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
         else
         {
             // If it the last child.
-            if (child_status == BT::FAILURE && reset_policy_ != BT::ON_SUCCESS )
+            if (child_status == NodeStatus::FAILURE && reset_policy_ != BT::ON_SUCCESS )
             {
                 for (unsigned t=0; t<=current_child_idx_; t++)
                 {
-                    children_nodes_[t]->setStatus(BT::IDLE);
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
                 // if it the last child and it has returned failure, reset the memory
                 current_child_idx_ = 0;
@@ -95,7 +94,7 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
             return child_status;
         }
     }
-    return BT::EXIT;
+    throw std::runtime_error("This is not supposed to happen");
 }
 
 void BT::FallbackNodeWithMemory::halt()

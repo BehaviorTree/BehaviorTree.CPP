@@ -31,12 +31,52 @@
 
 namespace BT
 {
-void recursiveVisitor(const TreeNode *node, const std::function<void(const TreeNode*)> visitor);
+void recursiveVisitor(TreeNode *node, std::function<void(TreeNode *)> visitor);
 
 /**
  * Debug function to print on a stream
  */
 void printTreeRecursively(const TreeNode* root_node);
+
+
+/**
+ * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
+ * (or sent to a client application) to know the status of all the nodes of a tree.
+ * It is not "human readable".
+ *
+ * @param root_node
+ * @param serialized_buffer
+ */
+
+typedef std::vector<std::pair<uint16_t,uint8_t>> SerializedTreeStatus;
+
+void buildSerializedStatusSnapshot(const TreeNode *root_node, SerializedTreeStatus& serialized_buffer);
+
+
+/**
+ * @brief toStr converts NodeStatus to string. Optionally colored.
+ */
+const char* toStr(const BT::NodeStatus& status, bool colored = false);
+
+
+inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
+{
+    os << toStr(status);
+    return os;
+}
+
+/**
+ * @brief toStr converts NodeType to string.
+ */
+const char* toStr(const BT::NodeType& type);
+
+inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
+{
+    os << toStr(type);
+    return os;
+}
+
+
 }
 
 #endif   // BEHAVIOR_TREE_H

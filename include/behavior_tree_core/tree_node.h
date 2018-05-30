@@ -14,21 +14,10 @@
 #ifndef BEHAVIORTREECORE_TREENODE_H
 #define BEHAVIORTREECORE_TREENODE_H
 
-#ifdef DEBUG
-// #define DEBUG_STDERR(x) (std::cerr << (x))
-#define DEBUG_STDOUT(str)                                                                                              \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        std::cout << str << std::endl;                                                                                 \
-    } while (false)
-
-#else
-#define DEBUG_STDOUT(str)
-#endif
-
 #include <iostream>
 #include <string>
 #include <map>
+#include <set>
 
 #include "behavior_tree_core/tick_engine.h"
 #include "behavior_tree_core/exceptions.h"
@@ -38,40 +27,15 @@ namespace BT
 {
 // Enumerates the possible types of a node, for drawinf we have do discriminate whoich control node it is:
 
-enum NodeType
+enum class NodeType
 {
-    ACTION_NODE,
-    CONDITION_NODE,
-    CONTROL_NODE,
-    DECORATOR_NODE,
-    SUBTREE_NODE,
-    UNDEFINED
+    UNDEFINED = 0,
+    ACTION,
+    CONDITION,
+    CONTROL,
+    DECORATOR,
+    SUBTREE
 };
-
-inline const char* toStr(const BT::NodeType& type)
-{
-    switch (type)
-    {
-        case NodeType::ACTION_NODE:
-            return "Action";
-        case NodeType::CONDITION_NODE:
-            return "Condition";
-        case NodeType::DECORATOR_NODE:
-            return "Decorator";
-        case NodeType::CONTROL_NODE:
-            return "Control";
-        case NodeType::SUBTREE_NODE:
-            return "SubTree";
-        default:
-            return "Undefined";
-    }
-}
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
-{
-    os << toStr(type);
-    return os;
-}
 
 // Enumerates the states every node can be in after execution during a particular
 // time step:
@@ -82,38 +46,14 @@ inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
 //   time step, but the task is not yet complete;
 // - "Idle" indicates that the node hasn't run yet.
 // - "Halted" indicates that the node has been halted by its father.
-enum NodeStatus
+enum class NodeStatus
 {
-    IDLE,
+    IDLE = 0,
     RUNNING,
     SUCCESS,
-    FAILURE,
-    EXIT
+    FAILURE
 };
 
-inline const char* toStr(const BT::NodeStatus& status)
-{
-    switch (status)
-    {
-        case NodeStatus::SUCCESS:
-            return "SUCCESS";
-        case NodeStatus::FAILURE:
-            return "FAILURE";
-        case NodeStatus::RUNNING:
-            return "RUNNING";
-        case NodeStatus::IDLE:
-            return "IDLE";
-        default:
-            return "Undefined";
-    }
-}
-
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
-{
-    os << toStr(status);
-    return os;
-}
 
 // Enumerates the options for when a parallel node is considered to have failed:
 // - "FAIL_ON_ONE" indicates that the node will return failure as soon as one of
@@ -143,7 +83,7 @@ enum SuccessPolicy
     SUCCEED_ON_ALL
 };
 
-// If "BT::FAIL_ON_ONE" and "BT::SUCCEED_ON_ONE" are both active and are both trigerred in the
+// If "BT::FAIL_vON_ONE" and "BT::SUCCEED_ON_ONE" are both active and are both trigerred in the
 // same time step, failure will take precedence.
 
 // We call Parameters the set of Key/Values that can be read from file and are
@@ -203,9 +143,14 @@ class TreeNode
      */
      StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
 
+     // get an unique identifier of this instance of treeNode
+     uint16_t UID() const;
+
 private:
 
   StatusChangeSignal state_change_signal_;
+
+  const uint16_t _uid;
 
 };
 

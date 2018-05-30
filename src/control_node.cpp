@@ -17,7 +17,7 @@ BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
-    // ReturnStatus const NodeStatus child_status = BT::IDLE;  // commented out as unused
+    // ReturnStatus const NodeStatus child_status = NodeStatus::IDLE;  // commented out as unused
 }
 
 void BT::ControlNode::addChild(TreeNode* child)
@@ -41,9 +41,8 @@ unsigned int BT::ControlNode::childrenCount() const
 
 void BT::ControlNode::halt()
 {
-    DEBUG_STDOUT("HALTING: " << name());
     haltChildren(0);
-    setStatus(BT::IDLE);
+    setStatus(NodeStatus::IDLE);
 }
 
 const std::vector<BT::TreeNode*>& BT::ControlNode::children() const
@@ -55,14 +54,9 @@ void BT::ControlNode::haltChildren(int i)
 {
     for (unsigned int j = i; j < children_nodes_.size(); j++)
     {
-        if (children_nodes_[j]->status() == BT::RUNNING)
+        if (children_nodes_[j]->status() == NodeStatus::RUNNING)
         {
-            DEBUG_STDOUT("SENDING HALT TO CHILD " << children_nodes_[j]->name());
             children_nodes_[j]->halt();
-        }
-        else
-        {
-            DEBUG_STDOUT("NO NEED TO HALT " << children_nodes_[j]->name() << "STATUS" << children_nodes_[j]->status());
         }
     }
 }
