@@ -50,7 +50,7 @@ inline NodePtr XMLParser::treeParsing(const tinyxml2::XMLElement* root_element,
         NodeParameters node_params;
 
         // Actions and Decorators have their own ID
-        if (element_name == "Action" || element_name == "Decorator")
+        if (element_name == "Action" || element_name == "Decorator" || element_name == "Condition")
         {
             node_ID = element->Attribute("ID");
         }
