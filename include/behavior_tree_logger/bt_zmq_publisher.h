@@ -2,6 +2,7 @@
 #define BT_ZMQ_PUBLISHER_H
 
 #include <array>
+#include <future>
 #include <zmq.hpp>
 #include "abstract_logger.h"
 #include "BT_logger_generated.h"
@@ -11,7 +12,7 @@ namespace BT{
 class PublisherZMQ: public StatusChangeLogger
 {
 public:
-    PublisherZMQ(TreeNode* root_node, int max_msg_per_second = 100);
+    PublisherZMQ(TreeNode* root_node, int max_msg_per_second = 25);
 
     virtual ~PublisherZMQ();
 
@@ -27,8 +28,7 @@ private:
     std::vector<uint8_t> _tree_buffer;
     std::vector<uint8_t> _status_buffer;
     std::vector< std::array<uint8_t,12> > _transition_buffer;
-    std::chrono::milliseconds _min_time_between_msgs;
-    std::chrono::high_resolution_clock::time_point _prev_time;
+    std::chrono::microseconds _min_time_between_msgs;
 
     zmq::context_t _zmq_context;
     zmq::socket_t  _zmq_publisher;
@@ -38,6 +38,12 @@ private:
     std::thread _thread;
 
     void createStatusBuffer();
+
+    TimePoint _deadline;
+    std::mutex _mutex;
+    std::atomic_bool _send_pending;
+
+    std::future<void> _send_future;
 };
 
 

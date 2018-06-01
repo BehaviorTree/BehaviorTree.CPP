@@ -1,5 +1,6 @@
 #include "behavior_tree_logger/bt_zmq_publisher.h"
 #include "behavior_tree_logger/bt_flatbuffer_helper.h"
+#include <future>
 
 namespace BT {
 
@@ -20,10 +21,11 @@ PublisherZMQ::PublisherZMQ(TreeNode *root_node,
                            int max_msg_per_second):
     StatusChangeLogger(root_node),
     _root_node(root_node),
-    _min_time_between_msgs( std::chrono::milliseconds(1000) / max_msg_per_second ),
+    _min_time_between_msgs( std::chrono::microseconds(1000*1000) / max_msg_per_second ),
     _zmq_context(1),
     _zmq_publisher( _zmq_context, ZMQ_PUB ),
-    _zmq_server( _zmq_context, ZMQ_REP )
+    _zmq_server( _zmq_context, ZMQ_REP ),
+    _send_pending(false)
 {
     static bool first_instance = true;
     if( first_instance )
@@ -82,46 +84,57 @@ void PublisherZMQ::callback(TimePoint timestamp, const TreeNode &node, NodeStatu
 
     std::array<uint8_t,12> transition =  SerializeTransition(node.UID(),
                                                              timestamp, prev_status, status);
-
-    _transition_buffer.push_back( transition );
-
-    if( (timestamp - _prev_time) >= _min_time_between_msgs )
     {
-        _prev_time = timestamp;
-        flush();
-    };
+        std::unique_lock<std::mutex> lock( _mutex );
+        _transition_buffer.push_back( transition );
+    }
+
+    if( !_send_pending )
+    {
+        _send_pending = true;
+        _send_future = std::async(std::launch::async, [this]()
+        {
+            std::this_thread::sleep_for( _min_time_between_msgs );
+            flush();
+        }  );
+    }
 }
 
 void PublisherZMQ::flush()
 {
-    const size_t msg_size = _status_buffer.size() + 8 +
-            (_transition_buffer.size() * 12);
-
-    zmq::message_t message ( msg_size );
-    uint8_t* data_ptr = static_cast<uint8_t*>( message.data() );
-
-    // first 4 bytes are the side of the header
-    flatbuffers::WriteScalar<uint32_t>( data_ptr, _status_buffer.size() );
-    data_ptr += sizeof(uint32_t);
-    // copy the header part
-    memcpy( data_ptr, _status_buffer.data(), _status_buffer.size() );
-    data_ptr += _status_buffer.size();
-
-    // first 4 bytes are the side of the transition buffer
-    flatbuffers::WriteScalar<uint32_t>( data_ptr, _transition_buffer.size() );
-    data_ptr += sizeof(uint32_t);
-
-    for (auto& transition: _transition_buffer)
+    zmq::message_t message;
     {
-        memcpy( data_ptr, transition.data(), transition.size() );
-        data_ptr += transition.size();
+        std::unique_lock<std::mutex> lock( _mutex );
+
+        const size_t msg_size = _status_buffer.size() + 8 +
+                (_transition_buffer.size() * 12);
+
+        message.rebuild( msg_size );
+        uint8_t* data_ptr = static_cast<uint8_t*>( message.data() );
+
+        // first 4 bytes are the side of the header
+        flatbuffers::WriteScalar<uint32_t>( data_ptr, _status_buffer.size() );
+        data_ptr += sizeof(uint32_t);
+        // copy the header part
+        memcpy( data_ptr, _status_buffer.data(), _status_buffer.size() );
+        data_ptr += _status_buffer.size();
+
+        // first 4 bytes are the side of the transition buffer
+        flatbuffers::WriteScalar<uint32_t>( data_ptr, _transition_buffer.size() );
+        data_ptr += sizeof(uint32_t);
+
+        for (auto& transition: _transition_buffer)
+        {
+            memcpy( data_ptr, transition.data(), transition.size() );
+            data_ptr += transition.size();
+        }
+        _transition_buffer.clear();
+        createStatusBuffer();
     }
 
     _zmq_publisher.send(message);
-    _transition_buffer.clear();
-
-    // rebuild _status_buffer for the next time
-    createStatusBuffer();
+    _send_pending = false;
+   // printf("%.3f zmq send\n", std::chrono::duration<double>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count());
 }
 
 }
