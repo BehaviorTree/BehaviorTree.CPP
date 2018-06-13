@@ -19,7 +19,7 @@ static uint8_t getUID()
     return uid++;
 }
 
-BT::TreeNode::TreeNode(std::string name) : name_(name), status_(NodeStatus::IDLE), _uid( getUID() )
+BT::TreeNode::TreeNode(std::string name) : name_(name), status_(NodeStatus::IDLE), uid_( getUID() )
 {
 }
 
@@ -83,15 +83,15 @@ BT::TreeNode::StatusChangeSubscriber BT::TreeNode::subscribeToStatusChange(BT::T
 
 uint16_t BT::TreeNode::UID() const
 {
-    return _uid;
+    return uid_;
 }
 
 void BT::TreeNode::setRegistrationName(const std::string &registration_name)
 {
-    _registration_name = registration_name;
+    registration_name_ = registration_name;
 }
 
 const std::string &BT::TreeNode::registrationName() const
 {
-    return _registration_name;
+    return registration_name_;
 }

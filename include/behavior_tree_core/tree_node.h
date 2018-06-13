@@ -156,9 +156,9 @@ private:
 
   StatusChangeSignal state_change_signal_;
 
-  const uint16_t _uid;
+  const uint16_t uid_;
 
-  std::string _registration_name;
+  std::string registration_name_;
 
 };
 

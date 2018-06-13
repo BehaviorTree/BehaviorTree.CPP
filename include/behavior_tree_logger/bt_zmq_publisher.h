@@ -24,26 +24,26 @@ private:
 
     virtual void flush() override;
 
-    TreeNode *_root_node;
-    std::vector<uint8_t> _tree_buffer;
-    std::vector<uint8_t> _status_buffer;
-    std::vector< std::array<uint8_t,12> > _transition_buffer;
-    std::chrono::microseconds _min_time_between_msgs;
+    TreeNode *root_node_;
+    std::vector<uint8_t> tree_buffer_;
+    std::vector<uint8_t> status_buffer_;
+    std::vector< std::array<uint8_t,12> > transition_buffer_;
+    std::chrono::microseconds min_time_between_msgs_;
 
-    zmq::context_t _zmq_context;
-    zmq::socket_t  _zmq_publisher;
-    zmq::socket_t  _zmq_server;
+    zmq::context_t zmq_context_;
+    zmq::socket_t  zmq_publisher_;
+    zmq::socket_t  zmq_server_;
 
-    std::atomic_bool _active_server;
-    std::thread _thread;
+    std::atomic_bool active_server_;
+    std::thread thread_;
 
     void createStatusBuffer();
 
-    TimePoint _deadline;
-    std::mutex _mutex;
-    std::atomic_bool _send_pending;
+    TimePoint deadline_;
+    std::mutex mutex_;
+    std::atomic_bool send_pending_;
 
-    std::future<void> _send_future;
+    std::future<void> send_future_;
 };
 
 

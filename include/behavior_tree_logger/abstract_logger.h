@@ -20,36 +20,36 @@ public:
 
     virtual void flush() = 0;
 
-    void setEnabled(bool enabled) { _enabled = enabled; }
+    void setEnabled(bool enabled) { enabled_ = enabled; }
 
-    bool enabled() const          { return _enabled; }
+    bool enabled() const          { return enabled_; }
 
     // false by default.
-    bool showsTransitionToIdle() const { return _show_transition_to_idle; }
+    bool showsTransitionToIdle() const { return show_transition_to_idle_; }
 
-    void enableTransitionToIdle(bool enable ) { _show_transition_to_idle = enable; }
+    void enableTransitionToIdle(bool enable ) { show_transition_to_idle_ = enable; }
 
 private:
-    bool _enabled;
-    bool _show_transition_to_idle;
-    std::vector<TreeNode::StatusChangeSubscriber> _subscribers;
+    bool enabled_;
+    bool show_transition_to_idle_;
+    std::vector<TreeNode::StatusChangeSubscriber> subscribers_;
 };
 
 //--------------------------------------------
 
 inline StatusChangeLogger::StatusChangeLogger(TreeNode *root_node):
-    _enabled(true),
-    _show_transition_to_idle(true)
+    enabled_(true),
+    show_transition_to_idle_(true)
 {
     recursiveVisitor(root_node, [this](TreeNode* node)
     {
-        _subscribers.push_back( node->subscribeToStatusChange(
+        subscribers_.push_back( node->subscribeToStatusChange(
                                     [this](TimePoint timestamp,
                                     const TreeNode& node,
                                     NodeStatus prev,
                                     NodeStatus status)
         {
-            if(_enabled && ( status != NodeStatus::IDLE || _show_transition_to_idle))
+            if(enabled_ && ( status != NodeStatus::IDLE || show_transition_to_idle_))
             {
                 this->callback(timestamp, node,prev,status);
             }

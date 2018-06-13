@@ -13,7 +13,7 @@ class FileLogger: public StatusChangeLogger {
 public:
     FileLogger(TreeNode* root_node, const char* filename, uint16_t buffer_size);
 
-    virtual ~FileLogger();
+    virtual ~FileLogger() override;
 
     virtual void callback(TimePoint timestamp,
                           const TreeNode& node,
@@ -24,13 +24,13 @@ public:
 
 private:
 
-    std::ofstream _file_os;
+    std::ofstream file_os_;
 
-    std::chrono::high_resolution_clock::time_point _start_time;
+    std::chrono::high_resolution_clock::time_point start_time;
 
-    std::vector< std::array<uint8_t,12> > _buffer;
+    std::vector< std::array<uint8_t,12> > buffer_;
 
-    bool _buffer_max_size;
+    bool buffer_max_size_;
 };
 
 

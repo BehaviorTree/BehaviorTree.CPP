@@ -36,8 +36,6 @@ public:
         }
     }
 
-    virtual ~StdCoutLogger() = default;
-
     virtual void callback(TimePoint timestamp,
                           const TreeNode& node,
                           NodeStatus prev_status,

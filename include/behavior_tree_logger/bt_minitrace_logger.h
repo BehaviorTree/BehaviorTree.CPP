@@ -27,7 +27,7 @@ public:
         this->enableTransitionToIdle(true);
     }
 
-    virtual ~MinitraceLogger()
+    virtual ~MinitraceLogger() override
     {
         minitrace::mtr_flush();
         minitrace::mtr_shutdown();
@@ -63,7 +63,7 @@ public:
         minitrace::mtr_flush();
     }
 private:
-    TimePoint _prev_time;
+    TimePoint prev_time_;
 };
 
 
