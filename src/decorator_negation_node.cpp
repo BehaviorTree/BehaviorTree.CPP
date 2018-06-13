@@ -15,15 +15,13 @@
 
 namespace BT
 {
-
-DecoratorNegationNode::DecoratorNegationNode(const std::string& name) :
-    DecoratorNode(name, NodeParameters() )
+DecoratorNegationNode::DecoratorNegationNode(const std::string& name) : DecoratorNode(name, NodeParameters())
 {
 }
 
 NodeStatus DecoratorNegationNode::tick()
 {
-    setStatus( NodeStatus::RUNNING );
+    setStatus(NodeStatus::RUNNING);
 
     const NodeStatus child_state = child_node_->executeTick();
 
@@ -56,5 +54,4 @@ NodeStatus DecoratorNegationNode::tick()
     }
     return status();
 }
-
 }

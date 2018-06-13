@@ -5,21 +5,20 @@
 #include "abstract_logger.h"
 #include "minitrace/minitrace.h"
 
-namespace BT{
-
-
-class MinitraceLogger: public StatusChangeLogger {
-
-public:
-    MinitraceLogger(TreeNode* root_node, const char* filename_json):
-        StatusChangeLogger(root_node)
+namespace BT
+{
+class MinitraceLogger : public StatusChangeLogger
+{
+  public:
+    MinitraceLogger(TreeNode* root_node, const char* filename_json) : StatusChangeLogger(root_node)
     {
         static bool first_instance = true;
-        if( first_instance )
+        if (first_instance)
         {
             first_instance = false;
         }
-        else{
+        else
+        {
             throw std::logic_error("Only one instance of MinitraceLogger shall be created");
         }
         minitrace::mtr_register_sigint_handler();
@@ -33,41 +32,38 @@ public:
         minitrace::mtr_shutdown();
     }
 
-    virtual void callback(TimePoint timestamp, const TreeNode& node,
-                          NodeStatus prev_status,
-                          NodeStatus status) override
+    virtual void callback(TimePoint timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status) override
     {
         using namespace minitrace;
 
-        const bool statusCompleted =  (status == NodeStatus::SUCCESS ||
-                                       status == NodeStatus::FAILURE);
+        const bool statusCompleted = (status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE);
 
         const char* category = toStr(node.type());
         const char* name = node.name().c_str();
 
-        if( prev_status == NodeStatus::IDLE && statusCompleted)
+        if (prev_status == NodeStatus::IDLE && statusCompleted)
         {
             MTR_INSTANT(category, name);
         }
-        else if( status == NodeStatus::RUNNING )
+        else if (status == NodeStatus::RUNNING)
         {
             MTR_BEGIN(category, name);
         }
-        else if( prev_status == NodeStatus::RUNNING && statusCompleted )
+        else if (prev_status == NodeStatus::RUNNING && statusCompleted)
         {
-            MTR_END( category, name );
+            MTR_END(category, name);
         }
     }
 
-    virtual void flush() override {
+    virtual void flush() override
+    {
         minitrace::mtr_flush();
     }
-private:
+
+  private:
     TimePoint prev_time_;
 };
 
+}   // end namespace
 
-} // end namespace
-
-
-#endif // BT_MINITRACE_LOGGER_H
+#endif   // BT_MINITRACE_LOGGER_H

@@ -17,7 +17,6 @@
 
 namespace BT
 {
-
 TickEngine::TickEngine(bool start_ready) : ready_(start_ready)
 {
 }
@@ -38,5 +37,4 @@ void TickEngine::notify()
     ready_ = true;
     condition_variable_.notify_all();
 }
-
 }

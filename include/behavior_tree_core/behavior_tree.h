@@ -31,13 +31,12 @@
 
 namespace BT
 {
-void recursiveVisitor(TreeNode *node, std::function<void(TreeNode *)> visitor);
+void recursiveVisitor(TreeNode* node, std::function<void(TreeNode*)> visitor);
 
 /**
  * Debug function to print on a stream
  */
 void printTreeRecursively(const TreeNode* root_node);
-
 
 /**
  * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
@@ -48,12 +47,9 @@ void printTreeRecursively(const TreeNode* root_node);
  * @param serialized_buffer
  */
 
-typedef std::vector<std::pair<uint16_t,uint8_t>> SerializedTreeStatus;
+typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
-void buildSerializedStatusSnapshot(const TreeNode *root_node, SerializedTreeStatus& serialized_buffer);
-
-
-
+void buildSerializedStatusSnapshot(const TreeNode* root_node, SerializedTreeStatus& serialized_buffer);
 }
 
 #endif   // BEHAVIOR_TREE_H

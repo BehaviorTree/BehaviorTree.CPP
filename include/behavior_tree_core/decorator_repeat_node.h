@@ -22,7 +22,7 @@ class DecoratorRepeatNode : public DecoratorNode
 {
   public:
     // Constructor
-    DecoratorRepeatNode(const std::string &name, unsigned int NTries);
+    DecoratorRepeatNode(const std::string& name, unsigned int NTries);
 
     DecoratorRepeatNode(const std::string& name, const NodeParameters& params);
 
@@ -30,7 +30,7 @@ class DecoratorRepeatNode : public DecoratorNode
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = { {NUM_CYCLES, "1"} };
+        static NodeParameters params = {{NUM_CYCLES, "1"}};
         return params;
     }
 

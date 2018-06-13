@@ -6,35 +6,30 @@
 #include <array>
 #include "abstract_logger.h"
 
-namespace BT{
-
-class FileLogger: public StatusChangeLogger {
-
-public:
+namespace BT
+{
+class FileLogger : public StatusChangeLogger
+{
+  public:
     FileLogger(TreeNode* root_node, const char* filename, uint16_t buffer_size);
 
     virtual ~FileLogger() override;
 
-    virtual void callback(TimePoint timestamp,
-                          const TreeNode& node,
-                          NodeStatus prev_status,
+    virtual void callback(TimePoint timestamp, const TreeNode& node, NodeStatus prev_status,
                           NodeStatus status) override;
 
     virtual void flush() override;
 
-private:
-
+  private:
     std::ofstream file_os_;
 
     std::chrono::high_resolution_clock::time_point start_time;
 
-    std::vector< std::array<uint8_t,12> > buffer_;
+    std::vector<std::array<uint8_t, 12> > buffer_;
 
     bool buffer_max_size_;
 };
 
+}   // end namespace
 
-} // end namespace
-
-
-#endif // BT_FILE_LOGGER_H
+#endif   // BT_FILE_LOGGER_H

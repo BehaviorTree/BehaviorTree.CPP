@@ -14,8 +14,7 @@
 #include "action_test_node.h"
 #include <string>
 
-BT::ActionTestNode::ActionTestNode(const std::string& name) :
-    ActionNode(name)
+BT::ActionTestNode::ActionTestNode(const std::string& name) : ActionNode(name)
 {
     boolean_value_ = true;
     time_ = 3;
@@ -31,12 +30,12 @@ BT::NodeStatus BT::ActionTestNode::tick()
 {
     stop_loop_ = false;
     int i = 0;
-    while ( !stop_loop_ && i++ < time_)
+    while (!stop_loop_ && i++ < time_)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    if ( !stop_loop_ )
+    if (!stop_loop_)
     {
         return boolean_value_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }

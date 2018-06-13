@@ -25,7 +25,7 @@ class SequenceNode : public ControlNode
 
     virtual ~SequenceNode() override = default;
 
-private:
+  private:
     virtual BT::NodeStatus tick() override;
 };
 }

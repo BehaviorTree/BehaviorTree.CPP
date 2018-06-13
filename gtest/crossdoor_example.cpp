@@ -5,7 +5,7 @@
 #include "behavior_tree_logger/bt_file_logger.h"
 
 #ifdef ZMQ_FOUND
-    #include "behavior_tree_logger/bt_zmq_publisher.h"
+#include "behavior_tree_logger/bt_zmq_publisher.h"
 #endif
 
 // clang-format off
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
     StdCoutLogger logger_cout(root_node.get());
     MinitraceLogger logger_minitrace(root_node.get(), "bt_trace.json");
-    FileLogger logger_file( root_node.get(), "bt_trace.fbl", 32 );
+    FileLogger logger_file(root_node.get(), "bt_trace.fbl", 32);
 
 #ifdef ZMQ_FOUND
     PublisherZMQ publisher_zmq(root_node.get());
@@ -69,10 +69,11 @@ int main(int argc, char** argv)
     std::cout << "---------------" << std::endl;
     root_node->executeTick();
 
-    std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     std::cout << "---------------" << std::endl;
-    while(1) root_node->executeTick();
+    while (1)
+        root_node->executeTick();
     std::cout << "---------------" << std::endl;
     return 0;
 }

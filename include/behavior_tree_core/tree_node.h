@@ -26,13 +26,11 @@
 
 namespace BT
 {
-
 // We call Parameters the set of Key/Values that can be read from file and are
 // used to parametrize an object. It is up to the user's code to parse the string.
 typedef std::map<std::string, std::string> NodeParameters;
 
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
-
 
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
@@ -45,7 +43,6 @@ class TreeNode
     mutable std::mutex state_mutex_;
 
   protected:
-
     // Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
 
@@ -72,9 +69,9 @@ class TreeNode
 
     virtual NodeType type() const = 0;
 
-    using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus,NodeStatus>;
+    using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus, NodeStatus>;
     using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
-    using StatusChangeCallback   = StatusChangeSignal::CallableFunction;
+    using StatusChangeCallback = StatusChangeSignal::CallableFunction;
 
     /**
      * @brief subscribeToStatusChange is used to attach a callback to a status change.
@@ -85,44 +82,41 @@ class TreeNode
      *
      * @return the subscriber.
      */
-     StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
+    StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
 
-     // get an unique identifier of this instance of treeNode
-     uint16_t UID() const;
+    // get an unique identifier of this instance of treeNode
+    uint16_t UID() const;
 
-     void setRegistrationName(const std::string& registration_name);
+    void setRegistrationName(const std::string& registration_name);
 
-     const std::string& registrationName() const;
+    const std::string& registrationName() const;
 
-protected:
-     template <typename T> T getParam(const std::string& key) const
-     {
-         auto it = parameters_.find(key);
-         if( it == parameters_.end() )
-         {
-             throw std::invalid_argument( std::string("Can't find the parameter with key: ") + key );
-         }
-         return convertFromString<T>( key.c_str() );
-     }
+  protected:
+    template <typename T>
+    T getParam(const std::string& key) const
+    {
+        auto it = parameters_.find(key);
+        if (it == parameters_.end())
+        {
+            throw std::invalid_argument(std::string("Can't find the parameter with key: ") + key);
+        }
+        return convertFromString<T>(key.c_str());
+    }
 
-private:
+  private:
+    StatusChangeSignal state_change_signal_;
 
-  StatusChangeSignal state_change_signal_;
+    const uint16_t uid_;
 
-  const uint16_t uid_;
+    std::string registration_name_;
 
-  std::string registration_name_;
-
-  const NodeParameters parameters_;
-
+    const NodeParameters parameters_;
 };
 
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
 // The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
 typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
-
-
 }
 
 #endif

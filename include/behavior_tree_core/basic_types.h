@@ -4,7 +4,8 @@
 #include <iostream>
 #include <string>
 
-namespace BT{
+namespace BT
+{
 // Enumerates the possible types of a node, for drawinf we
 // have do discriminate whoich control node it is:
 enum class NodeType
@@ -33,7 +34,6 @@ enum class NodeStatus
     SUCCESS,
     FAILURE
 };
-
 
 // Enumerates the options for when a parallel node is considered to have failed:
 // - "FAIL_ON_ONE" indicates that the node will return failure as soon as one of
@@ -66,10 +66,10 @@ enum SuccessPolicy
 template <typename T>
 T convertFromString(const char* str);
 
-template <typename T> inline
-T convertFromString(const std::string& str)
+template <typename T>
+inline T convertFromString(const std::string& str)
 {
-    return convertFromString<T>( str.c_str() );
+    return convertFromString<T>(str.c_str());
 }
 
 //------------------------------------------------------------------
@@ -78,7 +78,6 @@ T convertFromString(const std::string& str)
  * @brief toStr converts NodeStatus to string. Optionally colored.
  */
 const char* toStr(const BT::NodeStatus& status, bool colored = false);
-
 
 inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
 {
@@ -107,8 +106,6 @@ inline std::ostream& operator<<(std::ostream& os, const BT::ResetPolicy& type)
     os << toStr(type);
     return os;
 }
-
-
 }
 
-#endif // BT_BASIC_TYPES_H
+#endif   // BT_BASIC_TYPES_H

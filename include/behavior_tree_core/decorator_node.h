@@ -32,7 +32,6 @@ class DecoratorNode : public TreeNode
         return NodeType::DECORATOR;
     }
 };
-
 }
 
 #endif

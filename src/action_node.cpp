@@ -13,17 +13,17 @@
 
 #include "behavior_tree_core/action_node.h"
 
-namespace BT{
-
-ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters &parameters) :
-    LeafNode::LeafNode(name,parameters)
+namespace BT
+{
+ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters& parameters)
+  : LeafNode::LeafNode(name, parameters)
 {
 }
 
 //-------------------------------------------------------
 
-SimpleActionNode::SimpleActionNode(const std::string &name, SimpleActionNode::TickFunctor tick_functor)
-  : ActionNodeBase(name, NodeParameters()), tick_functor_( std::move(tick_functor) )
+SimpleActionNode::SimpleActionNode(const std::string& name, SimpleActionNode::TickFunctor tick_functor)
+  : ActionNodeBase(name, NodeParameters()), tick_functor_(std::move(tick_functor))
 {
 }
 
@@ -31,7 +31,7 @@ NodeStatus SimpleActionNode::tick()
 {
     NodeStatus prev_status = status();
 
-    if ( prev_status == NodeStatus::IDLE)
+    if (prev_status == NodeStatus::IDLE)
     {
         setStatus(NodeStatus::RUNNING);
         prev_status = NodeStatus::RUNNING;
@@ -47,8 +47,8 @@ NodeStatus SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-ActionNode::ActionNode(const std::string& name, const NodeParameters& parameters) :
-    ActionNodeBase(name, parameters), loop_(true)
+ActionNode::ActionNode(const std::string& name, const NodeParameters& parameters)
+  : ActionNodeBase(name, parameters), loop_(true)
 {
     thread_ = std::thread(&ActionNode::waitForTick, this);
 }
@@ -70,12 +70,12 @@ void ActionNode::waitForTick()
         // check this again because the tick_engine_ could be
         // notified from the method stopAndJoinThread
         if (loop_.load())
-        {       
+        {
             if (status() == NodeStatus::IDLE)
             {
                 setStatus(NodeStatus::RUNNING);
             }
-            setStatus( tick() );
+            setStatus(tick());
         }
     }
 }
@@ -100,5 +100,4 @@ void ActionNode::stopAndJoinThread()
     tick_engine_.notify();
     thread_.join();
 }
-
 }

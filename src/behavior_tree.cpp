@@ -3,7 +3,6 @@
 
 namespace BT
 {
-
 void recursiveVisitor(TreeNode* node, std::function<void(TreeNode*)> visitor)
 {
     if (!node)
@@ -61,17 +60,14 @@ void printTreeRecursively(const TreeNode* root_node)
     std::cout << "----------------" << std::endl;
 }
 
-void buildSerializedStatusSnapshot(TreeNode *root_node, SerializedTreeStatus& serialized_buffer)
+void buildSerializedStatusSnapshot(TreeNode* root_node, SerializedTreeStatus& serialized_buffer)
 {
     serialized_buffer.clear();
 
-    auto visitor = [ &serialized_buffer ](const TreeNode *node)
-    {
-        serialized_buffer.push_back( std::make_pair( node->UID(),
-                                                     static_cast<uint8_t>( node->status()) ) );
+    auto visitor = [&serialized_buffer](const TreeNode* node) {
+        serialized_buffer.push_back(std::make_pair(node->UID(), static_cast<uint8_t>(node->status())));
     };
 
     recursiveVisitor(root_node, visitor);
 }
-
 }

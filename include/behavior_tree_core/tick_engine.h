@@ -21,7 +21,6 @@
 
 namespace BT
 {
-
 class TickEngine
 {
   private:
@@ -38,7 +37,6 @@ class TickEngine
 
     void notify();
 };
-
 }
 
 #endif

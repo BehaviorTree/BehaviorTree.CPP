@@ -13,8 +13,7 @@
 
 #include "behavior_tree_core/sequence_node.h"
 
-BT::SequenceNode::SequenceNode(const std::string& name) :
-    ControlNode::ControlNode(name, NodeParameters())
+BT::SequenceNode::SequenceNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
 {
 }
 
@@ -39,9 +38,9 @@ BT::NodeStatus BT::SequenceNode::tick()
             // If the  child status is not success, halt the next children and return the status to your parent.
             if (child_status == NodeStatus::FAILURE)
             {
-                for(unsigned t=0; t<=i; t++)
+                for (unsigned t = 0; t <= i; t++)
                 {
-                    children_nodes_[t]->setStatus( NodeStatus::IDLE );
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
             }
 
@@ -54,9 +53,9 @@ BT::NodeStatus BT::SequenceNode::tick()
             {
                 // If the  child status is success, and it is the last child to be ticked,
                 // then the sequence has succeeded.
-                for(auto &ch: children_nodes_)
+                for (auto& ch : children_nodes_)
                 {
-                    ch->setStatus( NodeStatus::IDLE );
+                    ch->setStatus(NodeStatus::IDLE);
                 }
                 return NodeStatus::SUCCESS;
             }

@@ -77,7 +77,6 @@ const std::string xml_text_subtree = R"(
         )";
 // clang-format on
 
-
 TEST(BehaviorTreeFactory, VerifyLargeTree)
 {
     BT::XMLParser parser;
@@ -160,13 +159,13 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_EQ(root_node->name(), "root_selector");
 
     auto root_selector = dynamic_cast<const BT::FallbackNode*>(root_node.get());
-    ASSERT_TRUE( root_selector  != nullptr);
+    ASSERT_TRUE(root_selector != nullptr);
     ASSERT_EQ(root_selector->children().size(), 2);
     ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
     ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
 
     auto subtree = dynamic_cast<const BT::DecoratorSubtreeNode*>(root_selector->child(0));
-    ASSERT_TRUE( subtree  != nullptr);
+    ASSERT_TRUE(subtree != nullptr);
 
     auto sequence = dynamic_cast<const BT::SequenceNode*>(subtree->child());
     ASSERT_TRUE(sequence != nullptr);

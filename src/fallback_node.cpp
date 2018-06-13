@@ -15,9 +15,7 @@
 
 namespace BT
 {
-
-FallbackNode::FallbackNode(const std::string& name) :
-    ControlNode::ControlNode(name, NodeParameters())
+FallbackNode::FallbackNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
 {
 }
 
@@ -41,7 +39,7 @@ NodeStatus FallbackNode::tick()
         {
             if (child_status == NodeStatus::SUCCESS)
             {
-                for (unsigned t=0; t<=i; t++)
+                for (unsigned t = 0; t <= i; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
@@ -57,7 +55,7 @@ NodeStatus FallbackNode::tick()
             {
                 // If the  child status is failure, and it is the last child to be ticked,
                 // then the sequence has failed.
-                for (unsigned t=0; t<=i; t++)
+                for (unsigned t = 0; t <= i; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
@@ -67,5 +65,4 @@ NodeStatus FallbackNode::tick()
     }
     throw std::runtime_error("This is not supposed to happen");
 }
-
 }

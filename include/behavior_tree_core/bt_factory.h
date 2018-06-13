@@ -53,7 +53,7 @@ class BehaviorTreeFactory
     void registerNodeType(const std::string& ID)
     {
         static_assert(std::is_base_of<ActionNode, T>::value || std::is_base_of<ControlNode, T>::value ||
-                      std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
+                          std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
                       "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, "
                       "ControlNode "
                       "or ConditionNode");
@@ -66,9 +66,9 @@ class BehaviorTreeFactory
                       "[registerBuilder]: the registered class must have a Constructor with signature:\n\n"
                       "    (const std::string&, const NodeParameters&) or (const std::string&)");
 
-        static_assert( !(param_constructable && !has_static_required_parameters),
-                       "[registerBuilder]: a node that accepts NodeParameters must also implement a static method:\n\n"
-                       "    const NodeParameters& requiredNodeParameters(); ");
+        static_assert(!(param_constructable && !has_static_required_parameters),
+                      "[registerBuilder]: a node that accepts NodeParameters must also implement a static method:\n\n"
+                      "    const NodeParameters& requiredNodeParameters(); ");
 
         registerNodeTypeImpl<T>(ID);
         saveRequiredParameters<T>(ID);

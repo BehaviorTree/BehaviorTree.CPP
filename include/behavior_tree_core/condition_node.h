@@ -21,8 +21,7 @@ namespace BT
 class ConditionNode : public LeafNode
 {
   public:
-
-    ConditionNode(const std::string& name, const NodeParameters& parameters = NodeParameters() );
+    ConditionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
 
     virtual ~ConditionNode() override = default;
 

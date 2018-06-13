@@ -23,7 +23,7 @@ class ActionNodeBase : public LeafNode
 {
   public:
     // Constructor
-    ActionNodeBase(const std::string& name, const NodeParameters &parameters);
+    ActionNodeBase(const std::string& name, const NodeParameters& parameters);
     ~ActionNodeBase() override = default;
 
     virtual NodeType type() const override final
@@ -77,12 +77,11 @@ class SimpleActionNode : public ActionNodeBase
  *
  */
 
-
 class ActionNode : public ActionNodeBase
 {
   public:
     // Constructor
-    ActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters() );
+    ActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
     virtual ~ActionNode() override;
 
     // The method that is going to be executed by the thread

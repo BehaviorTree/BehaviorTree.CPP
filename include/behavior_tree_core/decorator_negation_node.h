@@ -21,9 +21,8 @@ namespace BT
 class DecoratorNegationNode : public DecoratorNode
 {
   public:
-
     DecoratorNegationNode(const std::string& name);
- 
+
     virtual ~DecoratorNegationNode() override = default;
 
   private:

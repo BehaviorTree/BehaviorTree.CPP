@@ -15,7 +15,6 @@
 
 namespace BT
 {
-
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
     registerNodeType<FallbackNode>("Fallback");
@@ -70,7 +69,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::st
         throw BehaviorTreeException("ID '" + ID + "' not registered");
     }
     std::unique_ptr<TreeNode> node = it->second(name, params);
-    node->setRegistrationName( ID );
+    node->setRegistrationName(ID);
     return node;
 }
 

@@ -21,10 +21,10 @@ namespace BT
 class SequenceNodeWithMemory : public ControlNode
 {
   public:
-    SequenceNodeWithMemory(const std::string &name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
+    SequenceNodeWithMemory(const std::string& name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
 
     // Reset policy passed by parameter [reset_policy]
-    SequenceNodeWithMemory(const std::string &name, const NodeParameters& params);
+    SequenceNodeWithMemory(const std::string& name, const NodeParameters& params);
 
     virtual ~SequenceNodeWithMemory() override = default;
 
@@ -32,7 +32,7 @@ class SequenceNodeWithMemory : public ControlNode
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = { {RESET_POLICY, toStr(BT::ON_SUCCESS_OR_FAILURE)} };
+        static NodeParameters params = {{RESET_POLICY, toStr(BT::ON_SUCCESS_OR_FAILURE)}};
         return params;
     }
 

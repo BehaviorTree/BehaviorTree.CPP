@@ -20,8 +20,7 @@ namespace BT
 {
 class FallbackNodeWithMemory : public ControlNode
 {
-
-public:
+  public:
     FallbackNodeWithMemory(const std::string& name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
 
     // Reset policy passed by parameter [reset_policy]
@@ -33,19 +32,17 @@ public:
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = { {RESET_POLICY, toStr(BT::ON_SUCCESS_OR_FAILURE)} };
+        static NodeParameters params = {{RESET_POLICY, toStr(BT::ON_SUCCESS_OR_FAILURE)}};
         return params;
     }
 
-private:
+  private:
     unsigned int current_child_idx_;
     ResetPolicy reset_policy_;
 
     constexpr static const char* RESET_POLICY = "reset_policy";
     virtual BT::NodeStatus tick() override;
 };
-
-
 }
 
 #endif   // FALLBACK_NODE_WITH_MEMORY_H

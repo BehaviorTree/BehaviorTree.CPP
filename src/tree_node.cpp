@@ -14,16 +14,16 @@
 #include "behavior_tree_core/tree_node.h"
 #include <cstring>
 
-namespace BT {
-
+namespace BT
+{
 static uint8_t getUID()
 {
     static uint8_t uid = 1;
     return uid++;
 }
 
-TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters) :
-    name_(name), status_(NodeStatus::IDLE), uid_( getUID() ), parameters_(parameters)
+TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters)
+  : name_(name), status_(NodeStatus::IDLE), uid_(getUID()), parameters_(parameters)
 {
 }
 
@@ -45,8 +45,7 @@ void TreeNode::setStatus(NodeStatus new_status)
     if (prev_status != new_status)
     {
         state_condition_variable_.notify_all();
-        state_change_signal_.notify( std::chrono::high_resolution_clock::now(),
-                                     *this, prev_status, new_status);
+        state_change_signal_.notify(std::chrono::high_resolution_clock::now(), *this, prev_status, new_status);
     }
 }
 
@@ -65,8 +64,9 @@ NodeStatus TreeNode::waitValidStatus()
 {
     std::unique_lock<std::mutex> lk(state_mutex_);
 
-    state_condition_variable_.wait(
-        lk, [&]() { return (status_ == NodeStatus::RUNNING || status_ == NodeStatus::SUCCESS || status_ == NodeStatus::FAILURE); });
+    state_condition_variable_.wait(lk, [&]() {
+        return (status_ == NodeStatus::RUNNING || status_ == NodeStatus::SUCCESS || status_ == NodeStatus::FAILURE);
+    });
     return status_;
 }
 
@@ -82,7 +82,7 @@ bool TreeNode::isHalted() const
 
 TreeNode::StatusChangeSubscriber TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 {
-    return state_change_signal_.subscribe( std::move(callback) );
+    return state_change_signal_.subscribe(std::move(callback));
 }
 
 uint16_t TreeNode::UID() const
@@ -90,14 +90,14 @@ uint16_t TreeNode::UID() const
     return uid_;
 }
 
-void TreeNode::setRegistrationName(const std::string &registration_name)
+void TreeNode::setRegistrationName(const std::string& registration_name)
 {
     registration_name_ = registration_name;
 }
 
-const std::string &TreeNode::registrationName() const
+const std::string& TreeNode::registrationName() const
 {
     return registration_name_;
 }
 
-} // end namespace
+}   // end namespace

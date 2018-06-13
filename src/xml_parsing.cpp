@@ -83,10 +83,8 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         for (auto node = xml_root->FirstChildElement(); node != nullptr; node = node->NextSiblingElement())
         {
             const char* name = node->Name();
-            if (strEqual(name, "Action") ||
-                    strEqual(name, "Decorator") ||
-                    strEqual(name, "SubTree") ||
-                    strEqual(name, "Condition"))
+            if (strEqual(name, "Action") || strEqual(name, "Decorator") || strEqual(name, "SubTree") ||
+                strEqual(name, "Condition"))
             {
                 const char* ID = node->Attribute("ID");
                 if (!ID)

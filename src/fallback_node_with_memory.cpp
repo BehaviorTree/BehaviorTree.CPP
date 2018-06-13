@@ -15,24 +15,19 @@
 
 namespace BT
 {
-
 constexpr const char* FallbackNodeWithMemory::RESET_POLICY;
 
-FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, ResetPolicy reset_policy)
-    : ControlNode::ControlNode(name, {{RESET_POLICY, toStr(reset_policy)}}),
-      current_child_idx_(0),
-      reset_policy_(reset_policy)
+FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string& name, ResetPolicy reset_policy)
+  : ControlNode::ControlNode(name, {{RESET_POLICY, toStr(reset_policy)}})
+  , current_child_idx_(0)
+  , reset_policy_(reset_policy)
 {
 }
 
-FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, const NodeParameters& params)
-  : ControlNode::ControlNode(name,params),
-    current_child_idx_(0),
-    reset_policy_( getParam<ResetPolicy>(RESET_POLICY) )
+FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string& name, const NodeParameters& params)
+  : ControlNode::ControlNode(name, params), current_child_idx_(0), reset_policy_(getParam<ResetPolicy>(RESET_POLICY))
 {
-
 }
-
 
 NodeStatus FallbackNodeWithMemory::tick()
 {
@@ -53,7 +48,7 @@ NodeStatus FallbackNodeWithMemory::tick()
             // If the  child status is not success, return the status
             if (child_status == NodeStatus::SUCCESS && reset_policy_ != ON_FAILURE)
             {
-                for (unsigned t=0; t<=current_child_idx_; t++)
+                for (unsigned t = 0; t <= current_child_idx_; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
@@ -70,9 +65,9 @@ NodeStatus FallbackNodeWithMemory::tick()
         else
         {
             // If it the last child.
-            if (child_status == NodeStatus::FAILURE && reset_policy_ != ON_SUCCESS )
+            if (child_status == NodeStatus::FAILURE && reset_policy_ != ON_SUCCESS)
             {
-                for (unsigned t=0; t<=current_child_idx_; t++)
+                for (unsigned t = 0; t <= current_child_idx_; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
@@ -90,5 +85,4 @@ void FallbackNodeWithMemory::halt()
     current_child_idx_ = 0;
     ControlNode::halt();
 }
-
 }

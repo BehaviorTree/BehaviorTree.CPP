@@ -30,7 +30,7 @@ class DecoratorRetryNode : public DecoratorNode
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = { {NUM_ATTEMPTS, "1"} };
+        static NodeParameters params = {{NUM_ATTEMPTS, "1"}};
         return params;
     }
 
