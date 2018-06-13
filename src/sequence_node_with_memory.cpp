@@ -21,30 +21,11 @@ BT::SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string &name, Rese
 }
 
 BT::SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, const NodeParameters& params)
-  : ControlNode::ControlNode(name, params), current_child_idx_(0)
+    : ControlNode::ControlNode(name,params),
+      current_child_idx_(0),
+      reset_policy_( getParam<ResetPolicy>("reset_policy") )
 {
-    auto it = params.find("reset_policy");
-    if( it == params.end())
-    {
-        throw std::runtime_error("SequenceNodeWithMemory requires the parameter [reset_policy]");
-    }
-    const std::string& policy = it->second;
 
-    if(policy == "ON_SUCCESS_OR_FAILURE")
-    {
-        reset_policy_ = ON_SUCCESS_OR_FAILURE;
-    }
-    else if(policy == "ON_SUCCESS")
-    {
-        reset_policy_ = ON_SUCCESS;
-    }
-    else if(policy == "ON_FAILURE")
-    {
-        reset_policy_ = ON_FAILURE;
-    }
-    else{
-        throw std::runtime_error("SequenceNodeWithMemory has a [reset_policy] that doesn't match.");
-    }
 }
 
 BT::NodeStatus BT::SequenceNodeWithMemory::tick()

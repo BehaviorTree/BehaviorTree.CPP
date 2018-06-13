@@ -16,19 +16,17 @@
 namespace BT {
 
 DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, unsigned int NTries)
-    : DecoratorNode(name, {{"num_cycles", std::to_string(NTries)}}), NTries_(NTries), TryIndx_(0)
+    : DecoratorNode(name, {{"num_cycles", std::to_string(NTries)}}),
+      NTries_(NTries), TryIndx_(0)
 {
 }
 
 DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, const NodeParameters& params)
-  : DecoratorNode(name,params), NTries_(1), TryIndx_(0)
+  : DecoratorNode(name,params),
+    NTries_( getParam<int>("num_cycles") ),
+    TryIndx_(0)
 {
-    auto it = params.find("num_cycles");
-    if (it == params.end())
-    {
-        throw std::runtime_error("[DecoratorRepeatNode] requires a parameter callen 'num_cycles'");
-    }
-    NTries_ = std::stoul(it->second);
+
 }
 
 NodeStatus DecoratorRepeatNode::tick()

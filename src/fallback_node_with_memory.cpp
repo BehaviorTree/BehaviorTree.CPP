@@ -15,35 +15,17 @@
 
 BT::FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, ResetPolicy reset_policy)
     : ControlNode::ControlNode(name, {{"reset_policy", toStr(reset_policy)}}),
-      current_child_idx_(0), reset_policy_(reset_policy)
+      current_child_idx_(0),
+      reset_policy_(reset_policy)
 {
 }
 
 BT::FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, const NodeParameters& params)
-  : ControlNode::ControlNode(name,params), current_child_idx_(0)
+  : ControlNode::ControlNode(name,params),
+    current_child_idx_(0),
+    reset_policy_( getParam<ResetPolicy>("reset_policy") )
 {
-    auto it = params.find("reset_policy");
-    if( it == params.end())
-    {
-        throw std::runtime_error("FallbackNodeWithMemory requires the parameter [reset_policy]");
-    }
-    const std::string& policy = it->second;
 
-    if(policy == "ON_SUCCESS_OR_FAILURE")
-    {
-        reset_policy_ = ON_SUCCESS_OR_FAILURE;
-    }
-    else if(policy == "ON_SUCCESS")
-    {
-        reset_policy_ = ON_SUCCESS;
-    }
-    else if(policy == "ON_FAILURE")
-    {
-        reset_policy_ = ON_FAILURE;
-    }
-    else{
-        throw std::runtime_error("FallbackNodeWithMemory has a [reset_policy] that doesn't match.");
-    }
 }
 
 
