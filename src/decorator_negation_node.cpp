@@ -13,7 +13,8 @@
 
 #include "behavior_tree_core/decorator_negation_node.h"
 
-BT::DecoratorNegationNode::DecoratorNegationNode(std::string name) : DecoratorNode(name)
+BT::DecoratorNegationNode::DecoratorNegationNode(const std::string& name, const NodeParameters& parameters) :
+    DecoratorNode(name,parameters)
 {
 }
 

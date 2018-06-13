@@ -13,7 +13,8 @@
 
 #include "behavior_tree_core/condition_node.h"
 
-BT::ConditionNode::ConditionNode(std::string name) : LeafNode::LeafNode(name)
+BT::ConditionNode::ConditionNode(const std::string& name, const NodeParameters& parameters)
+    : LeafNode::LeafNode(name,parameters)
 {
 }
 

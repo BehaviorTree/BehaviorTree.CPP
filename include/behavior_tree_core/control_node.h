@@ -27,7 +27,7 @@ class ControlNode : public TreeNode
 
   public:
     // Constructor
-    ControlNode(std::string name);
+    ControlNode(const std::string& name, const NodeParameters& parameters);
     ~ControlNode() = default;
 
     // The method used to fill the child vector

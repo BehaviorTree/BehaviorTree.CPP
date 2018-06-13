@@ -109,7 +109,7 @@ class TreeNode
 
   public:
     // The constructor and the destructor
-    TreeNode(std::string name);
+    TreeNode(const std::string& name, const NodeParameters& parameters);
     virtual ~TreeNode() = default;
 
     // The method that is going to be executed when the node receive a tick
@@ -160,12 +160,52 @@ private:
 
   std::string registration_name_;
 
+  const NodeParameters parameters_;
+
 };
 
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
+//------------------------------------------------------------------
+
 // The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
 typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
+
+/**
+ * @brief toStr converts NodeStatus to string. Optionally colored.
+ */
+const char* toStr(const BT::NodeStatus& status, bool colored = false);
+
+
+inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
+{
+    os << toStr(status);
+    return os;
+}
+
+/**
+ * @brief toStr converts NodeType to string.
+ */
+const char* toStr(const BT::NodeType& type);
+
+inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
+{
+    os << toStr(type);
+    return os;
+}
+
+/**
+ * @brief toStr converts ResetPolicy to string.
+ */
+const char* toStr(const BT::ResetPolicy& policy);
+
+inline std::ostream& operator<<(std::ostream& os, const BT::ResetPolicy& type)
+{
+    os << toStr(type);
+    return os;
+}
+
+
 }
 
 #endif

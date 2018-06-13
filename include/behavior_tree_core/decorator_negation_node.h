@@ -22,7 +22,7 @@ class DecoratorNegationNode : public DecoratorNode
 {
   public:
     // Constructor
-    DecoratorNegationNode(std::string name);
+    DecoratorNegationNode(const std::string& name, const NodeParameters& parameters);
  
     virtual ~DecoratorNegationNode() = default;
 

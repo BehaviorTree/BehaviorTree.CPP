@@ -13,7 +13,8 @@
 
 #include "behavior_tree_core/control_node.h"
 
-BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
+BT::ControlNode::ControlNode(const std::string& name, const NodeParameters& parameters) :
+    TreeNode::TreeNode(name,parameters)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable

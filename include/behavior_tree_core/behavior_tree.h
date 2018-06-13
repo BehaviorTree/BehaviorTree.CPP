@@ -53,29 +53,6 @@ typedef std::vector<std::pair<uint16_t,uint8_t>> SerializedTreeStatus;
 void buildSerializedStatusSnapshot(const TreeNode *root_node, SerializedTreeStatus& serialized_buffer);
 
 
-/**
- * @brief toStr converts NodeStatus to string. Optionally colored.
- */
-const char* toStr(const BT::NodeStatus& status, bool colored = false);
-
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
-{
-    os << toStr(status);
-    return os;
-}
-
-/**
- * @brief toStr converts NodeType to string.
- */
-const char* toStr(const BT::NodeType& type);
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
-{
-    os << toStr(type);
-    return os;
-}
-
 
 }
 

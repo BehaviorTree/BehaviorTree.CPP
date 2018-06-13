@@ -23,8 +23,8 @@ class ActionNodeBase : public LeafNode
 {
   public:
     // Constructor
-    ActionNodeBase(std::string name);
-    ~ActionNodeBase() = default;
+    ActionNodeBase(const std::string& name, const NodeParameters &parameters);
+    ~ActionNodeBase() override = default;
 
     virtual NodeType type() const override final
     {
@@ -50,7 +50,7 @@ class SimpleActionNode : public ActionNodeBase
     typedef std::function<NodeStatus()> TickFunctor;
 
     // Constructor: you must provide the funtion to call when tick() is invoked
-    SimpleActionNode(std::string name, TickFunctor tick_functor);
+    SimpleActionNode(const std::string& name, TickFunctor tick_functor);
 
     ~SimpleActionNode() = default;
 
@@ -82,8 +82,8 @@ class ActionNode : public ActionNodeBase
 {
   public:
     // Constructor
-    ActionNode(std::string name);
-    virtual ~ActionNode();
+    ActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters() );
+    virtual ~ActionNode() override;
 
     // The method that is going to be executed by the thread
     void waitForTick();

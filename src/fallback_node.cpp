@@ -13,7 +13,8 @@
 
 #include "behavior_tree_core/fallback_node.h"
 
-BT::FallbackNode::FallbackNode(std::string name) : ControlNode::ControlNode(name)
+BT::FallbackNode::FallbackNode(const std::string& name) :
+    ControlNode::ControlNode(name, NodeParameters())
 {
 }
 

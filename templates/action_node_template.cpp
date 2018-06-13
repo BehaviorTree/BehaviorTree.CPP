@@ -1,7 +1,7 @@
 #include <HEADER.h>
 #include <thread>
 
-BT::CLASSNAME::CONSTRUCTOR(std::string name) : ActionNode::ActionNode(name)
+BT::CLASSNAME::CONSTRUCTOR(const std::string& name) : ActionNode::ActionNode(name)
 {
     thread_ = std::thread(&ActionTestNode::WaitForTick, this);
 }

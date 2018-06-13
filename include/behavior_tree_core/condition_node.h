@@ -22,8 +22,8 @@ class ConditionNode : public LeafNode
 {
   public:
     // Constructor
-    ConditionNode(std::string name);
-    ~ConditionNode() = default;
+    ConditionNode(const std::string& name, const NodeParameters& parameters = NodeParameters() );
+    ~ConditionNode() override = default;
 
     // The method used to interrupt the execution of the node
     virtual void halt() override;

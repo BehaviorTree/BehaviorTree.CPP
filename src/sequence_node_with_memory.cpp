@@ -13,13 +13,15 @@
 
 #include "behavior_tree_core/sequence_node_with_memory.h"
 
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolicy reset_policy)
-  : ControlNode::ControlNode(name), current_child_idx_(0), reset_policy_(reset_policy)
+BT::SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string &name, ResetPolicy reset_policy)
+    : ControlNode::ControlNode(name, {{"reset_policy", toStr(reset_policy)}}),
+      current_child_idx_(0),
+      reset_policy_(reset_policy)
 {
 }
 
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, const NodeParameters& params)
-  : ControlNode::ControlNode(name), current_child_idx_(0)
+BT::SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, const NodeParameters& params)
+  : ControlNode::ControlNode(name, params), current_child_idx_(0)
 {
     auto it = params.find("reset_policy");
     if( it == params.end())

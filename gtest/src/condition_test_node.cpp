@@ -13,7 +13,8 @@
 #include "condition_test_node.h"
 #include <string>
 
-BT::ConditionTestNode::ConditionTestNode(std::string name) : ConditionNode::ConditionNode(name)
+BT::ConditionTestNode::ConditionTestNode(const std::string& name) :
+    ConditionNode::ConditionNode(name)
 {
     boolean_value_ = true;
 }
@@ -25,7 +26,6 @@ BT::ConditionTestNode::~ConditionTestNode()
 BT::NodeStatus BT::ConditionTestNode::tick()
 {
     // Condition checking and state update
-
     if (boolean_value_)
     {
         setStatus(NodeStatus::SUCCESS);

@@ -13,7 +13,8 @@
 
 #include "behavior_tree_core/sequence_node.h"
 
-BT::SequenceNode::SequenceNode(std::string name) : ControlNode::ControlNode(name)
+BT::SequenceNode::SequenceNode(const std::string& name) :
+    ControlNode::ControlNode(name, NodeParameters())
 {
 }
 

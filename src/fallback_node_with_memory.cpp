@@ -13,13 +13,14 @@
 
 #include "behavior_tree_core/fallback_node_with_memory.h"
 
-BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, ResetPolicy reset_policy)
-  : ControlNode::ControlNode(name), current_child_idx_(0), reset_policy_(reset_policy)
+BT::FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, ResetPolicy reset_policy)
+    : ControlNode::ControlNode(name, {{"reset_policy", toStr(reset_policy)}}),
+      current_child_idx_(0), reset_policy_(reset_policy)
 {
 }
 
-BT::FallbackNodeWithMemory::FallbackNodeWithMemory(std::string name, const NodeParameters& params)
-  : ControlNode::ControlNode(name), current_child_idx_(0)
+BT::FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, const NodeParameters& params)
+  : ControlNode::ControlNode(name,params), current_child_idx_(0)
 {
     auto it = params.find("reset_policy");
     if( it == params.end())

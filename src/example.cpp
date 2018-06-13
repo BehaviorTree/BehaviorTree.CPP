@@ -4,12 +4,12 @@
 class MyCondition : public BT::ConditionNode
 {
   public:
-    MyCondition(std::string name);
+    MyCondition(const std::string& name);
     ~MyCondition();
     BT::ReturnStatus Tick();
 };
 
-MyCondition::MyCondition(std::string name) : BT::ConditionNode::ConditionNode(name)
+MyCondition::MyCondition(const std::string& name) : BT::ConditionNode::ConditionNode(name)
 {
 }
 
@@ -23,13 +23,13 @@ BT::ReturnStatus MyCondition::Tick()
 class MyAction : public BT::ActionNode
 {
   public:
-    MyAction(std::string name);
+    MyAction(const std::string& name);
     ~MyAction();
     BT::ReturnStatus Tick();
     void Halt();
 };
 
-MyAction::MyAction(std::string name) : ActionNode::ActionNode(name)
+MyAction::MyAction(const std::string& name) : ActionNode::ActionNode(name)
 {
 }
 

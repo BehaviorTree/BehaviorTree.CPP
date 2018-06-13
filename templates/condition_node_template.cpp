@@ -1,6 +1,6 @@
 #include <HEADER.h>
 
-BT::CLASSNAME::CONSTRUCTOR(std::string name) : ConditionNode::ConditionNode(name)
+BT::CLASSNAME::CONSTRUCTOR(const std::string& name) : ConditionNode::ConditionNode(name)
 {
 }
 

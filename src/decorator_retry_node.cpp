@@ -13,13 +13,13 @@
 
 #include "behavior_tree_core/decorator_retry_node.h"
 
-BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, unsigned int NTries)
-  : DecoratorNode(name), NTries_(NTries), TryIndx_(0)
+BT::DecoratorRetryNode::DecoratorRetryNode(const std::string& name, unsigned int NTries)
+    : DecoratorNode(name, {{"num_attempts", std::to_string(NTries)}}), NTries_(NTries), TryIndx_(0)
 {
 }
 
-BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, const BT::NodeParameters& params)
-  : DecoratorNode(name), NTries_(1), TryIndx_(0)
+BT::DecoratorRetryNode::DecoratorRetryNode(const std::string& name, const BT::NodeParameters& params)
+  : DecoratorNode(name, params), NTries_(1), TryIndx_(0)
 {
     auto it = params.find("num_attempts");
     if (it == params.end())

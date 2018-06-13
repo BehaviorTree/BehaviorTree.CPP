@@ -9,7 +9,7 @@ class ConditionTestNode : public ConditionNode
 {
   public:
     // Constructor
-    ConditionTestNode(std::string name);
+    ConditionTestNode(const std::string& name);
     ~ConditionTestNode();
     void set_boolean_value(bool boolean_value);
 

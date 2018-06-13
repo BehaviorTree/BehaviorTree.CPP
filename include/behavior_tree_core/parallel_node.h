@@ -22,7 +22,7 @@ class ParallelNode : public ControlNode
 {
   public:
     // Constructor
-    ParallelNode(std::string name, int threshold_M);
+    ParallelNode(const std::string &name, int threshold_M);
     ~ParallelNode() = default;
 
     virtual void halt() override;

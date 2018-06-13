@@ -22,7 +22,7 @@ class LeafNode : public TreeNode
 {
   protected:
   public:
-    LeafNode(std::string name);
+    LeafNode(const std::string& name, const NodeParameters &parameters);
     ~LeafNode() = default;
 };
 }

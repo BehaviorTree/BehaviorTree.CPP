@@ -22,9 +22,9 @@ class DecoratorRepeatNode : public DecoratorNode
 {
   public:
     // Constructor
-    DecoratorRepeatNode(std::string name, unsigned int NTries);
+    DecoratorRepeatNode(const std::string &name, unsigned int NTries);
 
-    DecoratorRepeatNode(std::string name, const NodeParameters& params);
+    DecoratorRepeatNode(const std::string& name, const NodeParameters& params);
 
     ~DecoratorRepeatNode() = default;
 

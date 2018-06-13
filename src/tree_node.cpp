@@ -13,24 +13,27 @@
 
 #include "behavior_tree_core/tree_node.h"
 
+namespace BT {
+
 static uint8_t getUID()
 {
     static uint8_t uid = 1;
     return uid++;
 }
 
-BT::TreeNode::TreeNode(std::string name) : name_(name), status_(NodeStatus::IDLE), uid_( getUID() )
+TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters) :
+    name_(name), status_(NodeStatus::IDLE), uid_( getUID() ), parameters_(parameters)
 {
 }
 
-BT::NodeStatus BT::TreeNode::executeTick()
+NodeStatus TreeNode::executeTick()
 {
     const NodeStatus status = tick();
     setStatus(status);
     return status;
 }
 
-void BT::TreeNode::setStatus(NodeStatus new_status)
+void TreeNode::setStatus(NodeStatus new_status)
 {
     NodeStatus prev_status;
     {
@@ -46,18 +49,18 @@ void BT::TreeNode::setStatus(NodeStatus new_status)
     }
 }
 
-BT::NodeStatus BT::TreeNode::status() const
+NodeStatus TreeNode::status() const
 {
     std::lock_guard<std::mutex> LockGuard(state_mutex_);
     return status_;
 }
 
-void BT::TreeNode::setName(const std::string& new_name)
+void TreeNode::setName(const std::string& new_name)
 {
     name_ = new_name;
 }
 
-BT::NodeStatus BT::TreeNode::waitValidStatus()
+NodeStatus TreeNode::waitValidStatus()
 {
     std::unique_lock<std::mutex> lk(state_mutex_);
 
@@ -66,32 +69,99 @@ BT::NodeStatus BT::TreeNode::waitValidStatus()
     return status_;
 }
 
-const std::string& BT::TreeNode::name() const
+const std::string& TreeNode::name() const
 {
     return name_;
 }
 
-bool BT::TreeNode::isHalted() const
+bool TreeNode::isHalted() const
 {
     return status() == NodeStatus::IDLE;
 }
 
-BT::TreeNode::StatusChangeSubscriber BT::TreeNode::subscribeToStatusChange(BT::TreeNode::StatusChangeCallback callback)
+TreeNode::StatusChangeSubscriber TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 {
-    return state_change_signal_.subscribe(callback);
+    return state_change_signal_.subscribe( std::move(callback) );
 }
 
-uint16_t BT::TreeNode::UID() const
+uint16_t TreeNode::UID() const
 {
     return uid_;
 }
 
-void BT::TreeNode::setRegistrationName(const std::string &registration_name)
+void TreeNode::setRegistrationName(const std::string &registration_name)
 {
     registration_name_ = registration_name;
 }
 
-const std::string &BT::TreeNode::registrationName() const
+const std::string &TreeNode::registrationName() const
 {
     return registration_name_;
+}
+
+const char *toStr(const NodeStatus &status, bool colored)
+{
+    if( ! colored ){
+        switch (status)
+        {
+        case NodeStatus::SUCCESS:
+            return "SUCCESS";
+        case NodeStatus::FAILURE:
+            return "FAILURE";
+        case NodeStatus::RUNNING:
+            return "RUNNING";
+        case NodeStatus::IDLE:
+            return "IDLE";
+        }
+    }
+    else{
+        switch (status)
+        {
+        case NodeStatus::SUCCESS:
+            return ( "\x1b[32m" "SUCCESS" "\x1b[0m"); // RED
+        case NodeStatus::FAILURE:
+            return ( "\x1b[31m" "FAILURE" "\x1b[0m"); // GREEN
+        case NodeStatus::RUNNING:
+            return ( "\x1b[33m" "RUNNING" "\x1b[0m"); // YELLOW
+        case NodeStatus::IDLE:
+            return  ( "\x1b[36m" "IDLE" "\x1b[0m"); // CYAN
+        }
+    }
+    return "Undefined";
+}
+
+const char *toStr(const NodeType &type)
+{
+    switch (type)
+    {
+    case NodeType::ACTION:
+        return "Action";
+    case NodeType::CONDITION:
+        return "Condition";
+    case NodeType::DECORATOR:
+        return "Decorator";
+    case NodeType::CONTROL:
+        return "Control";
+    case NodeType::SUBTREE:
+        return "SubTree";
+    default:
+        return "Undefined";
+    }
+}
+
+const char *toStr(const ResetPolicy &policy)
+{
+    switch (policy)
+    {
+    case ResetPolicy::ON_FAILURE:
+        return "ON_FAILURE";
+    case ResetPolicy::ON_SUCCESS:
+        return "ON_SUCCESS";
+    case ResetPolicy::ON_SUCCESS_OR_FAILURE:
+        return "ON_SUCCESS_OR_FAILURE";
+    default:
+        return "Undefined";
+    }
+}
+
 }

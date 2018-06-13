@@ -22,7 +22,7 @@ class SequenceNode : public ControlNode
 {
   public:
     // Constructor
-    SequenceNode(std::string name);
+    SequenceNode(const std::string& name);
     ~SequenceNode() = default;
 
 private:

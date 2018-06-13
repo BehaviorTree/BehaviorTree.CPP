@@ -22,9 +22,9 @@ class DecoratorRetryNode : public DecoratorNode
 {
   public:
     // Constructor
-    DecoratorRetryNode(std::string name, unsigned int NTries);
+    DecoratorRetryNode(const std::string& name, unsigned int NTries);
 
-    DecoratorRetryNode(std::string name, const NodeParameters& params);
+    DecoratorRetryNode(const std::string& name, const NodeParameters& params);
 
     ~DecoratorRetryNode() = default;
 

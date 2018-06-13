@@ -12,7 +12,8 @@
 
 #include "behavior_tree_core/decorator_node.h"
 
-BT::DecoratorNode::DecoratorNode(std::string name) : TreeNode::TreeNode(name), child_node_(nullptr)
+BT::DecoratorNode::DecoratorNode(const std::string& name, const NodeParameters& parameters) :
+    TreeNode::TreeNode(name, parameters), child_node_(nullptr)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable

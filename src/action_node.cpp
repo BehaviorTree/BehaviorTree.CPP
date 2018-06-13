@@ -13,14 +13,15 @@
 
 #include "behavior_tree_core/action_node.h"
 
-BT::ActionNodeBase::ActionNodeBase(std::string name) : LeafNode::LeafNode(name)
+BT::ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters &parameters) :
+    LeafNode::LeafNode(name,parameters)
 {
 }
 
 //-------------------------------------------------------
 
-BT::SimpleActionNode::SimpleActionNode(std::string name, BT::SimpleActionNode::TickFunctor tick_functor)
-  : ActionNodeBase(name), tick_functor_(tick_functor)
+BT::SimpleActionNode::SimpleActionNode(const std::string &name, BT::SimpleActionNode::TickFunctor tick_functor)
+  : ActionNodeBase(name, NodeParameters()), tick_functor_( std::move(tick_functor) )
 {
 }
 
@@ -44,7 +45,8 @@ BT::NodeStatus BT::SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-BT::ActionNode::ActionNode(std::string name) : ActionNodeBase(name), loop_(true)
+BT::ActionNode::ActionNode(const std::string& name, const NodeParameters& parameters) :
+    ActionNodeBase(name, parameters), loop_(true)
 {
     thread_ = std::thread(&ActionNode::waitForTick, this);
 }

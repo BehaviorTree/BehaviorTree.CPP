@@ -21,10 +21,10 @@ namespace BT
 class FallbackNodeWithMemory : public ControlNode
 {
   public:
-    FallbackNodeWithMemory(std::string name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
+    FallbackNodeWithMemory(const std::string& name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
 
     // Reset policy passed by parameter [reset_policy]
-    FallbackNodeWithMemory(std::string name, const NodeParameters& params);
+    FallbackNodeWithMemory(const std::string&, const NodeParameters& params);
 
     ~FallbackNodeWithMemory() = default;
 

@@ -22,7 +22,7 @@ class FallbackNode : public ControlNode
 {
   public:
     // Constructor
-    FallbackNode(std::string name);
+    FallbackNode(const std::string& name);
     ~FallbackNode() = default;
 
 private:

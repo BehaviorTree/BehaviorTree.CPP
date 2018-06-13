@@ -9,7 +9,8 @@ class DecoratorSubtreeNode : public DecoratorNode
 {
   public:
     // Constructor
-    DecoratorSubtreeNode(std::string name) : DecoratorNode(name)
+    DecoratorSubtreeNode(const std::string& name, const NodeParameters& parameters) :
+        DecoratorNode(name, parameters)
     {
     }
 

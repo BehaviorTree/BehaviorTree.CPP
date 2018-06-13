@@ -12,7 +12,7 @@ class DecoratorNode : public TreeNode
 
   public:
     // Constructor
-    DecoratorNode(std::string name);
+    DecoratorNode(const std::string& name, const NodeParameters& parameters);
     ~DecoratorNode() = default;
 
     // The method used to fill the child vector
