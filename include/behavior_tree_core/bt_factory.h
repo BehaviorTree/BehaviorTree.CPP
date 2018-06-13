@@ -44,6 +44,11 @@ class BehaviorTreeFactory
         return builders_;
     }
 
+    const std::map<std::string, NodeParameters>& requiredNodeParameters() const
+    {
+        return required_parameters_;
+    }
+
     template <typename T>
     void registerNodeType(const std::string& ID)
     {
@@ -55,16 +60,23 @@ class BehaviorTreeFactory
 
         constexpr bool default_constructable = std::is_constructible<T, std::string>::value;
         constexpr bool param_constructable = std::is_constructible<T, std::string, const NodeParameters&>::value;
+        constexpr bool has_static_required_parameters = has_static_method_requiredNodeParameters<T>::value;
 
         static_assert(default_constructable || param_constructable,
-                      "[registerBuilder]: the registered class must have a Constructor with signature: "
-                      "  (const std::string&, const NodeParameters&) or (const std::string&)");
+                      "[registerBuilder]: the registered class must have a Constructor with signature:\n\n"
+                      "    (const std::string&, const NodeParameters&) or (const std::string&)");
+
+        static_assert( !(param_constructable && !has_static_required_parameters),
+                       "[registerBuilder]: a node that accepts NodeParameters must also implement a static method:\n\n"
+                       "    const NodeParameters& requiredNodeParameters(); ");
 
         registerNodeTypeImpl<T>(ID);
+        saveRequiredParameters<T>(ID);
     }
 
   private:
     std::map<std::string, NodeBuilder> builders_;
+    std::map<std::string, NodeParameters> required_parameters_;
 
     // template specialization + SFINAE + black magic
 
@@ -75,25 +87,17 @@ class BehaviorTreeFactory
     template <typename T>
     using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeParameters&>;
 
-    struct default_constructable{};
-    struct param_constructable{};
-    struct both_constructable{};
+    template <typename T, typename = void>
+    struct has_static_method_requiredNodeParameters: std::false_type {};
 
     template <typename T>
-    using enable_if_default_constructable_only =
-        typename std::enable_if<has_default_constructor<T>::value && !has_params_constructor<T>::value, struct default_constructable>;
+    struct has_static_method_requiredNodeParameters<T,
+            typename std::enable_if<std::is_same<decltype(T::requiredNodeParameters()), const NodeParameters&>::value>::type>
+        : std::true_type {};
 
     template <typename T>
-    using enable_if_param_constructable_only =
-        typename std::enable_if<!has_default_constructor<T>::value && has_params_constructor<T>::value, struct param_constructable>;
-
-    template <typename T>
-    using enable_if_has_both_constructors =
-        typename std::enable_if<has_default_constructor<T>::value && has_params_constructor<T>::value, struct both_constructable>;
-
-
-    template <typename T, typename enable_if_default_constructable_only<T>::type* = nullptr>
-    void registerNodeTypeImpl(const std::string& ID)
+    typename std::enable_if< has_default_constructor<T>::value && !has_params_constructor<T>::value>::type
+    registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = [](const std::string& name, const NodeParameters&)
         {
@@ -102,8 +106,9 @@ class BehaviorTreeFactory
         registerBuilder(ID, builder);
     }
 
-    template <typename T, typename enable_if_param_constructable_only<T>::type* = nullptr>
-    void registerNodeTypeImpl(const std::string& ID)
+    template <typename T>
+    typename std::enable_if< !has_default_constructor<T>::value && has_params_constructor<T>::value>::type
+    registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = [](const std::string& name, const NodeParameters& params)
         {
@@ -112,8 +117,9 @@ class BehaviorTreeFactory
         registerBuilder(ID, builder);
     }
 
-    template <typename T, typename enable_if_has_both_constructors<T>::type* = nullptr>
-    void registerNodeTypeImpl(const std::string& ID)
+    template <typename T>
+    typename std::enable_if< has_default_constructor<T>::value && has_params_constructor<T>::value>::type
+    registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = [](const std::string& name, const NodeParameters& params)
         {
@@ -125,6 +131,22 @@ class BehaviorTreeFactory
         };
         registerBuilder(ID, builder);
     }
+
+
+    template<typename T>
+    typename std::enable_if< has_static_method_requiredNodeParameters<T>::value>::type
+    saveRequiredParameters(const std::string& name)
+    {
+        required_parameters_.insert( { name, T::requiredNodeParameters()} );
+    }
+
+    template<typename T>
+    typename std::enable_if< !has_static_method_requiredNodeParameters<T>::value>::type
+    saveRequiredParameters(const std::string& )
+    {
+        //do nothing. This implementation is intentionally empty
+    }
+
     // clang-format on
 };
 

@@ -26,12 +26,19 @@ class DecoratorRepeatNode : public DecoratorNode
 
     DecoratorRepeatNode(const std::string& name, const NodeParameters& params);
 
-    ~DecoratorRepeatNode() = default;
+    virtual ~DecoratorRepeatNode() override = default;
+
+    static const NodeParameters& requiredNodeParameters()
+    {
+        static NodeParameters params = { {NUM_CYCLES, "1"} };
+        return params;
+    }
 
   private:
     unsigned NTries_;
     unsigned TryIndx_;
 
+    static constexpr const char* NUM_CYCLES = "num_cycles";
     virtual BT::NodeStatus tick() override;
 };
 }

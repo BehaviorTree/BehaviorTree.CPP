@@ -19,6 +19,9 @@
 #include <mutex>
 #include <condition_variable>
 
+namespace BT
+{
+
 class TickEngine
 {
   private:
@@ -35,5 +38,7 @@ class TickEngine
 
     void notify();
 };
+
+}
 
 #endif

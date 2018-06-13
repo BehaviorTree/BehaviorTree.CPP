@@ -15,15 +15,17 @@
 
 namespace BT {
 
+constexpr const char* DecoratorRepeatNode::NUM_CYCLES;
+
 DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, unsigned int NTries)
-    : DecoratorNode(name, {{"num_cycles", std::to_string(NTries)}}),
+    : DecoratorNode(name, {{NUM_CYCLES, std::to_string(NTries)}}),
       NTries_(NTries), TryIndx_(0)
 {
 }
 
 DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, const NodeParameters& params)
   : DecoratorNode(name,params),
-    NTries_( getParam<int>("num_cycles") ),
+    NTries_( getParam<int>(NUM_CYCLES) ),
     TryIndx_(0)
 {
 

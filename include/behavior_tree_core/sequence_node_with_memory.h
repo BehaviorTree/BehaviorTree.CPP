@@ -26,14 +26,21 @@ class SequenceNodeWithMemory : public ControlNode
     // Reset policy passed by parameter [reset_policy]
     SequenceNodeWithMemory(const std::string &name, const NodeParameters& params);
 
-    ~SequenceNodeWithMemory() = default;
+    virtual ~SequenceNodeWithMemory() override = default;
 
     virtual void halt() override;
+
+    static const NodeParameters& requiredNodeParameters()
+    {
+        static NodeParameters params = { {RESET_POLICY, toStr(BT::ON_SUCCESS_OR_FAILURE)} };
+        return params;
+    }
 
   private:
     unsigned int current_child_idx_;
     ResetPolicy reset_policy_;
 
+    static constexpr const char* RESET_POLICY = "reset_policy";
     virtual BT::NodeStatus tick() override;
 };
 }

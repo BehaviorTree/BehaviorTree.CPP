@@ -15,6 +15,9 @@
 
 // find how condition_variables work here http://es.cppreference.com/w/cpp/thread/condition_variable/wait
 
+namespace BT
+{
+
 TickEngine::TickEngine(bool start_ready) : ready_(start_ready)
 {
 }
@@ -34,4 +37,6 @@ void TickEngine::notify()
     std::lock_guard<std::mutex> LockGuard(mutex_);
     ready_ = true;
     condition_variable_.notify_all();
+}
+
 }

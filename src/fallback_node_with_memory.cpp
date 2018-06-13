@@ -13,23 +13,28 @@
 
 #include "behavior_tree_core/fallback_node_with_memory.h"
 
-BT::FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, ResetPolicy reset_policy)
-    : ControlNode::ControlNode(name, {{"reset_policy", toStr(reset_policy)}}),
+namespace BT
+{
+
+constexpr const char* FallbackNodeWithMemory::RESET_POLICY;
+
+FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, ResetPolicy reset_policy)
+    : ControlNode::ControlNode(name, {{RESET_POLICY, toStr(reset_policy)}}),
       current_child_idx_(0),
       reset_policy_(reset_policy)
 {
 }
 
-BT::FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, const NodeParameters& params)
+FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string &name, const NodeParameters& params)
   : ControlNode::ControlNode(name,params),
     current_child_idx_(0),
-    reset_policy_( getParam<ResetPolicy>("reset_policy") )
+    reset_policy_( getParam<ResetPolicy>(RESET_POLICY) )
 {
 
 }
 
 
-BT::NodeStatus BT::FallbackNodeWithMemory::tick()
+NodeStatus FallbackNodeWithMemory::tick()
 {
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
@@ -46,7 +51,7 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
         if (child_status != NodeStatus::FAILURE)
         {
             // If the  child status is not success, return the status
-            if (child_status == NodeStatus::SUCCESS && reset_policy_ != BT::ON_FAILURE)
+            if (child_status == NodeStatus::SUCCESS && reset_policy_ != ON_FAILURE)
             {
                 for (unsigned t=0; t<=current_child_idx_; t++)
                 {
@@ -65,7 +70,7 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
         else
         {
             // If it the last child.
-            if (child_status == NodeStatus::FAILURE && reset_policy_ != BT::ON_SUCCESS )
+            if (child_status == NodeStatus::FAILURE && reset_policy_ != ON_SUCCESS )
             {
                 for (unsigned t=0; t<=current_child_idx_; t++)
                 {
@@ -80,8 +85,10 @@ BT::NodeStatus BT::FallbackNodeWithMemory::tick()
     throw std::runtime_error("This is not supposed to happen");
 }
 
-void BT::FallbackNodeWithMemory::halt()
+void FallbackNodeWithMemory::halt()
 {
     current_child_idx_ = 0;
-    BT::ControlNode::halt();
+    ControlNode::halt();
+}
+
 }

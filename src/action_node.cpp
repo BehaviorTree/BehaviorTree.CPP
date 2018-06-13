@@ -13,19 +13,21 @@
 
 #include "behavior_tree_core/action_node.h"
 
-BT::ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters &parameters) :
+namespace BT{
+
+ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters &parameters) :
     LeafNode::LeafNode(name,parameters)
 {
 }
 
 //-------------------------------------------------------
 
-BT::SimpleActionNode::SimpleActionNode(const std::string &name, BT::SimpleActionNode::TickFunctor tick_functor)
+SimpleActionNode::SimpleActionNode(const std::string &name, SimpleActionNode::TickFunctor tick_functor)
   : ActionNodeBase(name, NodeParameters()), tick_functor_( std::move(tick_functor) )
 {
 }
 
-BT::NodeStatus BT::SimpleActionNode::tick()
+NodeStatus SimpleActionNode::tick()
 {
     NodeStatus prev_status = status();
 
@@ -45,13 +47,13 @@ BT::NodeStatus BT::SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-BT::ActionNode::ActionNode(const std::string& name, const NodeParameters& parameters) :
+ActionNode::ActionNode(const std::string& name, const NodeParameters& parameters) :
     ActionNodeBase(name, parameters), loop_(true)
 {
     thread_ = std::thread(&ActionNode::waitForTick, this);
 }
 
-BT::ActionNode::~ActionNode()
+ActionNode::~ActionNode()
 {
     if (thread_.joinable())
     {
@@ -59,7 +61,7 @@ BT::ActionNode::~ActionNode()
     }
 }
 
-void BT::ActionNode::waitForTick()
+void ActionNode::waitForTick()
 {
     while (loop_.load())
     {
@@ -78,7 +80,7 @@ void BT::ActionNode::waitForTick()
     }
 }
 
-BT::NodeStatus BT::ActionNode::executeTick()
+NodeStatus ActionNode::executeTick()
 {
     //send signal to other thread.
     // The other thread is in charge for changing the status
@@ -92,9 +94,11 @@ BT::NodeStatus BT::ActionNode::executeTick()
     return stat;
 }
 
-void BT::ActionNode::stopAndJoinThread()
+void ActionNode::stopAndJoinThread()
 {
     loop_.store(false);
     tick_engine_.notify();
     thread_.join();
+}
+
 }

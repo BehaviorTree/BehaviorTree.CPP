@@ -3,6 +3,7 @@
 
 namespace BT
 {
+
 void recursiveVisitor(TreeNode* node, std::function<void(TreeNode*)> visitor)
 {
     if (!node)

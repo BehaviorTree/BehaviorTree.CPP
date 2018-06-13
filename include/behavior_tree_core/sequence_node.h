@@ -21,9 +21,9 @@ namespace BT
 class SequenceNode : public ControlNode
 {
   public:
-    // Constructor
     SequenceNode(const std::string& name);
-    ~SequenceNode() = default;
+
+    virtual ~SequenceNode() override = default;
 
 private:
     virtual BT::NodeStatus tick() override;

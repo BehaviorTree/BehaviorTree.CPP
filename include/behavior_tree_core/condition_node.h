@@ -21,9 +21,10 @@ namespace BT
 class ConditionNode : public LeafNode
 {
   public:
-    // Constructor
+
     ConditionNode(const std::string& name, const NodeParameters& parameters = NodeParameters() );
-    ~ConditionNode() override = default;
+
+    virtual ~ConditionNode() override = default;
 
     // The method used to interrupt the execution of the node
     virtual void halt() override;

@@ -15,6 +15,7 @@
 
 namespace BT
 {
+
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
     registerNodeType<FallbackNode>("Fallback");

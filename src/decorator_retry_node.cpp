@@ -13,22 +13,26 @@
 
 #include "behavior_tree_core/decorator_retry_node.h"
 
-BT::DecoratorRetryNode::DecoratorRetryNode(const std::string& name, unsigned int NTries)
-    : DecoratorNode(name, {{"num_attempts", std::to_string(NTries)}}),
+namespace BT{
+
+constexpr const char* DecoratorRetryNode::NUM_ATTEMPTS;
+
+DecoratorRetryNode::DecoratorRetryNode(const std::string& name, unsigned int NTries)
+    : DecoratorNode(name, {{NUM_ATTEMPTS, std::to_string(NTries)}}),
       NTries_(NTries), TryIndx_(0)
 {
 }
 
-BT::DecoratorRetryNode::DecoratorRetryNode(const std::string& name, const BT::NodeParameters& params)
+DecoratorRetryNode::DecoratorRetryNode(const std::string& name, const NodeParameters& params)
   : DecoratorNode(name, params),
-    NTries_( getParam<int>("num_attempts") ), TryIndx_(0)
+    NTries_( getParam<int>(NUM_ATTEMPTS) ), TryIndx_(0)
 {
 }
 
-BT::NodeStatus BT::DecoratorRetryNode::tick()
+NodeStatus DecoratorRetryNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
-    BT::NodeStatus child_state = child_node_->executeTick();
+    NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {
@@ -65,4 +69,6 @@ BT::NodeStatus BT::DecoratorRetryNode::tick()
     }
 
     return status();
+}
+
 }

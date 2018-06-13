@@ -13,7 +13,8 @@ class DecoratorNode : public TreeNode
   public:
     // Constructor
     DecoratorNode(const std::string& name, const NodeParameters& parameters);
-    ~DecoratorNode() = default;
+
+    virtual ~DecoratorNode() override = default;
 
     // The method used to fill the child vector
     void setChild(TreeNode* child);

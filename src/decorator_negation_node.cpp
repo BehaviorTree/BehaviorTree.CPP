@@ -13,12 +13,15 @@
 
 #include "behavior_tree_core/decorator_negation_node.h"
 
-BT::DecoratorNegationNode::DecoratorNegationNode(const std::string& name, const NodeParameters& parameters) :
-    DecoratorNode(name,parameters)
+namespace BT
+{
+
+DecoratorNegationNode::DecoratorNegationNode(const std::string& name) :
+    DecoratorNode(name, NodeParameters() )
 {
 }
 
-BT::NodeStatus BT::DecoratorNegationNode::tick()
+NodeStatus DecoratorNegationNode::tick()
 {
     setStatus( NodeStatus::RUNNING );
 
@@ -52,4 +55,6 @@ BT::NodeStatus BT::DecoratorNegationNode::tick()
         }
     }
     return status();
+}
+
 }
