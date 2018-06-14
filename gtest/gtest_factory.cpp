@@ -79,8 +79,12 @@ const std::string xml_text_subtree = R"(
 
 TEST(BehaviorTreeFactory, VerifyLargeTree)
 {
-    BT::XMLParser parser;
+    BT::BehaviorTreeFactory factory;
+    CrossDoor cross_door(factory);
+
+    BT::XMLParser parser(factory);
     parser.loadFromText(xml_text);
+
     std::vector<std::string> errors;
     bool res = parser.verifyXML(errors);
 
@@ -93,11 +97,8 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_EQ(errors.size(), 0);
 
     std::vector<BT::TreeNodePtr> nodes;
-    BT::BehaviorTreeFactory factory;
 
-    CrossDoor cross_door(factory);
-
-    BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
+    BT::TreeNodePtr root_node = parser.instantiateTree(nodes);
 
     BT::printTreeRecursively(root_node.get());
 
@@ -135,8 +136,12 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
 TEST(BehaviorTreeFactory, Subtree)
 {
-    BT::XMLParser parser;
+    BT::BehaviorTreeFactory factory;
+    CrossDoor cross_door(factory);
+
+    BT::XMLParser parser(factory);
     parser.loadFromText(xml_text_subtree);
+
     std::vector<std::string> errors;
     bool res = parser.verifyXML(errors);
 
@@ -149,11 +154,8 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_EQ(errors.size(), 0);
 
     std::vector<BT::TreeNodePtr> nodes;
-    BT::BehaviorTreeFactory factory;
 
-    CrossDoor cross_door(factory);
-
-    BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
+    BT::TreeNodePtr root_node = parser.instantiateTree( nodes);
     BT::printTreeRecursively(root_node.get());
 
     ASSERT_EQ(root_node->name(), "root_selector");

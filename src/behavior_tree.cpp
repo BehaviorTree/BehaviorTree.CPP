@@ -3,7 +3,30 @@
 
 namespace BT
 {
-void recursiveVisitor(TreeNode* node, std::function<void(TreeNode*)> visitor)
+
+void applyRecursiveVisitor(const TreeNode* node, const std::function<void(const TreeNode*)>& visitor)
+{
+    if (!node)
+    {
+        throw std::runtime_error("One of the children of a DecoratorNode or ControlNode is nulltr");
+    }
+
+    visitor(node);
+
+    if (auto control = dynamic_cast<const BT::ControlNode*>(node))
+    {
+        for (const auto& child : control->children())
+        {
+            applyRecursiveVisitor( static_cast<const TreeNode*>(child), visitor);
+        }
+    }
+    else if (auto decorator = dynamic_cast<const BT::DecoratorNode*>(node))
+    {
+        applyRecursiveVisitor(decorator->child(), visitor);
+    }
+}
+
+void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>& visitor)
 {
     if (!node)
     {
@@ -16,12 +39,12 @@ void recursiveVisitor(TreeNode* node, std::function<void(TreeNode*)> visitor)
     {
         for (const auto& child : control->children())
         {
-            recursiveVisitor(child, visitor);
+            applyRecursiveVisitor(child, visitor);
         }
     }
     else if (auto decorator = dynamic_cast<BT::DecoratorNode*>(node))
     {
-        recursiveVisitor(decorator->child(), visitor);
+        applyRecursiveVisitor(decorator->child(), visitor);
     }
 }
 
@@ -68,6 +91,6 @@ void buildSerializedStatusSnapshot(TreeNode* root_node, SerializedTreeStatus& se
         serialized_buffer.push_back(std::make_pair(node->UID(), static_cast<uint8_t>(node->status())));
     };
 
-    recursiveVisitor(root_node, visitor);
+    applyRecursiveVisitor(root_node, visitor);
 }
 }

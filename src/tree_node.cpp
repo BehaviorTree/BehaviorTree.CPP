@@ -100,4 +100,9 @@ const std::string& TreeNode::registrationName() const
     return registration_name_;
 }
 
+const NodeParameters &TreeNode::initializationParameters() const
+{
+    return parameters_;
+}
+
 }   // end namespace

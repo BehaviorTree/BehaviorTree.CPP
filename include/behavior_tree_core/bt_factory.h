@@ -18,12 +18,20 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <cstring>
+#include <algorithm>
 
 #include "behavior_tree_core/behavior_tree.h"
 
 namespace BT
 {
-typedef std::set<std::string> RequiredParameters;
+
+struct TreeNodeModel
+{
+    NodeType type;
+    std::string registration_ID;
+    NodeParameters required_parameters;
+};
 
 class BehaviorTreeFactory
 {
@@ -34,7 +42,9 @@ class BehaviorTreeFactory
 
     void registerBuilder(const std::string& ID, NodeBuilder builder);
 
-    void registerSimpleAction(const std::string& ID, std::function<NodeStatus()> tick_functor);
+    void registerSimpleAction(const std::string& ID, const std::function<NodeStatus()> &tick_functor);
+
+    void registerSimpleCondition(const std::string& ID, const std::function<NodeStatus()> &tick_functor);
 
     std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
                                                   const NodeParameters& params) const;
@@ -44,9 +54,9 @@ class BehaviorTreeFactory
         return builders_;
     }
 
-    const std::map<std::string, NodeParameters>& requiredNodeParameters() const
+    const std::vector<TreeNodeModel>& models() const
     {
-        return required_parameters_;
+        return treenode_models_;
     }
 
     template <typename T>
@@ -63,7 +73,7 @@ class BehaviorTreeFactory
         constexpr bool has_static_required_parameters = has_static_method_requiredNodeParameters<T>::value;
 
         static_assert(default_constructable || param_constructable,
-                      "[registerBuilder]: the registered class must have a Constructor with signature:\n\n"
+                      "[registerBuilder]: the registered class must have at least one of these two constructors:\n\n"
                       "    (const std::string&, const NodeParameters&) or (const std::string&)");
 
         static_assert(!(param_constructable && !has_static_required_parameters),
@@ -71,12 +81,12 @@ class BehaviorTreeFactory
                       "    const NodeParameters& requiredNodeParameters(); ");
 
         registerNodeTypeImpl<T>(ID);
-        saveRequiredParameters<T>(ID);
+        storeNodeModel<T>(ID);
     }
 
   private:
     std::map<std::string, NodeBuilder> builders_;
-    std::map<std::string, NodeParameters> required_parameters_;
+    std::vector<TreeNodeModel> treenode_models_;
 
     // template specialization + SFINAE + black magic
 
@@ -125,6 +135,7 @@ class BehaviorTreeFactory
         {
             if( params.empty() )
             {
+                // call this one that MIGHT use default initialization
                 return std::unique_ptr<TreeNode>(new T(name));
             }
             return std::unique_ptr<TreeNode>(new T(name, params));
@@ -135,17 +146,21 @@ class BehaviorTreeFactory
 
     template<typename T>
     typename std::enable_if< has_static_method_requiredNodeParameters<T>::value>::type
-    saveRequiredParameters(const std::string& name)
+    storeNodeModel(const std::string& ID)
     {
-        required_parameters_.insert( { name, T::requiredNodeParameters()} );
+        treenode_models_.push_back( { getType<T>(), ID, T::requiredNodeParameters()} );
+        sortTreeNodeModel();
     }
 
     template<typename T>
     typename std::enable_if< !has_static_method_requiredNodeParameters<T>::value>::type
-    saveRequiredParameters(const std::string& )
+    storeNodeModel(const std::string& ID)
     {
-        //do nothing. This implementation is intentionally empty
+        treenode_models_.push_back( { getType<T>(), ID, NodeParameters()} );
+        sortTreeNodeModel();
     }
+
+    void sortTreeNodeModel();
 
     // clang-format on
 };

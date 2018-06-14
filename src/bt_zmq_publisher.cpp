@@ -7,7 +7,7 @@ namespace BT
 void PublisherZMQ::createStatusBuffer()
 {
     status_buffer_.clear();
-    recursiveVisitor(root_node_, [this](TreeNode* node) {
+    applyRecursiveVisitor(root_node_, [this](TreeNode* node) {
         size_t index = status_buffer_.size();
         status_buffer_.resize(index + 3);
         flatbuffers::WriteScalar<uint16_t>(&status_buffer_[index], node->UID());
@@ -44,6 +44,9 @@ PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
     zmq_publisher_.bind("tcp://*:1666");
     zmq_server_.bind("tcp://*:1667");
 
+    int timeout_ms = 100;
+    zmq_server_.setsockopt(ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
+
     active_server_ = true;
 
     thread_ = std::thread([this]() {
@@ -52,13 +55,17 @@ PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
             zmq::message_t req;
             try
             {
-                zmq_server_.recv(&req);
-                zmq::message_t reply(tree_buffer_.size());
-                memcpy(reply.data(), tree_buffer_.data(), tree_buffer_.size());
-                zmq_server_.send(reply);
+                bool received = zmq_server_.recv(&req);
+                if( received )
+                {
+                    zmq::message_t reply(tree_buffer_.size());
+                    memcpy(reply.data(), tree_buffer_.data(), tree_buffer_.size());
+                    zmq_server_.send(reply);
+                }
             }
             catch (zmq::error_t& err)
             {
+                std::cout << "[PublisherZMQ] just died. Exeption " << err.what() << std::endl;
                 active_server_ = false;
             }
         }

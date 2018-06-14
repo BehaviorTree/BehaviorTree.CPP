@@ -31,7 +31,10 @@
 
 namespace BT
 {
-void recursiveVisitor(TreeNode* node, std::function<void(TreeNode*)> visitor);
+
+void applyRecursiveVisitor(const TreeNode* node, const std::function<void(const TreeNode*)>& visitor);
+
+void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)> &visitor);
 
 /**
  * Debug function to print on a stream
@@ -49,7 +52,29 @@ void printTreeRecursively(const TreeNode* root_node);
 
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
+/**
+ * @brief buildSerializedStatusSnapshot create a snapshot of the tree and the status of each node.
+ * The serialization protocol is implemented with Flatbuffers.
+ *
+ * @param root_node
+ * @param serialized_buffer is the output.
+ */
 void buildSerializedStatusSnapshot(const TreeNode* root_node, SerializedTreeStatus& serialized_buffer);
+
+/// Simple way to extract the type of a TreeNode at COMPILE TIME.
+/// Useful to avoid the cost of without dynamic_cast or the virtual method TreeNode::type().
+template< typename T> inline NodeType getType()
+{
+    // clang-format off
+    if( std::is_base_of<ActionNodeBase, T>::value )        return NodeType::ACTION;
+    if( std::is_base_of<ConditionNode, T>::value )         return NodeType::CONDITION;
+    if( std::is_base_of<DecoratorSubtreeNode, T>::value )  return NodeType::SUBTREE;
+    if( std::is_base_of<DecoratorNode, T>::value )         return NodeType::DECORATOR;
+    if( std::is_base_of<ControlNode, T>::value )           return NodeType::CONTROL;
+    return NodeType::UNDEFINED;
+    // clang-format on
+}
+
 }
 
 #endif   // BEHAVIOR_TREE_H

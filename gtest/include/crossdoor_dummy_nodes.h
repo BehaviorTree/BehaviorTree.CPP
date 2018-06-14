@@ -12,12 +12,12 @@ class CrossDoor
         door_open_ = true;
         door_locked_ = false;
 
-        factory.registerSimpleAction("IsDoorOpen", [this]() { return IsDoorOpen(); });
+        factory.registerSimpleCondition("IsDoorOpen", [this]() { return IsDoorOpen(); });
         factory.registerSimpleAction("PassThroughDoor", [this]() { return PassThroughDoor(); });
         factory.registerSimpleAction("PassThroughWindow", [this]() { return PassThroughWindow(); });
         factory.registerSimpleAction("OpenDoor", [this]() { return OpenDoor(); });
         factory.registerSimpleAction("CloseDoor", [this]() { return CloseDoor(); });
-        factory.registerSimpleAction("IsDoorLocked", [this]() { return IsDoorLocked(); });
+        factory.registerSimpleCondition("IsDoorLocked", [this]() { return IsDoorLocked(); });
         factory.registerSimpleAction("UnlockDoor", [this]() { return UnlockDoor(); });
 
         _multiplier = fast ? 1 : 10;

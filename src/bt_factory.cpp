@@ -24,7 +24,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
     registerNodeType<DecoratorNegationNode>("Negation");
     registerNodeType<DecoratorRetryNode>("RetryUntilSuccesful");
-    registerNodeType<DecoratorRetryNode>("Repeat");
+    registerNodeType<DecoratorRepeatNode>("Repeat");
 
     registerNodeType<DecoratorSubtreeNode>("SubTree");
 }
@@ -51,13 +51,24 @@ void BehaviorTreeFactory::registerBuilder(const std::string& ID, NodeBuilder bui
     builders_.insert(std::make_pair(ID, builder));
 }
 
-void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, std::function<NodeStatus()> tick_functor)
+void BehaviorTreeFactory::registerSimpleCondition(const std::string &ID, const std::function<NodeStatus()> &tick_functor)
+{
+    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
+        return std::unique_ptr<TreeNode>(new SimpleConditionNode(name, tick_functor));
+    };
+
+    registerBuilder(ID, builder);
+    storeNodeModel<SimpleConditionNode>(ID);
+}
+
+void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, const std::function<NodeStatus()>& tick_functor)
 {
     NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
         return std::unique_ptr<TreeNode>(new SimpleActionNode(name, tick_functor));
     };
 
     registerBuilder(ID, builder);
+    storeNodeModel<SimpleActionNode>(ID);
 }
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::string& ID, const std::string& name,
@@ -71,6 +82,20 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::st
     std::unique_ptr<TreeNode> node = it->second(name, params);
     node->setRegistrationName(ID);
     return node;
+}
+
+void BehaviorTreeFactory::sortTreeNodeModel()
+{
+    std::sort( treenode_models_.begin(), treenode_models_.end(),
+               [](const TreeNodeModel& a, const TreeNodeModel& b)
+    {
+        int comp = std::strcmp( toStr( a.type ), toStr( b.type ));
+        if( comp == 0)
+        {
+            return a.registration_ID < b.registration_ID;
+        }
+        return comp < 0;
+    });
 }
 
 }   // end namespace

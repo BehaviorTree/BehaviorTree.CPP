@@ -91,6 +91,8 @@ class TreeNode
 
     const std::string& registrationName() const;
 
+    const NodeParameters& initializationParameters() const;
+
   protected:
     template <typename T>
     T getParam(const std::string& key) const
@@ -100,7 +102,7 @@ class TreeNode
         {
             throw std::invalid_argument(std::string("Can't find the parameter with key: ") + key);
         }
-        return convertFromString<T>(key.c_str());
+        return convertFromString<T>(it->second.c_str());
     }
 
   private:
