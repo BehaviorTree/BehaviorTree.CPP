@@ -52,7 +52,7 @@ class SimpleActionNode : public ActionNodeBase
     // Constructor: you must provide the funtion to call when tick() is invoked
     SimpleActionNode(const std::string& name, TickFunctor tick_functor);
 
-    ~SimpleActionNode() = default;
+    ~SimpleActionNode() override = default;
 
     virtual void halt() override
     {

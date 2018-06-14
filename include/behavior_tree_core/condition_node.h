@@ -33,6 +33,29 @@ class ConditionNode : public LeafNode
         return NodeType::CONDITION;
     }
 };
+
+class SimpleConditionNode : public ConditionNode
+{
+  public:
+    typedef std::function<NodeStatus()> TickFunctor;
+
+    // Constructor: you must provide the funtion to call when tick() is invoked
+    SimpleConditionNode(const std::string& name, TickFunctor tick_functor);
+
+    ~SimpleConditionNode() override = default;
+
+    virtual void halt() override
+    {
+        // not supported
+    }
+
+  protected:
+    virtual NodeStatus tick() override;
+
+    TickFunctor tick_functor_;
+};
+
+
 }
 
 #endif

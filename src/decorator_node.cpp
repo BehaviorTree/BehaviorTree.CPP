@@ -55,4 +55,17 @@ void DecoratorNode::haltChild()
         child_node_->halt();
     }
 }
+
+SimpleDecoratorNode::SimpleDecoratorNode(const std::string &name,
+                                         TickFunctor tick_functor)
+    : DecoratorNode(name, NodeParameters()),
+      tick_functor_(std::move(tick_functor))
+{
+}
+
+NodeStatus SimpleDecoratorNode::tick()
+{
+    return  tick_functor_( child()->executeTick() );
+}
+
 }

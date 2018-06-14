@@ -32,6 +32,23 @@ class DecoratorNode : public TreeNode
         return NodeType::DECORATOR;
     }
 };
+
+class SimpleDecoratorNode : public DecoratorNode
+{
+  public:
+    typedef std::function<NodeStatus(NodeStatus)> TickFunctor;
+
+    // Constructor: you must provide the funtion to call when tick() is invoked
+    SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor);
+
+    ~SimpleDecoratorNode() override = default;
+
+  protected:
+    virtual NodeStatus tick() override;
+
+    TickFunctor tick_functor_;
+};
+
 }
 
 #endif

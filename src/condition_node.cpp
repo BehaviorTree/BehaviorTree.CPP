@@ -13,11 +13,28 @@
 
 #include "behavior_tree_core/condition_node.h"
 
-BT::ConditionNode::ConditionNode(const std::string& name, const NodeParameters& parameters)
-  : LeafNode::LeafNode(name, parameters)
+namespace BT
+{
+
+ConditionNode::ConditionNode(const std::string& name, const NodeParameters& parameters)
+    : LeafNode::LeafNode(name, parameters)
 {
 }
 
-void BT::ConditionNode::halt()
+void ConditionNode::halt()
 {
+}
+
+SimpleConditionNode::SimpleConditionNode(const std::string &name,
+                                         TickFunctor tick_functor) :
+    ConditionNode(name, NodeParameters()),
+    tick_functor_(std::move(tick_functor))
+{
+}
+
+NodeStatus SimpleConditionNode::tick()
+{
+    return tick_functor_();
+}
+
 }
