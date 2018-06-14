@@ -14,8 +14,6 @@ struct TreeNode;
 
 struct BehaviorTree;
 
-struct Status;
-
 struct StatusChange;
 
 struct StatusChangeLog;
@@ -55,7 +53,7 @@ inline const char *EnumNameStatus(Status e) {
   return EnumNamesStatus()[index];
 }
 
-enum class NodeType : int8_t {
+enum class Type : int8_t {
   UNDEFINED = 0,
   ACTION = 1,
   CONDITION = 2,
@@ -66,19 +64,19 @@ enum class NodeType : int8_t {
   MAX = SUBTREE
 };
 
-inline const NodeType (&EnumValuesNodeType())[6] {
-  static const NodeType values[] = {
-    NodeType::UNDEFINED,
-    NodeType::ACTION,
-    NodeType::CONDITION,
-    NodeType::CONTROL,
-    NodeType::DECORATOR,
-    NodeType::SUBTREE
+inline const Type (&EnumValuesType())[6] {
+  static const Type values[] = {
+    Type::UNDEFINED,
+    Type::ACTION,
+    Type::CONDITION,
+    Type::CONTROL,
+    Type::DECORATOR,
+    Type::SUBTREE
   };
   return values;
 }
 
-inline const char * const *EnumNamesNodeType() {
+inline const char * const *EnumNamesType() {
   static const char * const names[] = {
     "UNDEFINED",
     "ACTION",
@@ -91,74 +89,47 @@ inline const char * const *EnumNamesNodeType() {
   return names;
 }
 
-inline const char *EnumNameNodeType(NodeType e) {
+inline const char *EnumNameType(Type e) {
   const size_t index = static_cast<int>(e);
-  return EnumNamesNodeType()[index];
+  return EnumNamesType()[index];
 }
 
-FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Timestamp FLATBUFFERS_FINAL_CLASS {
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(8) Timestamp FLATBUFFERS_FINAL_CLASS {
  private:
-  uint32_t sec_;
-  uint32_t usec_;
+  uint64_t usec_since_epoch_;
 
  public:
   Timestamp() {
     memset(this, 0, sizeof(Timestamp));
   }
-  Timestamp(uint32_t _sec, uint32_t _usec)
-      : sec_(flatbuffers::EndianScalar(_sec)),
-        usec_(flatbuffers::EndianScalar(_usec)) {
+  Timestamp(uint64_t _usec_since_epoch)
+      : usec_since_epoch_(flatbuffers::EndianScalar(_usec_since_epoch)) {
   }
-  uint32_t sec() const {
-    return flatbuffers::EndianScalar(sec_);
-  }
-  uint32_t usec() const {
-    return flatbuffers::EndianScalar(usec_);
+  uint64_t usec_since_epoch() const {
+    return flatbuffers::EndianScalar(usec_since_epoch_);
   }
 };
 FLATBUFFERS_STRUCT_END(Timestamp, 8);
 
-FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(2) Status FLATBUFFERS_FINAL_CLASS {
- private:
-  uint16_t uid_;
-  int8_t status_;
-  int8_t padding0__;
-
- public:
-  Status() {
-    memset(this, 0, sizeof(Status));
-  }
-  Status(uint16_t _uid, Status _status)
-      : uid_(flatbuffers::EndianScalar(_uid)),
-        status_(flatbuffers::EndianScalar(static_cast<int8_t>(_status))),
-        padding0__(0) {
-    (void)padding0__;
-  }
-  uint16_t uid() const {
-    return flatbuffers::EndianScalar(uid_);
-  }
-  Status status() const {
-    return static_cast<Status>(flatbuffers::EndianScalar(status_));
-  }
-};
-FLATBUFFERS_STRUCT_END(Status, 4);
-
-FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) StatusChange FLATBUFFERS_FINAL_CLASS {
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(8) StatusChange FLATBUFFERS_FINAL_CLASS {
  private:
   uint16_t uid_;
   int8_t prev_status_;
   int8_t status_;
-  uint32_t usec_delta_;
+  int32_t padding0__;
+  Timestamp timestamp_;
 
  public:
   StatusChange() {
     memset(this, 0, sizeof(StatusChange));
   }
-  StatusChange(uint16_t _uid, Status _prev_status, Status _status, uint32_t _usec_delta)
+  StatusChange(uint16_t _uid, Status _prev_status, Status _status, const Timestamp &_timestamp)
       : uid_(flatbuffers::EndianScalar(_uid)),
         prev_status_(flatbuffers::EndianScalar(static_cast<int8_t>(_prev_status))),
         status_(flatbuffers::EndianScalar(static_cast<int8_t>(_status))),
-        usec_delta_(flatbuffers::EndianScalar(_usec_delta)) {
+        padding0__(0),
+        timestamp_(_timestamp) {
+    (void)padding0__;
   }
   uint16_t uid() const {
     return flatbuffers::EndianScalar(uid_);
@@ -169,38 +140,50 @@ FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) StatusChange FLATBUFFERS_FINAL_CLASS {
   Status status() const {
     return static_cast<Status>(flatbuffers::EndianScalar(status_));
   }
-  uint32_t usec_delta() const {
-    return flatbuffers::EndianScalar(usec_delta_);
+  const Timestamp &timestamp() const {
+    return timestamp_;
   }
 };
-FLATBUFFERS_STRUCT_END(StatusChange, 8);
+FLATBUFFERS_STRUCT_END(StatusChange, 16);
 
 struct TreeNode FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_UID = 4,
-    VT_PAREND_UID = 6,
+    VT_CHILDREN_UID = 6,
     VT_TYPE = 8,
-    VT_NAME = 10
+    VT_STATUS = 10,
+    VT_INSTANCE_NAME = 12,
+    VT_REGISTRATION_NAME = 14
   };
   uint16_t uid() const {
     return GetField<uint16_t>(VT_UID, 0);
   }
-  uint16_t parend_uid() const {
-    return GetField<uint16_t>(VT_PAREND_UID, 0);
+  const flatbuffers::Vector<uint16_t> *children_uid() const {
+    return GetPointer<const flatbuffers::Vector<uint16_t> *>(VT_CHILDREN_UID);
   }
-  NodeType type() const {
-    return static_cast<NodeType>(GetField<int8_t>(VT_TYPE, 0));
+  Type type() const {
+    return static_cast<Type>(GetField<int8_t>(VT_TYPE, 0));
   }
-  const flatbuffers::String *name() const {
-    return GetPointer<const flatbuffers::String *>(VT_NAME);
+  Status status() const {
+    return static_cast<Status>(GetField<int8_t>(VT_STATUS, 0));
+  }
+  const flatbuffers::String *instance_name() const {
+    return GetPointer<const flatbuffers::String *>(VT_INSTANCE_NAME);
+  }
+  const flatbuffers::String *registration_name() const {
+    return GetPointer<const flatbuffers::String *>(VT_REGISTRATION_NAME);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_UID) &&
-           VerifyField<uint16_t>(verifier, VT_PAREND_UID) &&
+           VerifyOffset(verifier, VT_CHILDREN_UID) &&
+           verifier.Verify(children_uid()) &&
            VerifyField<int8_t>(verifier, VT_TYPE) &&
-           VerifyOffsetRequired(verifier, VT_NAME) &&
-           verifier.Verify(name()) &&
+           VerifyField<int8_t>(verifier, VT_STATUS) &&
+           VerifyOffsetRequired(verifier, VT_INSTANCE_NAME) &&
+           verifier.Verify(instance_name()) &&
+           VerifyOffsetRequired(verifier, VT_REGISTRATION_NAME) &&
+           verifier.Verify(registration_name()) &&
            verifier.EndTable();
   }
 };
@@ -211,14 +194,20 @@ struct TreeNodeBuilder {
   void add_uid(uint16_t uid) {
     fbb_.AddElement<uint16_t>(TreeNode::VT_UID, uid, 0);
   }
-  void add_parend_uid(uint16_t parend_uid) {
-    fbb_.AddElement<uint16_t>(TreeNode::VT_PAREND_UID, parend_uid, 0);
+  void add_children_uid(flatbuffers::Offset<flatbuffers::Vector<uint16_t>> children_uid) {
+    fbb_.AddOffset(TreeNode::VT_CHILDREN_UID, children_uid);
   }
-  void add_type(NodeType type) {
+  void add_type(Type type) {
     fbb_.AddElement<int8_t>(TreeNode::VT_TYPE, static_cast<int8_t>(type), 0);
   }
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
-    fbb_.AddOffset(TreeNode::VT_NAME, name);
+  void add_status(Status status) {
+    fbb_.AddElement<int8_t>(TreeNode::VT_STATUS, static_cast<int8_t>(status), 0);
+  }
+  void add_instance_name(flatbuffers::Offset<flatbuffers::String> instance_name) {
+    fbb_.AddOffset(TreeNode::VT_INSTANCE_NAME, instance_name);
+  }
+  void add_registration_name(flatbuffers::Offset<flatbuffers::String> registration_name) {
+    fbb_.AddOffset(TreeNode::VT_REGISTRATION_NAME, registration_name);
   }
   explicit TreeNodeBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -228,7 +217,8 @@ struct TreeNodeBuilder {
   flatbuffers::Offset<TreeNode> Finish() {
     const auto end = fbb_.EndTable(start_);
     auto o = flatbuffers::Offset<TreeNode>(end);
-    fbb_.Required(o, TreeNode::VT_NAME);
+    fbb_.Required(o, TreeNode::VT_INSTANCE_NAME);
+    fbb_.Required(o, TreeNode::VT_REGISTRATION_NAME);
     return o;
   }
 };
@@ -236,13 +226,17 @@ struct TreeNodeBuilder {
 inline flatbuffers::Offset<TreeNode> CreateTreeNode(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t uid = 0,
-    uint16_t parend_uid = 0,
-    NodeType type = NodeType::UNDEFINED,
-    flatbuffers::Offset<flatbuffers::String> name = 0) {
+    flatbuffers::Offset<flatbuffers::Vector<uint16_t>> children_uid = 0,
+    Type type = Type::UNDEFINED,
+    Status status = Status::IDLE,
+    flatbuffers::Offset<flatbuffers::String> instance_name = 0,
+    flatbuffers::Offset<flatbuffers::String> registration_name = 0) {
   TreeNodeBuilder builder_(_fbb);
-  builder_.add_name(name);
-  builder_.add_parend_uid(parend_uid);
+  builder_.add_registration_name(registration_name);
+  builder_.add_instance_name(instance_name);
+  builder_.add_children_uid(children_uid);
   builder_.add_uid(uid);
+  builder_.add_status(status);
   builder_.add_type(type);
   return builder_.Finish();
 }
@@ -250,15 +244,19 @@ inline flatbuffers::Offset<TreeNode> CreateTreeNode(
 inline flatbuffers::Offset<TreeNode> CreateTreeNodeDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t uid = 0,
-    uint16_t parend_uid = 0,
-    NodeType type = NodeType::UNDEFINED,
-    const char *name = nullptr) {
+    const std::vector<uint16_t> *children_uid = nullptr,
+    Type type = Type::UNDEFINED,
+    Status status = Status::IDLE,
+    const char *instance_name = nullptr,
+    const char *registration_name = nullptr) {
   return BT_Serialization::CreateTreeNode(
       _fbb,
       uid,
-      parend_uid,
+      children_uid ? _fbb.CreateVector<uint16_t>(*children_uid) : 0,
       type,
-      name ? _fbb.CreateString(name) : 0);
+      status,
+      instance_name ? _fbb.CreateString(instance_name) : 0,
+      registration_name ? _fbb.CreateString(registration_name) : 0);
 }
 
 struct BehaviorTree FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -326,18 +324,10 @@ inline flatbuffers::Offset<BehaviorTree> CreateBehaviorTreeDirect(
 struct StatusChangeLog FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_BEHAVIOR_TREE = 4,
-    VT_INITIAL_STATUS = 6,
-    VT_INITIAL_TIME = 8,
-    VT_STATE_CHANGES = 10
+    VT_STATE_CHANGES = 6
   };
   const BehaviorTree *behavior_tree() const {
     return GetPointer<const BehaviorTree *>(VT_BEHAVIOR_TREE);
-  }
-  const flatbuffers::Vector<int8_t> *initial_status() const {
-    return GetPointer<const flatbuffers::Vector<int8_t> *>(VT_INITIAL_STATUS);
-  }
-  const Timestamp *initial_time() const {
-    return GetStruct<const Timestamp *>(VT_INITIAL_TIME);
   }
   const flatbuffers::Vector<const StatusChange *> *state_changes() const {
     return GetPointer<const flatbuffers::Vector<const StatusChange *> *>(VT_STATE_CHANGES);
@@ -346,9 +336,6 @@ struct StatusChangeLog FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_BEHAVIOR_TREE) &&
            verifier.VerifyTable(behavior_tree()) &&
-           VerifyOffset(verifier, VT_INITIAL_STATUS) &&
-           verifier.Verify(initial_status()) &&
-           VerifyField<Timestamp>(verifier, VT_INITIAL_TIME) &&
            VerifyOffset(verifier, VT_STATE_CHANGES) &&
            verifier.Verify(state_changes()) &&
            verifier.EndTable();
@@ -360,12 +347,6 @@ struct StatusChangeLogBuilder {
   flatbuffers::uoffset_t start_;
   void add_behavior_tree(flatbuffers::Offset<BehaviorTree> behavior_tree) {
     fbb_.AddOffset(StatusChangeLog::VT_BEHAVIOR_TREE, behavior_tree);
-  }
-  void add_initial_status(flatbuffers::Offset<flatbuffers::Vector<int8_t>> initial_status) {
-    fbb_.AddOffset(StatusChangeLog::VT_INITIAL_STATUS, initial_status);
-  }
-  void add_initial_time(const Timestamp *initial_time) {
-    fbb_.AddStruct(StatusChangeLog::VT_INITIAL_TIME, initial_time);
   }
   void add_state_changes(flatbuffers::Offset<flatbuffers::Vector<const StatusChange *>> state_changes) {
     fbb_.AddOffset(StatusChangeLog::VT_STATE_CHANGES, state_changes);
@@ -385,13 +366,9 @@ struct StatusChangeLogBuilder {
 inline flatbuffers::Offset<StatusChangeLog> CreateStatusChangeLog(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<BehaviorTree> behavior_tree = 0,
-    flatbuffers::Offset<flatbuffers::Vector<int8_t>> initial_status = 0,
-    const Timestamp *initial_time = 0,
     flatbuffers::Offset<flatbuffers::Vector<const StatusChange *>> state_changes = 0) {
   StatusChangeLogBuilder builder_(_fbb);
   builder_.add_state_changes(state_changes);
-  builder_.add_initial_time(initial_time);
-  builder_.add_initial_status(initial_status);
   builder_.add_behavior_tree(behavior_tree);
   return builder_.Finish();
 }
@@ -399,44 +376,40 @@ inline flatbuffers::Offset<StatusChangeLog> CreateStatusChangeLog(
 inline flatbuffers::Offset<StatusChangeLog> CreateStatusChangeLogDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<BehaviorTree> behavior_tree = 0,
-    const std::vector<int8_t> *initial_status = nullptr,
-    const Timestamp *initial_time = 0,
     const std::vector<StatusChange> *state_changes = nullptr) {
   return BT_Serialization::CreateStatusChangeLog(
       _fbb,
       behavior_tree,
-      initial_status ? _fbb.CreateVector<int8_t>(*initial_status) : 0,
-      initial_time,
       state_changes ? _fbb.CreateVectorOfStructs<StatusChange>(*state_changes) : 0);
 }
 
-inline const BT_Serialization::StatusChangeLog *GetStatusChangeLog(const void *buf) {
-  return flatbuffers::GetRoot<BT_Serialization::StatusChangeLog>(buf);
+inline const BT_Serialization::BehaviorTree *GetBehaviorTree(const void *buf) {
+  return flatbuffers::GetRoot<BT_Serialization::BehaviorTree>(buf);
 }
 
-inline const BT_Serialization::StatusChangeLog *GetSizePrefixedStatusChangeLog(const void *buf) {
-  return flatbuffers::GetSizePrefixedRoot<BT_Serialization::StatusChangeLog>(buf);
+inline const BT_Serialization::BehaviorTree *GetSizePrefixedBehaviorTree(const void *buf) {
+  return flatbuffers::GetSizePrefixedRoot<BT_Serialization::BehaviorTree>(buf);
 }
 
-inline bool VerifyStatusChangeLogBuffer(
+inline bool VerifyBehaviorTreeBuffer(
     flatbuffers::Verifier &verifier) {
-  return verifier.VerifyBuffer<BT_Serialization::StatusChangeLog>(nullptr);
+  return verifier.VerifyBuffer<BT_Serialization::BehaviorTree>(nullptr);
 }
 
-inline bool VerifySizePrefixedStatusChangeLogBuffer(
+inline bool VerifySizePrefixedBehaviorTreeBuffer(
     flatbuffers::Verifier &verifier) {
-  return verifier.VerifySizePrefixedBuffer<BT_Serialization::StatusChangeLog>(nullptr);
+  return verifier.VerifySizePrefixedBuffer<BT_Serialization::BehaviorTree>(nullptr);
 }
 
-inline void FinishStatusChangeLogBuffer(
+inline void FinishBehaviorTreeBuffer(
     flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<BT_Serialization::StatusChangeLog> root) {
+    flatbuffers::Offset<BT_Serialization::BehaviorTree> root) {
   fbb.Finish(root);
 }
 
-inline void FinishSizePrefixedStatusChangeLogBuffer(
+inline void FinishSizePrefixedBehaviorTreeBuffer(
     flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<BT_Serialization::StatusChangeLog> root) {
+    flatbuffers::Offset<BT_Serialization::BehaviorTree> root) {
   fbb.FinishSizePrefixed(root);
 }
 

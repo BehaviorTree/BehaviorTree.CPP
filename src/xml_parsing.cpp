@@ -83,7 +83,10 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         for (auto node = xml_root->FirstChildElement(); node != nullptr; node = node->NextSiblingElement())
         {
             const char* name = node->Name();
-            if (strEqual(name, "Action") || strEqual(name, "Decorator") || strEqual(name, "SubTree"))
+            if (strEqual(name, "Action") ||
+                    strEqual(name, "Decorator") ||
+                    strEqual(name, "SubTree") ||
+                    strEqual(name, "Condition"))
             {
                 const char* ID = node->Attribute("ID");
                 if (!ID)
@@ -133,6 +136,17 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
             if (!node->Attribute("ID"))
             {
                 AppendError(node->GetLineNum(), "The node <Action> must have the attribute [ID]");
+            }
+        }
+        else if (strEqual(name, "Condition"))
+        {
+            if (children_count != 0)
+            {
+                AppendError(node->GetLineNum(), "The node <Condition> must not have any child");
+            }
+            if (!node->Attribute("ID"))
+            {
+                AppendError(node->GetLineNum(), "The node <Condition> must have the attribute [ID]");
             }
         }
         else if (strEqual(name, "Sequence") || strEqual(name, "SequenceStar") || strEqual(name, "Fallback") ||

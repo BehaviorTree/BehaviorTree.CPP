@@ -68,7 +68,9 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::st
     {
         throw BehaviorTreeException("ID '" + ID + "' not registered");
     }
-    return it->second(name, params);
+    std::unique_ptr<TreeNode> node = it->second(name, params);
+    node->setRegistrationName( ID );
+    return node;
 }
 
 }   // end namespace

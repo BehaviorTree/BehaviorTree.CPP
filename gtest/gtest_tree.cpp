@@ -396,19 +396,19 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     bool done_1 = false,  done_2 = false,  done_3 = false;
 
     auto sub1 = action_1.subscribeToStatusChange(
-                [&done_1](const TreeNode& , NodeStatus,NodeStatus status)
+                [&done_1](TimePoint, const TreeNode& , NodeStatus,NodeStatus status)
     {
        if( status == NodeStatus::SUCCESS) done_1 = true;
     });
 
     auto sub2 = action_2.subscribeToStatusChange(
-                [&done_2](const TreeNode& , NodeStatus,NodeStatus status)
+                [&done_2](TimePoint, const TreeNode& , NodeStatus,NodeStatus status)
     {
        if( status == NodeStatus::SUCCESS) done_2 = true;
     });
 
     auto sub3 = action_3.subscribeToStatusChange(
-                [&done_3](const TreeNode& , NodeStatus,NodeStatus status)
+                [&done_3](TimePoint, const TreeNode& , NodeStatus,NodeStatus status)
     {
        if( status == NodeStatus::SUCCESS) done_3 = true;
     });
