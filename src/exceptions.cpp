@@ -13,7 +13,8 @@
 
 #include "behavior_tree_core/exceptions.h"
 
-BT::BehaviorTreeException::BehaviorTreeException(const std::string Message)
+BT::BehaviorTreeException::BehaviorTreeException(const std::string &message):
+    message_( std::string("BehaviorTreeException: ") + message )
 {
-    this->Message = std::string("BehaviorTreeException: " + Message).c_str();
+
 }
