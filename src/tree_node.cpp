@@ -55,11 +55,6 @@ NodeStatus TreeNode::status() const
     return status_;
 }
 
-void TreeNode::setName(const std::string& new_name)
-{
-    name_ = new_name;
-}
-
 NodeStatus TreeNode::waitValidStatus()
 {
     std::unique_lock<std::mutex> lk(state_mutex_);

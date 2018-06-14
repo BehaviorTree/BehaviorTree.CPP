@@ -34,6 +34,18 @@ class ConditionNode : public LeafNode
     }
 };
 
+
+/**
+ * @brief The SimpleConditionNode provides an easy to use ConditionNode.
+ * The user should simply provide a callback with this signature
+ *
+ *    BT::NodeStatus functionName(void)
+ *
+ * This avoids the hassle of inheriting from a ActionNode.
+ *
+ * Using lambdas or std::bind it is easy to pass a pointer to a method.
+ * SimpleConditionNode does not support halting, NodeParameters, nor Blackboards.
+ */
 class SimpleConditionNode : public ConditionNode
 {
   public:

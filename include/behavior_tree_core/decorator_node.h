@@ -33,6 +33,17 @@ class DecoratorNode : public TreeNode
     }
 };
 
+/**
+ * @brief The SimpleDecoratorNode provides an easy to use DecoratorNode.
+ * The user should simply provide a callback with this signature
+ *
+ *    BT::NodeStatus functionName(BT::NodeStatus child_status)
+ *
+ * This avoids the hassle of inheriting from a DecoratorNode.
+ *
+ * Using lambdas or std::bind it is easy to pass a pointer to a method.
+ * SimpleDecoratorNode does not support halting, NodeParameters, nor Blackboards.
+ */
 class SimpleDecoratorNode : public DecoratorNode
 {
   public:

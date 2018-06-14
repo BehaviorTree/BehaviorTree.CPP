@@ -33,16 +33,15 @@ class ActionNodeBase : public LeafNode
 };
 
 /**
- * @brief The SimpleActionNode provides a easy to use ActionNode.
+ * @brief The SimpleActionNode provides an easy to use ActionNode.
  * The user should simply provide a callback with this signature
  *
- *    BT::NodeStatus funtionName(void)
+ *    BT::NodeStatus functionName(void)
  *
  * This avoids the hassle of inheriting from a ActionNode.
  *
- * Using lambdas or std::bind it is easy to pass a pointer to a method too.
- * For the time being, this class of Actions can not carry use the BT::NodeParameters
- * This may change in the future.
+ * Using lambdas or std::bind it is easy to pass a pointer to a method.
+ * SimpleActionNode does not support halting, NodeParameters, nor Blackboards.
  */
 class SimpleActionNode : public ActionNodeBase
 {

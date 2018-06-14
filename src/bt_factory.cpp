@@ -77,7 +77,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::st
     auto it = builders_.find(ID);
     if (it == builders_.end())
     {
-        throw BehaviorTreeException("ID '" + ID + "' not registered");
+        throw std::invalid_argument("ID '" + ID + "' not registered");
     }
     std::unique_ptr<TreeNode> node = it->second(name, params);
     node->setRegistrationName(ID);

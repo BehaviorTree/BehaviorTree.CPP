@@ -26,6 +26,9 @@
 namespace BT
 {
 
+// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
+typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
+
 struct TreeNodeModel
 {
     NodeType type;

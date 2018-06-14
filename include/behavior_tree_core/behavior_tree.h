@@ -41,20 +41,13 @@ void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)> 
  */
 void printTreeRecursively(const TreeNode* root_node);
 
-/**
- * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
- * (or sent to a client application) to know the status of all the nodes of a tree.
- * It is not "human readable".
- *
- * @param root_node
- * @param serialized_buffer
- */
 
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
 /**
- * @brief buildSerializedStatusSnapshot create a snapshot of the tree and the status of each node.
- * The serialization protocol is implemented with Flatbuffers.
+ * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
+ * (or sent to a client application) to know the status of all the nodes of a tree.
+ * It is not "human readable".
  *
  * @param root_node
  * @param serialized_buffer is the output.
