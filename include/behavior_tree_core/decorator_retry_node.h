@@ -22,17 +22,23 @@ class DecoratorRetryNode : public DecoratorNode
 {
   public:
     // Constructor
-    DecoratorRetryNode(std::string name, unsigned int NTries);
+    DecoratorRetryNode(const std::string& name, unsigned int NTries);
 
-    DecoratorRetryNode(std::string name, const NodeParameters& params);
+    DecoratorRetryNode(const std::string& name, const NodeParameters& params);
 
-    ~DecoratorRetryNode() = default;
+    virtual ~DecoratorRetryNode() override = default;
 
+    static const NodeParameters& requiredNodeParameters()
+    {
+        static NodeParameters params = {{NUM_ATTEMPTS, "1"}};
+        return params;
+    }
 
   private:
     unsigned int NTries_;
     unsigned int TryIndx_;
 
+    static constexpr const char* NUM_ATTEMPTS = "num_attempts";
     virtual BT::NodeStatus tick() override;
 };
 }

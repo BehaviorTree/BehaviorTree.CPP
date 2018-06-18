@@ -23,8 +23,8 @@ class ActionNodeBase : public LeafNode
 {
   public:
     // Constructor
-    ActionNodeBase(std::string name);
-    ~ActionNodeBase() = default;
+    ActionNodeBase(const std::string& name, const NodeParameters& parameters);
+    ~ActionNodeBase() override = default;
 
     virtual NodeType type() const override final
     {
@@ -33,16 +33,15 @@ class ActionNodeBase : public LeafNode
 };
 
 /**
- * @brief The SimpleActionNode provides a easy to use ActionNode.
+ * @brief The SimpleActionNode provides an easy to use ActionNode.
  * The user should simply provide a callback with this signature
  *
- *    BT::NodeStatus funtionName(void)
+ *    BT::NodeStatus functionName(void)
  *
  * This avoids the hassle of inheriting from a ActionNode.
  *
- * Using lambdas or std::bind it is easy to pass a pointer to a method too.
- * For the time being, this class of Actions can not carry use the BT::NodeParameters
- * This may change in the future.
+ * Using lambdas or std::bind it is easy to pass a pointer to a method.
+ * SimpleActionNode does not support halting, NodeParameters, nor Blackboards.
  */
 class SimpleActionNode : public ActionNodeBase
 {
@@ -50,9 +49,9 @@ class SimpleActionNode : public ActionNodeBase
     typedef std::function<NodeStatus()> TickFunctor;
 
     // Constructor: you must provide the funtion to call when tick() is invoked
-    SimpleActionNode(std::string name, TickFunctor tick_functor);
+    SimpleActionNode(const std::string& name, TickFunctor tick_functor);
 
-    ~SimpleActionNode() = default;
+    ~SimpleActionNode() override = default;
 
     virtual void halt() override
     {
@@ -77,13 +76,12 @@ class SimpleActionNode : public ActionNodeBase
  *
  */
 
-
 class ActionNode : public ActionNodeBase
 {
   public:
     // Constructor
-    ActionNode(std::string name);
-    virtual ~ActionNode();
+    ActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    virtual ~ActionNode() override;
 
     // The method that is going to be executed by the thread
     void waitForTick();

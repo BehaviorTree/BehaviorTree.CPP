@@ -13,39 +13,23 @@
 
 #include "behavior_tree_core/sequence_node_with_memory.h"
 
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, ResetPolicy reset_policy)
-  : ControlNode::ControlNode(name), current_child_idx_(0), reset_policy_(reset_policy)
+namespace BT
+{
+constexpr const char* SequenceNodeWithMemory::RESET_POLICY;
+
+SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, ResetPolicy reset_policy)
+  : ControlNode::ControlNode(name, {{RESET_POLICY, toStr(reset_policy)}})
+  , current_child_idx_(0)
+  , reset_policy_(reset_policy)
 {
 }
 
-BT::SequenceNodeWithMemory::SequenceNodeWithMemory(std::string name, const NodeParameters& params)
-  : ControlNode::ControlNode(name), current_child_idx_(0)
+SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, const NodeParameters& params)
+  : ControlNode::ControlNode(name, params), current_child_idx_(0), reset_policy_(getParam<ResetPolicy>(RESET_POLICY))
 {
-    auto it = params.find("reset_policy");
-    if( it == params.end())
-    {
-        throw std::runtime_error("SequenceNodeWithMemory requires the parameter [reset_policy]");
-    }
-    const std::string& policy = it->second;
-
-    if(policy == "ON_SUCCESS_OR_FAILURE")
-    {
-        reset_policy_ = ON_SUCCESS_OR_FAILURE;
-    }
-    else if(policy == "ON_SUCCESS")
-    {
-        reset_policy_ = ON_SUCCESS;
-    }
-    else if(policy == "ON_FAILURE")
-    {
-        reset_policy_ = ON_FAILURE;
-    }
-    else{
-        throw std::runtime_error("SequenceNodeWithMemory has a [reset_policy] that doesn't match.");
-    }
 }
 
-BT::NodeStatus BT::SequenceNodeWithMemory::tick()
+NodeStatus SequenceNodeWithMemory::tick()
 {
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
@@ -67,9 +51,9 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
         if (child_status != NodeStatus::SUCCESS)
         {
             // If the  child status is not success, return the status
-            if (child_status == NodeStatus::FAILURE && reset_policy_ != BT::ON_SUCCESS )
-            {        
-                for (unsigned t=0; t<=current_child_idx_; t++)
+            if (child_status == NodeStatus::FAILURE && reset_policy_ != ON_SUCCESS)
+            {
+                for (unsigned t = 0; t <= current_child_idx_; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
@@ -86,10 +70,10 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
         else
         {
             // if it the last child.
-            if (child_status == NodeStatus::SUCCESS || reset_policy_ != BT::ON_FAILURE)
+            if (child_status == NodeStatus::SUCCESS || reset_policy_ != ON_FAILURE)
             {
                 // if it the last child and it has returned SUCCESS, reset the memory
-                for (unsigned t=0; t<=current_child_idx_; t++)
+                for (unsigned t = 0; t <= current_child_idx_; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
@@ -101,8 +85,9 @@ BT::NodeStatus BT::SequenceNodeWithMemory::tick()
     throw std::runtime_error("This is not supposed to happen");
 }
 
-void BT::SequenceNodeWithMemory::halt()
+void SequenceNodeWithMemory::halt()
 {
     current_child_idx_ = 0;
-    BT::ControlNode::halt();
+    ControlNode::halt();
+}
 }

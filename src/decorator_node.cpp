@@ -12,14 +12,17 @@
 
 #include "behavior_tree_core/decorator_node.h"
 
-BT::DecoratorNode::DecoratorNode(std::string name) : TreeNode::TreeNode(name), child_node_(nullptr)
+namespace BT
+{
+DecoratorNode::DecoratorNode(const std::string& name, const NodeParameters& parameters)
+  : TreeNode::TreeNode(name, parameters), child_node_(nullptr)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
     // ReturnStatus const NodeStatus child_status = NodeStatus::IDLE;  // commented out as unused
 }
 
-void BT::DecoratorNode::setChild(TreeNode* child)
+void DecoratorNode::setChild(TreeNode* child)
 {
     if (child_node_)
     {
@@ -29,26 +32,40 @@ void BT::DecoratorNode::setChild(TreeNode* child)
     child_node_ = child;
 }
 
-void BT::DecoratorNode::halt()
+void DecoratorNode::halt()
 {
     haltChild();
     setStatus(NodeStatus::IDLE);
 }
 
-const BT::TreeNode* BT::DecoratorNode::child() const
+const TreeNode* DecoratorNode::child() const
 {
     return child_node_;
 }
 
-BT::TreeNode* BT::DecoratorNode::child()
+TreeNode* DecoratorNode::child()
 {
     return child_node_;
 }
 
-void BT::DecoratorNode::haltChild()
+void DecoratorNode::haltChild()
 {
     if (child_node_->status() == NodeStatus::RUNNING)
     {
         child_node_->halt();
     }
+}
+
+SimpleDecoratorNode::SimpleDecoratorNode(const std::string &name,
+                                         TickFunctor tick_functor)
+    : DecoratorNode(name, NodeParameters()),
+      tick_functor_(std::move(tick_functor))
+{
+}
+
+NodeStatus SimpleDecoratorNode::tick()
+{
+    return  tick_functor_( child()->executeTick() );
+}
+
 }

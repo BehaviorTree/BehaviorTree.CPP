@@ -13,26 +13,24 @@
 
 #include "behavior_tree_core/decorator_retry_node.h"
 
-BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, unsigned int NTries)
-  : DecoratorNode(name), NTries_(NTries), TryIndx_(0)
+namespace BT
+{
+constexpr const char* DecoratorRetryNode::NUM_ATTEMPTS;
+
+DecoratorRetryNode::DecoratorRetryNode(const std::string& name, unsigned int NTries)
+  : DecoratorNode(name, {{NUM_ATTEMPTS, std::to_string(NTries)}}), NTries_(NTries), TryIndx_(0)
 {
 }
 
-BT::DecoratorRetryNode::DecoratorRetryNode(std::string name, const BT::NodeParameters& params)
-  : DecoratorNode(name), NTries_(1), TryIndx_(0)
+DecoratorRetryNode::DecoratorRetryNode(const std::string& name, const NodeParameters& params)
+  : DecoratorNode(name, params), NTries_(getParam<int>(NUM_ATTEMPTS)), TryIndx_(0)
 {
-    auto it = params.find("num_attempts");
-    if (it == params.end())
-    {
-        throw std::runtime_error("[DecoratorRetryNode] requires a parameter callen 'num_attempts'");
-    }
-    NTries_ = std::stoul(it->second);
 }
 
-BT::NodeStatus BT::DecoratorRetryNode::tick()
+NodeStatus DecoratorRetryNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
-    BT::NodeStatus child_state = child_node_->executeTick();
+    NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {
@@ -69,4 +67,5 @@ BT::NodeStatus BT::DecoratorRetryNode::tick()
     }
 
     return status();
+}
 }

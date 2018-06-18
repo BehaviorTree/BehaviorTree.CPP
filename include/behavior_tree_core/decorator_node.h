@@ -12,8 +12,9 @@ class DecoratorNode : public TreeNode
 
   public:
     // Constructor
-    DecoratorNode(std::string name);
-    ~DecoratorNode() = default;
+    DecoratorNode(const std::string& name, const NodeParameters& parameters);
+
+    virtual ~DecoratorNode() override = default;
 
     // The method used to fill the child vector
     void setChild(TreeNode* child);
@@ -30,6 +31,33 @@ class DecoratorNode : public TreeNode
     {
         return NodeType::DECORATOR;
     }
+};
+
+/**
+ * @brief The SimpleDecoratorNode provides an easy to use DecoratorNode.
+ * The user should simply provide a callback with this signature
+ *
+ *    BT::NodeStatus functionName(BT::NodeStatus child_status)
+ *
+ * This avoids the hassle of inheriting from a DecoratorNode.
+ *
+ * Using lambdas or std::bind it is easy to pass a pointer to a method.
+ * SimpleDecoratorNode does not support halting, NodeParameters, nor Blackboards.
+ */
+class SimpleDecoratorNode : public DecoratorNode
+{
+  public:
+    typedef std::function<NodeStatus(NodeStatus)> TickFunctor;
+
+    // Constructor: you must provide the funtion to call when tick() is invoked
+    SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor);
+
+    ~SimpleDecoratorNode() override = default;
+
+  protected:
+    virtual NodeStatus tick() override;
+
+    TickFunctor tick_functor_;
 };
 
 }

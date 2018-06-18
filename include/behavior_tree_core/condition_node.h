@@ -21,9 +21,9 @@ namespace BT
 class ConditionNode : public LeafNode
 {
   public:
-    // Constructor
-    ConditionNode(std::string name);
-    ~ConditionNode() = default;
+    ConditionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+
+    virtual ~ConditionNode() override = default;
 
     // The method used to interrupt the execution of the node
     virtual void halt() override;
@@ -33,6 +33,41 @@ class ConditionNode : public LeafNode
         return NodeType::CONDITION;
     }
 };
+
+
+/**
+ * @brief The SimpleConditionNode provides an easy to use ConditionNode.
+ * The user should simply provide a callback with this signature
+ *
+ *    BT::NodeStatus functionName(void)
+ *
+ * This avoids the hassle of inheriting from a ActionNode.
+ *
+ * Using lambdas or std::bind it is easy to pass a pointer to a method.
+ * SimpleConditionNode does not support halting, NodeParameters, nor Blackboards.
+ */
+class SimpleConditionNode : public ConditionNode
+{
+  public:
+    typedef std::function<NodeStatus()> TickFunctor;
+
+    // Constructor: you must provide the funtion to call when tick() is invoked
+    SimpleConditionNode(const std::string& name, TickFunctor tick_functor);
+
+    ~SimpleConditionNode() override = default;
+
+    virtual void halt() override
+    {
+        // not supported
+    }
+
+  protected:
+    virtual NodeStatus tick() override;
+
+    TickFunctor tick_functor_;
+};
+
+
 }
 
 #endif

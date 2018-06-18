@@ -13,26 +13,24 @@
 
 #include "behavior_tree_core/decorator_repeat_node.h"
 
-BT::DecoratorRepeatNode::DecoratorRepeatNode(std::string name, unsigned int NTries)
-  : DecoratorNode(name), NTries_(NTries), TryIndx_(0)
+namespace BT
+{
+constexpr const char* DecoratorRepeatNode::NUM_CYCLES;
+
+DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, unsigned int NTries)
+  : DecoratorNode(name, {{NUM_CYCLES, std::to_string(NTries)}}), NTries_(NTries), TryIndx_(0)
 {
 }
 
-BT::DecoratorRepeatNode::DecoratorRepeatNode(std::string name, const BT::NodeParameters& params)
-  : DecoratorNode(name), NTries_(1), TryIndx_(0)
+DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, const NodeParameters& params)
+  : DecoratorNode(name, params), NTries_(getParam<int>(NUM_CYCLES)), TryIndx_(0)
 {
-    auto it = params.find("num_cycles");
-    if (it == params.end())
-    {
-        throw std::runtime_error("[DecoratorRepeatNode] requires a parameter callen 'num_cycles'");
-    }
-    NTries_ = std::stoul(it->second);
 }
 
-BT::NodeStatus BT::DecoratorRepeatNode::tick()
+NodeStatus DecoratorRepeatNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
-    BT::NodeStatus child_state = child_node_->executeTick();
+    NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {
@@ -68,4 +66,5 @@ BT::NodeStatus BT::DecoratorRepeatNode::tick()
     }
 
     return status();
+}
 }

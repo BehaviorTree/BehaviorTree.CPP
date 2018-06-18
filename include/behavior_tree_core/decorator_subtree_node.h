@@ -8,18 +8,17 @@ namespace BT
 class DecoratorSubtreeNode : public DecoratorNode
 {
   public:
-    // Constructor
-    DecoratorSubtreeNode(std::string name) : DecoratorNode(name)
+    DecoratorSubtreeNode(const std::string& name) : DecoratorNode(name, NodeParameters())
     {
     }
 
-    virtual ~DecoratorSubtreeNode() = default;
+    virtual ~DecoratorSubtreeNode() override = default;
 
   private:
-    virtual BT::NodeStatus tick()
+    virtual BT::NodeStatus tick() override
     {
         NodeStatus prev_status = status();
-        if ( prev_status== NodeStatus::IDLE)
+        if (prev_status == NodeStatus::IDLE)
         {
             setStatus(NodeStatus::RUNNING);
         }
@@ -28,7 +27,6 @@ class DecoratorSubtreeNode : public DecoratorNode
         return status;
     }
 };
-
 }
 
 #endif   // DECORATOR_SUBTREE_NODE_H

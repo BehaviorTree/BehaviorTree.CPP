@@ -18,12 +18,23 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <cstring>
+#include <algorithm>
 
 #include "behavior_tree_core/behavior_tree.h"
 
 namespace BT
 {
-typedef std::set<std::string> RequiredParameters;
+
+// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
+typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
+
+struct TreeNodeModel
+{
+    NodeType type;
+    std::string registration_ID;
+    NodeParameters required_parameters;
+};
 
 class BehaviorTreeFactory
 {
@@ -34,7 +45,9 @@ class BehaviorTreeFactory
 
     void registerBuilder(const std::string& ID, NodeBuilder builder);
 
-    void registerSimpleAction(const std::string& ID, std::function<NodeStatus()> tick_functor);
+    void registerSimpleAction(const std::string& ID, const std::function<NodeStatus()> &tick_functor);
+
+    void registerSimpleCondition(const std::string& ID, const std::function<NodeStatus()> &tick_functor);
 
     std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
                                                   const NodeParameters& params) const;
@@ -44,27 +57,39 @@ class BehaviorTreeFactory
         return builders_;
     }
 
+    const std::vector<TreeNodeModel>& models() const
+    {
+        return treenode_models_;
+    }
+
     template <typename T>
     void registerNodeType(const std::string& ID)
     {
         static_assert(std::is_base_of<ActionNode, T>::value || std::is_base_of<ControlNode, T>::value ||
-                      std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
+                          std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
                       "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, "
                       "ControlNode "
                       "or ConditionNode");
 
         constexpr bool default_constructable = std::is_constructible<T, std::string>::value;
         constexpr bool param_constructable = std::is_constructible<T, std::string, const NodeParameters&>::value;
+        constexpr bool has_static_required_parameters = has_static_method_requiredNodeParameters<T>::value;
 
         static_assert(default_constructable || param_constructable,
-                      "[registerBuilder]: the registered class must have a Constructor with signature: "
-                      "  (const std::string&, const NodeParameters&) or (const std::string&)");
+                      "[registerBuilder]: the registered class must have at least one of these two constructors:\n\n"
+                      "    (const std::string&, const NodeParameters&) or (const std::string&)");
+
+        static_assert(!(param_constructable && !has_static_required_parameters),
+                      "[registerBuilder]: a node that accepts NodeParameters must also implement a static method:\n\n"
+                      "    const NodeParameters& requiredNodeParameters(); ");
 
         registerNodeTypeImpl<T>(ID);
+        storeNodeModel<T>(ID);
     }
 
   private:
     std::map<std::string, NodeBuilder> builders_;
+    std::vector<TreeNodeModel> treenode_models_;
 
     // template specialization + SFINAE + black magic
 
@@ -75,25 +100,17 @@ class BehaviorTreeFactory
     template <typename T>
     using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeParameters&>;
 
-    struct default_constructable{};
-    struct param_constructable{};
-    struct both_constructable{};
+    template <typename T, typename = void>
+    struct has_static_method_requiredNodeParameters: std::false_type {};
 
     template <typename T>
-    using enable_if_default_constructable_only =
-        typename std::enable_if<has_default_constructor<T>::value && !has_params_constructor<T>::value, struct default_constructable>;
+    struct has_static_method_requiredNodeParameters<T,
+            typename std::enable_if<std::is_same<decltype(T::requiredNodeParameters()), const NodeParameters&>::value>::type>
+        : std::true_type {};
 
     template <typename T>
-    using enable_if_param_constructable_only =
-        typename std::enable_if<!has_default_constructor<T>::value && has_params_constructor<T>::value, struct param_constructable>;
-
-    template <typename T>
-    using enable_if_has_both_constructors =
-        typename std::enable_if<has_default_constructor<T>::value && has_params_constructor<T>::value, struct both_constructable>;
-
-
-    template <typename T, typename enable_if_default_constructable_only<T>::type* = nullptr>
-    void registerNodeTypeImpl(const std::string& ID)
+    typename std::enable_if< has_default_constructor<T>::value && !has_params_constructor<T>::value>::type
+    registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = [](const std::string& name, const NodeParameters&)
         {
@@ -102,8 +119,9 @@ class BehaviorTreeFactory
         registerBuilder(ID, builder);
     }
 
-    template <typename T, typename enable_if_param_constructable_only<T>::type* = nullptr>
-    void registerNodeTypeImpl(const std::string& ID)
+    template <typename T>
+    typename std::enable_if< !has_default_constructor<T>::value && has_params_constructor<T>::value>::type
+    registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = [](const std::string& name, const NodeParameters& params)
         {
@@ -112,19 +130,41 @@ class BehaviorTreeFactory
         registerBuilder(ID, builder);
     }
 
-    template <typename T, typename enable_if_has_both_constructors<T>::type* = nullptr>
-    void registerNodeTypeImpl(const std::string& ID)
+    template <typename T>
+    typename std::enable_if< has_default_constructor<T>::value && has_params_constructor<T>::value>::type
+    registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = [](const std::string& name, const NodeParameters& params)
         {
             if( params.empty() )
             {
+                // call this one that MIGHT use default initialization
                 return std::unique_ptr<TreeNode>(new T(name));
             }
             return std::unique_ptr<TreeNode>(new T(name, params));
         };
         registerBuilder(ID, builder);
     }
+
+
+    template<typename T>
+    typename std::enable_if< has_static_method_requiredNodeParameters<T>::value>::type
+    storeNodeModel(const std::string& ID)
+    {
+        treenode_models_.push_back( { getType<T>(), ID, T::requiredNodeParameters()} );
+        sortTreeNodeModel();
+    }
+
+    template<typename T>
+    typename std::enable_if< !has_static_method_requiredNodeParameters<T>::value>::type
+    storeNodeModel(const std::string& ID)
+    {
+        treenode_models_.push_back( { getType<T>(), ID, NodeParameters()} );
+        sortTreeNodeModel();
+    }
+
+    void sortTreeNodeModel();
+
     // clang-format on
 };
 

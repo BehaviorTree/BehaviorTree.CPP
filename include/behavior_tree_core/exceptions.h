@@ -11,22 +11,27 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef EXCEPTIONS_H
-#define EXCEPTIONS_H
+#ifndef BT_EXCEPTIONS_H
+#define BT_EXCEPTIONS_H
 
 #include <string>
 #include <stdexcept>
 
 namespace BT
 {
-/// Exception class
+
 class BehaviorTreeException : public std::exception
 {
-  private:
-    const char* Message;
-
   public:
-    BehaviorTreeException(const std::string Message);
+    BehaviorTreeException(const std::string& Message);
+
+    const char* what()  const noexcept
+    {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 }
 

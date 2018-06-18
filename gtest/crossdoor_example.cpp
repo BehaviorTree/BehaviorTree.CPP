@@ -5,7 +5,7 @@
 #include "behavior_tree_logger/bt_file_logger.h"
 
 #ifdef ZMQ_FOUND
-    #include "behavior_tree_logger/bt_zmq_publisher.h"
+#include "behavior_tree_logger/bt_zmq_publisher.h"
 #endif
 
 // clang-format off
@@ -23,10 +23,12 @@ const std::string xml_text = R"(
          </Sequence>
 
          <Sequence name="door_closed_sequence">
-             <Decorator ID="Negation">
-                <Action ID="IsDoorOpen" />
-             </Decorator>
-             <Action ID="OpenDoor" />
+             <Negation>
+                <IsDoorOpen/>
+             </Negation>
+             <RetryUntilSuccesful num_attempts="2" >
+                <OpenDoor/>
+             </RetryUntilSuccesful>
              <Action ID="PassThroughDoor" />
              <Action ID="CloseDoor" />
          </Sequence>
@@ -50,15 +52,15 @@ int main(int argc, char** argv)
     // register all the actions into the factory
     CrossDoor cross_door(factory, false);
 
-    XMLParser parser;
+    XMLParser parser(factory);
     parser.loadFromText(xml_text);
 
     std::vector<BT::TreeNodePtr> nodes;
-    BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
+    BT::TreeNodePtr root_node = parser.instantiateTree(nodes);
 
     StdCoutLogger logger_cout(root_node.get());
     MinitraceLogger logger_minitrace(root_node.get(), "bt_trace.json");
-    FileLogger logger_file( root_node.get(), "bt_trace.fbl", 32 );
+    FileLogger logger_file(root_node.get(), "bt_trace.fbl", 32);
 
 #ifdef ZMQ_FOUND
     PublisherZMQ publisher_zmq(root_node.get());
@@ -66,13 +68,18 @@ int main(int argc, char** argv)
 
     cross_door.CloseDoor();
 
+    std::cout << "\n-------\n";
+    XMLWriter writer(factory);
+    std::cout << writer.writeXML( root_node.get(), false) << std::endl;
+
     std::cout << "---------------" << std::endl;
     root_node->executeTick();
 
-    std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     std::cout << "---------------" << std::endl;
-    while(1) root_node->executeTick();
+    while (1)
+        root_node->executeTick();
     std::cout << "---------------" << std::endl;
     return 0;
 }

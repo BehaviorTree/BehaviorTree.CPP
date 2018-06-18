@@ -13,14 +13,17 @@
 
 #include "behavior_tree_core/control_node.h"
 
-BT::ControlNode::ControlNode(std::string name) : TreeNode::TreeNode(name)
+namespace BT
+{
+ControlNode::ControlNode(const std::string& name, const NodeParameters& parameters)
+  : TreeNode::TreeNode(name, parameters)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
     // ReturnStatus const NodeStatus child_status = NodeStatus::IDLE;  // commented out as unused
 }
 
-void BT::ControlNode::addChild(TreeNode* child)
+void ControlNode::addChild(TreeNode* child)
 {
     //    Checking if the child is not already present
     //    for (auto node : children_nodes_)
@@ -34,23 +37,23 @@ void BT::ControlNode::addChild(TreeNode* child)
     children_nodes_.push_back(child);
 }
 
-unsigned int BT::ControlNode::childrenCount() const
+unsigned int ControlNode::childrenCount() const
 {
     return children_nodes_.size();
 }
 
-void BT::ControlNode::halt()
+void ControlNode::halt()
 {
     haltChildren(0);
     setStatus(NodeStatus::IDLE);
 }
 
-const std::vector<BT::TreeNode*>& BT::ControlNode::children() const
+const std::vector<TreeNode*>& ControlNode::children() const
 {
     return children_nodes_;
 }
 
-void BT::ControlNode::haltChildren(int i)
+void ControlNode::haltChildren(int i)
 {
     for (unsigned int j = i; j < children_nodes_.size(); j++)
     {
@@ -59,4 +62,5 @@ void BT::ControlNode::haltChildren(int i)
             children_nodes_[j]->halt();
         }
     }
+}
 }

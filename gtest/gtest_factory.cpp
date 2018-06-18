@@ -77,11 +77,14 @@ const std::string xml_text_subtree = R"(
         )";
 // clang-format on
 
-
 TEST(BehaviorTreeFactory, VerifyLargeTree)
 {
-    BT::XMLParser parser;
+    BT::BehaviorTreeFactory factory;
+    CrossDoor cross_door(factory);
+
+    BT::XMLParser parser(factory);
     parser.loadFromText(xml_text);
+
     std::vector<std::string> errors;
     bool res = parser.verifyXML(errors);
 
@@ -94,11 +97,8 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_EQ(errors.size(), 0);
 
     std::vector<BT::TreeNodePtr> nodes;
-    BT::BehaviorTreeFactory factory;
 
-    CrossDoor cross_door(factory);
-
-    BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
+    BT::TreeNodePtr root_node = parser.instantiateTree(nodes);
 
     BT::printTreeRecursively(root_node.get());
 
@@ -136,8 +136,12 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
 TEST(BehaviorTreeFactory, Subtree)
 {
-    BT::XMLParser parser;
+    BT::BehaviorTreeFactory factory;
+    CrossDoor cross_door(factory);
+
+    BT::XMLParser parser(factory);
     parser.loadFromText(xml_text_subtree);
+
     std::vector<std::string> errors;
     bool res = parser.verifyXML(errors);
 
@@ -150,23 +154,20 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_EQ(errors.size(), 0);
 
     std::vector<BT::TreeNodePtr> nodes;
-    BT::BehaviorTreeFactory factory;
 
-    CrossDoor cross_door(factory);
-
-    BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
+    BT::TreeNodePtr root_node = parser.instantiateTree( nodes);
     BT::printTreeRecursively(root_node.get());
 
     ASSERT_EQ(root_node->name(), "root_selector");
 
     auto root_selector = dynamic_cast<const BT::FallbackNode*>(root_node.get());
-    ASSERT_TRUE( root_selector  != nullptr);
+    ASSERT_TRUE(root_selector != nullptr);
     ASSERT_EQ(root_selector->children().size(), 2);
     ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
     ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
 
     auto subtree = dynamic_cast<const BT::DecoratorSubtreeNode*>(root_selector->child(0));
-    ASSERT_TRUE( subtree  != nullptr);
+    ASSERT_TRUE(subtree != nullptr);
 
     auto sequence = dynamic_cast<const BT::SequenceNode*>(subtree->child());
     ASSERT_TRUE(sequence != nullptr);

@@ -22,70 +22,10 @@
 #include "behavior_tree_core/tick_engine.h"
 #include "behavior_tree_core/exceptions.h"
 #include "behavior_tree_core/signal.h"
+#include "behavior_tree_core/basic_types.h"
 
 namespace BT
 {
-// Enumerates the possible types of a node, for drawinf we have do discriminate whoich control node it is:
-
-enum class NodeType
-{
-    UNDEFINED = 0,
-    ACTION,
-    CONDITION,
-    CONTROL,
-    DECORATOR,
-    SUBTREE
-};
-
-// Enumerates the states every node can be in after execution during a particular
-// time step:
-// - "Success" indicates that the node has completed running during this time step;
-// - "Failure" indicates that the node has determined it will not be able to complete
-//   its task;
-// - "Running" indicates that the node has successfully moved forward during this
-//   time step, but the task is not yet complete;
-// - "Idle" indicates that the node hasn't run yet.
-// - "Halted" indicates that the node has been halted by its father.
-enum class NodeStatus
-{
-    IDLE = 0,
-    RUNNING,
-    SUCCESS,
-    FAILURE
-};
-
-
-// Enumerates the options for when a parallel node is considered to have failed:
-// - "FAIL_ON_ONE" indicates that the node will return failure as soon as one of
-//   its children fails;
-// - "FAIL_ON_ALL" indicates that all of the node's children must fail before it
-//   returns failure.
-enum FailurePolicy
-{
-    FAIL_ON_ONE,
-    FAIL_ON_ALL
-};
-enum ResetPolicy
-{
-    ON_SUCCESS_OR_FAILURE,
-    ON_SUCCESS,
-    ON_FAILURE
-};
-
-// Enumerates the options for when a parallel node is considered to have succeeded:
-// - "SUCCEED_ON_ONE" indicates that the node will return success as soon as one
-//   of its children succeeds;
-// - "BT::SUCCEED_ON_ALL" indicates that all of the node's children must succeed before
-//   it returns success.
-enum SuccessPolicy
-{
-    SUCCEED_ON_ONE,
-    SUCCEED_ON_ALL
-};
-
-// If "BT::FAIL_vON_ONE" and "BT::SUCCEED_ON_ONE" are both active and are both trigerred in the
-// same time step, failure will take precedence.
-
 // We call Parameters the set of Key/Values that can be read from file and are
 // used to parametrize an object. It is up to the user's code to parse the string.
 typedef std::map<std::string, std::string> NodeParameters;
@@ -95,77 +35,108 @@ typedef std::chrono::high_resolution_clock::time_point TimePoint;
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
 {
-  private:
-    // Node name
-    std::string name_;
-    NodeStatus status_;
-    std::condition_variable state_condition_variable_;
-    mutable std::mutex state_mutex_;
-
-  protected:
-
-    // Method to be implemented by the user
-    virtual BT::NodeStatus tick() = 0;
-
   public:
-    // The constructor and the destructor
-    TreeNode(std::string name);
+
+    /**
+     * @brief TreeNode main constructor.
+     *
+     * @param name         name of the instance, not the type of sensor.
+     * @param parameters   this might be empty. use getParam<T>(key) to parse the value.
+     *
+     * Note: a node that accepts a not empty set of NodeParameters must also implement the method:
+     *
+     * static const NodeParameters& requiredNodeParameters();
+     */
+    TreeNode(const std::string& name, const NodeParameters& parameters);
     virtual ~TreeNode() = default;
 
-    // The method that is going to be executed when the node receive a tick
+    /// The method that will be executed to invoke tick(); and setStatus();
     virtual BT::NodeStatus executeTick();
 
-    // The method used to interrupt the execution of the node
+    /// The method used to interrupt the execution of a RUNNING node
     virtual void halt() = 0;
 
     bool isHalted() const;
 
     NodeStatus status() const;
+
     void setStatus(NodeStatus new_status);
 
     const std::string& name() const;
-    void setName(const std::string& new_name);
 
+    /// Blocking funtion that will sleep until the setStatus() is called with
+    /// either RUNNING, FAILURE or SUCCESS.
     BT::NodeStatus waitValidStatus();
 
     virtual NodeType type() const = 0;
 
-    using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus,NodeStatus>;
+    using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus, NodeStatus>;
     using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
-    using StatusChangeCallback   = StatusChangeSignal::CallableFunction;
+    using StatusChangeCallback = StatusChangeSignal::CallableFunction;
 
     /**
      * @brief subscribeToStatusChange is used to attach a callback to a status change.
      * AS soon as StatusChangeSubscriber goes out of scope (it is a shared_ptr) the callback
-     * is unsubscribed
+     * is unsubscribed automatically.
      *
      * @param callback. Must have signature void funcname(NodeStatus prev_status, NodeStatus new_status)
      *
      * @return the subscriber.
      */
-     StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
+    StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
 
-     // get an unique identifier of this instance of treeNode
-     uint16_t UID() const;
+    // get an unique identifier of this instance of treeNode
+    uint16_t UID() const;
 
-     void setRegistrationName(const std::string& registration_name);
+    /// registrationName is the ID used by BehaviorTreeFactory to create an instance.
+    const std::string& registrationName() const;
 
-     const std::string& registrationName() const;
+    /// Parameters passed at construction time. Can never change after the
+    /// creation of the TreeNode instance.
+    const NodeParameters& initializationParameters() const;
 
-private:
+  protected:
 
-  StatusChangeSignal state_change_signal_;
+    /// Method to be implemented by the user
+    virtual BT::NodeStatus tick() = 0;
 
-  const uint16_t uid_;
+    template <typename T>
+    T getParam(const std::string& key) const
+    {
+        auto it = parameters_.find(key);
+        if (it == parameters_.end())
+        {
+            throw std::invalid_argument(std::string("Can't find the parameter with key: ") + key);
+        }
+        return convertFromString<T>(it->second.c_str());
+    }
 
-  std::string registration_name_;
+    /// registrationName() is set by the BehaviorTreeFactory
+    void setRegistrationName(const std::string& registration_name);
 
+    friend class BehaviorTreeFactory;
+
+  private:
+    const std::string name_;
+
+    NodeStatus status_;
+
+    std::condition_variable state_condition_variable_;
+
+    mutable std::mutex state_mutex_;
+
+    StatusChangeSignal state_change_signal_;
+
+    const uint16_t uid_;
+
+    std::string registration_name_;
+
+    const NodeParameters parameters_;
 };
 
 typedef std::shared_ptr<TreeNode> TreeNodePtr;
 
-// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
-typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
+
 }
 
 #endif

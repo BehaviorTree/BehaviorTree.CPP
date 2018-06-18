@@ -21,11 +21,11 @@ namespace BT
 class SequenceNode : public ControlNode
 {
   public:
-    // Constructor
-    SequenceNode(std::string name);
-    ~SequenceNode() = default;
+    SequenceNode(const std::string& name);
 
-private:
+    virtual ~SequenceNode() override = default;
+
+  private:
     virtual BT::NodeStatus tick() override;
 };
 }

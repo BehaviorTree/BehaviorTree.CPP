@@ -67,7 +67,6 @@ const std::string xml_text_B = R"(
  </root>
  )";
 
-
 // clang-format on
 
 int main(int argc, char** argv)
@@ -79,26 +78,30 @@ int main(int argc, char** argv)
     factory.registerNodeType<BatteryCondition>("BatteryOK");
     factory.registerNodeType<MoveAction>("Move");
 
-    XMLParser parser;
+    XMLParser parser(factory);
     parser.loadFromText(xml_text_A);
 
     std::vector<BT::TreeNodePtr> nodes;
-    BT::TreeNodePtr root_node = parser.instantiateTree(factory, nodes);
+    BT::TreeNodePtr root_node = parser.instantiateTree(nodes);
 
     StdCoutLogger logger_cout(root_node.get());
-    FileLogger file_file( root_node.get(), "simple_trace.fbl", 32 );
-
+    FileLogger file_file(root_node.get(), "simple_trace.fbl", 32);
 
     std::cout << "\n------- First executeTick() --------" << std::endl;
     root_node->executeTick();
     std::cout << "\n------- sleep --------" << std::endl;
-    std::this_thread::sleep_for( std::chrono::milliseconds(50) );
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     std::cout << "\n------- Second executeTick() --------" << std::endl;
     root_node->executeTick();
     std::cout << "\n------- sleep --------" << std::endl;
-    std::this_thread::sleep_for( std::chrono::milliseconds(50) );
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     std::cout << "\n------- Third executeTick() --------" << std::endl;
     root_node->executeTick();
     std::cout << std::endl;
+
+    std::cout << "\n-------\n";
+    XMLWriter writer(factory);
+    std::cout << writer.writeXML( root_node.get() ) << std::endl;
+
     return 0;
 }

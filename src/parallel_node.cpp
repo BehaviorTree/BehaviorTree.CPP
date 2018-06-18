@@ -13,8 +13,8 @@
 
 #include "behavior_tree_core/parallel_node.h"
 
-BT::ParallelNode::ParallelNode(std::string name, int threshold_M)
-  : ControlNode::ControlNode(name), threshold_M_(threshold_M)
+BT::ParallelNode::ParallelNode(const std::string& name, int threshold_M)
+  : ControlNode::ControlNode(name, NodeParameters()), threshold_M_(threshold_M)
 {
 }
 

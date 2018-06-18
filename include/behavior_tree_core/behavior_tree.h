@@ -31,7 +31,10 @@
 
 namespace BT
 {
-void recursiveVisitor(TreeNode *node, std::function<void(TreeNode *)> visitor);
+
+void applyRecursiveVisitor(const TreeNode* node, const std::function<void(const TreeNode*)>& visitor);
+
+void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)> &visitor);
 
 /**
  * Debug function to print on a stream
@@ -39,43 +42,31 @@ void recursiveVisitor(TreeNode *node, std::function<void(TreeNode *)> visitor);
 void printTreeRecursively(const TreeNode* root_node);
 
 
+typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
+
 /**
  * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
  * (or sent to a client application) to know the status of all the nodes of a tree.
  * It is not "human readable".
  *
  * @param root_node
- * @param serialized_buffer
+ * @param serialized_buffer is the output.
  */
+void buildSerializedStatusSnapshot(const TreeNode* root_node, SerializedTreeStatus& serialized_buffer);
 
-typedef std::vector<std::pair<uint16_t,uint8_t>> SerializedTreeStatus;
-
-void buildSerializedStatusSnapshot(const TreeNode *root_node, SerializedTreeStatus& serialized_buffer);
-
-
-/**
- * @brief toStr converts NodeStatus to string. Optionally colored.
- */
-const char* toStr(const BT::NodeStatus& status, bool colored = false);
-
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
+/// Simple way to extract the type of a TreeNode at COMPILE TIME.
+/// Useful to avoid the cost of without dynamic_cast or the virtual method TreeNode::type().
+template< typename T> inline NodeType getType()
 {
-    os << toStr(status);
-    return os;
+    // clang-format off
+    if( std::is_base_of<ActionNodeBase, T>::value )        return NodeType::ACTION;
+    if( std::is_base_of<ConditionNode, T>::value )         return NodeType::CONDITION;
+    if( std::is_base_of<DecoratorSubtreeNode, T>::value )  return NodeType::SUBTREE;
+    if( std::is_base_of<DecoratorNode, T>::value )         return NodeType::DECORATOR;
+    if( std::is_base_of<ControlNode, T>::value )           return NodeType::CONTROL;
+    return NodeType::UNDEFINED;
+    // clang-format on
 }
-
-/**
- * @brief toStr converts NodeType to string.
- */
-const char* toStr(const BT::NodeType& type);
-
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
-{
-    os << toStr(type);
-    return os;
-}
-
 
 }
 

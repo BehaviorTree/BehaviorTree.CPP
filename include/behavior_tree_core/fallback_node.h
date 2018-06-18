@@ -21,14 +21,13 @@ namespace BT
 class FallbackNode : public ControlNode
 {
   public:
-    // Constructor
-    FallbackNode(std::string name);
-    ~FallbackNode() = default;
+    FallbackNode(const std::string& name);
 
-private:
+    virtual ~FallbackNode() override = default;
+
+  private:
     virtual BT::NodeStatus tick() override;
 };
-
 }
 
 #endif

@@ -9,7 +9,7 @@ class ActionTestNode : public ActionNode
 {
   public:
     // Constructor
-    ActionTestNode(std::string name);
+    ActionTestNode(const std::string& name);
 
     ~ActionTestNode();
 

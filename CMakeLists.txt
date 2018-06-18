@@ -7,7 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
 #
-# This variable MUST NOT be set by the user manually, it will be detected
+# This variable MUST NOT be set manually by the user, it will be detected
 # automatically if you compile using catkin
 if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(catkin_FOUND 1)
@@ -41,6 +41,7 @@ endif(catkin_FOUND)
 
 set(BT_Source
 	src/action_node.cpp
+        src/basic_types.cpp
         src/decorator_node.cpp
         src/decorator_negation_node.cpp
         src/decorator_repeat_node.cpp

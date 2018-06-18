@@ -23,10 +23,7 @@ struct SimpleSequenceTest : testing::Test
     BT::ActionTestNode action;
     BT::ConditionTestNode condition;
 
-    SimpleSequenceTest():
-        root("root_sequence"),
-        action("action"),
-        condition("condition")
+    SimpleSequenceTest() : root("root_sequence"), action("action"), condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -42,12 +39,12 @@ struct ComplexSequenceTest : testing::Test
 
     BT::SequenceNode seq_conditions;
 
-    ComplexSequenceTest():
-        root("root_sequence"),
-        action_1("action_1"),
-        condition_1("condition_1"),
-        condition_2("condition_2"),
-        seq_conditions("sequence_conditions")
+    ComplexSequenceTest()
+      : root("root_sequence")
+      , action_1("action_1")
+      , condition_1("condition_1")
+      , condition_2("condition_2")
+      , seq_conditions("sequence_conditions")
     {
         root.addChild(&seq_conditions);
         {
@@ -65,19 +62,13 @@ struct SequenceTripleActionTest : testing::Test
     BT::ActionTestNode action_2;
     BT::ActionTestNode action_3;
 
-    SequenceTripleActionTest():
-        root("root_sequence"),
-        action_1("action_1"),
-        action_2("action_2"),
-        action_3("action_3")
+    SequenceTripleActionTest() : root("root_sequence"), action_1("action_1"), action_2("action_2"), action_3("action_3")
     {
         root.addChild(&action_1);
         root.addChild(&action_2);
         root.addChild(&action_3);
-
     }
 };
-
 
 struct ComplexSequence2ActionsTest : testing::Test
 {
@@ -90,14 +81,14 @@ struct ComplexSequence2ActionsTest : testing::Test
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
 
-    ComplexSequence2ActionsTest():
-        root("root_sequence"),
-        action_1("action_1"),
-        action_2("action_2"),
-        seq_1("sequence_1"),
-        seq_2("sequence_2"),
-        condition_1("condition_1"),
-        condition_2("condition_2")
+    ComplexSequence2ActionsTest()
+      : root("root_sequence")
+      , action_1("action_1")
+      , action_2("action_2")
+      , seq_1("sequence_1")
+      , seq_2("sequence_2")
+      , condition_1("condition_1")
+      , condition_2("condition_2")
     {
         root.addChild(&seq_1);
         {
@@ -118,10 +109,7 @@ struct SimpleFallbackTest : testing::Test
     BT::ActionTestNode action;
     BT::ConditionTestNode condition;
 
-    SimpleFallbackTest():
-        root("root_fallback"),
-        action("action"),
-        condition("condition")
+    SimpleFallbackTest() : root("root_fallback"), action("action"), condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -137,12 +125,12 @@ struct ComplexFallbackTest : testing::Test
 
     BT::FallbackNode fal_conditions;
 
-    ComplexFallbackTest():
-        root("root_fallback"),
-        action_1("action_1"),
-        condition_1("condition_1"),
-        condition_2("condition_2"),
-        fal_conditions("fallback_conditions")
+    ComplexFallbackTest()
+      : root("root_fallback")
+      , action_1("action_1")
+      , condition_1("condition_1")
+      , condition_2("condition_2")
+      , fal_conditions("fallback_conditions")
     {
         root.addChild(&fal_conditions);
         {
@@ -162,14 +150,13 @@ struct BehaviorTreeTest : testing::Test
 
     BT::FallbackNode fal_conditions;
 
-    BehaviorTreeTest():
-        root("root_sequence"),
-        action_1("action_1"),
-        condition_1("condition_1"),
-        condition_2("condition_2"),
-        fal_conditions("fallback_conditions")
+    BehaviorTreeTest()
+      : root("root_sequence")
+      , action_1("action_1")
+      , condition_1("condition_1")
+      , condition_2("condition_2")
+      , fal_conditions("fallback_conditions")
     {
-
         root.addChild(&fal_conditions);
         {
             fal_conditions.addChild(&condition_1);
@@ -185,10 +172,7 @@ struct SimpleSequenceWithMemoryTest : testing::Test
     BT::ActionTestNode action;
     BT::ConditionTestNode condition;
 
-    SimpleSequenceWithMemoryTest():
-        root("root_sequence"),
-        action("action"),
-        condition("condition")
+    SimpleSequenceWithMemoryTest() : root("root_sequence"), action("action"), condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -208,14 +192,14 @@ struct ComplexSequenceWithMemoryTest : testing::Test
     BT::SequenceNodeWithMemory seq_conditions;
     BT::SequenceNodeWithMemory seq_actions;
 
-    ComplexSequenceWithMemoryTest():
-        root("root_sequence"),
-        action_1("action_1"),
-        action_2("action_2"),
-        condition_1("condition_1"),
-        condition_2("condition_2"),
-        seq_conditions("sequence_conditions"),
-        seq_actions("sequence_actions")
+    ComplexSequenceWithMemoryTest()
+      : root("root_sequence")
+      , action_1("action_1")
+      , action_2("action_2")
+      , condition_1("condition_1")
+      , condition_2("condition_2")
+      , seq_conditions("sequence_conditions")
+      , seq_actions("sequence_actions")
     {
         root.addChild(&seq_conditions);
         {
@@ -236,10 +220,7 @@ struct SimpleFallbackWithMemoryTest : testing::Test
     BT::ActionTestNode action;
     BT::ConditionTestNode condition;
 
-    SimpleFallbackWithMemoryTest():
-        root("root_sequence"),
-        action("action"),
-        condition("condition")
+    SimpleFallbackWithMemoryTest() : root("root_sequence"), action("action"), condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -259,14 +240,14 @@ struct ComplexFallbackWithMemoryTest : testing::Test
     BT::FallbackNodeWithMemory fal_conditions;
     BT::FallbackNodeWithMemory fal_actions;
 
-    ComplexFallbackWithMemoryTest():
-        root("root_fallback"),
-        action_1("action_1"),
-        action_2("action_2"),
-        condition_1("condition_1"),
-        condition_2("condition_2"),
-        fal_conditions("fallback_conditions"),
-        fal_actions("fallback_actions")
+    ComplexFallbackWithMemoryTest()
+      : root("root_fallback")
+      , action_1("action_1")
+      , action_2("action_2")
+      , condition_1("condition_1")
+      , condition_2("condition_2")
+      , fal_conditions("fallback_conditions")
+      , fal_actions("fallback_actions")
     {
         root.addChild(&fal_conditions);
         {
@@ -290,12 +271,12 @@ struct SimpleParallelTest : testing::Test
     BT::ActionTestNode action_2;
     BT::ConditionTestNode condition_2;
 
-    SimpleParallelTest():
-        root("root_parallel",4),
-        action_1("action_1"),
-        condition_1("condition_1"),
-        action_2("action_2"),
-        condition_2("condition_2")
+    SimpleParallelTest()
+      : root("root_parallel", 4)
+      , action_1("action_1")
+      , condition_1("condition_1")
+      , action_2("action_2")
+      , condition_2("condition_2")
     {
         root.addChild(&condition_1);
         root.addChild(&action_1);
@@ -319,16 +300,16 @@ struct ComplexParallelTest : testing::Test
     BT::ActionTestNode action_3;
     BT::ConditionTestNode condition_3;
 
-    ComplexParallelTest():
-        root("root",2),
-        parallel_1("par1",3),
-        parallel_2("par2",1),
-        action_1("action_1"),
-        condition_1("condition_1"),
-        action_2("action_2"),
-        condition_2("condition_2"),
-        action_3("action_3"),
-        condition_3("condition_3")
+    ComplexParallelTest()
+      : root("root", 2)
+      , parallel_1("par1", 3)
+      , parallel_2("par2", 1)
+      , action_1("action_1")
+      , condition_1("condition_1")
+      , action_2("action_2")
+      , condition_2("condition_2")
+      , action_3("action_3")
+      , condition_3("condition_3")
     {
         root.addChild(&parallel_1);
         {
@@ -393,24 +374,21 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     action_3.set_time(2);
     // the sequence is supposed to finish in (200 ms * 3) = 600 ms
 
-    bool done_1 = false,  done_2 = false,  done_3 = false;
+    bool done_1 = false, done_2 = false, done_3 = false;
 
-    auto sub1 = action_1.subscribeToStatusChange(
-                [&done_1](TimePoint, const TreeNode& , NodeStatus,NodeStatus status)
-    {
-       if( status == NodeStatus::SUCCESS) done_1 = true;
+    auto sub1 = action_1.subscribeToStatusChange([&done_1](TimePoint, const TreeNode&, NodeStatus, NodeStatus status) {
+        if (status == NodeStatus::SUCCESS)
+            done_1 = true;
     });
 
-    auto sub2 = action_2.subscribeToStatusChange(
-                [&done_2](TimePoint, const TreeNode& , NodeStatus,NodeStatus status)
-    {
-       if( status == NodeStatus::SUCCESS) done_2 = true;
+    auto sub2 = action_2.subscribeToStatusChange([&done_2](TimePoint, const TreeNode&, NodeStatus, NodeStatus status) {
+        if (status == NodeStatus::SUCCESS)
+            done_2 = true;
     });
 
-    auto sub3 = action_3.subscribeToStatusChange(
-                [&done_3](TimePoint, const TreeNode& , NodeStatus,NodeStatus status)
-    {
-       if( status == NodeStatus::SUCCESS) done_3 = true;
+    auto sub3 = action_3.subscribeToStatusChange([&done_3](TimePoint, const TreeNode&, NodeStatus, NodeStatus status) {
+        if (status == NodeStatus::SUCCESS)
+            done_3 = true;
     });
 
     // first tick
@@ -422,9 +400,9 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
 
     // continue until succesfull
-    while ( state != NodeStatus::SUCCESS && system_clock::now() < timeout)
+    while (state != NodeStatus::SUCCESS && system_clock::now() < timeout)
     {
-        std::this_thread::sleep_for( milliseconds( 20) );
+        std::this_thread::sleep_for(milliseconds(20));
         state = root.executeTick();
     }
 
@@ -435,11 +413,10 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
-    ASSERT_TRUE(system_clock::now() < timeout); // no timeout should occur
+    ASSERT_TRUE(system_clock::now() < timeout);   // no timeout should occur
 
     root.halt();
 }
-
 
 TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
 {
@@ -970,8 +947,9 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_3.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());     // success not read yet by the node parallel_1
-    ASSERT_EQ(NodeStatus::RUNNING, parallel_1.status());   // parallel_1 hasn't realize (yet) that action_1 has succeeded
+    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());   // success not read yet by the node parallel_1
+    ASSERT_EQ(NodeStatus::RUNNING,
+              parallel_1.status());   // parallel_1 hasn't realize (yet) that action_1 has succeeded
 
     state = root.executeTick();
 
