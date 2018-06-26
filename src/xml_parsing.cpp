@@ -189,9 +189,17 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         }
     };
 
+    std::vector<std::string> tree_names;
+    int tree_count = 0;
+
     for (auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
          bt_root = bt_root->NextSiblingElement("BehaviorTree"))
     {
+        tree_count++;
+        if( bt_root->Attribute("ID"))
+        {
+            tree_names.push_back(bt_root->Attribute("ID"));
+        }
         if (ChildrenCount(bt_root) != 1)
         {
             AppendError(bt_root->GetLineNum(), "The node <BehaviorTree> must have exactly 1 child");
@@ -199,6 +207,25 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         else
         {
             recursiveStep(bt_root->FirstChildElement());
+        }
+    }
+
+    if( xml_root->Attribute("main_tree_to_execute") )
+    {
+        std::string main_tree = xml_root->Attribute("main_tree_to_execute");
+        if( std::find( tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
+        {
+            error_messages.emplace_back("The tree esecified in [main_tree_to_execute] "
+                                        "can't be found");
+            is_valid = false;
+        }
+    }
+    else{
+        if( tree_count != 1)
+        {
+            error_messages.emplace_back("If you don't specify the attribute [main_tree_to_execute], "
+                                        "Your file must contain a single BehaviorTree");
+            is_valid = false;
         }
     }
     return is_valid;
@@ -222,14 +249,34 @@ TreeNodePtr XMLParser::instantiateTree(std::vector<TreeNodePtr>& nodes)
 
     //--------------------------------------
     XMLElement* xml_root = doc_.RootElement();
-    const std::string main_tree_ID = xml_root->Attribute("main_tree_to_execute");
+
+    std::string main_tree_ID;
+    if( xml_root->Attribute("main_tree_to_execute") )
+    {
+        main_tree_ID = xml_root->Attribute("main_tree_to_execute");
+    }
 
     std::map<std::string, XMLElement*> bt_roots;
+
+    int tree_count = 0;
 
     for (auto node = xml_root->FirstChildElement("BehaviorTree"); node != nullptr;
          node = node->NextSiblingElement("BehaviorTree"))
     {
-        bt_roots[node->Attribute("ID")] = node;
+        std::string tree_name = main_tree_ID;
+        if( tree_count++ > 0 )
+        {
+            tree_name += std::string("_") + std::to_string(tree_count);
+        }
+        if( node->Attribute("ID"))
+        {
+            tree_name = node->Attribute("ID");
+        }
+        bt_roots[tree_name] = node;
+        if( main_tree_ID.empty() )
+        {
+            main_tree_ID = tree_name;
+        }
     }
 
     //--------------------------------------
