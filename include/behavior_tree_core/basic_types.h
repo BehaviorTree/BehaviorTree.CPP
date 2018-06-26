@@ -64,14 +64,8 @@ enum SuccessPolicy
     SUCCEED_ON_ALL
 };
 
-template <typename T>
-T convertFromString(const char* str);
 
-template <typename T>
-inline T convertFromString(const std::string& str)
-{
-    return convertFromString<T>(str.c_str());
-}
+template <typename T> T convertFromString(const std::string& str);
 
 //------------------------------------------------------------------
 

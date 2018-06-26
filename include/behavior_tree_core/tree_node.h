@@ -108,8 +108,9 @@ class TreeNode
         {
             throw std::invalid_argument(std::string("Can't find the parameter with key: ") + key);
         }
-        return convertFromString<T>(it->second.c_str());
+        return convertFromString<T>(it->second);
     }
+
 
     /// registrationName() is set by the BehaviorTreeFactory
     void setRegistrationName(const std::string& registration_name);

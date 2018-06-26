@@ -79,29 +79,42 @@ const char* toStr(const ResetPolicy& policy)
 }
 
 template <>
-int convertFromString<int>(const char* str)
+std::string convertFromString<std::string>(const std::string& str)
 {
-    return std::stoi(str);
+    return str;
 }
 
 template <>
-unsigned convertFromString<unsigned>(const char* str)
+const char* convertFromString<const char*>(const std::string& str)
 {
-    return std::stoul(str);
+    return str.c_str();
+}
+
+
+template <>
+int convertFromString<int>(const std::string& str)
+{
+    return std::stoi(str.c_str());
 }
 
 template <>
-double convertFromString<double>(const char* str)
+unsigned convertFromString<unsigned>(const std::string& str)
+{
+    return std::stoul(str.c_str());
+}
+
+template <>
+double convertFromString<double>(const std::string& str)
 {
     return std::stod(str);
 }
 
 template <>
-NodeStatus convertFromString<NodeStatus>(const char* str)
+NodeStatus convertFromString<NodeStatus>(const std::string& str)
 {
     for (auto status : {NodeStatus::IDLE, NodeStatus::RUNNING, NodeStatus::SUCCESS, NodeStatus::FAILURE})
     {
-        if (std::strcmp(toStr(status), str) == 0)
+        if (std::strcmp(toStr(status), str.c_str()) == 0)
         {
             return status;
         }
@@ -110,12 +123,12 @@ NodeStatus convertFromString<NodeStatus>(const char* str)
 }
 
 template <>
-NodeType convertFromString<NodeType>(const char* str)
+NodeType convertFromString<NodeType>(const std::string& str)
 {
     for (auto status : {NodeType::ACTION, NodeType::CONDITION, NodeType::CONTROL, NodeType::DECORATOR,
                         NodeType::SUBTREE, NodeType::UNDEFINED})
     {
-        if (std::strcmp(toStr(status), str) == 0)
+        if (std::strcmp(toStr(status), str.c_str()) == 0)
         {
             return status;
         }
@@ -124,11 +137,11 @@ NodeType convertFromString<NodeType>(const char* str)
 }
 
 template <>
-ResetPolicy convertFromString<ResetPolicy>(const char* str)
+ResetPolicy convertFromString<ResetPolicy>(const std::string& str)
 {
     for (auto status : {ResetPolicy::ON_SUCCESS, ResetPolicy::ON_SUCCESS_OR_FAILURE, ResetPolicy::ON_FAILURE})
     {
-        if (std::strcmp(toStr(status), str) == 0)
+        if (std::strcmp(toStr(status), str.c_str()) == 0)
         {
             return status;
         }
