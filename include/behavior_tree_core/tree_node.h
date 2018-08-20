@@ -19,16 +19,18 @@
 #include <map>
 #include <set>
 
+#include "non_std/optional.hpp"
 #include "behavior_tree_core/tick_engine.h"
 #include "behavior_tree_core/exceptions.h"
 #include "behavior_tree_core/signal.h"
 #include "behavior_tree_core/basic_types.h"
+#include "Blackboard/blackboard.h"
 
 namespace BT
 {
 // We call Parameters the set of Key/Values that can be read from file and are
 // used to parametrize an object. It is up to the user's code to parse the string.
-typedef std::map<std::string, std::string> NodeParameters;
+typedef std::unordered_map<std::string, std::string> NodeParameters;
 
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
 
@@ -61,6 +63,10 @@ class TreeNode
     NodeStatus status() const;
 
     void setStatus(NodeStatus new_status);
+
+    void setBlackboard(std::shared_ptr<Blackboard> bb);
+
+    const std::shared_ptr<Blackboard>&  blackboard() const;
 
     const std::string& name() const;
 
@@ -101,14 +107,26 @@ class TreeNode
     virtual BT::NodeStatus tick() = 0;
 
     template <typename T>
-    T getParam(const std::string& key) const
+    nonstd::optional<T> getParam(const std::string& key) const
     {
         auto it = parameters_.find(key);
         if (it == parameters_.end())
         {
-            throw std::invalid_argument(std::string("Can't find the parameter with key: ") + key);
+            return nonstd::nullopt;
         }
-        return convertFromString<T>(it->second.c_str());
+        const std::string& str = it->second;
+
+        // check if it follows this ${pattern}, if it does, search inside the blackboard
+        if( bb_ && str.size()>=4 && str[0] == '$' && str[1] == '{' && str.back() == '}')
+        {
+            const std::string stripped_key( &str[2], str.size()-3);
+            T value;
+            bool found = bb_->get(stripped_key, value);
+            return found ? nonstd::optional<T>(value) : nonstd::nullopt;
+        }
+        else{
+            return convertFromString<T>(str.c_str());
+        }
     }
 
     /// registrationName() is set by the BehaviorTreeFactory
@@ -132,6 +150,8 @@ class TreeNode
     std::string registration_name_;
 
     const NodeParameters parameters_;
+
+    std::shared_ptr<Blackboard> bb_;
 };
 
 typedef std::shared_ptr<TreeNode> TreeNodePtr;

@@ -25,8 +25,12 @@ FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string& name, ResetPol
 }
 
 FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string& name, const NodeParameters& params)
-  : ControlNode::ControlNode(name, params), current_child_idx_(0), reset_policy_(getParam<ResetPolicy>(RESET_POLICY))
+  : ControlNode::ControlNode(name, params), current_child_idx_(0), reset_policy_(ON_SUCCESS_OR_FAILURE)
 {
+    auto param = getParam<ResetPolicy>(RESET_POLICY);
+    if(param){
+        reset_policy_ = param.value();
+    }
 }
 
 NodeStatus FallbackNodeWithMemory::tick()

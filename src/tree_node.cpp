@@ -49,6 +49,16 @@ void TreeNode::setStatus(NodeStatus new_status)
     }
 }
 
+void TreeNode::setBlackboard(std::shared_ptr<Blackboard> bb)
+{
+    bb_ = bb;
+}
+
+const std::shared_ptr<Blackboard>& TreeNode::blackboard() const
+{
+    return bb_;
+}
+
 NodeStatus TreeNode::status() const
 {
     std::lock_guard<std::mutex> LockGuard(state_mutex_);
