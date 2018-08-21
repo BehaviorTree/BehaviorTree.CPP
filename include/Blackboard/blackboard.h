@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include <SafeAny/safe_any.hpp>
+#include <non_std/optional.hpp>
 
 namespace BT{
 
@@ -27,25 +28,42 @@ public:
 // the templatized methods set() and get() are more user-friendly
 class Blackboard
 {
-public:
 
-    Blackboard( std::unique_ptr<BlackboardImpl> implementation):
-        impl_( std::move(implementation ) )
+
+public:
+    // This is intentionally private. Use Blackboard::create instead
+    Blackboard(std::unique_ptr<BlackboardImpl> base ): impl_( std::move(base) )
     { }
+
+    Blackboard() = delete;
+
+    template <typename ImplClass, typename ... Args>
+    static std::shared_ptr<Blackboard> create(Args... args )
+    {
+        std::unique_ptr<BlackboardImpl> base( new ImplClass(args...) );
+        return std::make_shared<Blackboard>(std::move(base));
+    }
 
     virtual ~Blackboard() = default;
 
     template <typename T> bool get(const std::string& key, T& value) const
     {
+        if( !impl_ )
+        {
+            return false;
+        }
         const SafeAny::Any* val = impl_->get(key);
         if( !val ){ return false; }
 
-        value = val->convert<T>();
+        value = val->cast<T>();
         return true;
     }
 
     template <typename T> void set(const std::string& key, const T& value) {
-        impl_->set(key, SafeAny::Any(value));
+        if( impl_)
+        {
+            impl_->set(key, SafeAny::Any(value));
+        }
     }
 
 private:

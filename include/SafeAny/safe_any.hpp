@@ -7,491 +7,168 @@
 #include <chrono>
 #include <string>
 #include <cstring>
+#include <type_traits>
 #include "any.hpp"
+#include "convert_impl.hpp"
 
 namespace SafeAny{
 
-// Version of string that uses only two words. Good for small object optimization in linb::any
-class SimpleString
-{
-public:
-    SimpleString(const std::string& str): SimpleString(str.data(), str.size())
-    { }
-    SimpleString(const char* data): SimpleString( data, strlen(data) )
-    { }
 
-    SimpleString(const char* data, std::size_t size): _size(size)
-    {
-        _data = new char[_size+1];
-        strncpy(_data, data, _size);
-        _data[_size] = '\0';
-    }
-
-    SimpleString(const SimpleString& other): SimpleString(other.data(), other.size())
-    { }
-
-
-    ~SimpleString() {
-        if(_data){
-            delete[] _data;
-        }
-    }
-
-    std::string toStdString() const
-    {
-        return std::string(_data, _size);
-    }
-
-    const char* data() const { return _data;}
-
-    std::size_t size() const { return _size;}
-
-private:
-    char* _data;
-    std::size_t _size;
-};
-
-
-
+// Rational: since type erased numbers will always use at least 8 bytes
+// it is faster to cast everything to either double, uint64_t or int64_t.
 class Any
 {
+    template <typename T>
+    using EnableIntegral = typename std::enable_if<std::is_integral<T>::value ||
+                                                   std::is_enum<T>::value>::type*;
 
+    template <typename T>
+    using EnableNonIntegral = typename std::enable_if< !std::is_integral<T>::value &&
+                                                       !std::is_enum<T>::value>::type*;
+
+    template <typename T>
+    using EnableString = typename std::enable_if< std::is_same<T, std::string>::value>::type*;
+
+    template <typename T>
+    using EnableArithmetic = typename std::enable_if< std::is_arithmetic<T>::value > ::type*;
+
+    template <typename T>
+    using EnableEnum = typename std::enable_if< std::is_enum<T>::value > ::type*;
+
+    template <typename T>
+    using EnableUnknownType = typename std::enable_if< !std::is_arithmetic<T>::value &&
+                                                       !std::is_enum<T>::value &&
+                                                       !std::is_same<T,std::string>::value > ::type*;
 public:
 
     Any() {}
 
     ~Any() = default;
 
-    template<typename T> Any(const T& value) : _any(value)
-    { }
+    Any(const double& value) : _any(value) { }
 
-    template<typename T> T convert( ) const;
+    Any(const uint64_t& value) : _any(value) { }
 
-    template<typename T> T extract( ) const
+    Any(const float& value) : _any( double(value) ) { }
+
+    Any(const std::string& str) :  _any(SimpleString(str)) { }
+
+    // all the other integrals are casted to int64_t
+    template<typename T>
+    explicit Any(const T& value, EnableIntegral<T> = 0):
+        _any( int64_t(value) ) { }
+
+    // default for other custom types
+    template<typename T>
+    explicit Any(const T& value, EnableNonIntegral<T> = 0):
+        _any( value ) { }
+
+
+    // this is different from any_cast, because if allows safe
+    // conversions between arithmetic values.
+    template<typename T> T cast() const
     {
-        return linb::any_cast<T>(_any);
+        if( _any.type() == typeid (T) )
+        {
+            return linb::any_cast<T>(_any);
+        }
+        else{
+            return convert<T>();
+        }
     }
-
-    const std::type_info& type() const { return _any.type(); }
 
 private:
 
     linb::any _any;
+
+    //----------------------------
+
+    template<typename DST>
+    DST convert( EnableString<DST> = 0 ) const
+    {
+        const auto& type = _any.type();
+
+        if( type == typeid(SimpleString) )
+        {
+            return linb::any_cast<SimpleString>(_any).toStdString();
+        }
+        else if( type == typeid(int64_t)) {
+            return std::to_string( linb::any_cast<int64_t>(_any) );
+        }
+        else if( type == typeid(uint64_t)) {
+            return std::to_string( linb::any_cast<uint64_t>(_any) );
+        }
+        else if( type == typeid(double)) {
+            return std::to_string( linb::any_cast<double>(_any) );
+        }
+
+        throw errorMsg<DST>();
+    }
+
+
+    template<typename DST>
+    DST convert( EnableArithmetic<DST> = 0 ) const
+    {
+        using details::convertNumber;
+        DST out;
+
+        const auto& type = _any.type();
+
+        if( type == typeid(int64_t)) {
+            convertNumber<int64_t, DST>(linb::any_cast<int64_t>(_any), out  );
+        }
+        else if( type == typeid(uint64_t)) {
+            convertNumber<uint64_t, DST>(linb::any_cast<uint64_t>(_any), out  );
+        }
+        else if( type == typeid(double)) {
+            convertNumber<double, DST>(linb::any_cast<double>(_any), out  );
+        }
+        else{
+            throw errorMsg<DST>();
+        }
+        return out;
+    }
+
+    template<typename DST>
+    DST convert( EnableEnum<DST> = 0 ) const
+    {
+        using details::convertNumber;
+
+        const auto& type = _any.type();
+
+        if( type == typeid(int64_t))
+        {
+            uint64_t out = linb::any_cast<int64_t>(_any);
+            return static_cast<DST>(out);
+        }
+        else if( type == typeid(uint64_t))
+        {
+            uint64_t out = linb::any_cast<uint64_t>(_any);
+            return static_cast<DST>(out);
+        }
+
+        throw errorMsg<DST>();
+    }
+
+    template<typename DST>
+    DST convert( EnableUnknownType<DST> = 0 ) const
+    {
+        throw errorMsg<DST>();
+    }
+
+    template <typename T>
+    std::runtime_error errorMsg() const
+    {
+        char buffer[1024];
+        sprintf(buffer, "[Any::convert]: no known safe conversion between %s and %s",
+                _any.type().name(), typeid (T).name() );
+        return std::runtime_error(buffer);
+    }
+
 };
 
-//----------------------------------------------
-//specialization for std::string
-template <> inline Any::Any(const std::string& str)
-{
-    _any = linb::any(SimpleString(str));
-}
-
-template <> inline std::string Any::extract() const
-{
-    return linb::any_cast<SimpleString>(_any).toStdString();
-}
-
-namespace details{
 
 
-template <typename BoolCondition>
-using EnableIf = typename std::enable_if< BoolCondition::value, void>::type;
-
-template <typename T>
-struct is_integer : std::integral_constant<bool, std::is_integral<T>::value
-        && !std::is_same<T, bool>::value
-        && !std::is_same<T, char>::value>
-{};
-
-template <typename From, typename To>
-struct is_same_real : std::integral_constant<bool,
-        std::is_same<From, To>::value
-        && std::is_floating_point<To>::value >
-{};
-
-
-template <typename From, typename To>
-struct is_safe_integer_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && is_integer<To>::value
-        && sizeof(From) < sizeof(To)
-&& std::is_signed<From>::value == std::is_signed<To>::value>
-{};
-
-template <typename T>
-struct is_convertible_type
-        : std::integral_constant<bool,
-           std::is_integral<T>::value
-        || std::is_floating_point<T>::value
-        || std::is_same<T, bool>::value
-        || std::is_same<T, char>::value
-        || std::is_same<T, std::string>::value
-        || std::is_same<T, SimpleString>::value>
-{};
-
-template <typename From, typename To>
-struct float_conversion
-        : std::integral_constant<bool, std::is_floating_point<From>::value
-        && std::is_floating_point<To>::value && !std::is_same<From, To>::value >
-{};
-
-template <typename From, typename To>
-struct unsigned_to_smaller_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && is_integer<To>::value
-        && (sizeof(From) > sizeof(To))
-&& !std::is_signed<From>::value
-&& !std::is_signed<To>::value >
-{};
-
-template <typename From, typename To>
-struct signed_to_smaller_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && is_integer<To>::value
-        && (sizeof(From) > sizeof(To))
-&& std::is_signed<From>::value
-&& std::is_signed<To>::value >
-{};
-
-//---------------------------
-template <typename From, typename To>
-struct signed_to_smaller_unsigned_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && is_integer<To>::value
-        && sizeof(From) >= sizeof(To)
-&& std::is_signed<From>::value
-&& !std::is_signed<To>::value >
-{};
-
-template <typename From, typename To>
-struct signed_to_larger_unsigned_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && is_integer<To>::value
-        && sizeof(From) < sizeof(To)
-&& std::is_signed<From>::value
-&& !std::is_signed<To>::value >
-{};
-
-template <typename From, typename To>
-struct unsigned_to_smaller_signed_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && is_integer<To>::value
-        && (sizeof(From) >= sizeof(To))
-&& !std::is_signed<From>::value
-&& std::is_signed<To>::value >
-{};
-
-template <typename From, typename To>
-struct unsigned_to_larger_signed_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && is_integer<To>::value
-        && sizeof(From) < sizeof(To)
-&& !std::is_signed<From>::value
-&& std::is_signed<To>::value >
-{};
-
-template <typename From, typename To>
-struct floating_to_signed_conversion
-        : std::integral_constant<bool, std::is_floating_point<From>::value
-        && is_integer<To>::value
-        && std::is_signed<To>::value >
-{};
-
-template <typename From, typename To>
-struct floating_to_unsigned_conversion
-        : std::integral_constant<bool, std::is_floating_point<From>::value
-        && is_integer<To>::value
-        && !std::is_signed<To>::value >
-{};
-
-template <typename From, typename To>
-struct integer_to_floating_conversion
-        : std::integral_constant<bool, is_integer<From>::value
-        && std::is_floating_point<To>::value >
-{};
-
-template <typename From, typename To>
-inline void checkUpperLimit(const From& from)
-{
-    if ((sizeof(To) < sizeof(From)) &&
-            (from > static_cast<From>(std::numeric_limits<To>::max()))) {
-        throw std::runtime_error("Value too large.");
-    }
-    else if (static_cast<To>(from) > std::numeric_limits<To>::max()) {
-        throw std::runtime_error("Value too large.");
-    }
-}
-
-template <typename From, typename To>
-inline void checkUpperLimitFloat(const From& from)
-{
-    if (from > std::numeric_limits<To>::max()){
-        throw std::runtime_error("Value too large.");
-    }
-}
-
-template <typename From, typename To>
-inline void checkLowerLimitFloat(const From& from)
-{
-    if (from < -std::numeric_limits<To>::max()){
-        throw std::runtime_error("Value too small.");
-    }
-}
-
-template <typename From, typename To>
-inline void checkLowerLimit(const From& from)
-{
-    if (from < std::numeric_limits<To>::min()){
-        throw std::runtime_error("Value too small.");
-    }
-}
-
-template <typename From, typename To>
-inline void checkTruncation(const From& from)
-{
-    if( from != static_cast<From>(static_cast<To>( from))){
-        throw std::runtime_error("Floating point truncated");
-    }
-}
-
-
-//----------------------- Implementation ----------------------------------------------
-
-template<typename SRC,typename DST> inline
-typename std::enable_if< !is_convertible_type<DST>::value, void>::type
-convert_impl( const SRC& , DST&  )
-{
-    throw std::runtime_error("Not convertible");
-}
-
-
-template<typename SRC,typename DST> inline
-EnableIf< std::is_same<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    target = from;
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< is_safe_integer_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    target = static_cast<DST>( from);
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< float_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    checkTruncation<SRC,DST>(from);
-    target = static_cast<DST>( from );
-}
-
-
-template<typename SRC,typename DST> inline
-EnableIf< unsigned_to_smaller_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    checkUpperLimit<SRC,DST>(from);
-    target = static_cast<DST>( from);
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< signed_to_smaller_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    checkLowerLimit<SRC,DST>(from);
-    checkUpperLimit<SRC,DST>(from);
-    target = static_cast<DST>( from);
-}
-
-
-template<typename SRC,typename DST> inline
-EnableIf< signed_to_smaller_unsigned_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    if (from < 0 )
-        throw std::runtime_error("Value is negative and can't be converted to signed");
-
-    checkUpperLimit<SRC,DST>(from);
-    target = static_cast<DST>( from );
-}
-
-
-template<typename SRC,typename DST> inline
-EnableIf< signed_to_larger_unsigned_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    //std::cout << "signed_to_larger_unsigned_conversion" << std::endl;
-
-    if ( from < 0 )
-        throw std::runtime_error("Value is negative and can't be converted to signed");
-
-    target = static_cast<DST>( from);
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< unsigned_to_larger_signed_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    //std::cout << "unsigned_to_larger_signed_conversion" << std::endl;
-    target = static_cast<DST>( from);
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< unsigned_to_smaller_signed_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    checkUpperLimit<SRC,DST>(from);
-    target = static_cast<DST>( from);
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< floating_to_signed_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    checkLowerLimitFloat<SRC,DST>(from);
-    checkLowerLimitFloat<SRC,DST>(from);
-
-    if( from != static_cast<SRC>(static_cast<DST>( from)))
-        throw std::runtime_error("Floating point truncated");
-
-    target = static_cast<DST>( from);
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< floating_to_unsigned_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    if ( from < 0 )
-        throw std::runtime_error("Value is negative and can't be converted to signed");
-
-    checkLowerLimitFloat<SRC,DST>(from);
-
-    if( from != static_cast<SRC>(static_cast<DST>( from)))
-        throw std::runtime_error("Floating point truncated");
-
-    target = static_cast<DST>( from);
-}
-
-template<typename SRC,typename DST> inline
-EnableIf< integer_to_floating_conversion<SRC, DST>>
-convert_impl( const SRC& from, DST& target )
-{
-    checkTruncation<SRC,DST>(from);
-    target = static_cast<DST>( from);
-}
-
-} //end namespace details
-
-
-template<typename DST> inline
-DST Any::convert() const
-{
-    using details::convert_impl;
-    DST out;
-
-    const auto& type = _any.type();
-
-    if( ! details::is_convertible_type<DST>::value )
-    {
-        return linb::any_cast<DST>(_any);
-    }
-
-    if( type == typeid(bool)) {
-        return DST( extract<bool>() );
-    }
-    else if( type == typeid(char)) {
-        convert_impl<int8_t,  DST>( int8_t(extract<char>()), out  );
-    }
-    else if( type == typeid(int8_t)) {
-        convert_impl<int8_t,  DST>(extract<int8_t>(), out  );
-    }
-    else if( type == typeid(int16_t)) {
-        convert_impl<int16_t,  DST>(extract<int16_t>(), out  );
-    }
-    else if( type == typeid(int32_t)) {
-        convert_impl<int32_t,  DST>(extract<int32_t>(), out  );
-    }
-    else if( type == typeid(int64_t)) {
-        convert_impl<int64_t,  DST>(extract<int64_t>(), out  );
-    }
-    else if( type == typeid(uint8_t)) {
-        convert_impl<uint8_t,  DST>(extract<uint8_t>(), out  );
-    }
-    else if( type == typeid(uint16_t)) {
-        convert_impl<uint16_t,  DST>(extract<uint16_t>(), out  );
-    }
-    else if( type == typeid(uint32_t)) {
-        convert_impl<uint32_t,  DST>(extract<uint32_t>(), out  );
-    }
-    else if( type == typeid(uint64_t)) {
-        convert_impl<uint64_t,  DST>(extract<uint64_t>(), out  );
-    }
-    else if( type == typeid(float)) {
-        convert_impl<float,  DST>(extract<float>(), out  );
-    }
-    else if( type == typeid(double)) {
-        convert_impl<double,  DST>(extract<double>(), out  );
-    }
-    else if( type == typeid(SimpleString) )
-    {
-        throw std::runtime_error("String can not be converted to another type implicitly");
-    }
-    else{
-        return linb::any_cast<DST>(_any);
-    }
-
-    return out;
-}
-
-template<> inline std::string Any::convert() const
-{
-    const auto& type = _any.type();
-
-    if( type == typeid(SimpleString) )
-    {
-        return extract<SimpleString>().toStdString();
-    }
-    else if( type == typeid(bool)) {
-        return std::to_string( extract<bool>() );
-    }
-    else if( type == typeid(char)) {
-        return std::to_string( extract<char>() );
-    }
-    else if( type == typeid(int8_t)) {
-        return std::to_string( extract<int8_t>() );
-    }
-    else if( type == typeid(int16_t)) {
-        return std::to_string( extract<int16_t>() );
-    }
-    else if( type == typeid(int32_t)) {
-        return std::to_string( extract<int32_t>() );
-    }
-    else if( type == typeid(int64_t)) {
-        return std::to_string( extract<int64_t>() );
-    }
-    else if( type == typeid(uint8_t)) {
-        return std::to_string( extract<uint8_t>() );
-    }
-    else if( type == typeid(uint16_t)) {
-        return std::to_string( extract<uint16_t>() );
-    }
-    else if( type == typeid(uint32_t)) {
-        return std::to_string( extract<uint32_t>() );
-    }
-    else if( type == typeid(uint64_t)) {
-        return std::to_string( extract<uint64_t>() );
-    }
-    else if( type == typeid(float)) {
-        return std::to_string( extract<float>() );
-    }
-    else if( type == typeid(double)) {
-        return std::to_string( extract<double>() );
-    }
-
-    throw std::runtime_error("Conversion to std::string failed");
-}
 
 
 } // end namespace VarNumber

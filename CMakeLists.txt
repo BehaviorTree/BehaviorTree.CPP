@@ -133,8 +133,12 @@ if( ZMQ_FOUND )
     target_link_libraries(bt_recorder  ${BEHAVIOR_TRE_LIBRARIES} )
 endif()
 
-add_executable(simple_example gtest/simple_example.cpp )
+add_executable(simple_example examples/simple_example.cpp )
 target_link_libraries(simple_example ${BEHAVIOR_TRE_LIBRARIES} )
+
+
+add_executable(tutorial_blackboard examples/tutorial_blackboard.cpp )
+target_link_libraries(tutorial_blackboard ${BEHAVIOR_TRE_LIBRARIES} )
 
 
 ######################################################

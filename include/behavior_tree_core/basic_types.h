@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
+#include <vector>
+#include <sstream>
 
 namespace BT
 {
@@ -101,6 +103,21 @@ inline std::ostream& operator<<(std::ostream& os, const BT::ResetPolicy& type)
     os << toStr(type);
     return os;
 }
+
+// small utility, unless you want to use <boost/algorithm/string.hpp>
+inline std::vector<std::string> splitString(const std::string& strToSplit, char delimeter)
+{
+    std::stringstream ss(strToSplit);
+    std::string item;
+    std::vector<std::string> splitted_strings;
+    while (std::getline(ss, item, delimeter))
+    {
+       splitted_strings.push_back(item);
+    }
+    return splitted_strings;
+}
+
+
 }
 
 #endif   // BT_BASIC_TYPES_H

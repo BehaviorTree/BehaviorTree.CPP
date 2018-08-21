@@ -267,7 +267,7 @@ namespace nonstd {
 
 // type traits needed:
 
-namespace nonstd { namespace optional_lite { namespace detail {
+namespace BT { namespace optional_lite { namespace detail {
 
 #if optional_HAVE( CONDITIONAL )
     using std::conditional;
@@ -284,7 +284,7 @@ namespace nonstd { namespace optional_lite { namespace detail {
 
 #ifndef nonstd_lite_HAVE_IN_PLACE_TYPES
 
-namespace nonstd {
+namespace BT {
 
 namespace detail {
 
@@ -324,8 +324,8 @@ inline in_place_t in_place_index( detail::in_place_index_tag<I> = detail::in_pla
 
 // mimic templated typedef:
 
-#define nonstd_lite_in_place_type_t( T)  nonstd::in_place_t(&)( nonstd::detail::in_place_type_tag<T>  )
-#define nonstd_lite_in_place_index_t(T)  nonstd::in_place_t(&)( nonstd::detail::in_place_index_tag<I> )
+#define nonstd_lite_in_place_type_t( T)  BT::in_place_t(&)( BT::detail::in_place_type_tag<T>  )
+#define nonstd_lite_in_place_index_t(T)  BT::in_place_t(&)( BT::detail::in_place_index_tag<I> )
 
 #define nonstd_lite_HAVE_IN_PLACE_TYPES  1
 
@@ -337,7 +337,7 @@ inline in_place_t in_place_index( detail::in_place_index_tag<I> = detail::in_pla
 // optional:
 //
 
-namespace nonstd { namespace optional_lite {
+namespace BT { namespace optional_lite {
 
 /// class optional
 
@@ -1188,10 +1188,10 @@ using namespace optional_lite;
 namespace std {
 
 template< class T >
-struct hash< nonstd::optional<T> >
+struct hash< BT::optional<T> >
 {
 public:
-    std::size_t operator()( nonstd::optional<T> const & v ) const optional_noexcept
+    std::size_t operator()( BT::optional<T> const & v ) const optional_noexcept
     {
         return bool( v ) ? hash<T>()( *v ) : 0;
     }

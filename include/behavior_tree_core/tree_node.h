@@ -107,12 +107,25 @@ class TreeNode
     virtual BT::NodeStatus tick() = 0;
 
     template <typename T>
-    nonstd::optional<T> getParam(const std::string& key) const
+    BT::optional<T> getParam(const std::string& key) const
+    {
+        T out;
+        if( getParam(key, out))
+        {
+            return std::move(out);
+        }
+        else{
+            return BT::nullopt;
+        }
+    }
+
+    template <typename T>
+    bool getParam(const std::string& key, T& destination) const
     {
         auto it = parameters_.find(key);
         if (it == parameters_.end())
         {
-            return nonstd::nullopt;
+            return false;
         }
         const std::string& str = it->second;
 
@@ -120,12 +133,12 @@ class TreeNode
         if( bb_ && str.size()>=4 && str[0] == '$' && str[1] == '{' && str.back() == '}')
         {
             const std::string stripped_key( &str[2], str.size()-3);
-            T value;
-            bool found = bb_->get(stripped_key, value);
-            return found ? nonstd::optional<T>(value) : nonstd::nullopt;
+            bool found = bb_->get(stripped_key, destination);
+            return found;
         }
         else{
-            return convertFromString<T>(str.c_str());
+            destination = convertFromString<T>(str.c_str());
+            return true;
         }
     }
 

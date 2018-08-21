@@ -65,23 +65,24 @@ class BehaviorTreeFactory
     template <typename T>
     void registerNodeType(const std::string& ID)
     {
-        static_assert(std::is_base_of<ActionNode, T>::value || std::is_base_of<ControlNode, T>::value ||
-                          std::is_base_of<DecoratorNode, T>::value || std::is_base_of<ConditionNode, T>::value,
-                      "[registerBuilder]: accepts only classed derived from either ActionNode, DecoratorNode, "
-                      "ControlNode "
-                      "or ConditionNode");
+        static_assert(std::is_base_of<ActionNodeBase, T>::value ||
+                      std::is_base_of<ControlNode, T>::value ||
+                      std::is_base_of<DecoratorNode, T>::value ||
+                      std::is_base_of<ConditionNode, T>::value,
+                      "[registerBuilder]: accepts only classed derived from either ActionNodeBase, "
+                      "DecoratorNode, ControlNode or ConditionNode");
 
-        constexpr bool default_constructable = std::is_constructible<T, std::string>::value;
-        constexpr bool param_constructable = std::is_constructible<T, std::string, const NodeParameters&>::value;
+        constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
+        constexpr bool param_constructable = std::is_constructible<T, const std::string&, const NodeParameters&>::value;
         constexpr bool has_static_required_parameters = has_static_method_requiredNodeParameters<T>::value;
 
         static_assert(default_constructable || param_constructable,
-                      "[registerBuilder]: the registered class must have at least one of these two constructors:\n\n"
-                      "    (const std::string&, const NodeParameters&) or (const std::string&)");
+                      "[registerBuilder]: the registered class must have at least one of these two constructors: "
+                      "    (const std::string&, const NodeParameters&) or (const std::string&)\n");
 
         static_assert(!(param_constructable && !has_static_required_parameters),
-                      "[registerBuilder]: a node that accepts NodeParameters must also implement a static method:\n\n"
-                      "    const NodeParameters& requiredNodeParameters(); ");
+                      "[registerBuilder]: a node that accepts NodeParameters must also implement a static method: "
+                      "  const NodeParameters& requiredNodeParameters();\n");
 
         registerNodeTypeImpl<T>(ID);
         storeNodeModel<T>(ID);

@@ -78,14 +78,14 @@ int main(int argc, char** argv)
     factory.registerNodeType<BatteryCondition>("BatteryOK");
     factory.registerNodeType<MoveAction>("Move");
 
-    XMLParser parser(factory);
+    BT::XMLParser parser(factory);
     parser.loadFromText(xml_text_A);
 
     std::vector<BT::TreeNodePtr> nodes;
     BT::TreeNodePtr root_node = parser.instantiateTree(nodes);
 
-    StdCoutLogger logger_cout(root_node.get());
-    FileLogger file_file(root_node.get(), "simple_trace.fbl", 32);
+    BT::StdCoutLogger logger_cout(root_node.get());
+    BT::FileLogger file_file(root_node.get(), "simple_trace.fbl", 32);
 
     std::cout << "\n------- First executeTick() --------" << std::endl;
     root_node->executeTick();
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
     std::cout << std::endl;
 
     std::cout << "\n-------\n";
-    XMLWriter writer(factory);
+    BT::XMLWriter writer(factory);
     std::cout << writer.writeXML( root_node.get() ) << std::endl;
 
     return 0;
