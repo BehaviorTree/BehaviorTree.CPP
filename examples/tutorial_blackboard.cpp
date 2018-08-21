@@ -14,7 +14,7 @@ struct Pose2D
 class PullGoalPose: public ActionNodeBase
 {
 public:
-    PullGoalPose(const std::string& name): ActionNodeBase(name, NodeParameters() ) {}
+    PullGoalPose(const std::string& name): ActionNodeBase(name) {}
 
     NodeStatus tick() override
     {
@@ -36,8 +36,7 @@ public:
 class MoveAction_A: public ActionNodeBase
 {
 public:
-    MoveAction_A(const std::string& name):
-        ActionNodeBase(name, NodeParameters() ) {}
+    MoveAction_A(const std::string& name): ActionNodeBase(name) {}
 
     NodeStatus tick() override
     {
@@ -61,8 +60,7 @@ public:
 class MoveAction_B: public ActionNodeBase
 {
 public:
-    MoveAction_B(const std::string& name,
-                 const NodeParameters& params):
+    MoveAction_B(const std::string& name, const NodeParameters& params):
         ActionNodeBase(name, params) {}
 
     NodeStatus tick() override
@@ -89,6 +87,9 @@ public:
 };
 
 namespace BT{
+
+// this template specialization is needed if you want
+// to automatically convert a NodeParameter into a Pose2D
 
 template <>
 Pose2D convertFromString(const std::string& str)
@@ -151,8 +152,6 @@ int main(int argc, char** argv)
     {
         node->setBlackboard(bb);
     }
-
-  //  StdCoutLogger logger_cout(root_node.get());
 
     root_node->executeTick();
 

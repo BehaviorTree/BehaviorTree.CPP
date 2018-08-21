@@ -23,7 +23,7 @@ class ActionNodeBase : public LeafNode
 {
   public:
     // Constructor
-    ActionNodeBase(const std::string& name, const NodeParameters& parameters);
+    ActionNodeBase(const std::string& name, const NodeParameters& parameters = NodeParameters());
     ~ActionNodeBase() override = default;
 
     virtual NodeType type() const override final

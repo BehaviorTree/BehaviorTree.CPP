@@ -84,6 +84,10 @@ class BehaviorTreeFactory
                       "[registerBuilder]: a node that accepts NodeParameters must also implement a static method: "
                       "  const NodeParameters& requiredNodeParameters();\n");
 
+        static_assert( !( has_static_required_parameters && !param_constructable),
+                       "[registerBuilder]: since you have a static method requiredNodeParameters(), "
+                       "you will also need a constructor sign signature (const std::string&, const NodeParameters&)\n)" );
+
         registerNodeTypeImpl<T>(ID);
         storeNodeModel<T>(ID);
     }
