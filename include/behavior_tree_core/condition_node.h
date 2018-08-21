@@ -51,7 +51,7 @@ class SimpleConditionNode : public ConditionNode
   public:
     typedef std::function<NodeStatus()> TickFunctor;
 
-    // Constructor: you must provide the funtion to call when tick() is invoked
+    // Constructor: you must provide the function to call when tick() is invoked
     SimpleConditionNode(const std::string& name, TickFunctor tick_functor);
 
     ~SimpleConditionNode() override = default;

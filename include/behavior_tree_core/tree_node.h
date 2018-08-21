@@ -70,7 +70,7 @@ class TreeNode
 
     const std::string& name() const;
 
-    /// Blocking funtion that will sleep until the setStatus() is called with
+    /// Blocking function that will sleep until the setStatus() is called with
     /// either RUNNING, FAILURE or SUCCESS.
     BT::NodeStatus waitValidStatus();
 
