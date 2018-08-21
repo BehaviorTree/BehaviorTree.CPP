@@ -23,8 +23,12 @@ DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, unsigned int N
 }
 
 DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, const NodeParameters& params)
-  : DecoratorNode(name, params), NTries_(getParam<int>(NUM_CYCLES)), TryIndx_(0)
+  : DecoratorNode(name, params), NTries_(1), TryIndx_(0)
 {
+    auto param = getParam<int>(NUM_CYCLES);
+    if(param){
+        NTries_ = param.value();
+    }
 }
 
 NodeStatus DecoratorRepeatNode::tick()

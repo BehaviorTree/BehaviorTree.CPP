@@ -23,8 +23,12 @@ DecoratorRetryNode::DecoratorRetryNode(const std::string& name, unsigned int NTr
 }
 
 DecoratorRetryNode::DecoratorRetryNode(const std::string& name, const NodeParameters& params)
-  : DecoratorNode(name, params), NTries_(getParam<int>(NUM_ATTEMPTS)), TryIndx_(0)
+  : DecoratorNode(name, params), NTries_(1), TryIndx_(0)
 {
+    auto param = getParam<int>(NUM_ATTEMPTS);
+    if(param){
+        NTries_ = param.value();
+    }
 }
 
 NodeStatus DecoratorRetryNode::tick()
