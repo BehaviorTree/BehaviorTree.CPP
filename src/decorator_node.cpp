@@ -65,7 +65,7 @@ SimpleDecoratorNode::SimpleDecoratorNode(const std::string &name,
 
 NodeStatus SimpleDecoratorNode::tick()
 {
-    return  tick_functor_( child()->executeTick() );
+    return  tick_functor_( child()->executeTick(), blackboard() );
 }
 
 }
