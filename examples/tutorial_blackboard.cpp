@@ -11,25 +11,17 @@ struct Pose2D
 
 // This action will read the desired robot position
 // and store it on the BlackBoard (key: "GoalPose")
-class PullGoalPose: public ActionNodeBase
+NodeStatus PullGoalPose(const std::shared_ptr<Blackboard>& blackboard)
 {
-public:
-    PullGoalPose(const std::string& name): ActionNodeBase(name) {}
+    //In this example we store a fixed value. In a real application
+    // we would read it from an external source (GUI, fleet manager, etc.)
+    Pose2D goal = { 1, 2, M_PI};
 
-    NodeStatus tick() override
-    {
-        //In this example we hardcode a fixed value.
-        //In a real application we would read it from an external
-        // source (GUI, fleet manager, etc.)
-        Pose2D goal = { 1, 2, M_PI};
+    // store it in the blackboard
+    blackboard->set("GoalPose", goal);
 
-        // store it in the blackboard
-        blackboard()->set("GoalPose", goal);
-
-        return NodeStatus::SUCCESS;
-    }
-};
-
+    return NodeStatus::SUCCESS;
+}
 
 // First approach: read ALWAYS from the same
 // blackboard key: [GoalPose]
@@ -41,7 +33,6 @@ public:
     NodeStatus tick() override
     {
         Pose2D goal;
-
         if( blackboard()->get("GoalPose", goal) ) // return true if succesful
         {
             printf("[MoveBase] [Taget: x=%.ff y=%.1f theta=%.2f\n",
@@ -57,6 +48,7 @@ public:
 
 // Second approach: read the goal from the NodeParameter "goal".
 // This value can be static or point to the key of a blackboard.
+// A pointer to a Blackboard entry is written as ${key}
 class MoveAction_B: public ActionNodeBase
 {
 public:
@@ -66,7 +58,6 @@ public:
     NodeStatus tick() override
     {
         Pose2D goal;
-
         if( getParam<Pose2D>("goal", goal) )
         {
             printf("[MoveBase] [Taget: x=%.ff y=%.1f theta=%.2f\n",
@@ -111,6 +102,15 @@ Pose2D convertFromString(const std::string& str)
 }
 
 
+/** Example: simple sequence of 4 actions
+
+  1) Store a value of Pose2D in the key "GoalPose" of the blackboard.
+  2) Call MoveAction_A. It will read "GoalPose" from the blackboard.
+  3) Call MoveAction_B that reads the NodeParameter "goal". It's value "2;4;0" is converted
+     to Pose2D using the function [ Pose2D convertFromString(const std::string& str) ].
+  4) Call MoveAction_B. It will read "GoalPose" from the blackboard  .
+
+*/
 const std::string xml_text = R"(
 
  <root main_tree_to_execute = "MainTree" >
@@ -120,7 +120,6 @@ const std::string xml_text = R"(
             <PullGoalPose/>
             <MoveAction_A />
             <MoveAction_B  goal="2;4;0" />
-            <PullGoalPose/>
             <MoveAction_B  goal="${GoalPose}" />
         </Sequence>
      </BehaviorTree>
@@ -136,7 +135,7 @@ int main(int argc, char** argv)
     using namespace BT;
 
     BehaviorTreeFactory factory;
-    factory.registerNodeType<PullGoalPose>("PullGoalPose");
+    factory.registerSimpleAction("PullGoalPose", PullGoalPose);
     factory.registerNodeType<MoveAction_A>("MoveAction_A");
     factory.registerNodeType<MoveAction_B>("MoveAction_B");
 

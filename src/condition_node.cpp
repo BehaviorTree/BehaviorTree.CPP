@@ -34,7 +34,7 @@ SimpleConditionNode::SimpleConditionNode(const std::string &name,
 
 NodeStatus SimpleConditionNode::tick()
 {
-    return tick_functor_();
+    return tick_functor_(blackboard());
 }
 
 }

@@ -64,9 +64,9 @@ class TreeNode
 
     void setStatus(NodeStatus new_status);
 
-    void setBlackboard(std::shared_ptr<Blackboard> bb);
+    void setBlackboard(const Blackboard::Ptr& bb);
 
-    const std::shared_ptr<Blackboard>&  blackboard() const;
+    const Blackboard::Ptr &blackboard() const;
 
     const std::string& name() const;
 
@@ -164,7 +164,7 @@ class TreeNode
 
     const NodeParameters parameters_;
 
-    std::shared_ptr<Blackboard> bb_;
+    Blackboard::Ptr bb_;
 };
 
 typedef std::shared_ptr<TreeNode> TreeNodePtr;

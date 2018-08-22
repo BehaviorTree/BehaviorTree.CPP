@@ -49,7 +49,7 @@ class ConditionNode : public LeafNode
 class SimpleConditionNode : public ConditionNode
 {
   public:
-    typedef std::function<NodeStatus()> TickFunctor;
+    typedef std::function<NodeStatus(const Blackboard::Ptr&)> TickFunctor;
 
     // Constructor: you must provide the function to call when tick() is invoked
     SimpleConditionNode(const std::string& name, TickFunctor tick_functor);

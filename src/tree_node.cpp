@@ -49,12 +49,12 @@ void TreeNode::setStatus(NodeStatus new_status)
     }
 }
 
-void TreeNode::setBlackboard(std::shared_ptr<Blackboard> bb)
+void TreeNode::setBlackboard(const Blackboard::Ptr &bb)
 {
     bb_ = bb;
 }
 
-const std::shared_ptr<Blackboard>& TreeNode::blackboard() const
+const Blackboard::Ptr& TreeNode::blackboard() const
 {
     return bb_;
 }

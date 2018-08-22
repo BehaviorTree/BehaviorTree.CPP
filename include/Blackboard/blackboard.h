@@ -12,6 +12,9 @@
 
 namespace BT{
 
+// This is the "backend" of the blackboard.
+// To create a new blackboard, user must inherit from BlackboardImpl
+// and override set and get.
 class BlackboardImpl
 {
 public:
@@ -22,26 +25,27 @@ public:
     virtual void set(const std::string& key, const SafeAny::Any& value) = 0;
 };
 
-
-// Blackboard is the front-end to be used by the developer.
+// This is the "frontend" to be used by the developer.
+//
 // Even if the abstract class BlackboardImpl can be used directly,
 // the templatized methods set() and get() are more user-friendly
 class Blackboard
 {
-
-
-public:
     // This is intentionally private. Use Blackboard::create instead
     Blackboard(std::unique_ptr<BlackboardImpl> base ): impl_( std::move(base) )
     { }
 
+public:
+
+    typedef std::shared_ptr<Blackboard> Ptr;
+
     Blackboard() = delete;
 
     template <typename ImplClass, typename ... Args>
-    static std::shared_ptr<Blackboard> create(Args... args )
+    static Blackboard::Ptr create(Args... args )
     {
         std::unique_ptr<BlackboardImpl> base( new ImplClass(args...) );
-        return std::make_shared<Blackboard>(std::move(base));
+        return std::shared_ptr<Blackboard>( new Blackboard(std::move(base)) );
     }
 
     virtual ~Blackboard() = default;
@@ -59,7 +63,8 @@ public:
         return true;
     }
 
-    template <typename T> void set(const std::string& key, const T& value) {
+    template <typename T> void set(const std::string& key, const T& value)
+    {
         if( impl_)
         {
             impl_->set(key, SafeAny::Any(value));

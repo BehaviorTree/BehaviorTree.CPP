@@ -46,14 +46,15 @@ class ActionNodeBase : public LeafNode
  * This avoids the hassle of inheriting from a ActionNode.
  *
  * Using lambdas or std::bind it is easy to pass a pointer to a method.
- * SimpleActionNode does not support halting, NodeParameters, nor Blackboards.
+ * SimpleActionNode is executed synchronously and does not support halting.
+ * NodeParameters aren't supported.
  */
 class SimpleActionNode : public ActionNodeBase
 {
   public:
-    typedef std::function<NodeStatus()> TickFunctor;
+    typedef std::function<NodeStatus(const Blackboard::Ptr&)> TickFunctor;
 
-    // Constructor: you must provide the funtion to call when tick() is invoked
+    // Constructor: you must provide the function to call when tick() is invoked
     SimpleActionNode(const std::string& name, TickFunctor tick_functor);
 
     ~SimpleActionNode() override = default;

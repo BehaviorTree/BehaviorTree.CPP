@@ -46,8 +46,10 @@ class BehaviorTreeFactory
     void registerBuilder(const std::string& ID, NodeBuilder builder);
 
     void registerSimpleAction(const std::string& ID, const std::function<NodeStatus()> &tick_functor);
+    void registerSimpleAction(const std::string& ID, const SimpleActionNode::TickFunctor &tick_functor);
 
     void registerSimpleCondition(const std::string& ID, const std::function<NodeStatus()> &tick_functor);
+    void registerSimpleCondition(const std::string& ID, const SimpleConditionNode::TickFunctor &tick_functor);
 
     std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
                                                   const NodeParameters& params) const;

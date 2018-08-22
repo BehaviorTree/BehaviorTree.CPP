@@ -53,6 +53,18 @@ void BehaviorTreeFactory::registerBuilder(const std::string& ID, NodeBuilder bui
 
 void BehaviorTreeFactory::registerSimpleCondition(const std::string &ID, const std::function<NodeStatus()> &tick_functor)
 {
+    auto wrapper = [tick_functor](const Blackboard::Ptr&){ return tick_functor(); };
+    registerSimpleCondition(ID, wrapper);
+}
+
+void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, const std::function<NodeStatus()> &tick_functor)
+{
+    auto wrapper = [tick_functor](const Blackboard::Ptr&){ return tick_functor(); };
+    registerSimpleAction(ID, wrapper);
+}
+
+void BehaviorTreeFactory::registerSimpleCondition(const std::string &ID, const SimpleConditionNode::TickFunctor &tick_functor)
+{
     NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
         return std::unique_ptr<TreeNode>(new SimpleConditionNode(name, tick_functor));
     };
@@ -61,7 +73,7 @@ void BehaviorTreeFactory::registerSimpleCondition(const std::string &ID, const s
     storeNodeModel<SimpleConditionNode>(ID);
 }
 
-void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, const std::function<NodeStatus()>& tick_functor)
+void BehaviorTreeFactory::registerSimpleAction(const std::string& ID, const SimpleActionNode::TickFunctor& tick_functor)
 {
     NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
         return std::unique_ptr<TreeNode>(new SimpleActionNode(name, tick_functor));

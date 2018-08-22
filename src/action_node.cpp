@@ -37,7 +37,7 @@ NodeStatus SimpleActionNode::tick()
         prev_status = NodeStatus::RUNNING;
     }
 
-    NodeStatus status = tick_functor_();
+    NodeStatus status = tick_functor_( blackboard() );
     if (status != prev_status)
     {
         setStatus(status);
