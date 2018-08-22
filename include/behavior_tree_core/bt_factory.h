@@ -29,6 +29,7 @@ namespace BT
 // The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
 typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
 
+/// This information is used mostly by the XMLParser.
 struct TreeNodeModel
 {
     NodeType type;
@@ -43,6 +44,9 @@ class BehaviorTreeFactory
 
     bool unregisterBuilder(const std::string& ID);
 
+    /** More generic way to register your own builder.
+     *  Most of the time you should use registerSimple???? or registerNodeType<> instead.
+     */
     void registerBuilder(const std::string& ID, NodeBuilder builder);
 
     void registerSimpleAction(const std::string& ID, const std::function<NodeStatus()> &tick_functor);
@@ -54,19 +58,25 @@ class BehaviorTreeFactory
     void registerSimpleDecorator(const std::string& ID, const std::function<NodeStatus(NodeStatus)> &tick_functor);
     void registerSimpleDecorator(const std::string& ID, const SimpleDecoratorNode::TickFunctor &tick_functor);
 
-    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
+    /**
+     * @brief instantiateTreeNode creates a TreeNode
+     *
+     * @param ID       unique ID used to register the node type
+     * @param name     name of this particular instance
+     * @param params   parameters (usually read from the XML definition)
+     * @return         new node.
+     */
+    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID,
+                                                  const std::string& name,
                                                   const NodeParameters& params) const;
 
-    const std::map<std::string, NodeBuilder>& builders() const
-    {
-        return builders_;
-    }
-
-    const std::vector<TreeNodeModel>& models() const
-    {
-        return treenode_models_;
-    }
-
+    /** registerNodeType is the method to use to register your custom TreeNode.
+     *
+     *  It accepts only classed derived from either ActionNodeBase, DecoratorNode,
+     *  ControlNode or ConditionNode.
+     *
+     *  REMINDER: If you want your derived class to
+     */
     template <typename T>
     void registerNodeType(const std::string& ID)
     {
@@ -77,25 +87,34 @@ class BehaviorTreeFactory
                       "[registerBuilder]: accepts only classed derived from either ActionNodeBase, "
                       "DecoratorNode, ControlNode or ConditionNode");
 
+        static_assert( !std::is_abstract<T>::value, "[registerBuilder]: Some methods are pure virtual. "
+                                                    "Did you override the methods tick() and halt()?" );
+
         constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
         constexpr bool param_constructable = std::is_constructible<T, const std::string&, const NodeParameters&>::value;
         constexpr bool has_static_required_parameters = has_static_method_requiredNodeParameters<T>::value;
 
         static_assert(default_constructable || param_constructable,
                       "[registerBuilder]: the registered class must have at least one of these two constructors: "
-                      "    (const std::string&, const NodeParameters&) or (const std::string&)\n");
+                      "  (const std::string&, const NodeParameters&) or (const std::string&).");
 
         static_assert(!(param_constructable && !has_static_required_parameters),
-                      "[registerBuilder]: a node that accepts NodeParameters must also implement a static method: "
+                      "[registerBuilder]: you MUST implement the static method: "
                       "  const NodeParameters& requiredNodeParameters();\n");
 
         static_assert( !( has_static_required_parameters && !param_constructable),
                        "[registerBuilder]: since you have a static method requiredNodeParameters(), "
-                       "you will also need a constructor sign signature (const std::string&, const NodeParameters&)\n)" );
+                       "you MUST add a constructor sign signature (const std::string&, const NodeParameters&)\n" );
 
         registerNodeTypeImpl<T>(ID);
         storeNodeModel<T>(ID);
     }
+
+    // All the builders. Made available mostly for debug purposes.
+    const std::map<std::string, NodeBuilder>& builders() const;
+
+    // Exposes all the TreeNodeModel.
+    const std::vector<TreeNodeModel>& models() const;
 
   private:
     std::map<std::string, NodeBuilder> builders_;

@@ -32,15 +32,19 @@
 namespace BT
 {
 
-void applyRecursiveVisitor(const TreeNode* node, const std::function<void(const TreeNode*)>& visitor);
+void applyRecursiveVisitor(const TreeNode* node,
+                           const std::function<void(const TreeNode*)>& visitor);
 
-void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)> &visitor);
+void applyRecursiveVisitor(TreeNode* node,
+                           const std::function<void(TreeNode*)> &visitor);
 
 /**
  * Debug function to print on a stream
  */
 void printTreeRecursively(const TreeNode* root_node);
 
+void assignBlackboardToEntireTree(TreeNode* root_node,
+                                 const Blackboard::Ptr& bb);
 
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 

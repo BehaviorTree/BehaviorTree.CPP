@@ -93,4 +93,13 @@ void buildSerializedStatusSnapshot(TreeNode* root_node, SerializedTreeStatus& se
 
     applyRecursiveVisitor(root_node, visitor);
 }
+
+void assignBlackboardToEntireTree(TreeNode *root_node, const Blackboard::Ptr &bb)
+{
+    auto visitor = [bb](TreeNode* node) {
+        node->setBlackboard(bb);
+    };
+    applyRecursiveVisitor(root_node, visitor);
+}
+
 }

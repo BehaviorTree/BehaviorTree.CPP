@@ -41,6 +41,9 @@ public:
 
     Blackboard() = delete;
 
+    /** Use this static method to create an instance of the BlackBoard
+    *   to share among all your NodeTrees.
+    */
     template <typename ImplClass, typename ... Args>
     static Blackboard::Ptr create(Args... args )
     {
@@ -50,6 +53,9 @@ public:
 
     virtual ~Blackboard() = default;
 
+    /** Return true if the entry with the given key was found.
+     *  Note that this method may throw an exception if the cast to T failed.
+     */
     template <typename T> bool get(const std::string& key, T& value) const
     {
         if( !impl_ )
@@ -63,6 +69,7 @@ public:
         return true;
     }
 
+    /// Update the entry with the given key
     template <typename T> void set(const std::string& key, const T& value)
     {
         if( impl_)

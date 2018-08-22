@@ -78,11 +78,8 @@ int main(int argc, char** argv)
     factory.registerNodeType<BatteryCondition>("BatteryOK");
     factory.registerNodeType<MoveAction>("Move");
 
-    BT::XMLParser parser(factory);
-    parser.loadFromText(xml_text_A);
-
-    std::vector<BT::TreeNodePtr> nodes;
-    BT::TreeNodePtr root_node = parser.instantiateTree(nodes);
+    auto res = buildTreeFromText(factory, xml_text_A);
+    const TreeNodePtr& root_node = res.first;
 
     BT::StdCoutLogger logger_cout(root_node.get());
     BT::FileLogger file_file(root_node.get(), "simple_trace.fbl", 32);

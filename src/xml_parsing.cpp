@@ -481,4 +481,32 @@ std::string XMLWriter::writeXML(const TreeNode *root_node, bool compact_represen
     return std::string( printer.CStr(), printer.CStrSize()-1 );
 }
 
+std::pair<TreeNodePtr, std::vector<TreeNodePtr> >
+buildTreeFromText(const BehaviorTreeFactory &factory,
+                  const std::string &text,
+                  const Blackboard::Ptr &blackboard)
+{
+    XMLParser parser(factory);
+    parser.loadFromText(text);
+
+    std::vector<TreeNodePtr> nodes;
+    auto root = parser.instantiateTree(nodes);
+    assignBlackboardToEntireTree(root.get(), blackboard );
+    return {root, nodes};
+}
+
+std::pair<TreeNodePtr, std::vector<TreeNodePtr> >
+buildTreeFromFile(const BehaviorTreeFactory &factory,
+                  const std::string &filename,
+                  const Blackboard::Ptr &blackboard)
+{
+    XMLParser parser(factory);
+    parser.loadFromFile(filename);
+
+    std::vector<TreeNodePtr> nodes;
+    auto root = parser.instantiateTree(nodes);
+    assignBlackboardToEntireTree(root.get(), blackboard );
+    return {root, nodes};
+}
+
 }

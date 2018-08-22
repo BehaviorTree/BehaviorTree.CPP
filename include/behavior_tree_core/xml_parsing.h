@@ -11,9 +11,9 @@ class XMLParser
   public:
     XMLParser(const BehaviorTreeFactory& factory): factory_(factory) {}
 
-    void loadFromFile(const std::string& filename) noexcept(false);
+    void loadFromFile(const std::string& filename);
 
-    void loadFromText(const std::string& xml_text) noexcept(false);
+    void loadFromText(const std::string& xml_text);
 
     bool verifyXML(std::vector<std::string>& error_messages) const noexcept(false);
 
@@ -34,6 +34,30 @@ class XMLParser
 
     const BehaviorTreeFactory& factory_;
 };
+
+/** Helper function to do the most common steps all at once:
+* 1) Create an instance of XMLParse and call loadFromText.
+* 2) Instantiate the entire tree.
+* 3) Assign the given Blackboard
+*
+* return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
+*/
+std::pair<TreeNodePtr, std::vector<TreeNodePtr>>
+buildTreeFromText(const BehaviorTreeFactory& factory,
+                  const std::string& text,
+                  const Blackboard::Ptr& blackboard = Blackboard::Ptr() );
+
+/** Helper function to do the most common steps all at once:
+* 1) Create an instance of XMLParse and call loadFromFile.
+* 2) Instantiate the entire tree.
+* 3) Assign the given Blackboard
+*
+* return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
+*/
+std::pair<TreeNodePtr, std::vector<TreeNodePtr>>
+buildTreeFromFile(const BehaviorTreeFactory& factory,
+                  const std::string& filename,
+                  const Blackboard::Ptr& blackboard = Blackboard::Ptr() );
 
 class XMLWriter
 {

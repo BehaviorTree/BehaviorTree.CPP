@@ -118,6 +118,16 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::st
     return node;
 }
 
+const std::map<std::string, NodeBuilder> &BehaviorTreeFactory::builders() const
+{
+    return builders_;
+}
+
+const std::vector<TreeNodeModel> &BehaviorTreeFactory::models() const
+{
+    return treenode_models_;
+}
+
 void BehaviorTreeFactory::sortTreeNodeModel()
 {
     std::sort( treenode_models_.begin(), treenode_models_.end(),

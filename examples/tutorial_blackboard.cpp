@@ -9,6 +9,30 @@ struct Pose2D
     double x,y,theta;
 };
 
+namespace BT{
+
+// this template specialization is needed ONLY if you want
+// to AUTOMATICALLY convert a NodeParameter into a Pose2D
+template <> Pose2D convertFromString(const std::string& str)
+{
+    auto parts = BT::splitString(str, ';');
+    if( parts.size() != 3)
+    {
+        throw std::runtime_error("invalid input)");
+    }
+    else{
+        Pose2D output;
+        output.x     = convertFromString<double>( parts[0] );
+        output.y     = convertFromString<double>( parts[1] );
+        output.theta = convertFromString<double>( parts[2] );
+        return output;
+    }
+}
+
+}
+
+//-----------------------------------------
+
 // This action will read the desired robot position
 // and store it on the BlackBoard (key: "GoalPose")
 NodeStatus PullGoalPose(const std::shared_ptr<Blackboard>& blackboard)
@@ -77,29 +101,7 @@ public:
     }
 };
 
-namespace BT{
 
-// this template specialization is needed if you want
-// to automatically convert a NodeParameter into a Pose2D
-
-template <>
-Pose2D convertFromString(const std::string& str)
-{
-    auto parts = splitString(str, ';');
-    if( parts.size() != 3)
-    {
-        throw std::runtime_error("invalid input)");
-    }
-    else{
-        Pose2D output;
-        output.x     = convertFromString<double>( parts[0] );
-        output.y     = convertFromString<double>( parts[1] );
-        output.theta = convertFromString<double>( parts[2] );
-        return output;
-    }
-}
-
-}
 
 
 /** Example: simple sequence of 4 actions
@@ -130,7 +132,7 @@ const std::string xml_text = R"(
 
 // clang-format on
 
-int main(int argc, char** argv)
+int main()
 {
     using namespace BT;
 
@@ -139,18 +141,12 @@ int main(int argc, char** argv)
     factory.registerNodeType<MoveAction_A>("MoveAction_A");
     factory.registerNodeType<MoveAction_B>("MoveAction_B");
 
-    XMLParser parser(factory);
-    parser.loadFromText(xml_text);
+    // create a Blackboard from BlackboardLocal (simple local storage)
+    auto blackboard = Blackboard::create<BlackboardLocal>();
 
-    std::vector<TreeNodePtr> nodes;
-    TreeNodePtr root_node = parser.instantiateTree(nodes);
+    auto res = buildTreeFromText(factory, xml_text, blackboard);
 
-    // create a Blackboard and assign it to your tree
-    auto bb = Blackboard::create<BlackboardLocal>();
-    for(auto& node: nodes)
-    {
-        node->setBlackboard(bb);
-    }
+    const TreeNodePtr& root_node = res.first;
 
     root_node->executeTick();
 
