@@ -3,7 +3,10 @@
 
 namespace BT
 {
-FileLogger::FileLogger(BT::TreeNode* root_node, const char* filename, uint16_t buffer_size)
+
+FileLogger::FileLogger(BT::TreeNode* root_node,
+                       const char* filename,
+                       uint16_t buffer_size)
   : StatusChangeLogger(root_node), buffer_max_size_(buffer_size)
 {
     if (buffer_max_size_ != 0)

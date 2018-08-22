@@ -43,7 +43,7 @@ const std::string xml_text = R"(
 
 // clang-format on
 
-int main(int argc, char** argv)
+int main()
 {
     using namespace BT;
 

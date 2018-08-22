@@ -11,6 +11,7 @@ namespace BT
 {
 class PublisherZMQ : public StatusChangeLogger
 {
+    static std::atomic<bool> ref_count;
   public:
     PublisherZMQ(TreeNode* root_node, int max_msg_per_second = 25);
 

@@ -4,6 +4,10 @@
 
 namespace BT
 {
+
+std::atomic<bool> PublisherZMQ::ref_count(false);
+
+
 void PublisherZMQ::createStatusBuffer()
 {
     status_buffer_.clear();
