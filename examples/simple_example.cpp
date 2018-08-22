@@ -8,25 +8,30 @@ class BatteryCondition: public BT::ConditionNode
 {
 public:
     BatteryCondition(const std::string& name): BT::ConditionNode(name) {}
-    BT::NodeStatus tick() override {
+    BT::NodeStatus tick() override
+    {
         std::cout << "[ Battery: OK ]" << std::endl;
-        return BT::NodeStatus::SUCCESS; }
+        return BT::NodeStatus::SUCCESS;
+    }
 };
 
 class TemperatureCondition: public BT::ConditionNode
 {
 public:
     TemperatureCondition(const std::string& name): BT::ConditionNode(name) {}
-    BT::NodeStatus tick() override {
+    BT::NodeStatus tick() override
+    {
         std::cout << "[ Temperature: OK ]" << std::endl;
-        return BT::NodeStatus::SUCCESS; }
+        return BT::NodeStatus::SUCCESS;
+    }
 };
 
 class MoveAction: public BT::ActionNode
 {
 public:
     MoveAction(const std::string& name): BT::ActionNode(name) {}
-    BT::NodeStatus tick() override {
+    BT::NodeStatus tick() override
+    {
         std::cout << "[ Move: started ]" << std::endl;
         std::this_thread::sleep_for( std::chrono::milliseconds(80) );
         std::cout << "[ Move: finished ]" << std::endl;
@@ -79,7 +84,7 @@ int main(int argc, char** argv)
     factory.registerNodeType<MoveAction>("Move");
 
     auto res = buildTreeFromText(factory, xml_text_A);
-    const TreeNodePtr& root_node = res.first;
+    const TreeNode::Ptr& root_node = res.first;
 
     BT::StdCoutLogger logger_cout(root_node.get());
     BT::FileLogger file_file(root_node.get(), "simple_trace.fbl", 32);

@@ -52,6 +52,8 @@ class TreeNode
     TreeNode(const std::string& name, const NodeParameters& parameters);
     virtual ~TreeNode() = default;
 
+    typedef std::shared_ptr<TreeNode> Ptr;
+
     /// The method that will be executed to invoke tick(); and setStatus();
     virtual BT::NodeStatus executeTick();
 
@@ -167,7 +169,7 @@ class TreeNode
     Blackboard::Ptr bb_;
 };
 
-typedef std::shared_ptr<TreeNode> TreeNodePtr;
+
 
 
 }

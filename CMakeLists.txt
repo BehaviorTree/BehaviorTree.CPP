@@ -140,6 +140,11 @@ target_link_libraries(simple_example ${BEHAVIOR_TRE_LIBRARIES} )
 add_executable(tutorial_blackboard examples/tutorial_blackboard.cpp )
 target_link_libraries(tutorial_blackboard ${BEHAVIOR_TRE_LIBRARIES} )
 
+add_executable(tutorial_programmatic_tree examples/tutorial_programmatic_tree.cpp )
+target_link_libraries(tutorial_programmatic_tree ${BEHAVIOR_TRE_LIBRARIES} )
+
+add_executable(tutorial_factory_tree examples/tutorial_factory_tree.cpp )
+target_link_libraries(tutorial_factory_tree ${BEHAVIOR_TRE_LIBRARIES} )
 
 ######################################################
 # INSTALLATION OF LIBRARY AND EXECUTABLE

@@ -146,7 +146,7 @@ int main()
 
     auto res = buildTreeFromText(factory, xml_text, blackboard);
 
-    const TreeNodePtr& root_node = res.first;
+    const TreeNode::Ptr& root_node = res.first;
 
     root_node->executeTick();
 

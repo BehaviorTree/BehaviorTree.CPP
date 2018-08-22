@@ -18,17 +18,17 @@ class XMLParser
     bool verifyXML(std::vector<std::string>& error_messages) const noexcept(false);
 
     using NodeBuilder =
-        std::function<TreeNodePtr(const std::string&, const std::string&, const NodeParameters&, TreeNodePtr)>;
+        std::function<TreeNode::Ptr(const std::string&, const std::string&, const NodeParameters&, TreeNode::Ptr)>;
 
-    TreeNodePtr instantiateTree(std::vector<TreeNodePtr>& nodes);
+    TreeNode::Ptr instantiateTree(std::vector<TreeNode::Ptr>& nodes);
 
   private:
 
     //method to visit each node of a tree
-    TreeNodePtr treeParsing(const tinyxml2::XMLElement* root_element,
+    TreeNode::Ptr treeParsing(const tinyxml2::XMLElement* root_element,
                             const NodeBuilder& node_builder,
-                            std::vector<TreeNodePtr>& nodes,
-                            const TreeNodePtr &root_parent);
+                            std::vector<TreeNode::Ptr>& nodes,
+                            const TreeNode::Ptr &root_parent);
 
     tinyxml2::XMLDocument doc_;
 
@@ -42,7 +42,7 @@ class XMLParser
 *
 * return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
 */
-std::pair<TreeNodePtr, std::vector<TreeNodePtr>>
+std::pair<TreeNode::Ptr, std::vector<TreeNode::Ptr>>
 buildTreeFromText(const BehaviorTreeFactory& factory,
                   const std::string& text,
                   const Blackboard::Ptr& blackboard = Blackboard::Ptr() );
@@ -54,7 +54,7 @@ buildTreeFromText(const BehaviorTreeFactory& factory,
 *
 * return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
 */
-std::pair<TreeNodePtr, std::vector<TreeNodePtr>>
+std::pair<TreeNode::Ptr, std::vector<TreeNode::Ptr>>
 buildTreeFromFile(const BehaviorTreeFactory& factory,
                   const std::string& filename,
                   const Blackboard::Ptr& blackboard = Blackboard::Ptr() );

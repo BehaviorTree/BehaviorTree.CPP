@@ -18,8 +18,8 @@ const std::string xml_text = R"(
          <Fallback name="root_selector">
 
          <Sequence name="door_open_sequence">
-             <Action ID="IsDoorOpen" />
-             <Action ID="PassThroughDoor" />
+             <IsDoorOpen/>
+             <PassThroughDoor/>
          </Sequence>
 
          <Sequence name="door_closed_sequence">
@@ -55,8 +55,8 @@ int main(int argc, char** argv)
     XMLParser parser(factory);
     parser.loadFromText(xml_text);
 
-    std::vector<BT::TreeNodePtr> nodes;
-    BT::TreeNodePtr root_node = parser.instantiateTree(nodes);
+    std::vector<BT::TreeNode::Ptr> nodes;
+    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes);
 
     StdCoutLogger logger_cout(root_node.get());
     MinitraceLogger logger_minitrace(root_node.get(), "bt_trace.json");

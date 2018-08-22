@@ -12,13 +12,13 @@ class CrossDoor
         door_open_ = true;
         door_locked_ = false;
 
-        factory.registerSimpleCondition("IsDoorOpen", [this]() { return IsDoorOpen(); });
-        factory.registerSimpleAction("PassThroughDoor", [this]() { return PassThroughDoor(); });
-        factory.registerSimpleAction("PassThroughWindow", [this]() { return PassThroughWindow(); });
-        factory.registerSimpleAction("OpenDoor", [this]() { return OpenDoor(); });
-        factory.registerSimpleAction("CloseDoor", [this]() { return CloseDoor(); });
-        factory.registerSimpleCondition("IsDoorLocked", [this]() { return IsDoorLocked(); });
-        factory.registerSimpleAction("UnlockDoor", [this]() { return UnlockDoor(); });
+        factory.registerSimpleCondition("IsDoorOpen",   std::bind(&CrossDoor::IsDoorOpen, this) );
+        factory.registerSimpleAction("PassThroughDoor", std::bind(&CrossDoor::PassThroughDoor, this) );
+        factory.registerSimpleAction("PassThroughWindow", std::bind(&CrossDoor::PassThroughWindow, this) );
+        factory.registerSimpleAction("OpenDoor", std::bind(&CrossDoor::OpenDoor, this) );
+        factory.registerSimpleAction("CloseDoor", std::bind(&CrossDoor::CloseDoor, this) );
+        factory.registerSimpleCondition("IsDoorLocked", std::bind(&CrossDoor::IsDoorLocked, this) );
+        factory.registerSimpleAction("UnlockDoor", std::bind(&CrossDoor::UnlockDoor, this) );
 
         _multiplier = fast ? 1 : 10;
     }

@@ -231,7 +231,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
     return is_valid;
 }
 
-TreeNodePtr XMLParser::instantiateTree(std::vector<TreeNodePtr>& nodes)
+TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
 {
     nodes.clear();
 
@@ -281,9 +281,9 @@ TreeNodePtr XMLParser::instantiateTree(std::vector<TreeNodePtr>& nodes)
 
     //--------------------------------------
     NodeBuilder node_builder = [&](const std::string& ID, const std::string& name,
-            const NodeParameters& params, TreeNodePtr parent) -> TreeNodePtr
+            const NodeParameters& params, TreeNode::Ptr parent) -> TreeNode::Ptr
     {
-        TreeNodePtr child_node = factory_.instantiateTreeNode(ID, name, params);
+        TreeNode::Ptr child_node = factory_.instantiateTreeNode(ID, name, params);
         nodes.push_back(child_node);
         if (parent)
         {
@@ -310,19 +310,19 @@ TreeNodePtr XMLParser::instantiateTree(std::vector<TreeNodePtr>& nodes)
     //--------------------------------------
 
     auto root_element = bt_roots[main_tree_ID]->FirstChildElement();
-    return treeParsing(root_element, node_builder, nodes, TreeNodePtr());
+    return treeParsing(root_element, node_builder, nodes, TreeNode::Ptr());
 }
 
-TreeNodePtr BT::XMLParser::treeParsing(const XMLElement *root_element,
+TreeNode::Ptr BT::XMLParser::treeParsing(const XMLElement *root_element,
                                        const NodeBuilder &node_builder,
-                                       std::vector<TreeNodePtr> &nodes,
-                                       const TreeNodePtr& root_parent)
+                                       std::vector<TreeNode::Ptr> &nodes,
+                                       const TreeNode::Ptr& root_parent)
 {
     using namespace tinyxml2;
 
-    std::function<TreeNodePtr(const TreeNodePtr&, const tinyxml2::XMLElement*)> recursiveStep;
+    std::function<TreeNode::Ptr(const TreeNode::Ptr&, const tinyxml2::XMLElement*)> recursiveStep;
 
-    recursiveStep = [&](const TreeNodePtr& parent, const tinyxml2::XMLElement* element) -> TreeNodePtr {
+    recursiveStep = [&](const TreeNode::Ptr& parent, const tinyxml2::XMLElement* element) -> TreeNode::Ptr {
         const std::string element_name = element->Name();
         std::string node_ID;
         std::string node_alias;
@@ -362,7 +362,7 @@ TreeNodePtr BT::XMLParser::treeParsing(const XMLElement *root_element,
             }
         }
 
-        TreeNodePtr node = node_builder(node_ID, node_alias, node_params, parent);
+        TreeNode::Ptr node = node_builder(node_ID, node_alias, node_params, parent);
         nodes.push_back(node);
 
         for (auto child_element = element->FirstChildElement(); child_element;
@@ -375,7 +375,7 @@ TreeNodePtr BT::XMLParser::treeParsing(const XMLElement *root_element,
     };
 
     // start recursion
-    TreeNodePtr root = recursiveStep(root_parent, root_element);
+    TreeNode::Ptr root = recursiveStep(root_parent, root_element);
     return root;
 }
 
@@ -481,7 +481,7 @@ std::string XMLWriter::writeXML(const TreeNode *root_node, bool compact_represen
     return std::string( printer.CStr(), printer.CStrSize()-1 );
 }
 
-std::pair<TreeNodePtr, std::vector<TreeNodePtr> >
+std::pair<TreeNode::Ptr, std::vector<TreeNode::Ptr> >
 buildTreeFromText(const BehaviorTreeFactory &factory,
                   const std::string &text,
                   const Blackboard::Ptr &blackboard)
@@ -489,13 +489,13 @@ buildTreeFromText(const BehaviorTreeFactory &factory,
     XMLParser parser(factory);
     parser.loadFromText(text);
 
-    std::vector<TreeNodePtr> nodes;
+    std::vector<TreeNode::Ptr> nodes;
     auto root = parser.instantiateTree(nodes);
     assignBlackboardToEntireTree(root.get(), blackboard );
     return {root, nodes};
 }
 
-std::pair<TreeNodePtr, std::vector<TreeNodePtr> >
+std::pair<TreeNode::Ptr, std::vector<TreeNode::Ptr> >
 buildTreeFromFile(const BehaviorTreeFactory &factory,
                   const std::string &filename,
                   const Blackboard::Ptr &blackboard)
@@ -503,7 +503,7 @@ buildTreeFromFile(const BehaviorTreeFactory &factory,
     XMLParser parser(factory);
     parser.loadFromFile(filename);
 
-    std::vector<TreeNodePtr> nodes;
+    std::vector<TreeNode::Ptr> nodes;
     auto root = parser.instantiateTree(nodes);
     assignBlackboardToEntireTree(root.get(), blackboard );
     return {root, nodes};
