@@ -23,7 +23,6 @@ public:
         storage_[key] = value;
     }
 
-
 private:
     std::unordered_map<std::string, SafeAny::Any> storage_;
 

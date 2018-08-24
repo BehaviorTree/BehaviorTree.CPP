@@ -2,7 +2,7 @@
 #include "action_test_node.h"
 #include "condition_test_node.h"
 #include "behavior_tree_core/xml_parsing.h"
-#include "crossdoor_dummy_nodes.h"
+#include "../examples/crossdoor_dummy_nodes.h"
 
 // clang-format off
 

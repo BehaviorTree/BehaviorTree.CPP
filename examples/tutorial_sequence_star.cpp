@@ -2,34 +2,11 @@
 #include "behavior_tree_logger/bt_cout_logger.h"
 #include "behavior_tree_logger/bt_file_logger.h"
 
+#include "dummy_nodes.h"
+#include "movebase_node.h"
+
 using namespace BT;
 
-
-NodeStatus checkBattery()
-{
-    std::cout << "[ Battery: OK ]" << std::endl;
-    return NodeStatus::SUCCESS;
-}
-
-NodeStatus CheckTemperature()
-{
-    std::cout << "[ Temperature: OK ]" << std::endl;
-    return NodeStatus::SUCCESS;
-}
-
-// This is an asynchronous operation that will run in a separate thread
-class MoveAction: public ActionNode
-{
-public:
-    MoveAction(const std::string& name): ActionNode(name) {}
-    NodeStatus tick() override
-    {
-        std::cout << "[ Move: started ]" << std::endl;
-        std::this_thread::sleep_for( std::chrono::milliseconds(80) );
-        std::cout << "[ Move: finished ]" << std::endl;
-        return NodeStatus::SUCCESS;
-    }
-};
 
 // clang-format off
 
@@ -41,7 +18,7 @@ const std::string xml_text_sequence = R"(
         <Sequence name="root">
             <BatteryOK/>
             <TemperatureOK />
-            <Move/>
+            <MoveBase goal="1;2;3"/>
         </Sequence>
      </BehaviorTree>
 
@@ -56,7 +33,7 @@ const std::string xml_text_sequence_star = R"(
         <SequenceStar name="root">
              <BatteryOK/>
              <TemperatureOK />
-             <Move/>
+             <MoveBase goal="1;2;3"/>
         </SequenceStar>
      </BehaviorTree>
 
@@ -73,16 +50,16 @@ void Assert(bool condition)
 int main()
 {
     BehaviorTreeFactory factory;
-    factory.registerSimpleCondition("TemperatureOK", std::bind( checkBattery ));
+    factory.registerSimpleCondition("TemperatureOK", std::bind( CheckBattery ));
     factory.registerSimpleCondition("BatteryOK", std::bind( CheckTemperature ));
-    factory.registerNodeType<MoveAction>("Move");
+    factory.registerNodeType<MoveBaseAction>("MoveBase");
 
     // Loog at the state transitions and messages using either
     // xml_text_sequence and xml_text_sequence_star
 
     // The main difference that you should notice is that the
     // actions BatteryOK and TempearaturOK are executed at each tick()
-    // is Sequence is used and only once if SequenceStar is used.
+    // if Sequence is used, but only once if SequenceStar is used.
 
     for(auto& xml_text: {xml_text_sequence, xml_text_sequence_star})
     {
@@ -105,24 +82,20 @@ int main()
         Assert( status == NodeStatus::RUNNING);
 
         std::cout << "\n------- sleep --------" << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         std::cout << "\n------- Second executeTick() --------" << std::endl;
         status = root_node->executeTick();
         Assert( status == NodeStatus::RUNNING);
 
         std::cout << "\n------- sleep --------" << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         std::cout << "\n------- Third executeTick() --------" << std::endl;
         status = root_node->executeTick();
         Assert( status == NodeStatus::SUCCESS);
 
         std::cout << std::endl;
-
-        // The main difference that you should notice is that the
-        // actions BatteryOK and TempearaturOK are executed at each tick()
-        // is Sequence is used and only once if SequenceStar is used.
     }
     return 0;
 }

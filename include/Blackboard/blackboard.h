@@ -55,6 +55,8 @@ public:
 
     /** Return true if the entry with the given key was found.
      *  Note that this method may throw an exception if the cast to T failed.
+     *
+     * return true is succesful
      */
     template <typename T> bool get(const std::string& key, T& value) const
     {

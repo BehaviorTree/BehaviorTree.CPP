@@ -108,6 +108,8 @@ class TreeNode
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
 
+    /** Get a parameter from the passed NodeParameters and convert it to type T.
+     */
     template <typename T>
     BT::optional<T> getParam(const std::string& key) const
     {
@@ -121,6 +123,10 @@ class TreeNode
         }
     }
 
+    /** Get a parameter from the passed NodeParameters and convert it to type T.
+     *
+     * return false either if there is no parameter with this key or if conversion failed.
+     */
     template <typename T>
     bool getParam(const std::string& key, T& destination) const
     {
@@ -131,16 +137,24 @@ class TreeNode
         }
         const std::string& str = it->second;
 
-        // check if it follows this ${pattern}, if it does, search inside the blackboard
-        if( bb_ && str.size()>=4 && str[0] == '$' && str[1] == '{' && str.back() == '}')
-        {
-            const std::string stripped_key( &str[2], str.size()-3);
-            bool found = bb_->get(stripped_key, destination);
-            return found;
+        try{
+            // check if it follows this ${pattern}, if it does, search inside the blackboard
+            if( bb_ && str.size()>=4 && str[0] == '$' && str[1] == '{' && str.back() == '}')
+            {
+                const std::string stripped_key( &str[2], str.size()-3);
+                bool found = bb_->get(stripped_key, destination);
+                return found;
+            }
+            else{
+                destination = convertFromString<T>(str.c_str());
+                return true;
+            }
         }
-        else{
-            destination = convertFromString<T>(str.c_str());
-            return true;
+        catch( std::runtime_error& err)
+        {
+            std::cout << "Exception at getParam(" <<
+                         key << "): " << err.what() << std::endl;
+            return false;
         }
     }
 

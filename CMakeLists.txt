@@ -124,10 +124,6 @@ endif()
 # COMPILING EXAMPLES and TOOLS
 ######################################################
 
-
-add_executable(crossdoor_example gtest/crossdoor_example.cpp )
-target_link_libraries(crossdoor_example ${BEHAVIOR_TRE_LIBRARIES} )
-
 add_executable(bt_log_cat         tools/bt_log_cat.cpp )
 target_link_libraries(bt_log_cat  behavior_tree_core )
 
@@ -145,6 +141,7 @@ BuildExample(tutorial_programmatic_tree)
 BuildExample(tutorial_factory_tree)
 BuildExample(tutorial_sequence_star)
 BuildExample(tutorial_blackboard)
+BuildExample(crossdoor_example)
 
 
 ######################################################

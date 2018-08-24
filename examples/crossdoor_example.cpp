@@ -79,7 +79,9 @@ int main()
 
     std::cout << "---------------" << std::endl;
     while (1)
+    {
         root_node->executeTick();
+    }
     std::cout << "---------------" << std::endl;
     return 0;
 }
