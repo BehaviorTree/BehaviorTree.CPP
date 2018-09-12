@@ -59,19 +59,10 @@ buildTreeFromFile(const BehaviorTreeFactory& factory,
                   const std::string& filename,
                   const Blackboard::Ptr& blackboard = Blackboard::Ptr() );
 
-class XMLWriter
-{
-public:
-    XMLWriter( const BehaviorTreeFactory& factory):
-        factory_(factory)
-    {}
+std::string writeXML(const BehaviorTreeFactory& factory,
+                     const TreeNode* root_node,
+                     bool compact_representation = false);
 
-    std::string writeXML(const TreeNode* root_node, bool compact_representation = false) const;
-
-private:
-   const BehaviorTreeFactory& factory_;
-
-};
 
 
 }

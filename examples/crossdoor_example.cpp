@@ -3,6 +3,7 @@
 #include "behavior_tree_logger/bt_cout_logger.h"
 #include "behavior_tree_logger/bt_minitrace_logger.h"
 #include "behavior_tree_logger/bt_file_logger.h"
+#include "Blackboard/blackboard_local.h"
 
 #ifdef ZMQ_FOUND
 #include "behavior_tree_logger/bt_zmq_publisher.h"
@@ -43,45 +44,36 @@ const std::string xml_text = R"(
 
 // clang-format on
 
+using namespace BT;
+
 int main()
 {
-    using namespace BT;
-
     BT::BehaviorTreeFactory factory;
+    auto blackboard = Blackboard::create<BlackboardLocal>();
+    blackboard->set("door_open", false);
+    blackboard->set("door_locked", true);
 
     // register all the actions into the factory
-    CrossDoor cross_door(factory, false);
+    CrossDoor::RegisterNodes(factory);
 
-    XMLParser parser(factory);
-    parser.loadFromText(xml_text);
+    // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
+    auto tree = buildTreeFromText(factory, xml_text, blackboard);
+    TreeNode* root_node = tree.first.get();
 
-    std::vector<BT::TreeNode::Ptr> nodes;
-    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes);
-
-    StdCoutLogger logger_cout(root_node.get());
-    MinitraceLogger logger_minitrace(root_node.get(), "bt_trace.json");
-    FileLogger logger_file(root_node.get(), "bt_trace.fbl", 32);
-
+    StdCoutLogger logger_cout(root_node);
+    MinitraceLogger logger_minitrace(root_node, "bt_trace.json");
+    FileLogger logger_file(root_node, "bt_trace.fbl", 32);
 #ifdef ZMQ_FOUND
-    PublisherZMQ publisher_zmq(root_node.get());
+    PublisherZMQ publisher_zmq(root_node);
 #endif
 
-    cross_door.CloseDoor();
-
-    std::cout << "\n-------\n";
-    XMLWriter writer(factory);
-    std::cout << writer.writeXML( root_node.get(), false) << std::endl;
-
+    std::cout << writeXML( factory, root_node, false ) << std::endl;
     std::cout << "---------------" << std::endl;
-    root_node->executeTick();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    std::cout << "---------------" << std::endl;
-    while (1)
+    // Keep on ticking until you get either a SUCCESS or FAILURE state
+    while( root_node->executeTick() == BT::NodeStatus::RUNNING)
     {
-        root_node->executeTick();
+        // continue;
     }
-    std::cout << "---------------" << std::endl;
     return 0;
 }

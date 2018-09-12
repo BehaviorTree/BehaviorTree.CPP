@@ -379,7 +379,9 @@ TreeNode::Ptr BT::XMLParser::treeParsing(const XMLElement *root_element,
     return root;
 }
 
-std::string XMLWriter::writeXML(const TreeNode *root_node, bool compact_representation) const
+std::string writeXML(const BehaviorTreeFactory& factory,
+                     const TreeNode *root_node,
+                     bool compact_representation)
 {
     using namespace tinyxml2;
 
@@ -395,7 +397,7 @@ std::string XMLWriter::writeXML(const TreeNode *root_node, bool compact_represen
 
         std::function<void(const TreeNode*, XMLElement* parent)> recursiveVisitor;
 
-        recursiveVisitor = [&recursiveVisitor, &doc, compact_representation, this]
+        recursiveVisitor = [&recursiveVisitor, &doc, compact_representation,&factory]
                 (const TreeNode* node, XMLElement* parent) -> void
         {
             std::string node_type = toStr(node->type());
@@ -409,7 +411,7 @@ std::string XMLWriter::writeXML(const TreeNode *root_node, bool compact_represen
             }
             else if(compact_representation)
             {
-                for(const auto& model: factory_.models() )
+                for(const auto& model: factory.models() )
                 {
                     if( model.registration_ID == node_ID)
                     {
@@ -456,7 +458,7 @@ std::string XMLWriter::writeXML(const TreeNode *root_node, bool compact_represen
     XMLElement* model_root = doc.NewElement("TreeNodesModel");
     rootXML->InsertEndChild(model_root);
 
-    for( auto& model: factory_.models())
+    for( auto& model: factory.models())
     {
         if( model.type == NodeType::CONTROL)
         {

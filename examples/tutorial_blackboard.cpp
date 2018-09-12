@@ -47,6 +47,11 @@ public:
            return NodeStatus::FAILURE;
         }
     }
+
+    virtual void halt() override
+    {
+        setStatus(NodeStatus::IDLE);
+    }
 };
 
 

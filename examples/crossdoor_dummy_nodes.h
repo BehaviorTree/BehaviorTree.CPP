@@ -2,82 +2,82 @@
 
 using namespace BT;
 
-class CrossDoor
+namespace CrossDoor
 {
-    int _multiplier;
 
-  public:
-    CrossDoor(BT::BehaviorTreeFactory& factory, bool fast = true)
+BT::NodeStatus IsDoorOpen(const Blackboard::Ptr& blackboard)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(500) );
+    bool door_open = blackboard->get<bool>("door_open");
+
+    return  door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+}
+
+BT::NodeStatus IsDoorLocked(const Blackboard::Ptr& blackboard)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(500) );
+    bool door_locked = blackboard->get<bool>("door_locked");
+
+    return door_locked ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+}
+
+BT::NodeStatus UnlockDoor(const Blackboard::Ptr& blackboard)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    blackboard->set("door_locked", false);
+
+    return NodeStatus::SUCCESS;
+}
+
+BT::NodeStatus PassThroughDoor(const Blackboard::Ptr& blackboard)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    bool door_open = blackboard->get<bool>("door_open");
+
+    return door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+}
+
+BT::NodeStatus PassThroughWindow(const Blackboard::Ptr& blackboard)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    return NodeStatus::SUCCESS;
+}
+
+BT::NodeStatus OpenDoor(const Blackboard::Ptr& blackboard)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    bool door_locked = blackboard->get<bool>("door_locked");
+
+    if (door_locked)
     {
-        door_open_ = true;
-        door_locked_ = false;
-
-        factory.registerSimpleCondition("IsDoorOpen",   std::bind(&CrossDoor::IsDoorOpen, this) );
-        factory.registerSimpleAction("PassThroughDoor", std::bind(&CrossDoor::PassThroughDoor, this) );
-        factory.registerSimpleAction("PassThroughWindow", std::bind(&CrossDoor::PassThroughWindow, this) );
-        factory.registerSimpleAction("OpenDoor", std::bind(&CrossDoor::OpenDoor, this) );
-        factory.registerSimpleAction("CloseDoor", std::bind(&CrossDoor::CloseDoor, this) );
-        factory.registerSimpleCondition("IsDoorLocked", std::bind(&CrossDoor::IsDoorLocked, this) );
-        factory.registerSimpleAction("UnlockDoor", std::bind(&CrossDoor::UnlockDoor, this) );
-
-        _multiplier = fast ? 1 : 10;
+        return NodeStatus::FAILURE;
     }
 
-    BT::NodeStatus IsDoorOpen()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50) * _multiplier);
-        return door_open_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
-    }
+    blackboard->set("door_open", true);
+    return NodeStatus::SUCCESS;
+}
 
-    BT::NodeStatus IsDoorLocked()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50) * _multiplier);
-        return door_locked_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
-    }
+BT::NodeStatus CloseDoor(const Blackboard::Ptr& blackboard)
+{
+    bool door_open = blackboard->get<bool>("door_open");
 
-    BT::NodeStatus UnlockDoor()
+    if (door_open)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200) * _multiplier);
-        door_locked_ = false;
-        return NodeStatus::SUCCESS;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+        blackboard->set("door_open", false);
     }
+    return NodeStatus::SUCCESS;
+}
 
-    BT::NodeStatus PassThroughDoor()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100) * _multiplier);
-        return door_open_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
-    }
+void RegisterNodes(BT::BehaviorTreeFactory& factory)
+{
+    factory.registerSimpleCondition("IsDoorOpen",   IsDoorOpen );
+    factory.registerSimpleAction("PassThroughDoor", PassThroughDoor );
+    factory.registerSimpleAction("PassThroughWindow", PassThroughWindow );
+    factory.registerSimpleAction("OpenDoor", OpenDoor );
+    factory.registerSimpleAction("CloseDoor", CloseDoor );
+    factory.registerSimpleCondition("IsDoorLocked", IsDoorLocked );
+    factory.registerSimpleAction("UnlockDoor", UnlockDoor );
+}
 
-    BT::NodeStatus PassThroughWindow()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100) * _multiplier);
-        return NodeStatus::SUCCESS;
-    }
-
-    BT::NodeStatus OpenDoor()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200) * _multiplier);
-        if (door_locked_)
-            return NodeStatus::FAILURE;
-        door_open_ = true;
-        return NodeStatus::SUCCESS;
-    }
-
-    BT::NodeStatus CloseDoor()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(150) * _multiplier);
-        if (door_open_)
-        {
-            door_open_ = false;
-            return NodeStatus::SUCCESS;
-        }
-        else
-        {
-            return NodeStatus::FAILURE;
-        }
-    }
-
-  private:
-    bool door_open_;
-    bool door_locked_;
-};
+}

@@ -84,7 +84,7 @@ class TreeNode
 
     /**
      * @brief subscribeToStatusChange is used to attach a callback to a status change.
-     * AS soon as StatusChangeSubscriber goes out of scope (it is a shared_ptr) the callback
+     * When StatusChangeSubscriber goes out of scope (it is a shared_ptr) the callback
      * is unsubscribed automatically.
      *
      * @param callback. Must have signature void funcname(NodeStatus prev_status, NodeStatus new_status)

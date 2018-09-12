@@ -30,11 +30,6 @@ class ActionNodeBase : public LeafNode
     {
         return NodeType::ACTION;
     }
-
-    virtual void halt() override
-    {
-        setStatus(NodeStatus::IDLE);
-    }
 };
 
 /**

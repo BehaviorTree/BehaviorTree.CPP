@@ -8,7 +8,7 @@ namespace BT
 class StatusChangeLogger
 {
   public:
-    StatusChangeLogger(TreeNode* root_node);
+    StatusChangeLogger(TreeNode *root_node);
     virtual ~StatusChangeLogger() = default;
 
     virtual void callback(BT::TimePoint timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status) = 0;
@@ -44,7 +44,9 @@ class StatusChangeLogger
 
 //--------------------------------------------
 
-inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node) : enabled_(true), show_transition_to_idle_(true)
+inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node) :
+    enabled_(true),
+    show_transition_to_idle_(true)
 {
     applyRecursiveVisitor(root_node, [this](TreeNode* node)
     {

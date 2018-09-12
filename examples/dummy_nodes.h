@@ -59,6 +59,10 @@ public:
         std::cout << "CustomAction: " << this->name() << std::endl;
         return BT::NodeStatus::SUCCESS;
     }
+    virtual void halt() override
+    {
+        setStatus(BT::NodeStatus::IDLE);
+    }
 };
 
 
