@@ -35,12 +35,11 @@ int main()
 
     // IMPORTANT: when the object tree goes out of scope, all the TreeNodes are destroyed
     auto tree = buildTreeFromText(factory, xml_text);
-    const TreeNode::Ptr& root_node = tree.first;
 
     // The tick is propagated to all the children.
     // until one of the returns FAILURE or RUNNING.
     // In this case all of the return SUCCESS
-    root_node->executeTick();
+    tree.root_node->executeTick();
 
     return 0;
 }

@@ -483,8 +483,7 @@ std::string writeXML(const BehaviorTreeFactory& factory,
     return std::string( printer.CStr(), printer.CStrSize()-1 );
 }
 
-std::pair<TreeNode::Ptr, std::vector<TreeNode::Ptr> >
-buildTreeFromText(const BehaviorTreeFactory &factory,
+Tree buildTreeFromText(const BehaviorTreeFactory &factory,
                   const std::string &text,
                   const Blackboard::Ptr &blackboard)
 {
@@ -494,11 +493,10 @@ buildTreeFromText(const BehaviorTreeFactory &factory,
     std::vector<TreeNode::Ptr> nodes;
     auto root = parser.instantiateTree(nodes);
     assignBlackboardToEntireTree(root.get(), blackboard );
-    return {root, nodes};
+    return {root.get(), nodes};
 }
 
-std::pair<TreeNode::Ptr, std::vector<TreeNode::Ptr> >
-buildTreeFromFile(const BehaviorTreeFactory &factory,
+Tree buildTreeFromFile(const BehaviorTreeFactory &factory,
                   const std::string &filename,
                   const Blackboard::Ptr &blackboard)
 {
@@ -508,7 +506,7 @@ buildTreeFromFile(const BehaviorTreeFactory &factory,
     std::vector<TreeNode::Ptr> nodes;
     auto root = parser.instantiateTree(nodes);
     assignBlackboardToEntireTree(root.get(), blackboard );
-    return {root, nodes};
+    return {root.get(), nodes};
 }
 
 }

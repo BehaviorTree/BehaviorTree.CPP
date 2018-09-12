@@ -66,33 +66,32 @@ int main()
         std::cout << "\n------------ BUILDING A NEW TREE ------------\n\n" << std::endl;
 
         auto tree = buildTreeFromText(factory, xml_text);
-        TreeNode::Ptr root_node = tree.first;
 
         // This logger will show all the state transitions on console
-        StdCoutLogger logger_cout(root_node.get());
+        StdCoutLogger logger_cout(tree.root_node);
 
         // This other logger will save the state transition in a custom file format
         // simple_trace.fbl can be visualized using the command line tool [bt_log_cat]
-        FileLogger file_file(root_node.get(), "simple_trace.fbl", 32);
+        FileLogger file_file(tree.root_node, "simple_trace.fbl", 32);
 
         NodeStatus status;
 
         std::cout << "\n------- First executeTick() --------" << std::endl;
-        status = root_node->executeTick();
+        status = tree.root_node->executeTick();
         Assert( status == NodeStatus::RUNNING);
 
         std::cout << "\n------- sleep --------" << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         std::cout << "\n------- Second executeTick() --------" << std::endl;
-        status = root_node->executeTick();
+        status = tree.root_node->executeTick();
         Assert( status == NodeStatus::RUNNING);
 
         std::cout << "\n------- sleep --------" << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         std::cout << "\n------- Third executeTick() --------" << std::endl;
-        status = root_node->executeTick();
+        status = tree.root_node->executeTick();
         Assert( status == NodeStatus::SUCCESS);
 
         std::cout << std::endl;

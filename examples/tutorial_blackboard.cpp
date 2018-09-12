@@ -96,13 +96,12 @@ int main()
     auto blackboard = Blackboard::create<BlackboardLocal>();
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto res = buildTreeFromText(factory, xml_text, blackboard);
-    const TreeNode::Ptr& root_node = res.first;
+    auto tree = buildTreeFromText(factory, xml_text, blackboard);
 
     NodeStatus status = NodeStatus::RUNNING;
     while( status == NodeStatus::RUNNING )
     {
-        status = root_node->executeTick();
+        status = tree.root_node->executeTick();
     }
 
     return 0;

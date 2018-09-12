@@ -58,22 +58,22 @@ int main()
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
     auto tree = buildTreeFromText(factory, xml_text, blackboard);
-    TreeNode* root_node = tree.first.get();
 
-    StdCoutLogger logger_cout(root_node);
-    MinitraceLogger logger_minitrace(root_node, "bt_trace.json");
-    FileLogger logger_file(root_node, "bt_trace.fbl", 32);
+    StdCoutLogger logger_cout(tree.root_node);
+    MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
+    FileLogger logger_file(tree.root_node, "bt_trace.fbl", 32);
 #ifdef ZMQ_FOUND
-    PublisherZMQ publisher_zmq(root_node);
+    PublisherZMQ publisher_zmq(tree.root_node);
 #endif
 
-    std::cout << writeXML( factory, root_node, false ) << std::endl;
+    std::cout << writeXML( factory, tree.root_node, false ) << std::endl;
     std::cout << "---------------" << std::endl;
 
     // Keep on ticking until you get either a SUCCESS or FAILURE state
-    while( root_node->executeTick() == BT::NodeStatus::RUNNING)
+    NodeStatus status = NodeStatus::RUNNING;
+    while( status == NodeStatus::RUNNING )
     {
-        // continue;
+        status = tree.root_node->executeTick();
     }
     return 0;
 }
