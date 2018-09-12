@@ -177,7 +177,14 @@ template<typename SRC,typename DST> inline
 typename std::enable_if< !is_convertible_type<DST>::value, void>::type
 convertNumber( const SRC& , DST&  )
 {
-    throw std::runtime_error("Not convertible");
+    static_assert(is_convertible_type<DST>::value,"Not convertible");
+}
+
+template<typename SRC,typename DST> inline
+EnableIf< std::is_same<bool, DST>>
+convertNumber( const SRC& from, DST& target )
+{
+    target = (from != 0);
 }
 
 

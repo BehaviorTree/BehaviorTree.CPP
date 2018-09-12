@@ -71,6 +71,18 @@ public:
         return true;
     }
 
+    template <typename T> T get(const std::string& key) const
+    {
+        T value;
+        bool found = get(key, value);
+        if(!found)
+        {
+            throw std::runtime_error("Missing key");
+        }
+        return value;
+    }
+
+
     /// Update the entry with the given key
     template <typename T> void set(const std::string& key, const T& value)
     {
