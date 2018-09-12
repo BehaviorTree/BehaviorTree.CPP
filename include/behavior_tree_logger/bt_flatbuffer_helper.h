@@ -42,11 +42,13 @@ inline BT_Serialization::Status convertToFlatbuffers(NodeStatus type)
     return BT_Serialization::Status::IDLE;
 }
 
-inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builder, BT::TreeNode* root_node)
+inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builder,
+                                          BT::TreeNode* root_node)
 {
     std::vector<flatbuffers::Offset<BT_Serialization::TreeNode>> fb_nodes;
 
-    applyRecursiveVisitor(root_node, [&](TreeNode* node) {
+    applyRecursiveVisitor(root_node, [&](BT::TreeNode* node)
+    {
         std::vector<uint16_t> children_uid;
         if (auto control = dynamic_cast<BT::ControlNode*>(node))
         {
@@ -62,10 +64,27 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
             children_uid.push_back(child->UID());
         }
 
-        fb_nodes.push_back(BT_Serialization::CreateTreeNode(
-            builder, node->UID(), builder.CreateVector(children_uid), convertToFlatbuffers(node->type()),
-            convertToFlatbuffers(node->status()), builder.CreateString(node->name().c_str()),
-            builder.CreateString(node->registrationName().c_str())));
+        std::vector<flatbuffers::Offset<BT_Serialization::KeyValue>> params;
+        const NodeParameters & init_params = node->initializationParameters();
+        for (const auto& it: init_params)
+        {
+            params.push_back( BT_Serialization::CreateKeyValueDirect(
+                                  builder,
+                                  it.first.c_str(),
+                                  it.second.c_str())
+                              );
+        }
+
+        auto tn = BT_Serialization::CreateTreeNode(
+                    builder, node->UID(),
+                    builder.CreateVector(children_uid),
+                    convertToFlatbuffers(node->type()),
+                    convertToFlatbuffers(node->status()),
+                    builder.CreateString(node->name().c_str()),
+                    builder.CreateString(node->registrationName().c_str()),
+                    builder.CreateVector(params) );
+
+        fb_nodes.push_back(tn);
     });
 
     auto behavior_tree =

@@ -21,6 +21,12 @@ struct Timestamp
   usec_since_epoch : uint64;
 }
 
+table KeyValue
+{
+  key   : string;
+  value : string;
+}
+
 table TreeNode
 {
   uid           : uint16;
@@ -29,6 +35,7 @@ table TreeNode
   status        : Status;
   instance_name : string   (required);
   registration_name : string   (required);
+  params : [KeyValue];
 }
 
 table BehaviorTree 
