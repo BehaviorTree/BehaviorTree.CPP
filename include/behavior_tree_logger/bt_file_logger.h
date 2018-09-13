@@ -11,7 +11,7 @@ namespace BT
 class FileLogger : public StatusChangeLogger
 {
   public:
-    FileLogger(TreeNode* root_node, const char* filename, uint16_t buffer_size);
+    FileLogger(TreeNode* root_node, const char* filename, uint16_t buffer_size = 10);
 
     virtual ~FileLogger() override;
 

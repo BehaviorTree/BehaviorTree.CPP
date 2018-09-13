@@ -4,42 +4,39 @@
 #include "behavior_tree_logger/bt_minitrace_logger.h"
 #include "behavior_tree_logger/bt_file_logger.h"
 #include "Blackboard/blackboard_local.h"
-
-#ifdef ZMQ_FOUND
 #include "behavior_tree_logger/bt_zmq_publisher.h"
-#endif
 
 // clang-format off
 
 const std::string xml_text = R"(
 
- <root main_tree_to_execute = "MainTree" >
+<root main_tree_to_execute = "MainTree" >
 
-     <BehaviorTree ID="MainTree">
-         <Fallback name="root_selector">
+    <BehaviorTree ID="MainTree">
+        <Fallback name="root_selector">
 
-         <Sequence name="door_open_sequence">
-             <IsDoorOpen/>
-             <PassThroughDoor/>
-         </Sequence>
+            <Sequence name="door_open_sequence">
+                <Condition ID="IsDoorOpen"/>
+                <Action ID="PassThroughDoor"/>
+            </Sequence>
 
-         <Sequence name="door_closed_sequence">
-             <Negation>
-                <IsDoorOpen/>
-             </Negation>
-             <RetryUntilSuccesful num_attempts="2" >
-                <OpenDoor/>
-             </RetryUntilSuccesful>
-             <Action ID="PassThroughDoor" />
-             <Action ID="CloseDoor" />
-         </Sequence>
+            <Sequence name="door_closed_sequence">
+                <Negation>
+                    <Condition ID="IsDoorOpen"/>
+                </Negation>
+                <RetryUntilSuccesful num_attempts="2" >
+                    <Action ID="OpenDoor"/>
+                </RetryUntilSuccesful>
+                <Action ID="PassThroughDoor" />
+                <Action ID="CloseDoor" />
+            </Sequence>
 
-         <Action ID="PassThroughWindow" />
+        <Action ID="PassThroughWindow" />
 
-         </Fallback>
-     </BehaviorTree>
+        </Fallback>
+    </BehaviorTree>
 
- </root>
+</root>
  )";
 
 // clang-format on
@@ -59,15 +56,11 @@ int main()
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
     auto tree = buildTreeFromText(factory, xml_text, blackboard);
 
-    StdCoutLogger logger_cout(tree.root_node);
+    // Create some loggers
+    StdCoutLogger   logger_cout(tree.root_node);
     MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
-    FileLogger logger_file(tree.root_node, "bt_trace.fbl", 32);
-#ifdef ZMQ_FOUND
-    PublisherZMQ publisher_zmq(tree.root_node);
-#endif
-
-    std::cout << writeXML( factory, tree.root_node, false ) << std::endl;
-    std::cout << "---------------" << std::endl;
+    FileLogger      logger_file(tree.root_node, "bt_trace.fbl");
+    PublisherZMQ    publisher_zmq(tree.root_node);
 
     // Keep on ticking until you get either a SUCCESS or FAILURE state
     NodeStatus status = NodeStatus::RUNNING;
