@@ -18,12 +18,12 @@
 
 namespace BT
 {
-class DecoratorNegationNode : public DecoratorNode
+class NegationNode : public DecoratorNode
 {
   public:
-    DecoratorNegationNode(const std::string& name);
+    NegationNode(const std::string& name);
 
-    virtual ~DecoratorNegationNode() override = default;
+    virtual ~NegationNode() override = default;
 
   private:
     virtual BT::NodeStatus tick() override;

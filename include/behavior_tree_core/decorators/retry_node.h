@@ -11,47 +11,36 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/decorator_negation_node.h"
+#ifndef DECORATORRETRYNODE_H
+#define DECORATORRETRYNODE_H
+
+#include "behavior_tree_core/decorator_node.h"
 
 namespace BT
 {
-DecoratorNegationNode::DecoratorNegationNode(const std::string& name) : DecoratorNode(name, NodeParameters())
+class RetryNode : public DecoratorNode
 {
-}
+  public:
+    // Constructor
+    RetryNode(const std::string& name, unsigned int NTries);
 
-NodeStatus DecoratorNegationNode::tick()
-{
-    setStatus(NodeStatus::RUNNING);
+    RetryNode(const std::string& name, const NodeParameters& params);
 
-    const NodeStatus child_state = child_node_->executeTick();
+    virtual ~RetryNode() override = default;
 
-    switch (child_state)
+    static const NodeParameters& requiredNodeParameters()
     {
-        case NodeStatus::SUCCESS:
-        {
-            setStatus(NodeStatus::FAILURE);
-            child_node_->setStatus(NodeStatus::IDLE);
-        }
-        break;
-
-        case NodeStatus::FAILURE:
-        {
-            setStatus(NodeStatus::SUCCESS);
-            child_node_->setStatus(NodeStatus::IDLE);
-        }
-        break;
-
-        case NodeStatus::RUNNING:
-        {
-            setStatus(NodeStatus::RUNNING);
-        }
-        break;
-
-        default:
-        {
-            // TODO throw?
-        }
+        static NodeParameters params = {{NUM_ATTEMPTS, "1"}};
+        return params;
     }
-    return status();
+
+  private:
+    unsigned int NTries_;
+    unsigned int TryIndx_;
+
+    static constexpr const char* NUM_ATTEMPTS = "num_attempts";
+    virtual BT::NodeStatus tick() override;
+};
 }
-}
+
+#endif

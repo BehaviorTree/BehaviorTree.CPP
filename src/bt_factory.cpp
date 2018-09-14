@@ -22,11 +22,18 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<SequenceNode>("Sequence");
     registerNodeType<SequenceNodeWithMemory>("SequenceStar");
 
-    registerNodeType<DecoratorNegationNode>("Negation");
-    registerNodeType<DecoratorRetryNode>("RetryUntilSuccesful");
-    registerNodeType<DecoratorRepeatNode>("Repeat");
+    registerNodeType<NegationNode>("Negation");
+    registerNodeType<RetryNode>("RetryUntilSuccesful");
+    registerNodeType<RepeatNode>("Repeat");
+
+    registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
+    registerNodeType<AlwaysFailureNode>("AlwaysFailure");
 
     registerNodeType<DecoratorSubtreeNode>("SubTree");
+
+    registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
+    registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
+    registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
 }
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)

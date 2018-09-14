@@ -128,7 +128,7 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_EQ(sequence_closed->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence_closed->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::DecoratorNegationNode*>(sequence_closed->child(0));
+    auto decorator = dynamic_cast<const BT::NegationNode*>(sequence_closed->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorOpen");
@@ -178,7 +178,7 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_EQ(sequence->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::DecoratorNegationNode*>(sequence->child(0));
+    auto decorator = dynamic_cast<const BT::NegationNode*>(sequence->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorLocked");

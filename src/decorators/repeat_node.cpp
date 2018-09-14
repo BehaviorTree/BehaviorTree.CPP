@@ -11,18 +11,18 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/decorator_repeat_node.h"
+#include "behavior_tree_core/decorators/repeat_node.h"
 
 namespace BT
 {
-constexpr const char* DecoratorRepeatNode::NUM_CYCLES;
+constexpr const char* RepeatNode::NUM_CYCLES;
 
-DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, unsigned int NTries)
+RepeatNode::RepeatNode(const std::string& name, unsigned int NTries)
   : DecoratorNode(name, {{NUM_CYCLES, std::to_string(NTries)}}), NTries_(NTries), TryIndx_(0)
 {
 }
 
-DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, const NodeParameters& params)
+RepeatNode::RepeatNode(const std::string& name, const NodeParameters& params)
   : DecoratorNode(name, params), NTries_(1), TryIndx_(0)
 {
     auto param = getParam<int>(NUM_CYCLES);
@@ -31,7 +31,7 @@ DecoratorRepeatNode::DecoratorRepeatNode(const std::string& name, const NodePara
     }
 }
 
-NodeStatus DecoratorRepeatNode::tick()
+NodeStatus RepeatNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
     NodeStatus child_state = child_node_->executeTick();

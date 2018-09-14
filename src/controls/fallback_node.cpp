@@ -11,55 +11,58 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/sequence_node.h"
+#include "behavior_tree_core/controls/fallback_node.h"
 
-BT::SequenceNode::SequenceNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
+namespace BT
+{
+FallbackNode::FallbackNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
 {
 }
 
-BT::NodeStatus BT::SequenceNode::tick()
+NodeStatus FallbackNode::tick()
 {
     // gets the number of children. The number could change if, at runtime, one edits the tree.
     const unsigned N_of_children = children_nodes_.size();
 
-    // Routing the ticks according to the sequence node's logic:
+    // Routing the ticks according to the fallback node's logic:
 
     setStatus(NodeStatus::RUNNING);
 
-    for (unsigned int i = 0; i < N_of_children; i++)
+    for (unsigned i = 0; i < N_of_children; i++)
     {
         TreeNode* child_node = children_nodes_[i];
 
         const NodeStatus child_status = child_node->executeTick();
 
         // Ponderate on which status to send to the parent
-        if (child_status != NodeStatus::SUCCESS)
+        if (child_status != NodeStatus::FAILURE)
         {
-            // If the  child status is not success, halt the next children and return the status to your parent.
-            if (child_status == NodeStatus::FAILURE)
+            if (child_status == NodeStatus::SUCCESS)
             {
                 for (unsigned t = 0; t <= i; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
             }
-
+            // If the  child status is not failure, halt the next children and return the status to your parent.
             haltChildren(i + 1);
             return child_status;
         }
         else
         {
+            // the child returned failure.
             if (i == N_of_children - 1)
             {
-                // If the  child status is success, and it is the last child to be ticked,
-                // then the sequence has succeeded.
-                for (auto& ch : children_nodes_)
+                // If the  child status is failure, and it is the last child to be ticked,
+                // then the sequence has failed.
+                for (unsigned t = 0; t <= i; t++)
                 {
-                    ch->setStatus(NodeStatus::IDLE);
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
-                return NodeStatus::SUCCESS;
+                return NodeStatus::FAILURE;
             }
         }
     }
     throw std::runtime_error("This is not supposed to happen");
+}
 }

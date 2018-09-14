@@ -1,5 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,36 +10,61 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATORRETRYNODE_H
-#define DECORATORRETRYNODE_H
+#ifndef DECORATOR_ALWAYS_SUCCESS_NODE_H
+#define DECORATOR_ALWAYS_SUCCESS_NODE_H
 
 #include "behavior_tree_core/decorator_node.h"
 
 namespace BT
 {
-class DecoratorRetryNode : public DecoratorNode
+class AlwaysSuccessNode : public DecoratorNode
 {
   public:
-    // Constructor
-    DecoratorRetryNode(const std::string& name, unsigned int NTries);
+    AlwaysSuccessNode(const std::string& name);
 
-    DecoratorRetryNode(const std::string& name, const NodeParameters& params);
-
-    virtual ~DecoratorRetryNode() override = default;
-
-    static const NodeParameters& requiredNodeParameters()
-    {
-        static NodeParameters params = {{NUM_ATTEMPTS, "1"}};
-        return params;
-    }
+    virtual ~AlwaysSuccessNode() override = default;
 
   private:
-    unsigned int NTries_;
-    unsigned int TryIndx_;
-
-    static constexpr const char* NUM_ATTEMPTS = "num_attempts";
     virtual BT::NodeStatus tick() override;
 };
+
+//------------ implementation ----------------------------
+
+inline AlwaysSuccessNode::AlwaysSuccessNode(const std::string& name) :
+    DecoratorNode(name, NodeParameters())
+{
+}
+
+inline NodeStatus AlwaysSuccessNode::tick()
+{
+    setStatus(NodeStatus::RUNNING);
+
+    const NodeStatus child_state = child_node_->executeTick();
+
+    switch (child_state)
+    {
+    case NodeStatus::FAILURE:
+    case NodeStatus::SUCCESS:
+    {
+        child_node_->setStatus(NodeStatus::IDLE);
+        return  NodeStatus::SUCCESS;
+    }
+    break;
+
+    case NodeStatus::RUNNING:
+    {
+        return NodeStatus::RUNNING;
+    }
+    break;
+
+    default:
+    {
+        // TODO throw?
+    }
+}
+    return status();
+}
+
 }
 
 #endif

@@ -43,24 +43,26 @@ set(BT_Source
 	src/action_node.cpp
         src/basic_types.cpp
         src/decorator_node.cpp
-        src/decorator_negation_node.cpp
-        src/decorator_repeat_node.cpp
-        src/decorator_retry_node.cpp
 	src/condition_node.cpp
 	src/control_node.cpp
 	src/exceptions.cpp
 	src/leaf_node.cpp
 	src/tick_engine.cpp
-	src/parallel_node.cpp
-	src/fallback_node.cpp
-	src/sequence_node.cpp
-	src/fallback_node_with_memory.cpp
-	src/sequence_node_with_memory.cpp
-	src/tree_node.cpp
+        src/tree_node.cpp
         src/bt_factory.cpp
         src/behavior_tree.cpp
-
         src/xml_parsing.cpp
+
+        src/decorators/negation_node.cpp
+        src/decorators/repeat_node.cpp
+        src/decorators/retry_node.cpp
+
+        src/controls/parallel_node.cpp
+        src/controls/fallback_node.cpp
+        src/controls/sequence_node.cpp
+        src/controls/fallback_node_with_memory.cpp
+        src/controls/sequence_node_with_memory.cpp
+
 
         src/loggers/bt_cout_logger.cpp
         src/loggers/bt_file_logger.cpp

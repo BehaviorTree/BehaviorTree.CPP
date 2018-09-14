@@ -1,5 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,36 +10,54 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATOR_REPEAT_NODE_H
-#define DECORATOR_REPEAT_NODE_H
+#ifndef DECORATOR_BLACKBOARD_PRECONDITION_NODE_H
+#define DECORATOR_BLACKBOARD_PRECONDITION_NODE_H
 
 #include "behavior_tree_core/decorator_node.h"
 
 namespace BT
 {
-class DecoratorRepeatNode : public DecoratorNode
+template <typename T>
+class BlackboardPreconditionNode : public DecoratorNode
 {
   public:
-    // Constructor
-    DecoratorRepeatNode(const std::string& name, unsigned int NTries);
+    BlackboardPreconditionNode(const std::string& name, const NodeParameters& params):
+        DecoratorNode(name, params)
+    {
+    }
 
-    DecoratorRepeatNode(const std::string& name, const NodeParameters& params);
-
-    virtual ~DecoratorRepeatNode() override = default;
+    virtual ~BlackboardPreconditionNode() override = default;
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = {{NUM_CYCLES, "1"}};
+        static NodeParameters params = {{"key", ""}, {"expected", "*"}};
         return params;
     }
 
   private:
-    unsigned NTries_;
-    unsigned TryIndx_;
 
-    static constexpr const char* NUM_CYCLES = "num_cycles";
-    virtual BT::NodeStatus tick() override;
+    virtual BT::NodeStatus tick() override
+    {
+        std::string key;
+        T expected;
+        T value;
+
+        setStatus(NodeStatus::RUNNING);
+
+        if( blackboard() &&                   //blackboard not null
+            getParam("key", key) &&           // parameter key provided
+            getParam("expected", expected) && // parameter expected provided
+            blackboard()->get(key,value) &&   // value found in blackboard
+            (value == expected || initializationParameters().at("expected") == "*") ) // is expected value or "*"
+        {
+            return child_node_->executeTick();
+        }
+        else{
+           return NodeStatus::FAILURE;
+        }
+    }
 };
+
 }
 
 #endif

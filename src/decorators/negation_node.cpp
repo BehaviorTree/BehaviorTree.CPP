@@ -11,50 +11,33 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/decorator_retry_node.h"
+#include "behavior_tree_core/decorators/negation_node.h"
 
 namespace BT
 {
-constexpr const char* DecoratorRetryNode::NUM_ATTEMPTS;
-
-DecoratorRetryNode::DecoratorRetryNode(const std::string& name, unsigned int NTries)
-  : DecoratorNode(name, {{NUM_ATTEMPTS, std::to_string(NTries)}}), NTries_(NTries), TryIndx_(0)
+NegationNode::NegationNode(const std::string& name) : DecoratorNode(name, NodeParameters())
 {
 }
 
-DecoratorRetryNode::DecoratorRetryNode(const std::string& name, const NodeParameters& params)
-  : DecoratorNode(name, params), NTries_(1), TryIndx_(0)
-{
-    auto param = getParam<int>(NUM_ATTEMPTS);
-    if(param){
-        NTries_ = param.value();
-    }
-}
-
-NodeStatus DecoratorRetryNode::tick()
+NodeStatus NegationNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
-    NodeStatus child_state = child_node_->executeTick();
+
+    const NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state)
     {
         case NodeStatus::SUCCESS:
         {
-            TryIndx_ = 0;
-            setStatus(NodeStatus::SUCCESS);
+            setStatus(NodeStatus::FAILURE);
             child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
         case NodeStatus::FAILURE:
         {
-            TryIndx_++;
-            if (TryIndx_ >= NTries_)
-            {
-                TryIndx_ = 0;
-                setStatus(NodeStatus::FAILURE);
-                child_node_->setStatus(NodeStatus::IDLE);
-            }
+            setStatus(NodeStatus::SUCCESS);
+            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
@@ -69,7 +52,6 @@ NodeStatus DecoratorRetryNode::tick()
             // TODO throw?
         }
     }
-
     return status();
 }
 }
