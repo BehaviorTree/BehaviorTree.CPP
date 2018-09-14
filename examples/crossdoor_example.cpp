@@ -13,14 +13,14 @@ const std::string xml_text = R"(
 <root main_tree_to_execute = "MainTree" >
 
     <BehaviorTree ID="MainTree">
-        <Fallback name="root_selector">
+        <FallbackStar name="root_selector">
 
             <Sequence name="door_open_sequence">
                 <Condition ID="IsDoorOpen"/>
                 <Action ID="PassThroughDoor"/>
             </Sequence>
 
-            <Sequence name="door_closed_sequence">
+            <SequenceStar name="door_closed_sequence">
                 <Negation>
                     <Condition ID="IsDoorOpen"/>
                 </Negation>
@@ -29,11 +29,11 @@ const std::string xml_text = R"(
                 </RetryUntilSuccesful>
                 <Action ID="PassThroughDoor" />
                 <Action ID="CloseDoor" />
-            </Sequence>
+            </SequenceStar>
 
         <Action ID="PassThroughWindow" />
 
-        </Fallback>
+        </FallbackStar>
     </BehaviorTree>
 
 </root>
@@ -46,6 +46,7 @@ using namespace BT;
 int main()
 {
     BT::BehaviorTreeFactory factory;
+
     auto blackboard = Blackboard::create<BlackboardLocal>();
     blackboard->set("door_open", false);
     blackboard->set("door_locked", true);
