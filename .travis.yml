@@ -22,7 +22,7 @@ matrix:
     fast_finish: true
 
 before_install:
-  - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential
+  - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential libzmqpp-dev
   # GTest: see motivation here https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
   - sudo apt-get --reinstall install -qq libgtest-dev cmake
   - cd /usr/src/gtest
