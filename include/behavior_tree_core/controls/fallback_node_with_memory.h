@@ -18,6 +18,25 @@
 
 namespace BT
 {
+
+/**
+ * @brief The FallbackNodeWithMemory is used when you want to evaluate different "strategies".
+ *
+ * This control node ticks its children UNTIL one of them returns SUCCESS.
+ *
+ * In that case it returns SUCCESS, otherwise it returns FAILURE.
+ * If a child return RUNNING, this node returns RUNNING and at the next tick it will continue
+ * from the same index.
+ * It is recommended for asynchronous children which may return RUNNING.
+ *
+ * Example: three children, A, B and C
+ *
+ * 1) A returns FAILURE. Continue.
+ * 2) B returns RUNNING. Stop and return RUNNING.
+ * 3) B is ticked again but it returns SUCCESS. Stop and return SUCCESS.
+ *
+ */
+
 class FallbackNodeWithMemory : public ControlNode
 {
   public:

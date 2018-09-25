@@ -12,6 +12,7 @@
 */
 
 #include "behavior_tree_core/bt_factory.h"
+#include "behavior_tree_core/shared_library.h"
 
 namespace BT
 {
@@ -26,8 +27,11 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<RetryNode>("RetryUntilSuccesful");
     registerNodeType<RepeatNode>("Repeat");
 
-    registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
-    registerNodeType<AlwaysFailureNode>("AlwaysFailure");
+    registerNodeType<ForceSuccessDecorator>("ForceSuccess");
+    registerNodeType<ForceFailureDecorator>("ForceFailure");
+
+    registerNodeType<AlwaysSuccess>("AlwaysSuccess");
+    registerNodeType<AlwaysFailure>("AlwaysFailure");
 
     registerNodeType<DecoratorSubtreeNode>("SubTree");
 
@@ -87,7 +91,7 @@ void BehaviorTreeFactory::registerSimpleCondition(const std::string &ID,
     };
 
     registerBuilder(ID, builder);
-    storeNodeModel<SimpleConditionNode>(ID);
+    storeNodeManifest<SimpleConditionNode>(ID);
 }
 
 void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
@@ -98,7 +102,7 @@ void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
     };
 
     registerBuilder(ID, builder);
-    storeNodeModel<SimpleActionNode>(ID);
+    storeNodeManifest<SimpleActionNode>(ID);
 }
 
 void BehaviorTreeFactory::registerSimpleDecorator(const std::string &ID,
@@ -109,7 +113,24 @@ void BehaviorTreeFactory::registerSimpleDecorator(const std::string &ID,
     };
 
     registerBuilder(ID, builder);
-    storeNodeModel<SimpleDecoratorNode>(ID);
+    storeNodeManifest<SimpleDecoratorNode>(ID);
+}
+
+void BehaviorTreeFactory::registerFromPlugin(const std::string file_path)
+{
+    BT::SharedLibrary loader;
+    loader.load(file_path);
+    typedef void (*Func)(BehaviorTreeFactory&);
+
+    if(loader.hasSymbol(PLUGIN_SYMBOL))
+    {
+        Func func = (Func) loader.getSymbol(PLUGIN_SYMBOL);
+        func(*this);
+    }
+    else{
+        std::cout << "ERROR loading library [" << file_path << "]: can't find symbol ["<<
+                     PLUGIN_SYMBOL << "]" << std::endl;
+    }
 }
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(const std::string& ID, const std::string& name,
@@ -130,15 +151,15 @@ const std::map<std::string, NodeBuilder> &BehaviorTreeFactory::builders() const
     return builders_;
 }
 
-const std::vector<TreeNodeModel> &BehaviorTreeFactory::models() const
+const std::vector<TreeNodeManifest> &BehaviorTreeFactory::manifests() const
 {
-    return treenode_models_;
+    return manifests_;
 }
 
-void BehaviorTreeFactory::sortTreeNodeModel()
+void BehaviorTreeFactory::sortTreeNodeManifests()
 {
-    std::sort( treenode_models_.begin(), treenode_models_.end(),
-               [](const TreeNodeModel& a, const TreeNodeModel& b)
+    std::sort( manifests_.begin(), manifests_.end(),
+               [](const TreeNodeManifest& a, const TreeNodeManifest& b)
     {
         int comp = std::strcmp( toStr( a.type ), toStr( b.type ));
         if( comp == 0)

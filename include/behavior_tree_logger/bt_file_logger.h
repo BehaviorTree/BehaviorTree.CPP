@@ -15,7 +15,7 @@ class FileLogger : public StatusChangeLogger
 
     virtual ~FileLogger() override;
 
-    virtual void callback(TimePoint timestamp, const TreeNode& node, NodeStatus prev_status,
+    virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
                           NodeStatus status) override;
 
     virtual void flush() override;

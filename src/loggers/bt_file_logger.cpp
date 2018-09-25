@@ -37,7 +37,7 @@ FileLogger::~FileLogger()
     file_os_.close();
 }
 
-void FileLogger::callback(TimePoint timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
+void FileLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
 {
     std::array<uint8_t, 12> buffer = SerializeTransition(node.UID(), timestamp, prev_status, status);
 

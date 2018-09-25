@@ -14,28 +14,40 @@
 #define DECORATOR_ALWAYS_FAILURE_NODE_H
 
 #include "behavior_tree_core/decorator_node.h"
+#include "behavior_tree_core/action_node.h"
 
 namespace BT
 {
-class AlwaysFailureNode : public DecoratorNode
+class ForceFailureDecorator : public DecoratorNode
 {
   public:
-    AlwaysFailureNode(const std::string& name);
-
-    virtual ~AlwaysFailureNode() override = default;
+    ForceFailureDecorator(const std::string& name):
+        DecoratorNode(name, NodeParameters())
+    { }
 
   private:
     virtual BT::NodeStatus tick() override;
 };
 
+class AlwaysFailure : public ActionNodeBase
+{
+  public:
+    AlwaysFailure(const std::string& name):
+        ActionNodeBase(name, NodeParameters())
+    { }
+
+  private:
+    virtual BT::NodeStatus tick() override
+    {
+        return NodeStatus::FAILURE;
+    }
+    virtual void halt() override {}
+};
+
 //------------ implementation ----------------------------
 
-inline AlwaysFailureNode::AlwaysFailureNode(const std::string& name) :
-    DecoratorNode(name, NodeParameters())
-{
-}
 
-inline NodeStatus AlwaysFailureNode::tick()
+inline NodeStatus ForceFailureDecorator::tick()
 {
     setStatus(NodeStatus::RUNNING);
 
@@ -49,13 +61,11 @@ inline NodeStatus AlwaysFailureNode::tick()
         child_node_->setStatus(NodeStatus::IDLE);
         return NodeStatus::FAILURE;
     }
-    break;
 
     case NodeStatus::RUNNING:
     {
         return NodeStatus::RUNNING;
     }
-    break;
 
     default:
     {

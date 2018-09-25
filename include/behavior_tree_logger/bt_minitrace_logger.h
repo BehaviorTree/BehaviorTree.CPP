@@ -16,7 +16,7 @@ class MinitraceLogger : public StatusChangeLogger
 
     virtual ~MinitraceLogger() override;
 
-    virtual void callback(TimePoint timestamp,
+    virtual void callback(Duration timestamp,
                           const TreeNode& node,
                           NodeStatus prev_status,
                           NodeStatus status) override;

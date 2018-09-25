@@ -88,7 +88,7 @@ PublisherZMQ::~PublisherZMQ()
     flush();
 }
 
-void PublisherZMQ::callback(TimePoint timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
+void PublisherZMQ::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
 {
     using namespace std::chrono;
 

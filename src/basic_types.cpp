@@ -149,4 +149,34 @@ ResetPolicy convertFromString<ResetPolicy>(const std::string& str)
     throw std::invalid_argument(std::string("Cannot convert this to ResetPolicy: ") + str);
 }
 
+std::ostream &operator<<(std::ostream &os, const NodeType &type)
+{
+    os << toStr(type);
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const NodeStatus &status)
+{
+    os << toStr(status);
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, const ResetPolicy &type)
+{
+    os << toStr(type);
+    return os;
+}
+
+std::vector<std::string> splitString(const std::string &strToSplit, char delimeter)
+{
+    std::stringstream ss(strToSplit);
+    std::string item;
+    std::vector<std::string> splitted_strings;
+    while (std::getline(ss, item, delimeter))
+    {
+        splitted_strings.push_back(item);
+    }
+    return splitted_strings;
+}
+
 }   // end namespace

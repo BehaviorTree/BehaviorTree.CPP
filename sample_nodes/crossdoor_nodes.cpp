@@ -1,51 +1,54 @@
-#include "behavior_tree_core/bt_factory.h"
+#include "crossdoor_nodes.h"
 
-using namespace BT;
-
-namespace CrossDoor
+// This function must be implemented in the .cpp file to create
+// a plugin that can be loaded at run-time
+BT_REGISTER_NODES(factory)
 {
+    CrossDoor::RegisterNodes(factory);
+}
 
-BT::NodeStatus IsDoorOpen(const Blackboard::Ptr& blackboard)
+
+NodeStatus CrossDoor::IsDoorOpen(const Blackboard::Ptr &blackboard)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500) );
+    SleepMS(500);
     bool door_open = blackboard->get<bool>("door_open");
 
     return  door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-BT::NodeStatus IsDoorLocked(const Blackboard::Ptr& blackboard)
+NodeStatus CrossDoor::IsDoorLocked(const Blackboard::Ptr &blackboard)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500) );
+    SleepMS(500);
     bool door_locked = blackboard->get<bool>("door_locked");
 
     return door_locked ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-BT::NodeStatus UnlockDoor(const Blackboard::Ptr& blackboard)
+NodeStatus CrossDoor::UnlockDoor(const Blackboard::Ptr &blackboard)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    SleepMS(2000);
     blackboard->set("door_locked", false);
 
     return NodeStatus::SUCCESS;
 }
 
-BT::NodeStatus PassThroughDoor(const Blackboard::Ptr& blackboard)
+NodeStatus CrossDoor::PassThroughDoor(const Blackboard::Ptr &blackboard)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    SleepMS(1000);
     bool door_open = blackboard->get<bool>("door_open");
 
     return door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-BT::NodeStatus PassThroughWindow(const Blackboard::Ptr& blackboard)
+NodeStatus CrossDoor::PassThroughWindow(const Blackboard::Ptr &blackboard)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    SleepMS(1000);
     return NodeStatus::SUCCESS;
 }
 
-BT::NodeStatus OpenDoor(const Blackboard::Ptr& blackboard)
+NodeStatus CrossDoor::OpenDoor(const Blackboard::Ptr &blackboard)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    SleepMS(2000);
     bool door_locked = blackboard->get<bool>("door_locked");
 
     if (door_locked)
@@ -57,19 +60,19 @@ BT::NodeStatus OpenDoor(const Blackboard::Ptr& blackboard)
     return NodeStatus::SUCCESS;
 }
 
-BT::NodeStatus CloseDoor(const Blackboard::Ptr& blackboard)
+NodeStatus CrossDoor::CloseDoor(const Blackboard::Ptr &blackboard)
 {
     bool door_open = blackboard->get<bool>("door_open");
 
     if (door_open)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+        SleepMS(1500);
         blackboard->set("door_open", false);
     }
     return NodeStatus::SUCCESS;
 }
 
-void RegisterNodes(BT::BehaviorTreeFactory& factory)
+void CrossDoor::RegisterNodes(BehaviorTreeFactory &factory)
 {
     factory.registerSimpleCondition("IsDoorOpen",   IsDoorOpen );
     factory.registerSimpleAction("PassThroughDoor", PassThroughDoor );
@@ -80,4 +83,3 @@ void RegisterNodes(BT::BehaviorTreeFactory& factory)
     factory.registerSimpleAction("UnlockDoor", UnlockDoor );
 }
 
-}

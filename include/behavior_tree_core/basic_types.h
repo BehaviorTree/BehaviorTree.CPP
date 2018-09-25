@@ -76,46 +76,24 @@ template <typename T> T convertFromString(const std::string& str);
  */
 const char* toStr(const BT::NodeStatus& status, bool colored = false);
 
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status)
-{
-    os << toStr(status);
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
 
 /**
  * @brief toStr converts NodeType to string.
  */
 const char* toStr(const BT::NodeType& type);
 
-inline std::ostream& operator<<(std::ostream& os, const BT::NodeType& type)
-{
-    os << toStr(type);
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
 /**
  * @brief toStr converts ResetPolicy to string.
  */
 const char* toStr(const BT::ResetPolicy& policy);
 
-inline std::ostream& operator<<(std::ostream& os, const BT::ResetPolicy& type)
-{
-    os << toStr(type);
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const BT::ResetPolicy& type);
 
 // small utility, unless you want to use <boost/algorithm/string.hpp>
-inline std::vector<std::string> splitString(const std::string& strToSplit, char delimeter)
-{
-    std::stringstream ss(strToSplit);
-    std::string item;
-    std::vector<std::string> splitted_strings;
-    while (std::getline(ss, item, delimeter))
-    {
-       splitted_strings.push_back(item);
-    }
-    return splitted_strings;
-}
+std::vector<std::string> splitString(const std::string& strToSplit, char delimeter);
 
 
 }

@@ -6,64 +6,21 @@
 
 using namespace BT;
 
-// Write into the blackboard key: [GoalPose]
-NodeStatus CalculateGoalPose(const Blackboard::Ptr& blackboard)
-{
-    //In this example we store a fixed value. In a real application
-    // we would read it from an external source (GUI, fleet manager, etc.)
-    Pose2D goal = { 1, 2, M_PI};
+/** This tutorial will tech you:
+ *
+ *  - How to use the Blackboard to shared data between TreeNodes
+ *  - How to use a Blackboard as a NodeParameter
+ *
+ * The tree is a Sequence of 4 actions
 
-    // RECOMMENDED: check if the blackboard is empty
-    if( blackboard )
-    {
-        // store it in the blackboard
-        blackboard->set("GoalPose", goal);
-    }
-
-    printf("[CalculateGoalPose]\n");
-
-    return NodeStatus::SUCCESS;
-}
-
-// Read from the blackboard key: [GoalPose]
-class PrintGoalPose: public ActionNodeBase
-{
-public:
-    PrintGoalPose(const std::string& name): ActionNodeBase(name) {}
-
-    NodeStatus tick() override
-    {
-        Pose2D goal;
-
-        // RECOMMENDED: check if the blackboard is empty
-        if( blackboard() && blackboard()->get("GoalPose", goal) )
-        {
-            printf("[PrintGoalPose] x=%.f y=%.1f theta=%.2f\n",
-                   goal.x, goal.y, goal.theta);
-            return NodeStatus::SUCCESS;
-        }
-        else{
-           printf("The blackboard does not contain the key [GoalPose]\n");
-           return NodeStatus::FAILURE;
-        }
-    }
-
-    virtual void halt() override
-    {
-        setStatus(NodeStatus::IDLE);
-    }
-};
-
-
-/** Example: simple sequence of 4 actions
-
-  1) Store a value of Pose2D in the key "GoalPose" of the blackboard.
-  2) Call PrintGoalPose. It will read "GoalPose" from the blackboard.
-  3) Call MoveAction that reads the NodeParameter "goal". It's value "2;4;0" is converted
-     to Pose2D using the function [ Pose2D convertFromString(const std::string& str) ].
-  4) Call MoveAction. It will read "GoalPose" from the blackboard.
-
+ *  1) Store a value of Pose2D in the key "GoalPose" of the blackboard.
+ *  2) Call PrintGoalPose. It will read "GoalPose" from the blackboard.
+ *  3) Call MoveAction. The NodeParameter "goal" is provided by the XML itself at the beginning.
+ *  4) Call MoveAction. The NodeParameter "goal" will be read from the Blackboard at run-time.
+ *
 */
+
+// clang-format off
 const std::string xml_text = R"(
 
  <root main_tree_to_execute = "MainTree" >
@@ -80,8 +37,49 @@ const std::string xml_text = R"(
  </root>
  )";
 
-
 // clang-format on
+
+// Write into the blackboard key: [GoalPose]
+// Use this function signature to create a SimpleAction that needs the blackboard
+NodeStatus CalculateGoalPose(const Blackboard::Ptr& blackboard)
+{
+    const Pose2D mygoal = { 1, 2, M_PI};
+
+    // RECOMMENDED: check if the blackboard is nullptr
+    if( blackboard )
+    {
+        // store it in the blackboard
+        blackboard->set("GoalPose", mygoal);
+    }
+
+    printf("[CalculateGoalPose]\n");
+    return NodeStatus::SUCCESS;
+}
+
+// Read from the blackboard key: [GoalPose]
+class PrintGoalPose: public ActionNodeBase
+{
+public:
+    PrintGoalPose(const std::string& name): ActionNodeBase(name) {}
+
+    NodeStatus tick() override
+    {
+        Pose2D goal;
+        // RECOMMENDED: check if the blackboard is empty
+        if( blackboard() && blackboard()->get("GoalPose", goal) )
+        {
+            printf("[PrintGoalPose] x=%.f y=%.1f theta=%.2f\n",
+                   goal.x, goal.y, goal.theta);
+            return NodeStatus::SUCCESS;
+        }
+        else{
+           printf("The blackboard does not contain the key [GoalPose]\n");
+           return NodeStatus::FAILURE;
+        }
+    }
+
+    virtual void halt() override { setStatus(NodeStatus::IDLE); }
+};
 
 int main()
 {
@@ -92,7 +90,7 @@ int main()
     factory.registerNodeType<PrintGoalPose>("PrintGoalPose");
     factory.registerNodeType<MoveBaseAction>("MoveBase");
 
-    // create a Blackboard from BlackboardLocal (simple local storage)
+    // create a Blackboard from BlackboardLocal (simple, not persistent, local storage)
     auto blackboard = Blackboard::create<BlackboardLocal>();
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
@@ -102,6 +100,7 @@ int main()
     while( status == NodeStatus::RUNNING )
     {
         status = tree.root_node->executeTick();
+        SleepMS(1); // optional sleep to avoid "busy loops"
     }
 
     return 0;

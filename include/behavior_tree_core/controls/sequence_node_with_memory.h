@@ -18,6 +18,22 @@
 
 namespace BT
 {
+
+/**
+ * @brief The SequenceNode is used to execute a sequence of asynchronous children.
+ *
+ * Tick all the children as long as they return SUCCESS.
+ * If any child return FAILURE, stop the sequence and return FAILURE.
+ * If any child return RUNNING, stop the sequence, return RUNNING. Restart from the same child
+ *
+ * Example: three children, A , B and C
+ *
+ * 1) A returns SUCCESS. Continue.
+ * 2) B returns RUNNING. Stop and return RUNNING.
+ * 3) B is ticked and retuns SUCCESS. Continue.
+ * 4) C returns SUCCESS. The entire sequence returns SUCCESS.
+ */
+
 class SequenceNodeWithMemory : public ControlNode
 {
   public:

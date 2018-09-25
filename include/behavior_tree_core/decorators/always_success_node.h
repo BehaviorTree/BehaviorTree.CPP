@@ -14,28 +14,40 @@
 #define DECORATOR_ALWAYS_SUCCESS_NODE_H
 
 #include "behavior_tree_core/decorator_node.h"
+#include "behavior_tree_core/action_node.h"
 
 namespace BT
 {
-class AlwaysSuccessNode : public DecoratorNode
+class ForceSuccessDecorator : public DecoratorNode
 {
   public:
-    AlwaysSuccessNode(const std::string& name);
-
-    virtual ~AlwaysSuccessNode() override = default;
+    ForceSuccessDecorator(const std::string& name):
+        DecoratorNode(name, NodeParameters())
+    { }
 
   private:
     virtual BT::NodeStatus tick() override;
 };
 
+class AlwaysSuccess : public ActionNodeBase
+{
+  public:
+    AlwaysSuccess(const std::string& name):
+        ActionNodeBase(name, NodeParameters())
+    { }
+
+  private:
+    virtual BT::NodeStatus tick() override
+    {
+        return NodeStatus::SUCCESS;
+    }
+    virtual void halt() override {}
+};
+
 //------------ implementation ----------------------------
 
-inline AlwaysSuccessNode::AlwaysSuccessNode(const std::string& name) :
-    DecoratorNode(name, NodeParameters())
-{
-}
 
-inline NodeStatus AlwaysSuccessNode::tick()
+inline NodeStatus ForceSuccessDecorator::tick()
 {
     setStatus(NodeStatus::RUNNING);
 
@@ -49,13 +61,11 @@ inline NodeStatus AlwaysSuccessNode::tick()
         child_node_->setStatus(NodeStatus::IDLE);
         return  NodeStatus::SUCCESS;
     }
-    break;
 
     case NodeStatus::RUNNING:
     {
         return NodeStatus::RUNNING;
     }
-    break;
 
     default:
     {

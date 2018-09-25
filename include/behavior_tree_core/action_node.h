@@ -90,18 +90,6 @@ class ActionNode : public ActionNodeBase
     // This method triggers the TickEngine. Do NOT remove the "final" keyword.
     virtual NodeStatus executeTick() override final;
 
-    // This method MUST to be overriden by the user.
-    virtual NodeStatus tick() override
-    {
-        return NodeStatus::IDLE;
-    }
-
-    // This method MUST to be overriden by the user.
-    virtual void halt() override
-    {
-        setStatus(NodeStatus::IDLE);
-    }
-
     void stopAndJoinThread();
 
   protected:

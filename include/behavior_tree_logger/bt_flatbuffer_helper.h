@@ -96,14 +96,14 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
 /** Serialize manually the informations about state transition
  * No flatbuffer serialization here
  */
-inline std::array<uint8_t, 12> SerializeTransition(uint16_t UID, TimePoint timestamp, NodeStatus prev_status,
+inline std::array<uint8_t, 12> SerializeTransition(uint16_t UID, Duration timestamp, NodeStatus prev_status,
                                                    NodeStatus status)
 {
     using namespace std::chrono;
     std::array<uint8_t, 12> buffer;
-    auto usec_since_epoch = duration_cast<microseconds>(timestamp.time_since_epoch()).count();
-    uint32_t t_sec = usec_since_epoch / 1000000;
-    uint32_t t_usec = usec_since_epoch % 1000000;
+    auto usec = duration_cast<microseconds>(timestamp).count();
+    uint32_t t_sec = usec / 1000000;
+    uint32_t t_usec = usec % 1000000;
 
     flatbuffers::WriteScalar(&buffer[0], t_sec);
     flatbuffers::WriteScalar(&buffer[4], t_usec);

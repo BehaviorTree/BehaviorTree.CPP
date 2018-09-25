@@ -36,10 +36,10 @@
 namespace BT
 {
 
-void applyRecursiveVisitor(const TreeNode* node,
+void applyRecursiveVisitor(const TreeNode* root_node,
                            const std::function<void(const TreeNode*)>& visitor);
 
-void applyRecursiveVisitor(TreeNode* node,
+void applyRecursiveVisitor(TreeNode* root_node,
                            const std::function<void(TreeNode*)> &visitor);
 
 /**

@@ -26,16 +26,20 @@
 namespace BT
 {
 
-// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
+/// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
 typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
 
 /// This information is used mostly by the XMLParser.
-struct TreeNodeModel
+struct TreeNodeManifest
 {
     NodeType type;
     std::string registration_ID;
     NodeParameters required_parameters;
 };
+
+const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
+#define BT_REGISTER_NODES(factory)  \
+    extern "C" void __attribute__((visibility("default"))) BT_RegisterNodesFromPlugin( BT::BehaviorTreeFactory& factory )
 
 class BehaviorTreeFactory
 {
@@ -49,11 +53,23 @@ class BehaviorTreeFactory
      */
     void registerBuilder(const std::string& ID, NodeBuilder builder);
 
+    /// Register a SimpleActionNode
     void registerSimpleAction(const std::string& ID, const SimpleActionNode::TickFunctor &tick_functor);
 
+    /// Register a SimpleConditionNode
     void registerSimpleCondition(const std::string& ID, const SimpleConditionNode::TickFunctor &tick_functor);
 
+    /// Register a SimpleDecoratorNode
     void registerSimpleDecorator(const std::string& ID, const SimpleDecoratorNode::TickFunctor &tick_functor);
+
+    /**
+     * @brief registerFromPlugin load a shared library and execute the function BT_REGISTER_NODES (see macro).
+     *
+     * This method may throw.
+     *
+     * @param file_path path of the file
+     */
+    void registerFromPlugin(const std::string file_path);
 
     /**
      * @brief instantiateTreeNode creates a TreeNode
@@ -104,20 +120,21 @@ class BehaviorTreeFactory
                        "you MUST add a constructor sign signature (const std::string&, const NodeParameters&)\n" );
 
         registerNodeTypeImpl<T>(ID);
-        storeNodeModel<T>(ID);
+        storeNodeManifest<T>(ID);
     }
 
-    // All the builders. Made available mostly for debug purposes.
+    /// All the builders. Made available mostly for debug purposes.
     const std::map<std::string, NodeBuilder>& builders() const;
 
-    // Exposes all the TreeNodeModel.
-    const std::vector<TreeNodeModel>& models() const;
+    /// Manifests of all the registered TreeNodes.
+    const std::vector<TreeNodeManifest>& manifests() const;
 
   private:
-    std::map<std::string, NodeBuilder> builders_;
-    std::vector<TreeNodeModel> treenode_models_;
 
-    // template specialization + SFINAE + black magic
+    std::map<std::string, NodeBuilder> builders_;
+    std::vector<TreeNodeManifest> manifests_;
+
+    // template specialization = SFINAE + black magic
 
     // clang-format off
     template <typename T>
@@ -175,21 +192,21 @@ class BehaviorTreeFactory
 
     template<typename T>
     typename std::enable_if< has_static_method_requiredNodeParameters<T>::value>::type
-    storeNodeModel(const std::string& ID)
+    storeNodeManifest(const std::string& ID)
     {
-        treenode_models_.push_back( { getType<T>(), ID, T::requiredNodeParameters()} );
-        sortTreeNodeModel();
+        manifests_.push_back( { getType<T>(), ID, T::requiredNodeParameters()} );
+        sortTreeNodeManifests();
     }
 
     template<typename T>
     typename std::enable_if< !has_static_method_requiredNodeParameters<T>::value>::type
-    storeNodeModel(const std::string& ID)
+    storeNodeManifest(const std::string& ID)
     {
-        treenode_models_.push_back( { getType<T>(), ID, NodeParameters()} );
-        sortTreeNodeModel();
+        manifests_.push_back( { getType<T>(), ID, NodeParameters()} );
+        sortTreeNodeManifests();
     }
 
-    void sortTreeNodeModel();
+    void sortTreeNodeManifests();
 
     // clang-format on
 };

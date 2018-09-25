@@ -33,6 +33,7 @@ namespace BT
 typedef std::unordered_map<std::string, std::string> NodeParameters;
 
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
+typedef std::chrono::high_resolution_clock::duration   Duration;
 
 // Abstract base class for Behavior Tree Nodes
 class TreeNode

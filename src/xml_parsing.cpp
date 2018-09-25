@@ -169,7 +169,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         else{
             // Last resort:  MAYBE used ID as element name?
             bool found = false;
-            for( const auto& model: factory_.models())
+            for( const auto& model: factory_.manifests())
             {
                 if(model.registration_ID == name)
                 {
@@ -411,7 +411,7 @@ std::string writeXML(const BehaviorTreeFactory& factory,
             }
             else if(compact_representation)
             {
-                for(const auto& model: factory.models() )
+                for(const auto& model: factory.manifests() )
                 {
                     if( model.registration_ID == node_ID)
                     {
@@ -458,7 +458,7 @@ std::string writeXML(const BehaviorTreeFactory& factory,
     XMLElement* model_root = doc.NewElement("TreeNodesModel");
     rootXML->InsertEndChild(model_root);
 
-    for( auto& model: factory.models())
+    for( auto& model: factory.manifests())
     {
         if( model.type == NodeType::CONTROL)
         {

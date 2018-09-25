@@ -9,6 +9,11 @@ struct Pose2D
     double x,y,theta;
 };
 
+inline void SleepMS(int ms)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}
+
 namespace BT{
 
 // This template specialization is needed only if you want
@@ -37,45 +42,34 @@ template <> Pose2D convertFromString(const std::string& key)
 }
 
 // This is an asynchronous operation that will run in a separate thread.
-// It requires the NodeParameter "goal"
+// It requires the NodeParameter "goal". If the key is not provided, the default
+// value "0;0;0" is used instead.
 
 class MoveBaseAction: public BT::ActionNode
 {
 public:
-    // When your TreeNode requires a NodeParameter, use this
-    // kind of constructor
+    // If your TreeNode requires a NodeParameter, you must define a constructor
+    // with this signature.
     MoveBaseAction(const std::string& name, const BT::NodeParameters& params):
         ActionNode(name, params) {}
 
-    // This is mandatory to tell to the factory which parameter(s)
-    // are required
+    // It is mandatory to define this static method.
+    // If you don't, BehaviorTreeFactory::registerNodeType will not compile.
+    //
     static const BT::NodeParameters& requiredNodeParameters()
     {
         static BT::NodeParameters params = {{"goal","0;0;0"}};
         return params;
     }
 
-    BT::NodeStatus tick() override
-    {
-        Pose2D goal;
+    BT::NodeStatus tick() override;
 
-        // retrieve the parameter using getParam()
-        if( getParam<Pose2D>("goal", goal) )
-        {
-            printf("[MoveBase] goal: x=%.f y=%.1f theta=%.2f\n",
-                   goal.x, goal.y, goal.theta);
+    virtual void halt() override;
 
-            std::this_thread::sleep_for( std::chrono::milliseconds(180) );
+private:
 
-            std::cout << "[ Move: finished ]" << std::endl;
-            return BT::NodeStatus::SUCCESS;
-        }
-        else{
-           printf("The NodeParameter does not contain the key [goal] "
-                  " or the blackboard does not contain the provided key\n");
-           return BT::NodeStatus::FAILURE;
-        }
-    }
+    std::atomic_bool _halt_requested;
+
 };
 
 
