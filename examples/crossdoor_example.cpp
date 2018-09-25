@@ -4,7 +4,10 @@
 #include "behavior_tree_logger/bt_minitrace_logger.h"
 #include "behavior_tree_logger/bt_file_logger.h"
 #include "Blackboard/blackboard_local.h"
+
+#ifdef ZMQ_FOUND
 #include "behavior_tree_logger/bt_zmq_publisher.h"
+#endif
 
 // clang-format off
 
@@ -61,8 +64,10 @@ int main()
     StdCoutLogger   logger_cout(tree.root_node);
     MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
     FileLogger      logger_file(tree.root_node, "bt_trace.fbl");
+#ifdef ZMQ_FOUND
     PublisherZMQ    publisher_zmq(tree.root_node);
-
+#endif
+    
     // Keep on ticking until you get either a SUCCESS or FAILURE state
     NodeStatus status = NodeStatus::RUNNING;
     while( status == NodeStatus::RUNNING )
