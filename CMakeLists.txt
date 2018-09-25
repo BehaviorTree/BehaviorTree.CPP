@@ -25,6 +25,8 @@ if(catkin_FOUND)
     INCLUDE_DIRS include
     LIBRARIES behavior_tree_core
     )
+  include_directories(3rdparty)
+  
 else(catkin_FOUND)
 
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
