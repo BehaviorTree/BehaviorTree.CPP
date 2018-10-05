@@ -6,11 +6,10 @@
 This  __C++__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use and fast.
 
-Even if out main use-case is __robotics__, you can use this library to build
-__AI for games__, or to replace Finite State Machines in you application with a
-more intuitive approach that focus on the execution of tasks, rather than a change in state.
+Even if our main use-case is __robotics__, you can use this library to build
+__AI for games__, or to replace Finite State Machines in you application.
 
-__BehaviorTree.CPP__ has many interesting features:
+__BehaviorTree.CPP__ has many interesting features, when compared to other implementations:
 
 - It makes asynchronous Actions, i.e. non-blocking, a first-class citizen.
 - It allows the creation of trees at run-time, using a textual representation (XML).
@@ -28,7 +27,6 @@ The usual approach to manage complexity, heterogeneity and scalability is to
 use the concept of 
 [Component Base Software Engineering](https://en.wikipedia.org/wiki/Component-based_software_engineering).
 
-
 Any existing middleware for robotics took this approach either informally or formally,
 being [ROS](www.ros.org), [YARP](www.yarp.it) and 
 [SmartSoft](http://www.servicerobotik-ulm.de) some notable examples.
@@ -36,7 +34,7 @@ being [ROS](www.ros.org), [YARP](www.yarp.it) and
 A "good" software architecture should have the following characteristics:
 
 - Modularity.
-- Reusability.
+- Reusability of components.
 - Composability.
 - Good separation of concerns. 
 
@@ -48,14 +46,14 @@ Frequently ,the concern of __Coordination__ is mixed with __Computation__.
 In other words, people address the problems of coordinating actions and take decisions
 locally.
 
-The business logic becomes spread in many locations and it is hard for the developer
-to reason about it and to degub errors in the control flow.
+The business logic becomes "spread" in many locations and it is hard for the developer
+to reason about it and to debug errors in the control flow.
 
-A better solution is to have a strong separation of concern and to centralize
-as much as possible the business logic in a single location. 
+To achieve strong separation of concerns it is better to centralize
+the business logic in a single location. 
 
 Finite State Machines were created specifically with this goal in mind, but in
-the recent years Behavior Trees gained popularity, especially in the game industry.
+the recent years __Behavior Trees__ gained popularity, especially in the game industry.
 
 
 ## What is a Behavior Tree?
@@ -74,7 +72,7 @@ are more expressive and easier to reason about.
 The main advantages of Behavior Trees, when compared to FSMs are:
 
 - __They are intrinsically Hierarchical__: this means that we can _compose_
-complex behaviors including entire trees as sub-branches of a bugger one. 
+complex behaviors including entire trees as sub-branches of a bigger tree. 
 For instance, the behavior "Fetch Beer" may reuse in one of its nodes the tree
 "Grasp Object".
 
@@ -84,6 +82,6 @@ State transitions in FSMs, by comparisons, are harder to understand
 both in their textual and graphical representation.    
 
 - __They are more expressive__: Ready to use ControlNodes and DecoratorNodes
-make possible to express more complex control flows. The use can extend the
-"vocabulary" with his/her own custo nodes.
+make possible to express more complex control flows. The user can extend the
+"vocabulary" with his/her own custom nodes.
 

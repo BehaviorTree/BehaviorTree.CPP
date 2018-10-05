@@ -3,8 +3,8 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>140</x>
-      <y>60</y>
+      <x>160</x>
+      <y>70</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -15,7 +15,7 @@ fg=#009000</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>30</x>
+      <x>40</x>
       <y>150</y>
       <w>100</w>
       <h>30</h>
@@ -28,18 +28,18 @@ fg=#009000
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>70</x>
-      <y>80</y>
-      <w>140</w>
-      <h>90</h>
+      <x>80</x>
+      <y>90</y>
+      <w>150</w>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;70.0;120.0;10.0</additional_attributes>
+    <additional_attributes>10.0;60.0;130.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>250</x>
+      <x>270</x>
       <y>150</y>
       <w>100</w>
       <h>30</h>
@@ -51,7 +51,7 @@ fg=#009000</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>90</x>
+      <x>160</x>
       <y>220</y>
       <w>90</w>
       <h>30</h>
@@ -63,76 +63,30 @@ fg=#009000</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>180</x>
-      <y>80</y>
+      <x>200</x>
+      <y>90</y>
       <w>30</w>
-      <h>90</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;70.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>180</x>
-      <y>80</y>
+      <x>200</x>
+      <y>90</y>
       <w>140</w>
-      <h>90</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>120.0;70.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>140</x>
-      <y>150</y>
-      <w>100</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>Fallback
-fg=#009000</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>120</x>
-      <y>170</y>
-      <w>90</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;50.0;70.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>180</x>
-      <y>170</y>
-      <w>90</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>70.0;50.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>190</x>
-      <y>220</y>
-      <w>120</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>AlwaysSuccess
-</panel_attributes>
-    <additional_attributes/>
+    <additional_attributes>120.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>530</x>
-      <y>60</y>
+      <y>70</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -144,34 +98,34 @@ fg=#009000</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>460</x>
-      <y>80</y>
+      <y>90</y>
       <w>140</w>
-      <h>90</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;70.0;120.0;10.0</additional_attributes>
+    <additional_attributes>10.0;60.0;120.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>570</x>
-      <y>80</y>
+      <y>90</y>
       <w>30</w>
-      <h>90</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;70.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>570</x>
-      <y>80</y>
+      <y>90</y>
       <w>140</w>
-      <h>90</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>120.0;70.0;10.0;10.0</additional_attributes>
+    <additional_attributes>120.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
@@ -212,7 +166,7 @@ fg=#009000</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>460</x>
+      <x>480</x>
       <y>220</y>
       <w>90</w>
       <h>30</h>
@@ -224,13 +178,13 @@ fg=#009000</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>500</x>
+      <x>520</x>
       <y>170</y>
-      <w>100</w>
+      <w>80</w>
       <h>70</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;50.0;80.0;10.0</additional_attributes>
+    <additional_attributes>10.0;50.0;60.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -258,9 +212,9 @@ fg=#009000</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>570</x>
+      <x>580</x>
       <y>220</y>
-      <w>120</w>
+      <w>110</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>ForceFailure
@@ -277,5 +231,29 @@ fg=#009000</panel_attributes>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>50.0;50.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>200</x>
+      <y>170</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-
+</panel_attributes>
+    <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>150</x>
+      <y>150</y>
+      <w>110</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>ForceSuccess
+fg=#009000</panel_attributes>
+    <additional_attributes/>
   </element>
 </diagram>

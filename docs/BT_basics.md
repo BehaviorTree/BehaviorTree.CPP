@@ -35,12 +35,8 @@ which child should be ticked next or will return a result itself.
 
 __ControlNodes__ are nodes which can have 1 to N children. Once a tick
 is received, this tick may be propagated to one or more of the children.
-It must be noted that children are always __ordered__, but it is up to the
-type of control node to decide if they are ticked in the given order.
 
-__DecoratorNodes__ can have only a single child. Their function is either 
-to transform the result they receive from the child, to terminate the child, 
-or repeat processing of the child, depending on the type of decorator.
+__DecoratorNodes__ can have only a single child. 
 
 __ActionNodes__ are leaves and do not have children. The user should implement
 their own ActionNodes that perform the actual task.
@@ -51,15 +47,15 @@ alter the state of the system.
 
 ![UML hierarchy](images/TypeHierarchy.png)
 
-!!! warning
-    Actions and Conditions differ only in terms of __semantic__, the C++
-    framework can not enforce it unfortunately.
+!!! note
+    Actions and Conditions differ only in terms of __semantic__. 
+    From an implementation point of view they are the same.
 
 ## Learn by example
 
-To better understand how a BehaviorTree works let's focus on some practical
+To better understand how a BehaviorTrees work let's focus on some practical
 examples. For the sake of simplicity we will not take into account what happens
-when an action return RUNNING.
+when an action returns RUNNING.
 
 We will assume that each Action is executed atomically and synchronously.
 In future sections we will more thoughtfully analyze asynchronous actions.
@@ -80,22 +76,43 @@ A Sequence works as described next:
 - If a child returns FAILURE, then no more children are ticked and the Sequence returns FAILURE.
 - If all the children return SUCCESS, then the Fallback returns SUCCESS too.
 
-In this particular case, if the action __GrabBeer__ failed, the door of the fridge would
-remain opened, since the last action __CloseDoor__ is skipped.
+??? warning "Exercise: find the bug! Expand to read the answer."
+    If the action __GrabBeer__ fails, the door of the 
+    fridge would remain opened, since the last action __CloseDoor__ is skipped.
 
-Let's take into accound another example:
 
-![Simple Sequence: Enter Room](images/Sequence2.png)
+### Decorators
 
-In this case __Negation__ is a [DecoratorNode](DecoratorNode.md) that inverts 
-the result returned by its child. 
+The goal of a [DecoratorNode](DecoratorNode.md) is either to transform the result it received 
+from the child, to terminate the child, 
+or repeat ticking of the child, depending on the type of Decorator.
 
-This means that a Negation followed by the ConditionNode called
-__DoorOpen__ is equialent to "is the door closed?".
+You can create your own Decorators too.
 
-As a result, the branch on the right side means: 
+![Simple Decorator: Enter Room](images/DecoratorEnterRoom.png)
 
-    "If the door is closed, then open it".
+The node __Negation__ is a Decorator that inverts 
+the result returned by its child; Negation followed by the node called
+__DoorOpen__ is therefore equivalent to 
+
+    "Is the door closed?".
+
+The node __Retry__ will repeat ticking the child up to N times (3 in this case)
+if the child returns FAILURE.
+
+__Apparently__, the branch on the right side means: 
+
+    If the door is closed, then try to open it.
+    Try up to 3 times, otherwise give up and return FAILURE.
+
+      
+__But__ there is an error. Can you find it?
+    
+??? warning "Exercise: find the bug! Expand to read the answer."
+    If __DoorOpen__ returns FAILURE, we have the desired behaviour.
+    But if it returns SUCCESS, the left branch fails and the entire Sequence
+    is interrupted. 
+    
 
 ### Fallback
 
@@ -111,22 +128,33 @@ In short, it ticks the children in order, as usual from left to right and:
 
 In the next example, you can see how Sequence and Fallbacks can be combined:
 
-    "Try to open the door, 
-    otherwise unlock it with a key (if you have it), 
-    otherwise smash it. 
-    If any of these actions succeeded, then enter the room".
     
 ![FallbackNodes](images/FallbackBasic.png)  
 
+
+>In the door open?
+>
+> I not, try to open the door.
+>
+> Otherwise, if you have a key, unlock and open the door.
+>
+> Otherwise, smash the door. 
+>
+>If any of these actions succeeded, then enter the room.
+
 ### "Fetch me a beer" revisited
 
-We can now improve the previous example, which attempted to
-grab a beer from the fridge but left the door open if the beer was not there.
+We can now improve the "Fetch Me a Beer" example, which leaves the door open 
+if the beer was not there.
 
-In the next picture we use the color green to represent nodes which will return
-SUCCESS and red for those which return FAILURE.
+We use the color "green" to represent nodes which will return
+SUCCESS and "red" for those which return FAILURE. Black nodes are never executed. 
 
-The action __GrabBeer__ will always fail.
+![FetchBeer failure](images/FetchBeerFails.png)
+
+
+Let's create an alternative tree that closes the door even when __GrabBeer__ 
+returns FAILURE.
 
 
 ![FetchBeer failure](images/FetchBeer.png)
@@ -138,7 +166,7 @@ Both the trees will close the door of the fridge, eventually, but:
 - the tree on the __right__ side will return SUCCESS if the beer was there, 
 FAILURE otherwise.
 
-We can easily double-check what happen if __GrabBeer__ returns SUCCESS.
+We can easily double-check that everything works as usual if __GrabBeer__ returns SUCCESS.
 
 ![FetchBeer success](images/FetchBeer2.png)
 

@@ -3,7 +3,7 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>180</x>
+      <x>260</x>
       <y>140</y>
       <w>100</w>
       <h>30</h>
@@ -15,7 +15,7 @@ fg=blue</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>60</x>
+      <x>200</x>
       <y>210</y>
       <w>100</w>
       <h>30</h>
@@ -26,18 +26,18 @@ fg=blue</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>110</x>
+      <x>250</x>
       <y>160</y>
-      <w>140</w>
+      <w>80</w>
       <h>70</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;50.0;120.0;10.0</additional_attributes>
+    <additional_attributes>10.0;50.0;60.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>290</x>
+      <x>430</x>
       <y>210</y>
       <w>100</w>
       <h>30</h>
@@ -46,109 +46,42 @@ fg=blue</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <id>UMLClass</id>
+    <id>Relation</id>
     <coordinates>
-      <x>180</x>
-      <y>210</y>
-      <w>100</w>
-      <h>30</h>
+      <x>300</x>
+      <y>160</y>
+      <w>90</w>
+      <h>70</h>
     </coordinates>
-    <panel_attributes>Sequence
-</panel_attributes>
-    <additional_attributes/>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>70.0;50.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>220</x>
+      <x>300</x>
       <y>160</y>
-      <w>30</w>
+      <w>210</w>
       <h>70</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>220</x>
-      <y>160</y>
-      <w>150</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>130.0;50.0;10.0;10.0</additional_attributes>
+    <additional_attributes>190.0;50.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>280</x>
-      <y>280</y>
+      <x>320</x>
+      <y>290</y>
       <w>100</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>OpenDoor</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>170</x>
-      <y>280</y>
-      <w>100</w>
-      <h>30</h>
+      <h>40</h>
     </coordinates>
     <panel_attributes>UnlockDoor</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>220</x>
-      <y>230</y>
-      <w>30</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>220</x>
-      <y>230</y>
-      <w>130</w>
-      <h>70</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>110.0;50.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLUseCase</id>
-    <coordinates>
-      <x>40</x>
-      <y>270</y>
-      <w>120</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>HaveKey?</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>90</x>
-      <y>230</y>
-      <w>160</w>
-      <h>60</h>
-    </coordinates>
-    <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;40.0;140.0;10.0</additional_attributes>
-  </element>
-  <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>250</x>
+      <x>370</x>
       <y>80</y>
       <w>100</w>
       <h>30</h>
@@ -160,7 +93,7 @@ fg=blue</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>330</x>
+      <x>470</x>
       <y>140</y>
       <w>100</w>
       <h>30</h>
@@ -171,23 +104,113 @@ fg=blue</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>220</x>
+      <x>300</x>
       <y>100</y>
-      <w>100</w>
+      <w>140</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;40.0;80.0;10.0</additional_attributes>
+    <additional_attributes>10.0;40.0;120.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>290</x>
+      <x>410</x>
       <y>100</y>
-      <w>110</w>
+      <w>130</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>90.0;40.0;10.0;10.0</additional_attributes>
+    <additional_attributes>110.0;40.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>70</x>
+      <y>210</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>isDoorOpen?</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>120</x>
+      <y>160</y>
+      <w>210</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;50.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>430</x>
+      <y>290</y>
+      <w>100</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>OpenDoor</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>360</x>
+      <y>240</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>360</x>
+      <y>240</y>
+      <w>140</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>120.0;50.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>240</x>
+      <y>240</y>
+      <w>150</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;50.0;130.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>190</x>
+      <y>290</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>HaveKey?</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>320</x>
+      <y>210</y>
+      <w>100</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Sequence
+("Unlock")
+</panel_attributes>
+    <additional_attributes/>
   </element>
 </diagram>

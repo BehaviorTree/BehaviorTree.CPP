@@ -21,8 +21,17 @@ repo_url: 'https://github.com/Eurecat/BehaviorTree.CPP'
 
 markdown_extensions:
   - admonition
+  - pymdownx.details
 
 
 pages:
     - Home: index.md
-    - Introduction BTs: 02_BT_description.md
+    - Learn the basics:
+       - The Basics:       BT_basics.md
+       - Control Nodes:    ControlNodes.md
+       - Decorators Nodes: DecoratorNodes.md
+       - The BlackBoard:   BlackBoard.md
+    - Getting Started: 
+       - How to use the library: getting_started.md
+       - BT at run-time: getting_started.md
+       - Examples: getting_started.md
