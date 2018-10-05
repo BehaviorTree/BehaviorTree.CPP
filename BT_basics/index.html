@@ -35,7 +35,7 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="..">
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.0.4">
     
     
@@ -679,14 +679,18 @@ or repeat ticking of the child, depending on the type of Decorator.</p>
 <p>The node <strong>Negation</strong> is a Decorator that inverts 
 the result returned by its child; Negation followed by the node called
 <strong>DoorOpen</strong> is therefore equivalent to </p>
-<pre><code>"Is the door closed?".
-</code></pre>
+<div class="codehilite"><pre><span></span>&quot;Is the door closed?&quot;.
+</pre></div>
+
+
 <p>The node <strong>Retry</strong> will repeat ticking the child up to N times (3 in this case)
 if the child returns FAILURE.</p>
 <p><strong>Apparently</strong>, the branch on the right side means: </p>
-<pre><code>If the door is closed, then try to open it.
+<div class="codehilite"><pre><span></span>If the door is closed, then try to open it.
 Try up to 3 times, otherwise give up and return FAILURE.
-</code></pre>
+</pre></div>
+
+
 <p><strong>But</strong> there is an error. Can you find it?</p>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
 But if it returns SUCCESS, the left branch fails and the entire Sequence
@@ -802,11 +806,9 @@ FAILURE otherwise.</li>
       
     </div>
     
-      <script src="../assets/javascripts/application.a26c1c19.js"></script>
+      <script src="../assets/javascripts/application.583bbe55.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
-      
-        <script src="../search/main.js"></script>
       
     
     
