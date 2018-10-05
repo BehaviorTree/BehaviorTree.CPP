@@ -35,7 +35,7 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <link rel="shortcut icon" href="..">
       <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.0.4">
     
     
@@ -113,7 +113,7 @@
       <div class="md-flex__cell md-flex__cell--shrink">
         <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
           
-            <i class="md-icon"></i>
+            <img src="../images/BT.png" width="24" height="24">
           
         </a>
       </div>
@@ -257,7 +257,7 @@
   <label class="md-nav__title md-nav__title--site" for="__drawer">
     <a href=".." title="BehaviorTree.CPP" class="md-nav__button md-logo">
       
-        <i class="md-icon"></i>
+        <img src="../images/BT.png" width="48" height="48">
       
     </a>
     BehaviorTree.CPP
@@ -417,8 +417,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../ControlNodes/" title="Control Nodes" class="md-nav__link">
-      Control Nodes
+    <a href="../SequenceNode/" title="Sequence Nodes" class="md-nav__link">
+      Sequence Nodes
     </a>
   </li>
 
@@ -429,7 +429,19 @@
 
 
   <li class="md-nav__item">
-    <a href="../DecoratorNodes/" title="Decorators Nodes" class="md-nav__link">
+    <a href="../FallbackNode/" title="Fallback Nodes" class="md-nav__link">
+      Fallback Nodes
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../DecoratorNode/" title="Decorators Nodes" class="md-nav__link">
       Decorators Nodes
     </a>
   </li>
@@ -647,7 +659,7 @@ when an action returns RUNNING.</p>
 In future sections we will more thoughtfully analyze asynchronous actions.</p>
 <h3 id="sequence">Sequence</h3>
 <p>Let's illustrate how a BT works using the most basic and frequently used 
-ControlNode: the <a href="SequenceNode.md">SequenceNode</a>.</p>
+ControlNode: the <a href="../SequenceNode/">SequenceNode</a>.</p>
 <p><img alt="Simple Sequence: fridge" src="../images/SequenceBasic.png" /></p>
 <p>It is important to notice that the children of a ControlNode are <strong>ordered</strong>.
 In this case the order of execution is <strong>from left to right</strong>.</p>
@@ -659,7 +671,7 @@ In this case the order of execution is <strong>from left to right</strong>.</p>
 </ul>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If the action <strong>GrabBeer</strong> fails, the door of the 
 fridge would remain opened, since the last action <strong>CloseDoor</strong> is skipped.</p></details><h3 id="decorators">Decorators</h3>
-<p>The goal of a <a href="DecoratorNode.md">DecoratorNode</a> is either to transform the result it received 
+<p>The goal of a <a href="../DecoratorNode/">DecoratorNode</a> is either to transform the result it received 
 from the child, to terminate the child, 
 or repeat ticking of the child, depending on the type of Decorator.</p>
 <p>You can create your own Decorators too.</p>
@@ -679,7 +691,7 @@ Try up to 3 times, otherwise give up and return FAILURE.
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
 But if it returns SUCCESS, the left branch fails and the entire Sequence
 is interrupted. </p></details><h3 id="fallback">Fallback</h3>
-<p><a href="FallbackNode.md">FallbackNodes</a>, known also as <strong>"Selector"</strong> in the literature,
+<p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong> in the literature,
 Is a node that is used to express, as the name suggests, fallback strategies, 
 ie. what to do if a child return FAILURE.</p>
 <p>In short, it ticks the children in order, as usual from left to right and:</p>
@@ -750,13 +762,13 @@ FAILURE otherwise.</li>
           </a>
         
         
-          <a href="../ControlNodes/" title="Control Nodes" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../SequenceNode/" title="Sequence Nodes" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Control Nodes
+                Sequence Nodes
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
@@ -790,9 +802,11 @@ FAILURE otherwise.</li>
       
     </div>
     
-      <script src="../assets/javascripts/application.583bbe55.js"></script>
+      <script src="../assets/javascripts/application.a26c1c19.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
+      
+        <script src="../search/main.js"></script>
       
     
     
