@@ -7,6 +7,7 @@ copyright: 'Copyright &copy; 2018 Davide Faconti, Eurecat'
 theme:
   name: 'material'
   language: en
+  logo: 'images/BT.png'
   feature:
     tabs: true
   palette:
@@ -22,14 +23,18 @@ repo_url: 'https://github.com/Eurecat/BehaviorTree.CPP'
 markdown_extensions:
   - admonition
   - pymdownx.details
+  - pymdownx.superfences
+  - codehilite:
+      guess_lang: true
 
 
 pages:
     - Home: index.md
     - Learn the basics:
        - The Basics:       BT_basics.md
-       - Control Nodes:    ControlNodes.md
-       - Decorators Nodes: DecoratorNodes.md
+       - Sequence Nodes:    SequenceNode.md
+       - Fallback Nodes:    FallbackNode.md
+       - Decorators Nodes: DecoratorNode.md
        - The BlackBoard:   BlackBoard.md
     - Getting Started: 
        - How to use the library: getting_started.md
