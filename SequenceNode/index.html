@@ -598,6 +598,11 @@ The next time it is ticked, it will use the same index.</li>
 <p>If a child returns FAILURE, the sequence returns FAILURE.
 Reset the index and halt all the children. 
 The entire sequence will be executed again at the next tick.</p>
+<p><strong>Example</strong>:</p>
+<p>This tree represents the behavior of a sniper in a computer game.
+If any of these conditions/actions fails, the entire sequence is executed
+again from the beginning.</p>
+<p><img alt="SequenceNode" src="../images/SequenceNode.png" /></p>
 <details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="c1">// At the beginning, start from first child </span>
     <span class="k">if</span><span class="p">(</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">RUNNING</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -635,6 +640,11 @@ The entire sequence will be executed again at the next tick.</p>
 </details><h2 id="sequencestarnode">SequenceStarNode</h2>
 <p>If a child returns FAILURE, the sequence returns FAILURE. At the next tick, 
 the failed child is executed again.</p>
+<p><strong>Example</strong>:</p>
+<p>This is a patrolling agent/robot that must visit locations A, B and C only once.
+If the action <strong>GoTo(B)</strong> fails, <strong>GoTo(A)</strong> is not ticked again.</p>
+<p>Note as <strong>isBatteryOK</strong> is visited at every tick, because its parent is a normal SequenceNode.</p>
+<p><img alt="SequenceStar" src="../images/SequenceStar.png" /></p>
 <details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="c1">// index is initialized to 0 in the constructor</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
 
@@ -668,6 +678,10 @@ the failed child is executed again.</p>
 <p>All the children are executed at least once. 
 If <strong>any</strong> child returned FAILURE,
 the sequence is <strong>not</strong> interrupted but the sequence itself will return FAILURE. </p>
+<p><strong>Example</strong>:</p>
+<p>If the door of the fridge was succesfully opened, grab a beer.
+<strong>CloseFridge</strong> is always executed, even when <em>GrabBeer</em> failed.</p>
+<p><img alt="SequenceAll" src="../images/SequenceAll.png" /></p>
 <details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="k">if</span><span class="p">(</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">RUNNING</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
         <span class="n">at_least_one_failure</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
