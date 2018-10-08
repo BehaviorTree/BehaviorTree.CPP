@@ -87,7 +87,7 @@ if( ZMQ_FOUND )
     add_definitions( -DZMQ_FOUND )
     set(BT_Source ${BT_Source} src/loggers/bt_zmq_publisher.cpp )
 
-    set(BEHAVIOR_TREE_LIBRARIES behavior_tree_core zmq)
+    set(BEHAVIOR_TREE_LIBRARIES ${BEHAVIOR_TREE_LIBRARIES} zmq)
 else()
     message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
 endif()
@@ -115,7 +115,7 @@ if(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
     catkin_add_gtest(behavior_tree_core_test ${BT_Tests} )
     target_link_libraries(behavior_tree_core_test
-        behavior_tree_core
+        ${BEHAVIOR_TREE_LIBRARIES} crossdoor_nodes
         ${catkin_LIBRARIES} )
 	    
 elseif(GTEST_FOUND)
@@ -123,10 +123,10 @@ elseif(GTEST_FOUND)
 
     add_executable(behavior_tree_core_test ${BT_Tests} )
     target_link_libraries(behavior_tree_core_test
-        behavior_tree_core
+        ${BEHAVIOR_TREE_LIBRARIES} crossdoor_nodes
         ${GTEST_LIBRARIES}
         ${GTEST_MAIN_LIBRARIES}
-        crossdoor_nodes)
+        )
 		
 endif()
 
