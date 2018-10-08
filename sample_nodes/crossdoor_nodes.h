@@ -10,19 +10,19 @@ inline void SleepMS(int ms)
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-BT::NodeStatus IsDoorOpen(const Blackboard::Ptr& blackboard);
+BT::NodeStatus IsDoorOpen(TreeNode &self);
 
-BT::NodeStatus IsDoorLocked(const Blackboard::Ptr& blackboard);
+BT::NodeStatus IsDoorLocked(TreeNode &self);
 
-BT::NodeStatus UnlockDoor(const Blackboard::Ptr& blackboard);
+BT::NodeStatus UnlockDoor(TreeNode &self);
 
-BT::NodeStatus PassThroughDoor(const Blackboard::Ptr& blackboard);
+BT::NodeStatus PassThroughDoor(TreeNode &self);
 
-BT::NodeStatus PassThroughWindow(const Blackboard::Ptr& blackboard);
+BT::NodeStatus PassThroughWindow(TreeNode &self);
 
-BT::NodeStatus OpenDoor(const Blackboard::Ptr& blackboard);
+BT::NodeStatus OpenDoor(TreeNode &self);
 
-BT::NodeStatus CloseDoor(const Blackboard::Ptr& blackboard);
+BT::NodeStatus CloseDoor(TreeNode &self);
 
 void RegisterNodes(BT::BehaviorTreeFactory& factory);
 

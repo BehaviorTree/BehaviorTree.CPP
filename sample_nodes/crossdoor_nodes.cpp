@@ -8,66 +8,66 @@ BT_REGISTER_NODES(factory)
 }
 
 
-NodeStatus CrossDoor::IsDoorOpen(const Blackboard::Ptr &blackboard)
+NodeStatus CrossDoor::IsDoorOpen(TreeNode &self)
 {
     SleepMS(500);
-    bool door_open = blackboard->get<bool>("door_open");
+    bool door_open = self.blackboard()->get<bool>("door_open");
 
     return  door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-NodeStatus CrossDoor::IsDoorLocked(const Blackboard::Ptr &blackboard)
+NodeStatus CrossDoor::IsDoorLocked(TreeNode &self)
 {
     SleepMS(500);
-    bool door_locked = blackboard->get<bool>("door_locked");
+    bool door_locked = self.blackboard()->get<bool>("door_locked");
 
     return door_locked ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-NodeStatus CrossDoor::UnlockDoor(const Blackboard::Ptr &blackboard)
+NodeStatus CrossDoor::UnlockDoor(TreeNode &self)
 {
     SleepMS(2000);
-    blackboard->set("door_locked", false);
+    self.blackboard()->set("door_locked", false);
 
     return NodeStatus::SUCCESS;
 }
 
-NodeStatus CrossDoor::PassThroughDoor(const Blackboard::Ptr &blackboard)
+NodeStatus CrossDoor::PassThroughDoor(TreeNode &self)
 {
     SleepMS(1000);
-    bool door_open = blackboard->get<bool>("door_open");
+    bool door_open = self.blackboard()->get<bool>("door_open");
 
     return door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-NodeStatus CrossDoor::PassThroughWindow(const Blackboard::Ptr &blackboard)
+NodeStatus CrossDoor::PassThroughWindow(TreeNode &self)
 {
     SleepMS(1000);
     return NodeStatus::SUCCESS;
 }
 
-NodeStatus CrossDoor::OpenDoor(const Blackboard::Ptr &blackboard)
+NodeStatus CrossDoor::OpenDoor(TreeNode &self)
 {
     SleepMS(2000);
-    bool door_locked = blackboard->get<bool>("door_locked");
+    bool door_locked = self.blackboard()->get<bool>("door_locked");
 
     if (door_locked)
     {
         return NodeStatus::FAILURE;
     }
 
-    blackboard->set("door_open", true);
+    self.blackboard()->set("door_open", true);
     return NodeStatus::SUCCESS;
 }
 
-NodeStatus CrossDoor::CloseDoor(const Blackboard::Ptr &blackboard)
+NodeStatus CrossDoor::CloseDoor(TreeNode &self)
 {
-    bool door_open = blackboard->get<bool>("door_open");
+    bool door_open = self.blackboard()->get<bool>("door_open");
 
     if (door_open)
     {
         SleepMS(1500);
-        blackboard->set("door_open", false);
+        self.blackboard()->set("door_open", false);
     }
     return NodeStatus::SUCCESS;
 }

@@ -41,15 +41,15 @@ const std::string xml_text = R"(
 
 // Write into the blackboard key: [GoalPose]
 // Use this function signature to create a SimpleAction that needs the blackboard
-NodeStatus CalculateGoalPose(const Blackboard::Ptr& blackboard)
+NodeStatus CalculateGoalPose(TreeNode& self)
 {
     const Pose2D mygoal = { 1, 2, M_PI};
 
     // RECOMMENDED: check if the blackboard is nullptr
-    if( blackboard )
+    if( self.blackboard() )
     {
         // store it in the blackboard
-        blackboard->set("GoalPose", mygoal);
+        self.blackboard()->set("GoalPose", mygoal);
     }
 
     printf("[CalculateGoalPose]\n");

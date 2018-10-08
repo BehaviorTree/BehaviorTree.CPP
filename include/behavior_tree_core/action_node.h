@@ -47,7 +47,7 @@ class ActionNodeBase : public LeafNode
 class SimpleActionNode : public ActionNodeBase
 {
   public:
-    typedef std::function<NodeStatus(const Blackboard::Ptr&)> TickFunctor;
+    typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
 
     // Constructor: you must provide the function to call when tick() is invoked
     SimpleActionNode(const std::string& name, TickFunctor tick_functor);

@@ -60,7 +60,6 @@ public:
 
     // It is mandatory to define this static method.
     // If you don't, BehaviorTreeFactory::registerNodeType will not compile.
-    //
     static const BT::NodeParameters& requiredNodeParameters()
     {
         static BT::NodeParameters params = {{"message",""}};
