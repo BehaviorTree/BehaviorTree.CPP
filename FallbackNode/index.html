@@ -448,8 +448,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../getting_started/" title="How to use the library" class="md-nav__link">
-      How to use the library
+    <a href="../getting_started/" title="Main concepts" class="md-nav__link">
+      Main concepts
     </a>
   </li>
 
@@ -460,20 +460,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../getting_started/" title="BT at run-time" class="md-nav__link">
-      BT at run-time
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../getting_started/" title="Examples" class="md-nav__link">
-      Examples
+    <a href="../tutorial_A_create_trees/" title="How to create a Tree" class="md-nav__link">
+      How to create a Tree
     </a>
   </li>
 
@@ -547,40 +535,40 @@ Currently, there is only a single type of node called "FallbackNode".</p>
 <p><strong>Example</strong>:</p>
 <p>Try different strategies to open the door. Check first if it is open already.</p>
 <p><img alt="FallbackNode" src="../images/FallbackSimplified.png" /></p>
-<details class="example"><summary>See the pseudocode</summary><p>``` c++
-    // At the beginning, start from first child 
-    if( state != RUNNING) {
-        index = 0;
-    }
-    state = RUNNING;</p><div class="codehilite"><pre><span></span>while( index &lt; number_of_children )
-{
-    child_state = child[index]-&gt;tick();
+<details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="c1">// At the beginning, start from first child </span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">RUNNING</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
 
-    if( child_state == RUNNING ) {
-        // Suspend execution and return RUNNING.
-        // At the next tick, index will be the same.
-        state = RUNNING;
-        return state;
-    }
-    else if( child_state == FAILURE ) {
-        // continue the while loop
-        index++;
-    }
-    else if( child_state == SUCCESS ) {
-        // Suspend execution and return SUCCESS.
-        // index is reset and children are halted.
-        state = SUCCESS;
-        index = 0;
-        HaltAllChildren();
-        return state;
-    }
-}
-// all the children returned failure. Return FAILURE too.
-state = FAILURE;
-HaltAllChildren();
-return state;
+    <span class="k">while</span><span class="p">(</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span> <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">child_state</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
+
+        <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Suspend execution and return RUNNING.</span>
+            <span class="c1">// At the next tick, index will be the same.</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// continue the while loop</span>
+            <span class="n">index</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Suspend execution and return SUCCESS.</span>
+            <span class="c1">// index is reset and children are halted.</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">SUCCESS</span><span class="p">;</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="n">HaltAllChildren</span><span class="p">();</span>
+            <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// all the children returned failure. Return FAILURE too.</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">FAILURE</span><span class="p">;</span>
+    <span class="n">HaltAllChildren</span><span class="p">();</span>
+    <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
 </pre></div>
-
 </details>
                 
                   

@@ -40,7 +40,7 @@
     
     
       
-        <title>Examples - BehaviorTree.CPP</title>
+        <title>Main concepts - BehaviorTree.CPP</title>
       
     
     
@@ -102,6 +102,10 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="../#getting-started" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -124,7 +128,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                Examples
+                Main concepts
               </span>
             
           
@@ -404,30 +408,6 @@
           
           
 
-
-  <li class="md-nav__item">
-    <a href="./" title="How to use the library" class="md-nav__link">
-      How to use the library
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="./" title="BT at run-time" class="md-nav__link">
-      BT at run-time
-    </a>
-  </li>
-
-        
-          
-          
-          
-
   
 
 
@@ -435,11 +415,75 @@
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
     
+      
     
-    <a href="./" title="Examples" class="md-nav__link md-nav__link--active">
-      Examples
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Main concepts
+      </label>
+    
+    <a href="./" title="Main concepts" class="md-nav__link md-nav__link--active">
+      Main concepts
     </a>
     
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#nodes-vs-trees" title="Nodes vs Trees" class="md-nav__link">
+    Nodes vs Trees
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-tick-callbacks" title="The tick() callbacks" class="md-nav__link">
+    The tick() callbacks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inheritance-vs-dependency-injection" title="Inheritance vs dependency injection." class="md-nav__link">
+    Inheritance vs dependency injection.
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nodeparameters" title="NodeParameters" class="md-nav__link">
+    NodeParameters
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_A_create_trees/" title="How to create a Tree" class="md-nav__link">
+      How to create a Tree
+    </a>
   </li>
 
         
@@ -455,6 +499,58 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#nodes-vs-trees" title="Nodes vs Trees" class="md-nav__link">
+    Nodes vs Trees
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-tick-callbacks" title="The tick() callbacks" class="md-nav__link">
+    The tick() callbacks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inheritance-vs-dependency-injection" title="Inheritance vs dependency injection." class="md-nav__link">
+    Inheritance vs dependency injection.
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nodeparameters" title="NodeParameters" class="md-nav__link">
+    NodeParameters
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
@@ -463,9 +559,42 @@
                   <a href="https://github.com/Eurecat/BehaviorTree.CPP/edit/master/docs/getting_started.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>Examples</h1>
-                
-                
+                <h1 id="getting-started">Getting started</h1>
+<p><strong>BehaviorTree.CPP</strong> is a C++ library that can be easily integrated into
+your favourite distributed middleware, such as <strong>ROS</strong> of <strong>SmartSoft</strong>.</p>
+<p>You can also statically link it into your application (for example a game).</p>
+<p>There are some main concepts  that you need to understand first.</p>
+<h2 id="nodes-vs-trees">Nodes vs Trees</h2>
+<p>The user must create his/her own ActionNodes and ConditionNodes (LeafeNodes) and this 
+library helps you to compose them easily into trees. </p>
+<p>Think about the LeafNodes as the building blocks that you need to compose
+a complex system.</p>
+<p>Keep in mind that, by definition, your custom Nodes are (or should be) highly reusable.
+Therefore, even if some heavy litfing might be needed at the beginning,
+the added productivity will compensate that.  </p>
+<h2 id="the-tick-callbacks">The tick() callbacks</h2>
+<p>Any TreeNode can be seen as a mechanism to invoke a <strong>callback</strong>, i.e. to 
+run a piece of code. What this callback does is up to you.</p>
+<p>Don't be puzzled by the fact that in most of the examples the Actions just
+print messages on the screen of sleep for a certain amount of time to simulate
+a long calculation.</p>
+<h2 id="inheritance-vs-dependency-injection">Inheritance vs dependency injection.</h2>
+<p>To create a custom TreeNode, you should inherit from the proper type.</p>
+<p>For instance, to create your own Action, you should inherit from the 
+class <strong>ActionNodeBase</strong>. </p>
+<p>Alternatively, we provided a mechanism to create a TreeNode passins a 
+<strong>function pointer</strong> to a wrapper.</p>
+<p>This approach reduce the amount of boilerplate in your code but has also 
+some limitations; the most important one is that TreeNodes created using 
+function pointers can not support NodeParameters.</p>
+<h2 id="nodeparameters">NodeParameters</h2>
+<p>NodeParameters are conceptually similar to the arguments of a function.</p>
+<p>They are passed statically when the tree is instantiated.</p>
+<p>They are expressed as a list of <strong>key/value</strong> pairs, where both the the
+key and the value are strings.</p>
+<p>This is not surprising, since NodeParameters are usually parsed from file.</p>
+<p>The library provides some methods and utlity functions to correctly convert
+values from string to the proper C++ type.  </p>
                 
                   
                 
@@ -486,7 +615,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="./" title="BT at run-time" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../BlackBoard/" title="The BlackBoard" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -495,11 +624,25 @@
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                BT at run-time
+                The BlackBoard
               </span>
             </div>
           </a>
         
+        
+          <a href="../tutorial_A_create_trees/" title="How to create a Tree" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                How to create a Tree
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>
