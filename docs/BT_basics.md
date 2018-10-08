@@ -78,7 +78,7 @@ A Sequence works as described next:
 
 ??? warning "Exercise: find the bug! Expand to read the answer."
     If the action __GrabBeer__ fails, the door of the 
-    fridge would remain opened, since the last action __CloseDoor__ is skipped.
+    fridge would remain open, since the last action __CloseDoor__ is skipped.
 
 
 ### Decorators

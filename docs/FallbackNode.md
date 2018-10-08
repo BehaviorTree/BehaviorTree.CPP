@@ -1,24 +1,64 @@
-# ControlNodes
+# Fallback
 
-ControlNodes can have multiple children. Children are always __ordered__
-and it is up to the ControlNode itself to decide if and when a child should
-be ticked.
+This family of nodes are known as "Selector" or, sometimes, "Priority"
+in other frameworks.
 
-## SequenceNode
+Its purpose is to try different strategies, until we find one that "works".
+Currently, there is only a single type of node called "FallbackNode".
+
+
+## FallbackNode
 
 The SequenceNode is used to execute the children in a sequence.
 
-It ticks its children __as long as__ they returns SUCCESS.
+- Before ticking the first child, Fallback becomes __RUNNING__.
+- If a child returns __FAILURE__, it ticks the next child.
+- If the __last__ child returns __FAILURE__ too, all the children are halted and
+ the Sequence returns __FAILURE__.
+- If a child returns __RUNNING__, Fallback suspends and returns __RUNNING__.
+- If a child returns __SUCCESS__, Fallback stops and returns __SUCCESS__. 
 
-- Before ticking the first child, Sequence becomes __RUNNING__.
-- If a child return __SUCCESS__, it ticks the next child.
-- If the __last__ child returns __SUCCESS__ too, all the children are halted and
- the Sequence returns __SUCCESS__.
-- If a child returns __RUNNING__, Sequence suspends and returns __RUNNING__.
-- If a child returns __FAILURE__, Sequence stops and returns __FAILURE__. 
+__Example__:
 
+Try different strategies to open the door. Check first if it is open already.
 
+![FallbackNode](images/FallbackSimplified.png)
 
+??? example "See the pseudocode"
+	``` c++
+		// At the beginning, start from first child 
+		if( state != RUNNING) {
+			index = 0;
+		}
+		state = RUNNING;
+
+		while( index < number_of_children )
+		{
+			child_state = child[index]->tick();
+			
+			if( child_state == RUNNING ) {
+				// Suspend execution and return RUNNING.
+				// At the next tick, index will be the same.
+				state = RUNNING;
+				return state;
+			}
+			else if( child_state == FAILURE ) {
+				// continue the while loop
+				index++;
+			}
+			else if( child_state == SUCCESS ) {
+				// Suspend execution and return SUCCESS.
+				// index is reset and children are halted.
+				state = SUCCESS;
+				index = 0;
+				HaltAllChildren();
+				return state;
+			}
+		}
+		// all the children returned failure. Return FAILURE too.
+		state = FAILURE;
+		HaltAllChildren();
+		return state;
 
 
 
