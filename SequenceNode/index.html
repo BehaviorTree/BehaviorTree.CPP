@@ -560,7 +560,7 @@
                 <h1 id="sequences">Sequences</h1>
 <p>A <strong>Sequence</strong> ticks all it's children, from left to right, as long as 
 they return SUCCESS. If any child returns FAILURE, the sequence is suspended.</p>
-<p>Here we introduce two kinds of TreeNodes:</p>
+<p>Here we introduce different kinds of TreeNodes:</p>
 <ul>
 <li>SequenceNode</li>
 <li>SequenceStarNode</li>
@@ -582,7 +582,7 @@ they return SUCCESS. If any child returns FAILURE, the sequence is suspended.</p
 </pre></div>
 
 
-<p><strong>SequenceAllNode</strong> is used when you want all the children to be ticked at least
+<p>Last, use <strong>SequenceAllNode</strong> when you want all the children to be ticked at least
 once. If any of them failed, the SequenceAllNode returns FAILURE.   </p>
 <p>The shared logic is:</p>
 <ul>
@@ -590,8 +590,8 @@ once. If any of them failed, the SequenceAllNode returns FAILURE.   </p>
 <li>If a child returns <strong>SUCCESS</strong>, it ticks the next child.</li>
 <li>If the <strong>last</strong> child returns <strong>SUCCESS</strong> too, all the children are halted and
  the SequenceNode returns <strong>SUCCESS</strong>.</li>
-<li>If a child returns <strong>RUNNING</strong>, Sequence suspends and returns <strong>RUNNING</strong>. 
-The next time it is ticked, it will use the same index.</li>
+<li>If a child returns <strong>RUNNING</strong>, the sequence suspends and returns <strong>RUNNING</strong>. 
+The next time it is ticked, it will tick the same child again.</li>
 </ul>
 <p>The three Sequences differ in what they do if a child returns FAILURE.</p>
 <h2 id="sequencenode">SequenceNode</h2>
@@ -642,8 +642,8 @@ again from the beginning.</p>
 the failed child is executed again.</p>
 <p><strong>Example</strong>:</p>
 <p>This is a patrolling agent/robot that must visit locations A, B and C only once.
-If the action <strong>GoTo(B)</strong> fails, <strong>GoTo(A)</strong> is not ticked again.</p>
-<p>Note as <strong>isBatteryOK</strong> is visited at every tick, because its parent is a normal SequenceNode.</p>
+If the action <strong>GoTo(B)</strong> fails, <strong>GoTo(A)</strong> will not be ticked again.</p>
+<p>On the other hand, <strong>isBatteryOK</strong> is visited at every tick, because its parent is a normal SequenceNode.</p>
 <p><img alt="SequenceStar" src="../images/SequenceStar.png" /></p>
 <details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="c1">// index is initialized to 0 in the constructor</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>

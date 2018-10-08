@@ -102,7 +102,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="../#controlnodes" tabindex="1" class="md-skip">
+      <a href="../#fallback" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -377,8 +377,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
-    SequenceNode
+  <a href="#fallbacknode" title="FallbackNode" class="md-nav__link">
+    FallbackNode
   </a>
   
 </li>
@@ -504,8 +504,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
-    SequenceNode
+  <a href="#fallbacknode" title="FallbackNode" class="md-nav__link">
+    FallbackNode
   </a>
   
 </li>
@@ -529,21 +529,59 @@
                   <a href="https://github.com/Eurecat/BehaviorTree.CPP/edit/master/docs/FallbackNode.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="controlnodes">ControlNodes</h1>
-<p>ControlNodes can have multiple children. Children are always <strong>ordered</strong>
-and it is up to the ControlNode itself to decide if and when a child should
-be ticked.</p>
-<h2 id="sequencenode">SequenceNode</h2>
+                <h1 id="fallback">Fallback</h1>
+<p>This family of nodes are known as "Selector" or, sometimes, "Priority"
+in other frameworks.</p>
+<p>Its purpose is to try different strategies, until we find one that "works".
+Currently, there is only a single type of node called "FallbackNode".</p>
+<h2 id="fallbacknode">FallbackNode</h2>
 <p>The SequenceNode is used to execute the children in a sequence.</p>
-<p>It ticks its children <strong>as long as</strong> they returns SUCCESS.</p>
 <ul>
-<li>Before ticking the first child, Sequence becomes <strong>RUNNING</strong>.</li>
-<li>If a child return <strong>SUCCESS</strong>, it ticks the next child.</li>
-<li>If the <strong>last</strong> child returns <strong>SUCCESS</strong> too, all the children are halted and
- the Sequence returns <strong>SUCCESS</strong>.</li>
-<li>If a child returns <strong>RUNNING</strong>, Sequence suspends and returns <strong>RUNNING</strong>.</li>
-<li>If a child returns <strong>FAILURE</strong>, Sequence stops and returns <strong>FAILURE</strong>. </li>
+<li>Before ticking the first child, Fallback becomes <strong>RUNNING</strong>.</li>
+<li>If a child returns <strong>FAILURE</strong>, it ticks the next child.</li>
+<li>If the <strong>last</strong> child returns <strong>FAILURE</strong> too, all the children are halted and
+ the Sequence returns <strong>FAILURE</strong>.</li>
+<li>If a child returns <strong>RUNNING</strong>, Fallback suspends and returns <strong>RUNNING</strong>.</li>
+<li>If a child returns <strong>SUCCESS</strong>, Fallback stops and returns <strong>SUCCESS</strong>. </li>
 </ul>
+<p><strong>Example</strong>:</p>
+<p>Try different strategies to open the door. Check first if it is open already.</p>
+<p><img alt="FallbackNode" src="../images/FallbackSimplified.png" /></p>
+<details class="example"><summary>See the pseudocode</summary><p>``` c++
+    // At the beginning, start from first child 
+    if( state != RUNNING) {
+        index = 0;
+    }
+    state = RUNNING;</p><div class="codehilite"><pre><span></span>while( index &lt; number_of_children )
+{
+    child_state = child[index]-&gt;tick();
+
+    if( child_state == RUNNING ) {
+        // Suspend execution and return RUNNING.
+        // At the next tick, index will be the same.
+        state = RUNNING;
+        return state;
+    }
+    else if( child_state == FAILURE ) {
+        // continue the while loop
+        index++;
+    }
+    else if( child_state == SUCCESS ) {
+        // Suspend execution and return SUCCESS.
+        // index is reset and children are halted.
+        state = SUCCESS;
+        index = 0;
+        HaltAllChildren();
+        return state;
+    }
+}
+// all the children returned failure. Return FAILURE too.
+state = FAILURE;
+HaltAllChildren();
+return state;
+</pre></div>
+
+</details>
                 
                   
                 
