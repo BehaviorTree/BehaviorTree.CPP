@@ -365,8 +365,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
-    SequenceNode
+  <a href="#sequencenode-default" title="SequenceNode (default)" class="md-nav__link">
+    SequenceNode (default)
   </a>
   
 </li>
@@ -518,8 +518,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
-    SequenceNode
+  <a href="#sequencenode-default" title="SequenceNode (default)" class="md-nav__link">
+    SequenceNode (default)
   </a>
   
 </li>
@@ -559,8 +559,8 @@
                 
                 <h1 id="sequences">Sequences</h1>
 <p>A <strong>Sequence</strong> ticks all it's children, from left to right, as long as 
-they return SUCCESS. If any child returns FAILURE, the sequence is suspended.</p>
-<p>Here we introduce different kinds of TreeNodes:</p>
+they return SUCCESS. If any child returns FAILURE, the sequence is aborted.</p>
+<p>Here we introduce different kinds of sequence nodes:</p>
 <ul>
 <li>SequenceNode</li>
 <li>SequenceStarNode</li>
@@ -577,7 +577,7 @@ they return SUCCESS. If any child returns FAILURE, the sequence is suspended.</p
 
 
 <p>Use <strong>SequenceStarNode</strong> if, instead, the answer is: </p>
-<div class="codehilite"><pre><span></span>A: &quot;Try again to execute the failed child.
+<div class="codehilite"><pre><span></span>A: &quot;Try again to execute the child that failed.
     Do not re-tick children which succeeded already.&quot;
 </pre></div>
 
@@ -586,15 +586,15 @@ they return SUCCESS. If any child returns FAILURE, the sequence is suspended.</p
 once. If any of them failed, the SequenceAllNode returns FAILURE.   </p>
 <p>The shared logic is:</p>
 <ul>
-<li>Before ticking the first child, SequenceNode becomes <strong>RUNNING</strong>.</li>
+<li>Before ticking the first child, sequence becomes <strong>RUNNING</strong>.</li>
 <li>If a child returns <strong>SUCCESS</strong>, it ticks the next child.</li>
 <li>If the <strong>last</strong> child returns <strong>SUCCESS</strong> too, all the children are halted and
- the SequenceNode returns <strong>SUCCESS</strong>.</li>
+ the sequence returns <strong>SUCCESS</strong>.</li>
 <li>If a child returns <strong>RUNNING</strong>, the sequence suspends and returns <strong>RUNNING</strong>. 
 The next time it is ticked, it will tick the same child again.</li>
 </ul>
-<p>The three Sequences differ in what they do if a child returns FAILURE.</p>
-<h2 id="sequencenode">SequenceNode</h2>
+<p>The three sequences differ in what they do if a child returns FAILURE.</p>
+<h2 id="sequencenode-default">SequenceNode (default)</h2>
 <p>If a child returns FAILURE, the sequence returns FAILURE.
 Reset the index and halt all the children. 
 The entire sequence will be executed again at the next tick.</p>
