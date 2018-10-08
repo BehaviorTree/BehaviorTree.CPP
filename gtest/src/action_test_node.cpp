@@ -14,20 +14,22 @@
 #include "action_test_node.h"
 #include <string>
 
-BT::ActionTestNode::ActionTestNode(const std::string& name) : ActionNode(name)
+BT::AsyncActionTest::AsyncActionTest(const std::string& name) : ActionNode(name)
 {
     boolean_value_ = true;
     time_ = 3;
     stop_loop_ = false;
+    tick_count_ = 0;
 }
 
-BT::ActionTestNode::~ActionTestNode()
+BT::AsyncActionTest::~AsyncActionTest()
 {
     halt();
 }
 
-BT::NodeStatus BT::ActionTestNode::tick()
+BT::NodeStatus BT::AsyncActionTest::tick()
 {
+    tick_count_++;
     stop_loop_ = false;
     int i = 0;
     while (!stop_loop_ && i++ < time_)
@@ -45,18 +47,39 @@ BT::NodeStatus BT::ActionTestNode::tick()
     }
 }
 
-void BT::ActionTestNode::halt()
+void BT::AsyncActionTest::halt()
 {
     stop_loop_ = true;
     setStatus(NodeStatus::IDLE);
 }
 
-void BT::ActionTestNode::set_time(int time)
+void BT::AsyncActionTest::setTime(int time)
 {
     time_ = time;
 }
 
-void BT::ActionTestNode::set_boolean_value(bool boolean_value)
+void BT::AsyncActionTest::setBoolean(bool boolean_value)
+{
+    boolean_value_ = boolean_value;
+}
+
+//----------------------------------------------
+
+
+BT::SyncActionTest::SyncActionTest(const std::string &name) :
+    ActionNodeBase(name)
+{
+    tick_count_ = 0;
+    boolean_value_ = true;
+}
+
+BT::NodeStatus BT::SyncActionTest::tick()
+{
+    tick_count_++;
+    return boolean_value_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+}
+
+void BT::SyncActionTest::setBoolean(bool boolean_value)
 {
     boolean_value_ = boolean_value;
 }

@@ -18,9 +18,6 @@ BT::ConditionTestNode::ConditionTestNode(const std::string& name) : ConditionNod
     boolean_value_ = true;
 }
 
-BT::ConditionTestNode::~ConditionTestNode()
-{
-}
 
 BT::NodeStatus BT::ConditionTestNode::tick()
 {
@@ -37,7 +34,7 @@ BT::NodeStatus BT::ConditionTestNode::tick()
     }
 }
 
-void BT::ConditionTestNode::set_boolean_value(bool boolean_value)
+void BT::ConditionTestNode::setBoolean(bool boolean_value)
 {
     boolean_value_ = boolean_value;
 }

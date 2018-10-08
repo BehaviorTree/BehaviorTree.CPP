@@ -10,8 +10,8 @@ class ConditionTestNode : public ConditionNode
   public:
     // Constructor
     ConditionTestNode(const std::string& name);
-    ~ConditionTestNode();
-    void set_boolean_value(bool boolean_value);
+
+    void setBoolean(bool boolean_value);
 
     // The method that is going to be executed by the thread
     virtual BT::NodeStatus tick() override;

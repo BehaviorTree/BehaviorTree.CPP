@@ -107,6 +107,9 @@ set(BT_Tests
         gtest/src/action_test_node.cpp
         gtest/src/condition_test_node.cpp
         gtest/gtest_tree.cpp
+        gtest/gtest_sequence.cpp
+        gtest/gtest_parallel.cpp
+        gtest/gtest_fallback.cpp
         gtest/gtest_factory.cpp
 )
 

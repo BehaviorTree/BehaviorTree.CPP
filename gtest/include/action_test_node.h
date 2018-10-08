@@ -5,27 +5,51 @@
 
 namespace BT
 {
-class ActionTestNode : public ActionNode
+
+class SyncActionTest : public ActionNodeBase
 {
   public:
-    // Constructor
-    ActionTestNode(const std::string& name);
+    SyncActionTest(const std::string& name);
 
-    ~ActionTestNode();
+    BT::NodeStatus tick() override;
+
+    virtual void halt() override
+    {}
+
+    void setBoolean(bool boolean_value);
+
+    int tickCount() const { return tick_count_; }
+
+  private:
+    bool boolean_value_;
+    int tick_count_;
+};
+
+
+class AsyncActionTest : public ActionNode
+{
+  public:
+
+    AsyncActionTest(const std::string& name);
+
+    ~AsyncActionTest();
 
     // The method that is going to be executed by the thread
     BT::NodeStatus tick() override;
 
-    void set_time(int time);
+    void setTime(int time);
 
     // The method used to interrupt the execution of the node
     virtual void halt() override;
 
-    void set_boolean_value(bool boolean_value);
+    void setBoolean(bool boolean_value);
+
+    int tickCount() const { return tick_count_; }
 
   private:
     int time_;
     bool boolean_value_;
+    int tick_count_;
     std::atomic_bool stop_loop_;
 };
 }
