@@ -102,4 +102,15 @@ void assignBlackboardToEntireTree(TreeNode *root_node, const Blackboard::Ptr &bb
     applyRecursiveVisitor(root_node, visitor);
 }
 
+void haltAllActions(TreeNode *root_node)
+{
+    auto visitor = [](TreeNode* node) {
+        if( auto action = dynamic_cast<ActionNode*>(node) )
+        {
+            action->stopAndJoinThread();
+        }
+    };
+    applyRecursiveVisitor(root_node, visitor);
+}
+
 }

@@ -46,5 +46,8 @@ int main()
     // In this case all of them return SUCCESS immediately
     sequence_root.executeTick();
 
+    // needed when you use ActionNodes with their own thread
+    haltAllActions(&sequence_root);
+
     return 0;
 }

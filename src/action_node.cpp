@@ -67,15 +67,12 @@ void ActionNode::waitForTick()
     {
         tick_engine_.wait();
 
-        // check this again because the tick_engine_ could be
+        // check loop_ again because the tick_engine_ could be
         // notified from the method stopAndJoinThread
-        if (loop_.load())
+        if (loop_ && status() == NodeStatus::IDLE)
         {
-            if (status() == NodeStatus::IDLE)
-            {
-                setStatus(NodeStatus::RUNNING);
-            }
-            setStatus(tick());
+            setStatus(NodeStatus::RUNNING);
+            setStatus( tick() );
         }
     }
 }
@@ -98,6 +95,9 @@ void ActionNode::stopAndJoinThread()
 {
     loop_.store(false);
     tick_engine_.notify();
-    thread_.join();
+    if( thread_.joinable() )
+    {
+        thread_.join();
+    }
 }
 }

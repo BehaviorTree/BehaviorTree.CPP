@@ -28,6 +28,10 @@ struct SimpleSequenceTest : testing::Test
         root.addChild(&condition);
         root.addChild(&action);
     }
+    ~SimpleSequenceTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 struct ComplexSequenceTest : testing::Test
@@ -53,6 +57,10 @@ struct ComplexSequenceTest : testing::Test
         }
         root.addChild(&action_1);
     }
+    ~ComplexSequenceTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 struct SequenceTripleActionTest : testing::Test
@@ -67,6 +75,10 @@ struct SequenceTripleActionTest : testing::Test
         root.addChild(&action_1);
         root.addChild(&action_2);
         root.addChild(&action_3);
+    }
+    ~SequenceTripleActionTest()
+    {
+        haltAllActions(&root);
     }
 };
 
@@ -101,6 +113,10 @@ struct ComplexSequence2ActionsTest : testing::Test
             seq_2.addChild(&action_2);
         }
     }
+    ~ComplexSequence2ActionsTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 struct SimpleFallbackTest : testing::Test
@@ -113,6 +129,10 @@ struct SimpleFallbackTest : testing::Test
     {
         root.addChild(&condition);
         root.addChild(&action);
+    }
+    ~SimpleFallbackTest()
+    {
+        haltAllActions(&root);
     }
 };
 
@@ -139,6 +159,10 @@ struct ComplexFallbackTest : testing::Test
         }
         root.addChild(&action_1);
     }
+    ~ComplexFallbackTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 struct BehaviorTreeTest : testing::Test
@@ -164,6 +188,10 @@ struct BehaviorTreeTest : testing::Test
         }
         root.addChild(&action_1);
     }
+    ~BehaviorTreeTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 struct SimpleSequenceWithMemoryTest : testing::Test
@@ -176,6 +204,10 @@ struct SimpleSequenceWithMemoryTest : testing::Test
     {
         root.addChild(&condition);
         root.addChild(&action);
+    }
+    ~SimpleSequenceWithMemoryTest()
+    {
+        haltAllActions(&root);
     }
 };
 
@@ -212,6 +244,10 @@ struct ComplexSequenceWithMemoryTest : testing::Test
             seq_actions.addChild(&action_2);
         }
     }
+    ~ComplexSequenceWithMemoryTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 struct SimpleFallbackWithMemoryTest : testing::Test
@@ -224,6 +260,10 @@ struct SimpleFallbackWithMemoryTest : testing::Test
     {
         root.addChild(&condition);
         root.addChild(&action);
+    }
+    ~SimpleFallbackWithMemoryTest()
+    {
+        haltAllActions(&root);
     }
 };
 
@@ -260,6 +300,10 @@ struct ComplexFallbackWithMemoryTest : testing::Test
             fal_actions.addChild(&action_2);
         }
     }
+    ~ComplexFallbackWithMemoryTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 struct SimpleParallelTest : testing::Test
@@ -282,6 +326,10 @@ struct SimpleParallelTest : testing::Test
         root.addChild(&action_1);
         root.addChild(&condition_2);
         root.addChild(&action_2);
+    }
+    ~SimpleParallelTest()
+    {
+        haltAllActions(&root);
     }
 };
 
@@ -324,6 +372,10 @@ struct ComplexParallelTest : testing::Test
             parallel_2.addChild(&action_3);
         }
     }
+    ~ComplexParallelTest()
+    {
+        haltAllActions(&root);
+    }
 };
 
 /****************TESTS START HERE***************************/
@@ -336,7 +388,7 @@ TEST_F(SimpleSequenceTest, ConditionTrue)
 
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
-    root.halt();
+
 }
 
 TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
@@ -348,7 +400,7 @@ TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
     ASSERT_EQ(NodeStatus::FAILURE, state);
     ASSERT_EQ(NodeStatus::IDLE, condition.status());
     ASSERT_EQ(NodeStatus::IDLE, action.status());
-    root.halt();
+
 }
 
 TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
@@ -360,7 +412,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
-    root.halt();
+
 }
 
 TEST_F(SequenceTripleActionTest, TripleAction)
@@ -415,7 +467,7 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_TRUE(system_clock::now() < timeout);   // no timeout should occur
 
-    root.halt();
+
 }
 
 TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
@@ -447,7 +499,7 @@ TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
 
     // TODO: what is a reasonable behavior in this case?
 
-    root.halt();
+
 }
 
 TEST_F(ComplexSequenceTest, ComplexSequenceConditions1ToFalse)
@@ -463,7 +515,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions1ToFalse)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    root.halt();
+
 }
 
 TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)
@@ -479,7 +531,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    root.halt();
+
 }
 
 TEST_F(SimpleFallbackTest, ConditionTrue)
@@ -492,7 +544,7 @@ TEST_F(SimpleFallbackTest, ConditionTrue)
     ASSERT_EQ(NodeStatus::SUCCESS, state);
     ASSERT_EQ(NodeStatus::IDLE, condition.status());
     ASSERT_EQ(NodeStatus::IDLE, action.status());
-    root.halt();
+
 }
 
 TEST_F(SimpleFallbackTest, ConditionToFalse)
@@ -507,7 +559,7 @@ TEST_F(SimpleFallbackTest, ConditionToFalse)
     ASSERT_EQ(NodeStatus::SUCCESS, state);
     ASSERT_EQ(NodeStatus::IDLE, condition.status());
     ASSERT_EQ(NodeStatus::IDLE, action.status());
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackTest, Condition1ToTrue)
@@ -532,7 +584,7 @@ TEST_F(ComplexFallbackTest, Condition1ToTrue)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackTest, Condition2ToTrue)
@@ -557,7 +609,7 @@ TEST_F(ComplexFallbackTest, Condition2ToTrue)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    root.halt();
+
 }
 
 TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
@@ -573,7 +625,7 @@ TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    root.halt();
+
 }
 
 TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
@@ -589,7 +641,7 @@ TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    root.halt();
+
 }
 
 TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
@@ -600,7 +652,7 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::SUCCESS, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
-    root.halt();
+
 }
 
 TEST_F(SimpleSequenceWithMemoryTest, ConditionTurnToFalse)
@@ -618,7 +670,7 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTurnToFalse)
     ASSERT_EQ(NodeStatus::SUCCESS, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
@@ -633,7 +685,7 @@ TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFase)
@@ -652,7 +704,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFase)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexSequenceWithMemoryTest, Conditions2ToFalse)
@@ -671,7 +723,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions2ToFalse)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexSequenceWithMemoryTest, Action1DoneSeq)
@@ -711,7 +763,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Action1DoneSeq)
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
@@ -724,7 +776,7 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
     ASSERT_EQ(NodeStatus::FAILURE, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    root.halt();
+
 }
 
 TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
@@ -743,7 +795,7 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
     ASSERT_EQ(NodeStatus::FAILURE, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, ConditionsTrue)
@@ -758,7 +810,7 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
@@ -774,7 +826,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
@@ -791,7 +843,7 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
@@ -811,7 +863,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
@@ -831,7 +883,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
@@ -854,7 +906,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
     ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 
-    root.halt();
+
 }
 
 TEST_F(SimpleParallelTest, ConditionsTrue)
@@ -867,7 +919,7 @@ TEST_F(SimpleParallelTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    root.halt();
+
 }
 
 TEST_F(SimpleParallelTest, Threshold_3)
@@ -884,7 +936,7 @@ TEST_F(SimpleParallelTest, Threshold_3)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 
-    root.halt();
+
 }
 
 TEST_F(SimpleParallelTest, Threshold_1)
@@ -898,7 +950,7 @@ TEST_F(SimpleParallelTest, Threshold_1)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 
-    root.halt();
+
 }
 TEST_F(ComplexParallelTest, ConditionsTrue)
 {
@@ -914,7 +966,7 @@ TEST_F(ComplexParallelTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, parallel_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    root.halt();
+
 }
 
 TEST_F(ComplexParallelTest, Condition3False)
@@ -932,7 +984,7 @@ TEST_F(ComplexParallelTest, Condition3False)
     ASSERT_EQ(NodeStatus::RUNNING, parallel_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    root.halt();
+
 }
 
 TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
@@ -971,7 +1023,7 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     ASSERT_EQ(NodeStatus::IDLE, parallel_2.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 
-    root.halt();
+
 }
 
 int main(int argc, char** argv)
