@@ -20,6 +20,17 @@ ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters& pa
 {
 }
 
+NodeStatus ActionNodeBase::executeTick()
+{
+    NodeStatus prev_status = status();
+
+    if (prev_status == NodeStatus::IDLE || prev_status == NodeStatus::RUNNING)
+    {
+        setStatus( tick() );
+    }
+    return status();
+}
+
 //-------------------------------------------------------
 
 SimpleActionNode::SimpleActionNode(const std::string& name, SimpleActionNode::TickFunctor tick_functor)

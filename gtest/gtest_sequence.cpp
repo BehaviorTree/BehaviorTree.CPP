@@ -66,12 +66,15 @@ struct ComplexSequenceTest : testing::Test
 struct SequenceTripleActionTest : testing::Test
 {
     BT::SequenceNode root;
+    BT::ConditionTestNode condition;
     BT::AsyncActionTest action_1;
     BT::SyncActionTest  action_2;
     BT::AsyncActionTest action_3;
 
-    SequenceTripleActionTest() : root("root_sequence"), action_1("action_1"), action_2("action_2"), action_3("action_3")
+    SequenceTripleActionTest() : root("root_sequence"), condition("condition"),
+        action_1("action_1"), action_2("action_2"), action_3("action_3")
     {
+        root.addChild(&condition);
         root.addChild(&action_1);
         root.addChild(&action_2);
         root.addChild(&action_3);
@@ -247,21 +250,7 @@ TEST_F(SequenceTripleActionTest, TripleAction)
 
     action_1.setTime(3);
     action_3.setTime(3);
-    // the sequence is supposed to finish in (200 ms * 3) = 600 ms
-
-    int count_1 = 0, count_2 = 0, count_3 = 0;
-
-    auto sub1 = action_1.subscribeToStatusChange([&](TimePoint, const TreeNode&, NodeStatus, NodeStatus status) {
-        if (status == NodeStatus::SUCCESS) count_1++;
-    });
-
-    auto sub2 = action_2.subscribeToStatusChange([&](TimePoint, const TreeNode&, NodeStatus, NodeStatus status) {
-        if (status == NodeStatus::SUCCESS) count_2++;
-    });
-
-    auto sub3 = action_3.subscribeToStatusChange([&](TimePoint, const TreeNode&, NodeStatus, NodeStatus status) {
-        if (status == NodeStatus::SUCCESS) count_3++;
-    });
+    // the sequence is supposed to finish in (300 ms * 2) = 600 ms
 
     // first tick
     NodeStatus state = root.executeTick();
@@ -279,9 +268,14 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     }
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_TRUE(count_1 == 1);
-    ASSERT_TRUE(count_2 == 1);
-    ASSERT_TRUE(count_3 == 1);
+
+    // Condition is called many times
+    ASSERT_NE(condition.tickCount(), 30);
+    // all the actions are called only once
+    ASSERT_EQ(action_1.tickCount(), 1);
+    ASSERT_EQ(action_2.tickCount(), 1);
+    ASSERT_EQ(action_3.tickCount(), 1);
+
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());

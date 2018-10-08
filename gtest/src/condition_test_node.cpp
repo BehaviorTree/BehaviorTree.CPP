@@ -16,11 +16,14 @@
 BT::ConditionTestNode::ConditionTestNode(const std::string& name) : ConditionNode::ConditionNode(name)
 {
     boolean_value_ = true;
+    tick_count_ = 0;
 }
 
 
 BT::NodeStatus BT::ConditionTestNode::tick()
 {
+    tick_count_++;
+
     // Condition checking and state update
     if (boolean_value_)
     {
