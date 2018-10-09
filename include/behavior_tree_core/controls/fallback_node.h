@@ -20,20 +20,17 @@ namespace BT
 {
 
 /**
- * @brief The FallbackNode is used when you want to evaluate different "strategies".
+ * @brief The FallbackNode is used to try different strategies,
+ * until one succeed.
+ * If any child returns RUNNING, previous children will be ticked again.
  *
- * This control node ticks its children UNTIL one of them returns SUCCESS.
+ * - If all the children return FAILURE, this node returns FAILURE.
  *
- * In that case it return SUCCESS, otherwise it return FAILURE.
- * If it finds a child returning RUNNING, it returns RUNNING and it restarts from the first child.
+ * - If a child returns RUNNING, this node returns RUNNING.
+ *   The loop is restarted, but already completed children are not halted.
+ *   This generally implies that ConditionNode are ticked again.
  *
- * If you don't want to restart from the first child, use FallbackNodeWithMemory instead.
- *
- * Example: three children, A, B and C
- *
- * 1) A returns FAILURE. Continue.
- * 2) B returns RUNNING, Restart from A
- * 3) A returns FAILURE again but B return SUCCESS. Stop and return SUCCESS.
+ * - If a child returns SUCCESS, stop the loop and returns SUCCESS.
  *
  */
 class FallbackNode : public ControlNode

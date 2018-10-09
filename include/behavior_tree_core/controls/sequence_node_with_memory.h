@@ -20,24 +20,23 @@ namespace BT
 {
 
 /**
- * @brief The SequenceNode is used to execute a sequence of asynchronous children.
+ * @brief The SequenceNodeWithMemory is used to execute a sequence of children.
+ * If any child returns RUNNING, previous children are not ticked again.
  *
- * Tick all the children as long as they return SUCCESS.
- * If any child return FAILURE, stop the sequence and return FAILURE.
- * If any child return RUNNING, stop the sequence, return RUNNING. Restart from the same child
+ * - If all the children return SUCCESS, this node returns SUCCESS.
  *
- * Example: three children, A , B and C
+ * - If a child returns RUNNING, this node returns RUNNING.
+ *   Loop is NOT restarted, the same running child will be ticked again.
  *
- * 1) A returns SUCCESS. Continue.
- * 2) B returns RUNNING. Stop and return RUNNING.
- * 3) B is ticked and retuns SUCCESS. Continue.
- * 4) C returns SUCCESS. The entire sequence returns SUCCESS.
+ * - If a child returns FAILURE, stop the loop and returns FAILURE.
+ *   Restart the loop only if (reset_on_failure == true)
+ *
  */
 
 class SequenceNodeWithMemory : public ControlNode
 {
   public:
-    SequenceNodeWithMemory(const std::string& name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
+    SequenceNodeWithMemory(const std::string& name, bool reset_on_failure = true);
 
     // Reset policy passed by parameter [reset_policy]
     SequenceNodeWithMemory(const std::string& name, const NodeParameters& params);
@@ -48,15 +47,14 @@ class SequenceNodeWithMemory : public ControlNode
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = {{RESET_POLICY, toStr(BT::ON_SUCCESS_OR_FAILURE)}};
+        static NodeParameters params = {{"reset_on_failure", "true"}};
         return params;
     }
 
   private:
     unsigned int current_child_idx_;
-    ResetPolicy reset_policy_;
+    bool reset_on_failure_;
 
-    static constexpr const char* RESET_POLICY = "reset_policy";
     virtual BT::NodeStatus tick() override;
 };
 }

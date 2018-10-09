@@ -48,12 +48,7 @@ enum FailurePolicy
     FAIL_ON_ONE,
     FAIL_ON_ALL
 };
-enum ResetPolicy
-{
-    ON_SUCCESS_OR_FAILURE,
-    ON_SUCCESS,
-    ON_FAILURE
-};
+
 
 // Enumerates the options for when a parallel node is considered to have succeeded:
 // - "SUCCEED_ON_ONE" indicates that the node will return success as soon as one
@@ -84,13 +79,6 @@ std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
 const char* toStr(const BT::NodeType& type);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
-
-/**
- * @brief toStr converts ResetPolicy to string.
- */
-const char* toStr(const BT::ResetPolicy& policy);
-
-std::ostream& operator<<(std::ostream& os, const BT::ResetPolicy& type);
 
 // small utility, unless you want to use <boost/algorithm/string.hpp>
 std::vector<std::string> splitString(const std::string& strToSplit, char delimeter);

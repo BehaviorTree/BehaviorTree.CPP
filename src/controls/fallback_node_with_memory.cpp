@@ -15,22 +15,11 @@
 
 namespace BT
 {
-constexpr const char* FallbackNodeWithMemory::RESET_POLICY;
 
-FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string& name, ResetPolicy reset_policy)
-  : ControlNode::ControlNode(name, {{RESET_POLICY, toStr(reset_policy)}})
+FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string& name)
+  : ControlNode::ControlNode(name, {})
   , current_child_idx_(0)
-  , reset_policy_(reset_policy)
 {
-}
-
-FallbackNodeWithMemory::FallbackNodeWithMemory(const std::string& name, const NodeParameters& params)
-  : ControlNode::ControlNode(name, params), current_child_idx_(0), reset_policy_(ON_SUCCESS_OR_FAILURE)
-{
-    auto param = getParam<ResetPolicy>(RESET_POLICY);
-    if(param){
-        reset_policy_ = param.value();
-    }
 }
 
 NodeStatus FallbackNodeWithMemory::tick()
@@ -40,48 +29,47 @@ NodeStatus FallbackNodeWithMemory::tick()
 
     setStatus(NodeStatus::RUNNING);
 
-    // Routing the ticks according to the fallback node's (with memory) logic:
     while (current_child_idx_ < N_of_children)
     {
         TreeNode* current_child_node = children_nodes_[current_child_idx_];
-
         const NodeStatus child_status = current_child_node->executeTick();
 
-        if (child_status != NodeStatus::FAILURE)
+        switch( child_status )
         {
-            // If the  child status is not success, return the status
-            if (child_status == NodeStatus::SUCCESS && reset_policy_ != ON_FAILURE)
+            case NodeStatus::RUNNING:{
+                return child_status;
+            }
+            case NodeStatus::SUCCESS :
             {
                 for (unsigned t = 0; t <= current_child_idx_; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
                 current_child_idx_ = 0;
+                return child_status;
             }
-            return child_status;
-        }
-        else if (current_child_idx_ != N_of_children - 1)
-        {
-            // If the  child status is failure, continue to the next child
-            // (if any, hence if(current_child_ != N_of_children_ - 1) ) in the for loop (if any).
-            current_child_idx_++;
-        }
-        else
-        {
-            // If it the last child.
-            if (child_status == NodeStatus::FAILURE && reset_policy_ != ON_SUCCESS)
+            case NodeStatus::FAILURE:
             {
-                for (unsigned t = 0; t <= current_child_idx_; t++)
-                {
-                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
-                }
-                // if it the last child and it has returned failure, reset the memory
-                current_child_idx_ = 0;
+                current_child_idx_++;
+            }break;
+
+            case NodeStatus::IDLE:
+            {
+                throw std::runtime_error("This is not supposed to happen");
             }
-            return child_status;
+        } // end switch
+    }// end while loop
+
+    // The entire while loop completed. This means that all the children returned FAILURE.
+    if (current_child_idx_ == N_of_children)
+    {
+        for (unsigned t = 0; t < N_of_children; t++)
+        {
+            children_nodes_[t]->setStatus(NodeStatus::IDLE);
         }
+        current_child_idx_ = 0;
     }
-    throw std::runtime_error("This is not supposed to happen");
+    return NodeStatus::FAILURE;
 }
 
 void FallbackNodeWithMemory::halt()

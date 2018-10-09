@@ -19,22 +19,17 @@
 namespace BT
 {
 /**
- * @brief The SequenceNode is used to execute a sequence of synchronous children.
+ * @brief The SequenceNode is used to execute a sequence of children.
+ * If any child returns RUNNING, previous children will be ticked again.
  *
- * This control node ticks its children AS LONG AS they returns SUCCESS.
+ * - If all the children return SUCCESS, this node returns SUCCESS.
  *
- * If all the children return SUCCESS, the sequence is SUCCESS.
- * If any return FAILURE, the sequence returns FAILURE and it starts from the beginning.
- * If a child returns RUNNING, this node returns RUNNING and at the next tick it will continue
- * from the same index.
- * It is recommended for asynchronous children which may return RUNNING.
+ * - If a child returns RUNNING, this node returns RUNNING.
+ *   The loop is restarted, but already completed children are not halted.
+ *   This generally implies that ConditionNode are ticked again.
  *
- * Example: three children, A , B and C
+ * - If a child returns FAILURE, stop the loop and returns FAILURE.
  *
- * 1) A returns SUCCESS. Continue.
- * 2) B returns RUNNING. Stop and return RUNNING.
- * 3) A is ticked again and return SUCCESS. B is ticked and retuns SUCCESS. Continue.
- * 4) C returns SUCCESS. The entire sequence returns SUCCESS.
  */
 class SequenceNode : public ControlNode
 {

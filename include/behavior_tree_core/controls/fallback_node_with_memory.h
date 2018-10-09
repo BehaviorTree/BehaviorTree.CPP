@@ -20,46 +20,28 @@ namespace BT
 {
 
 /**
- * @brief The FallbackNodeWithMemory is used when you want to evaluate different "strategies".
+ * @brief The FallbackNodeWithMemory is used to try different strategies,
+ * until one succeed.
+ * If any child returns RUNNING, previous children will NOT be ticked again.
  *
- * This control node ticks its children UNTIL one of them returns SUCCESS.
+ * - If all the children return FAILURE, this node returns FAILURE.
  *
- * In that case it returns SUCCESS, otherwise it returns FAILURE.
- * If a child return RUNNING, this node returns RUNNING and at the next tick it will continue
- * from the same index.
- * It is recommended for asynchronous children which may return RUNNING.
+ * - If a child returns RUNNING, this node returns RUNNING.
+ *   Loop is NOT restarted, the same running child will be ticked again.
  *
- * Example: three children, A, B and C
- *
- * 1) A returns FAILURE. Continue.
- * 2) B returns RUNNING. Stop and return RUNNING.
- * 3) B is ticked again but it returns SUCCESS. Stop and return SUCCESS.
- *
+ * - If a child returns SUCCESS, stop the loop and returns SUCCESS.
  */
 
 class FallbackNodeWithMemory : public ControlNode
 {
   public:
-    FallbackNodeWithMemory(const std::string& name, ResetPolicy reset_policy = BT::ON_SUCCESS_OR_FAILURE);
-
-    // Reset policy passed by parameter [reset_policy]
-    FallbackNodeWithMemory(const std::string&, const NodeParameters& params);
-
-    virtual ~FallbackNodeWithMemory() override = default;
+    FallbackNodeWithMemory(const std::string& name);
 
     virtual void halt() override;
 
-    static const NodeParameters& requiredNodeParameters()
-    {
-        static NodeParameters params = {{RESET_POLICY, toStr(BT::ON_SUCCESS_OR_FAILURE)}};
-        return params;
-    }
-
   private:
     unsigned int current_child_idx_;
-    ResetPolicy reset_policy_;
 
-    constexpr static const char* RESET_POLICY = "reset_policy";
     virtual BT::NodeStatus tick() override;
 };
 }

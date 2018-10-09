@@ -63,21 +63,6 @@ const char* toStr(const NodeType& type)
     }
 }
 
-const char* toStr(const ResetPolicy& policy)
-{
-    switch (policy)
-    {
-        case ResetPolicy::ON_FAILURE:
-            return "ON_FAILURE";
-        case ResetPolicy::ON_SUCCESS:
-            return "ON_SUCCESS";
-        case ResetPolicy::ON_SUCCESS_OR_FAILURE:
-            return "ON_SUCCESS_OR_FAILURE";
-        default:
-            return "Undefined";
-    }
-}
-
 template <>
 std::string convertFromString<std::string>(const std::string& str)
 {
@@ -110,6 +95,46 @@ double convertFromString<double>(const std::string& str)
 }
 
 template <>
+bool convertFromString<bool>(const std::string& str)
+{
+    if( str.size() == 1)
+    {
+        if ( str[0] == '0'){
+            return false;
+        }
+        else if( str[0] == '1'){
+            return true;
+        }
+        else{
+            std::runtime_error("invalid bool conversion");
+        }
+    }
+    else if( str.size() == 4)
+    {
+        if( str == "true" || str == "TRUE" || str == "True")
+        {
+            return true;
+        }
+        else{
+            std::runtime_error("invalid bool conversion");
+        }
+    }
+    else if( str.size() == 5)
+    {
+        if( str == "false" || str == "FALSE" || str == "False")
+        {
+            return false;
+        }
+        else{
+            std::runtime_error("invalid bool conversion");
+        }
+    }
+
+    std::runtime_error("invalid bool conversion");
+    return false;
+}
+
+template <>
 NodeStatus convertFromString<NodeStatus>(const std::string& str)
 {
     for (auto status : {NodeStatus::IDLE, NodeStatus::RUNNING, NodeStatus::SUCCESS, NodeStatus::FAILURE})
@@ -136,18 +161,6 @@ NodeType convertFromString<NodeType>(const std::string& str)
     throw std::invalid_argument(std::string("Cannot convert this to NodeType: ") + str);
 }
 
-template <>
-ResetPolicy convertFromString<ResetPolicy>(const std::string& str)
-{
-    for (auto status : {ResetPolicy::ON_SUCCESS, ResetPolicy::ON_SUCCESS_OR_FAILURE, ResetPolicy::ON_FAILURE})
-    {
-        if (std::strcmp(toStr(status), str.c_str()) == 0)
-        {
-            return status;
-        }
-    }
-    throw std::invalid_argument(std::string("Cannot convert this to ResetPolicy: ") + str);
-}
 
 std::ostream &operator<<(std::ostream &os, const NodeType &type)
 {
@@ -161,11 +174,6 @@ std::ostream &operator<<(std::ostream &os, const NodeStatus &status)
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const ResetPolicy &type)
-{
-    os << toStr(type);
-    return os;
-}
 
 std::vector<std::string> splitString(const std::string &strToSplit, char delimeter)
 {
