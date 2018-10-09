@@ -20,7 +20,6 @@ const std::string xml_text = R"(
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>
             <CloseGripper   name="close_gripper"/>
-            <SaySomething   name="say_done" message="mission completed!" />
         </Sequence>
      </BehaviorTree>
 
@@ -58,7 +57,7 @@ int main()
     factory.registerSimpleAction("CloseGripper", std::bind( &GripperInterface::close, &gripper));
 
     factory.registerNodeType<ApproachObject>("ApproachObject");
-    factory.registerNodeType<SaySomething>("SaySomething");
+
 #else
     // Load dynamically a plugin and register the TreeNodes it contains
     factory.registerFromPlugin("./libdummy_nodes.so");

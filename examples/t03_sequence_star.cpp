@@ -1,6 +1,4 @@
 #include "behavior_tree_core/xml_parsing.h"
-#include "behavior_tree_logger/bt_cout_logger.h"
-#include "behavior_tree_logger/bt_file_logger.h"
 
 #include "dummy_nodes.h"
 #include "movebase_node.h"
@@ -26,7 +24,9 @@ const std::string xml_text_sequence = R"(
         <Sequence name="root">
             <BatteryOK/>
             <TemperatureOK />
+            <SaySomething   message="mission started..." />
             <MoveBase goal="1;2;3"/>
+            <SaySomething   message="mission completed!" />
         </Sequence>
      </BehaviorTree>
 
@@ -39,9 +39,11 @@ const std::string xml_text_sequence_star = R"(
 
      <BehaviorTree ID="MainTree">
         <SequenceStar name="root">
-             <BatteryOK/>
-             <TemperatureOK />
-             <MoveBase goal="1;2;3"/>
+            <BatteryOK/>
+            <TemperatureOK />
+            <SaySomething   message="mission started..." />
+            <MoveBase goal="1;2;3"/>
+            <SaySomething   message="mission completed!" />
         </SequenceStar>
      </BehaviorTree>
 
@@ -57,10 +59,13 @@ void Assert(bool condition)
 
 int main()
 {
+    using namespace DummyNodes;
+
     BehaviorTreeFactory factory;
-    factory.registerSimpleCondition("TemperatureOK", std::bind( DummyNodes::CheckBattery ));
-    factory.registerSimpleCondition("BatteryOK", std::bind( DummyNodes::CheckTemperature ));
+    factory.registerSimpleCondition("TemperatureOK", std::bind( CheckBattery ));
+    factory.registerSimpleCondition("BatteryOK", std::bind( CheckTemperature ));
     factory.registerNodeType<MoveBaseAction>("MoveBase");
+    factory.registerNodeType<SaySomething>("SaySomething");
 
     // Compare the state transitions and messages using either
     // xml_text_sequence and xml_text_sequence_star
@@ -74,15 +79,6 @@ int main()
         std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
 
         auto tree = buildTreeFromText(factory, xml_text);
-
-        // This logger will show all the state transitions on console
-        StdCoutLogger logger_cout(tree.root_node);
-        logger_cout.enableTransitionToIdle(false);// make the log less verbose
-        logger_cout.seTimestampType( TimestampType::RELATIVE );
-
-        // FileLogger will save the state transitions in a custom file format
-        // simple_trace.fbl, that can be visualized using the command line tool [bt_log_cat]
-        FileLogger logger_file(tree.root_node, "simple_trace.fbl");
 
         NodeStatus status;
 
@@ -111,43 +107,35 @@ int main()
 ------------ BUILDING A NEW TREE ------------
 
 --- 1st executeTick() ---
-[0.000]: root                      IDLE -> RUNNING
 [ Temperature: OK ]
-[0.000]: BatteryOK                 IDLE -> SUCCESS
 [ Battery: OK ]
-[0.000]: TemperatureOK             IDLE -> SUCCESS
-[0.000]: MoveBase                  IDLE -> RUNNING
+Robot says: "mission started..."
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
 
 --- 2nd executeTick() ---
 [ Temperature: OK ]
 [ Battery: OK ]
 [ MoveBase: FINISHED ]
-[0.253]: MoveBase                  RUNNING -> SUCCESS
 
 --- 3rd executeTick() ---
 [ Temperature: OK ]
 [ Battery: OK ]
-[0.301]: root                      RUNNING -> SUCCESS
+Robot says: "mission completed!"
 
 
 ------------ BUILDING A NEW TREE ------------
 
 --- 1st executeTick() ---
-[0.000]: root                      IDLE -> RUNNING
 [ Temperature: OK ]
-[0.000]: BatteryOK                 IDLE -> SUCCESS
 [ Battery: OK ]
-[0.000]: TemperatureOK             IDLE -> SUCCESS
-[0.000]: MoveBase                  IDLE -> RUNNING
+Robot says: "mission started..."
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
 
 --- 2nd executeTick() ---
 [ MoveBase: FINISHED ]
-[0.254]: MoveBase                  RUNNING -> SUCCESS
 
 --- 3rd executeTick() ---
-[0.301]: root                      RUNNING -> SUCCESS
+Robot says: "mission completed!"
 
 */
 
