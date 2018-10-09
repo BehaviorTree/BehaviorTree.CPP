@@ -32,6 +32,7 @@
 #include "behavior_tree_core/decorators/always_success_node.h"
 #include "behavior_tree_core/decorators/always_failure_node.h"
 #include "behavior_tree_core/decorators/blackboard_precondition_node.h"
+#include "behavior_tree_core/decorators/deadline_node.h"
 
 namespace BT
 {

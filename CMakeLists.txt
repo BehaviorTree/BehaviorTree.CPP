@@ -61,6 +61,7 @@ set(BT_Source
         src/decorators/negation_node.cpp
         src/decorators/repeat_node.cpp
         src/decorators/retry_node.cpp
+        src/decorators/deadline_node.cpp
 
         src/controls/parallel_node.cpp
         src/controls/fallback_node.cpp
@@ -111,6 +112,7 @@ set(BT_Tests
         gtest/gtest_parallel.cpp
         gtest/gtest_fallback.cpp
         gtest/gtest_factory.cpp
+        gtest/gtest_decorator.cpp
 )
 
 if(catkin_FOUND AND CATKIN_ENABLE_TESTING)

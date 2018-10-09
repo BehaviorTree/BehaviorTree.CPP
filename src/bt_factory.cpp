@@ -38,6 +38,8 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
+
+    registerNodeType<DeadlineNode>("Deadline");
 }
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
