@@ -474,6 +474,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#nodeparameters-in-the-xml" title="NodeParameters in the XML" class="md-nav__link">
+    NodeParameters in the XML
+  </a>
+  
+</li>
+      
       
       
       
@@ -482,6 +489,18 @@
   
 </nav>
     
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_C_blackboard/" title="Blackboards" class="md-nav__link">
+      Blackboards
+    </a>
   </li>
 
         
@@ -524,6 +543,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#nodeparameters-in-the-xml" title="NodeParameters in the XML" class="md-nav__link">
+    NodeParameters in the XML
+  </a>
+  
+</li>
+      
       
       
       
@@ -561,7 +587,7 @@ parsed from file.</p>
 </pre></div>
 
 <ul>
-<li>The following static member funtion must be defined:</li>
+<li>The following static member function must be defined:</li>
 </ul>
 <div class="codehilite"><pre><span></span><span class="k">static</span> <span class="k">const</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
 </pre></div>
@@ -610,11 +636,6 @@ printed on console, without any conversion.</p>
         <span class="k">return</span> <span class="n">params</span><span class="p">;</span>
     <span class="p">}</span>
 <span class="p">};</span>
-</pre></div>
-
-<p>To pass the parameter "message" in the XML representation, use an attribute
-with the same name:</p>
-<div class="codehilite"><pre><span></span><span class="nt">&lt;SaySomething</span> <span class="na">message=</span><span class="s">&quot;Hello World&quot;</span><span class="nt">/&gt;</span>
 </pre></div>
 
 <h2 id="example-conversion-to-user-defined-c-types">Example: conversion to user defined C++ types</h2>
@@ -706,9 +727,11 @@ string "0;0;0" into a Pose2D.</p>
 <span class="p">};</span>
 </pre></div>
 
-<p>The corresponding XML representation, given (x=41.2 , y= 13.5, theta = 0.7),
-would be:</p>
+<h2 id="nodeparameters-in-the-xml">NodeParameters in the XML</h2>
+<p>To pass the parameter in the XML, use an attribute
+with the same name:</p>
 <div class="codehilite"><pre><span></span><span class="nt">&lt;MoveBaseAction</span> <span class="na">goal=</span><span class="s">&quot;41.2;13.5;0.7&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;SaySomething</span>   <span class="na">message=</span><span class="s">&quot;Destination reached&quot;</span><span class="nt">/&gt;</span>
 </pre></div>
                 
                   
@@ -744,6 +767,20 @@ would be:</p>
             </div>
           </a>
         
+        
+          <a href="../tutorial_C_blackboard/" title="Blackboards" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Blackboards
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>
