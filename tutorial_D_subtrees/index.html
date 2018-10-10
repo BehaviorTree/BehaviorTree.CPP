@@ -40,7 +40,7 @@
     
     
       
-        <title>The Basics - BehaviorTree.CPP</title>
+        <title>Compose with Subtrees - BehaviorTree.CPP</title>
       
     
     
@@ -102,10 +102,6 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="../#introduction-to-bts" tabindex="1" class="md-skip">
-        Skip to content
-      </a>
-    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -128,7 +124,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                The Basics
+                Compose with Subtrees
               </span>
             
           
@@ -221,7 +217,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="./" title="Learn the basics" class="md-tabs__link md-tabs__link--active">
+        <a href="../BT_basics/" title="Learn the basics" class="md-tabs__link">
           Learn the basics
         </a>
       
@@ -234,7 +230,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../getting_started/" title="Tutorials" class="md-tabs__link">
+        <a href="../getting_started/" title="Tutorials" class="md-tabs__link md-tabs__link--active">
           Tutorials
         </a>
       
@@ -303,12 +299,10 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+  <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
     
     <label class="md-nav__link" for="nav-2">
       Learn the basics
@@ -324,90 +318,11 @@
           
           
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-      
-    
-    
-      <label class="md-nav__link md-nav__link--active" for="__toc">
-        The Basics
-      </label>
-    
-    <a href="./" title="The Basics" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../BT_basics/" title="The Basics" class="md-nav__link">
       The Basics
     </a>
-    
-      
-<nav class="md-nav md-nav--secondary">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#types-of-nodes" title="Types of nodes" class="md-nav__link">
-    Types of nodes
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#learn-by-example" title="Learn by example" class="md-nav__link">
-    Learn by example
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#sequence" title="Sequence" class="md-nav__link">
-    Sequence
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#decorators" title="Decorators" class="md-nav__link">
-    Decorators
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fallback" title="Fallback" class="md-nav__link">
-    Fallback
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fetch-me-a-beer-revisited" title=""Fetch me a beer" revisited" class="md-nav__link">
-    "Fetch me a beer" revisited
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-      
-      
-      
-      
-    </ul>
-  
-</nav>
-    
   </li>
 
         
@@ -456,10 +371,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
     
     <label class="md-nav__link" for="nav-3">
       Tutorials
@@ -523,11 +440,18 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../tutorial_D_subtrees/" title="Compose with Subtrees" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+    
+    <a href="./" title="Compose with Subtrees" class="md-nav__link md-nav__link--active">
       Compose with Subtrees
     </a>
+    
   </li>
 
         
@@ -567,207 +491,17 @@
               </div>
             
             
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-<nav class="md-nav md-nav--secondary">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#types-of-nodes" title="Types of nodes" class="md-nav__link">
-    Types of nodes
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#learn-by-example" title="Learn by example" class="md-nav__link">
-    Learn by example
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#sequence" title="Sequence" class="md-nav__link">
-    Sequence
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#decorators" title="Decorators" class="md-nav__link">
-    Decorators
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fallback" title="Fallback" class="md-nav__link">
-    Fallback
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fetch-me-a-beer-revisited" title=""Fetch me a beer" revisited" class="md-nav__link">
-    "Fetch me a beer" revisited
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-      
-      
-      
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/Eurecat/BehaviorTree.CPP/edit/master/docs/BT_basics.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/Eurecat/BehaviorTree.CPP/edit/master/docs/tutorial_D_subtrees.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="introduction-to-bts">Introduction to BTs</h1>
-<p>Unlike a Finite State Machine, a Behaviour Tree is a <strong>tree of hierarchical nodes</strong> 
-that controls the flow of decision and the execution of "tasks" or, as we
-will call them further, "<strong>Actions</strong>".</p>
-<p>The <strong>leaves</strong> of the tree are the actual commands, ie.e the place where
-our coordinating component interacts with the rest of the system.</p>
-<p>For instance, in a service-oriented architecture, the leaves would contain
-the "client" code that triggers an action.</p>
-<p>The other nodes of the tree, those which are not leaves, control the 
-"flow of execution".</p>
-<p>To better understand how this flow takes place , imagine a signal, that we will further
-call "<strong>tick</strong>" that is executed at the <strong>root</strong> of the tree and propagates through
-the branches until it reaches one or multiple leaves.</p>
-<p>The result of a tick can be either:</p>
-<ul>
-<li><strong>SUCCESS</strong></li>
-<li><strong>FAILURE</strong></li>
-<li><strong>RUNNING</strong></li>
-</ul>
-<p>The first two, as their names suggest, inform their parent that their operation
- was a success or a failure.</p>
-<p>RUNNING is returned by asynchronous nodes when their execution is not completed
-and they needs more time to return a valid result.</p>
-<p>This C++ library provides also the status <strong>IDLE</strong>; it means that the node is ready to
-start.</p>
-<p>The result of a node is propagated back to the parent, that will decide
-which child should be ticked next or will return a result to its own parent.</p>
-<h2 id="types-of-nodes">Types of nodes</h2>
-<p><strong>ControlNodes</strong> are nodes which can have 1 to N children. Once a tick
-is received, this tick may be propagated to one or more of the children.</p>
-<p><strong>DecoratorNodes</strong> is similar to the ControlNode, but it can have only a single child. </p>
-<p><strong>ActionNodes</strong> are leaves and do not have children. The user should implement
-their own ActionNodes to perform the actual task.</p>
-<p><strong>ConditionNodes</strong> are equivalent to ActionNodes, but
-they are always atomic, i.e. they must not return RUNNING. They should not 
-alter the state of the system.</p>
-<p><img alt="UML hierarchy" src="../images/TypeHierarchy.png" /></p>
-<h2 id="learn-by-example">Learn by example</h2>
-<p>To better understand how a BehaviorTrees work, let's focus on some practical
-examples. For the sake of simplicity we will not take into account what happens
-when an action returns RUNNING.</p>
-<p>We will assume that each Action is executed atomically and synchronously.</p>
-<h3 id="sequence">Sequence</h3>
-<p>Let's illustrate how a BT works using the most basic and frequently used 
-ControlNode: the <a href="../SequenceNode/">SequenceNode</a>.</p>
-<p>The children of a ControlNode are always <strong>ordered</strong>; it is up to the ControlNode
-to consider this order or not.</p>
-<p>In the graphical representation, the order of execution is <strong>from left to right</strong>.</p>
-<p><img alt="Simple Sequence: fridge" src="../images/SequenceBasic.png" /></p>
-<p>In short:</p>
-<ul>
-<li>If a child returns SUCCESS, tick the next one.</li>
-<li>If a child returns FAILURE, then no more children are ticked and the Sequence returns FAILURE.</li>
-<li>If all the children return SUCCESS, then the Sequence returns SUCCESS too.</li>
-</ul>
-<details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If the action <strong>GrabBeer</strong> fails, the door of the 
-fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p>
-</details>
-<h3 id="decorators">Decorators</h3>
-<p>The goal of a <a href="../DecoratorNode/">DecoratorNode</a> is either to transform the result it received 
-from the child, to terminate the child, 
-or repeat ticking of the child, depending on the type of Decorator.</p>
-<p>You can create your own Decorators.</p>
-<p><img alt="Simple Decorator: Enter Room" src="../images/DecoratorEnterRoom.png" /></p>
-<p>The node <strong>Negation</strong> is a Decorator that inverts 
-the result returned by its child; Negation followed by the node called
-<strong>DoorOpen</strong> is therefore equivalent to </p>
-<div class="codehilite"><pre><span></span>&quot;Is the door closed?&quot;.
-</pre></div>
-
-
-<p>The node <strong>Retry</strong> will repeat ticking the child up to N times (3 in this case)
-if the child returns FAILURE.</p>
-<p><strong>Apparently</strong>, the branch on the right side means: </p>
-<div class="codehilite"><pre><span></span>If the door is closed, then try to open it.
-Try up to 3 times, otherwise give up and return FAILURE.
-</pre></div>
-
-
-<p><strong>But</strong> there is an error. Can you find it?</p>
-<details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
-But if it returns SUCCESS, the left branch fails and the entire Sequence
-is interrupted. </p>
-</details>
-<h3 id="fallback">Fallback</h3>
-<p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
-are nodes that can express, as the name suggests, fallback strategies, 
-ie. what to do next if a child returns FAILURE.</p>
-<p>In short, it ticks the children in order and:</p>
-<ul>
-<li>If a child returns FAILURE, tick the next one.</li>
-<li>If a child returns SUCCESS, then no more children are ticked and the Fallback returns SUCCESS.</li>
-<li>If all the children return FAILURE, then the Fallback returns FAILURE too.</li>
-</ul>
-<p>In the next example, you can see how Sequence and Fallbacks can be combined:</p>
-<p><img alt="FallbackNodes" src="../images/FallbackBasic.png" />  </p>
-<blockquote>
-<p>In the door open?</p>
-<p>I not, try to open the door.</p>
-<p>Otherwise, if you have a key, unlock and open the door.</p>
-<p>Otherwise, smash the door. </p>
-<p>If any of these actions succeeded, then enter the room.</p>
-</blockquote>
-<h3 id="fetch-me-a-beer-revisited">"Fetch me a beer" revisited</h3>
-<p>We can now improve the "Fetch Me a Beer" example, which leaves the door open 
-if the beer was not there.</p>
-<p>We use the color "green" to represent nodes which will return
-SUCCESS and "red" for those which return FAILURE. Black nodes are never executed. </p>
-<p><img alt="FetchBeer failure" src="../images/FetchBeerFails.png" /></p>
-<p>Let's create an alternative tree that closes the door even when <strong>GrabBeer</strong> 
-returns FAILURE.</p>
-<p><img alt="FetchBeer failure" src="../images/FetchBeer.png" /></p>
-<p>Both the trees will close the door of the fridge, eventually, but:</p>
-<ul>
-<li>the tree on the <strong>left</strong> side will always return SUCCESS if we managed to
- open and close the fridge.</li>
-<li>the tree on the <strong>right</strong> side will return SUCCESS if the beer was there, 
-FAILURE otherwise.</li>
-</ul>
-<p>Everything works as expected if <strong>GrabBeer</strong> returns SUCCESS.</p>
-<p><img alt="FetchBeer success" src="../images/FetchBeer2.png" /></p>
+                  <h1>Compose with Subtrees</h1>
+                
+                
                 
                   
                 
@@ -788,7 +522,7 @@ FAILURE otherwise.</li>
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href=".." title="Home" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../tutorial_C_blackboard/" title="Use Blackboards" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -797,19 +531,19 @@ FAILURE otherwise.</li>
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Home
+                Use Blackboards
               </span>
             </div>
           </a>
         
         
-          <a href="../SequenceNode/" title="Sequence Nodes" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../tutorial_E_plugins/" title="Create Plugins" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Sequence Nodes
+                Create Plugins
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

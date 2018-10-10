@@ -40,7 +40,7 @@
     
     
       
-        <title>How to create a Tree - BehaviorTree.CPP</title>
+        <title>Create a Tree - BehaviorTree.CPP</title>
       
     
     
@@ -128,7 +128,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                How to create a Tree
+                Create a Tree
               </span>
             
           
@@ -234,8 +234,8 @@
   
     <li class="md-tabs__item">
       
-        <a href="../getting_started/" title="Getting Started" class="md-tabs__link md-tabs__link--active">
-          Getting Started
+        <a href="../getting_started/" title="Tutorials" class="md-tabs__link md-tabs__link--active">
+          Tutorials
         </a>
       
     </li>
@@ -366,18 +366,6 @@
   </li>
 
         
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../BlackBoard/" title="The BlackBoard" class="md-nav__link">
-      The BlackBoard
-    </a>
-  </li>
-
-        
       </ul>
     </nav>
   </li>
@@ -395,11 +383,11 @@
       <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
     
     <label class="md-nav__link" for="nav-3">
-      Getting Started
+      Tutorials
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
       <label class="md-nav__title" for="nav-3">
-        Getting Started
+        Tutorials
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
         
@@ -431,11 +419,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        How to create a Tree
+        Create a Tree
       </label>
     
-    <a href="./" title="How to create a Tree" class="md-nav__link md-nav__link--active">
-      How to create a Tree
+    <a href="./" title="Create a Tree" class="md-nav__link md-nav__link--active">
+      Create a Tree
     </a>
     
       
@@ -498,8 +486,44 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Blackboards" class="md-nav__link">
-      Blackboards
+    <a href="../tutorial_C_blackboard/" title="Use Blackboards" class="md-nav__link">
+      Use Blackboards
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_D_subtrees/" title="Compose with Subtrees" class="md-nav__link">
+      Compose with Subtrees
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_E_plugins/" title="Create Plugins" class="md-nav__link">
+      Create Plugins
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_F_loggers/" title="Log state transitions" class="md-nav__link">
+      Log state transitions
     </a>
   </li>
 
@@ -652,7 +676,7 @@ a function pointer. </p>
 <span class="p">};</span>
 </pre></div>
 
-<p>We can build a <strong>SimpleActionNode</strong> from any of these functors:</p>
+<p>We can build a <code>SimpleActionNode</code> from any of these functors:</p>
 <ul>
 <li>SayHello()</li>
 <li>GripperInterface::open()</li>
@@ -699,7 +723,6 @@ a function pointer. </p>
 <h2 id="tutorial-02-a-dynamically-created-tree">Tutorial 02: a dynamically created Tree</h2>
 <p>Give the following XML stored in the file <strong>my_tree.xml</strong></p>
 <div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span> <span class="nt">&gt;</span>
-
      <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
         <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;root_sequence&quot;</span><span class="nt">&gt;</span>
             <span class="nt">&lt;SayHello</span>       <span class="na">name=</span><span class="s">&quot;action_hello&quot;</span><span class="nt">/&gt;</span>
@@ -708,16 +731,30 @@ a function pointer. </p>
             <span class="nt">&lt;CloseGripper</span>   <span class="na">name=</span><span class="s">&quot;close_gripper&quot;</span><span class="nt">/&gt;</span>
         <span class="nt">&lt;/Sequence&gt;</span>
      <span class="nt">&lt;/BehaviorTree&gt;</span>
-
  <span class="nt">&lt;/root&gt;</span>
 </pre></div>
 
-<p>We must first register our custom TreeNodes into the <strong>BehaviorTreeFactory</strong>
+<p>Note that the following syntax is also valid:</p>
+<div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span> <span class="nt">&gt;</span>
+     <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;root_sequence&quot;</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;SayHello&quot;</span>       <span class="na">name=</span><span class="s">&quot;action_hello&quot;</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;OpenGripper&quot;</span>    <span class="na">name=</span><span class="s">&quot;open_gripper&quot;</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;ApproachObject&quot;</span> <span class="na">name=</span><span class="s">&quot;approach_object&quot;</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;CloseGripper&quot;</span>   <span class="na">name=</span><span class="s">&quot;close_gripper&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;/Sequence&gt;</span>
+     <span class="nt">&lt;/BehaviorTree&gt;</span>
+ <span class="nt">&lt;/root&gt;</span>
+</pre></div>
+
+<p>We must first register our custom TreeNodes into the <code>BehaviorTreeFactory</code>
  and then load the XML from file or text.</p>
-<p>The names used in the XML must conincide with those used to register
+<p>The identifier used in the XML must coincide with those used to register
 the TreeNodes.</p>
 <p>The attribute "name" represent the name of the instance and it is optional.</p>
-<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
+<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_core/xml_parsing.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;Blackboard/blackboard_local.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
