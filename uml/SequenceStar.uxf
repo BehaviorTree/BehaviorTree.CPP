@@ -5,10 +5,11 @@
     <coordinates>
       <x>260</x>
       <y>110</y>
-      <w>120</w>
-      <h>30</h>
+      <w>180</w>
+      <h>40</h>
     </coordinates>
     <panel_attributes>SequenceStar
+reset_on_failure="false"
 fg=blue
 </panel_attributes>
     <additional_attributes/>
@@ -16,7 +17,7 @@ fg=blue
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>160</x>
+      <x>190</x>
       <y>180</y>
       <w>100</w>
       <h>40</h>
@@ -28,40 +29,40 @@ fg=blue
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>200</x>
-      <y>130</y>
+      <x>230</x>
+      <y>140</y>
       <w>140</w>
-      <h>70</h>
+      <h>60</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;50.0;120.0;10.0</additional_attributes>
+    <additional_attributes>10.0;40.0;120.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>310</x>
-      <y>130</y>
+      <x>340</x>
+      <y>140</y>
       <w>30</w>
-      <h>70</h>
+      <h>60</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>310</x>
-      <y>130</y>
+      <x>340</x>
+      <y>140</y>
       <w>140</w>
-      <h>70</h>
+      <h>60</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>120.0;50.0;10.0;10.0</additional_attributes>
+    <additional_attributes>120.0;40.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>270</x>
+      <x>300</x>
       <y>180</y>
       <w>100</w>
       <h>40</h>
@@ -73,7 +74,7 @@ fg=blue
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>380</x>
+      <x>410</x>
       <y>180</y>
       <w>100</w>
       <h>40</h>

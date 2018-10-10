@@ -487,6 +487,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_B_node_parameters/" title="Add NodeParameters" class="md-nav__link">
+      Add NodeParameters
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -565,36 +577,36 @@ your favourite distributed middleware, such as <strong>ROS</strong> of <strong>S
 <p>You can also statically link it into your application (for example a game).</p>
 <p>There are some main concepts  that you need to understand first.</p>
 <h2 id="nodes-vs-trees">Nodes vs Trees</h2>
-<p>The user must create his/her own ActionNodes and ConditionNodes (LeafeNodes) and this 
+<p>The user must create his/her own ActionNodes and ConditionNodes (LeafNodes) and this 
 library helps you to compose them easily into trees. </p>
 <p>Think about the LeafNodes as the building blocks that you need to compose
 a complex system.</p>
-<p>Keep in mind that, by definition, your custom Nodes are (or should be) highly reusable.
-Therefore, even if some heavy litfing might be needed at the beginning,
-the added productivity will compensate that.  </p>
+<p>By definition, your custom Nodes are (or should be) highly reusable.
+Therefore, some wrapping interfaces might be needed at the beginning to adapt your
+legacy code.</p>
 <h2 id="the-tick-callbacks">The tick() callbacks</h2>
 <p>Any TreeNode can be seen as a mechanism to invoke a <strong>callback</strong>, i.e. to 
-run a piece of code. What this callback does is up to you.</p>
-<p>Don't be puzzled by the fact that in most of the examples the Actions just
+<strong>run a piece of code</strong>. What this callback does is up to you.</p>
+<p>In most of the <strong>following examples</strong>, our Actions just
 print messages on the screen of sleep for a certain amount of time to simulate
 a long calculation.</p>
 <h2 id="inheritance-vs-dependency-injection">Inheritance vs dependency injection.</h2>
-<p>To create a custom TreeNode, you should inherit from the proper type.</p>
-<p>For instance, to create your own Action, you should inherit from the 
+<p>To create a custom TreeNode, you should inherit from the proper class.</p>
+<p>For instance, to create your own synchronous Action, you should inherit from the 
 class <strong>ActionNodeBase</strong>. </p>
-<p>Alternatively, we provided a mechanism to create a TreeNode passins a 
-<strong>function pointer</strong> to a wrapper.</p>
-<p>This approach reduce the amount of boilerplate in your code but has also 
+<p>Alternatively, we provided a mechanism to create a TreeNode passing a 
+<strong>function pointer</strong> to a wrapper (dependency injection).</p>
+<p>This approach reduces the amount of boilerplate in your code but has also 
 some limitations; the most important one is that TreeNodes created using 
-function pointers can not support NodeParameters.</p>
+function pointers can not support <a href="../NodeParameters/">NodeParameters</a>.</p>
 <h2 id="nodeparameters">NodeParameters</h2>
 <p>NodeParameters are conceptually similar to the arguments of a function.</p>
 <p>They are passed statically when the tree is instantiated.</p>
 <p>They are expressed as a list of <strong>key/value</strong> pairs, where both the the
 key and the value are strings.</p>
 <p>This is not surprising, since NodeParameters are usually parsed from file.</p>
-<p>The library provides some methods and utlity functions to correctly convert
-values from string to the proper C++ type.  </p>
+<p>The library provides some methods and utility functions to correctly convert
+values from string to the desired C++ type.  </p>
                 
                   
                 

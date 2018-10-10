@@ -507,6 +507,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_B_node_parameters/" title="Add NodeParameters" class="md-nav__link">
+      Add NodeParameters
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -607,11 +619,11 @@ will call them further, "<strong>Actions</strong>".</p>
 our coordinating component interacts with the rest of the system.</p>
 <p>For instance, in a service-oriented architecture, the leaves would contain
 the "client" code that triggers an action.</p>
-<p>All the other nodes of the tree, those which are not leaves, control the 
+<p>The other nodes of the tree, those which are not leaves, control the 
 "flow of execution".</p>
 <p>To better understand how this flow takes place , imagine a signal, that we will further
 call "<strong>tick</strong>" that is executed at the <strong>root</strong> of the tree and propagates through
-the branches until it reaches a leave.</p>
+the branches until it reaches one or multiple leaves.</p>
 <p>The result of a tick can be either:</p>
 <ul>
 <li><strong>SUCCESS</strong></li>
@@ -619,50 +631,49 @@ the branches until it reaches a leave.</p>
 <li><strong>RUNNING</strong></li>
 </ul>
 <p>The first two, as their names suggest, inform their parent that their operation
- was a success or a failure.
-The latter usually means that the execution of the TreeNode is not completed
-and it needs more time to return a valid result.</p>
+ was a success or a failure.</p>
+<p>RUNNING is returned by asynchronous nodes when their execution is not completed
+and they needs more time to return a valid result.</p>
+<p>This C++ library provides also the status <strong>IDLE</strong>; it means that the node is ready to
+start.</p>
 <p>The result of a node is propagated back to the parent, that will decide
-which child should be ticked next or will return a result itself.</p>
+which child should be ticked next or will return a result to its own parent.</p>
 <h2 id="types-of-nodes">Types of nodes</h2>
 <p><strong>ControlNodes</strong> are nodes which can have 1 to N children. Once a tick
 is received, this tick may be propagated to one or more of the children.</p>
-<p><strong>DecoratorNodes</strong> can have only a single child. </p>
+<p><strong>DecoratorNodes</strong> is similar to the ControlNode, but it can have only a single child. </p>
 <p><strong>ActionNodes</strong> are leaves and do not have children. The user should implement
-their own ActionNodes that perform the actual task.</p>
-<p><strong>ConditionNodes</strong> are equivalent to ActionNodes, with the exeption that
-they are alwais aotmic (they should not return RUNNING) and they should not 
+their own ActionNodes to perform the actual task.</p>
+<p><strong>ConditionNodes</strong> are equivalent to ActionNodes, but
+they are always atomic, i.e. they must not return RUNNING. They should not 
 alter the state of the system.</p>
 <p><img alt="UML hierarchy" src="../images/TypeHierarchy.png" /></p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Actions and Conditions differ only in terms of <strong>semantic</strong>. 
-From an implementation point of view they are the same.</p>
-</div>
 <h2 id="learn-by-example">Learn by example</h2>
-<p>To better understand how a BehaviorTrees work let's focus on some practical
+<p>To better understand how a BehaviorTrees work, let's focus on some practical
 examples. For the sake of simplicity we will not take into account what happens
 when an action returns RUNNING.</p>
-<p>We will assume that each Action is executed atomically and synchronously.
-In future sections we will more thoughtfully analyze asynchronous actions.</p>
+<p>We will assume that each Action is executed atomically and synchronously.</p>
 <h3 id="sequence">Sequence</h3>
 <p>Let's illustrate how a BT works using the most basic and frequently used 
 ControlNode: the <a href="../SequenceNode/">SequenceNode</a>.</p>
+<p>The children of a ControlNode are always <strong>ordered</strong>; it is up to the ControlNode
+to consider this order or not.</p>
+<p>In the graphical representation, the order of execution is <strong>from left to right</strong>.</p>
 <p><img alt="Simple Sequence: fridge" src="../images/SequenceBasic.png" /></p>
-<p>It is important to notice that the children of a ControlNode are <strong>ordered</strong>.
-In this case the order of execution is <strong>from left to right</strong>.</p>
-<p>A Sequence works as described next:</p>
+<p>In short:</p>
 <ul>
 <li>If a child returns SUCCESS, tick the next one.</li>
 <li>If a child returns FAILURE, then no more children are ticked and the Sequence returns FAILURE.</li>
-<li>If all the children return SUCCESS, then the Fallback returns SUCCESS too.</li>
+<li>If all the children return SUCCESS, then the Sequence returns SUCCESS too.</li>
 </ul>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If the action <strong>GrabBeer</strong> fails, the door of the 
-fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p></details><h3 id="decorators">Decorators</h3>
+fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p>
+</details>
+<h3 id="decorators">Decorators</h3>
 <p>The goal of a <a href="../DecoratorNode/">DecoratorNode</a> is either to transform the result it received 
 from the child, to terminate the child, 
 or repeat ticking of the child, depending on the type of Decorator.</p>
-<p>You can create your own Decorators too.</p>
+<p>You can create your own Decorators.</p>
 <p><img alt="Simple Decorator: Enter Room" src="../images/DecoratorEnterRoom.png" /></p>
 <p>The node <strong>Negation</strong> is a Decorator that inverts 
 the result returned by its child; Negation followed by the node called
@@ -682,11 +693,13 @@ Try up to 3 times, otherwise give up and return FAILURE.
 <p><strong>But</strong> there is an error. Can you find it?</p>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
 But if it returns SUCCESS, the left branch fails and the entire Sequence
-is interrupted. </p></details><h3 id="fallback">Fallback</h3>
-<p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong> in the literature,
-Is a node that is used to express, as the name suggests, fallback strategies, 
-ie. what to do if a child return FAILURE.</p>
-<p>In short, it ticks the children in order, as usual from left to right and:</p>
+is interrupted. </p>
+</details>
+<h3 id="fallback">Fallback</h3>
+<p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
+are nodes that can express, as the name suggests, fallback strategies, 
+ie. what to do next if a child returns FAILURE.</p>
+<p>In short, it ticks the children in order and:</p>
 <ul>
 <li>If a child returns FAILURE, tick the next one.</li>
 <li>If a child returns SUCCESS, then no more children are ticked and the Fallback returns SUCCESS.</li>
@@ -713,11 +726,11 @@ returns FAILURE.</p>
 <p>Both the trees will close the door of the fridge, eventually, but:</p>
 <ul>
 <li>the tree on the <strong>left</strong> side will always return SUCCESS if we managed to
- open and clode the fridge.</li>
+ open and close the fridge.</li>
 <li>the tree on the <strong>right</strong> side will return SUCCESS if the beer was there, 
 FAILURE otherwise.</li>
 </ul>
-<p>We can easily double-check that everything works as usual if <strong>GrabBeer</strong> returns SUCCESS.</p>
+<p>Everything works as expected if <strong>GrabBeer</strong> returns SUCCESS.</p>
 <p><img alt="FetchBeer success" src="../images/FetchBeer2.png" /></p>
                 
                   

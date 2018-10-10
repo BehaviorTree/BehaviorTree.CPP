@@ -365,8 +365,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sequencenode-default" title="SequenceNode (default)" class="md-nav__link">
-    SequenceNode (default)
+  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
+    SequenceNode
   </a>
   
 </li>
@@ -374,13 +374,6 @@
         <li class="md-nav__item">
   <a href="#sequencestarnode" title="SequenceStarNode" class="md-nav__link">
     SequenceStarNode
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sequenceallnode" title="SequenceAllNode" class="md-nav__link">
-    SequenceAllNode
   </a>
   
 </li>
@@ -480,6 +473,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_B_node_parameters/" title="Add NodeParameters" class="md-nav__link">
+      Add NodeParameters
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -506,8 +511,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sequencenode-default" title="SequenceNode (default)" class="md-nav__link">
-    SequenceNode (default)
+  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
+    SequenceNode
   </a>
   
 </li>
@@ -515,13 +520,6 @@
         <li class="md-nav__item">
   <a href="#sequencestarnode" title="SequenceStarNode" class="md-nav__link">
     SequenceStarNode
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sequenceallnode" title="SequenceAllNode" class="md-nav__link">
-    SequenceAllNode
   </a>
   
 </li>
@@ -546,159 +544,127 @@
                 
                 
                 <h1 id="sequences">Sequences</h1>
-<p>A <strong>Sequence</strong> ticks all it's children, from left to right, as long as 
+<p>A <strong>Sequence</strong> ticks all it's children as long as 
 they return SUCCESS. If any child returns FAILURE, the sequence is aborted.</p>
-<p>Here we introduce different kinds of sequence nodes:</p>
+<p>Currently the framework provides two kinds of nodes:</p>
 <ul>
 <li>SequenceNode</li>
 <li>SequenceStarNode</li>
-<li>SequenceAllNode</li>
 </ul>
-<p>The best way to determine which one should be used is to ask yourself:</p>
-<div class="codehilite"><pre><span></span>Q: &quot;What should I do if one of the childs returns FAILURE?&quot;
-</pre></div>
-
-
-<p>Use <strong>SequenceNode</strong> if you answer is: </p>
-<div class="codehilite"><pre><span></span>A: &quot;Restart the entire sequence&quot;
-</pre></div>
-
-
-<p>Use <strong>SequenceStarNode</strong> if, instead, the answer is: </p>
-<div class="codehilite"><pre><span></span>A: &quot;Try again to execute the child that failed.
-    Do not re-tick children which succeeded already.&quot;
-</pre></div>
-
-
-<p>Last, use <strong>SequenceAllNode</strong> when you want all the children to be ticked at least
-once. If any of them failed, the SequenceAllNode returns FAILURE.   </p>
-<p>The shared logic is:</p>
+<p>They share the following rules:</p>
 <ul>
-<li>Before ticking the first child, sequence becomes <strong>RUNNING</strong>.</li>
-<li>If a child returns <strong>SUCCESS</strong>, it ticks the next child.</li>
-<li>If the <strong>last</strong> child returns <strong>SUCCESS</strong> too, all the children are halted and
- the sequence returns <strong>SUCCESS</strong>.</li>
-<li>If a child returns <strong>RUNNING</strong>, the sequence suspends and returns <strong>RUNNING</strong>. 
-The next time it is ticked, it will tick the same child again.</li>
+<li>
+<p>Before ticking the first child, the node status becomes <strong>RUNNING</strong>.</p>
+</li>
+<li>
+<p>If a child returns <strong>SUCCESS</strong>, it ticks the next child.</p>
+</li>
+<li>
+<p>If the <strong>last</strong> child returns <strong>SUCCESS</strong> too, all the children are halted and
+ the sequence returns <strong>SUCCESS</strong>.</p>
+</li>
 </ul>
-<p>The three sequences differ in what they do if a child returns FAILURE.</p>
-<h2 id="sequencenode-default">SequenceNode (default)</h2>
+<h2 id="sequencenode">SequenceNode</h2>
+<ul>
+<li>
 <p>If a child returns FAILURE, the sequence returns FAILURE.
-Reset the index and halt all the children. 
-The entire sequence will be executed again at the next tick.</p>
+  The index is reset and all the children are halted. </p>
+</li>
+<li>
+<p>If a child returns RUNNING:</p>
+<ul>
+<li>the sequence returns RUNNING.</li>
+<li>the loop is restarted and  all the previous children are ticked again <strong>unless
+   they are ActionNodes</strong>. </li>
+</ul>
+</li>
+</ul>
 <p><strong>Example</strong>:</p>
 <p>This tree represents the behavior of a sniper in a computer game.
 If any of these conditions/actions fails, the entire sequence is executed
 again from the beginning.</p>
+<p>A running actions will be interrupted if <strong>isEnemyVisible</strong> becomes
+false (i.e. it returns FAILURE).</p>
 <p><img alt="SequenceNode" src="../images/SequenceNode.png" /></p>
-<details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="c1">// At the beginning, start from first child </span>
-    <span class="k">if</span><span class="p">(</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">RUNNING</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+<details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="n">status</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
 
-    <span class="k">while</span><span class="p">(</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span> <span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span><span class="p">;</span> <span class="n">index</span><span class="o">++</span><span class="p">)</span>
     <span class="p">{</span>
-        <span class="n">child_state</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
+        <span class="n">child_status</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
 
-        <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
             <span class="c1">// Suspend execution and return RUNNING.</span>
             <span class="c1">// At the next tick, index will be the same.</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
-            <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">RUNNING</span><span class="p">;</span>
         <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// continue the while loop</span>
-            <span class="n">index</span><span class="o">++</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
             <span class="c1">// Suspend execution and return FAILURE.</span>
             <span class="c1">// index is reset and children are halted.</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">FAILURE</span><span class="p">;</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
             <span class="n">HaltAllChildren</span><span class="p">();</span>
-            <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">FAILURE</span><span class="p">;</span>
         <span class="p">}</span>
     <span class="p">}</span>
     <span class="c1">// all the children returned success. Return SUCCESS too.</span>
-    <span class="n">state</span> <span class="o">=</span> <span class="n">SUCCESS</span><span class="p">;</span>
     <span class="n">HaltAllChildren</span><span class="p">();</span>
-    <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
 </pre></div>
-</details><h2 id="sequencestarnode">SequenceStarNode</h2>
-<p>If a child returns FAILURE, the sequence returns FAILURE. At the next tick, 
-the failed child is executed again.</p>
+
+</details>
+<h2 id="sequencestarnode">SequenceStarNode</h2>
+<p>Use this ControlNode when you don't want to tick a child more than once.</p>
+<p>You can customize its behavior using the <a href="../NodeParameters/">NodeParameter</a> "reset_on_failure".</p>
+<ul>
+<li>
+<p>If a child returns FAILURE, the sequence returns FAILURE. </p>
+<ul>
+<li>[reset_on_failure = "true"]: (default) the loop is restarted.</li>
+<li>[reset_on_failure = "false"]: the same failed child is executed again.</li>
+</ul>
+</li>
+<li>
+<p>If a child returns RUNNING, the sequence returns RUNNING.
+  The same child will be ticked again.</p>
+</li>
+</ul>
 <p><strong>Example</strong>:</p>
-<p>This is a patrolling agent/robot that must visit locations A, B and C only once.
+<p>This is a patrolling agent/robot that must visit locations A, B and C <strong>only once</strong>.
 If the action <strong>GoTo(B)</strong> fails, <strong>GoTo(A)</strong> will not be ticked again.</p>
-<p>On the other hand, <strong>isBatteryOK</strong> is visited at every tick, because its parent is a normal SequenceNode.</p>
+<p>On the other hand, <strong>isBatteryOK</strong> must be checked at every tick, 
+for this reason its parent must be a SequenceNode.</p>
 <p><img alt="SequenceStar" src="../images/SequenceStar.png" /></p>
 <details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="c1">// index is initialized to 0 in the constructor</span>
-    <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
 
     <span class="k">while</span><span class="p">(</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span> <span class="p">)</span>
     <span class="p">{</span>
-        <span class="n">child_state</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
+        <span class="n">child_status</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
 
-        <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
             <span class="c1">// Suspend execution and return RUNNING.</span>
             <span class="c1">// At the next tick, index will be the same.</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
-            <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">RUNNING</span><span class="p">;</span>
         <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
             <span class="c1">// continue the while loop</span>
             <span class="n">index</span><span class="o">++</span><span class="p">;</span>
         <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
             <span class="c1">// Suspend execution and return FAILURE.</span>
             <span class="c1">// At the next tick, index will be the same.</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">FAILURE</span><span class="p">;</span>
-            <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+            <span class="k">if</span><span class="p">(</span> <span class="n">reset_on_failure</span> <span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">HaltAllChildren</span><span class="p">();</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">FAILURE</span><span class="p">;</span>
         <span class="p">}</span>
     <span class="p">}</span>
     <span class="c1">// all the children returned success. Return SUCCESS too.</span>
-    <span class="n">state</span> <span class="o">=</span> <span class="n">SUCCESS</span><span class="p">;</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="n">HaltAllChildren</span><span class="p">();</span>
-    <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
 </pre></div>
-</details><h2 id="sequenceallnode">SequenceAllNode</h2>
-<p>All the children are executed at least once. 
-If <strong>any</strong> child returned FAILURE,
-the sequence is <strong>not</strong> interrupted but the sequence itself will return FAILURE. </p>
-<p><strong>Example</strong>:</p>
-<p>If the door of the fridge was succesfully opened, grab a beer.
-<strong>CloseFridge</strong> is always executed, even when <em>GrabBeer</em> failed.</p>
-<p><img alt="SequenceAll" src="../images/SequenceAll.png" /></p>
-<details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="k">if</span><span class="p">(</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">RUNNING</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="n">at_least_one_failure</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
 
-    <span class="k">while</span><span class="p">(</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span> <span class="p">)</span>
-    <span class="p">{</span>
-        <span class="n">child_state</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
-
-        <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// Suspend execution and return RUNNING.</span>
-            <span class="c1">// At the next tick, index will be the same.</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
-            <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="n">index</span><span class="o">++</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_state</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="n">index</span><span class="o">++</span><span class="p">;</span>
-            <span class="n">at_least_one_failure</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="c1">// If any child failed, the entire sequence fails.  </span>
-    <span class="n">state</span> <span class="o">=</span>  <span class="n">at_least_one_failure</span> <span class="o">?</span> <span class="nl">FAILURE</span> <span class="p">:</span> <span class="n">SUCCESS</span><span class="p">;</span>
-    <span class="n">HaltAllChildren</span><span class="p">();</span>
-    <span class="k">return</span> <span class="n">state</span><span class="p">;</span>
-</pre></div>
 </details>
                 
                   

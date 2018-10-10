@@ -102,7 +102,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="../#how-to-create-trees" tabindex="1" class="md-skip">
+      <a href="../#how-to-create-a-behaviortree" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -480,6 +480,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_B_node_parameters/" title="Add NodeParameters" class="md-nav__link">
+      Add NodeParameters
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -545,14 +557,14 @@
                   <a href="https://github.com/Eurecat/BehaviorTree.CPP/edit/master/docs/tutorial_A_create_trees.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="how-to-create-trees">How to create Trees</h1>
+                <h1 id="how-to-create-a-behaviortree">How to create a BehaviorTree</h1>
 <p>You have mainly two ways to create Behavior Trees.</p>
 <ul>
-<li><strong>Statically, at compilation time</strong>.</li>
-<li><strong>Dynamically, at run-time</strong>, i.e. parsing a file.</li>
+<li><strong>Statically</strong>, at compilation time.</li>
+<li><strong>Dynamically</strong>, at run-time, i.e. parsing a file.</li>
 </ul>
-<p>You are strongly encourage to use the latter approach, but we will describe
-the first for the sake of completeness.</p>
+<p>You are <strong>strongly encourage to use the latter approach</strong>, but we will describe
+the former for the sake of completeness.</p>
 <h2 id="how-to-create-your-own-actionnodes">How to create your own ActionNodes</h2>
 <p>You can find the source code here: <a href="../sample_nodes/ dummy_nodes.h">dummy_nodes.h</a></p>
 <p>The default (and recommended) way to create a TreeNode is by inheritance.</p>
@@ -563,17 +575,17 @@ the first for the sake of completeness.</p>
     <span class="n">ApproachObject</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">)</span><span class="o">:</span>
         <span class="n">BT</span><span class="o">::</span><span class="n">ActionNodeBase</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="p">{}</span>
 
-    <span class="c1">// You must override the virtual function tick()</span>
+    <span class="c1">// You must override this virtual function</span>
     <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span> <span class="k">override</span>
     <span class="p">{</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;ApproachObject: &quot;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
 
-    <span class="c1">// You must override the virtual function halt()</span>
+    <span class="c1">// You must override this virtual function</span>
     <span class="k">virtual</span> <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span> 
     <span class="p">{</span>
-        <span class="c1">// Do nothing. This is used by asynchronous nodes.</span>
+        <span class="c1">// Do nothing. This is used by asynchronous nodes only.</span>
     <span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
@@ -581,28 +593,28 @@ the first for the sake of completeness.</p>
 <p>As you can see:</p>
 <ul>
 <li>
-<p>Any TreeNode as a name. This identifier is meant to be user-readable and it 
+<p>Any instance of a TreeNode has a name. This identifier is meant to be user-readable and it 
  doesn't need to be unique.</p>
 </li>
 <li>
 <p>The method <strong>tick()</strong> is the place where the actual Action takes place.
-It must return a NodeStatus RUNNING, SUCCESS or FAILURE. </p>
+It must return a NodeStatus, i.e. RUNNING, SUCCESS or FAILURE. </p>
 </li>
 <li>
 <p>The method <strong>halt()</strong> is used to stop an asynchronous Action. ApproachObject
 doesn't need it.</p>
 </li>
 </ul>
-<p>Alternatively, we can use <strong>dependecy injection to create a TreeNode given 
-a </strong>functor__ (function pointer). </p>
-<p>The only requirement of the funtor is to have either one of these signatures:</p>
-<div class="codehilite"><pre><span></span>BT::NodeStatus myFunction()
-BT::NodeStatus myFunction(TreeNode&amp; self)
+<p>Alternatively, we can use <strong>dependecy injection</strong> to create a TreeNode given 
+a function pointer. </p>
+<p>The only requirement of the functor is to have either one of these signatures:</p>
+<div class="codehilite"><pre><span></span><span class="nt">BT</span><span class="p">::</span><span class="nd">NodeStatus</span> <span class="nt">myFunction</span><span class="o">()</span>
+<span class="nt">BT</span><span class="p">::</span><span class="nd">NodeStatus</span> <span class="nt">myFunction</span><span class="o">(</span><span class="nt">TreeNode</span><span class="o">&amp;</span><span class="nt">amp</span><span class="o">;</span> <span class="nt">self</span><span class="o">)</span>
 </pre></div>
 
 
 <div class="codehilite"><pre><span></span><span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">SayHello</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Robot says: </span><span class="se">\&quot;</span><span class="s">Hello!!!</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Robot says Hello&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
 <span class="p">}</span>
 
@@ -628,7 +640,7 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
 <span class="p">};</span>
 </pre></div>
 
-<p>In the example, we can build a <strong>SimpleActionNode</strong> from:</p>
+<p>We can build a <strong>SimpleActionNode</strong> from any of these functors:</p>
 <ul>
 <li>SayHello()</li>
 <li>GripperInterface::open()</li>
@@ -689,7 +701,10 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
 </pre></div>
 
 <p>We must first register our custom TreeNodes into the <strong>BehaviorTreeFactory</strong>
- and the load the XMl from file or text.</p>
+ and the load the XML from file or text.</p>
+<p>The names used in the XML must conincide with those used to register
+the TreeNodes.</p>
+<p>The attribute "name" represent the name of the instance and it is optional.</p>
 <div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
@@ -708,8 +723,8 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
 
     <span class="n">factory</span><span class="p">.</span><span class="n">registerNodeType</span><span class="o">&lt;</span><span class="n">ApproachObject</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;ApproachObject&quot;</span><span class="p">);</span>
 
-    <span class="c1">// IMPORTANT: when the object tree goes out of scope,</span>
-    <span class="c1">// all the TreeNodes are destroyed</span>
+    <span class="c1">// IMPORTANT: when the object &quot;tree&quot; goes out of scope,</span>
+    <span class="c1">// all the TreeNodes instances are destroyed</span>
     <span class="k">auto</span> <span class="n">tree</span> <span class="o">=</span> <span class="n">buildTreeFromFile</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="s">&quot;./my_tree.xml&quot;</span><span class="p">);</span>
 
     <span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="o">-&gt;</span><span class="n">executeTick</span><span class="p">();</span>
@@ -758,6 +773,20 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
             </div>
           </a>
         
+        
+          <a href="../tutorial_B_node_parameters/" title="Add NodeParameters" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Add NodeParameters
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>
