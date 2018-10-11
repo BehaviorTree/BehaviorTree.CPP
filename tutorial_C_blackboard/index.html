@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="#3f51b5">
+        <meta name="theme-color" content="#2196f3">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="indigo" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
   
     <svg class="md-svg">
       <defs>
@@ -566,9 +566,9 @@
                 
                 
                 <h1 id="blackboards">Blackboards</h1>
-<p>The blackboard is a a key/value storage that can be shared by all the Nodes
+<p>The blackboard is a a <strong>key/value</strong> storage that can be shared by all the Nodes
 of a tree.</p>
-<p>The <strong>key</strong> is a string and the value is a type-erased container (called <code>SafeAny::Any</code>) 
+<p>The <strong>key</strong> is a string whilst the <strong>value</strong> is a type-erased container (called <code>SafeAny::Any</code>) 
 that allows the user to store any C++ object and to cast it back to its original form.</p>
 <p>Contrariwise to <code>boost::any</code> and <code>std::any</code>, this container will also try to 
 avoid common overflow and underflow errors.</p>
@@ -594,13 +594,14 @@ to create a persistent blackboard using a database.</p>
         <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
     <span class="k">else</span><span class="p">{</span>
+        <span class="c1">// No blackboard passed to this node.</span>
         <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">FAILURE</span><span class="p">;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 
-<p>Let's consider now the following XML tree definition:</p>
-<div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span> <span class="nt">&gt;</span>
+<p>Let's consider the following XML tree definition:</p>
+<div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
      <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
         <span class="nt">&lt;SequenceStar&gt;</span>
             <span class="nt">&lt;CalculateGoalPose/&gt;</span>
@@ -614,16 +615,16 @@ to create a persistent blackboard using a database.</p>
 
 <p>The root SequenceStar will execute four actions:</p>
 <ul>
-<li>CalculateGoalPose sets writes into the key "GoalPose".</li>
-<li>The syntax <code>${...}</code> tells to MoveBase to read the goal from the key "GoalPose" in the blackboard.</li>
-<li>Alternatively, you can write a key/value pair into the Blackboard using the built-in action <code>SetBlackboard</code>.</li>
+<li><code>CalculateGoalPose</code> writes into the blackboard key "GoalPose".</li>
+<li>The syntax <code>${...}</code> tells to <code>MoveBase</code> to read the goal from the key "GoalPose" in the blackboard.</li>
+<li>Alternatively, you can write a key/value pair into the blackboard using the built-in action <code>SetBlackboard</code>.</li>
 <li>Similar to step 2. Pose2D is retrieved from "OtherGoal".  </li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For your information, <strong>GoalPose</strong> is stored as a type erased Pose2D.</p>
 <p>On the other hand, <strong>OtherGoal</strong> is stored as a std::string, but is converted 
-to Pose2D the method <code>getParam()</code> using the function <code>convertFromString&lt;Pose2D&gt;()</code>.</p>
+to Pose2D by the method <code>getParam()</code> using the function <code>convertFromString&lt;Pose2D&gt;()</code>.</p>
 </div>
 <p>In the following code sample we can see two equivalent ways to assign a 
 Blackboard to a tree.</p>

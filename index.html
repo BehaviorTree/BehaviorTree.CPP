@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="#3f51b5">
+        <meta name="theme-color" content="#2196f3">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="indigo" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
   
     <svg class="md-svg">
       <defs>
@@ -604,6 +604,7 @@ which are loaded at run-time.</li>
 <li>It includes a <strong>logging/profiling</strong> infrastructure that allows the user 
 to visualize, record, replay and analyze state transitions.</li>
 </ul>
+<p><img alt="ReadTheDocs" src="images/ReadTheDocs.png" />  </p>
 <h2 id="the-problem">The problem</h2>
 <p>Many software systems, being robotics a notable example, are inherently
 complex.</p>
@@ -623,14 +624,14 @@ being <a href="www.ros.org">ROS</a>, <a href="www.yarp.it">YARP</a> and
 <p>If we don't keep these concepts in mind from the very beginning, we create 
 software modules/components which are highly coupled to a particular application,
 instead of being reusable.</p>
-<p>Frequently ,the concern of <strong>Coordination</strong> is mixed with <strong>Computation</strong>. 
+<p>Frequently, the concern of <strong>Coordination</strong> is mixed with <strong>Computation</strong>. 
 In other words, people address the problems of coordinating actions and take decisions
 locally.</p>
-<p>The business logic becomes "spread" in many locations and it is hard for the developer
-to reason about it and to debug errors in the control flow.</p>
+<p>The business logic becomes "spread" in many locations and it is <strong>hard for the developer
+to reason about it and to debug errors</strong> in the control flow.</p>
 <p>To achieve strong separation of concerns it is better to centralize
 the business logic in a single location. </p>
-<p>Finite State Machines were created specifically with this goal in mind, but in
+<p><strong>Finite State Machines</strong> were created specifically with this goal in mind, but in
 the recent years <strong>Behavior Trees</strong> gained popularity, especially in the game industry.</p>
 <h2 id="what-is-a-behavior-tree">What is a Behavior Tree?</h2>
 <p>A Behavior Tree (<strong>BT</strong>) is a way to structure the switching between different 

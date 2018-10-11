@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="#3f51b5">
+        <meta name="theme-color" content="#2196f3">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="indigo" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
   
     <svg class="md-svg">
       <defs>
@@ -565,15 +565,16 @@
 hierarchical</strong>.</p>
 <p>You might have noticed that it is always possible to raise the level of
 abstraction looking one node up in the hierarchy of the tree.</p>
-<p>For example, in the <a href="../BT_basics/">Introduction</a> page we have seen this tree:</p>
+<p>In the <a href="../BT_basics/">Introduction</a> we presented this tree:</p>
 <p><img alt="FallbackNodes" src="../images/FallbackBasic.png" />  </p>
-<p>The Sequence calle "Unlock" can be seen as an entire subtree with an arbitrary
+<p>The Sequence called "Unlock" can be seen as an entire subtree; from the point
+of view of its parent, that subtree can have an arbitrary
 level of complexity.</p>
-<p>BehaviorTree.CPP provides a way to create reusable and composable Subtrees
+<p><strong>BehaviorTree.CPP</strong> provides a way to create reusable and composable Subtrees
 that can be included as nodes of a larger and more complex tree.</p>
 <h2 id="example-subtrees-in-xml">Example: subtrees in XML</h2>
-<p>To use the Subtree funtionality, you <strong>don't</strong> need to modify your
-<strong>cpp</strong> code, nor your existing TreeNodes.</p>
+<p>To define and insert a Subtree you <strong>don't need to modify your
+ c++ code</strong>, nor your existing TreeNodes implementations.</p>
 <p>Multiple BehaviorTrees can be created and composed in the XML itself.</p>
 <div class="codehilite"><pre><span></span><span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
     <span class="c">&lt;!---------------------------------------&gt;</span>

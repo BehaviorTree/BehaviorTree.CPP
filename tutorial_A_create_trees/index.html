@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="#3f51b5">
+        <meta name="theme-color" content="#2196f3">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="indigo" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
   
     <svg class="md-svg">
       <defs>
@@ -644,14 +644,16 @@ doesn't need it.</p>
 <p>Alternatively, we can use <strong>dependecy injection</strong> to create a TreeNode given 
 a function pointer. </p>
 <p>The only requirement of the functor is to have either one of these signatures:</p>
-<div class="codehilite"><pre><span></span>BT::NodeStatus myFunction()
-BT::NodeStatus myFunction(TreeNode&amp; self)
+<div class="codehilite"><pre><span></span>    <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">myFunction</span><span class="p">()</span>
+    <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">myFunction</span><span class="p">(</span><span class="n">BT</span><span class="o">::</span><span class="n">TreeNode</span><span class="o">&amp;</span> <span class="n">self</span><span class="p">)</span> 
 </pre></div>
 
+<p>For example:</p>
+<div class="codehilite"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
 
-<div class="codehilite"><pre><span></span><span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">SayHello</span><span class="p">()</span> <span class="p">{</span>
+<span class="n">NodeStatus</span> <span class="nf">SayHello</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Robot says Hello&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
 <span class="p">}</span>
 
 <span class="k">class</span> <span class="nc">GripperInterface</span>
@@ -659,16 +661,16 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
 <span class="k">public</span><span class="o">:</span>
     <span class="n">GripperInterface</span><span class="p">()</span><span class="o">:</span> <span class="n">_open</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{}</span>
 
-    <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">open</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">NodeStatus</span> <span class="n">open</span><span class="p">()</span> <span class="p">{</span>
         <span class="n">_open</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;GripperInterface::open&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-        <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
 
-    <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">close</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">NodeStatus</span> <span class="n">close</span><span class="p">()</span> <span class="p">{</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;GripperInterface::close&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="n">_open</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
 
 <span class="k">private</span><span class="o">:</span>
@@ -683,6 +685,12 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
 <li>GripperInterface::close()</li>
 </ul>
 <h2 id="a-static-tree">A static Tree</h2>
+<p>Let's create instances of our TreeNodes and compose them into a tree.</p>
+<ul>
+<li><code>BT::SequenceNode</code> is a built-in ControlNode provided by the library.</li>
+<li><code>BT::SimpleActionNode</code> is a synchronous ActionNode created passing a functor.</li>
+<li><code>DummyNodes::ApproachObject</code> is our user-defined ActionNode.</li>
+</ul>
 <div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>

@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="#3f51b5">
+        <meta name="theme-color" content="#2196f3">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="indigo" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
   
     <svg class="md-svg">
       <defs>
@@ -449,8 +449,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example-an-action-with-the-parameter-message" title="Example: an action with the parameter "message"" class="md-nav__link">
-    Example: an action with the parameter "message"
+  <a href="#example-an-action-requiring-the-parameter-message" title="Example: an Action requiring the parameter "message"" class="md-nav__link">
+    Example: an Action requiring the parameter "message"
   </a>
   
 </li>
@@ -554,8 +554,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example-an-action-with-the-parameter-message" title="Example: an action with the parameter "message"" class="md-nav__link">
-    Example: an action with the parameter "message"
+  <a href="#example-an-action-requiring-the-parameter-message" title="Example: an Action requiring the parameter "message"" class="md-nav__link">
+    Example: an Action requiring the parameter "message"
   </a>
   
 </li>
@@ -594,8 +594,8 @@
                 
                 
                 <h1 id="how-to-use-nodeparameters">How to use NodeParameters</h1>
-<p>NodeParameters are like arguments of a function.</p>
-<p>They are a list of <strong>key/value</strong> (both strings) that are usually
+<p>NodeParameters are like arguments passed to a function.</p>
+<p>They are a map of <strong>key/value</strong> pairs (both strings) that are usually
 parsed from file.</p>
 <p>To create a TreeNodes that accepts NodeParameters, you must follow these rules:</p>
 <ul>
@@ -616,10 +616,9 @@ parsed from file.</p>
 <div class="codehilite"><pre><span></span><span class="k">static</span> <span class="k">const</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
 </pre></div>
 
-<h2 id="example-an-action-with-the-parameter-message">Example: an action with the parameter "message"</h2>
-<p>In the following example you can see a simple sunchronous ActionNodeBase.</p>
-<p>The parameter with the <strong>key</strong> "message" is passed as a NodeParameter. Its <strong>value</strong> is
-printed on console, without any conversion.</p>
+<h2 id="example-an-action-requiring-the-parameter-message">Example: an Action requiring the parameter "message"</h2>
+<p><code>SaySomething</code> is a simple synchronous ActionNodeBase which will print the 
+string passed in the NodeParameter called "message".</p>
 <p>Please note:</p>
 <ul>
 <li>
@@ -630,8 +629,8 @@ printed on console, without any conversion.</p>
   The string "default message" is the default value.</p>
 </li>
 <li>
-<p>Parameters MUST be accessed using the method <code>getParam()</code>, preferably in the
-<code>tick()</code> method, since this value may change over time.  </p>
+<p>Parameters must be accessed using the method <code>getParam()</code>, preferably in the
+<code>tick()</code> method.</p>
 </li>
 </ul>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">SaySomething</span><span class="o">:</span> <span class="k">public</span> <span class="n">ActionNodeBase</span>
@@ -760,8 +759,18 @@ string "0;0;0" into a Pose2D.</p>
 <h2 id="nodeparameters-in-the-xml">NodeParameters in the XML</h2>
 <p>To pass the parameter in the XML, use an attribute
 with the same name:</p>
-<div class="codehilite"><pre><span></span><span class="nt">&lt;MoveBaseAction</span> <span class="na">goal=</span><span class="s">&quot;41.2;13.5;0.7&quot;</span><span class="nt">/&gt;</span>
-<span class="nt">&lt;SaySomething</span>   <span class="na">message=</span><span class="s">&quot;Destination reached&quot;</span><span class="nt">/&gt;</span>
+<div class="codehilite"><pre><span></span><span class="nt">&lt;Sequence&gt;</span>
+    <span class="nt">&lt;MoveBaseAction</span> <span class="na">goal=</span><span class="s">&quot;41.2;13.5;0.7&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;SaySomething</span>   <span class="na">message=</span><span class="s">&quot;Destination reached&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;SaySomething/&gt;</span> <span class="c">&lt;!-- No parameter passed  --&gt;</span> 
+<span class="nt">&lt;/Sequence&gt;</span> 
+</pre></div>
+
+<p>Expected output:</p>
+<div class="codehilite"><pre><span></span>[ MoveBase: STARTED ]: goal: x=41.2 y=13.5 theta=0.7
+[ MoveBase: FINISHED ]
+Robot says: Destination reached
+Robot says: default message
 </pre></div>
                 
                   
