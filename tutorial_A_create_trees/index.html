@@ -444,15 +444,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tutorial-01-a-statically-created-tree" title="Tutorial 01: a statically created Tree" class="md-nav__link">
-    Tutorial 01: a statically created Tree
+  <a href="#a-static-tree" title="A static Tree" class="md-nav__link">
+    A static Tree
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#tutorial-02-a-dynamically-created-tree" title="Tutorial 02: a dynamically created Tree" class="md-nav__link">
-    Tutorial 02: a dynamically created Tree
+  <a href="#a-dynamically-created-tree" title="A dynamically created Tree" class="md-nav__link">
+    A dynamically created Tree
   </a>
   
 </li>
@@ -561,15 +561,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tutorial-01-a-statically-created-tree" title="Tutorial 01: a statically created Tree" class="md-nav__link">
-    Tutorial 01: a statically created Tree
+  <a href="#a-static-tree" title="A static Tree" class="md-nav__link">
+    A static Tree
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#tutorial-02-a-dynamically-created-tree" title="Tutorial 02: a dynamically created Tree" class="md-nav__link">
-    Tutorial 02: a dynamically created Tree
+  <a href="#a-dynamically-created-tree" title="A dynamically created Tree" class="md-nav__link">
+    A dynamically created Tree
   </a>
   
 </li>
@@ -602,7 +602,7 @@
 <p>You are <strong>strongly encourage to use the latter approach</strong>, but we will describe
 the former for the sake of completeness.</p>
 <h2 id="how-to-create-your-own-actionnodes">How to create your own ActionNodes</h2>
-<p>You can find the source code here: <a href="../sample_nodes/ dummy_nodes.h">dummy_nodes.h</a></p>
+<p>You can find the source code here: <a href="../sample_nodes/dummy_nodes.h">dummy_nodes.h</a></p>
 <p>The default (and recommended) way to create a TreeNode is by inheritance.</p>
 <div class="codehilite"><pre><span></span><span class="c1">// Example of custom ActionNodeBase (synchronous Action)</span>
 <span class="k">class</span> <span class="nc">ApproachObject</span><span class="o">:</span> <span class="k">public</span> <span class="n">BT</span><span class="o">::</span><span class="n">ActionNodeBase</span>
@@ -682,7 +682,7 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
 <li>GripperInterface::open()</li>
 <li>GripperInterface::close()</li>
 </ul>
-<h2 id="tutorial-01-a-statically-created-tree">Tutorial 01: a statically created Tree</h2>
+<h2 id="a-static-tree">A static Tree</h2>
 <div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
@@ -720,7 +720,7 @@ BT::NodeStatus myFunction(TreeNode&amp; self)
 <span class="cm">*/</span>
 </pre></div>
 
-<h2 id="tutorial-02-a-dynamically-created-tree">Tutorial 02: a dynamically created Tree</h2>
+<h2 id="a-dynamically-created-tree">A dynamically created Tree</h2>
 <p>Give the following XML stored in the file <strong>my_tree.xml</strong></p>
 <div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span> <span class="nt">&gt;</span>
      <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>

@@ -630,14 +630,23 @@ printed on console, without any conversion.</p>
   The string "default message" is the default value.</p>
 </li>
 <li>
-<p>Parameters MUST be accessed using the method <strong>getParam()</strong>.  </p>
+<p>Parameters MUST be accessed using the method <code>getParam()</code>, preferably in the
+<code>tick()</code> method, since this value may change over time.  </p>
 </li>
 </ul>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">SaySomething</span><span class="o">:</span> <span class="k">public</span> <span class="n">ActionNodeBase</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
+    <span class="c1">// There must be a constructor with this signature</span>
 <span class="hll">    <span class="n">SaySomething</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">params</span><span class="p">)</span><span class="o">:</span>
 </span>        <span class="n">ActionNodeBase</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="c1">// It is mandatory to define this static method.</span>
+<span class="hll">    <span class="k">static</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
+</span>    <span class="p">{</span>
+        <span class="k">static</span> <span class="n">NodeParameters</span> <span class="n">params</span> <span class="o">=</span> <span class="p">{{</span><span class="s">&quot;message&quot;</span><span class="p">,</span><span class="s">&quot;default message&quot;</span><span class="p">}};</span>
+        <span class="k">return</span> <span class="n">params</span><span class="p">;</span>
+    <span class="p">}</span>
 
     <span class="k">virtual</span> <span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span> <span class="k">override</span>
     <span class="p">{</span>
@@ -650,15 +659,7 @@ printed on console, without any conversion.</p>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Robot says: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">msg</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
-
     <span class="k">virtual</span> <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span> <span class="p">{}</span>
-
-    <span class="c1">// It is mandatory to define this static method.</span>
-<span class="hll">    <span class="k">static</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
-</span>    <span class="p">{</span>
-        <span class="k">static</span> <span class="n">NodeParameters</span> <span class="n">params</span> <span class="o">=</span> <span class="p">{{</span><span class="s">&quot;message&quot;</span><span class="p">,</span><span class="s">&quot;default message&quot;</span><span class="p">}};</span>
-        <span class="k">return</span> <span class="n">params</span><span class="p">;</span>
-    <span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
 
@@ -672,16 +673,18 @@ printed on console, without any conversion.</p>
 
 <p>If we want the method <code>getParam()</code> to be able to parse a string
 and store its value into a Pose2D, we must provide our own specialization
-of <code>convertFromString&lt;&gt;()</code>.</p>
+of <code>convertFromString&lt;T&gt;()</code>.</p>
 <p>In this case, we want to represent Pose2D as three real numbers separated by 
 semicolons.</p>
-<div class="codehilite"><pre><span></span><span class="k">namespace</span> <span class="n">BT</span><span class="p">{</span>
+<div class="codehilite"><pre><span></span><span class="c1">// use this namespace</span>
+<span class="k">namespace</span> <span class="n">BT</span><span class="p">{</span>
 
 <span class="c1">// This template specialization is needed if you want</span>
 <span class="c1">// to AUTOMATICALLY convert a NodeParameter into a Pose2D</span>
-<span class="hll"><span class="k">template</span> <span class="o">&lt;&gt;</span> <span class="n">Pose2D</span> <span class="n">convertFromString</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">key</span><span class="p">)</span>
+<span class="hll"><span class="k">template</span> <span class="o">&lt;&gt;</span> <span class="n">Pose2D</span> <span class="n">BT</span><span class="o">::</span><span class="n">convertFromString</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">key</span><span class="p">)</span>
 </span><span class="p">{</span>
-    <span class="c1">// Three real numbers separated by semicolons</span>
+    <span class="c1">// Three real numbers separated by semicolons.</span>
+    <span class="c1">// You may use &lt;boost/algorithm/string/split.hpp&gt;  if you prefer</span>
     <span class="k">auto</span> <span class="n">parts</span> <span class="o">=</span> <span class="n">BT</span><span class="o">::</span><span class="n">splitString</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="sc">&#39;;&#39;</span><span class="p">);</span>
     <span class="k">if</span><span class="p">(</span> <span class="n">parts</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">)</span>
     <span class="p">{</span>
@@ -695,9 +698,11 @@ semicolons.</p>
         <span class="k">return</span> <span class="n">output</span><span class="p">;</span>
     <span class="p">}</span>
 <span class="p">}</span>
+
+<span class="p">}</span> <span class="c1">// end naespace</span>
 </pre></div>
 
-<p>We now define a synchronous ActionNode called <strong>MoveBaseAction</strong>.</p>
+<p>We now define a <strong>asynchronous</strong> ActionNode called <strong>MoveBaseAction</strong>.</p>
 <p>The method <code>getParam()</code> will call the function <code>convertFromString&lt;Pose2D&gt;()</code> under the hood;
 alternatively, we can use the latter directly, for instance to convert the default
 string "0;0;0" into a Pose2D.</p>
@@ -722,7 +727,7 @@ string "0;0;0" into a Pose2D.</p>
         <span class="n">Pose2D</span> <span class="n">goal</span><span class="p">;</span>
 <span class="hll">        <span class="k">if</span><span class="p">(</span> <span class="n">getParam</span><span class="o">&lt;</span><span class="n">Pose2D</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">,</span> <span class="n">goal</span><span class="p">)</span> <span class="o">==</span> <span class="nb">false</span> <span class="p">)</span>
 </span><span class="hll">        <span class="p">{</span>
-</span><span class="hll">            <span class="k">auto</span> <span class="n">default_goal_value</span> <span class="o">=</span>  <span class="n">requiredNodeParameters</span><span class="p">().</span><span class="n">at</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">);</span>
+</span><span class="hll">            <span class="k">auto</span> <span class="n">default_goal</span> <span class="o">=</span>  <span class="n">requiredNodeParameters</span><span class="p">().</span><span class="n">at</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">);</span>
 </span><span class="hll">            <span class="n">goal</span> <span class="o">=</span> <span class="n">BT</span><span class="o">::</span><span class="n">convertFromString</span><span class="o">&lt;</span><span class="n">Pose2D</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">default_goal_value</span> <span class="p">);</span>
 </span><span class="hll">        <span class="p">}</span>
 </span>
@@ -732,14 +737,15 @@ string "0;0;0" into a Pose2D.</p>
         <span class="n">halt_requested_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
 
         <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="c1">// &quot;compute&quot; for 250 milliseconds or until halt_requested_ is true</span>
+        <span class="c1">// &quot;compute&quot; for 250 milliseconds or until halt_requested_</span>
         <span class="k">while</span><span class="p">(</span> <span class="o">!</span><span class="n">halt_requested_</span> <span class="o">&amp;&amp;</span> <span class="n">count</span><span class="o">++</span> <span class="o">&lt;</span> <span class="mi">25</span><span class="p">)</span>
         <span class="p">{</span>
             <span class="n">SleepMilliseconds</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
         <span class="p">}</span>
 
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[ MoveBase: FINISHED ]&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-        <span class="k">return</span> <span class="n">halt_requested_</span> <span class="o">?</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="nl">SUCCESS</span> <span class="p">:</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">halt_requested_</span> <span class="o">?</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="nl">FAILURE</span> <span class="p">:</span> 
+                                 <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
 
     <span class="k">virtual</span> <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span> 

@@ -572,18 +572,20 @@ level of complexity.</p>
 <p>BehaviorTree.CPP provides a way to create reusable and composable Subtrees
 that can be included as nodes of a larger and more complex tree.</p>
 <h2 id="example-subtrees-in-xml">Example: subtrees in XML</h2>
+<p>To use the Subtree funtionality, you <strong>don't</strong> need to modify your
+<strong>cpp</strong> code, nor your existing TreeNodes.</p>
+<p>Multiple BehaviorTrees can be created and composed in the XML itself.</p>
 <div class="codehilite"><pre><span></span><span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
     <span class="c">&lt;!---------------------------------------&gt;</span>
     <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;DoorClosed&quot;</span><span class="nt">&gt;</span>
         <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;door_closed_sequence&quot;</span><span class="nt">&gt;</span>
             <span class="nt">&lt;Negation&gt;</span>
-                <span class="nt">&lt;Condition</span> <span class="na">ID=</span><span class="s">&quot;IsDoorOpen&quot;</span><span class="nt">/&gt;</span>
+                <span class="nt">&lt;IsDoorOpen/&gt;</span>
             <span class="nt">&lt;/Negation&gt;</span>
             <span class="nt">&lt;RetryUntilSuccesful</span> <span class="na">num_attempts=</span><span class="s">&quot;4&quot;</span><span class="nt">&gt;</span>
                 <span class="nt">&lt;OpenDoor/&gt;</span>
             <span class="nt">&lt;/RetryUntilSuccesful&gt;</span>
             <span class="nt">&lt;PassThroughDoor/&gt;</span>
-            <span class="nt">&lt;CloseDoor/&gt;</span>
         <span class="nt">&lt;/Sequence&gt;</span>
     <span class="nt">&lt;/BehaviorTree&gt;</span>
     <span class="c">&lt;!---------------------------------------&gt;</span>
@@ -593,13 +595,16 @@ that can be included as nodes of a larger and more complex tree.</p>
                 <span class="nt">&lt;IsDoorOpen/&gt;</span>
                 <span class="nt">&lt;PassThroughDoor/&gt;</span>
             <span class="nt">&lt;/Sequence&gt;</span>
-            <span class="nt">&lt;SubTree</span> <span class="na">ID=</span><span class="s">&quot;DoorClosed&quot;</span><span class="nt">/&gt;</span>
-            <span class="nt">&lt;PassThroughWindow/&gt;</span>
+<span class="hll">            <span class="nt">&lt;SubTree</span> <span class="na">ID=</span><span class="s">&quot;DoorClosed&quot;</span><span class="nt">/&gt;</span>
+</span>            <span class="nt">&lt;PassThroughWindow/&gt;</span>
         <span class="nt">&lt;/Fallback&gt;</span>
     <span class="nt">&lt;/BehaviorTree&gt;</span>
     <span class="c">&lt;!---------------------------------------&gt;</span> 
 <span class="nt">&lt;/root&gt;</span>
 </pre></div>
+
+<p>The corresponding graphical representation is:</p>
+<p><img alt="CrossDoorSubtree" src="../images/CrossDoorSubtree.png" /> </p>
                 
                   
                 
