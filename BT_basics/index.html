@@ -40,7 +40,7 @@
     
     
       
-        <title>The Basics - BehaviorTree.CPP</title>
+        <title>Introduction - BehaviorTree.CPP</title>
       
     
     
@@ -60,8 +60,8 @@
     
       
         <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
-        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Ubuntu","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
     
     <link rel="stylesheet" href="../assets/fonts/material-icons.css">
@@ -128,7 +128,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                The Basics
+                Introduction
               </span>
             
           
@@ -335,11 +335,11 @@
     
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
-        The Basics
+        Introduction
       </label>
     
-    <a href="./" title="The Basics" class="md-nav__link md-nav__link--active">
-      The Basics
+    <a href="./" title="Introduction" class="md-nav__link md-nav__link--active">
+      Introduction
     </a>
     
       
@@ -477,8 +477,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../getting_started/" title="Main concepts" class="md-nav__link">
-      Main concepts
+    <a href="../getting_started/" title="Getting started" class="md-nav__link">
+      Getting started
     </a>
   </li>
 
@@ -537,8 +537,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Create Plugins" class="md-nav__link">
-      Create Plugins
+    <a href="../tutorial_E_plugins/" title="Create a Plugin" class="md-nav__link">
+      Create a Plugin
     </a>
   </li>
 
@@ -703,9 +703,7 @@ to consider this order or not.</p>
 <li>If all the children return SUCCESS, then the Sequence returns SUCCESS too.</li>
 </ul>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If the action <strong>GrabBeer</strong> fails, the door of the 
-fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p>
-</details>
-<h3 id="decorators">Decorators</h3>
+fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p></details><h3 id="decorators">Decorators</h3>
 <p>The goal of a <a href="../DecoratorNode/">DecoratorNode</a> is either to transform the result it received 
 from the child, to terminate the child, 
 or repeat ticking of the child, depending on the type of Decorator.</p>
@@ -729,9 +727,7 @@ Try up to 3 times, otherwise give up and return FAILURE.
 <p><strong>But</strong> there is an error. Can you find it?</p>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
 But if it returns SUCCESS, the left branch fails and the entire Sequence
-is interrupted. </p>
-</details>
-<h3 id="fallback">Fallback</h3>
+is interrupted. </p></details><h3 id="fallback">Fallback</h3>
 <p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
 are nodes that can express, as the name suggests, fallback strategies, 
 ie. what to do next if a child returns FAILURE.</p>
