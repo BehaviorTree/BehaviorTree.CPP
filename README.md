@@ -24,9 +24,10 @@ Reference
 ------------
 Please refer to the following paper when using the library:
 
-**How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture, and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
+**How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture,
+and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
 
-bibtex entry:
+Bibtex entry:
 
 `@ARTICLE{TRO17Colledanchise,` <br/>
 `author={M. Colledanchise and P. Ögren},` <br/>
@@ -41,18 +42,25 @@ bibtex entry:
 `ISSN={1552-3098},` <br/>
 `month={April},}`<br/>
 
-  
-# Aknowledgement
+Further readings
+---------------
 
-This project is one of the main components of [MOOD2Be](https://eurecat.org/es/portfolio-items/mood2be/),
+The book Behavior Trees in Robotics and AI, published by CRC Press Taylor & Francis, is available for purchase
+(ebook and hardcover) on the CRC Press Store or Amazon. The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
+
+Tutorials available at https://btirai.github.io/
+  
+Aknowledgement
+------------
+This library is the result of the join effort between **Eurecat** (main autjor, Davide Faconti) and the
+**Italian Institute of Technology** (Michele Colledanchise).
+
+It is one of the main components of [MOOD2Be](https://eurecat.org/es/portfolio-items/mood2be/),
 and it is developed at [Eurecat](https://eurecat.org) by Davide Faconti.
 
 MOOD2Be is one of the six **Integrated Technical Projects (ITPs)** selected from the 
-[RobMoSys first open call](https://robmosys.eu/itp/)
-. 
-It received funding from the European Union’s Horizon 2020 Research and Innovation Programme
-under the RobMoSys project.
-
+[RobMoSys first open call](https://robmosys.eu/itp/) and it received funding from the European
+Union’s Horizon 2020 Research and Innovation Programme.
 
 License
 -------
