@@ -26,12 +26,9 @@ SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, bool res
 SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, const NodeParameters& params)
   : ControlNode::ControlNode(name, params)
   ,  current_child_idx_(0)
-  , reset_on_failure_(false)
+  , reset_on_failure_(true)
 {
-    auto param = getParam<bool>("reset_on_failure");
-    if(param){
-        reset_on_failure_ = param.value();
-    }
+    getParam<bool>("reset_on_failure", reset_on_failure_);
 }
 
 NodeStatus SequenceNodeWithMemory::tick()
