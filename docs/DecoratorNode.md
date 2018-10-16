@@ -5,7 +5,7 @@ A decorator is a node that can have only a single child.
 It is up to the Decorator to decide if, when and how many times the child should be
 ticked.
 
-## NegationNode
+## InverterNode
 
 Tick the child once and return SUCCESS if the child failed or FAILURE if
 the child succeeded.

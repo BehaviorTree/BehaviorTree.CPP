@@ -1,5 +1,5 @@
-#ifndef DEADLINE_NODE_H
-#define DEADLINE_NODE_H
+#ifndef DECORATOR_TIMEOUT_NODE_H
+#define DECORATOR_TIMEOUT_NODE_H
 
 #include "behavior_tree_core/decorator_node.h"
 #include <atomic>
@@ -7,13 +7,13 @@
 
 namespace BT
 {
-class DeadlineNode : public DecoratorNode
+class TimeoutNode : public DecoratorNode
 {
   public:
 
-    DeadlineNode(const std::string& name, unsigned milliseconds);
+    TimeoutNode(const std::string& name, unsigned milliseconds);
 
-    DeadlineNode(const std::string& name,const NodeParameters& params);
+    TimeoutNode(const std::string& name,const NodeParameters& params);
 
     static const NodeParameters& requiredNodeParameters()
     {

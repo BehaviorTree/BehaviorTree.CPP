@@ -16,9 +16,9 @@ const std::string xml_text = R"(
 	<!--------------------------------------->
     <BehaviorTree ID="DoorClosed">
         <Sequence name="door_closed_sequence">
-            <Negation>
+            <Inverter>
                 <Condition ID="IsDoorOpen"/>
-            </Negation>
+            </Inverter>
             <RetryUntilSuccesful num_attempts="4">
                 <OpenDoor/>
             </RetryUntilSuccesful>

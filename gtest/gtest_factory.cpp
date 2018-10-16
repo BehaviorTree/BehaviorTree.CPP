@@ -19,7 +19,7 @@ const std::string xml_text = R"(
             </Sequence>
 
             <Sequence name="door_closed_sequence">
-                <Decorator ID="Negation">
+                <Decorator ID="Inverter">
                      <Action ID="IsDoorOpen" />
                 </Decorator>
                 <Action ID="OpenDoor" />
@@ -56,7 +56,7 @@ const std::string xml_text_subtree = R"(
 
   <BehaviorTree ID="CrossDoorSubtree">
     <Sequence name="door_sequence">
-      <Decorator ID="Negation">
+      <Decorator ID="Inverter">
         <Action ID="IsDoorLocked" />
       </Decorator>
       <Action ID="OpenDoor" />
@@ -123,12 +123,12 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_TRUE(sequence_closed != nullptr);
 
     ASSERT_EQ(sequence_closed->children().size(), 4);
-    ASSERT_EQ(sequence_closed->child(0)->name(), "Negation");
+    ASSERT_EQ(sequence_closed->child(0)->name(), "Inverter");
     ASSERT_EQ(sequence_closed->child(1)->name(), "OpenDoor");
     ASSERT_EQ(sequence_closed->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence_closed->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::NegationNode*>(sequence_closed->child(0));
+    auto decorator = dynamic_cast<const BT::InverterNode*>(sequence_closed->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorOpen");
@@ -173,12 +173,12 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_TRUE(sequence != nullptr);
 
     ASSERT_EQ(sequence->children().size(), 4);
-    ASSERT_EQ(sequence->child(0)->name(), "Negation");
+    ASSERT_EQ(sequence->child(0)->name(), "Inverter");
     ASSERT_EQ(sequence->child(1)->name(), "OpenDoor");
     ASSERT_EQ(sequence->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::NegationNode*>(sequence->child(0));
+    auto decorator = dynamic_cast<const BT::InverterNode*>(sequence->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorLocked");

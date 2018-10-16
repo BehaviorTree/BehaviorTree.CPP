@@ -24,7 +24,7 @@
 #include "behavior_tree_core/action_node.h"
 #include "behavior_tree_core/condition_node.h"
 
-#include "behavior_tree_core/decorators/negation_node.h"
+#include "behavior_tree_core/decorators/inverter_node.h"
 #include "behavior_tree_core/decorators/retry_node.h"
 #include "behavior_tree_core/decorators/repeat_node.h"
 #include "behavior_tree_core/decorators/subtree_node.h"
@@ -35,8 +35,8 @@
 
 #include "behavior_tree_core/decorators/force_success_node.h"
 #include "behavior_tree_core/decorators/force_failure_node.h"
-#include "behavior_tree_core/decorators/blackboard_precondition_node.h"
-#include "behavior_tree_core/decorators/deadline_node.h"
+#include "behavior_tree_core/decorators/blackboard_precondition.h"
+#include "behavior_tree_core/decorators/timeout_node.h"
 
 namespace BT
 {

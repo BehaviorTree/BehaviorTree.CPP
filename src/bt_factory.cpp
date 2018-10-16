@@ -23,9 +23,10 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<SequenceNode>("Sequence");
     registerNodeType<SequenceNodeWithMemory>("SequenceStar");
 
-    registerNodeType<NegationNode>("Negation");
+    registerNodeType<InverterNode>("Inverter");
     registerNodeType<RetryNode>("RetryUntilSuccesful");
     registerNodeType<RepeatNode>("Repeat");
+    registerNodeType<TimeoutNode>("Timeout");
 
     registerNodeType<ForceSuccessDecorator>("ForceSuccess");
     registerNodeType<ForceFailureDecorator>("ForceFailure");
@@ -39,8 +40,6 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
-
-    registerNodeType<DeadlineNode>("Deadline");
 }
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
@@ -64,27 +63,6 @@ void BehaviorTreeFactory::registerBuilder(const std::string& ID, NodeBuilder bui
 
     builders_.insert(std::make_pair(ID, builder));
 }
-
-//void BehaviorTreeFactory::registerSimpleCondition(const std::string &ID,
-//                                                  const std::function<NodeStatus()> &tick_functor)
-//{
-//    auto wrapper = [tick_functor](const Blackboard::Ptr&){ return tick_functor(); };
-//    registerSimpleCondition(ID, wrapper);
-//}
-
-//void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
-//                                               const std::function<NodeStatus()> &tick_functor)
-//{
-//    auto wrapper = [tick_functor](const Blackboard::Ptr&){ return tick_functor(); };
-//    registerSimpleAction(ID, wrapper);
-//}
-
-//void BehaviorTreeFactory::registerSimpleDecorator(const std::string& ID,
-//                                                  const std::function<NodeStatus(NodeStatus)> &tick_functor)
-//{
-//    auto wrapper = [tick_functor](NodeStatus status, const Blackboard::Ptr&){ return tick_functor(status); };
-//    registerSimpleDecorator(ID, wrapper);
-//}
 
 void BehaviorTreeFactory::registerSimpleCondition(const std::string &ID,
                                                   const SimpleConditionNode::TickFunctor &tick_functor)

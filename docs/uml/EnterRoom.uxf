@@ -52,7 +52,7 @@
       <w>100</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>Negation
+    <panel_attributes>Inverter
 fg=blue</panel_attributes>
     <additional_attributes/>
   </element>

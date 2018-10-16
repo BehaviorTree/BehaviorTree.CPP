@@ -1,8 +1,8 @@
-#include "behavior_tree_core/decorators/deadline_node.h"
+#include "behavior_tree_core/decorators/timeout_node.h"
 
 namespace BT {
 
-DeadlineNode::DeadlineNode(const std::string &name,
+TimeoutNode::TimeoutNode(const std::string &name,
                                unsigned milliseconds):
     DecoratorNode(name, {}),
     child_halted_(false),
@@ -11,7 +11,7 @@ DeadlineNode::DeadlineNode(const std::string &name,
 
 }
 
-DeadlineNode::DeadlineNode(const std::string &name,
+TimeoutNode::TimeoutNode(const std::string &name,
                                const BT::NodeParameters &params) :
     DecoratorNode(name, params),
     child_halted_(false),
@@ -24,7 +24,7 @@ DeadlineNode::DeadlineNode(const std::string &name,
     }
 }
 
-NodeStatus DeadlineNode::tick()
+NodeStatus TimeoutNode::tick()
 {
     if( status() == NodeStatus::IDLE )
     {

@@ -11,15 +11,15 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/decorators/negation_node.h"
+#include "behavior_tree_core/decorators/inverter_node.h"
 
 namespace BT
 {
-NegationNode::NegationNode(const std::string& name) : DecoratorNode(name, NodeParameters())
+InverterNode::InverterNode(const std::string& name) : DecoratorNode(name, NodeParameters())
 {
 }
 
-NodeStatus NegationNode::tick()
+NodeStatus InverterNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
 

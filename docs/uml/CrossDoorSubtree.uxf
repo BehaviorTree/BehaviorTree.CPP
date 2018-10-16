@@ -132,7 +132,7 @@
       <w>80</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>Negation</panel_attributes>
+    <panel_attributes>Inverter</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

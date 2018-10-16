@@ -20,7 +20,7 @@ using BT::NodeStatus;
 
 struct DeadlineTest : testing::Test
 {
-    BT::DeadlineNode root;
+    BT::TimeoutNode root;
     BT::AsyncActionTest action;
 
     DeadlineTest()

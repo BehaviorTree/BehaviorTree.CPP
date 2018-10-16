@@ -96,8 +96,8 @@ You can create your own Decorators.
 
 ![Simple Decorator: Enter Room](images/DecoratorEnterRoom.png)
 
-The node __Negation__ is a Decorator that inverts 
-the result returned by its child; Negation followed by the node called
+The node __Inverter__ is a Decorator that inverts 
+the result returned by its child; Inverter followed by the node called
 __DoorOpen__ is therefore equivalent to 
 
     "Is the door closed?".

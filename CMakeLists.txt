@@ -58,10 +58,10 @@ set(BT_Source
         src/shared_library.cpp
         src/shared_library_UNIX.cpp
 
-        src/decorators/negation_node.cpp
+        src/decorators/inverter_node.cpp
         src/decorators/repeat_node.cpp
         src/decorators/retry_node.cpp
-        src/decorators/deadline_node.cpp
+        src/decorators/timeout_node.cpp
 
         src/controls/parallel_node.cpp
         src/controls/fallback_node.cpp

@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+/* Copyright (C) 2018 Michele Colledanchise -  All Rights Reserved
  * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -11,19 +11,19 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATORNEGATIONNODE_H
-#define DECORATORNEGATIONNODE_H
+#ifndef DECORATOR_INVERTER_NODE_H
+#define DECORATOR_INVERTER_NODE_H
 
 #include "behavior_tree_core/decorator_node.h"
 
 namespace BT
 {
-class NegationNode : public DecoratorNode
+class InverterNode : public DecoratorNode
 {
   public:
-    NegationNode(const std::string& name);
+    InverterNode(const std::string& name);
 
-    virtual ~NegationNode() override = default;
+    virtual ~InverterNode() override = default;
 
   private:
     virtual BT::NodeStatus tick() override;

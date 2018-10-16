@@ -30,9 +30,9 @@ Multiple BehaviorTrees can be created and composed in the XML itself.
 	<!--------------------------------------->
     <BehaviorTree ID="DoorClosed">
         <Sequence name="door_closed_sequence">
-            <Negation>
+            <Inverter>
                 <IsDoorOpen/>
-            </Negation>
+            </Inverter>
             <RetryUntilSuccesful num_attempts="4">
                 <OpenDoor/>
             </RetryUntilSuccesful>
