@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="">
+        <meta name="theme-color" content="#2196f3">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="dark-blue" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
   
     <svg class="md-svg">
       <defs>
@@ -489,8 +489,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_A_create_trees/" title="Tutorial 1: Tree and Nodes" class="md-nav__link">
-      Tutorial 1: Tree and Nodes
+    <a href="../tutorial_A_create_trees/" title="Create a Tree" class="md-nav__link">
+      Create a Tree
     </a>
   </li>
 
@@ -501,8 +501,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-nav__link">
-      Tutorial 2: NodeParameters
+    <a href="../tutorial_B_node_parameters/" title="Add NodeParameters" class="md-nav__link">
+      Add NodeParameters
     </a>
   </li>
 
@@ -513,8 +513,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-nav__link">
-      Tutorial 3: Blackboards
+    <a href="../tutorial_C_blackboard/" title="Use Blackboards" class="md-nav__link">
+      Use Blackboards
     </a>
   </li>
 
@@ -525,8 +525,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_D_subtrees/" title="Tutorial 4: Subtrees" class="md-nav__link">
-      Tutorial 4: Subtrees
+    <a href="../tutorial_D_subtrees/" title="Compose with Subtrees" class="md-nav__link">
+      Compose with Subtrees
     </a>
   </li>
 
@@ -537,8 +537,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-nav__link">
-      Tutorial 5: Plugins
+    <a href="../tutorial_E_plugins/" title="Create a Plugin" class="md-nav__link">
+      Create a Plugin
     </a>
   </li>
 
@@ -549,8 +549,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_F_loggers/" title="Tutorial 6: Loggers" class="md-nav__link">
-      Tutorial 6: Loggers
+    <a href="../tutorial_F_loggers/" title="Log state transitions" class="md-nav__link">
+      Log state transitions
     </a>
   </li>
 
@@ -709,8 +709,8 @@ from the child, to terminate the child,
 or repeat ticking of the child, depending on the type of Decorator.</p>
 <p>You can create your own Decorators.</p>
 <p><img alt="Simple Decorator: Enter Room" src="../images/DecoratorEnterRoom.png" /></p>
-<p>The node <strong>Negation</strong> is a Decorator that inverts 
-the result returned by its child; Negation followed by the node called
+<p>The node <strong>Inverter</strong> is a Decorator that inverts 
+the result returned by its child; Inverter followed by the node called
 <strong>DoorOpen</strong> is therefore equivalent to </p>
 <div class="codehilite"><pre><span></span>&quot;Is the door closed?&quot;.
 </pre></div>
@@ -741,7 +741,7 @@ ie. what to do next if a child returns FAILURE.</p>
 <p><img alt="FallbackNodes" src="../images/FallbackBasic.png" />  </p>
 <blockquote>
 <p>In the door open?</p>
-<p>If not, try to open the door.</p>
+<p>I not, try to open the door.</p>
 <p>Otherwise, if you have a key, unlock and open the door.</p>
 <p>Otherwise, smash the door. </p>
 <p>If any of these actions succeeded, then enter the room.</p>

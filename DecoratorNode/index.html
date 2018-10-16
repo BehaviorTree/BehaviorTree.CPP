@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="">
+        <meta name="theme-color" content="#2196f3">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="dark-blue" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
   
     <svg class="md-svg">
       <defs>
@@ -389,8 +389,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#negationnode" title="NegationNode" class="md-nav__link">
-    NegationNode
+  <a href="#inverternode" title="InverterNode" class="md-nav__link">
+    InverterNode
   </a>
   
 </li>
@@ -476,8 +476,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_A_create_trees/" title="Tutorial 1: Tree and Nodes" class="md-nav__link">
-      Tutorial 1: Tree and Nodes
+    <a href="../tutorial_A_create_trees/" title="Create a Tree" class="md-nav__link">
+      Create a Tree
     </a>
   </li>
 
@@ -488,8 +488,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-nav__link">
-      Tutorial 2: NodeParameters
+    <a href="../tutorial_B_node_parameters/" title="Add NodeParameters" class="md-nav__link">
+      Add NodeParameters
     </a>
   </li>
 
@@ -500,8 +500,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-nav__link">
-      Tutorial 3: Blackboards
+    <a href="../tutorial_C_blackboard/" title="Use Blackboards" class="md-nav__link">
+      Use Blackboards
     </a>
   </li>
 
@@ -512,8 +512,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_D_subtrees/" title="Tutorial 4: Subtrees" class="md-nav__link">
-      Tutorial 4: Subtrees
+    <a href="../tutorial_D_subtrees/" title="Compose with Subtrees" class="md-nav__link">
+      Compose with Subtrees
     </a>
   </li>
 
@@ -524,8 +524,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-nav__link">
-      Tutorial 5: Plugins
+    <a href="../tutorial_E_plugins/" title="Create a Plugin" class="md-nav__link">
+      Create a Plugin
     </a>
   </li>
 
@@ -536,8 +536,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_F_loggers/" title="Tutorial 6: Loggers" class="md-nav__link">
-      Tutorial 6: Loggers
+    <a href="../tutorial_F_loggers/" title="Log state transitions" class="md-nav__link">
+      Log state transitions
     </a>
   </li>
 
@@ -568,8 +568,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#negationnode" title="NegationNode" class="md-nav__link">
-    NegationNode
+  <a href="#inverternode" title="InverterNode" class="md-nav__link">
+    InverterNode
   </a>
   
 </li>
@@ -625,7 +625,7 @@
 <p>A decorator is a node that can have only a single child.</p>
 <p>It is up to the Decorator to decide if, when and how many times the child should be
 ticked.</p>
-<h2 id="negationnode">NegationNode</h2>
+<h2 id="inverternode">InverterNode</h2>
 <p>Tick the child once and return SUCCESS if the child failed or FAILURE if
 the child succeeded.</p>
 <p>If the child returns RUNNING, this node returns RUNNING too.</p>
