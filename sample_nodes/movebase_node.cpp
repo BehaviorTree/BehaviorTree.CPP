@@ -12,25 +12,13 @@ BT_REGISTER_NODES(factory)
 BT::NodeStatus MoveBaseAction::tick()
 {
     Pose2D goal;
-
-    // Retrieve the parameter using getParam()
-    bool goal_passed = getParam<Pose2D>("goal", goal);
-
-    //  You might want to create a node that fails if a mandatory parameter is missing.
-
-//  if( !goal_passed )
-//  {
-//      printf("The NodeParameter does not contain the key [goal] "
-//             " or the blackboard does not contain the provided key\n");
-//      return BT::NodeStatus::FAILURE;
-//  }
-
-     // In this case, if "goal" was not passed, the default value is used instead.
-    if( !goal_passed )
+    if( getParam<Pose2D>("goal", goal) == false )
     {
-        auto& default_goal_value =  requiredNodeParameters().begin()->second;
+        auto default_goal_value =  requiredNodeParameters().at("goal");
+        // use the convertFromString function
         goal = BT::convertFromString<Pose2D>( default_goal_value );
     }
+
     printf("[ MoveBase: STARTED ]. goal: x=%.f y=%.1f theta=%.2f\n",
            goal.x, goal.y, goal.theta);
 

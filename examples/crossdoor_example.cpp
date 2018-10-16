@@ -12,33 +12,31 @@
 // clang-format off
 
 const std::string xml_text = R"(
-
-<root main_tree_to_execute = "MainTree" >
-
-    <BehaviorTree ID="MainTree">
-        <FallbackStar name="root_selector">
-
-            <Sequence name="door_open_sequence">
+<root main_tree_to_execute = "MainTree">
+	<!--------------------------------------->
+    <BehaviorTree ID="DoorClosed">
+        <Sequence name="door_closed_sequence">
+            <Negation>
                 <Condition ID="IsDoorOpen"/>
-                <Action ID="PassThroughDoor"/>
-            </Sequence>
-
-            <SequenceStar name="door_closed_sequence">
-                <Negation>
-                    <Condition ID="IsDoorOpen"/>
-                </Negation>
-                <RetryUntilSuccesful num_attempts="2" >
-                    <Action ID="OpenDoor"/>
-                </RetryUntilSuccesful>
-                <Action ID="PassThroughDoor" />
-                <Action ID="CloseDoor" />
-            </SequenceStar>
-
-        <Action ID="PassThroughWindow" />
-
-        </FallbackStar>
+            </Negation>
+            <RetryUntilSuccesful num_attempts="4">
+                <OpenDoor/>
+            </RetryUntilSuccesful>
+            <PassThroughDoor/>
+        </Sequence>
     </BehaviorTree>
-
+    <!--------------------------------------->
+    <BehaviorTree ID="MainTree">
+        <Fallback name="root_Fallback">
+            <Sequence name="door_open_sequence">
+                <IsDoorOpen/>
+                <PassThroughDoor/>
+            </Sequence>
+            <SubTree ID="DoorClosed"/>
+            <PassThroughWindow/>
+        </Fallback>
+    </BehaviorTree>
+    <!---------------------------------------> 
 </root>
  )";
 

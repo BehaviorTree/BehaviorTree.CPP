@@ -77,6 +77,8 @@ public:
         }
     }
 
+    const std::type_info& type() const noexcept { return _any.type(); }
+
 private:
 
     linb::any _any;

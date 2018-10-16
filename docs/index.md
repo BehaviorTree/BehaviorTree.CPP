@@ -18,6 +18,9 @@ which are loaded at run-time.
 - It includes a __logging/profiling__ infrastructure that allows the user 
 to visualize, record, replay and analyze state transitions.
 
+![ReadTheDocs](images/ReadTheDocs.png)  
+
+
 ## The problem
 
 Many software systems, being robotics a notable example, are inherently
@@ -42,17 +45,17 @@ If we don't keep these concepts in mind from the very beginning, we create
 software modules/components which are highly coupled to a particular application,
 instead of being reusable.
 
-Frequently ,the concern of __Coordination__ is mixed with __Computation__. 
+Frequently, the concern of __Coordination__ is mixed with __Computation__. 
 In other words, people address the problems of coordinating actions and take decisions
 locally.
 
-The business logic becomes "spread" in many locations and it is hard for the developer
-to reason about it and to debug errors in the control flow.
+The business logic becomes "spread" in many locations and it is __hard for the developer
+to reason about it and to debug errors__ in the control flow.
 
 To achieve strong separation of concerns it is better to centralize
 the business logic in a single location. 
 
-Finite State Machines were created specifically with this goal in mind, but in
+__Finite State Machines__ were created specifically with this goal in mind, but in
 the recent years __Behavior Trees__ gained popularity, especially in the game industry.
 
 

@@ -57,14 +57,13 @@ void ApproachObject::halt()
 BT::NodeStatus SaySomething::tick()
 {
     std::string msg;
-    if(  getParam("message", msg) )
+    if( getParam("message", msg) == false )
     {
-        std::cout << "Robot says: \"" << msg << "\"" <<std::endl;
-        return BT::NodeStatus::SUCCESS;
+        // if getParam failed, use the default value
+        msg = requiredNodeParameters().at("message");
     }
-    else{
-        return BT::NodeStatus::FAILURE;
-    }
+    std::cout << "Robot says: " << msg << std::endl;
+    return BT::NodeStatus::SUCCESS;
 }
 
 }

@@ -32,6 +32,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
     registerNodeType<AlwaysSuccess>("AlwaysSuccess");
     registerNodeType<AlwaysFailure>("AlwaysFailure");
+    registerNodeType<SetBlackboard>("SetBlackboard");
 
     registerNodeType<DecoratorSubtreeNode>("SubTree");
 

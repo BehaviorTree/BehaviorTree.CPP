@@ -10,24 +10,13 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATOR_ALWAYS_SUCCESS_NODE_H
-#define DECORATOR_ALWAYS_SUCCESS_NODE_H
+#ifndef ACTION_ALWAYS_SUCCESS_NODE_H
+#define ACTION_ALWAYS_SUCCESS_NODE_H
 
-#include "behavior_tree_core/decorator_node.h"
 #include "behavior_tree_core/action_node.h"
 
 namespace BT
 {
-class ForceSuccessDecorator : public DecoratorNode
-{
-  public:
-    ForceSuccessDecorator(const std::string& name):
-        DecoratorNode(name, NodeParameters())
-    { }
-
-  private:
-    virtual BT::NodeStatus tick() override;
-};
 
 class AlwaysSuccess : public ActionNodeBase
 {
@@ -43,37 +32,6 @@ class AlwaysSuccess : public ActionNodeBase
     }
     virtual void halt() override {}
 };
-
-//------------ implementation ----------------------------
-
-
-inline NodeStatus ForceSuccessDecorator::tick()
-{
-    setStatus(NodeStatus::RUNNING);
-
-    const NodeStatus child_state = child_node_->executeTick();
-
-    switch (child_state)
-    {
-    case NodeStatus::FAILURE:
-    case NodeStatus::SUCCESS:
-    {
-        child_node_->setStatus(NodeStatus::IDLE);
-        return  NodeStatus::SUCCESS;
-    }
-
-    case NodeStatus::RUNNING:
-    {
-        return NodeStatus::RUNNING;
-    }
-
-    default:
-    {
-        // TODO throw?
-    }
-}
-    return status();
-}
 
 }
 

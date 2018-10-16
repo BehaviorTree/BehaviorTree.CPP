@@ -29,8 +29,12 @@
 #include "behavior_tree_core/decorators/repeat_node.h"
 #include "behavior_tree_core/decorators/subtree_node.h"
 
-#include "behavior_tree_core/decorators/always_success_node.h"
-#include "behavior_tree_core/decorators/always_failure_node.h"
+#include "behavior_tree_core/actions/always_success_node.h"
+#include "behavior_tree_core/actions/always_failure_node.h"
+#include "behavior_tree_core/actions/set_blackboard_node.h"
+
+#include "behavior_tree_core/decorators/force_success_node.h"
+#include "behavior_tree_core/decorators/force_failure_node.h"
 #include "behavior_tree_core/decorators/blackboard_precondition_node.h"
 #include "behavior_tree_core/decorators/deadline_node.h"
 

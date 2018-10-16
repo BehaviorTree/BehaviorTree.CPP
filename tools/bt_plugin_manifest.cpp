@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 
         for( auto& param: params)
         {
-             std::cout << "    - [Key]: " << param.first << " / Default value: "
-                       << param.second << std::endl;
+             std::cout << "    - [Key]: \"" << param.first << "\" / [Default]: \""
+                       << param.second << "\"" << std::endl;
         }
 
     }

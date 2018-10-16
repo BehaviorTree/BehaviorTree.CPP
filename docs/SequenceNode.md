@@ -1,192 +1,131 @@
 # Sequences
 
-A __Sequence__ ticks all it's children, from left to right, as long as 
-they return SUCCESS. If any child returns FAILURE, the sequence is suspended.
+A __Sequence__ ticks all it's children as long as 
+they return SUCCESS. If any child returns FAILURE, the sequence is aborted.
 
-Here we introduce different kinds of TreeNodes:
+Currently the framework provides two kinds of nodes:
 
 - SequenceNode
 - SequenceStarNode
-- SequenceAllNode
-
-The best way to determine which one should be used is to ask yourself:
-
-    Q: "What should I do if one of the childs returns FAILURE?"
-
-Use __SequenceNode__ if you answer is: 
-
-    A: "Restart the entire sequence"
-
-Use __SequenceStarNode__ if, instead, the answer is: 
 
 
-    A: "Try again to execute the failed child.
-        Do not re-tick children which succeeded already."
-   
-Last, use __SequenceAllNode__ when you want all the children to be ticked at least
-once. If any of them failed, the SequenceAllNode returns FAILURE.   
+They share the following rules:
 
-The shared logic is:
+- Before ticking the first child, the node status becomes __RUNNING__.
 
-- Before ticking the first child, SequenceNode becomes __RUNNING__.
 - If a child returns __SUCCESS__, it ticks the next child.
-- If the __last__ child returns __SUCCESS__ too, all the children are halted and
- the SequenceNode returns __SUCCESS__.
-- If a child returns __RUNNING__, the sequence suspends and returns __RUNNING__. 
-The next time it is ticked, it will tick the same child again.
 
-The three Sequences differ in what they do if a child returns FAILURE.
+- If the __last__ child returns __SUCCESS__ too, all the children are halted and
+ the sequence returns __SUCCESS__.
+ 
+ 
 
 ## SequenceNode
 
-If a child returns FAILURE, the sequence returns FAILURE.
-Reset the index and halt all the children. 
-The entire sequence will be executed again at the next tick.
+- If a child returns FAILURE, the sequence returns FAILURE.
+  The index is reset and all the children are halted. 
 
+- If a child returns RUNNING:
+
+     - the sequence returns RUNNING.
+     - the loop is restarted and  all the previous children are ticked again __unless
+       they are ActionNodes__. 
+  
 __Example__:
 
 This tree represents the behavior of a sniper in a computer game.
 If any of these conditions/actions fails, the entire sequence is executed
 again from the beginning.
 
+A running actions will be interrupted if __isEnemyVisible__ becomes
+false (i.e. it returns FAILURE).
+
 ![SequenceNode](images/SequenceNode.png)
 
 ??? example "See the pseudocode"
 	``` c++
-		// At the beginning, start from first child 
-		if( state != RUNNING) {
-			index = 0;
-		}
-		state = RUNNING;
+		status = RUNNING;
 
-		while( index < number_of_children )
+		for (int index=0; index < number_of_children; index++)
 		{
-			child_state = child[index]->tick();
+			child_status = child[index]->tick();
 			
-			if( child_state == RUNNING ) {
+			if( child_status == RUNNING ) {
 				// Suspend execution and return RUNNING.
 				// At the next tick, index will be the same.
-				state = RUNNING;
-				return state;
+				return RUNNING;
 			}
-			else if( child_state == SUCCESS ) {
-				// continue the while loop
-				index++;
-			}
-			else if( child_state == FAILURE ) {
+			else if( child_status == FAILURE ) {
 				// Suspend execution and return FAILURE.
 				// index is reset and children are halted.
-				state = FAILURE;
-				index = 0;
 				HaltAllChildren();
-				return state;
+				return FAILURE;
 			}
 		}
 		// all the children returned success. Return SUCCESS too.
-		state = SUCCESS;
 		HaltAllChildren();
-		return state;
+		return SUCCESS;
 	```
 
 
 ## SequenceStarNode
 
-If a child returns FAILURE, the sequence returns FAILURE. At the next tick, 
-the failed child is executed again.
+Use this ControlNode when you don't want to tick a child more than once.
+
+You can customize its behavior using the [NodeParameter](NodeParameters.md) "reset_on_failure".
+
+- If a child returns FAILURE, the sequence returns FAILURE. 
+
+     - [reset_on_failure = "true"]: (default) the loop is restarted.
+     - [reset_on_failure = "false"]: the same failed child is executed again.
+  
+- If a child returns RUNNING, the sequence returns RUNNING.
+  The same child will be ticked again.
 
 __Example__:
 
-This is a patrolling agent/robot that must visit locations A, B and C only once.
+This is a patrolling agent/robot that must visit locations A, B and C __only once__.
 If the action __GoTo(B)__ fails, __GoTo(A)__ will not be ticked again.
 
-On the other hand, __isBatteryOK__ is visited at every tick, because its parent is a normal SequenceNode.
+On the other hand, __isBatteryOK__ must be checked at every tick, 
+for this reason its parent must be a SequenceNode.
 
 ![SequenceStar](images/SequenceStar.png)
 
 ??? example "See the pseudocode"
 	``` c++
-
 		// index is initialized to 0 in the constructor
-		state = RUNNING;
+		status = RUNNING;
 
 		while( index < number_of_children )
 		{
-			child_state = child[index]->tick();
+			child_status = child[index]->tick();
 			
-			if( child_state == RUNNING ) {
+			if( child_status == RUNNING ) {
 				// Suspend execution and return RUNNING.
 				// At the next tick, index will be the same.
-				state = RUNNING;
-				return state;
+				return RUNNING;
 			}
-			else if( child_state == SUCCESS ) {
+			else if( child_status == SUCCESS ) {
 				// continue the while loop
 				index++;
 			}
-			else if( child_state == FAILURE ) {
+			else if( child_status == FAILURE ) {
 				// Suspend execution and return FAILURE.
 				// At the next tick, index will be the same.
-				state = FAILURE;
-				return state;
+				if( reset_on_failure )
+				{
+					HaltAllChildren();
+					index = 0;
+				}
+				return FAILURE;
 			}
 		}
 		// all the children returned success. Return SUCCESS too.
-		state = SUCCESS;
+		index = 0;
 		HaltAllChildren();
-		return state;
+		return SUCCESS;
 	```
-
-
-## SequenceAllNode
-
-All the children are executed at least once. 
-If __any__ child returned FAILURE,
-the sequence is __not__ interrupted but the sequence itself will return FAILURE. 
-
-__Example__:
-
-If the door of the fridge was succesfully opened, grab a beer.
-__CloseFridge__ is always executed, even when _GrabBeer_ failed.
-
-
-![SequenceAll](images/SequenceAll.png)
-
-??? example "See the pseudocode"
-	``` c++
-		if( state != RUNNING) {
-			index = 0;
-			at_least_one_failure = false;
-		}
-		state = RUNNING;
-		
-		while( index < number_of_children )
-		{
-			child_state = child[index]->tick();
-			
-			if( child_state == RUNNING ) {
-				// Suspend execution and return RUNNING.
-				// At the next tick, index will be the same.
-				state = RUNNING;
-				return state;
-			}
-			else if( child_state == SUCCESS ) {
-				index++;
-			}
-			else if( child_state == FAILURE ) {
-				index++;
-				at_least_one_failure = true;
-			}
-		}
-		// If any child failed, the entire sequence fails.	
-		state =  at_least_one_failure ? FAILURE : SUCCESS;
-		HaltAllChildren();
-		return state;
-	```
-
-
-
-
-
 
 
  

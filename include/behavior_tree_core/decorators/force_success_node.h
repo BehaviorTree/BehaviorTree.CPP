@@ -10,18 +10,17 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATOR_ALWAYS_FAILURE_NODE_H
-#define DECORATOR_ALWAYS_FAILURE_NODE_H
+#ifndef DECORATOR_ALWAYS_SUCCESS_NODE_H
+#define DECORATOR_ALWAYS_SUCCESS_NODE_H
 
 #include "behavior_tree_core/decorator_node.h"
-#include "behavior_tree_core/action_node.h"
 
 namespace BT
 {
-class ForceFailureDecorator : public DecoratorNode
+class ForceSuccessDecorator : public DecoratorNode
 {
   public:
-    ForceFailureDecorator(const std::string& name):
+    ForceSuccessDecorator(const std::string& name):
         DecoratorNode(name, NodeParameters())
     { }
 
@@ -29,25 +28,10 @@ class ForceFailureDecorator : public DecoratorNode
     virtual BT::NodeStatus tick() override;
 };
 
-class AlwaysFailure : public ActionNodeBase
-{
-  public:
-    AlwaysFailure(const std::string& name):
-        ActionNodeBase(name, NodeParameters())
-    { }
-
-  private:
-    virtual BT::NodeStatus tick() override
-    {
-        return NodeStatus::FAILURE;
-    }
-    virtual void halt() override {}
-};
-
 //------------ implementation ----------------------------
 
 
-inline NodeStatus ForceFailureDecorator::tick()
+inline NodeStatus ForceSuccessDecorator::tick()
 {
     setStatus(NodeStatus::RUNNING);
 
@@ -59,7 +43,7 @@ inline NodeStatus ForceFailureDecorator::tick()
     case NodeStatus::SUCCESS:
     {
         child_node_->setStatus(NodeStatus::IDLE);
-        return NodeStatus::FAILURE;
+        return  NodeStatus::SUCCESS;
     }
 
     case NodeStatus::RUNNING:

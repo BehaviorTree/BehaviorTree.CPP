@@ -10,6 +10,8 @@
 #include <SafeAny/safe_any.hpp>
 #include <non_std/optional.hpp>
 
+template <typename T> T convertFromString(const std::string& str);
+
 namespace BT{
 
 // This is the "backend" of the blackboard.
@@ -67,7 +69,14 @@ public:
         const SafeAny::Any* val = impl_->get(key);
         if( !val ){ return false; }
 
-        value = val->cast<T>();
+        if( !std::is_same<std::string,T>::value &&
+            ( val->type() == typeid(SafeAny::SimpleString) ||  val->type() == typeid(std::string)) )
+        {
+            value = convertFromString<T>( val->cast<std::string>() );
+        }
+        else{
+            value = val->cast<T>();
+        }
         return true;
     }
 

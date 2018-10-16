@@ -5,7 +5,7 @@ A decorator is a node that can have only a single child.
 It is up to the Decorator to decide if, when and how many times the child should be
 ticked.
 
-## InverterNode
+## NegationNode
 
 Tick the child once and return SUCCESS if the child failed or FAILURE if
 the child succeeded.
@@ -26,7 +26,7 @@ Otherwise, it returns always FAILURE.
 
 ## RepeatNode
 
-Tick the child up to N times, where N is passed as a [NodeParameter](NodeParameter.md),
+Tick the child up to N times, where N is passed as a [NodeParameter](NodeParameters.md),
 as long as the child returns SUCCESS.
 
 Interrupt the loop if the child returns FAILURE and, in that case, return FAILURE too.
@@ -35,19 +35,11 @@ If the child returns RUNNING, this node returns RUNNING too.
 
 ## RetryNode
 
-Tick the child up to N times, where N is passed as a [NodeParameter](NodeParameter.md),
+Tick the child up to N times, where N is passed as a [NodeParameter](NodeParameters.md),
 as long as the child returns FAILURE.
 
 Interrupt the loop if the child returns SUCCESS and, in that case, return SUCCESS too.
 
 If the child returns RUNNING, this node returns RUNNING too.
 
-## RetryNode
-
-Tick the child up to N times, where N is passed as a [NodeParameter](NodeParameter.md),
-as long as the child returns FAILURE.
-
-Interrupt the loop if the child returns SUCCESS and, in that case, return SUCCESS too.
-
-If the child returns RUNNING, this node returns RUNNING too.
 
