@@ -368,8 +368,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sequence" title="Sequence" class="md-nav__link">
-    Sequence
+  <a href="#first-controlnode-sequence" title="First ControlNode: Sequence" class="md-nav__link">
+    First ControlNode: Sequence
   </a>
   
 </li>
@@ -382,8 +382,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fallback" title="Fallback" class="md-nav__link">
-    Fallback
+  <a href="#second-controlnode-fallback" title="Second ControlNode: Fallback" class="md-nav__link">
+    Second ControlNode: Fallback
   </a>
   
 </li>
@@ -596,8 +596,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sequence" title="Sequence" class="md-nav__link">
-    Sequence
+  <a href="#first-controlnode-sequence" title="First ControlNode: Sequence" class="md-nav__link">
+    First ControlNode: Sequence
   </a>
   
 </li>
@@ -610,8 +610,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fallback" title="Fallback" class="md-nav__link">
-    Fallback
+  <a href="#second-controlnode-fallback" title="Second ControlNode: Fallback" class="md-nav__link">
+    Second ControlNode: Fallback
   </a>
   
 </li>
@@ -651,20 +651,23 @@
 <p>Unlike a Finite State Machine, a Behaviour Tree is a <strong>tree of hierarchical nodes</strong> 
 that controls the flow of decision and the execution of "tasks" or, as we
 will call them further, "<strong>Actions</strong>".</p>
-<p>The <strong>leaves</strong> of the tree are the actual commands, ie.e the place where
+<p>The <strong>leaves</strong> of the tree are the actual commands, i.e. the place where
 our coordinating component interacts with the rest of the system.</p>
 <p>For instance, in a service-oriented architecture, the leaves would contain
-the "client" code that triggers an action.</p>
+the "client" code that communicate with the "server" that performs the
+operation.</p>
+<p><img alt="Leaf To Component Communication" src="../images/LeafToComponentCommunication.png" /></p>
 <p>The other nodes of the tree, those which are not leaves, control the 
 "flow of execution".</p>
 <p>To better understand how this flow takes place , imagine a signal, that we will further
-call "<strong>tick</strong>" that is executed at the <strong>root</strong> of the tree and propagates through
+call "<strong>tick</strong>"; it is executed at the <strong>root</strong> of the tree and propagates through
 the branches until it reaches one or multiple leaves.</p>
-<p>The result of a tick can be either:</p>
+<p>The <code>tick()</code> callback returns a <code>NodeStatus</code> that will be either:</p>
 <ul>
 <li><strong>SUCCESS</strong></li>
 <li><strong>FAILURE</strong></li>
 <li><strong>RUNNING</strong></li>
+<li><strong>IDLE</strong></li>
 </ul>
 <p>The first two, as their names suggest, inform their parent that their operation
  was a success or a failure.</p>
@@ -689,7 +692,7 @@ alter the state of the system.</p>
 examples. For the sake of simplicity we will not take into account what happens
 when an action returns RUNNING.</p>
 <p>We will assume that each Action is executed atomically and synchronously.</p>
-<h3 id="sequence">Sequence</h3>
+<h3 id="first-controlnode-sequence">First ControlNode: Sequence</h3>
 <p>Let's illustrate how a BT works using the most basic and frequently used 
 ControlNode: the <a href="../SequenceNode/">SequenceNode</a>.</p>
 <p>The children of a ControlNode are always <strong>ordered</strong>; it is up to the ControlNode
@@ -727,7 +730,7 @@ Try up to 3 times, otherwise give up and return FAILURE.
 <p><strong>But</strong> there is an error. Can you find it?</p>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
 But if it returns SUCCESS, the left branch fails and the entire Sequence
-is interrupted. </p></details><h3 id="fallback">Fallback</h3>
+is interrupted. </p></details><h3 id="second-controlnode-fallback">Second ControlNode: Fallback</h3>
 <p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
 are nodes that can express, as the name suggests, fallback strategies, 
 ie. what to do next if a child returns FAILURE.</p>
