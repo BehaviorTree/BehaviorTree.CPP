@@ -4,25 +4,29 @@ Unlike a Finite State Machine, a Behaviour Tree is a __tree of hierarchical node
 that controls the flow of decision and the execution of "tasks" or, as we
 will call them further, "__Actions__".
 
-The __leaves__ of the tree are the actual commands, ie.e the place where
+The __leaves__ of the tree are the actual commands, i.e. the place where
 our coordinating component interacts with the rest of the system.
 
 For instance, in a service-oriented architecture, the leaves would contain
-the "client" code that triggers an action.
+the "client" code that communicate with the "server" that performs the
+operation.
+
+![Leaf To Component Communication](images/LeafToComponentCommunication.png)
+
 
 The other nodes of the tree, those which are not leaves, control the 
 "flow of execution".
 
 To better understand how this flow takes place , imagine a signal, that we will further
-call "__tick__" that is executed at the __root__ of the tree and propagates through
+call "__tick__"; it is executed at the __root__ of the tree and propagates through
 the branches until it reaches one or multiple leaves.
 
-The result of a tick can be either:
+The `tick()` callback returns a `NodeStatus` that will be either:
 
 - __SUCCESS__
 - __FAILURE__
 - __RUNNING__
-
+- __IDLE__
 
 The first two, as their names suggest, inform their parent that their operation
  was a success or a failure.
@@ -62,7 +66,7 @@ when an action returns RUNNING.
 We will assume that each Action is executed atomically and synchronously.
 
 
-### Sequence
+### First ControlNode: Sequence
 
 Let's illustrate how a BT works using the most basic and frequently used 
 ControlNode: the [SequenceNode](SequenceNode.md).
@@ -119,7 +123,7 @@ __But__ there is an error. Can you find it?
     is interrupted. 
     
 
-### Fallback
+### Second ControlNode: Fallback
 
 [FallbackNodes](FallbackNode.md), known also as __"Selector"__,
 are nodes that can express, as the name suggests, fallback strategies, 
