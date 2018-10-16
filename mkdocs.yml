@@ -36,11 +36,11 @@ pages:
        - Fallback Nodes:    FallbackNode.md
        - Decorators Nodes:  DecoratorNode.md
     - Tutorials: 
-       - Getting started:         getting_started.md
-       - Create a Tree:           tutorial_A_create_trees.md
-       - Add NodeParameters:      tutorial_B_node_parameters.md
-       - Use Blackboards:         tutorial_C_blackboard.md
-       - Compose with Subtrees:   tutorial_D_subtrees.md
-       - Create a Plugin:         tutorial_E_plugins.md
-       - Log state transitions:   tutorial_F_loggers.md
+       - Getting started:                getting_started.md
+       - "Tutorial 1: Create a Tree":    tutorial_A_create_trees.md
+       - "Tutorial 2: NodeParameters":   tutorial_B_node_parameters.md
+       - "Tutorial 3: Blackboards":      tutorial_C_blackboard.md
+       - "Tutorial 4: Subtrees":         tutorial_D_subtrees.md
+       - "Tutorial 5: Plugins":          tutorial_E_plugins.md
+       - "Tutorial 6: Loggers":          tutorial_F_loggers.md
 
