@@ -1,4 +1,5 @@
-/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+ * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,38 +11,104 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <action_node.h>
-#include <string>
+#include "behavior_tree_core/action_node.h"
 
-
-BT::ActionNode::ActionNode(std::string name) : LeafNode::LeafNode(name)
+namespace BT
 {
-    type_ = BT::ACTION_NODE;
-    thread_ = std::thread(&ActionNode::WaitForTick, this);
+ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters& parameters)
+  : LeafNode::LeafNode(name, parameters)
+{
 }
 
-BT::ActionNode::~ActionNode() {}
-
-
-void BT::ActionNode::WaitForTick()
+NodeStatus ActionNodeBase::executeTick()
 {
+    NodeStatus prev_status = status();
 
-    while (true)
+    if (prev_status == NodeStatus::IDLE || prev_status == NodeStatus::RUNNING)
     {
-        // Waiting for the tick to come
-        DEBUG_STDOUT(get_name() << " WAIT FOR TICK");
+        setStatus( tick() );
+    }
+    return status();
+}
 
-        tick_engine.Wait();
-        DEBUG_STDOUT(get_name() << " TICK RECEIVED");
+//-------------------------------------------------------
 
-        // Running state
-        set_status(BT::RUNNING);
-        BT::ReturnStatus status = Tick();
-        set_status(status);
+SimpleActionNode::SimpleActionNode(const std::string& name, SimpleActionNode::TickFunctor tick_functor)
+  : ActionNodeBase(name, NodeParameters()), tick_functor_(std::move(tick_functor))
+{
+}
+
+NodeStatus SimpleActionNode::tick()
+{
+    NodeStatus prev_status = status();
+
+    if (prev_status == NodeStatus::IDLE)
+    {
+        setStatus(NodeStatus::RUNNING);
+        prev_status = NodeStatus::RUNNING;
+    }
+
+    NodeStatus status = tick_functor_( *this );
+    if (status != prev_status)
+    {
+        setStatus(status);
+    }
+    return status;
+}
+
+//-------------------------------------------------------
+
+ActionNode::ActionNode(const std::string& name, const NodeParameters& parameters)
+  : ActionNodeBase(name, parameters), loop_(true)
+{
+    thread_ = std::thread(&ActionNode::waitForTick, this);
+}
+
+ActionNode::~ActionNode()
+{
+    if (thread_.joinable())
+    {
+        stopAndJoinThread();
     }
 }
 
-int BT::ActionNode::DrawType()
+void ActionNode::waitForTick()
 {
-    return BT::ACTION;
+    while (loop_.load())
+    {
+        tick_engine_.wait();
+
+        // check loop_ again because the tick_engine_ could be
+        // notified from the method stopAndJoinThread
+        if (loop_ && status() == NodeStatus::IDLE)
+        {
+            setStatus(NodeStatus::RUNNING);
+            setStatus( tick() );
+        }
+    }
+}
+
+NodeStatus ActionNode::executeTick()
+{
+    //send signal to other thread.
+    // The other thread is in charge for changing the status
+    if (status() == NodeStatus::IDLE)
+    {
+        tick_engine_.notify();
+    }
+
+    // block as long as the state is NodeStatus::IDLE
+    const NodeStatus stat = waitValidStatus();
+    return stat;
+}
+
+void ActionNode::stopAndJoinThread()
+{
+    loop_.store(false);
+    tick_engine_.notify();
+    if( thread_.joinable() )
+    {
+        thread_.join();
+    }
+}
 }

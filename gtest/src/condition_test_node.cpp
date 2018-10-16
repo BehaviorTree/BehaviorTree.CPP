@@ -10,38 +10,34 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
-#include <condition_test_node.h>
+#include "condition_test_node.h"
 #include <string>
 
-BT::ConditionTestNode::ConditionTestNode(std::string name) : ConditionNode::ConditionNode(name)
+BT::ConditionTestNode::ConditionTestNode(const std::string& name) : ConditionNode::ConditionNode(name)
 {
     boolean_value_ = true;
+    tick_count_ = 0;
 }
 
-BT::ConditionTestNode::~ConditionTestNode() {}
 
-BT::ReturnStatus BT::ConditionTestNode::Tick()
+BT::NodeStatus BT::ConditionTestNode::tick()
 {
-        // Condition checking and state update
+    tick_count_++;
 
-        if (boolean_value_)
-        {
-            set_status(BT::SUCCESS);
-            return BT::SUCCESS;
-        }
-        else
-        {
-            set_status(BT::FAILURE);
-            return BT::FAILURE;
-        }
+    // Condition checking and state update
+    if (boolean_value_)
+    {
+        setStatus(NodeStatus::SUCCESS);
+        return NodeStatus::SUCCESS;
+    }
+    else
+    {
+        setStatus(NodeStatus::FAILURE);
+        return NodeStatus::FAILURE;
+    }
 }
 
-
-
-
-void BT::ConditionTestNode::set_boolean_value(bool boolean_value)
+void BT::ConditionTestNode::setBoolean(bool boolean_value)
 {
     boolean_value_ = boolean_value;
 }
-

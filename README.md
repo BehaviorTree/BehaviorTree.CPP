@@ -1,20 +1,33 @@
-NEWS!
------------
-The Preprint of our book titled "**Behavior Trees in Robotics and AI**" is available here: https://arxiv.org/abs/1709.00084
+# About this library
 
-<img width="100" alt="portfolio_view" src="http://michelecolledanchise.com/BTPPLOGO.png"> BT++ 
-====
-![License MIT](https://img.shields.io/dub/l/vibe-d.svg) ![Version](https://img.shields.io/badge/version-v1.4-green.svg) <img src="https://travis-ci.org/miccol/Behavior-Tree.svg?branch=master"/>
- <br/>       
-A behavior tree library in `C++`.
+This  __C++__ library provides a framework to create BehaviorTrees.
+It was designed to be flexible, easy to use and fast.
 
-REFERENCE
+Even if our main use-case is __robotics__, you can use this library to build
+__AI for games__, or to replace Finite State Machines in you application.
+
+__BehaviorTree.CPP__ has many interesting features, when compared to other implementations:
+
+- It makes asynchronous Actions, i.e. non-blocking, a first-class citizen.
+- It allows the creation of trees at run-time, using a textual representation (XML).
+- You can link staticaly you custom TreeNodes or convert them into plugins 
+which are loaded at run-time.
+- It includes a __logging/profiling__ infrastructure that allows the user 
+to visualize, record, replay and analyze state transitions.
+
+Documentation
+------------
+
+https://eurecat.github.io/BehaviorTree.CPP
+
+Reference
 ------------
 Please refer to the following paper when using the library:
 
-**How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture, and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
+**How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture,
+and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
 
-bibtex entry:
+Bibtex entry:
 
 `@ARTICLE{TRO17Colledanchise,` <br/>
 `author={M. Colledanchise and P. Ögren},` <br/>
@@ -29,104 +42,32 @@ bibtex entry:
 `ISSN={1552-3098},` <br/>
 `month={April},}`<br/>
 
-DEPENDENCIES
+Further readings
+---------------
+
+The book Behavior Trees in Robotics and AI, published by CRC Press Taylor & Francis, is available for purchase
+(ebook and hardcover) on the CRC Press Store or Amazon. The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
+
+Tutorials available at https://btirai.github.io/
+  
+Aknowledgement
 ------------
+This library is the result of the join effort between **Eurecat** (main autjor, Davide Faconti) and the
+**Italian Institute of Technology** (Michele Colledanchise).
 
-Regarding visualization purposes:
-* [OpenGL](https://www.opengl.org/)
-* [Glut](https://www.opengl.org/resources/libraries/glut/)
+It is one of the main components of [MOOD2Be](https://eurecat.org/es/portfolio-items/mood2be/),
+and it is developed at [Eurecat](https://eurecat.org) by Davide Faconti.
 
-Regarding tests:
-* [GTests](https://github.com/google/googletest)
+MOOD2Be is one of the six **Integrated Technical Projects (ITPs)** selected from the 
+[RobMoSys first open call](https://robmosys.eu/itp/) and it received funding from the European
+Union’s Horizon 2020 Research and Innovation Programme.
 
-BT NODES SUPPORT
-----------------
-**Fallback:** Fallback nodes are used to find and execute the first child that does not fail. A Selector node will return immediately with a status code of success or running when one of its children returns success or running. The children are ticked in order of importance, from `left` to `right`.
-
-**Sequence:** Sequence nodes are used to find and execute the first child that has not yet succeeded. A sequence node will return immediately with a status code of `failure` or `running` when one of its children returns failure or running. The children are ticked in order, from `left` to `right`.
-
-**Parallel:** The parallel node ticks its children in parallel and returns success if `M ≤ N` children return success, it returns failure if `N − M + 1` children return failure, and it returns running otherwise.
-
-**Decorator:** The decorator node manipulates the return status of its child according to the policy defined by the user (e.g. it inverts the success/failure status of the child). In this library the decorators implemented are the two common ones: *Decorator Retry* which retries the execution of a node if this fails; and *Decorator Negation* That inverts the Success/Failure outcome.
-
-**Action:** An Action node performs an action, and returns Success if the action is completed, Failure if it can not be completed and Running if completion is under way.
-
-**Condition:** A Condition node determines if a desired condition `c` has been met. Conditions are technically a subset of the Actions, but are given a separate category and graphical symbol to improve readability of the BT and emphasize the fact that they never return running and do not change any internal states/variables of the BT.
-
-A user manual is available in the project folder ([BTppUserManual.pdf](https://github.com/miccol/Behavior-Tree/blob/master/BTppUserManual.pdf)).
-
-SETUP
------------
-
-The first step to use BT++ is to retrieve its source code. You can either download it 
-here (https://github.com/miccol/Behavior-Tree) or clone the repository:
-
-`$ cd /path/to/folder` <br/>
-`$ git clone https://github.com/miccol/Behavior−Tree.git`
-
-Once you have the repository, compile the library:
-
-`$ cd /path/to/folder/` <br/>
-`$ mkdir ./build` <br/>
-`$ cd build` <br/>
-`$ cmake ..` <br/>
-`$ make` <br/>
-
-
-**NOTE**
-In case you get the following error:
-
-`CMake Error: The following variables are used in this project, but they are set to NOTFOUND.
-Please set them or make sure they are set and tested correctly in the CMake files:
-GLUT_Xmu_LIBRARY (ADVANCED)`
-
-please see solution [here](https://ubuntuforums.org/archive/index.php/t-1703770.html). Thanks [miquelramirez](https://github.com/miquelramirez) for this.
-
-
-Check the installation by running a sample example.
-
-`$ cd /path/to/folder/` <br/>
-`$ cd build/sample` <br/>
-`$ ./btpp_example` <br/>
-
-INSTALL THE LIBRARY SYSTEM-WIDE (tested on Ubuntu 14.04 and 16.04)
--------------------------------
-
-If you would like to install the library system-wide, then run:
-
-`$ cd /path/to/folder/` <br/>
-`$ cd build` <br/>
-`$ sudo make install` <br/>
-
-On Ubuntu, this will install the library (libbtpp.so) in `/usr/local/lib`. <br/>
-In an external project, just call in your CMakeLists 'find_package(BTpp)' to find the library. <br/>
-The include directory is defined as `BTpp_INCLUDE_DIRS` and the libraries to link as `BTpp_LIBRARIES`.<br/>
-The repository [my-behavior-tree-project](https://github.com/miccol/my-behavior-tree-project) shows an example on how to use the library once system-wide installed.
-
-
-CREATE YOUR OWN ACTION NODE
-------
-1) Implement your action node class extending the abstract class `BT::ActionNode`.
-2) Implement the method `BT::ReturnStatus Tick()` with the code you want to execute while the action is running. Use the method `is_halted()` to check if the action has been prempted. When the execution of your action finished, return `BT::SUCCESS` or `BT::FAILURE` accordingly.  
-3) Implement the method `void Halt()` with the code you want to execute when the action gets preempted (halted).
-See the file `src/example.cpp` for an example.
-
-CREATE YOUR OWN CONDITION NODE
-------
-1) Implement your condition node class extending the abstract class `BT::ConditionNode`.
-2) Implement the method `BT::ReturnStatus Tick()` with the code you want to execute to check the condition. Return `BT::SUCCESS` or `BT::FAILURE` accordingly.  
-See the file `src/example.cpp` for an example.
-
-
-NOTES
--------
-In case you are puzzled about why a sequence (or fallback) node with 2 or more actions as children never get past the first action, see [this](https://github.com/miccol/ROS-Behavior-Tree/issues/16) discussion.
-
-LICENSE
+License
 -------
 The MIT License (MIT)
 
 Copyright (c) 2014-2018 Michele Colledanchise
+Copyright (c) 2018 Davide Faconti
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

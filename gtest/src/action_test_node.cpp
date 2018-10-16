@@ -1,4 +1,5 @@
-/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+/* Copyright (C) 2015-2017 Michele Colledanchise -  All Rights Reserved
+ * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,64 +11,75 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
-#include <action_test_node.h>
+#include "action_test_node.h"
 #include <string>
 
-
-BT::ActionTestNode::ActionTestNode(std::string name) : ActionNode::ActionNode(name)
+BT::AsyncActionTest::AsyncActionTest(const std::string& name) : ActionNode(name)
 {
     boolean_value_ = true;
     time_ = 3;
+    stop_loop_ = false;
+    tick_count_ = 0;
 }
 
-BT::ActionTestNode::~ActionTestNode() {}
-
-BT::ReturnStatus BT::ActionTestNode::Tick()
+BT::AsyncActionTest::~AsyncActionTest()
 {
+    halt();
+}
 
+BT::NodeStatus BT::AsyncActionTest::tick()
+{
+    tick_count_++;
+    stop_loop_ = false;
     int i = 0;
-    while (get_status() != BT::HALTED && i++ < time_)
+    while (!stop_loop_ && i++ < time_)
     {
-        DEBUG_STDOUT(" Action " << get_name() << "running! Thread id:" << std::this_thread::get_id());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    if (get_status() != BT::HALTED)
+
+    if (!stop_loop_)
     {
-        if (boolean_value_)
-        {
-            DEBUG_STDOUT(" Action " << get_name() << " Done!");
-            return BT::SUCCESS;
-        }
-        else
-        {
-            DEBUG_STDOUT(" Action " << get_name() << " FAILED!");
-            return BT::FAILURE;
-        }
+        return boolean_value_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     }
     else
     {
-        return BT::HALTED;
+        return NodeStatus::IDLE;
     }
 }
 
-void BT::ActionTestNode::Halt()
+void BT::AsyncActionTest::halt()
 {
-    set_status(BT::HALTED);
-    DEBUG_STDOUT("HALTED state set!");
+    stop_loop_ = true;
+    setStatus(NodeStatus::IDLE);
 }
 
-
-void BT::ActionTestNode::set_time(int time)
+void BT::AsyncActionTest::setTime(int time)
 {
     time_ = time;
 }
 
-
-
-void BT::ActionTestNode::set_boolean_value(bool boolean_value)
+void BT::AsyncActionTest::setBoolean(bool boolean_value)
 {
     boolean_value_ = boolean_value;
 }
 
+//----------------------------------------------
 
+
+BT::SyncActionTest::SyncActionTest(const std::string &name) :
+    ActionNodeBase(name)
+{
+    tick_count_ = 0;
+    boolean_value_ = true;
+}
+
+BT::NodeStatus BT::SyncActionTest::tick()
+{
+    tick_count_++;
+    return boolean_value_ ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+}
+
+void BT::SyncActionTest::setBoolean(bool boolean_value)
+{
+    boolean_value_ = boolean_value;
+}

@@ -1,4 +1,5 @@
-/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+ * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,37 +11,30 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <tick_engine.h>
+#include "behavior_tree_core/tick_engine.h"
 
-TickEngine::TickEngine(int initial_value)
+// find how condition_variables work here http://es.cppreference.com/w/cpp/thread/condition_variable/wait
+
+namespace BT
 {
-    value_ = initial_value;
+TickEngine::TickEngine(bool start_ready) : ready_(start_ready)
+{
 }
 
-TickEngine::~TickEngine() {}
-
-void TickEngine::Wait()
+void TickEngine::wait()
 {
-    // Lock acquire (need a unique lock for the condition variable usage)
     std::unique_lock<std::mutex> UniqueLock(mutex_);
-
-    // If the state is 0 then we have to wait for a signal
-    if (value_ == 0)
+    while (!ready_)
+    {
         condition_variable_.wait(UniqueLock);
-
-    // Once here we decrement the state
-    value_--;
+    }
+    ready_ = false;
 }
 
-void TickEngine::Tick()
+void TickEngine::notify()
 {
-    // Lock acquire
-
     std::lock_guard<std::mutex> LockGuard(mutex_);
-
-    // State increment
-    value_++;
-
-    // Notification
+    ready_ = true;
     condition_variable_.notify_all();
+}
 }
