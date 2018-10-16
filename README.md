@@ -18,38 +18,9 @@ to visualize, record, replay and analyze state transitions.
 Documentation
 ------------
 
-https://eurecat.github.io/BehaviorTree.CPP
+https://behaviortree.github.io/BehaviorTree.CPP/
 
-Reference
-------------
-Please refer to the following paper when using the library:
 
-**How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture,
-and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
-
-Bibtex entry:
-
-`@ARTICLE{TRO17Colledanchise,` <br/>
-`author={M. Colledanchise and P. Ögren},` <br/>
-`journal={IEEE Transactions on Robotics},` <br/>
-`title={{How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture, and Decision Trees}},` <br/> 
-`year={2017},` <br/>
-`volume={33},` <br/>
-`number={2},` <br/>
-`pages={372-389},` <br/>
-`keywords={Computer architecture;Decision trees;High definition video;Robot control;Switches;Behavior trees (BTs);decision trees;finite state machines (FSMs);hybrid dynamical systems (HDSs);modularity;sequential behavior compositions;subsumption architecture}, ` <br/>
-`doi={10.1109/TRO.2016.2633567},` <br/>
-`ISSN={1552-3098},` <br/>
-`month={April},}`<br/>
-
-Further readings
----------------
-
-The book Behavior Trees in Robotics and AI, published by CRC Press Taylor & Francis, is available for purchase
-(ebook and hardcover) on the CRC Press Store or Amazon. The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
-
-Tutorials available at https://btirai.github.io/
-  
 Aknowledgement
 ------------
 This library is the result of the join effort between **Eurecat** (main autjor, Davide Faconti) and the
@@ -61,6 +32,21 @@ and it is developed at [Eurecat](https://eurecat.org) by Davide Faconti.
 MOOD2Be is one of the six **Integrated Technical Projects (ITPs)** selected from the 
 [RobMoSys first open call](https://robmosys.eu/itp/) and it received funding from the European
 Union’s Horizon 2020 Research and Innovation Programme.
+
+Further readings
+---------------
+
+Please refer to the following paper when using the library:
+
+**How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture,
+and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
+
+
+**Behavior Trees in Robotics and AI**, published by CRC Press Taylor & Francis, is available for purchase
+(ebook and hardcover) on the CRC Press Store or Amazon.
+
+ The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
+
 
 License
 -------

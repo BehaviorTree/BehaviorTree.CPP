@@ -17,8 +17,8 @@ theme:
     text: Ubuntu
     code: Roboto Mono
   
-repo_name: 'BehaviorTreeCPP'
-repo_url: 'https://github.com/BehaviorTree/BehaviorTreeCPP'
+repo_name: 'BehaviorTree.CPP'
+repo_url: 'https://github.com/BehaviorTree/BehaviorTree.CPP'
 
 markdown_extensions:
   - admonition
