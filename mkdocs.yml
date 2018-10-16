@@ -17,8 +17,8 @@ theme:
     text: Ubuntu
     code: Roboto Mono
   
-repo_name: 'Eurecat/BehaviorTree.CPP'
-repo_url: 'https://github.com/Eurecat/BehaviorTree.CPP'
+repo_name: 'BehaviorTreeCPP'
+repo_url: 'https://github.com/BehaviorTree/BehaviorTreeCPP'
 
 markdown_extensions:
   - admonition
@@ -34,7 +34,7 @@ pages:
        - Introduction:      BT_basics.md
        - Sequence Nodes:    SequenceNode.md
        - Fallback Nodes:    FallbackNode.md
-       - Decorators Nodes: DecoratorNode.md
+       - Decorators Nodes:  DecoratorNode.md
     - Tutorials: 
        - Getting started:         getting_started.md
        - Create a Tree:           tutorial_A_create_trees.md
