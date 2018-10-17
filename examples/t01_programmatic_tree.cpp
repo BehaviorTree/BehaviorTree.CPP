@@ -19,7 +19,7 @@ int main()
     // sequence_root will be the root of our tree
     BT::SequenceNode sequence_root("sequence");
 
-    // Simple functions can be wrapped inside in ActionNodeBase
+    // Function pointers can be wrapped inside ActionNodeBase
     // using the SimpleActionNode
     SimpleActionNode say_hello("action_hello", std::bind(SayHello) );
 
