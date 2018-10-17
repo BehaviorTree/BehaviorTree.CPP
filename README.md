@@ -1,4 +1,8 @@
-# About this library
+![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
+![Version](https://img.shields.io/badge/version-v2.0-green.svg)
+[![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
+
+# About BehaviorTree.CPP
 
 This  __C++__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use and fast.
@@ -36,13 +40,12 @@ Union’s Horizon 2020 Research and Innovation Programme.
 Further readings
 ---------------
 
-Please refer to the following paper when using the library:
+- Introductory article: [Behavior trees for AI: How they work](http://www.gamasutra.com/blogs/ChrisSimpson/20140717/221339/Behavior_trees_for_AI_How_they_work.php)
 
-**How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture,
+- **How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture,
 and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
 
-
-**Behavior Trees in Robotics and AI**, published by CRC Press Taylor & Francis, is available for purchase
+- **Behavior Trees in Robotics and AI**, published by CRC Press Taylor & Francis, available for purchase
 (ebook and hardcover) on the CRC Press Store or Amazon.
 
  The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
