@@ -11,8 +11,8 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef FALLBACK_NODE_WITH_MEMORY_H
-#define FALLBACK_NODE_WITH_MEMORY_H
+#ifndef SEQUENCE_NODE_WITH_MEMORY_H
+#define SEQUENCE_NODE_WITH_MEMORY_H
 
 #include "behavior_tree_core/control_node.h"
 
@@ -20,30 +20,43 @@ namespace BT
 {
 
 /**
- * @brief The FallbackNodeWithMemory is used to try different strategies,
- * until one succeed.
- * If any child returns RUNNING, previous children will NOT be ticked again.
+ * @brief The SequenceStarNode is used to execute a sequence of children.
+ * If any child returns RUNNING, previous children are not ticked again.
  *
- * - If all the children return FAILURE, this node returns FAILURE.
+ * - If all the children return SUCCESS, this node returns SUCCESS.
  *
  * - If a child returns RUNNING, this node returns RUNNING.
  *   Loop is NOT restarted, the same running child will be ticked again.
  *
- * - If a child returns SUCCESS, stop the loop and returns SUCCESS.
+ * - If a child returns FAILURE, stop the loop and returns FAILURE.
+ *   Restart the loop only if (reset_on_failure == true)
+ *
  */
 
-class FallbackNodeWithMemory : public ControlNode
+class SequenceStarNode : public ControlNode
 {
   public:
-    FallbackNodeWithMemory(const std::string& name);
+    SequenceStarNode(const std::string& name, bool reset_on_failure = true);
+
+    // Reset policy passed by parameter [reset_policy]
+    SequenceStarNode(const std::string& name, const NodeParameters& params);
+
+    virtual ~SequenceStarNode() override = default;
 
     virtual void halt() override;
 
+    static const NodeParameters& requiredNodeParameters()
+    {
+        static NodeParameters params = {{"reset_on_failure", "true"}};
+        return params;
+    }
+
   private:
     unsigned int current_child_idx_;
+    bool reset_on_failure_;
 
     virtual BT::NodeStatus tick() override;
 };
 }
 
-#endif   // FALLBACK_NODE_WITH_MEMORY_H
+#endif   // SEQUENCE_NODE_WITH_MEMORY_H

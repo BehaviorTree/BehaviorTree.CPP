@@ -126,7 +126,7 @@ struct ComplexSequence2ActionsTest : testing::Test
 
 struct SimpleSequenceWithMemoryTest : testing::Test
 {
-    BT::SequenceNodeWithMemory root;
+    BT::SequenceStarNode root;
     BT::AsyncActionTest action;
     BT::ConditionTestNode condition;
 
@@ -143,7 +143,7 @@ struct SimpleSequenceWithMemoryTest : testing::Test
 
 struct ComplexSequenceWithMemoryTest : testing::Test
 {
-    BT::SequenceNodeWithMemory root;
+    BT::SequenceStarNode root;
 
     BT::AsyncActionTest action_1;
     BT::AsyncActionTest action_2;
@@ -151,8 +151,8 @@ struct ComplexSequenceWithMemoryTest : testing::Test
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
 
-    BT::SequenceNodeWithMemory seq_conditions;
-    BT::SequenceNodeWithMemory seq_actions;
+    BT::SequenceStarNode seq_conditions;
+    BT::SequenceStarNode seq_actions;
 
     ComplexSequenceWithMemoryTest()
       : root("root_sequence")

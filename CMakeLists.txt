@@ -64,11 +64,10 @@ set(BT_Source
         src/decorators/timeout_node.cpp
 
         src/controls/parallel_node.cpp
-        src/controls/fallback_node.cpp
         src/controls/sequence_node.cpp
-        src/controls/fallback_node_with_memory.cpp
-        src/controls/sequence_node_with_memory.cpp
-
+        src/controls/sequence_star_node.cpp
+        src/controls/fallback_node.cpp
+        src/controls/fallback_star_node.cpp
 
         src/loggers/bt_cout_logger.cpp
         src/loggers/bt_file_logger.cpp

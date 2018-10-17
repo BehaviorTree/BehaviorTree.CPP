@@ -11,8 +11,8 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef SEQUENCE_NODE_WITH_MEMORY_H
-#define SEQUENCE_NODE_WITH_MEMORY_H
+#ifndef selector_node_WITH_MEMORY_H
+#define selector_node_WITH_MEMORY_H
 
 #include "behavior_tree_core/control_node.h"
 
@@ -20,43 +20,30 @@ namespace BT
 {
 
 /**
- * @brief The SequenceNodeWithMemory is used to execute a sequence of children.
- * If any child returns RUNNING, previous children are not ticked again.
+ * @brief The FallbackStarNode is used to try different strategies,
+ * until one succeed.
+ * If any child returns RUNNING, previous children will NOT be ticked again.
  *
- * - If all the children return SUCCESS, this node returns SUCCESS.
+ * - If all the children return FAILURE, this node returns FAILURE.
  *
  * - If a child returns RUNNING, this node returns RUNNING.
  *   Loop is NOT restarted, the same running child will be ticked again.
  *
- * - If a child returns FAILURE, stop the loop and returns FAILURE.
- *   Restart the loop only if (reset_on_failure == true)
- *
+ * - If a child returns SUCCESS, stop the loop and returns SUCCESS.
  */
 
-class SequenceNodeWithMemory : public ControlNode
+class FallbackStarNode : public ControlNode
 {
   public:
-    SequenceNodeWithMemory(const std::string& name, bool reset_on_failure = true);
-
-    // Reset policy passed by parameter [reset_policy]
-    SequenceNodeWithMemory(const std::string& name, const NodeParameters& params);
-
-    virtual ~SequenceNodeWithMemory() override = default;
+    FallbackStarNode(const std::string& name);
 
     virtual void halt() override;
 
-    static const NodeParameters& requiredNodeParameters()
-    {
-        static NodeParameters params = {{"reset_on_failure", "true"}};
-        return params;
-    }
-
   private:
     unsigned int current_child_idx_;
-    bool reset_on_failure_;
 
     virtual BT::NodeStatus tick() override;
 };
 }
 
-#endif   // SEQUENCE_NODE_WITH_MEMORY_H
+#endif   // selector_node_WITH_MEMORY_H

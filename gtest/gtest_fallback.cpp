@@ -67,7 +67,7 @@ struct ComplexFallbackTest : testing::Test
 
 struct SimpleFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackNodeWithMemory root;
+    BT::FallbackStarNode root;
     BT::AsyncActionTest action;
     BT::ConditionTestNode condition;
 
@@ -84,7 +84,7 @@ struct SimpleFallbackWithMemoryTest : testing::Test
 
 struct ComplexFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackNodeWithMemory root;
+    BT::FallbackStarNode root;
 
     BT::AsyncActionTest action_1;
     BT::AsyncActionTest action_2;
@@ -92,8 +92,8 @@ struct ComplexFallbackWithMemoryTest : testing::Test
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
 
-    BT::FallbackNodeWithMemory fal_conditions;
-    BT::FallbackNodeWithMemory fal_actions;
+    BT::FallbackStarNode fal_conditions;
+    BT::FallbackStarNode fal_actions;
 
     ComplexFallbackWithMemoryTest()
       : root("root_fallback")

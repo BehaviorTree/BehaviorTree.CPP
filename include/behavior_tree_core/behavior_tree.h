@@ -18,8 +18,8 @@
 #include "behavior_tree_core/controls/fallback_node.h"
 #include "behavior_tree_core/controls/sequence_node.h"
 
-#include "behavior_tree_core/controls/sequence_node_with_memory.h"
-#include "behavior_tree_core/controls/fallback_node_with_memory.h"
+#include "behavior_tree_core/controls/sequence_star_node.h"
+#include "behavior_tree_core/controls/fallback_star_node.h"
 
 #include "behavior_tree_core/action_node.h"
 #include "behavior_tree_core/condition_node.h"

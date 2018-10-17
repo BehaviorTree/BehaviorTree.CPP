@@ -11,27 +11,18 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behavior_tree_core/controls/sequence_node_with_memory.h"
+#include "behavior_tree_core/controls/fallback_star_node.h"
 
 namespace BT
 {
 
-SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, bool reset_on_failure)
-  : ControlNode::ControlNode(name, SequenceNodeWithMemory::requiredNodeParameters() )
+FallbackStarNode::FallbackStarNode(const std::string& name)
+  : ControlNode::ControlNode(name, {})
   , current_child_idx_(0)
-  , reset_on_failure_(reset_on_failure)
 {
 }
 
-SequenceNodeWithMemory::SequenceNodeWithMemory(const std::string& name, const NodeParameters& params)
-  : ControlNode::ControlNode(name, params)
-  ,  current_child_idx_(0)
-  , reset_on_failure_(true)
-{
-    getParam<bool>("reset_on_failure", reset_on_failure_);
-}
-
-NodeStatus SequenceNodeWithMemory::tick()
+NodeStatus FallbackStarNode::tick()
 {
     // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
     const unsigned N_of_children = children_nodes_.size();
@@ -48,22 +39,16 @@ NodeStatus SequenceNodeWithMemory::tick()
             case NodeStatus::RUNNING:{
                 return child_status;
             }
-            case NodeStatus::FAILURE:
+            case NodeStatus::SUCCESS :
             {
-                if (reset_on_failure_)
+                for (unsigned t = 0; t <= current_child_idx_; t++)
                 {
-                    for (unsigned t = 0; t <= current_child_idx_; t++)
-                    {
-                        children_nodes_[t]->setStatus(NodeStatus::IDLE);
-                    }
-                    current_child_idx_ = 0;
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
-                else{ // just reset this child to try again
-                    current_child_node->setStatus(NodeStatus::IDLE);
-                }
+                current_child_idx_ = 0;
                 return child_status;
             }
-            case NodeStatus::SUCCESS:
+            case NodeStatus::FAILURE:
             {
                 current_child_idx_++;
             }break;
@@ -75,8 +60,7 @@ NodeStatus SequenceNodeWithMemory::tick()
         } // end switch
     }// end while loop
 
-
-    // The entire while loop completed. This means that all the children returned SUCCESS.
+    // The entire while loop completed. This means that all the children returned FAILURE.
     if (current_child_idx_ == N_of_children)
     {
         for (unsigned t = 0; t < N_of_children; t++)
@@ -85,10 +69,10 @@ NodeStatus SequenceNodeWithMemory::tick()
         }
         current_child_idx_ = 0;
     }
-    return NodeStatus::SUCCESS;
+    return NodeStatus::FAILURE;
 }
 
-void SequenceNodeWithMemory::halt()
+void FallbackStarNode::halt()
 {
     current_child_idx_ = 0;
     ControlNode::halt();
