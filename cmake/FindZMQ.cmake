@@ -25,7 +25,6 @@ else (ZMQ_LIBRARIES AND ZMQ_INCLUDE_DIRS)
       /usr/include
       /usr/local/include
       /opt/local/include
-      /sw/include
   )
 
   find_library(ZMQ_LIBRARY

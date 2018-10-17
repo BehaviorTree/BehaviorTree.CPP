@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(behavior_tree_core)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -Werror=return-type")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
 #
@@ -93,12 +92,19 @@ else()
 endif()
 
 ######################################################
-# COMPILING LIBRARY
+# LIBRARY
 ######################################################
 add_library(behavior_tree_core STATIC ${BT_Source} )
 target_compile_options(behavior_tree_core PRIVATE "-fPIC")
 target_link_libraries(behavior_tree_core dl)
 
+######################################################
+# EXAMPLES and TOOLS
+######################################################
+
+add_subdirectory(tools)
+add_subdirectory(sample_nodes)
+add_subdirectory(examples)
 
 ######################################################
 # TESTS
@@ -134,23 +140,6 @@ elseif(GTEST_FOUND)
 		
 endif()
 
-######################################################
-# COMPILING EXAMPLES and TOOLS
-######################################################
 
-add_executable(bt_log_cat         tools/bt_log_cat.cpp )
-target_link_libraries(bt_log_cat  ${BEHAVIOR_TREE_LIBRARIES} )
-
-if( ZMQ_FOUND )
-    add_executable(bt_recorder         tools/bt_recorder.cpp )
-    target_link_libraries(bt_recorder  ${BEHAVIOR_TREE_LIBRARIES} )
-endif()
-
-add_executable(bt_plugin_manifest         tools/bt_plugin_manifest.cpp )
-target_link_libraries(bt_plugin_manifest  ${BEHAVIOR_TREE_LIBRARIES} )
-
-
-add_subdirectory(sample_nodes)
-add_subdirectory(examples)
 
 
