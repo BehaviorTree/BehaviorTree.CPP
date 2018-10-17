@@ -23,7 +23,7 @@ https://behaviortree.github.io/BehaviorTree.CPP/
 
 Aknowledgement
 ------------
-This library is the result of the join effort between **Eurecat** (main autjor, Davide Faconti) and the
+This library is the result of the join effort between **Eurecat** (main autor, Davide Faconti) and the
 **Italian Institute of Technology** (Michele Colledanchise).
 
 It is one of the main components of [MOOD2Be](https://eurecat.org/es/portfolio-items/mood2be/),
