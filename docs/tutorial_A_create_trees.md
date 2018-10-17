@@ -10,7 +10,7 @@ the former for the sake of completeness.
 
 ## How to create your own ActionNodes
 
-You can find the source code here: [dummy_nodes.h](../sample_nodes/dummy_nodes.h)
+You can find the source code here: **sample_nodes/dummy_nodes.h**.
 
 The default (and recommended) way to create a TreeNode is by inheritance.
 

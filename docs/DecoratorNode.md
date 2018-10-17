@@ -26,7 +26,7 @@ Otherwise, it returns always FAILURE.
 
 ## RepeatNode
 
-Tick the child up to N times, where N is passed as a [NodeParameter](NodeParameters.md),
+Tick the child up to N times, where N is passed as a [NodeParameter](tutorial_B_node_parameters.md),
 as long as the child returns SUCCESS.
 
 Interrupt the loop if the child returns FAILURE and, in that case, return FAILURE too.
@@ -35,7 +35,7 @@ If the child returns RUNNING, this node returns RUNNING too.
 
 ## RetryNode
 
-Tick the child up to N times, where N is passed as a [NodeParameter](NodeParameters.md),
+Tick the child up to N times, where N is passed as a [NodeParameter](tutorial_B_node_parameters.md),
 as long as the child returns FAILURE.
 
 Interrupt the loop if the child returns SUCCESS and, in that case, return SUCCESS too.

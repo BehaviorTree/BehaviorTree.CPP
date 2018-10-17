@@ -31,7 +31,7 @@ use the concept of
 [Component Base Software Engineering](https://en.wikipedia.org/wiki/Component-based_software_engineering).
 
 Any existing middleware for robotics took this approach either informally or formally,
-being [ROS](www.ros.org), [YARP](www.yarp.it) and 
+being [ROS](http://www.ros.org), [YARP](http://www.yarp.it) and 
 [SmartSoft](http://www.servicerobotik-ulm.de) some notable examples.
 
 A "good" software architecture should have the following characteristics:
