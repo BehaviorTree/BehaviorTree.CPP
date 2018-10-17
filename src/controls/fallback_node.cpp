@@ -22,47 +22,45 @@ FallbackNode::FallbackNode(const std::string& name) : ControlNode::ControlNode(n
 NodeStatus FallbackNode::tick()
 {
     // gets the number of children. The number could change if, at runtime, one edits the tree.
-    const unsigned N_of_children = children_nodes_.size();
+    const unsigned children_count = children_nodes_.size();
 
     // Routing the ticks according to the fallback node's logic:
 
     setStatus(NodeStatus::RUNNING);
 
-    for (unsigned i = 0; i < N_of_children; i++)
+    for (unsigned index = 0; index < children_count; index++)
     {
-        TreeNode* child_node = children_nodes_[i];
-
+        TreeNode* child_node = children_nodes_[index];
         const NodeStatus child_status = child_node->executeTick();
 
-        // Ponderate on which status to send to the parent
-        if (child_status != NodeStatus::FAILURE)
+        switch( child_status )
         {
-            if (child_status == NodeStatus::SUCCESS)
-            {
-                for (unsigned t = 0; t <= i; t++)
-                {
-                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
-                }
-            }
-            // If the  child status is not failure, halt the next children and return the status to your parent.
-            haltChildren(i + 1);
+        case NodeStatus::RUNNING:{
             return child_status;
         }
-        else
-        {
-            // the child returned failure.
-            if (i == N_of_children - 1)
+        case NodeStatus::SUCCESS:{
+            for (unsigned t = 0; t <= index; t++)
             {
-                // If the  child status is failure, and it is the last child to be ticked,
-                // then the sequence has failed.
-                for (unsigned t = 0; t <= i; t++)
-                {
-                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
-                }
-                return NodeStatus::FAILURE;
+                children_nodes_[t]->setStatus(NodeStatus::IDLE);
             }
+            haltChildren(index + 1);
+            return child_status;
         }
+        case NodeStatus::FAILURE: {
+            // continue;
+        }break;
+
+        case NodeStatus::IDLE:{
+            throw std::runtime_error("This is not supposed to happen");
+        }
+        } // end switch
+    }// end for loop
+
+    for (auto& ch : children_nodes_)
+    {
+        ch->setStatus(NodeStatus::IDLE);
     }
-    throw std::runtime_error("This is not supposed to happen");
+    return NodeStatus::FAILURE;
 }
+
 }

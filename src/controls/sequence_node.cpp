@@ -13,53 +13,52 @@
 
 #include "behavior_tree_core/controls/sequence_node.h"
 
-BT::SequenceNode::SequenceNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
+namespace BT
+{
+
+SequenceNode::SequenceNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
 {
 }
 
-BT::NodeStatus BT::SequenceNode::tick()
+NodeStatus SequenceNode::tick()
 {
-    // gets the number of children. The number could change if, at runtime, one edits the tree.
-    const unsigned N_of_children = children_nodes_.size();
-
-    // Routing the ticks according to the sequence node's logic:
+    const unsigned children_count = children_nodes_.size();
 
     setStatus(NodeStatus::RUNNING);
 
-    for (unsigned int i = 0; i < N_of_children; i++)
+    for (unsigned int index = 0; index < children_count; index++)
     {
-        TreeNode* child_node = children_nodes_[i];
-
+        TreeNode* child_node = children_nodes_[index];
         const NodeStatus child_status = child_node->executeTick();
 
-        // Ponderate on which status to send to the parent
-        if (child_status != NodeStatus::SUCCESS)
+        switch( child_status )
         {
-            // If the  child status is not success, halt the next children and return the status to your parent.
-            if (child_status == NodeStatus::FAILURE)
-            {
-                for (unsigned t = 0; t <= i; t++)
+            case NodeStatus::RUNNING:{
+                return child_status;
+            }
+            case NodeStatus::FAILURE:{
+                for (unsigned t = 0; t <= index; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
                 }
+                haltChildren(index + 1);
+                return child_status;
             }
+            case NodeStatus::SUCCESS: {
+            // continue;
+            }break;
 
-            haltChildren(i + 1);
-            return child_status;
-        }
-        else
-        {
-            if (i == N_of_children - 1)
-            {
-                // If the  child status is success, and it is the last child to be ticked,
-                // then the sequence has succeeded.
-                for (auto& ch : children_nodes_)
-                {
-                    ch->setStatus(NodeStatus::IDLE);
-                }
-                return NodeStatus::SUCCESS;
+            case NodeStatus::IDLE:{
+                throw std::runtime_error("This is not supposed to happen");
             }
-        }
+        } // end switch
+    }// end for loop
+
+    for (auto& ch : children_nodes_)
+    {
+        ch->setStatus(NodeStatus::IDLE);
     }
-    throw std::runtime_error("This is not supposed to happen");
+    return NodeStatus::SUCCESS;
+}
+
 }

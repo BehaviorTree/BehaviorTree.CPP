@@ -33,12 +33,12 @@ SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters
 
 NodeStatus SequenceStarNode::tick()
 {
-    // Vector size initialization. N_of_children_ could change at runtime if you edit the tree
-    const unsigned N_of_children = children_nodes_.size();
+    // Vector size initialization. children_count_ could change at runtime if you edit the tree
+    const unsigned children_count = children_nodes_.size();
 
     setStatus(NodeStatus::RUNNING);
 
-    while (current_child_idx_ < N_of_children)
+    while (current_child_idx_ < children_count)
     {
         TreeNode* current_child_node = children_nodes_[current_child_idx_];
         const NodeStatus child_status = current_child_node->executeTick();
@@ -77,9 +77,9 @@ NodeStatus SequenceStarNode::tick()
 
 
     // The entire while loop completed. This means that all the children returned SUCCESS.
-    if (current_child_idx_ == N_of_children)
+    if (current_child_idx_ == children_count)
     {
-        for (unsigned t = 0; t < N_of_children; t++)
+        for (unsigned t = 0; t < children_count; t++)
         {
             children_nodes_[t]->setStatus(NodeStatus::IDLE);
         }
