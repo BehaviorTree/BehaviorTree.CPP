@@ -27,13 +27,11 @@ https://behaviortree.github.io/BehaviorTree.CPP/
 
 Aknowledgement
 ------------
-This library is the result of the join effort between **Eurecat** (main autor, Davide Faconti) and the
-**Italian Institute of Technology** (Michele Colledanchise).
+This library was developed at  **Eurecat** (main author, Davide Faconti) in a joint effort
+with the **Italian Institute of Technology** (Michele Colledanchise).
 
 It is one of the main components of [MOOD2Be](https://eurecat.org/es/portfolio-items/mood2be/),
-and it is developed at [Eurecat](https://eurecat.org) by Davide Faconti.
-
-MOOD2Be is one of the six **Integrated Technical Projects (ITPs)** selected from the 
+which is one of the six **Integrated Technical Projects (ITPs)** selected from the
 [RobMoSys first open call](https://robmosys.eu/itp/) and it received funding from the European
 Union’s Horizon 2020 Research and Innovation Programme.
 
