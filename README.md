@@ -25,7 +25,7 @@ Documentation
 https://behaviortree.github.io/BehaviorTree.CPP/
 
 
-Aknowledgement
+Acknowledgement
 ------------
 This library was developed at  **Eurecat** (main author, Davide Faconti) in a joint effort
 with the **Italian Institute of Technology** (Michele Colledanchise).
