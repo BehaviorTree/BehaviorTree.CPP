@@ -173,7 +173,7 @@
   
 
 
-  <a href="https://github.com/BehaviorTree/BehaviorTreeCPP/" title="Go to repository" class="md-source" data-md-source="github">
+  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/" title="Go to repository" class="md-source" data-md-source="github">
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
@@ -182,7 +182,7 @@
       </div>
     
     <div class="md-source__repository">
-      BehaviorTreeCPP
+      BehaviorTree.CPP
     </div>
   </a>
 
@@ -270,7 +270,7 @@
   
 
 
-  <a href="https://github.com/BehaviorTree/BehaviorTreeCPP/" title="Go to repository" class="md-source" data-md-source="github">
+  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/" title="Go to repository" class="md-source" data-md-source="github">
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
@@ -279,7 +279,7 @@
       </div>
     
     <div class="md-source__repository">
-      BehaviorTreeCPP
+      BehaviorTree.CPP
     </div>
   </a>
 
@@ -644,7 +644,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/BehaviorTree/BehaviorTreeCPP/edit/master/docs/BT_basics.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/BT_basics.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <h1 id="introduction-to-bts">Introduction to BTs</h1>
@@ -706,9 +706,7 @@ to consider this order or not.</p>
 <li>If all the children return SUCCESS, then the Sequence returns SUCCESS too.</li>
 </ul>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If the action <strong>GrabBeer</strong> fails, the door of the 
-fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p>
-</details>
-<h3 id="decorators">Decorators</h3>
+fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p></details><h3 id="decorators">Decorators</h3>
 <p>The goal of a <a href="../DecoratorNode/">DecoratorNode</a> is either to transform the result it received 
 from the child, to terminate the child, 
 or repeat ticking of the child, depending on the type of Decorator.</p>
@@ -732,9 +730,7 @@ Try up to 3 times, otherwise give up and return FAILURE.
 <p><strong>But</strong> there is an error. Can you find it?</p>
 <details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
 But if it returns SUCCESS, the left branch fails and the entire Sequence
-is interrupted. </p>
-</details>
-<h3 id="second-controlnode-fallback">Second ControlNode: Fallback</h3>
+is interrupted. </p></details><h3 id="second-controlnode-fallback">Second ControlNode: Fallback</h3>
 <p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
 are nodes that can express, as the name suggests, fallback strategies, 
 ie. what to do next if a child returns FAILURE.</p>
