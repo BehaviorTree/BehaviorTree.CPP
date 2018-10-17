@@ -21,8 +21,8 @@ template <typename T>
 class BlackboardPreconditionNode : public DecoratorNode
 {
   public:
-    BlackboardPreconditionNode(const std::string& name, const NodeParameters& params):
-        DecoratorNode(name, params)
+    BlackboardPreconditionNode(const std::string& name, const NodeParameters& params)
+      : DecoratorNode(name, params)
     {
     }
 
@@ -35,7 +35,6 @@ class BlackboardPreconditionNode : public DecoratorNode
     }
 
   private:
-
     virtual BT::NodeStatus tick() override
     {
         std::string key;
@@ -44,20 +43,21 @@ class BlackboardPreconditionNode : public DecoratorNode
 
         setStatus(NodeStatus::RUNNING);
 
-        if( blackboard() &&                   //blackboard not null
-            getParam("key", key) &&           // parameter key provided
-            getParam("expected", expected) && // parameter expected provided
-            blackboard()->get(key,value) &&   // value found in blackboard
-            (value == expected || initializationParameters().at("expected") == "*") ) // is expected value or "*"
+        if (blackboard() &&                     //blackboard not null
+            getParam("key", key) &&             // parameter key provided
+            getParam("expected", expected) &&   // parameter expected provided
+            blackboard()->get(key, value) &&    // value found in blackboard
+            (value == expected ||
+             initializationParameters().at("expected") == "*"))   // is expected value or "*"
         {
             return child_node_->executeTick();
         }
-        else{
-           return NodeStatus::FAILURE;
+        else
+        {
+            return NodeStatus::FAILURE;
         }
     }
 };
-
 }
 
 #endif

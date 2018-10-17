@@ -16,7 +16,10 @@ class ConditionTestNode : public ConditionNode
     // The method that is going to be executed by the thread
     virtual BT::NodeStatus tick() override;
 
-    int tickCount() const { return tick_count_; }
+    int tickCount() const
+    {
+        return tick_count_;
+    }
 
   private:
     bool boolean_value_;

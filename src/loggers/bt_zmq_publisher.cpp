@@ -4,9 +4,7 @@
 
 namespace BT
 {
-
 std::atomic<bool> PublisherZMQ::ref_count(false);
-
 
 void PublisherZMQ::createStatusBuffer()
 {
@@ -60,7 +58,7 @@ PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
             try
             {
                 bool received = zmq_server_.recv(&req);
-                if( received )
+                if (received)
                 {
                     zmq::message_t reply(tree_buffer_.size());
                     memcpy(reply.data(), tree_buffer_.data(), tree_buffer_.size());
@@ -88,11 +86,13 @@ PublisherZMQ::~PublisherZMQ()
     flush();
 }
 
-void PublisherZMQ::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
+void PublisherZMQ::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
+                            NodeStatus status)
 {
     using namespace std::chrono;
 
-    std::array<uint8_t, 12> transition = SerializeTransition(node.UID(), timestamp, prev_status, status);
+    std::array<uint8_t, 12> transition =
+        SerializeTransition(node.UID(), timestamp, prev_status, status);
     {
         std::unique_lock<std::mutex> lock(mutex_);
         transition_buffer_.push_back(transition);

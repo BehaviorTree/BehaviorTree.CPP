@@ -17,15 +17,12 @@
 
 using BT::NodeStatus;
 
-
 struct DeadlineTest : testing::Test
 {
     BT::TimeoutNode root;
     BT::AsyncActionTest action;
 
-    DeadlineTest()
-      : root("deadline", 250)
-      , action("action")
+    DeadlineTest() : root("deadline", 250), action("action")
     {
         root.setChild(&action);
     }
@@ -34,7 +31,6 @@ struct DeadlineTest : testing::Test
         haltAllActions(&root);
     }
 };
-
 
 /****************TESTS START HERE***************************/
 
@@ -67,4 +63,3 @@ TEST_F(DeadlineTest, DeadlineNotTriggeredTest)
     ASSERT_EQ(NodeStatus::IDLE, action.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
-

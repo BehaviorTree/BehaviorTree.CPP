@@ -13,7 +13,6 @@ using namespace BT;
  *    its own thread).
 */
 
-
 // clang-format off
 
 const std::string xml_text_sequence = R"(
@@ -54,7 +53,8 @@ const std::string xml_text_sequence_star = R"(
 
 void Assert(bool condition)
 {
-    if( !condition ) throw std::runtime_error("this is not what I expected");
+    if (!condition)
+        throw std::runtime_error("this is not what I expected");
 }
 
 int main()
@@ -62,8 +62,8 @@ int main()
     using namespace DummyNodes;
 
     BehaviorTreeFactory factory;
-    factory.registerSimpleCondition("TemperatureOK", std::bind( CheckBattery ));
-    factory.registerSimpleCondition("BatteryOK", std::bind( CheckTemperature ));
+    factory.registerSimpleCondition("TemperatureOK", std::bind(CheckBattery));
+    factory.registerSimpleCondition("BatteryOK", std::bind(CheckTemperature));
     factory.registerNodeType<MoveBaseAction>("MoveBase");
     factory.registerNodeType<SaySomething>("SaySomething");
 
@@ -74,7 +74,7 @@ int main()
     //  1) When Sequence is used, BatteryOK and TempearaturOK is executed at each tick()
     //  2) When SequenceStar is used, those ConditionNodes are executed only once.
 
-    for(auto& xml_text: {xml_text_sequence, xml_text_sequence_star})
+    for (auto& xml_text : {xml_text_sequence, xml_text_sequence_star})
     {
         std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
 
@@ -84,17 +84,17 @@ int main()
 
         std::cout << "\n--- 1st executeTick() ---" << std::endl;
         status = tree.root_node->executeTick();
-        Assert( status == NodeStatus::RUNNING);
+        Assert(status == NodeStatus::RUNNING);
 
         SleepMS(150);
         std::cout << "\n--- 2nd executeTick() ---" << std::endl;
         status = tree.root_node->executeTick();
-        Assert( status == NodeStatus::RUNNING);
+        Assert(status == NodeStatus::RUNNING);
 
         SleepMS(150);
         std::cout << "\n--- 3rd executeTick() ---" << std::endl;
         status = tree.root_node->executeTick();
-        Assert( status == NodeStatus::SUCCESS);
+        Assert(status == NodeStatus::SUCCESS);
 
         std::cout << std::endl;
     }
@@ -138,4 +138,3 @@ Robot says: "mission started..."
 Robot says: "mission completed!"
 
 */
-

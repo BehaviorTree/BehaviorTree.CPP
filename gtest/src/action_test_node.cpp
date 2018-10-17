@@ -65,9 +65,7 @@ void BT::AsyncActionTest::setBoolean(bool boolean_value)
 
 //----------------------------------------------
 
-
-BT::SyncActionTest::SyncActionTest(const std::string &name) :
-    ActionNodeBase(name)
+BT::SyncActionTest::SyncActionTest(const std::string& name) : ActionNodeBase(name)
 {
     tick_count_ = 0;
     boolean_value_ = true;

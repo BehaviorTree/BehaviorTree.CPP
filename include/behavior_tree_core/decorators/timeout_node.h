@@ -10,10 +10,9 @@ namespace BT
 class TimeoutNode : public DecoratorNode
 {
   public:
-
     TimeoutNode(const std::string& name, unsigned milliseconds);
 
-    TimeoutNode(const std::string& name,const NodeParameters& params);
+    TimeoutNode(const std::string& name, const NodeParameters& params);
 
     static const NodeParameters& requiredNodeParameters()
     {
@@ -37,4 +36,4 @@ class TimeoutNode : public DecoratorNode
 };
 }
 
-#endif // DEADLINE_NODE_H
+#endif   // DEADLINE_NODE_H

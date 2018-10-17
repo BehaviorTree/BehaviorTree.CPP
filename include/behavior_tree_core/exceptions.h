@@ -19,18 +19,17 @@
 
 namespace BT
 {
-
 class BehaviorTreeException : public std::exception
 {
   public:
     BehaviorTreeException(const std::string& Message);
 
-    const char* what()  const noexcept
+    const char* what() const noexcept
     {
         return message_.c_str();
     }
 
-private:
+  private:
     std::string message_;
 };
 }

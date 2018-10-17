@@ -15,16 +15,15 @@
 
 #include "behavior_tree_core/action_node.h"
 
-
 namespace BT
 {
-
 class SetBlackboard : public ActionNodeBase
 {
   public:
-    SetBlackboard(const std::string& name, const NodeParameters& params):
-        ActionNodeBase(name, params)
-    { }
+    SetBlackboard(const std::string& name, const NodeParameters& params)
+      : ActionNodeBase(name, params)
+    {
+    }
 
     static const NodeParameters& requiredNodeParameters()
     {
@@ -36,19 +35,22 @@ class SetBlackboard : public ActionNodeBase
     virtual BT::NodeStatus tick() override
     {
         std::string key;
-        if( !blackboard() || !getParam("key",key) || key.empty()){
+        if (!blackboard() || !getParam("key", key) || key.empty())
+        {
             return NodeStatus::FAILURE;
         }
-        else{
+        else
+        {
             std::string value;
-            getParam("value",value);
-            blackboard()->set(key,value);
+            getParam("value", value);
+            blackboard()->set(key, value);
             return NodeStatus::SUCCESS;
         }
     }
-    virtual void halt() override {}
+    virtual void halt() override
+    {
+    }
 };
-
 }
 
 #endif

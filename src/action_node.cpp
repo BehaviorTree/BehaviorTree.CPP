@@ -26,14 +26,15 @@ NodeStatus ActionNodeBase::executeTick()
 
     if (prev_status == NodeStatus::IDLE || prev_status == NodeStatus::RUNNING)
     {
-        setStatus( tick() );
+        setStatus(tick());
     }
     return status();
 }
 
 //-------------------------------------------------------
 
-SimpleActionNode::SimpleActionNode(const std::string& name, SimpleActionNode::TickFunctor tick_functor)
+SimpleActionNode::SimpleActionNode(const std::string& name,
+                                   SimpleActionNode::TickFunctor tick_functor)
   : ActionNodeBase(name, NodeParameters()), tick_functor_(std::move(tick_functor))
 {
 }
@@ -48,7 +49,7 @@ NodeStatus SimpleActionNode::tick()
         prev_status = NodeStatus::RUNNING;
     }
 
-    NodeStatus status = tick_functor_( *this );
+    NodeStatus status = tick_functor_(*this);
     if (status != prev_status)
     {
         setStatus(status);
@@ -83,7 +84,7 @@ void ActionNode::waitForTick()
         if (loop_ && status() == NodeStatus::IDLE)
         {
             setStatus(NodeStatus::RUNNING);
-            setStatus( tick() );
+            setStatus(tick());
         }
     }
 }
@@ -106,7 +107,7 @@ void ActionNode::stopAndJoinThread()
 {
     loop_.store(false);
     tick_engine_.notify();
-    if( thread_.joinable() )
+    if (thread_.joinable())
     {
         thread_.join();
     }

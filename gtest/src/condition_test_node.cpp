@@ -13,12 +13,12 @@
 #include "condition_test_node.h"
 #include <string>
 
-BT::ConditionTestNode::ConditionTestNode(const std::string& name) : ConditionNode::ConditionNode(name)
+BT::ConditionTestNode::ConditionTestNode(const std::string& name)
+  : ConditionNode::ConditionNode(name)
 {
     boolean_value_ = true;
     tick_count_ = 0;
 }
-
 
 BT::NodeStatus BT::ConditionTestNode::tick()
 {

@@ -7,10 +7,8 @@ BT_REGISTER_NODES(factory)
     DummyNodes::RegisterNodes(factory);
 }
 
-
 namespace DummyNodes
 {
-
 BT::NodeStatus SayHello()
 {
     std::cout << "Robot says: \"Hello!!!\"" << std::endl;
@@ -57,7 +55,7 @@ void ApproachObject::halt()
 BT::NodeStatus SaySomething::tick()
 {
     std::string msg;
-    if( getParam("message", msg) == false )
+    if (getParam("message", msg) == false)
     {
         // if getParam failed, use the default value
         msg = requiredNodeParameters().at("message");
@@ -65,5 +63,4 @@ BT::NodeStatus SaySomething::tick()
     std::cout << "Robot says: " << msg << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
-
 }

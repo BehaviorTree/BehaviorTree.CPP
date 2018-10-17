@@ -25,9 +25,9 @@
 
 namespace BT
 {
-
 /// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
-typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)> NodeBuilder;
+typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)>
+    NodeBuilder;
 
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
@@ -38,8 +38,9 @@ struct TreeNodeManifest
 };
 
 const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
-#define BT_REGISTER_NODES(factory)  \
-    extern "C" void __attribute__((visibility("default"))) BT_RegisterNodesFromPlugin( BT::BehaviorTreeFactory& factory )
+#define BT_REGISTER_NODES(factory)                                                                 \
+    extern "C" void __attribute__((visibility("default")))                                         \
+        BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
 
 class BehaviorTreeFactory
 {
@@ -54,13 +55,16 @@ class BehaviorTreeFactory
     void registerBuilder(const std::string& ID, NodeBuilder builder);
 
     /// Register a SimpleActionNode
-    void registerSimpleAction(const std::string& ID, const SimpleActionNode::TickFunctor &tick_functor);
+    void registerSimpleAction(const std::string& ID,
+                              const SimpleActionNode::TickFunctor& tick_functor);
 
     /// Register a SimpleConditionNode
-    void registerSimpleCondition(const std::string& ID, const SimpleConditionNode::TickFunctor &tick_functor);
+    void registerSimpleCondition(const std::string& ID,
+                                 const SimpleConditionNode::TickFunctor& tick_functor);
 
     /// Register a SimpleDecoratorNode
-    void registerSimpleDecorator(const std::string& ID, const SimpleDecoratorNode::TickFunctor &tick_functor);
+    void registerSimpleDecorator(const std::string& ID,
+                                 const SimpleDecoratorNode::TickFunctor& tick_functor);
 
     /**
      * @brief registerFromPlugin load a shared library and execute the function BT_REGISTER_NODES (see macro).
@@ -79,8 +83,7 @@ class BehaviorTreeFactory
      * @param params   parameters (usually read from the XML definition)
      * @return         new node.
      */
-    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID,
-                                                  const std::string& name,
+    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
                                                   const NodeParameters& params) const;
 
     /** registerNodeType is the method to use to register your custom TreeNode.
@@ -94,30 +97,35 @@ class BehaviorTreeFactory
     void registerNodeType(const std::string& ID)
     {
         static_assert(std::is_base_of<ActionNodeBase, T>::value ||
-                      std::is_base_of<ControlNode, T>::value ||
-                      std::is_base_of<DecoratorNode, T>::value ||
-                      std::is_base_of<ConditionNode, T>::value,
+                          std::is_base_of<ControlNode, T>::value ||
+                          std::is_base_of<DecoratorNode, T>::value ||
+                          std::is_base_of<ConditionNode, T>::value,
                       "[registerBuilder]: accepts only classed derived from either ActionNodeBase, "
                       "DecoratorNode, ControlNode or ConditionNode");
 
-        static_assert( !std::is_abstract<T>::value, "[registerBuilder]: Some methods are pure virtual. "
-                                                    "Did you override the methods tick() and halt()?" );
+        static_assert(!std::is_abstract<T>::value,
+                      "[registerBuilder]: Some methods are pure virtual. "
+                      "Did you override the methods tick() and halt()?");
 
         constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
-        constexpr bool param_constructable = std::is_constructible<T, const std::string&, const NodeParameters&>::value;
-        constexpr bool has_static_required_parameters = has_static_method_requiredNodeParameters<T>::value;
+        constexpr bool param_constructable =
+            std::is_constructible<T, const std::string&, const NodeParameters&>::value;
+        constexpr bool has_static_required_parameters =
+            has_static_method_requiredNodeParameters<T>::value;
 
         static_assert(default_constructable || param_constructable,
-                      "[registerBuilder]: the registered class must have at least one of these two constructors: "
+                      "[registerBuilder]: the registered class must have at least one of these two "
+                      "constructors: "
                       "  (const std::string&, const NodeParameters&) or (const std::string&).");
 
         static_assert(!(param_constructable && !has_static_required_parameters),
                       "[registerBuilder]: you MUST implement the static method: "
                       "  const NodeParameters& requiredNodeParameters();\n");
 
-        static_assert( !( has_static_required_parameters && !param_constructable),
-                       "[registerBuilder]: since you have a static method requiredNodeParameters(), "
-                       "you MUST add a constructor sign signature (const std::string&, const NodeParameters&)\n" );
+        static_assert(!(has_static_required_parameters && !param_constructable),
+                      "[registerBuilder]: since you have a static method requiredNodeParameters(), "
+                      "you MUST add a constructor sign signature (const std::string&, const "
+                      "NodeParameters&)\n");
 
         registerNodeTypeImpl<T>(ID);
         storeNodeManifest<T>(ID);
@@ -130,7 +138,6 @@ class BehaviorTreeFactory
     const std::vector<TreeNodeManifest>& manifests() const;
 
   private:
-
     std::map<std::string, NodeBuilder> builders_;
     std::vector<TreeNodeManifest> manifests_;
 

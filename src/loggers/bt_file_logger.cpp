@@ -3,10 +3,7 @@
 
 namespace BT
 {
-
-FileLogger::FileLogger(BT::TreeNode* root_node,
-                       const char* filename,
-                       uint16_t buffer_size)
+FileLogger::FileLogger(BT::TreeNode* root_node, const char* filename, uint16_t buffer_size)
   : StatusChangeLogger(root_node), buffer_max_size_(buffer_size)
 {
     if (buffer_max_size_ != 0)
@@ -37,9 +34,11 @@ FileLogger::~FileLogger()
     file_os_.close();
 }
 
-void FileLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
+void FileLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
+                          NodeStatus status)
 {
-    std::array<uint8_t, 12> buffer = SerializeTransition(node.UID(), timestamp, prev_status, status);
+    std::array<uint8_t, 12> buffer =
+        SerializeTransition(node.UID(), timestamp, prev_status, status);
 
     if (buffer_max_size_ == 0)
     {

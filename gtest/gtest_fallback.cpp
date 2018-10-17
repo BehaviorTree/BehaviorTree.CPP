@@ -17,7 +17,6 @@
 
 using BT::NodeStatus;
 
-
 struct SimpleFallbackTest : testing::Test
 {
     BT::FallbackNode root;
@@ -63,7 +62,6 @@ struct ComplexFallbackTest : testing::Test
         haltAllActions(&root);
     }
 };
-
 
 struct SimpleFallbackWithMemoryTest : testing::Test
 {
@@ -197,7 +195,6 @@ TEST_F(ComplexFallbackTest, Condition2ToTrue)
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
 }
 
-
 TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 {
     condition.setBoolean(false);
@@ -324,5 +321,3 @@ TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
     ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 }
-
-

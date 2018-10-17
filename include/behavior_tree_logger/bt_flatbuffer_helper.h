@@ -47,8 +47,7 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
 {
     std::vector<flatbuffers::Offset<BT_Serialization::TreeNode>> fb_nodes;
 
-    applyRecursiveVisitor(root_node, [&](BT::TreeNode* node)
-    {
+    applyRecursiveVisitor(root_node, [&](BT::TreeNode* node) {
         std::vector<uint16_t> children_uid;
         if (auto control = dynamic_cast<BT::ControlNode*>(node))
         {
@@ -65,30 +64,24 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
         }
 
         std::vector<flatbuffers::Offset<BT_Serialization::KeyValue>> params;
-        const NodeParameters & init_params = node->initializationParameters();
-        for (const auto& it: init_params)
+        const NodeParameters& init_params = node->initializationParameters();
+        for (const auto& it : init_params)
         {
-            params.push_back( BT_Serialization::CreateKeyValueDirect(
-                                  builder,
-                                  it.first.c_str(),
-                                  it.second.c_str())
-                              );
+            params.push_back(BT_Serialization::CreateKeyValueDirect(builder, it.first.c_str(),
+                                                                    it.second.c_str()));
         }
 
         auto tn = BT_Serialization::CreateTreeNode(
-                    builder, node->UID(),
-                    builder.CreateVector(children_uid),
-                    convertToFlatbuffers(node->type()),
-                    convertToFlatbuffers(node->status()),
-                    builder.CreateString(node->name().c_str()),
-                    builder.CreateString(node->registrationName().c_str()),
-                    builder.CreateVector(params) );
+            builder, node->UID(), builder.CreateVector(children_uid),
+            convertToFlatbuffers(node->type()), convertToFlatbuffers(node->status()),
+            builder.CreateString(node->name().c_str()),
+            builder.CreateString(node->registrationName().c_str()), builder.CreateVector(params));
 
         fb_nodes.push_back(tn);
     });
 
-    auto behavior_tree =
-        BT_Serialization::CreateBehaviorTree(builder, root_node->UID(), builder.CreateVector(fb_nodes));
+    auto behavior_tree = BT_Serialization::CreateBehaviorTree(builder, root_node->UID(),
+                                                              builder.CreateVector(fb_nodes));
 
     builder.Finish(behavior_tree);
 }
@@ -96,8 +89,8 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
 /** Serialize manually the informations about state transition
  * No flatbuffer serialization here
  */
-inline std::array<uint8_t, 12> SerializeTransition(uint16_t UID, Duration timestamp, NodeStatus prev_status,
-                                                   NodeStatus status)
+inline std::array<uint8_t, 12> SerializeTransition(uint16_t UID, Duration timestamp,
+                                                   NodeStatus prev_status, NodeStatus status)
 {
     using namespace std::chrono;
     std::array<uint8_t, 12> buffer;

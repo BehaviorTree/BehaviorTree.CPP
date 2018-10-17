@@ -40,23 +40,19 @@
 
 namespace BT
 {
-
 void applyRecursiveVisitor(const TreeNode* root_node,
                            const std::function<void(const TreeNode*)>& visitor);
 
-void applyRecursiveVisitor(TreeNode* root_node,
-                           const std::function<void(TreeNode*)> &visitor);
+void applyRecursiveVisitor(TreeNode* root_node, const std::function<void(TreeNode*)>& visitor);
 
 /**
  * Debug function to print on a stream
  */
 void printTreeRecursively(const TreeNode* root_node);
 
-void assignBlackboardToEntireTree(TreeNode* root_node,
-                                 const Blackboard::Ptr& bb);
+void assignBlackboardToEntireTree(TreeNode* root_node, const Blackboard::Ptr& bb);
 
-
-void haltAllActions(TreeNode *root_node);
+void haltAllActions(TreeNode* root_node);
 
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
@@ -68,11 +64,13 @@ typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
  * @param root_node
  * @param serialized_buffer is the output.
  */
-void buildSerializedStatusSnapshot(const TreeNode* root_node, SerializedTreeStatus& serialized_buffer);
+void buildSerializedStatusSnapshot(const TreeNode* root_node,
+                                   SerializedTreeStatus& serialized_buffer);
 
 /// Simple way to extract the type of a TreeNode at COMPILE TIME.
 /// Useful to avoid the cost of without dynamic_cast or the virtual method TreeNode::type().
-template< typename T> inline NodeType getType()
+template <typename T>
+inline NodeType getType()
 {
     // clang-format off
     if( std::is_base_of<ActionNodeBase, T>::value )        return NodeType::ACTION;
@@ -83,7 +81,6 @@ template< typename T> inline NodeType getType()
     return NodeType::UNDEFINED;
     // clang-format on
 }
-
 }
 
 #endif   // BEHAVIOR_TREE_H

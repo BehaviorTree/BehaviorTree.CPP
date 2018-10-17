@@ -15,8 +15,8 @@
 
 namespace BT
 {
-
-void applyRecursiveVisitor(const TreeNode* node, const std::function<void(const TreeNode*)>& visitor)
+void applyRecursiveVisitor(const TreeNode* node,
+                           const std::function<void(const TreeNode*)>& visitor)
 {
     if (!node)
     {
@@ -29,7 +29,7 @@ void applyRecursiveVisitor(const TreeNode* node, const std::function<void(const 
     {
         for (const auto& child : control->children())
         {
-            applyRecursiveVisitor( static_cast<const TreeNode*>(child), visitor);
+            applyRecursiveVisitor(static_cast<const TreeNode*>(child), visitor);
         }
     }
     else if (auto decorator = dynamic_cast<const BT::DecoratorNode*>(node))
@@ -100,29 +100,27 @@ void buildSerializedStatusSnapshot(TreeNode* root_node, SerializedTreeStatus& se
     serialized_buffer.clear();
 
     auto visitor = [&serialized_buffer](const TreeNode* node) {
-        serialized_buffer.push_back(std::make_pair(node->UID(), static_cast<uint8_t>(node->status())));
+        serialized_buffer.push_back(
+            std::make_pair(node->UID(), static_cast<uint8_t>(node->status())));
     };
 
     applyRecursiveVisitor(root_node, visitor);
 }
 
-void assignBlackboardToEntireTree(TreeNode *root_node, const Blackboard::Ptr &bb)
+void assignBlackboardToEntireTree(TreeNode* root_node, const Blackboard::Ptr& bb)
 {
-    auto visitor = [bb](TreeNode* node) {
-        node->setBlackboard(bb);
-    };
+    auto visitor = [bb](TreeNode* node) { node->setBlackboard(bb); };
     applyRecursiveVisitor(root_node, visitor);
 }
 
-void haltAllActions(TreeNode *root_node)
+void haltAllActions(TreeNode* root_node)
 {
     auto visitor = [](TreeNode* node) {
-        if( auto action = dynamic_cast<ActionNode*>(node) )
+        if (auto action = dynamic_cast<ActionNode*>(node))
         {
             action->stopAndJoinThread();
         }
     };
     applyRecursiveVisitor(root_node, visitor);
 }
-
 }

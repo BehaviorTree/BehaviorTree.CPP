@@ -15,7 +15,8 @@
 
 namespace BT
 {
-FallbackNode::FallbackNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
+FallbackNode::FallbackNode(const std::string& name)
+  : ControlNode::ControlNode(name, NodeParameters())
 {
 }
 
@@ -33,28 +34,33 @@ NodeStatus FallbackNode::tick()
         TreeNode* child_node = children_nodes_[index];
         const NodeStatus child_status = child_node->executeTick();
 
-        switch( child_status )
+        switch (child_status)
         {
-        case NodeStatus::RUNNING:{
-            return child_status;
-        }
-        case NodeStatus::SUCCESS:{
-            for (unsigned t = 0; t <= index; t++)
+            case NodeStatus::RUNNING:
             {
-                children_nodes_[t]->setStatus(NodeStatus::IDLE);
+                return child_status;
             }
-            haltChildren(index + 1);
-            return child_status;
-        }
-        case NodeStatus::FAILURE: {
-            // continue;
-        }break;
+            case NodeStatus::SUCCESS:
+            {
+                for (unsigned t = 0; t <= index; t++)
+                {
+                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
+                }
+                haltChildren(index + 1);
+                return child_status;
+            }
+            case NodeStatus::FAILURE:
+            {
+                // continue;
+            }
+            break;
 
-        case NodeStatus::IDLE:{
-            throw std::runtime_error("This is not supposed to happen");
-        }
-        } // end switch
-    }// end for loop
+            case NodeStatus::IDLE:
+            {
+                throw std::runtime_error("This is not supposed to happen");
+            }
+        }   // end switch
+    }       // end for loop
 
     for (auto& ch : children_nodes_)
     {
@@ -62,5 +68,4 @@ NodeStatus FallbackNode::tick()
     }
     return NodeStatus::FAILURE;
 }
-
 }

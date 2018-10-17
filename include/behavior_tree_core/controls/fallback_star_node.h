@@ -18,7 +18,6 @@
 
 namespace BT
 {
-
 /**
  * @brief The FallbackStarNode is used to try different strategies,
  * until one succeed.

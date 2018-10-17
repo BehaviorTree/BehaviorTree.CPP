@@ -17,22 +17,22 @@
 
 namespace BT
 {
-
 class AlwaysSuccess : public ActionNodeBase
 {
   public:
-    AlwaysSuccess(const std::string& name):
-        ActionNodeBase(name, NodeParameters())
-    { }
+    AlwaysSuccess(const std::string& name) : ActionNodeBase(name, NodeParameters())
+    {
+    }
 
   private:
     virtual BT::NodeStatus tick() override
     {
         return NodeStatus::SUCCESS;
     }
-    virtual void halt() override {}
+    virtual void halt() override
+    {
+    }
 };
-
 }
 
 #endif

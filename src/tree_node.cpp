@@ -45,11 +45,12 @@ void TreeNode::setStatus(NodeStatus new_status)
     if (prev_status != new_status)
     {
         state_condition_variable_.notify_all();
-        state_change_signal_.notify(std::chrono::high_resolution_clock::now(), *this, prev_status, new_status);
+        state_change_signal_.notify(std::chrono::high_resolution_clock::now(), *this, prev_status,
+                                    new_status);
     }
 }
 
-void TreeNode::setBlackboard(const Blackboard::Ptr &bb)
+void TreeNode::setBlackboard(const Blackboard::Ptr& bb)
 {
     bb_ = bb;
 }
@@ -70,7 +71,8 @@ NodeStatus TreeNode::waitValidStatus()
     std::unique_lock<std::mutex> lk(state_mutex_);
 
     state_condition_variable_.wait(lk, [&]() {
-        return (status_ == NodeStatus::RUNNING || status_ == NodeStatus::SUCCESS || status_ == NodeStatus::FAILURE);
+        return (status_ == NodeStatus::RUNNING || status_ == NodeStatus::SUCCESS ||
+                status_ == NodeStatus::FAILURE);
     });
     return status_;
 }
@@ -85,7 +87,8 @@ bool TreeNode::isHalted() const
     return status() == NodeStatus::IDLE;
 }
 
-TreeNode::StatusChangeSubscriber TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
+TreeNode::StatusChangeSubscriber
+TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 {
     return state_change_signal_.subscribe(std::move(callback));
 }
@@ -105,7 +108,7 @@ const std::string& TreeNode::registrationName() const
     return registration_name_;
 }
 
-const NodeParameters &TreeNode::initializationParameters() const
+const NodeParameters& TreeNode::initializationParameters() const
 {
     return parameters_;
 }

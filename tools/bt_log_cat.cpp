@@ -98,7 +98,8 @@ int main(int argc, char* argv[])
         const uint32_t t_sec = flatbuffers::ReadScalar<uint32_t>(&buffer[index]);
         const uint32_t t_usec = flatbuffers::ReadScalar<uint32_t>(&buffer[index + 4]);
 
-        printf("[%d.%06d]: %s%s %s -> %s\n", t_sec, t_usec, name.c_str(), &whitespaces[std::min(ws_count, name.size())],
+        printf("[%d.%06d]: %s%s %s -> %s\n", t_sec, t_usec, name.c_str(),
+               &whitespaces[std::min(ws_count, name.size())],
                printStatus(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index + 10])),
                printStatus(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index + 11])));
     }

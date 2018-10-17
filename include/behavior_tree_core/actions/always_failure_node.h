@@ -13,27 +13,26 @@
 #ifndef ACTION_ALWAYS_FAILURE_NODE_H
 #define ACTION_ALWAYS_FAILURE_NODE_H
 
-
 #include "behavior_tree_core/action_node.h"
 
 namespace BT
 {
-
 class AlwaysFailure : public ActionNodeBase
 {
   public:
-    AlwaysFailure(const std::string& name):
-        ActionNodeBase(name, NodeParameters())
-    { }
+    AlwaysFailure(const std::string& name) : ActionNodeBase(name, NodeParameters())
+    {
+    }
 
   private:
     virtual BT::NodeStatus tick() override
     {
         return NodeStatus::FAILURE;
     }
-    virtual void halt() override {}
+    virtual void halt() override
+    {
+    }
 };
-
 }
 
 #endif

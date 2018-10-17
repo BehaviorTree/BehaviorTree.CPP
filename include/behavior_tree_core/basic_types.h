@@ -49,7 +49,6 @@ enum FailurePolicy
     FAIL_ON_ALL
 };
 
-
 // Enumerates the options for when a parallel node is considered to have succeeded:
 // - "SUCCEED_ON_ONE" indicates that the node will return success as soon as one
 //   of its children succeeds;
@@ -61,8 +60,8 @@ enum SuccessPolicy
     SUCCEED_ON_ALL
 };
 
-
-template <typename T> T convertFromString(const std::string& str);
+template <typename T>
+T convertFromString(const std::string& str);
 
 //------------------------------------------------------------------
 
@@ -82,8 +81,6 @@ std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
 // small utility, unless you want to use <boost/algorithm/string.hpp>
 std::vector<std::string> splitString(const std::string& strToSplit, char delimeter);
-
-
 }
 
 #endif   // BT_BASIC_TYPES_H

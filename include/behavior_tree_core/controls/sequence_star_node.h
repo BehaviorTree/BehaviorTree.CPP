@@ -18,7 +18,6 @@
 
 namespace BT
 {
-
 /**
  * @brief The SequenceStarNode is used to execute a sequence of children.
  * If any child returns RUNNING, previous children are not ticked again.

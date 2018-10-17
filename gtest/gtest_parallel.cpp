@@ -17,7 +17,6 @@
 
 using BT::NodeStatus;
 
-
 struct SimpleParallelTest : testing::Test
 {
     BT::ParallelNode root;
@@ -172,7 +171,8 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_3.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());   // success not read yet by the node parallel_1
+    ASSERT_EQ(NodeStatus::SUCCESS,
+              action_1.status());   // success not read yet by the node parallel_1
     ASSERT_EQ(NodeStatus::RUNNING,
               parallel_1.status());   // parallel_1 hasn't realize (yet) that action_1 has succeeded
 
@@ -196,4 +196,3 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     ASSERT_EQ(NodeStatus::IDLE, parallel_2.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
-

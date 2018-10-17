@@ -59,7 +59,6 @@ class SimpleDecoratorNode : public DecoratorNode
 
     TickFunctor tick_functor_;
 };
-
 }
 
 #endif

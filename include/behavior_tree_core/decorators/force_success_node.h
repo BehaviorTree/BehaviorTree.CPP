@@ -20,16 +20,15 @@ namespace BT
 class ForceSuccessDecorator : public DecoratorNode
 {
   public:
-    ForceSuccessDecorator(const std::string& name):
-        DecoratorNode(name, NodeParameters())
-    { }
+    ForceSuccessDecorator(const std::string& name) : DecoratorNode(name, NodeParameters())
+    {
+    }
 
   private:
     virtual BT::NodeStatus tick() override;
 };
 
 //------------ implementation ----------------------------
-
 
 inline NodeStatus ForceSuccessDecorator::tick()
 {
@@ -39,26 +38,25 @@ inline NodeStatus ForceSuccessDecorator::tick()
 
     switch (child_state)
     {
-    case NodeStatus::FAILURE:
-    case NodeStatus::SUCCESS:
-    {
-        child_node_->setStatus(NodeStatus::IDLE);
-        return  NodeStatus::SUCCESS;
-    }
+        case NodeStatus::FAILURE:
+        case NodeStatus::SUCCESS:
+        {
+            child_node_->setStatus(NodeStatus::IDLE);
+            return NodeStatus::SUCCESS;
+        }
 
-    case NodeStatus::RUNNING:
-    {
-        return NodeStatus::RUNNING;
-    }
+        case NodeStatus::RUNNING:
+        {
+            return NodeStatus::RUNNING;
+        }
 
-    default:
-    {
-        // TODO throw?
+        default:
+        {
+            // TODO throw?
+        }
     }
-}
     return status();
 }
-
 }
 
 #endif

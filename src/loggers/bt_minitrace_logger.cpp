@@ -3,15 +3,13 @@
 
 namespace BT
 {
-
 std::atomic<bool> MinitraceLogger::ref_count(false);
 
-MinitraceLogger::MinitraceLogger(TreeNode* root_node,
-                                 const char* filename_json) :
-    StatusChangeLogger(root_node)
+MinitraceLogger::MinitraceLogger(TreeNode* root_node, const char* filename_json)
+  : StatusChangeLogger(root_node)
 {
     bool expected = false;
-    if ( ! ref_count.compare_exchange_strong( expected, true) )
+    if (!ref_count.compare_exchange_strong(expected, true))
     {
         throw std::logic_error("Only one instance of StdCoutLogger shall be created");
     }
@@ -27,7 +25,8 @@ MinitraceLogger::~MinitraceLogger()
     minitrace::mtr_shutdown();
 }
 
-void MinitraceLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status, NodeStatus status)
+void MinitraceLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
+                               NodeStatus status)
 {
     using namespace minitrace;
 
@@ -55,4 +54,3 @@ void MinitraceLogger::flush()
     minitrace::mtr_flush();
 }
 }   // end namespace
-

@@ -15,10 +15,8 @@
 
 namespace BT
 {
-
 FallbackStarNode::FallbackStarNode(const std::string& name)
-  : ControlNode::ControlNode(name, {})
-  , current_child_idx_(0)
+  : ControlNode::ControlNode(name, {}), current_child_idx_(0)
 {
 }
 
@@ -34,12 +32,13 @@ NodeStatus FallbackStarNode::tick()
         TreeNode* current_child_node = children_nodes_[current_child_idx_];
         const NodeStatus child_status = current_child_node->executeTick();
 
-        switch( child_status )
+        switch (child_status)
         {
-            case NodeStatus::RUNNING:{
+            case NodeStatus::RUNNING:
+            {
                 return child_status;
             }
-            case NodeStatus::SUCCESS :
+            case NodeStatus::SUCCESS:
             {
                 for (unsigned t = 0; t <= current_child_idx_; t++)
                 {
@@ -51,14 +50,15 @@ NodeStatus FallbackStarNode::tick()
             case NodeStatus::FAILURE:
             {
                 current_child_idx_++;
-            }break;
+            }
+            break;
 
             case NodeStatus::IDLE:
             {
                 throw std::runtime_error("This is not supposed to happen");
             }
-        } // end switch
-    }// end while loop
+        }   // end switch
+    }       // end while loop
 
     // The entire while loop completed. This means that all the children returned FAILURE.
     if (current_child_idx_ == children_count)

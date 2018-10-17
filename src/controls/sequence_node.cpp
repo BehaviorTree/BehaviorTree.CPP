@@ -15,8 +15,8 @@
 
 namespace BT
 {
-
-SequenceNode::SequenceNode(const std::string& name) : ControlNode::ControlNode(name, NodeParameters())
+SequenceNode::SequenceNode(const std::string& name)
+  : ControlNode::ControlNode(name, NodeParameters())
 {
 }
 
@@ -31,12 +31,14 @@ NodeStatus SequenceNode::tick()
         TreeNode* child_node = children_nodes_[index];
         const NodeStatus child_status = child_node->executeTick();
 
-        switch( child_status )
+        switch (child_status)
         {
-            case NodeStatus::RUNNING:{
+            case NodeStatus::RUNNING:
+            {
                 return child_status;
             }
-            case NodeStatus::FAILURE:{
+            case NodeStatus::FAILURE:
+            {
                 for (unsigned t = 0; t <= index; t++)
                 {
                     children_nodes_[t]->setStatus(NodeStatus::IDLE);
@@ -44,15 +46,18 @@ NodeStatus SequenceNode::tick()
                 haltChildren(index + 1);
                 return child_status;
             }
-            case NodeStatus::SUCCESS: {
-            // continue;
-            }break;
+            case NodeStatus::SUCCESS:
+            {
+                // continue;
+            }
+            break;
 
-            case NodeStatus::IDLE:{
+            case NodeStatus::IDLE:
+            {
                 throw std::runtime_error("This is not supposed to happen");
             }
-        } // end switch
-    }// end for loop
+        }   // end switch
+    }       // end for loop
 
     for (auto& ch : children_nodes_)
     {
@@ -60,5 +65,4 @@ NodeStatus SequenceNode::tick()
     }
     return NodeStatus::SUCCESS;
 }
-
 }

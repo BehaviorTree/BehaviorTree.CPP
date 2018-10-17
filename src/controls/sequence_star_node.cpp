@@ -15,18 +15,15 @@
 
 namespace BT
 {
-
 SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failure)
-  : ControlNode::ControlNode(name, SequenceStarNode::requiredNodeParameters() )
+  : ControlNode::ControlNode(name, SequenceStarNode::requiredNodeParameters())
   , current_child_idx_(0)
   , reset_on_failure_(reset_on_failure)
 {
 }
 
 SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters& params)
-  : ControlNode::ControlNode(name, params)
-  ,  current_child_idx_(0)
-  , reset_on_failure_(true)
+  : ControlNode::ControlNode(name, params), current_child_idx_(0), reset_on_failure_(true)
 {
     getParam<bool>("reset_on_failure", reset_on_failure_);
 }
@@ -43,9 +40,10 @@ NodeStatus SequenceStarNode::tick()
         TreeNode* current_child_node = children_nodes_[current_child_idx_];
         const NodeStatus child_status = current_child_node->executeTick();
 
-        switch( child_status )
+        switch (child_status)
         {
-            case NodeStatus::RUNNING:{
+            case NodeStatus::RUNNING:
+            {
                 return child_status;
             }
             case NodeStatus::FAILURE:
@@ -58,7 +56,8 @@ NodeStatus SequenceStarNode::tick()
                     }
                     current_child_idx_ = 0;
                 }
-                else{ // just reset this child to try again
+                else
+                {   // just reset this child to try again
                     current_child_node->setStatus(NodeStatus::IDLE);
                 }
                 return child_status;
@@ -66,15 +65,15 @@ NodeStatus SequenceStarNode::tick()
             case NodeStatus::SUCCESS:
             {
                 current_child_idx_++;
-            }break;
+            }
+            break;
 
             case NodeStatus::IDLE:
             {
                 throw std::runtime_error("This is not supposed to happen");
             }
-        } // end switch
-    }// end while loop
-
+        }   // end switch
+    }       // end while loop
 
     // The entire while loop completed. This means that all the children returned SUCCESS.
     if (current_child_idx_ == children_count)

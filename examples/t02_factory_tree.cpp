@@ -48,13 +48,13 @@ int main()
 
     using namespace DummyNodes;
 
-    factory.registerSimpleAction("SayHello", std::bind(SayHello) );
-    factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery) );
-    factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature) );
+    factory.registerSimpleAction("SayHello", std::bind(SayHello));
+    factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
+    factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
 
     GripperInterface gripper;
-    factory.registerSimpleAction("OpenGripper", std::bind( &GripperInterface::open, &gripper));
-    factory.registerSimpleAction("CloseGripper", std::bind( &GripperInterface::close, &gripper));
+    factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &gripper));
+    factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &gripper));
 
     factory.registerNodeType<ApproachObject>("ApproachObject");
 

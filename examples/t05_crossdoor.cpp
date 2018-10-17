@@ -60,19 +60,19 @@ int main()
     auto tree = buildTreeFromText(factory, xml_text, blackboard);
 
     // Create some loggers
-    StdCoutLogger   logger_cout(tree.root_node);
+    StdCoutLogger logger_cout(tree.root_node);
     MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
-    FileLogger      logger_file(tree.root_node, "bt_trace.fbl");
+    FileLogger logger_file(tree.root_node, "bt_trace.fbl");
 #ifdef ZMQ_FOUND
-    PublisherZMQ    publisher_zmq(tree.root_node);
+    PublisherZMQ publisher_zmq(tree.root_node);
 #endif
-    
+
     // Keep on ticking until you get either a SUCCESS or FAILURE state
     NodeStatus status = NodeStatus::RUNNING;
-    while( status == NodeStatus::RUNNING )
+    while (status == NodeStatus::RUNNING)
     {
         status = tree.root_node->executeTick();
-        CrossDoor::SleepMS(1); // optional sleep to avoid "busy loops"
+        CrossDoor::SleepMS(1);   // optional sleep to avoid "busy loops"
     }
     return 0;
 }

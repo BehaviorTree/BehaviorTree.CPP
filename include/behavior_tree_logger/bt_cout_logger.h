@@ -24,9 +24,7 @@ class StdCoutLogger : public StatusChangeLogger
     StdCoutLogger(TreeNode* root_node);
     ~StdCoutLogger();
 
-    virtual void callback(Duration timestamp,
-                          const TreeNode& node,
-                          NodeStatus prev_status,
+    virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
                           NodeStatus status) override;
 
     virtual void flush() override;

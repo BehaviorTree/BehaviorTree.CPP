@@ -4,7 +4,6 @@
 
 using namespace BT;
 
-
 NodeStatus SayHello()
 {
     printf("hello\n");
@@ -14,8 +13,9 @@ NodeStatus SayHello()
 class ActionTestNode : public ActionNode
 {
   public:
-    ActionTestNode(const std::string& name): ActionNode(name)
-    { }
+    ActionTestNode(const std::string& name) : ActionNode(name)
+    {
+    }
 
     NodeStatus tick() override
     {
@@ -35,7 +35,6 @@ class ActionTestNode : public ActionNode
         setStatus(NodeStatus::IDLE);
     }
 
-
   private:
     int time_;
     std::atomic_bool stop_loop_;
@@ -44,7 +43,7 @@ class ActionTestNode : public ActionNode
 int main()
 {
     BT::SequenceNode root("root");
-    BT::SimpleActionNode action1("say_hello", std::bind(SayHello) );
+    BT::SimpleActionNode action1("say_hello", std::bind(SayHello));
     ActionTestNode action2("async_action");
 
     root.addChild(&action1);
@@ -54,16 +53,14 @@ int main()
 
     NodeStatus status = NodeStatus::RUNNING;
 
-    while( status == NodeStatus::RUNNING)
+    while (status == NodeStatus::RUNNING)
     {
         status = root.executeTick();
 
-        std::cout << count++ << " : " <<
-                     root.status() << " / " <<
-                     action1.status() << " / " <<
-                     action2.status() << std::endl;
+        std::cout << count++ << " : " << root.status() << " / " << action1.status() << " / "
+                  << action2.status() << std::endl;
 
-        std::this_thread::sleep_for( std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     haltAllActions(&root);
@@ -87,6 +84,3 @@ hello
 5 : SUCCESS / IDLE / IDLE
 
 */
-
-
-

@@ -41,16 +41,17 @@ const std::string xml_text = R"(
 // Use this function to create a SimpleActionNode that can access the blackboard
 NodeStatus CalculateGoalPose(TreeNode& self)
 {
-    const Pose2D mygoal = { 1, 2, M_PI};
+    const Pose2D mygoal = {1, 2, M_PI};
 
     // RECOMMENDED: check if the blackboard is nullptr first
-    if( self.blackboard() )
+    if (self.blackboard())
     {
         // store it in the blackboard
         self.blackboard()->set("GoalPose", mygoal);
         return NodeStatus::SUCCESS;
     }
-    else{
+    else
+    {
         return NodeStatus::FAILURE;
     }
 }
@@ -70,10 +71,10 @@ int main()
     auto tree = buildTreeFromText(factory, xml_text, blackboard);
 
     NodeStatus status = NodeStatus::RUNNING;
-    while( status == NodeStatus::RUNNING )
+    while (status == NodeStatus::RUNNING)
     {
         status = tree.root_node->executeTick();
-        SleepMS(1); // optional sleep to avoid "busy loops"
+        SleepMS(1);   // optional sleep to avoid "busy loops"
     }
     return 0;
 }

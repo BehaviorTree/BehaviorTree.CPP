@@ -5,7 +5,6 @@
 
 namespace BT
 {
-
 class SyncActionTest : public ActionNodeBase
 {
   public:
@@ -14,22 +13,24 @@ class SyncActionTest : public ActionNodeBase
     BT::NodeStatus tick() override;
 
     virtual void halt() override
-    {}
+    {
+    }
 
     void setBoolean(bool boolean_value);
 
-    int tickCount() const { return tick_count_; }
+    int tickCount() const
+    {
+        return tick_count_;
+    }
 
   private:
     bool boolean_value_;
     int tick_count_;
 };
 
-
 class AsyncActionTest : public ActionNode
 {
   public:
-
     AsyncActionTest(const std::string& name);
 
     ~AsyncActionTest();
@@ -44,7 +45,10 @@ class AsyncActionTest : public ActionNode
 
     void setBoolean(bool boolean_value);
 
-    int tickCount() const { return tick_count_; }
+    int tickCount() const
+    {
+        return tick_count_;
+    }
 
   private:
     int time_;

@@ -68,11 +68,15 @@ struct SequenceTripleActionTest : testing::Test
     BT::SequenceNode root;
     BT::ConditionTestNode condition;
     BT::AsyncActionTest action_1;
-    BT::SyncActionTest  action_2;
+    BT::SyncActionTest action_2;
     BT::AsyncActionTest action_3;
 
-    SequenceTripleActionTest() : root("root_sequence"), condition("condition"),
-        action_1("action_1"), action_2("action_2"), action_3("action_3")
+    SequenceTripleActionTest()
+      : root("root_sequence")
+      , condition("condition")
+      , action_1("action_1")
+      , action_2("action_2")
+      , action_3("action_3")
     {
         root.addChild(&condition);
         root.addChild(&action_1);
@@ -121,8 +125,6 @@ struct ComplexSequence2ActionsTest : testing::Test
         haltAllActions(&root);
     }
 };
-
-
 
 struct SimpleSequenceWithMemoryTest : testing::Test
 {
@@ -206,7 +208,6 @@ struct SimpleParallelTest : testing::Test
         haltAllActions(&root);
     }
 };
-
 
 /****************TESTS START HERE***************************/
 
@@ -323,7 +324,6 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions1ToFalse)
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-
 }
 
 TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)

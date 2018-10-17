@@ -26,7 +26,8 @@ RetryNode::RetryNode(const std::string& name, const NodeParameters& params)
   : DecoratorNode(name, params), NTries_(1), TryIndx_(0)
 {
     auto param = getParam<int>(NUM_ATTEMPTS);
-    if(param){
+    if (param)
+    {
         NTries_ = param.value();
     }
 }

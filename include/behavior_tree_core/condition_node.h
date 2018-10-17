@@ -34,7 +34,6 @@ class ConditionNode : public LeafNode
     }
 };
 
-
 /**
  * @brief The SimpleConditionNode provides an easy to use ConditionNode.
  * The user should simply provide a callback with this signature
@@ -66,8 +65,6 @@ class SimpleConditionNode : public ConditionNode
 
     TickFunctor tick_functor_;
 };
-
-
 }
 
 #endif

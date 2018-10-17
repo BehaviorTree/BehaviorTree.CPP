@@ -18,7 +18,6 @@
 
 namespace BT
 {
-
 /**
  * @brief The FallbackNode is used to try different strategies,
  * until one succeed.

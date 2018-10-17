@@ -17,7 +17,6 @@
 
 using BT::NodeStatus;
 
-
 struct BehaviorTreeTest : testing::Test
 {
     BT::SequenceNode root;
@@ -47,9 +46,7 @@ struct BehaviorTreeTest : testing::Test
     }
 };
 
-
 /****************TESTS START HERE***************************/
-
 
 TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
 {

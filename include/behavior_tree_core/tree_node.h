@@ -33,13 +33,12 @@ namespace BT
 typedef std::unordered_map<std::string, std::string> NodeParameters;
 
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
-typedef std::chrono::high_resolution_clock::duration   Duration;
+typedef std::chrono::high_resolution_clock::duration Duration;
 
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
 {
   public:
-
     /**
      * @brief TreeNode main constructor.
      *
@@ -69,7 +68,7 @@ class TreeNode
 
     void setBlackboard(const Blackboard::Ptr& bb);
 
-    const Blackboard::Ptr &blackboard() const;
+    const Blackboard::Ptr& blackboard() const;
 
     const std::string& name() const;
 
@@ -105,7 +104,6 @@ class TreeNode
     const NodeParameters& initializationParameters() const;
 
   protected:
-
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
 
@@ -115,11 +113,12 @@ class TreeNode
     BT::optional<T> getParam(const std::string& key) const
     {
         T out;
-        if( getParam(key, out))
+        if (getParam(key, out))
         {
             return std::move(out);
         }
-        else{
+        else
+        {
             return BT::nullopt;
         }
     }
@@ -138,23 +137,24 @@ class TreeNode
         }
         const std::string& str = it->second;
 
-        try{
+        try
+        {
             // check if it follows this ${pattern}, if it does, search inside the blackboard
-            if( bb_ && str.size()>=4 && str[0] == '$' && str[1] == '{' && str.back() == '}')
+            if (bb_ && str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}')
             {
-                const std::string stripped_key( &str[2], str.size()-3);
+                const std::string stripped_key(&str[2], str.size() - 3);
                 bool found = bb_->get(stripped_key, destination);
                 return found;
             }
-            else{
+            else
+            {
                 destination = convertFromString<T>(str.c_str());
                 return true;
             }
         }
-        catch( std::runtime_error& err)
+        catch (std::runtime_error& err)
         {
-            std::cout << "Exception at getParam(" <<
-                         key << "): " << err.what() << std::endl;
+            std::cout << "Exception at getParam(" << key << "): " << err.what() << std::endl;
             return false;
         }
     }
@@ -183,10 +183,6 @@ class TreeNode
 
     Blackboard::Ptr bb_;
 };
-
-
-
-
 }
 
 #endif
