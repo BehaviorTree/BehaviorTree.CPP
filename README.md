@@ -35,7 +35,7 @@ If you are looking for a more fancy graphical user interface, check
 ![Groot screenshot](groot-screenshot.png)
 
 
-Aknowledgement
+Acknowledgement
 ------------
 This library was developed at  **Eurecat** (main author, Davide Faconti) in a joint effort
 with the **Italian Institute of Technology** (Michele Colledanchise).
