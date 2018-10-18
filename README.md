@@ -24,6 +24,16 @@ Documentation
 
 https://behaviortree.github.io/BehaviorTree.CPP/
 
+GUI Editor
+------------
+
+Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
+
+If you are looking for a more fancy graphical user interface, check 
+[Groot](https://github.com/BehaviorTree/Groot) out.
+
+![Groot screenshot](groot-screenshot.png)
+
 
 Aknowledgement
 ------------
