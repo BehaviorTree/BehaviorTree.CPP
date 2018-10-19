@@ -1,18 +1,18 @@
 # Blackboards
 
-The blackboard is a a __key/value__ storage that can be shared by all the Nodes
+The blackboard is a a __key/value__ storage shared by all the Nodes
 of a tree.
 
 The __key__ is a string whilst the __value__ is a type-erased container (called `SafeAny::Any`) 
 that allows the user to store any C++ object and to cast it back to its original form.
 
-Contrariwise to `boost::any` and `std::any`, this container will also try to 
+Contrariwise to `boost::any` and `std::any`, `SafeAny::Any` will also try to 
 avoid common overflow and underflow errors.
 
-You can't cast a negative number into an `unsigned integer`,
+In fact, you can't cast a negative number into an `unsigned integer`,
 nor a very large number that exceeds 2^8 into a `char`. 
 
-If the __value__ is stored as a string, it will use `convertFromString<T>()`
+If the __value__ is stored as a string, the blackboard will use `convertFromString<T>()`
 to cast it to the type T (see [previous example](tutorial_B_node_parameters.md));
 
 The user can create his/her own Blackboards backend; it is possible, for instance,
@@ -61,9 +61,10 @@ Let's consider the following XML tree definition:
 The root SequenceStar will execute four actions:
 
 - `CalculateGoalPose` writes into the blackboard key "GoalPose".
-- The syntax `${...}` tells to `MoveBase` to read the goal from the key "GoalPose" in the blackboard.
+- The syntax `${...}` tells to `MoveBase` to read the goal at run-time from the blackboard;
+  they blackboard key is "GoalPose".
 - Alternatively, you can write a key/value pair into the blackboard using the built-in action `SetBlackboard`.
-- Similar to step 2. Pose2D is retrieved from "OtherGoal".  
+- Similar to step 2. Pose2D is retrieved from the key "OtherGoal".  
 
 !!! note
     For your information, __GoalPose__ is stored as a type erased Pose2D.

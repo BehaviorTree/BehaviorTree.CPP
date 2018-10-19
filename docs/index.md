@@ -20,8 +20,37 @@ to visualize, record, replay and analyze state transitions.
 
 ![ReadTheDocs](images/ReadTheDocs.png)  
 
+## What is a Behavior Tree?
 
-## The problem
+A Behavior Tree (__BT__) is a way to structure the switching between different 
+tasks in an autonomous agent, such as a robot or a virtual entity in a computer game.
+
+BTs are a very efficient way of creating complex systems that are both modular and reactive. 
+These properties are crucial in many applications, which has led to the spread 
+of BT from computer game programming to many branches of AI and Robotics. 
+ 
+If you are already familiar with Finite State Machines (__FSM__), you will
+easily grasp most of the concepts but, hopefully, you will find that BTs
+are more expressive and easier to reason about.
+
+The main advantages of Behavior Trees, when compared to FSMs are:
+
+- __They are intrinsically Hierarchical__: this means that we can _compose_
+complex behaviors including entire trees as sub-branches of a bigger tree. 
+For instance, the behavior "Fetch Beer" may reuse in one of its nodes the tree
+"Grasp Object".
+
+- __Their graphical representation has a semantic meaning__: it is easier to 
+"read" a BT and understand the corresponding workflow. 
+State transitions in FSMs, by comparisons, are harder to understand
+both in their textual and graphical representation.    
+
+- __They are more expressive__: Ready to use ControlNodes and DecoratorNodes
+make possible to express more complex control flows. The user can extend the
+"vocabulary" with his/her own custom nodes.
+
+
+## "Ok, but WHY do we need BehaviorTrees (or FSM)?"
 
 Many software systems, being robotics a notable example, are inherently
 complex.
@@ -58,33 +87,4 @@ the business logic in a single location.
 __Finite State Machines__ were created specifically with this goal in mind, but in
 the recent years __Behavior Trees__ gained popularity, especially in the game industry.
 
-
-## What is a Behavior Tree?
-
-A Behavior Tree (__BT__) is a way to structure the switching between different 
-tasks in an autonomous agent, such as a robot or a virtual entity in a computer game.
-
-BTs are a very efficient way of creating complex systems that are both modular and reactive. 
-These properties are crucial in many applications, which has led to the spread 
-of BT from computer game programming to many branches of AI and Robotics. 
- 
-If you are already familiar with Finite State Machines (__FSM__), you will
-easily grasp most of the concepts but, hopefully, you will  find that BTs
-are more expressive and easier to reason about.
-
-The main advantages of Behavior Trees, when compared to FSMs are:
-
-- __They are intrinsically Hierarchical__: this means that we can _compose_
-complex behaviors including entire trees as sub-branches of a bigger tree. 
-For instance, the behavior "Fetch Beer" may reuse in one of its nodes the tree
-"Grasp Object".
-
-- __Their graphical representation has a semantic meaning__: it is easier to 
-"read" a BT and understand the corresponding workflow. 
-State transitions in FSMs, by comparisons, are harder to understand
-both in their textual and graphical representation.    
-
-- __They are more expressive__: Ready to use ControlNodes and DecoratorNodes
-make possible to express more complex control flows. The user can extend the
-"vocabulary" with his/her own custom nodes.
 

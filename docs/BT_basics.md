@@ -11,17 +11,24 @@ For instance, in a service-oriented architecture, the leaves would contain
 the "client" code that communicate with the "server" that performs the
 operation.
 
+In the following example, we can see two Actions executed in a sequence,
+`DetectObject` and `GraspObject`.
+
 ![Leaf To Component Communication](images/LeafToComponentCommunication.png)
 
-
-The other nodes of the tree, those which are not leaves, control the 
+The other nodes of the tree, those which are __not leaves__, control the 
 "flow of execution".
 
-To better understand how this flow takes place , imagine a signal, that we will further
-call "__tick__"; it is executed at the __root__ of the tree and propagates through
-the branches until it reaches one or multiple leaves.
+To better understand how this control flow takes place , imagine a signal 
+called "__tick__"; it is executed at the __root__ of the tree and it propagates 
+through the branches until it reaches one or multiple leaves.
 
-The `tick()` callback returns a `NodeStatus` that will be either:
+!!! Note
+    The word __tick__ will be often used as a *verb* (to tick / to be ticked) and it means
+    
+    "To invoke the callback `tick()` called of a `TreeNode`".
+
+Then a `TreeNode` is ticked, it returns a `NodeStatus` that can be either:
 
 - __SUCCESS__
 - __FAILURE__
@@ -37,7 +44,7 @@ and they needs more time to return a valid result.
 This C++ library provides also the status __IDLE__; it means that the node is ready to
 start.
 
-The result of a node is propagated back to the parent, that will decide
+The result of a node is propagated back to its parent, that will decide
 which child should be ticked next or will return a result to its own parent.
 
 ## Types of nodes
@@ -57,7 +64,7 @@ alter the state of the system.
 ![UML hierarchy](images/TypeHierarchy.png)
 
 
-## Learn by example
+## Examples
 
 To better understand how a BehaviorTrees work, let's focus on some practical
 examples. For the sake of simplicity we will not take into account what happens
@@ -83,11 +90,11 @@ In short:
 
 - If a child returns SUCCESS, tick the next one.
 - If a child returns FAILURE, then no more children are ticked and the Sequence returns FAILURE.
-- If all the children return SUCCESS, then the Sequence returns SUCCESS too.
+- If __all__ the children return SUCCESS, then the Sequence returns SUCCESS too.
 
-??? warning "Exercise: find the bug! Expand to read the answer."
+!!! warning "Have you spotted the bug?"
     If the action __GrabBeer__ fails, the door of the 
-    fridge would remain open, since the last action __CloseDoor__ is skipped.
+    fridge would remain open, since the last action __CloseFridge__ is skipped.
 
 
 ### Decorators
@@ -113,14 +120,15 @@ __Apparently__, the branch on the right side means:
 
     If the door is closed, then try to open it.
     Try up to 3 times, otherwise give up and return FAILURE.
-
-      
-__But__ there is an error. Can you find it?
     
-??? warning "Exercise: find the bug! Expand to read the answer."
+But...
+    
+!!! warning "Have you spotted the bug?"
     If __DoorOpen__ returns FAILURE, we have the desired behaviour.
     But if it returns SUCCESS, the left branch fails and the entire Sequence
-    is interrupted. 
+    is interrupted.
+    
+    We will see later how we can improve this tree. 
     
 
 ### Second ControlNode: Fallback
@@ -140,26 +148,25 @@ In the next example, you can see how Sequence and Fallbacks can be combined:
 ![FallbackNodes](images/FallbackBasic.png)  
 
 
->In the door open?
+> Is the door open?
 >
-> I not, try to open the door.
+> If not, try to open the door.
 >
 > Otherwise, if you have a key, unlock and open the door.
 >
 > Otherwise, smash the door. 
 >
->If any of these actions succeeded, then enter the room.
+> If __any__ of these actions succeeded, then enter the room.
 
 ### "Fetch me a beer" revisited
 
-We can now improve the "Fetch Me a Beer" example, which leaves the door open 
-if the beer was not there.
+We can now improve the "Fetch Me a Beer" example, which left the door open 
+if the beer was not inside the fridge.
 
-We use the color "green" to represent nodes which will return
+We use the color "green" to represent nodes which return
 SUCCESS and "red" for those which return FAILURE. Black nodes are never executed. 
 
 ![FetchBeer failure](images/FetchBeerFails.png)
-
 
 Let's create an alternative tree that closes the door even when __GrabBeer__ 
 returns FAILURE.
@@ -167,10 +174,11 @@ returns FAILURE.
 
 ![FetchBeer failure](images/FetchBeer.png)
 
-Both the trees will close the door of the fridge, eventually, but:
+Both these trees will close the door of the fridge, eventually, but:
 
 - the tree on the __left__ side will always return SUCCESS if we managed to
  open and close the fridge.
+ 
 - the tree on the __right__ side will return SUCCESS if the beer was there, 
 FAILURE otherwise.
 

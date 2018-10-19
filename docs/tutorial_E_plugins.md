@@ -1,7 +1,7 @@
 # Plugins
 
-In the previous examples we linked the user-defined nodes where included
-and linked statically into out projects.
+In the previous examples the user-defined nodes where included
+and linked statically into out C++ projects.
 
 We used the `BehaviorTreeFactory` to registed manualy these custom TreeNodes.
 
@@ -12,11 +12,13 @@ pre-compiled __dynamic shared libraries, i.e. plugins__.
 
 Let's consider the [first tutorial](tutorial_A_create_trees.md).
 
-To do this we must encapsulate the registration of multiple TreeNodes into a single 
-function like this:
+To create a plugin we must encapsulate the registration of one or multiple TreeNodes 
+into a single function like this:
 
 ``` c++
-// This is a macro. Just deal with it.
+// This is a macro that defines a function with a single argument 
+// (BehaviorTreeFactory& factory)
+
 BT_REGISTER_NODES(factory)
 {
     static GripperInterface gi; // we can't have more than instance
@@ -34,10 +36,10 @@ BT_REGISTER_NODES(factory)
 !!! note
     This function must be placed in __.cpp__ file, not the header file.
     
-In this particular example we assume that BT_REGISTER_NODES and
+Here, we assume that BT_REGISTER_NODES and
 the definitions of our custom TreeNodes are all defined in the file __dummy_nodes.cpp__.
 
-If you compile the plugin using __cmake__, add the argument `SHARED` to
+When you use __cmake__ to compile a plugin, add the argument `SHARED` to
 `add_library`.
 
 ```cmake
@@ -45,7 +47,7 @@ If you compile the plugin using __cmake__, add the argument `SHARED` to
 add_library(dummy_nodes  SHARED dummy_nodes.cpp )
 ``` 
 
-In Linux the file __libdummy_nodes.so__ will be created.
+In Linux, the file __libdummy_nodes.so__ will be created.
 
 The [first tutorial](tutorial_A_create_trees.md) becomes, as a result, much simpler:
 

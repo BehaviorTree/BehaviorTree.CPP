@@ -35,7 +35,7 @@ Please note:
 - The __static__ method `requiredNodeParameters()` contains a single key/value pair.
   The string "default message" is the default value.
   
-- Parameters must be accessed using the method `getParam()`, preferably in the
+- Parameters must be accessed using the method `getParam()`, preferably inside the
 `tick()` method.
 
 ``` c++ hl_lines="5 9 18"
@@ -81,11 +81,16 @@ struct Pose2D
 ```
 
 If we want the method `getParam()` to be able to parse a string
-and store its value into a Pose2D, we must provide our own specialization
+and store its value into a `Pose2D`, we must provide our own template specialization
 of `convertFromString<T>()`.
 
-In this case, we want to represent Pose2D as three real numbers separated by 
-semicolons.
+In this case, the text representation of a `Pose2D` is three real numbers separated by 
+semicolons, like this:
+
+    "1.1;-2.32;0.4"
+
+Since this is a common pattern, the library provide the helper function `BT::splitString`.
+
 
 ``` c++ hl_lines="6"
 // use this namespace
@@ -111,13 +116,15 @@ template <> Pose2D BT::convertFromString(const std::string& key)
     }
 }
 
-} // end naespace
+} // end namespace
 ```
 
 We now define a __asynchronous__ ActionNode called __MoveBaseAction__.
 
+The method tick() of an `ActionNode` is executed in its own thread.
+
 The method `getParam()` will call the function `convertFromString<Pose2D>()` under the hood;
-alternatively, we can use the latter directly, for instance to convert the default
+alternatively, we can use the latter funtion directly, for instance to convert the default
 string "0;0;0" into a Pose2D.
 
 ``` c++ hl_lines="20 21 22 23 24"
@@ -175,9 +182,7 @@ private:
 
 ## NodeParameters in the XML
 
-
-To pass the parameter in the XML, use an attribute
-with the same name:
+To pass the parameter from a XML, use attributes:
 
 ``` XML
 <Sequence>

@@ -5,7 +5,7 @@ a mechanism to record and/or display all the state transitions in out tree.
 
 ## Example
 
-In this example we attach multiple loggers are attached to a tree.
+We can attach multiple loggers to a tree.
 
 To do this, we pass the root of the tree. 
 
@@ -51,30 +51,31 @@ int main()
 
 ## StdCoutLogger
 
-Simply print the state transition on __std::cout__.
+It simply prints the state transition on __std::cout__.
 
 
 ## FileLogger
 
-Store the state transitions (and their timestamp) in the bynary file
+It stores the state transitions (and their timestamp) in the binary file
 called "bt_trace.fbl".
 
-To bisualize the contect of this file, you can use the command line tool 
+To visualize the content of this file, use the command line tool 
 __bt_log_cat__.
 
 ## MinitraceLogger
 
-This logger store in a JSON file format the state duration. Its goal is to
-show the time required by a TreeNode to complete its tick() operation.
+This logger stores the states trnasitions and durations in a JSON file format. 
 
-This tracing format can be visualized in __Chrome__ tracer viewer:that
-you can access typing this in the address bar: __chrome://tracing__.
+Its goal is to show the time required by a TreeNode to complete its tick() operation.
+
+This tracing format can be visualized in the __Chrome__ tracer viewer; you can access it
+typing this in the address bar: __chrome://tracing__.
 
 For more information, refer to: [MiniTrace (GitHub)](https://github.com/hrydgard/minitrace)
 
 ## PublisherZMQ
 
-Publish state transitions in real-time using [ZMQ](http://zeromq.org/).
+It publishes state transitions in real-time using [ZMQ](http://zeromq.org/).
 
 You can record them using the command line tool __bt_recorder__.
 

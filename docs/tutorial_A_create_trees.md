@@ -45,9 +45,8 @@ As you can see:
 - The method __tick()__ is the place where the actual Action takes place.
 It must return a NodeStatus, i.e. RUNNING, SUCCESS or FAILURE. 
 
-- The method __halt()__ is used to stop an asynchronous Action. ApproachObject
+- The method __halt()__ is used to stop an __asynchronous Action__. ApproachObject
 doesn't need it.
- 
  
 Alternatively, we can use __dependecy injection__ to create a TreeNode given 
 a function pointer. 
@@ -184,7 +183,7 @@ We must first register our custom TreeNodes into the `BehaviorTreeFactory`
 The identifier used in the XML must coincide with those used to register
 the TreeNodes.
 
-The attribute "name" represent the name of the instance and it is optional.
+The attribute "name" represents the name of the instance and it is optional.
 
 
 ``` c++
