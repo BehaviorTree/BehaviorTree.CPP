@@ -566,15 +566,15 @@
                 
                 
                 <h1 id="blackboards">Blackboards</h1>
-<p>The blackboard is a a <strong>key/value</strong> storage that can be shared by all the Nodes
+<p>The blackboard is a a <strong>key/value</strong> storage shared by all the Nodes
 of a tree.</p>
 <p>The <strong>key</strong> is a string whilst the <strong>value</strong> is a type-erased container (called <code>SafeAny::Any</code>) 
 that allows the user to store any C++ object and to cast it back to its original form.</p>
-<p>Contrariwise to <code>boost::any</code> and <code>std::any</code>, this container will also try to 
+<p>Contrariwise to <code>boost::any</code> and <code>std::any</code>, <code>SafeAny::Any</code> will also try to 
 avoid common overflow and underflow errors.</p>
-<p>You can't cast a negative number into an <code>unsigned integer</code>,
+<p>In fact, you can't cast a negative number into an <code>unsigned integer</code>,
 nor a very large number that exceeds 2^8 into a <code>char</code>. </p>
-<p>If the <strong>value</strong> is stored as a string, it will use <code>convertFromString&lt;T&gt;()</code>
+<p>If the <strong>value</strong> is stored as a string, the blackboard will use <code>convertFromString&lt;T&gt;()</code>
 to cast it to the type T (see <a href="../tutorial_B_node_parameters/">previous example</a>);</p>
 <p>The user can create his/her own Blackboards backend; it is possible, for instance,
 to create a persistent blackboard using a database.</p>
@@ -616,9 +616,10 @@ to create a persistent blackboard using a database.</p>
 <p>The root SequenceStar will execute four actions:</p>
 <ul>
 <li><code>CalculateGoalPose</code> writes into the blackboard key "GoalPose".</li>
-<li>The syntax <code>${...}</code> tells to <code>MoveBase</code> to read the goal from the key "GoalPose" in the blackboard.</li>
+<li>The syntax <code>${...}</code> tells to <code>MoveBase</code> to read the goal at run-time from the blackboard;
+  they blackboard key is "GoalPose".</li>
 <li>Alternatively, you can write a key/value pair into the blackboard using the built-in action <code>SetBlackboard</code>.</li>
-<li>Similar to step 2. Pose2D is retrieved from "OtherGoal".  </li>
+<li>Similar to step 2. Pose2D is retrieved from the key "OtherGoal".  </li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

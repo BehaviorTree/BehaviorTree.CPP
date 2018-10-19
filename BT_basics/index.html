@@ -360,8 +360,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#learn-by-example" title="Learn by example" class="md-nav__link">
-    Learn by example
+  <a href="#examples" title="Examples" class="md-nav__link">
+    Examples
   </a>
   
     <nav class="md-nav">
@@ -588,8 +588,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#learn-by-example" title="Learn by example" class="md-nav__link">
-    Learn by example
+  <a href="#examples" title="Examples" class="md-nav__link">
+    Examples
   </a>
   
     <nav class="md-nav">
@@ -656,13 +656,20 @@ our coordinating component interacts with the rest of the system.</p>
 <p>For instance, in a service-oriented architecture, the leaves would contain
 the "client" code that communicate with the "server" that performs the
 operation.</p>
+<p>In the following example, we can see two Actions executed in a sequence,
+<code>DetectObject</code> and <code>GraspObject</code>.</p>
 <p><img alt="Leaf To Component Communication" src="../images/LeafToComponentCommunication.png" /></p>
-<p>The other nodes of the tree, those which are not leaves, control the 
+<p>The other nodes of the tree, those which are <strong>not leaves</strong>, control the 
 "flow of execution".</p>
-<p>To better understand how this flow takes place , imagine a signal, that we will further
-call "<strong>tick</strong>"; it is executed at the <strong>root</strong> of the tree and propagates through
-the branches until it reaches one or multiple leaves.</p>
-<p>The <code>tick()</code> callback returns a <code>NodeStatus</code> that will be either:</p>
+<p>To better understand how this control flow takes place , imagine a signal 
+called "<strong>tick</strong>"; it is executed at the <strong>root</strong> of the tree and it propagates 
+through the branches until it reaches one or multiple leaves.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The word <strong>tick</strong> will be often used as a <em>verb</em> (to tick / to be ticked) and it means</p>
+<p>"To invoke the callback <code>tick()</code> called of a <code>TreeNode</code>".</p>
+</div>
+<p>Then a <code>TreeNode</code> is ticked, it returns a <code>NodeStatus</code> that can be either:</p>
 <ul>
 <li><strong>SUCCESS</strong></li>
 <li><strong>FAILURE</strong></li>
@@ -675,7 +682,7 @@ the branches until it reaches one or multiple leaves.</p>
 and they needs more time to return a valid result.</p>
 <p>This C++ library provides also the status <strong>IDLE</strong>; it means that the node is ready to
 start.</p>
-<p>The result of a node is propagated back to the parent, that will decide
+<p>The result of a node is propagated back to its parent, that will decide
 which child should be ticked next or will return a result to its own parent.</p>
 <h2 id="types-of-nodes">Types of nodes</h2>
 <p><strong>ControlNodes</strong> are nodes which can have 1 to N children. Once a tick
@@ -687,7 +694,7 @@ their own ActionNodes to perform the actual task.</p>
 they are always atomic, i.e. they must not return RUNNING. They should not 
 alter the state of the system.</p>
 <p><img alt="UML hierarchy" src="../images/TypeHierarchy.png" /></p>
-<h2 id="learn-by-example">Learn by example</h2>
+<h2 id="examples">Examples</h2>
 <p>To better understand how a BehaviorTrees work, let's focus on some practical
 examples. For the sake of simplicity we will not take into account what happens
 when an action returns RUNNING.</p>
@@ -703,10 +710,14 @@ to consider this order or not.</p>
 <ul>
 <li>If a child returns SUCCESS, tick the next one.</li>
 <li>If a child returns FAILURE, then no more children are ticked and the Sequence returns FAILURE.</li>
-<li>If all the children return SUCCESS, then the Sequence returns SUCCESS too.</li>
+<li>If <strong>all</strong> the children return SUCCESS, then the Sequence returns SUCCESS too.</li>
 </ul>
-<details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If the action <strong>GrabBeer</strong> fails, the door of the 
-fridge would remain open, since the last action <strong>CloseDoor</strong> is skipped.</p></details><h3 id="decorators">Decorators</h3>
+<div class="admonition warning">
+<p class="admonition-title">Have you spotted the bug?</p>
+<p>If the action <strong>GrabBeer</strong> fails, the door of the 
+fridge would remain open, since the last action <strong>CloseFridge</strong> is skipped.</p>
+</div>
+<h3 id="decorators">Decorators</h3>
 <p>The goal of a <a href="../DecoratorNode/">DecoratorNode</a> is either to transform the result it received 
 from the child, to terminate the child, 
 or repeat ticking of the child, depending on the type of Decorator.</p>
@@ -727,10 +738,15 @@ Try up to 3 times, otherwise give up and return FAILURE.
 </pre></div>
 
 
-<p><strong>But</strong> there is an error. Can you find it?</p>
-<details class="warning"><summary>Exercise: find the bug! Expand to read the answer.</summary><p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
+<p>But...</p>
+<div class="admonition warning">
+<p class="admonition-title">Have you spotted the bug?</p>
+<p>If <strong>DoorOpen</strong> returns FAILURE, we have the desired behaviour.
 But if it returns SUCCESS, the left branch fails and the entire Sequence
-is interrupted. </p></details><h3 id="second-controlnode-fallback">Second ControlNode: Fallback</h3>
+is interrupted.</p>
+<p>We will see later how we can improve this tree. </p>
+</div>
+<h3 id="second-controlnode-fallback">Second ControlNode: Fallback</h3>
 <p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
 are nodes that can express, as the name suggests, fallback strategies, 
 ie. what to do next if a child returns FAILURE.</p>
@@ -743,27 +759,31 @@ ie. what to do next if a child returns FAILURE.</p>
 <p>In the next example, you can see how Sequence and Fallbacks can be combined:</p>
 <p><img alt="FallbackNodes" src="../images/FallbackBasic.png" />  </p>
 <blockquote>
-<p>In the door open?</p>
-<p>I not, try to open the door.</p>
+<p>Is the door open?</p>
+<p>If not, try to open the door.</p>
 <p>Otherwise, if you have a key, unlock and open the door.</p>
 <p>Otherwise, smash the door. </p>
-<p>If any of these actions succeeded, then enter the room.</p>
+<p>If <strong>any</strong> of these actions succeeded, then enter the room.</p>
 </blockquote>
 <h3 id="fetch-me-a-beer-revisited">"Fetch me a beer" revisited</h3>
-<p>We can now improve the "Fetch Me a Beer" example, which leaves the door open 
-if the beer was not there.</p>
-<p>We use the color "green" to represent nodes which will return
+<p>We can now improve the "Fetch Me a Beer" example, which left the door open 
+if the beer was not inside the fridge.</p>
+<p>We use the color "green" to represent nodes which return
 SUCCESS and "red" for those which return FAILURE. Black nodes are never executed. </p>
 <p><img alt="FetchBeer failure" src="../images/FetchBeerFails.png" /></p>
 <p>Let's create an alternative tree that closes the door even when <strong>GrabBeer</strong> 
 returns FAILURE.</p>
 <p><img alt="FetchBeer failure" src="../images/FetchBeer.png" /></p>
-<p>Both the trees will close the door of the fridge, eventually, but:</p>
+<p>Both these trees will close the door of the fridge, eventually, but:</p>
 <ul>
-<li>the tree on the <strong>left</strong> side will always return SUCCESS if we managed to
- open and close the fridge.</li>
-<li>the tree on the <strong>right</strong> side will return SUCCESS if the beer was there, 
-FAILURE otherwise.</li>
+<li>
+<p>the tree on the <strong>left</strong> side will always return SUCCESS if we managed to
+ open and close the fridge.</p>
+</li>
+<li>
+<p>the tree on the <strong>right</strong> side will return SUCCESS if the beer was there, 
+FAILURE otherwise.</p>
+</li>
 </ul>
 <p>Everything works as expected if <strong>GrabBeer</strong> returns SUCCESS.</p>
 <p><img alt="FetchBeer success" src="../images/FetchBeer2.png" /></p>

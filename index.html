@@ -325,15 +325,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-problem" title="The problem" class="md-nav__link">
-    The problem
+  <a href="#what-is-a-behavior-tree" title="What is a Behavior Tree?" class="md-nav__link">
+    What is a Behavior Tree?
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-is-a-behavior-tree" title="What is a Behavior Tree?" class="md-nav__link">
-    What is a Behavior Tree?
+  <a href="#ok-but-why-do-we-need-behaviortrees-or-fsm" title=""Ok, but WHY do we need BehaviorTrees (or FSM)?"" class="md-nav__link">
+    "Ok, but WHY do we need BehaviorTrees (or FSM)?"
   </a>
   
 </li>
@@ -557,15 +557,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-problem" title="The problem" class="md-nav__link">
-    The problem
+  <a href="#what-is-a-behavior-tree" title="What is a Behavior Tree?" class="md-nav__link">
+    What is a Behavior Tree?
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-is-a-behavior-tree" title="What is a Behavior Tree?" class="md-nav__link">
-    What is a Behavior Tree?
+  <a href="#ok-but-why-do-we-need-behaviortrees-or-fsm" title=""Ok, but WHY do we need BehaviorTrees (or FSM)?"" class="md-nav__link">
+    "Ok, but WHY do we need BehaviorTrees (or FSM)?"
   </a>
   
 </li>
@@ -605,7 +605,36 @@ which are loaded at run-time.</li>
 to visualize, record, replay and analyze state transitions.</li>
 </ul>
 <p><img alt="ReadTheDocs" src="images/ReadTheDocs.png" />  </p>
-<h2 id="the-problem">The problem</h2>
+<h2 id="what-is-a-behavior-tree">What is a Behavior Tree?</h2>
+<p>A Behavior Tree (<strong>BT</strong>) is a way to structure the switching between different 
+tasks in an autonomous agent, such as a robot or a virtual entity in a computer game.</p>
+<p>BTs are a very efficient way of creating complex systems that are both modular and reactive. 
+These properties are crucial in many applications, which has led to the spread 
+of BT from computer game programming to many branches of AI and Robotics. </p>
+<p>If you are already familiar with Finite State Machines (<strong>FSM</strong>), you will
+easily grasp most of the concepts but, hopefully, you will find that BTs
+are more expressive and easier to reason about.</p>
+<p>The main advantages of Behavior Trees, when compared to FSMs are:</p>
+<ul>
+<li>
+<p><strong>They are intrinsically Hierarchical</strong>: this means that we can <em>compose</em>
+complex behaviors including entire trees as sub-branches of a bigger tree. 
+For instance, the behavior "Fetch Beer" may reuse in one of its nodes the tree
+"Grasp Object".</p>
+</li>
+<li>
+<p><strong>Their graphical representation has a semantic meaning</strong>: it is easier to 
+"read" a BT and understand the corresponding workflow. 
+State transitions in FSMs, by comparisons, are harder to understand
+both in their textual and graphical representation.    </p>
+</li>
+<li>
+<p><strong>They are more expressive</strong>: Ready to use ControlNodes and DecoratorNodes
+make possible to express more complex control flows. The user can extend the
+"vocabulary" with his/her own custom nodes.</p>
+</li>
+</ul>
+<h2 id="ok-but-why-do-we-need-behaviortrees-or-fsm">"Ok, but WHY do we need BehaviorTrees (or FSM)?"</h2>
 <p>Many software systems, being robotics a notable example, are inherently
 complex.</p>
 <p>The usual approach to manage complexity, heterogeneity and scalability is to 
@@ -633,35 +662,6 @@ to reason about it and to debug errors</strong> in the control flow.</p>
 the business logic in a single location. </p>
 <p><strong>Finite State Machines</strong> were created specifically with this goal in mind, but in
 the recent years <strong>Behavior Trees</strong> gained popularity, especially in the game industry.</p>
-<h2 id="what-is-a-behavior-tree">What is a Behavior Tree?</h2>
-<p>A Behavior Tree (<strong>BT</strong>) is a way to structure the switching between different 
-tasks in an autonomous agent, such as a robot or a virtual entity in a computer game.</p>
-<p>BTs are a very efficient way of creating complex systems that are both modular and reactive. 
-These properties are crucial in many applications, which has led to the spread 
-of BT from computer game programming to many branches of AI and Robotics. </p>
-<p>If you are already familiar with Finite State Machines (<strong>FSM</strong>), you will
-easily grasp most of the concepts but, hopefully, you will  find that BTs
-are more expressive and easier to reason about.</p>
-<p>The main advantages of Behavior Trees, when compared to FSMs are:</p>
-<ul>
-<li>
-<p><strong>They are intrinsically Hierarchical</strong>: this means that we can <em>compose</em>
-complex behaviors including entire trees as sub-branches of a bigger tree. 
-For instance, the behavior "Fetch Beer" may reuse in one of its nodes the tree
-"Grasp Object".</p>
-</li>
-<li>
-<p><strong>Their graphical representation has a semantic meaning</strong>: it is easier to 
-"read" a BT and understand the corresponding workflow. 
-State transitions in FSMs, by comparisons, are harder to understand
-both in their textual and graphical representation.    </p>
-</li>
-<li>
-<p><strong>They are more expressive</strong>: Ready to use ControlNodes and DecoratorNodes
-make possible to express more complex control flows. The user can extend the
-"vocabulary" with his/her own custom nodes.</p>
-</li>
-</ul>
                 
                   
                 

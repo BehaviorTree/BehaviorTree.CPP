@@ -629,7 +629,7 @@ string passed in the NodeParameter called "message".</p>
   The string "default message" is the default value.</p>
 </li>
 <li>
-<p>Parameters must be accessed using the method <code>getParam()</code>, preferably in the
+<p>Parameters must be accessed using the method <code>getParam()</code>, preferably inside the
 <code>tick()</code> method.</p>
 </li>
 </ul>
@@ -671,10 +671,15 @@ string passed in the NodeParameter called "message".</p>
 </pre></div>
 
 <p>If we want the method <code>getParam()</code> to be able to parse a string
-and store its value into a Pose2D, we must provide our own specialization
+and store its value into a <code>Pose2D</code>, we must provide our own template specialization
 of <code>convertFromString&lt;T&gt;()</code>.</p>
-<p>In this case, we want to represent Pose2D as three real numbers separated by 
-semicolons.</p>
+<p>In this case, the text representation of a <code>Pose2D</code> is three real numbers separated by 
+semicolons, like this:</p>
+<div class="codehilite"><pre><span></span>&quot;1.1;-2.32;0.4&quot;
+</pre></div>
+
+
+<p>Since this is a common pattern, the library provide the helper function <code>BT::splitString</code>.</p>
 <div class="codehilite"><pre><span></span><span class="c1">// use this namespace</span>
 <span class="k">namespace</span> <span class="n">BT</span><span class="p">{</span>
 
@@ -698,12 +703,13 @@ semicolons.</p>
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="p">}</span> <span class="c1">// end naespace</span>
+<span class="p">}</span> <span class="c1">// end namespace</span>
 </pre></div>
 
 <p>We now define a <strong>asynchronous</strong> ActionNode called <strong>MoveBaseAction</strong>.</p>
+<p>The method tick() of an <code>ActionNode</code> is executed in its own thread.</p>
 <p>The method <code>getParam()</code> will call the function <code>convertFromString&lt;Pose2D&gt;()</code> under the hood;
-alternatively, we can use the latter directly, for instance to convert the default
+alternatively, we can use the latter funtion directly, for instance to convert the default
 string "0;0;0" into a Pose2D.</p>
 <div class="codehilite"><pre><span></span><span class="c1">// This is an asynchronous operation that will run in a separate thread.</span>
 <span class="c1">// It requires the NodeParameter &quot;goal&quot;. </span>
@@ -757,8 +763,7 @@ string "0;0;0" into a Pose2D.</p>
 </pre></div>
 
 <h2 id="nodeparameters-in-the-xml">NodeParameters in the XML</h2>
-<p>To pass the parameter in the XML, use an attribute
-with the same name:</p>
+<p>To pass the parameter from a XML, use attributes:</p>
 <div class="codehilite"><pre><span></span><span class="nt">&lt;Sequence&gt;</span>
     <span class="nt">&lt;MoveBaseAction</span> <span class="na">goal=</span><span class="s">&quot;41.2;13.5;0.7&quot;</span><span class="nt">/&gt;</span>
     <span class="nt">&lt;SaySomething</span>   <span class="na">message=</span><span class="s">&quot;Destination reached&quot;</span><span class="nt">/&gt;</span>

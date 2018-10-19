@@ -521,16 +521,18 @@
                 
                 
                 <h1 id="plugins">Plugins</h1>
-<p>In the previous examples we linked the user-defined nodes where included
-and linked statically into out projects.</p>
+<p>In the previous examples the user-defined nodes where included
+and linked statically into out C++ projects.</p>
 <p>We used the <code>BehaviorTreeFactory</code> to registed manualy these custom TreeNodes.</p>
 <p>Alternatively, we can load user-defined TreeNodes at run-time using 
 pre-compiled <strong>dynamic shared libraries, i.e. plugins</strong>.</p>
 <h1 id="example">Example</h1>
 <p>Let's consider the <a href="../tutorial_A_create_trees/">first tutorial</a>.</p>
-<p>To do this we must encapsulate the registration of multiple TreeNodes into a single 
-function like this:</p>
-<div class="codehilite"><pre><span></span><span class="c1">// This is a macro. Just deal with it.</span>
+<p>To create a plugin we must encapsulate the registration of one or multiple TreeNodes 
+into a single function like this:</p>
+<div class="codehilite"><pre><span></span><span class="c1">// This is a macro that defines a function with a single argument </span>
+<span class="c1">// (BehaviorTreeFactory&amp; factory)</span>
+
 <span class="n">BT_REGISTER_NODES</span><span class="p">(</span><span class="n">factory</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="k">static</span> <span class="n">GripperInterface</span> <span class="n">gi</span><span class="p">;</span> <span class="c1">// we can&#39;t have more than instance</span>
@@ -549,15 +551,15 @@ function like this:</p>
 <p class="admonition-title">Note</p>
 <p>This function must be placed in <strong>.cpp</strong> file, not the header file.</p>
 </div>
-<p>In this particular example we assume that BT_REGISTER_NODES and
+<p>Here, we assume that BT_REGISTER_NODES and
 the definitions of our custom TreeNodes are all defined in the file <strong>dummy_nodes.cpp</strong>.</p>
-<p>If you compile the plugin using <strong>cmake</strong>, add the argument <code>SHARED</code> to
+<p>When you use <strong>cmake</strong> to compile a plugin, add the argument <code>SHARED</code> to
 <code>add_library</code>.</p>
 <div class="codehilite"><pre><span></span><span class="c">#your CMakeLists.txt</span>
 <span class="nb">add_library</span><span class="p">(</span><span class="s">dummy_nodes</span>  <span class="s">SHARED</span> <span class="s">dummy_nodes.cpp</span> <span class="p">)</span>
 </pre></div>
 
-<p>In Linux the file <strong>libdummy_nodes.so</strong> will be created.</p>
+<p>In Linux, the file <strong>libdummy_nodes.so</strong> will be created.</p>
 <p>The <a href="../tutorial_A_create_trees/">first tutorial</a> becomes, as a result, much simpler:</p>
 <div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_core/xml_parsing.h&quot;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&quot;Blackboard/blackboard_local.h&quot;</span><span class="cp"></span>

@@ -620,7 +620,7 @@
                 <p><strong>BehaviorTree.CPP</strong> provides an extensible set of Loggers, i.e. 
 a mechanism to record and/or display all the state transitions in out tree.</p>
 <h2 id="example">Example</h2>
-<p>In this example we attach multiple loggers are attached to a tree.</p>
+<p>We can attach multiple loggers to a tree.</p>
 <p>To do this, we pass the root of the tree. </p>
 <div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_core/xml_parsing.h&quot;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_logger/bt_cout_logger.h&quot;</span><span class="cp"></span>
@@ -661,20 +661,20 @@ a mechanism to record and/or display all the state transitions in out tree.</p>
 </pre></div>
 
 <h2 id="stdcoutlogger">StdCoutLogger</h2>
-<p>Simply print the state transition on <strong>std::cout</strong>.</p>
+<p>It simply prints the state transition on <strong>std::cout</strong>.</p>
 <h2 id="filelogger">FileLogger</h2>
-<p>Store the state transitions (and their timestamp) in the bynary file
+<p>It stores the state transitions (and their timestamp) in the binary file
 called "bt_trace.fbl".</p>
-<p>To bisualize the contect of this file, you can use the command line tool 
+<p>To visualize the content of this file, use the command line tool 
 <strong>bt_log_cat</strong>.</p>
 <h2 id="minitracelogger">MinitraceLogger</h2>
-<p>This logger store in a JSON file format the state duration. Its goal is to
-show the time required by a TreeNode to complete its tick() operation.</p>
-<p>This tracing format can be visualized in <strong>Chrome</strong> tracer viewer:that
-you can access typing this in the address bar: <strong>chrome://tracing</strong>.</p>
+<p>This logger stores the states trnasitions and durations in a JSON file format. </p>
+<p>Its goal is to show the time required by a TreeNode to complete its tick() operation.</p>
+<p>This tracing format can be visualized in the <strong>Chrome</strong> tracer viewer; you can access it
+typing this in the address bar: <strong>chrome://tracing</strong>.</p>
 <p>For more information, refer to: <a href="https://github.com/hrydgard/minitrace">MiniTrace (GitHub)</a></p>
 <h2 id="publisherzmq">PublisherZMQ</h2>
-<p>Publish state transitions in real-time using <a href="http://zeromq.org/">ZMQ</a>.</p>
+<p>It publishes state transitions in real-time using <a href="http://zeromq.org/">ZMQ</a>.</p>
 <p>You can record them using the command line tool <strong>bt_recorder</strong>.</p>
                 
                   
