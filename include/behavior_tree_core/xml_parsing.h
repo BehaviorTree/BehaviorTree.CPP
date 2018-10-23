@@ -2,16 +2,18 @@
 #define XML_PARSING_BT_H
 
 #include "behavior_tree_core/bt_factory.h"
-#include "tinyXML2/tinyxml2.h"
 
 namespace BT
 {
 class XMLParser
 {
   public:
-    XMLParser(const BehaviorTreeFactory& factory) : factory_(factory)
-    {
-    }
+    XMLParser(const BehaviorTreeFactory& factory);
+
+    ~XMLParser();
+
+    XMLParser(const XMLParser& other) = delete;
+    XMLParser& operator=(const XMLParser& other) = delete;
 
     void loadFromFile(const std::string& filename);
 
@@ -25,14 +27,10 @@ class XMLParser
     TreeNode::Ptr instantiateTree(std::vector<TreeNode::Ptr>& nodes);
 
   private:
-    //method to visit each node of a tree
-    TreeNode::Ptr treeParsing(const tinyxml2::XMLElement* root_element,
-                              const NodeBuilder& node_builder, std::vector<TreeNode::Ptr>& nodes,
-                              const TreeNode::Ptr& root_parent);
 
-    tinyxml2::XMLDocument doc_;
+    struct Pimpl;
+    Pimpl* _p;
 
-    const BehaviorTreeFactory& factory_;
 };
 
 struct Tree

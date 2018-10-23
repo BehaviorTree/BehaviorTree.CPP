@@ -21,11 +21,10 @@ if(catkin_FOUND)
   message(STATUS "------------------------------------------")
 
   catkin_package(
-    INCLUDE_DIRS include
+    INCLUDE_DIRS include # do not include "3rdparty" here
     LIBRARIES behavior_tree_core
     )
-  include_directories(3rdparty)
-  
+
 else(catkin_FOUND)
 
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

@@ -11,32 +11,57 @@
 */
 
 #include "behavior_tree_core/xml_parsing.h"
+#include "tinyXML2/tinyxml2.h"
+
 #include <functional>
 
 namespace BT
 {
-using namespace tinyxml2;
+
+struct XMLParser::Pimpl
+{
+    TreeNode::Ptr treeParsing(const tinyxml2::XMLElement* root_element,
+                              const NodeBuilder& node_builder,
+                              std::vector<TreeNode::Ptr>& nodes,
+                              const TreeNode::Ptr& root_parent);
+
+    tinyxml2::XMLDocument doc;
+
+    const BehaviorTreeFactory& factory;
+
+    Pimpl(const BehaviorTreeFactory &fact): factory(fact) {}
+};
+
+
+XMLParser::XMLParser(const BehaviorTreeFactory &factory) : _p( new Pimpl(factory) )
+{
+}
+
+XMLParser::~XMLParser()
+{
+    delete _p;
+}
 
 void XMLParser::loadFromFile(const std::string& filename)
 {
-    XMLError err = doc_.LoadFile(filename.c_str());
+    tinyxml2::XMLError err = _p->doc.LoadFile(filename.c_str());
 
     if (err)
     {
         char buffer[200];
-        sprintf(buffer, "Error parsing the XML: %s", XMLDocument::ErrorIDToName(err));
+        sprintf(buffer, "Error parsing the XML: %s", tinyxml2::XMLDocument::ErrorIDToName(err));
         throw std::runtime_error(buffer);
     }
 }
 
 void XMLParser::loadFromText(const std::string& xml_text)
 {
-    XMLError err = doc_.Parse(xml_text.c_str(), xml_text.size());
+    tinyxml2::XMLError err = _p->doc.Parse(xml_text.c_str(), xml_text.size());
 
     if (err)
     {
         char buffer[200];
-        sprintf(buffer, "Error parsing the XML: %s", XMLDocument::ErrorIDToName(err));
+        sprintf(buffer, "Error parsing the XML: %s", tinyxml2::XMLDocument::ErrorIDToName(err));
         throw std::runtime_error(buffer);
     }
 }
@@ -45,7 +70,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
 {
     error_messages.clear();
 
-    if (doc_.Error())
+    if (_p->doc.Error())
     {
         error_messages.emplace_back("The XML was not correctly loaded");
         return false;
@@ -64,7 +89,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         is_valid = false;
     };
 
-    auto ChildrenCount = [](const XMLElement* parent_node) {
+    auto ChildrenCount = [](const tinyxml2::XMLElement* parent_node) {
         int count = 0;
         for (auto node = parent_node->FirstChildElement(); node != nullptr;
              node = node->NextSiblingElement())
@@ -76,7 +101,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
 
     //-----------------------------
 
-    const XMLElement* xml_root = doc_.RootElement();
+    const tinyxml2::XMLElement* xml_root = _p->doc.RootElement();
 
     if (!xml_root || !strEqual(xml_root->Name(), "root"))
     {
@@ -129,9 +154,9 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
     //-------------------------------------------------
 
     // function to be called recursively
-    std::function<void(const XMLElement*)> recursiveStep;
+    std::function<void(const tinyxml2::XMLElement*)> recursiveStep;
 
-    recursiveStep = [&](const XMLElement* node) {
+    recursiveStep = [&](const tinyxml2::XMLElement* node) {
         const int children_count = ChildrenCount(node);
         const char* name = node->Name();
         if (strEqual(name, "Decorator"))
@@ -192,7 +217,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         {
             // Last resort:  MAYBE used ID as element name?
             bool found = false;
-            for (const auto& model : factory_.manifests())
+            for (const auto& model : _p->factory.manifests())
             {
                 if (model.registration_ID == name)
                 {
@@ -274,7 +299,7 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
     }
 
     //--------------------------------------
-    XMLElement* xml_root = doc_.RootElement();
+    tinyxml2::XMLElement* xml_root = _p->doc.RootElement();
 
     std::string main_tree_ID;
     if (xml_root->Attribute("main_tree_to_execute"))
@@ -282,7 +307,7 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
         main_tree_ID = xml_root->Attribute("main_tree_to_execute");
     }
 
-    std::map<std::string, XMLElement*> bt_roots;
+    std::map<std::string, tinyxml2::XMLElement*> bt_roots;
 
     int tree_count = 0;
 
@@ -309,7 +334,7 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
     NodeBuilder node_builder = [&](const std::string& ID, const std::string& name,
                                    const NodeParameters& params,
                                    TreeNode::Ptr parent) -> TreeNode::Ptr {
-        TreeNode::Ptr child_node = factory_.instantiateTreeNode(ID, name, params);
+        TreeNode::Ptr child_node = _p->factory.instantiateTreeNode(ID, name, params);
         nodes.push_back(child_node);
         if (parent)
         {
@@ -329,20 +354,20 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
         if (subtree_node)
         {
             auto subtree_elem = bt_roots[name]->FirstChildElement();
-            treeParsing(subtree_elem, node_builder, nodes, child_node);
+            _p->treeParsing(subtree_elem, node_builder, nodes, child_node);
         }
         return child_node;
     };
     //--------------------------------------
 
     auto root_element = bt_roots[main_tree_ID]->FirstChildElement();
-    return treeParsing(root_element, node_builder, nodes, TreeNode::Ptr());
+    return _p->treeParsing(root_element, node_builder, nodes, TreeNode::Ptr());
 }
 
-TreeNode::Ptr BT::XMLParser::treeParsing(const XMLElement* root_element,
-                                         const NodeBuilder& node_builder,
-                                         std::vector<TreeNode::Ptr>& nodes,
-                                         const TreeNode::Ptr& root_parent)
+TreeNode::Ptr BT::XMLParser::Pimpl::treeParsing(const tinyxml2::XMLElement* root_element,
+                                                const NodeBuilder& node_builder,
+                                                std::vector<TreeNode::Ptr>& nodes,
+                                                const TreeNode::Ptr& root_parent)
 {
     using namespace tinyxml2;
 
