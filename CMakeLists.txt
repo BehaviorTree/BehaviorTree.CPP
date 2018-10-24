@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(behavior_tree_core)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -pthread -Werror=return-type")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -Werror=return-type -Wall -Wpedantic -Wattributes")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/

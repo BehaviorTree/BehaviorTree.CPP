@@ -65,11 +65,9 @@ distribution.
 #endif
 
 // Do NOT export. This version is meant to be linked statically only.
-#ifdef _WIN32
-#   define TINYXML2_LIB
-#elif __GNUC__ >= 4
-#   define TINYXML2_LIB __attribute__((visibility("hidden")))
-#endif
+#define TINYXML2_LIB
+
+
 
 
 #if defined(TINYXML2_DEBUG)
