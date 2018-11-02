@@ -3,6 +3,10 @@ project(behavior_tree_core)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -Werror=return-type -Wall -Wpedantic -Wattributes")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
+option(BUILD_UNIT_TESTS "Build the unit tests" ON)
+
 #############################################################
 # http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
 #
@@ -30,7 +34,7 @@ else(catkin_FOUND)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-	
+
     find_package(GTest)
     include_directories(${GTEST_INCLUDE_DIRS})
     if(NOT GTEST_FOUND)
@@ -41,14 +45,14 @@ endif(catkin_FOUND)
 
 
 set(BT_Source
-	src/action_node.cpp
+        src/action_node.cpp
         src/basic_types.cpp
         src/decorator_node.cpp
-	src/condition_node.cpp
-	src/control_node.cpp
-	src/exceptions.cpp
-	src/leaf_node.cpp
-	src/tick_engine.cpp
+        src/condition_node.cpp
+        src/control_node.cpp
+        src/exceptions.cpp
+        src/leaf_node.cpp
+        src/tick_engine.cpp
         src/tree_node.cpp
         src/bt_factory.cpp
         src/behavior_tree.cpp
@@ -100,11 +104,11 @@ target_link_libraries(behavior_tree_core dl)
 ######################################################
 # EXAMPLES and TOOLS
 ######################################################
-
-add_subdirectory(tools)
-add_subdirectory(sample_nodes)
-add_subdirectory(examples)
-
+if( BUILD_EXAMPLES )
+    add_subdirectory(tools)
+    add_subdirectory(sample_nodes)
+    add_subdirectory(examples)
+endif()
 ######################################################
 # TESTS
 ######################################################
@@ -126,8 +130,8 @@ if(catkin_FOUND AND CATKIN_ENABLE_TESTING)
     target_link_libraries(behavior_tree_core_test
         ${BEHAVIOR_TREE_LIBRARIES} crossdoor_nodes
         ${catkin_LIBRARIES} )
-	    
-elseif(GTEST_FOUND)
+
+elseif(GTEST_FOUND AND BUILD_UNIT_TESTS)
     include_directories(gtest/include)
 
     add_executable(behavior_tree_core_test ${BT_Tests} )
@@ -136,9 +140,5 @@ elseif(GTEST_FOUND)
         ${GTEST_LIBRARIES}
         ${GTEST_MAIN_LIBRARIES}
         )
-		
+
 endif()
-
-
-
-
