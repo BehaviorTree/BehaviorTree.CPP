@@ -183,3 +183,27 @@ TEST(BehaviorTreeFactory, Subtree)
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorLocked");
 }
+
+TEST(BehaviorTreeFactory, Issue7)
+{
+const std::string xml_text_issue = R"(
+<root>
+    <BehaviorTree ID="ReceiveGuest">
+    </BehaviorTree>
+</root> )";
+
+    BT::BehaviorTreeFactory factory;
+    BT::XMLParser parser(factory);
+    parser.loadFromText(xml_text_issue);
+
+    std::vector<std::string> errors;
+    bool res = parser.verifyXML(errors);
+
+    for (const std::string& str : errors)
+    {
+        std::cout << str << std::endl;
+    }
+
+    ASSERT_EQ(res, false);
+    ASSERT_EQ(errors.size(), 1);
+}
