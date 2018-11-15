@@ -1,4 +1,4 @@
-# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
+behaviortree_cpp_test# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
 # For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
 
 sudo: required
@@ -39,7 +39,7 @@ before_script:
   - mkdir -p build
   
 script:
-  - if [ "$ROS_DISTRO"  = "none" ]; then (cd build; cmake .. ;cmake --build .; ./bin/behavior_tree_core_test); fi
+  - if [ "$ROS_DISTRO"  = "none" ]; then (cd build; cmake .. ;cmake --build .; ./bin/behaviortree_cpp_test); fi
   - if [ "$ROS_DISTRO" != "none" ]; then (.ci_config/travis.sh); fi
 
 
