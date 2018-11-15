@@ -65,10 +65,11 @@ distribution.
 #endif
 
 // Do NOT export. This version is meant to be linked statically only.
-#define TINYXML2_LIB
-
-
-
+#ifdef _WIN32
+#   define TINYXML2_LIB // TODO?
+#else
+#   define TINYXML2_LIB __attribute__((visibility("hidden")))
+#endif
 
 #if defined(TINYXML2_DEBUG)
 #   if defined(_MSC_VER)

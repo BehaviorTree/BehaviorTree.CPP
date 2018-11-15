@@ -50,7 +50,14 @@ if(catkin_FOUND)
     INCLUDE_DIRS include # do not include "3rdparty" here
     LIBRARIES ${PROJECT_NAME}
     )
-endif(catkin_FOUND)
+
+else()
+
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+endif()
 
 #############################################################
 # LIBRARY
@@ -92,15 +99,17 @@ list(APPEND BT_SOURCE
 
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
 
+include(GNUInstallDirs)
+
 add_library(${BEHAVIOR_TREE_LIBRARY} ${BT_SOURCE} )
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES} ${catkin_LIBRARIES})
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC include 3rdparty ${catkin_INCLUDE_DIRS})
 
 if(MSVC)
   target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
-else(MSVC)
+else()
   target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE -Wall -Wextra -Werror=return-type)
-endif(MSVC)
+endif()
 
 ######################################################
 # EXAMPLES and TOOLS
@@ -149,3 +158,15 @@ endif()
 
 ######################################################
 # INSTALL
+
+if(catkin_FOUND)
+    install(TARGETS ${BEHAVIOR_TREE_LIBRARY}
+            ARCHIVE  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            )
+else()
+    install(TARGETS ${BEHAVIOR_TREE_LIBRARY}
+            ARCHIVE  DESTINATION lib}
+            )
+#TODO include files
+
+endif()
