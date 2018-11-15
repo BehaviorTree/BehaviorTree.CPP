@@ -1,17 +1,39 @@
 cmake_minimum_required(VERSION 2.8)
-project(behavior_tree_core)
+project(behaviortree_cpp)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -Werror=return-type -Wall -Wpedantic -Wattributes")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 
 option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 
 #############################################################
-# http://answers.ros.org/question/230877/optionally-build-a-package-with-catkin/
-#
-# This variable MUST NOT be set manually by the user, it will be detected
-# automatically if you compile using catkin
+# Find packages
+find_package(Threads REQUIRED)
+find_package(ZMQ)
+find_package(GTest)
+
+list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES Threads::Threads ${CMAKE_DL_LIBS})
+
+if( ZMQ_FOUND )
+    message(STATUS "ZeroMQ found.")
+    add_definitions( -DZMQ_FOUND )
+    list(APPEND BT_SOURCE src/loggers/bt_zmq_publisher.cpp)
+    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES zmq)
+else()
+    message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
+endif()
+
+if(NOT GTEST_FOUND)
+    message(WARNING " GTest not found!")
+endif(NOT GTEST_FOUND)
+
+
 if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(catkin_FOUND 1)
     add_definitions( -DUSING_ROS )
@@ -26,119 +48,104 @@ if(catkin_FOUND)
 
   catkin_package(
     INCLUDE_DIRS include # do not include "3rdparty" here
-    LIBRARIES behavior_tree_core
+    LIBRARIES ${PROJECT_NAME}
     )
-
-else(catkin_FOUND)
-
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-    find_package(GTest)
-    include_directories(${GTEST_INCLUDE_DIRS})
-    if(NOT GTEST_FOUND)
-        message(WARNING " GTest not found!")
-    endif(NOT GTEST_FOUND)
-
 endif(catkin_FOUND)
 
-
-set(BT_Source
-        src/action_node.cpp
-        src/basic_types.cpp
-        src/decorator_node.cpp
-        src/condition_node.cpp
-        src/control_node.cpp
-        src/exceptions.cpp
-        src/leaf_node.cpp
-        src/tick_engine.cpp
-        src/tree_node.cpp
-        src/bt_factory.cpp
-        src/behavior_tree.cpp
-        src/xml_parsing.cpp
-        src/shared_library.cpp
-        src/shared_library_UNIX.cpp
-
-        src/decorators/inverter_node.cpp
-        src/decorators/repeat_node.cpp
-        src/decorators/retry_node.cpp
-        src/decorators/timeout_node.cpp
-
-        src/controls/parallel_node.cpp
-        src/controls/sequence_node.cpp
-        src/controls/sequence_star_node.cpp
-        src/controls/fallback_node.cpp
-        src/controls/fallback_star_node.cpp
-
-        src/loggers/bt_cout_logger.cpp
-        src/loggers/bt_file_logger.cpp
-        src/loggers/bt_minitrace_logger.cpp
-
-        3rdparty/tinyXML2/tinyxml2.cpp
-        3rdparty/minitrace/minitrace.cpp
-)
-include_directories(include 3rdparty/)
-
-set(BEHAVIOR_TREE_LIBRARIES behavior_tree_core)
-
-find_package(ZMQ)
-
-if( ZMQ_FOUND )
-    message(STATUS "ZeroMQ found.")
-    add_definitions( -DZMQ_FOUND )
-    set(BT_Source ${BT_Source} src/loggers/bt_zmq_publisher.cpp )
-
-    set(BEHAVIOR_TREE_LIBRARIES ${BEHAVIOR_TREE_LIBRARIES} zmq)
-else()
-    message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
-endif()
-
-######################################################
+#############################################################
 # LIBRARY
-######################################################
-add_library(behavior_tree_core STATIC ${BT_Source} )
-target_compile_options(behavior_tree_core PRIVATE "-fPIC")
-target_link_libraries(behavior_tree_core dl)
+
+list(APPEND BT_SOURCE
+    src/action_node.cpp
+    src/basic_types.cpp
+    src/decorator_node.cpp
+    src/condition_node.cpp
+    src/control_node.cpp
+    src/exceptions.cpp
+    src/leaf_node.cpp
+    src/tick_engine.cpp
+    src/tree_node.cpp
+    src/bt_factory.cpp
+    src/behavior_tree.cpp
+    src/xml_parsing.cpp
+    src/shared_library.cpp
+    src/shared_library_UNIX.cpp
+
+    src/decorators/inverter_node.cpp
+    src/decorators/repeat_node.cpp
+    src/decorators/retry_node.cpp
+    src/decorators/timeout_node.cpp
+
+    src/controls/parallel_node.cpp
+    src/controls/sequence_node.cpp
+    src/controls/sequence_star_node.cpp
+    src/controls/fallback_node.cpp
+    src/controls/fallback_star_node.cpp
+
+    src/loggers/bt_cout_logger.cpp
+    src/loggers/bt_file_logger.cpp
+    src/loggers/bt_minitrace_logger.cpp
+
+    3rdparty/tinyXML2/tinyxml2.cpp
+    3rdparty/minitrace/minitrace.cpp
+    )
+
+set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
+
+add_library(${BEHAVIOR_TREE_LIBRARY} ${BT_SOURCE} )
+target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES} ${catkin_LIBRARIES})
+target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC include 3rdparty ${catkin_INCLUDE_DIRS})
+
+if(MSVC)
+  target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
+else(MSVC)
+  target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE -Wall -Wextra -Werror=return-type)
+endif(MSVC)
 
 ######################################################
 # EXAMPLES and TOOLS
-######################################################
+
 if( BUILD_EXAMPLES )
     add_subdirectory(tools)
     add_subdirectory(sample_nodes)
     add_subdirectory(examples)
 endif()
+
 ######################################################
 # TESTS
-######################################################
-set(BT_Tests
-        gtest/src/action_test_node.cpp
-        gtest/src/condition_test_node.cpp
-        gtest/gtest_tree.cpp
-        gtest/gtest_sequence.cpp
-        gtest/gtest_parallel.cpp
-        gtest/gtest_fallback.cpp
-        gtest/gtest_factory.cpp
-        gtest/gtest_decorator.cpp
-)
+
+list(APPEND BT_TESTS
+    gtest/src/action_test_node.cpp
+    gtest/src/condition_test_node.cpp
+    gtest/gtest_tree.cpp
+    gtest/gtest_sequence.cpp
+    gtest/gtest_parallel.cpp
+    gtest/gtest_fallback.cpp
+    gtest/gtest_factory.cpp
+    gtest/gtest_decorator.cpp
+    )
 
 if(catkin_FOUND AND CATKIN_ENABLE_TESTING)
-    include_directories(gtest/include)
 
-    catkin_add_gtest(behavior_tree_core_test ${BT_Tests} )
-    target_link_libraries(behavior_tree_core_test
-        ${BEHAVIOR_TREE_LIBRARIES} crossdoor_nodes
-        ${catkin_LIBRARIES} )
+    catkin_add_gtest(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
+                                                        crossdoor_nodes
+                                                        ${catkin_LIBRARIES})
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
 
 elseif(GTEST_FOUND AND BUILD_UNIT_TESTS)
-    include_directories(gtest/include)
 
-    add_executable(behavior_tree_core_test ${BT_Tests} )
-    target_link_libraries(behavior_tree_core_test
-        ${BEHAVIOR_TREE_LIBRARIES} crossdoor_nodes
-        ${GTEST_LIBRARIES}
-        ${GTEST_MAIN_LIBRARIES}
-        )
+    enable_testing()
 
+    add_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
+    target_link_libraries(${PROJECT_NAME}_test ${BEHAVIOR_TREE_LIBRARY}
+                                                crossdoor_nodes
+                                                ${GTEST_LIBRARIES}
+                                                ${GTEST_MAIN_LIBRARIES})
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include ${GTEST_INCLUDE_DIRS})
+
+    add_test(BehaviorTreeCoreTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BEHAVIOR_TREE_LIBRARY}_test)
 endif()
+
+######################################################
+# INSTALL
