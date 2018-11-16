@@ -112,15 +112,6 @@ else()
 endif()
 
 ######################################################
-# EXAMPLES and TOOLS
-
-if( BUILD_EXAMPLES )
-    add_subdirectory(tools)
-    add_subdirectory(sample_nodes)
-    add_subdirectory(examples)
-endif()
-
-######################################################
 # TESTS
 
 list(APPEND BT_TESTS
@@ -158,15 +149,23 @@ endif()
 
 ######################################################
 # INSTALL
-
 if(catkin_FOUND)
-    install(TARGETS ${BEHAVIOR_TREE_LIBRARY}
-            ARCHIVE  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            )
+    set( BEHAVIOR_TREE_LIBRARY_INSTALL_LIB ${CATKIN_PACKAGE_LIB_DESTINATION} )
 else()
-    install(TARGETS ${BEHAVIOR_TREE_LIBRARY}
-            ARCHIVE  DESTINATION lib}
-            )
-#TODO include files
-
+    set( BEHAVIOR_TREE_LIBRARY_INSTALL_LIB lib )
 endif()
+
+install(TARGETS ${BEHAVIOR_TREE_LIBRARY}
+    ARCHIVE  DESTINATION ${BEHAVIOR_TREE_LIBRARY_INSTALL_LIB}
+    )
+
+######################################################
+# EXAMPLES and TOOLS
+
+if( BUILD_EXAMPLES )
+    add_subdirectory(tools)
+    add_subdirectory(sample_nodes)
+    add_subdirectory(examples)
+endif()
+
+
