@@ -1,4 +1,4 @@
-behaviortree_cpp_test# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
+# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
 # For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
 
 sudo: required
