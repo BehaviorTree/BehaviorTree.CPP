@@ -1,8 +1,8 @@
 #ifndef SIMPLE_BT_NODES_H
 #define SIMPLE_BT_NODES_H
 
-#include "behavior_tree_core/behavior_tree.h"
-#include "behavior_tree_core/bt_factory.h"
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 namespace DummyNodes
 {

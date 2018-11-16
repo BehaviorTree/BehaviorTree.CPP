@@ -10,13 +10,13 @@ We can attach multiple loggers to a tree.
 To do this, we pass the root of the tree. 
 
 ```c++ hl_lines="21 22 23 25"
-#include "behavior_tree_core/xml_parsing.h"
-#include "behavior_tree_logger/bt_cout_logger.h"
-#include "behavior_tree_logger/bt_minitrace_logger.h"
-#include "behavior_tree_logger/bt_file_logger.h"
+#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
+#include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp/loggers/bt_file_logger.h"
 
 #ifdef ZMQ_FOUND
-#include "behavior_tree_logger/bt_zmq_publisher.h"
+#include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
 #endif
 
 using namespace BT;

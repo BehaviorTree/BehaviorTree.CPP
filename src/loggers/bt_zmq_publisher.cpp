@@ -1,5 +1,5 @@
-#include "behavior_tree_logger/bt_zmq_publisher.h"
-#include "behavior_tree_logger/bt_flatbuffer_helper.h"
+#include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
+#include "behaviortree_cpp/loggers/bt_flatbuffer_helper.h"
 #include <future>
 
 namespace BT

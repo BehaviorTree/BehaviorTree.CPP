@@ -1,4 +1,4 @@
-#include "behavior_tree_core/shared_library.h"
+#include "behaviortree_cpp/shared_library.h"
 
 BT::SharedLibrary::SharedLibrary(const std::string& path, int flags)
 {

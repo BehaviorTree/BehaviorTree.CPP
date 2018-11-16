@@ -1,7 +1,7 @@
 #include <string>
 #include <mutex>
 #include <dlfcn.h>
-#include "behavior_tree_core/shared_library.h"
+#include "behaviortree_cpp/shared_library.h"
 
 namespace BT
 {

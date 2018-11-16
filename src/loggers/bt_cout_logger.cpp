@@ -1,4 +1,4 @@
-#include "behavior_tree_logger/bt_cout_logger.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
 
 namespace BT
 {

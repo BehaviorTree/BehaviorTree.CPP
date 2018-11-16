@@ -187,7 +187,7 @@ The attribute "name" represents the name of the instance and it is optional.
 
 
 ``` c++
-#include "behavior_tree_core/xml_parsing.h"
+#include "behaviortree_cpp/xml_parsing.h"
 #include "Blackboard/blackboard_local.h"
 #include "dummy_nodes.h"
 

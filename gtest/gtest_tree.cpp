@@ -13,7 +13,7 @@
 #include <gtest/gtest.h>
 #include "action_test_node.h"
 #include "condition_test_node.h"
-#include "behavior_tree_core/behavior_tree.h"
+#include "behaviortree_cpp/behavior_tree.h"
 
 using BT::NodeStatus;
 
