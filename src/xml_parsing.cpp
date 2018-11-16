@@ -10,10 +10,12 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <functional>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "tinyXML2/tinyxml2.h"
-
-#include <functional>
 
 namespace BT
 {
@@ -31,7 +33,7 @@ struct XMLParser::Pimpl
 
     Pimpl(const BehaviorTreeFactory &fact): factory(fact) {}
 };
-
+#pragma GCC diagnostic pop
 
 XMLParser::XMLParser(const BehaviorTreeFactory &factory) : _p( new Pimpl(factory) )
 {
