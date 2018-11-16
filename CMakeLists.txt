@@ -1,10 +1,15 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12) # version on Ubuntu Trusty
 project(behaviortree_cpp)
 
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set (CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
@@ -156,11 +161,6 @@ else()
     set( BEHAVIOR_TREE_INC_DESTINATION   include )
     set( BEHAVIOR_TREE_BIN_DESTINATION   bin )
 endif()
-
-message(STATUS "------------------------------------------")
-message( "BEHAVIOR_TREE_LIB_DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}" )
-message( "BEHAVIOR_TREE_LIBRARY ${BEHAVIOR_TREE_LIBRARY}" )
-message(STATUS "------------------------------------------")
 
 INSTALL(TARGETS ${BEHAVIOR_TREE_LIBRARY}
     ARCHIVE DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
