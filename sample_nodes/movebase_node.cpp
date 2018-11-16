@@ -1,5 +1,5 @@
 #include "movebase_node.h"
-#include "behavior_tree_core/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 // This function must be implemented in the .cpp file to create
 // a plugin that can be loaded at run-time

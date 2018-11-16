@@ -1,5 +1,5 @@
-#include "behavior_tree_core/xml_parsing.h"
-#include "Blackboard/blackboard_local.h"
+#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/blackboard/blackboard_local.h"
 
 //#define MANUAL_STATIC_LINKING
 

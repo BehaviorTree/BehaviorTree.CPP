@@ -126,7 +126,7 @@ int64_t mtr_time_usec()
 {
   static int64_t prev = 0;
 	struct timeval tv;
-	gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
   int64_t now = 1000000*tv.tv_sec + tv.tv_usec;
   if( now <= prev) now = prev + 1;
   prev = now;
@@ -134,7 +134,7 @@ int64_t mtr_time_usec()
 }
 #endif	// !BLACKBERRY
 
-static void termination_handler(int signum) {
+static void termination_handler(int ) {
 	if (is_tracing) {
 		printf("Ctrl-C detected! Flushing trace and shutting down.\n\n");
 		mtr_flush();

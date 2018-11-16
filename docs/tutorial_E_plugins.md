@@ -53,7 +53,7 @@ The [first tutorial](tutorial_A_create_trees.md) becomes, as a result, much simp
 
 
 ```c++ hl_lines="3 25"
-#include "behavior_tree_core/xml_parsing.h"
+#include "behaviortree_cpp/xml_parsing.h"
 #include "Blackboard/blackboard_local.h"
 // #include "dummy_nodes.h" YOU DON'T NEED THIS ANYMORE
 

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
-#include "behavior_tree_core/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 int main(int argc, char* argv[])
 {

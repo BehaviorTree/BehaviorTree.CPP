@@ -1,12 +1,12 @@
 #include "crossdoor_nodes.h"
-#include "behavior_tree_core/xml_parsing.h"
-#include "behavior_tree_logger/bt_cout_logger.h"
-#include "behavior_tree_logger/bt_minitrace_logger.h"
-#include "behavior_tree_logger/bt_file_logger.h"
-#include "Blackboard/blackboard_local.h"
+#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
+#include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp/loggers/bt_file_logger.h"
+#include "behaviortree_cpp/blackboard/blackboard_local.h"
 
 #ifdef ZMQ_FOUND
-#include "behavior_tree_logger/bt_zmq_publisher.h"
+#include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
 #endif
 
 // clang-format off
