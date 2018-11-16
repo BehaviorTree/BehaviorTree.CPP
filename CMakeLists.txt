@@ -23,7 +23,7 @@ find_package(Threads REQUIRED)
 find_package(ZMQ)
 find_package(GTest)
 
-list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES Threads::Threads ${CMAKE_DL_LIBS})
+list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
 if( ZMQ_FOUND )
     message(STATUS "ZeroMQ found.")
