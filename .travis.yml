@@ -39,7 +39,7 @@ before_script:
   - mkdir -p build
   
 script:
-  - if [ "$ROS_DISTRO"  = "none" ]; then (cd build; cmake .. ;cmake --build .; ./bin/behaviortree_cpp_test); fi
+  - if [ "$ROS_DISTRO"  = "none" ]; then (cd build; cmake .. ;cmake --build .; sudo cmake --build . --target install;./bin/behaviortree_cpp_test); fi
   - if [ "$ROS_DISTRO" != "none" ]; then (.ci_config/travis.sh); fi
 
 
