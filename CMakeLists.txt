@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8.12) # version on Ubuntu Trusty
 project(behaviortree_cpp)
 
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
@@ -105,8 +112,6 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
     $<INSTALL_INTERFACE:3rdparty>
     ${catkin_INCLUDE_DIRS})
-set_property(TARGET ${BEHAVIOR_TREE_LIBRARY} PROPERTY CXX_STANDARD 11)
-set_property(TARGET ${BEHAVIOR_TREE_LIBRARY} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
   target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
