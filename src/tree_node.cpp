@@ -103,6 +103,11 @@ void TreeNode::setRegistrationName(const std::string& registration_name)
     registration_name_ = registration_name;
 }
 
+bool TreeNode::isBlackboardPattern(const std::string &str)
+{
+    return str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}';
+}
+
 const std::string& TreeNode::registrationName() const
 {
     return registration_name_;

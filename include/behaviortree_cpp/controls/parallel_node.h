@@ -21,8 +21,17 @@ namespace BT
 class ParallelNode : public ControlNode
 {
   public:
-    // Constructor
-    ParallelNode(const std::string& name, int threshold_M);
+
+    ParallelNode(const std::string& name, int threshold);
+
+    ParallelNode(const std::string& name, const NodeParameters& params);
+
+    static const NodeParameters& requiredNodeParameters()
+    {
+        static NodeParameters params = {{THRESHOLD_KEY, "1"}};
+        return params;
+    }
+
     ~ParallelNode() = default;
 
     virtual void halt() override;
@@ -31,9 +40,12 @@ class ParallelNode : public ControlNode
     void setThresholdM(unsigned int threshold_M);
 
   private:
-    unsigned int threshold_M_;
+    unsigned int threshold_;
     unsigned int success_childred_num_;
     unsigned int failure_childred_num_;
+
+    bool refresh_parameter_;
+    static constexpr const char* THRESHOLD_KEY = "threshold";
 
     virtual BT::NodeStatus tick() override;
 };

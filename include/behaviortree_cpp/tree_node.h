@@ -140,7 +140,7 @@ class TreeNode
         try
         {
             // check if it follows this ${pattern}, if it does, search inside the blackboard
-            if (bb_ && str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}')
+            if ( bb_ && isBlackboardPattern(str))
             {
                 const std::string stripped_key(&str[2], str.size() - 3);
                 bool found = bb_->get(stripped_key, destination);
@@ -182,6 +182,9 @@ class TreeNode
     const NodeParameters parameters_;
 
     Blackboard::Ptr bb_;
+
+protected:
+    static bool isBlackboardPattern(const std::string& str );
 };
 }
 

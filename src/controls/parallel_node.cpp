@@ -13,13 +13,41 @@
 
 #include "behaviortree_cpp/controls/parallel_node.h"
 
-BT::ParallelNode::ParallelNode(const std::string& name, int threshold_M)
-  : ControlNode::ControlNode(name, NodeParameters()), threshold_M_(threshold_M)
+namespace BT
+{
+
+constexpr const char* ParallelNode::THRESHOLD_KEY;
+
+ParallelNode::ParallelNode(const std::string& name, int threshold)
+  : ControlNode::ControlNode(name, {{THRESHOLD_KEY, std::to_string(threshold)}}),
+    threshold_(threshold),
+    refresh_parameter_(false)
 {
 }
 
-BT::NodeStatus BT::ParallelNode::tick()
+ParallelNode::ParallelNode(const std::string &name,
+                               const NodeParameters &params)
+    : ControlNode::ControlNode(name, params),
+    threshold_(1),
+    refresh_parameter_(false)
+  {
+    auto param = getParam<unsigned>( THRESHOLD_KEY );
+    if( !param )
+    {
+        throw std::runtime_error("Missing parameter [threshold] in ParallelNode");
+    }
+    refresh_parameter_ = isBlackboardPattern( params.begin()->second );
+  }
+
+NodeStatus ParallelNode::tick()
 {
+    if( refresh_parameter_ )
+    {
+        // Read it at every tick. Since it points to the blackboard,
+        // it may change dynamically
+        getParam(THRESHOLD_KEY, threshold_);
+    }
+
     success_childred_num_ = 0;
     failure_childred_num_ = 0;
     // Vector size initialization. children_count_ could change at runtime if you edit the tree
@@ -35,9 +63,9 @@ BT::NodeStatus BT::ParallelNode::tick()
         switch (child_status)
         {
             case NodeStatus::SUCCESS:
-                child_node->setStatus(
-                    NodeStatus::IDLE);   // the child goes in idle if it has returned success.
-                if (++success_childred_num_ == threshold_M_)
+                child_node->setStatus(NodeStatus::IDLE);
+                // the child goes in idle if it has returned success.
+                if (++success_childred_num_ == threshold_)
                 {
                     success_childred_num_ = 0;
                     failure_childred_num_ = 0;
@@ -46,9 +74,9 @@ BT::NodeStatus BT::ParallelNode::tick()
                 }
                 break;
             case NodeStatus::FAILURE:
-                child_node->setStatus(
-                    NodeStatus::IDLE);   // the child goes in idle if it has returned failure.
-                if (++failure_childred_num_ > children_count - threshold_M_)
+                child_node->setStatus(NodeStatus::IDLE);
+                // the child goes in idle if it has returned failure.
+                if (++failure_childred_num_ > children_count - threshold_)
                 {
                     success_childred_num_ = 0;
                     failure_childred_num_ = 0;
@@ -66,19 +94,21 @@ BT::NodeStatus BT::ParallelNode::tick()
     return NodeStatus::RUNNING;
 }
 
-void BT::ParallelNode::halt()
+void ParallelNode::halt()
 {
     success_childred_num_ = 0;
     failure_childred_num_ = 0;
-    BT::ControlNode::halt();
+    ControlNode::halt();
 }
 
-unsigned int BT::ParallelNode::thresholdM()
+unsigned int ParallelNode::thresholdM()
 {
-    return threshold_M_;
+    return threshold_;
 }
 
-void BT::ParallelNode::setThresholdM(unsigned int threshold_M)
+void ParallelNode::setThresholdM(unsigned int threshold_M)
 {
-    threshold_M_ = threshold_M;
+    threshold_ = threshold_M;
+}
+
 }
