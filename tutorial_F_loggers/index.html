@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="#2196f3">
+        <meta name="theme-color" content="#546e7a">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue-grey" data-md-color-accent="green">
   
     <svg class="md-svg">
       <defs>
@@ -622,13 +622,13 @@ a mechanism to record and/or display all the state transitions in out tree.</p>
 <h2 id="example">Example</h2>
 <p>We can attach multiple loggers to a tree.</p>
 <p>To do this, we pass the root of the tree. </p>
-<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_core/xml_parsing.h&quot;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_logger/bt_cout_logger.h&quot;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_logger/bt_minitrace_logger.h&quot;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_logger/bt_file_logger.h&quot;</span><span class="cp"></span>
+<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/xml_parsing.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/loggers/bt_cout_logger.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/loggers/bt_minitrace_logger.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/loggers/bt_file_logger.h&quot;</span><span class="cp"></span>
 
 <span class="cp">#ifdef ZMQ_FOUND</span>
-<span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_logger/bt_zmq_publisher.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/loggers/bt_zmq_publisher.h&quot;</span><span class="cp"></span>
 <span class="cp">#endif</span>
 
 <span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>

@@ -51,7 +51,7 @@
       
         
         
-        <meta name="theme-color" content="#2196f3">
+        <meta name="theme-color" content="#546e7a">
       
     
     
@@ -71,7 +71,7 @@
   
     
     
-    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-primary="blue-grey" data-md-color-accent="green">
   
     <svg class="md-svg">
       <defs>
@@ -739,6 +739,13 @@ a function pointer. </p>
             <span class="nt">&lt;CloseGripper</span>   <span class="na">name=</span><span class="s">&quot;close_gripper&quot;</span><span class="nt">/&gt;</span>
         <span class="nt">&lt;/Sequence&gt;</span>
      <span class="nt">&lt;/BehaviorTree&gt;</span>
+
+     <span class="nt">&lt;TreeNodesModel&gt;</span>
+        <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;SayHello&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;OpenGripper&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;ApproachObject&quot;</span><span class="nt">/&gt;</span>
+        <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;CloseGripper&quot;</span><span class="nt">/&gt;</span>
+     <span class="nt">&lt;/TreeNodesModel&gt;</span>
  <span class="nt">&lt;/root&gt;</span>
 </pre></div>
 
@@ -760,7 +767,7 @@ a function pointer. </p>
 <p>The identifier used in the XML must coincide with those used to register
 the TreeNodes.</p>
 <p>The attribute "name" represents the name of the instance and it is optional.</p>
-<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behavior_tree_core/xml_parsing.h&quot;</span><span class="cp"></span>
+<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/xml_parsing.h&quot;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&quot;Blackboard/blackboard_local.h&quot;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
 
