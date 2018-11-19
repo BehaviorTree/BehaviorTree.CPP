@@ -11,8 +11,8 @@ theme:
   feature:
     tabs: true
   palette:
-    primary: blue
-    accent: indigo
+    primary: blue grey
+    accent: green
   font:
     text: Ubuntu
     code: Roboto Mono

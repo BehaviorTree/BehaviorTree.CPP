@@ -159,6 +159,13 @@ Give the following XML stored in the file __my_tree.xml__
             <CloseGripper   name="close_gripper"/>
         </Sequence>
      </BehaviorTree>
+     
+     <TreeNodesModel>
+        <Action ID="SayHello"/>
+        <Action ID="OpenGripper"/>
+        <Action ID="ApproachObject"/>
+        <Action ID="CloseGripper"/>
+     </TreeNodesModel>
  </root>
 ```
 
