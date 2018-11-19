@@ -67,12 +67,16 @@ int main()
     PublisherZMQ publisher_zmq(tree.root_node);
 #endif
 
-    // Keep on ticking until you get either a SUCCESS or FAILURE state
-    NodeStatus status = NodeStatus::RUNNING;
-    while (status == NodeStatus::RUNNING)
+    //while (1)
     {
-        status = tree.root_node->executeTick();
-        CrossDoor::SleepMS(1);   // optional sleep to avoid "busy loops"
+        NodeStatus status = NodeStatus::RUNNING;
+        // Keep on ticking until you get either a SUCCESS or FAILURE state
+        while( status == NodeStatus::RUNNING)
+        {
+            status = tree.root_node->executeTick();
+            CrossDoor::SleepMS(1);   // optional sleep to avoid "busy loops"
+        }
+        CrossDoor::SleepMS(2000);
     }
     return 0;
 }

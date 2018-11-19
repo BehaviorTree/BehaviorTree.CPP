@@ -24,6 +24,12 @@ class DecoratorSubtreeNode : public DecoratorNode
         }
         auto status = child_node_->executeTick();
         setStatus(status);
+
+        // reset child if completed
+        if( status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE)
+        {
+            child_node_->setStatus(NodeStatus::IDLE);
+        }
         return status;
     }
 };
