@@ -23,7 +23,7 @@ namespace BT
 //   TreeNode::getParam<Pose2D>(key, ...)
 //
 template <>
-Pose2D convertFromString(const std::string& key)
+Pose2D convertFromString(const StringView& key)
 {
     // three real numbers separated by semicolons
     auto parts = BT::splitString(key, ';');
@@ -34,8 +34,8 @@ Pose2D convertFromString(const std::string& key)
     else
     {
         Pose2D output;
-        output.x = convertFromString<double>(parts[0]);
-        output.y = convertFromString<double>(parts[1]);
+        output.x     = convertFromString<double>(parts[0]);
+        output.y     = convertFromString<double>(parts[1]);
         output.theta = convertFromString<double>(parts[2]);
         return output;
     }

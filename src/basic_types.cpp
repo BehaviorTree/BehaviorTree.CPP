@@ -1,4 +1,5 @@
 #include "behaviortree_cpp/basic_types.h"
+#include <cstdlib>
 #include <cstring>
 
 namespace BT
@@ -64,37 +65,65 @@ const char* toStr(const NodeType& type)
 }
 
 template <>
-std::string convertFromString<std::string>(const std::string& str)
+std::string convertFromString<std::string>(const StringView& str)
 {
-    return str;
+    return std::string( str.data(), str.size() );
 }
 
 template <>
-const char* convertFromString<const char*>(const std::string& str)
+const char* convertFromString<const char*>(const StringView& str)
 {
-    return str.c_str();
+    return str.to_string().c_str();
 }
 
 template <>
-int convertFromString<int>(const std::string& str)
+int convertFromString<int>(const StringView& str)
 {
-    return std::stoi(str.c_str());
+    return  std::stoi(str.data());
 }
 
 template <>
-unsigned convertFromString<unsigned>(const std::string& str)
+unsigned convertFromString<unsigned>(const StringView& str)
 {
-    return std::stoul(str.c_str());
+    return std::stoul(str.data());
 }
 
 template <>
-double convertFromString<double>(const std::string& str)
+double convertFromString<double>(const StringView& str)
 {
-    return std::stod(str);
+    return std::stod(str.data());
 }
 
 template <>
-bool convertFromString<bool>(const std::string& str)
+std::vector<int> convertFromString<std::vector<int>>(const StringView& str)
+{
+    auto parts = splitString(str, ';');
+    std::vector<int> output;
+    output.reserve( parts.size() );
+    for(const StringView& part: parts)
+    {
+        char* end;
+        output.push_back( std::strtol( part.data(), &end, 10 ) );
+    }
+    return output;
+}
+
+template <>
+std::vector<double> convertFromString<std::vector<double>>(const StringView& str)
+{
+    auto parts = splitString(str, ';');
+    std::vector<double> output;
+    output.reserve( parts.size() );
+    for(const StringView& part: parts)
+    {
+        char* end;
+        output.push_back( std::strtod( part.data(), &end ) );
+    }
+    return output;
+}
+
+template <>
+bool convertFromString<bool>(const StringView& str)
 {
     if (str.size() == 1)
     {
@@ -139,31 +168,31 @@ bool convertFromString<bool>(const std::string& str)
 }
 
 template <>
-NodeStatus convertFromString<NodeStatus>(const std::string& str)
+NodeStatus convertFromString<NodeStatus>(const StringView& str)
 {
     for (auto status :
          {NodeStatus::IDLE, NodeStatus::RUNNING, NodeStatus::SUCCESS, NodeStatus::FAILURE})
     {
-        if (std::strcmp(toStr(status), str.c_str()) == 0)
+        if ( StringView(toStr(status)) == str )
         {
             return status;
         }
     }
-    throw std::invalid_argument(std::string("Cannot convert this to NodeStatus: ") + str);
+    throw std::invalid_argument(std::string("Cannot convert this to NodeStatus: ") + str.to_string() );
 }
 
 template <>
-NodeType convertFromString<NodeType>(const std::string& str)
+NodeType convertFromString<NodeType>(const StringView& str)
 {
     for (auto status : {NodeType::ACTION, NodeType::CONDITION, NodeType::CONTROL,
                         NodeType::DECORATOR, NodeType::SUBTREE, NodeType::UNDEFINED})
     {
-        if (std::strcmp(toStr(status), str.c_str()) == 0)
+        if (StringView(toStr(status)) == str)
         {
             return status;
         }
     }
-    throw std::invalid_argument(std::string("Cannot convert this to NodeType: ") + str);
+    throw std::invalid_argument(std::string("Cannot convert this to NodeType: ") + str.to_string());
 }
 
 std::ostream& operator<<(std::ostream& os, const NodeType& type)
@@ -178,14 +207,22 @@ std::ostream& operator<<(std::ostream& os, const NodeStatus& status)
     return os;
 }
 
-std::vector<std::string> splitString(const std::string& strToSplit, char delimeter)
+std::vector<StringView> splitString(const StringView &strToSplit, char delimeter)
 {
-    std::stringstream ss(strToSplit);
-    std::string item;
-    std::vector<std::string> splitted_strings;
-    while (std::getline(ss, item, delimeter))
+    std::vector<StringView> splitted_strings;
+    splitted_strings.reserve(4);
+
+    size_t pos = 0;
+    while( pos < strToSplit.size())
     {
-        splitted_strings.push_back(item);
+        size_t new_pos = strToSplit.find_first_of(delimeter, pos);
+        if( new_pos == std::string::npos)
+        {
+           new_pos = strToSplit.size();
+        }
+        StringView sv = { &strToSplit.data()[pos], new_pos - pos };
+        splitted_strings.push_back( sv );
+        pos = new_pos + 1;
     }
     return splitted_strings;
 }

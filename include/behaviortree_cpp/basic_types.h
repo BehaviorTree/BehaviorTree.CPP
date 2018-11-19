@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 #include <sstream>
+#include "behaviortree_cpp/string_view.hpp"
 
 namespace BT
 {
@@ -60,8 +61,10 @@ enum SuccessPolicy
     SUCCEED_ON_ALL
 };
 
+typedef nonstd::string_view StringView;
+
 template <typename T>
-T convertFromString(const std::string& str);
+T convertFromString(const StringView& str);
 
 //------------------------------------------------------------------
 
@@ -79,8 +82,9 @@ const char* toStr(const BT::NodeType& type);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
+
 // small utility, unless you want to use <boost/algorithm/string.hpp>
-std::vector<std::string> splitString(const std::string& strToSplit, char delimeter);
+std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
 }
 
 #endif   // BT_BASIC_TYPES_H

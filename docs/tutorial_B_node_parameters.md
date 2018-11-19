@@ -98,7 +98,7 @@ namespace BT{
 
 // This template specialization is needed if you want
 // to AUTOMATICALLY convert a NodeParameter into a Pose2D
-template <> Pose2D BT::convertFromString(const std::string& key)
+template <> Pose2D BT::convertFromString(const StringView& key)
 {
     // Three real numbers separated by semicolons.
     // You may use <boost/algorithm/string/split.hpp>  if you prefer
