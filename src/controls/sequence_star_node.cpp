@@ -15,22 +15,37 @@
 
 namespace BT
 {
+
+constexpr const char* SequenceStarNode::RESET_PARAM;
+
 SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failure)
-  : ControlNode::ControlNode(name, SequenceStarNode::requiredNodeParameters())
+  : ControlNode::ControlNode(name, {{RESET_PARAM, std::to_string(reset_on_failure)}})
   , current_child_idx_(0)
   , reset_on_failure_(reset_on_failure)
+  , refresh_parameter_(false)
 {
 }
 
 SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters& params)
-  : ControlNode::ControlNode(name, params), current_child_idx_(0), reset_on_failure_(true)
+  : ControlNode::ControlNode(name, params), current_child_idx_(0),
+    refresh_parameter_(false)
 {
-    getParam<bool>("reset_on_failure", reset_on_failure_);
+    if( !getParam(RESET_PARAM, reset_on_failure_) )
+    {
+        throw std::runtime_error("Missing parameter [reset_on_failure] in SequenceStarNode");
+    }
+    refresh_parameter_ = isBlackboardPattern( params.begin()->second );
 }
 
 NodeStatus SequenceStarNode::tick()
 {
-    // Vector size initialization. children_count_ could change at runtime if you edit the tree
+    if( refresh_parameter_)
+    {
+        // Read it at every tick. Since it points to the blackboard,
+        // it may change dynamically
+        getParam(RESET_PARAM, reset_on_failure_);
+    }
+
     const unsigned children_count = children_nodes_.size();
 
     setStatus(NodeStatus::RUNNING);

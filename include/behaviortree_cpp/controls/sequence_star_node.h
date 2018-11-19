@@ -46,13 +46,16 @@ class SequenceStarNode : public ControlNode
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = {{"reset_on_failure", "true"}};
+        static NodeParameters params = {{RESET_PARAM, "true"}};
         return params;
     }
 
   private:
     unsigned int current_child_idx_;
     bool reset_on_failure_;
+
+    bool refresh_parameter_;
+    static constexpr const char* RESET_PARAM = "reset_on_failure";
 
     virtual BT::NodeStatus tick() override;
 };

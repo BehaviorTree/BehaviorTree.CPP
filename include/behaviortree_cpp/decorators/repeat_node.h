@@ -35,10 +35,12 @@ class RepeatNode : public DecoratorNode
     }
 
   private:
-    unsigned NTries_;
-    unsigned TryIndx_;
+    unsigned num_cycles_;
+    unsigned try_index_;
 
+    bool refresh_parameter_;
     static constexpr const char* NUM_CYCLES = "num_cycles";
+
     virtual BT::NodeStatus tick() override;
 };
 }

@@ -28,11 +28,9 @@ ParallelNode::ParallelNode(const std::string& name, int threshold)
 ParallelNode::ParallelNode(const std::string &name,
                                const NodeParameters &params)
     : ControlNode::ControlNode(name, params),
-    threshold_(1),
     refresh_parameter_(false)
   {
-    auto param = getParam<unsigned>( THRESHOLD_KEY );
-    if( !param )
+    if( !getParam(THRESHOLD_KEY, threshold_) )
     {
         throw std::runtime_error("Missing parameter [threshold] in ParallelNode");
     }

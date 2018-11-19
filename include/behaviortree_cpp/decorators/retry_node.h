@@ -35,10 +35,12 @@ class RetryNode : public DecoratorNode
     }
 
   private:
-    unsigned int NTries_;
-    unsigned int TryIndx_;
+    unsigned int max_attempts_;
+    unsigned int try_index_;
 
+    bool refresh_parameter_;
     static constexpr const char* NUM_ATTEMPTS = "num_attempts";
+
     virtual BT::NodeStatus tick() override;
 };
 }
