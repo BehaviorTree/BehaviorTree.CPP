@@ -34,7 +34,7 @@ ParallelNode::ParallelNode(const std::string &name,
     {
         throw std::runtime_error("Missing parameter [threshold] in ParallelNode");
     }
-    refresh_parameter_ = isBlackboardPattern( params.begin()->second );
+    refresh_parameter_ = isBlackboardPattern( params.at(THRESHOLD_KEY) );
   }
 
 NodeStatus ParallelNode::tick()

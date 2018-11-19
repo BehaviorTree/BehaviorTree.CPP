@@ -34,7 +34,7 @@ RetryNode::RetryNode(const std::string& name, const NodeParameters& params)
     {
         throw std::runtime_error("Missing parameter [num_attempts] in RetryNode");
     }
-    refresh_parameter_ = isBlackboardPattern( params.begin()->second );
+    refresh_parameter_ = isBlackboardPattern( params.at(NUM_ATTEMPTS) );
 }
 
 NodeStatus RetryNode::tick()
