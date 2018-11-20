@@ -25,6 +25,7 @@ class BlackboardImpl
 
     virtual const SafeAny::Any* get(const std::string& key) const = 0;
     virtual void set(const std::string& key, const SafeAny::Any& value) = 0;
+    virtual bool contains(const std::string& key) const = 0;
 };
 
 // This is the "frontend" to be used by the developer.
@@ -105,6 +106,11 @@ class Blackboard
         {
             impl_->set(key, SafeAny::Any(value));
         }
+    }
+
+    bool contains(const std::string& key) const
+    {
+        return (impl_ && impl_->contains(key));
     }
 
   private:

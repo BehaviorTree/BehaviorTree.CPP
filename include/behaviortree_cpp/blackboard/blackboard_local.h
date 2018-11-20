@@ -27,6 +27,11 @@ class BlackboardLocal : public BlackboardImpl
         storage_[key] = value;
     }
 
+    virtual bool contains(const std::string& key) const override
+    {
+        return storage_.find(key) != storage_.end();
+    }
+
   private:
     std::unordered_map<std::string, SafeAny::Any> storage_;
 };
