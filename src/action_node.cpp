@@ -34,8 +34,9 @@ NodeStatus ActionNodeBase::executeTick()
 //-------------------------------------------------------
 
 SimpleActionNode::SimpleActionNode(const std::string& name,
-                                   SimpleActionNode::TickFunctor tick_functor)
-  : ActionNodeBase(name, NodeParameters()), tick_functor_(std::move(tick_functor))
+                                   SimpleActionNode::TickFunctor tick_functor,
+                                   const NodeParameters& params)
+  : ActionNodeBase(name, params), tick_functor_(std::move(tick_functor))
 {
 }
 

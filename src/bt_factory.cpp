@@ -66,8 +66,8 @@ void BehaviorTreeFactory::registerBuilder(const std::string& ID, NodeBuilder bui
 void BehaviorTreeFactory::registerSimpleCondition(
     const std::string& ID, const SimpleConditionNode::TickFunctor& tick_functor)
 {
-    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
-        return std::unique_ptr<TreeNode>(new SimpleConditionNode(name, tick_functor));
+    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters& params) {
+        return std::unique_ptr<TreeNode>(new SimpleConditionNode(name, tick_functor, params));
     };
 
     registerBuilder(ID, builder);
@@ -77,8 +77,8 @@ void BehaviorTreeFactory::registerSimpleCondition(
 void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
                                                const SimpleActionNode::TickFunctor& tick_functor)
 {
-    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
-        return std::unique_ptr<TreeNode>(new SimpleActionNode(name, tick_functor));
+    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters& params) {
+        return std::unique_ptr<TreeNode>(new SimpleActionNode(name, tick_functor, params));
     };
 
     registerBuilder(ID, builder);
@@ -88,8 +88,8 @@ void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
 void BehaviorTreeFactory::registerSimpleDecorator(
     const std::string& ID, const SimpleDecoratorNode::TickFunctor& tick_functor)
 {
-    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters&) {
-        return std::unique_ptr<TreeNode>(new SimpleDecoratorNode(name, tick_functor));
+    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeParameters& params) {
+        return std::unique_ptr<TreeNode>(new SimpleDecoratorNode(name, tick_functor, params));
     };
 
     registerBuilder(ID, builder);
