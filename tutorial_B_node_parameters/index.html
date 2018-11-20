@@ -528,6 +528,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_G_legacy/" title="Tutorial 7: Legacy code" class="md-nav__link">
+      Tutorial 7: Legacy code
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -596,12 +608,11 @@
                 <h1 id="how-to-use-nodeparameters">How to use NodeParameters</h1>
 <p>NodeParameters are like arguments passed to a function.</p>
 <p>They are a map of <strong>key/value</strong> pairs (both strings) that are usually
-parsed from file.</p>
+read from file.</p>
 <p>To create a TreeNodes that accepts NodeParameters, you must follow these rules:</p>
 <ul>
 <li>
-<p>Use inheritance. NodeParameters are <strong>not supported</strong> by <em>SimpleActionNodes</em> nor
- <em>SimpleConditionNodes</em>.</p>
+<p>Inherit from either ActionNodeBase,  ActionNode, ConditionNode or DecoratorNode.</p>
 </li>
 <li>
 <p>You must provide a constructor with the following signature:</p>
@@ -616,6 +627,8 @@ parsed from file.</p>
 <div class="codehilite"><pre><span></span><span class="k">static</span> <span class="k">const</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
 </pre></div>
 
+<p>Alternatively, since version 2.2, Simple Nodes can also support NodeParameters.
+Check the <a href="../tutorial_G_legacy/">tutorial 6</a> for details.</p>
 <h2 id="example-an-action-requiring-the-parameter-message">Example: an Action requiring the parameter "message"</h2>
 <p><code>SaySomething</code> is a simple synchronous ActionNodeBase which will print the 
 string passed in the NodeParameter called "message".</p>
