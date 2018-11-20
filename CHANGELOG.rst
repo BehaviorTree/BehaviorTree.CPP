@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.2.0 (2018-11-20)
+------------------
 * fix typo
 * method contains() added to BlackBoard
 * back compatible API change to improve the wrapping of legacy code (issue #15)
