@@ -75,7 +75,7 @@ int main()
         // thanks to paren_node, you can access easily the NodeParameters and the blackboard
         parent_node.getParam("goal", goal);
 
-        // you can write and read the blabkcoard if you like
+        // you can write and read the blackboard if you like
         //parent_node.blackboard() ....
 
         bool res = move_to.go( goal );
