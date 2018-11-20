@@ -1,33 +1,14 @@
-#include "behaviortree_cpp/xml_parsing.h"
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+# Wrap legacy code
 
+In this tutorial we see how to deal with legacy code that was not meant to be used
+with BehaviorTree.CPP.
 
-/** In this tutorial we will see how to wrap legacy code into a
- * BehaviorTree in a non-intrusive way, i.e. without modifying the
- * original class
-*/
+Let's start supposing that this is my class.
 
-// clang-format off
-const std::string xml_text = R"(
-
- <root main_tree_to_execute = "MainTree" >
-     <BehaviorTree ID="MainTree">
-        <SequenceStar name="root">
-            <MoveTo  goal="-1;3;0.5" />
-            <MoveTo  goal="${myGoal}" />
-        </SequenceStar>
-     </BehaviorTree>
- </root>
- )";
-
-// clang-format on
-
+``` c++
 // This is my custom type.
-// By default, we don't know how to read this from a NodeParameter.
 struct Point3D { double x,y,z; };
 
-// We want to create an ActionNode that calls the method MyLegacyMoveTo::go
 class MyLegacyMoveTo
 {
 public:
@@ -37,9 +18,35 @@ public:
         return true; // true means success in my legacy code
     }
 };
+```
 
-// Similarly to the previous tutorials, we need to implement this parsing method,
-// providing a specialization of BT::convertFromString
+We want to create an ActionNode called "MoveTo" that invokes the method __MyLegacyMoveTo::go()__.
+
+The final goal is to be able to use this ActionNode in a tree like this one:
+
+``` XML
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <SequenceStar name="root">
+            <MoveTo  goal="-1;3;0.5" />
+            <MoveTo  goal="${myGoal}" />
+        </SequenceStar>
+     </BehaviorTree>
+ </root>
+``` 
+
+The first thing that we need to do is to allow our library to convert
+a NodeParameter (that is
+nothing more than a pair of strings representing key/value) into a Point3D.
+
+As we did in a previous tutorial, we should implement a template specialization
+for __convertFromString__.
+
+Our particular string representation of a Point3D consists in three semicolon-separated
+numbers, representing __x, y and z_.
+
+
+``` c++
 namespace BT
 {
 template <> Point3D convertFromString(const StringView& key)
@@ -60,8 +67,12 @@ template <> Point3D convertFromString(const StringView& key)
     }
 }
 }
+```
 
+Finally, we can use a __C++11 lambda__ (or, alternatively, __std::bind__) to wrap
+out method into a function with the right signature.
 
+``` c++
 int main()
 {
     using namespace BT;
@@ -75,16 +86,12 @@ int main()
         // thanks to paren_node, you can access easily the NodeParameters and the blackboard
         parent_node.getParam("goal", goal);
 
-        // you can write and read the blackboard if you like
-        //parent_node.blackboard() ....
-
         bool res = move_to.go( goal );
         // convert bool to NodeStatus
         return res ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
     };
 
     BehaviorTreeFactory factory;
-    // Register the lambda with BehaviorTreeFactory::registerSimpleAction
     factory.registerSimpleAction("MoveTo", MoveToWrapperWithLambda);
 
     auto blackboard = Blackboard::create<BlackboardLocal>();
@@ -111,3 +118,22 @@ The first MoveTo read the parameter from the string "-1;3;0.5"
 whilst the second from the blackboard, that contains a copy of the Point3D my_goal.
 
 */
+```
+
+
+The functor we are passing to __SimpleActionNode__ requires the following signature:
+
+     BT::NodeStatus myFunction(BT::TreeNode& parent) 
+     
+As a consequence, we can access a NodeParameter by
+
+     parent.getParam()
+     
+or even set/get an entry of the Blackboard using
+
+     parent.blackboard()
+
+
+
+
+

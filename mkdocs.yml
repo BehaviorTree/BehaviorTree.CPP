@@ -11,8 +11,8 @@ theme:
   feature:
     tabs: true
   palette:
-    primary: blue
-    accent: indigo
+    primary: blue grey
+    accent: green
   font:
     text: Ubuntu
     code: Roboto Mono
@@ -43,4 +43,5 @@ pages:
        - "Tutorial 4: Subtrees":         tutorial_D_subtrees.md
        - "Tutorial 5: Plugins":          tutorial_E_plugins.md
        - "Tutorial 6: Loggers":          tutorial_F_loggers.md
+       - "Tutorial 7: Legacy code":      tutorial_G_legacy.md
 
