@@ -25,7 +25,7 @@ class FileLogger : public StatusChangeLogger
 
     std::chrono::high_resolution_clock::time_point start_time;
 
-    std::vector<std::array<uint8_t, 12> > buffer_;
+    std::vector<SerializedTransition> buffer_;
 
     bool buffer_max_size_;
 };

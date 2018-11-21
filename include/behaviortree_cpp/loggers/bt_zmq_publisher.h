@@ -27,7 +27,7 @@ class PublisherZMQ : public StatusChangeLogger
     TreeNode* root_node_;
     std::vector<uint8_t> tree_buffer_;
     std::vector<uint8_t> status_buffer_;
-    std::vector<std::array<uint8_t, 12> > transition_buffer_;
+    std::vector<SerializedTransition> transition_buffer_;
     std::chrono::microseconds min_time_between_msgs_;
 
     zmq::context_t zmq_context_;

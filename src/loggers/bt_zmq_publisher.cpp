@@ -91,7 +91,7 @@ void PublisherZMQ::callback(Duration timestamp, const TreeNode& node, NodeStatus
 {
     using namespace std::chrono;
 
-    std::array<uint8_t, 12> transition =
+    SerializedTransition transition =
         SerializeTransition(node.UID(), timestamp, prev_status, status);
     {
         std::unique_lock<std::mutex> lock(mutex_);
