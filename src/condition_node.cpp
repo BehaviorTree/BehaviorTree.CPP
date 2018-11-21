@@ -24,8 +24,9 @@ void ConditionNode::halt()
 {
 }
 
-SimpleConditionNode::SimpleConditionNode(const std::string& name, TickFunctor tick_functor)
-  : ConditionNode(name, NodeParameters()), tick_functor_(std::move(tick_functor))
+SimpleConditionNode::SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
+                                         const NodeParameters &params)
+  : ConditionNode(name, params), tick_functor_(std::move(tick_functor))
 {
 }
 

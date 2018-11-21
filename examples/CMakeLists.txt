@@ -25,3 +25,6 @@ target_link_libraries(t04_blackboard  movebase_node ${BEHAVIOR_TREE_LIBRARY}  )
 
 add_executable(t05_crossdoor         t05_crossdoor.cpp )
 target_link_libraries(t05_crossdoor  crossdoor_nodes ${BEHAVIOR_TREE_LIBRARY}  )
+
+add_executable(t06_wrap_legacy         t06_wrap_legacy.cpp )
+target_link_libraries(t06_wrap_legacy  crossdoor_nodes ${BEHAVIOR_TREE_LIBRARY}  )

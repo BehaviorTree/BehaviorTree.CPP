@@ -52,7 +52,8 @@ class SimpleActionNode : public ActionNodeBase
     typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
 
     // Constructor: you must provide the function to call when tick() is invoked
-    SimpleActionNode(const std::string& name, TickFunctor tick_functor);
+    SimpleActionNode(const std::string& name, TickFunctor tick_functor,
+                     const NodeParameters &params = NodeParameters());
 
     ~SimpleActionNode() override = default;
 

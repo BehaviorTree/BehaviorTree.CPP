@@ -103,10 +103,6 @@ class TreeNode
     /// creation of the TreeNode instance.
     const NodeParameters& initializationParameters() const;
 
-  protected:
-    /// Method to be implemented by the user
-    virtual BT::NodeStatus tick() = 0;
-
     /** Get a parameter from the passed NodeParameters and convert it to type T.
      */
     template <typename T>
@@ -146,8 +142,7 @@ class TreeNode
                 bool found = bb_->get(stripped_key, destination);
                 return found;
             }
-            else
-            {
+            else{
                 destination = convertFromString<T>(str.c_str());
                 return true;
             }
@@ -158,6 +153,10 @@ class TreeNode
             return false;
         }
     }
+
+  protected:
+    /// Method to be implemented by the user
+    virtual BT::NodeStatus tick() = 0;
 
     /// registrationName() is set by the BehaviorTreeFactory
     void setRegistrationName(const std::string& registration_name);
