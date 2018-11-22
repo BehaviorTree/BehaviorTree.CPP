@@ -35,29 +35,40 @@ class BlackboardPreconditionNode : public DecoratorNode
     }
 
   private:
-    virtual BT::NodeStatus tick() override
-    {
-        std::string key;
-        T expected;
-        T value;
-
-        setStatus(NodeStatus::RUNNING);
-
-        if (blackboard() &&                     //blackboard not null
-            getParam("key", key) &&             // parameter key provided
-            getParam("expected", expected) &&   // parameter expected provided
-            blackboard()->get(key, value) &&    // value found in blackboard
-            (value == expected ||
-             initializationParameters().at("expected") == "*"))   // is expected value or "*"
-        {
-            return child_node_->executeTick();
-        }
-        else
-        {
-            return NodeStatus::FAILURE;
-        }
-    }
+    virtual BT::NodeStatus tick() override;
 };
+
+//----------------------------------------------------
+
+template<typename T> inline
+NodeStatus BlackboardPreconditionNode<T>::tick()
+{
+    std::string key;
+    T expected_value;
+    T current_value;
+
+    getParam("key", key);
+    setStatus(NodeStatus::RUNNING);
+
+    // check if the key is present in the blackboard
+    if ( !blackboard() ||  !(blackboard()->contains(key)) )
+    {
+        return NodeStatus::FAILURE;
+    }
+
+    if( initializationParameters().at("expected") == "*" )
+    {
+        return child_node_->executeTick();
+    }
+
+    bool same = ( getParam("expected", expected_value) &&
+                  blackboard()->get(key, current_value) &&
+                  current_value == expected_value ) ;
+
+    return same ? child_node_->executeTick() :
+                  NodeStatus::FAILURE;
+}
+
 }
 
 #endif
