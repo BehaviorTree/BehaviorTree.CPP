@@ -543,7 +543,7 @@ Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& te
     std::vector<TreeNode::Ptr> nodes;
     auto root = parser.instantiateTree(nodes);
     assignBlackboardToEntireTree(root.get(), blackboard);
-    return {root.get(), nodes};
+    return Tree(root.get(), nodes);
 }
 
 Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& filename,
@@ -555,6 +555,6 @@ Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& fi
     std::vector<TreeNode::Ptr> nodes;
     auto root = parser.instantiateTree(nodes);
     assignBlackboardToEntireTree(root.get(), blackboard);
-    return {root.get(), nodes};
+    return Tree(root.get(), nodes);
 }
 }
