@@ -3,7 +3,6 @@
 
 #include <array>
 #include <future>
-#include <zmq.hpp>
 #include "abstract_logger.h"
 
 
@@ -30,10 +29,6 @@ class PublisherZMQ : public StatusChangeLogger
     std::vector<SerializedTransition> transition_buffer_;
     std::chrono::microseconds min_time_between_msgs_;
 
-    zmq::context_t zmq_context_;
-    zmq::socket_t zmq_publisher_;
-    zmq::socket_t zmq_server_;
-
     std::atomic_bool active_server_;
     std::thread thread_;
 
@@ -44,6 +39,10 @@ class PublisherZMQ : public StatusChangeLogger
     std::atomic_bool send_pending_;
 
     std::future<void> send_future_;
+
+    struct Pimpl;
+    Pimpl* zmq_;
+
 };
 }
 

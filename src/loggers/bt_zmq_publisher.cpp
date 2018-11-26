@@ -1,31 +1,32 @@
 #include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
 #include "behaviortree_cpp/loggers/bt_flatbuffer_helper.h"
 #include <future>
+#include <zmq.hpp>
 
 namespace BT
 {
 std::atomic<bool> PublisherZMQ::ref_count(false);
 
-void PublisherZMQ::createStatusBuffer()
+struct PublisherZMQ::Pimpl
 {
-    status_buffer_.clear();
-    applyRecursiveVisitor(root_node_, [this](TreeNode* node) {
-        size_t index = status_buffer_.size();
-        status_buffer_.resize(index + 3);
-        flatbuffers::WriteScalar<uint16_t>(&status_buffer_[index], node->UID());
-        flatbuffers::WriteScalar<int8_t>(&status_buffer_[index + 2],
-                                         static_cast<int8_t>(convertToFlatbuffers(node->status())));
-    });
-}
+    Pimpl():
+        context(1)
+      , publisher(context, ZMQ_PUB)
+      , server(context, ZMQ_REP)
+    {}
+
+    zmq::context_t context;
+    zmq::socket_t publisher;
+    zmq::socket_t server;
+};
+
 
 PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
   : StatusChangeLogger(root_node)
   , root_node_(root_node)
   , min_time_between_msgs_(std::chrono::microseconds(1000 * 1000) / max_msg_per_second)
-  , zmq_context_(1)
-  , zmq_publisher_(zmq_context_, ZMQ_PUB)
-  , zmq_server_(zmq_context_, ZMQ_REP)
   , send_pending_(false)
+  , zmq_(new Pimpl())
 {
     static bool first_instance = true;
     if (first_instance)
@@ -43,11 +44,11 @@ PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
     tree_buffer_.resize(builder.GetSize());
     memcpy(tree_buffer_.data(), builder.GetBufferPointer(), builder.GetSize());
 
-    zmq_publisher_.bind("tcp://*:1666");
-    zmq_server_.bind("tcp://*:1667");
+    zmq_->publisher.bind("tcp://*:1666");
+    zmq_->server.bind("tcp://*:1667");
 
     int timeout_ms = 100;
-    zmq_server_.setsockopt(ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
+    zmq_->server.setsockopt(ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
 
     active_server_ = true;
 
@@ -57,12 +58,12 @@ PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
             zmq::message_t req;
             try
             {
-                bool received = zmq_server_.recv(&req);
+                bool received = zmq_->server.recv(&req);
                 if (received)
                 {
                     zmq::message_t reply(tree_buffer_.size());
                     memcpy(reply.data(), tree_buffer_.data(), tree_buffer_.size());
-                    zmq_server_.send(reply);
+                    zmq_->server.send(reply);
                 }
             }
             catch (zmq::error_t& err)
@@ -84,6 +85,20 @@ PublisherZMQ::~PublisherZMQ()
         thread_.join();
     }
     flush();
+    delete zmq_;
+}
+
+
+void PublisherZMQ::createStatusBuffer()
+{
+    status_buffer_.clear();
+    applyRecursiveVisitor(root_node_, [this](TreeNode* node) {
+        size_t index = status_buffer_.size();
+        status_buffer_.resize(index + 3);
+        flatbuffers::WriteScalar<uint16_t>(&status_buffer_[index], node->UID());
+        flatbuffers::WriteScalar<int8_t>(&status_buffer_[index + 2],
+                                         static_cast<int8_t>(convertToFlatbuffers(node->status())));
+    });
 }
 
 void PublisherZMQ::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
@@ -139,7 +154,7 @@ void PublisherZMQ::flush()
         createStatusBuffer();
     }
 
-    zmq_publisher_.send(message);
+    zmq_->publisher.send(message);
     send_pending_ = false;
     // printf("%.3f zmq send\n", std::chrono::duration<double>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count());
 }
