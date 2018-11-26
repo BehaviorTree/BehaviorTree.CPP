@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include "abstract_logger.h"
-#include "minitrace/minitrace.h"
 
 namespace BT
 {
