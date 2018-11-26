@@ -37,9 +37,23 @@ struct Tree
 {
     TreeNode* root_node;
     std::vector<TreeNode::Ptr> nodes;
+
+    Tree() : root_node(nullptr)
+    {
+        
+    }
+
+    Tree(TreeNode* root_node, std::vector<TreeNode::Ptr> nodes)
+        : root_node(root_node), nodes(nodes)
+    {
+
+    }
+
     ~Tree()
     {
-        haltAllActions(root_node);
+        if (root_node) {
+            haltAllActions(root_node);
+        }
     }
 };
 
