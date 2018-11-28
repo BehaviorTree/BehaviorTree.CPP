@@ -1,5 +1,5 @@
 ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
-![Version](https://img.shields.io/badge/version-v2.2-green.svg)
+![Version](https://img.shields.io/badge/version-v2.3-green.svg)
 [![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
 
 # About BehaviorTree.CPP

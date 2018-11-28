@@ -2,6 +2,18 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix: registerBuilder did not register the manifest. It was "broken" as public API method
+* Use the Pimpl idiom to hide zmq from the header file
+* move header of minitrace in the cpp file
+* Fixed a crash occuring when you didn't initialized a Tree object (#20)
+* Fix issue #16
+* add ParallelNode to pre-registered entries in factory (issue #13)
+* removed M_PI
+* Update the documentation
+* Contributors: Davide Faconti, Jimmy Delas
+
 2.2.0 (2018-11-20)
 ------------------
 * fix typo
