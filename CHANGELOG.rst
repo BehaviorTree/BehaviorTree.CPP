@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.3.0 (2018-11-28)
+------------------
 * Fix: registerBuilder did not register the manifest. It was "broken" as public API method
 * Use the Pimpl idiom to hide zmq from the header file
 * move header of minitrace in the cpp file

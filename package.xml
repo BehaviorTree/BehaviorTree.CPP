@@ -1,6 +1,6 @@
 <package>
   <name>behaviortree_cpp</name>
-  <version>2.2.0</version>
+  <version>2.3.0</version>
   <description>
   This package provides a behavior trees core.
   </description>
