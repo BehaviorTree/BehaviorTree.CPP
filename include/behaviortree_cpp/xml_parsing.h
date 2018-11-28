@@ -64,7 +64,8 @@ struct Tree
 *
 * return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
 */
-Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,
+Tree buildTreeFromText(const BehaviorTreeFactory& factory,
+                       const std::string& text,
                        const Blackboard::Ptr& blackboard = Blackboard::Ptr());
 
 /** Helper function to do the most common steps all at once:
@@ -74,7 +75,8 @@ Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& te
 *
 * return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
 */
-Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& filename,
+Tree buildTreeFromFile(const BehaviorTreeFactory& factory,
+                       const std::string& filename,
                        const Blackboard::Ptr& blackboard = Blackboard::Ptr());
 
 std::string writeXML(const BehaviorTreeFactory& factory, const TreeNode* root_node,

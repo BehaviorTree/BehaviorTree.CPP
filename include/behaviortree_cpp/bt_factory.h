@@ -52,7 +52,7 @@ class BehaviorTreeFactory
     /** More generic way to register your own builder.
      *  Most of the time you should use registerSimple???? or registerNodeType<> instead.
      */
-    void registerBuilder(const std::string& ID, NodeBuilder builder);
+    void registerBuilder(const TreeNodeManifest& manifest, NodeBuilder builder);
 
     /// Register a SimpleActionNode
     void registerSimpleAction(const std::string& ID,
@@ -128,7 +128,6 @@ class BehaviorTreeFactory
                       "NodeParameters&)\n");
 
         registerNodeTypeImpl<T>(ID);
-        storeNodeManifest<T>(ID);
     }
 
     /// All the builders. Made available mostly for debug purposes.
@@ -166,7 +165,8 @@ class BehaviorTreeFactory
         {
             return std::unique_ptr<TreeNode>(new T(name));
         };
-        registerBuilder(ID, builder);
+        TreeNodeManifest manifest = { NodeType::ACTION, ID, NodeParameters() };
+        registerBuilder(manifest, builder);
     }
 
     template <typename T>
@@ -177,7 +177,8 @@ class BehaviorTreeFactory
         {
             return std::unique_ptr<TreeNode>(new T(name, params));
         };
-        registerBuilder(ID, builder);
+        TreeNodeManifest manifest = { getType<T>(), ID, T::requiredNodeParameters() };
+        registerBuilder(manifest, builder);
     }
 
     template <typename T>
@@ -193,24 +194,8 @@ class BehaviorTreeFactory
             }
             return std::unique_ptr<TreeNode>(new T(name, params));
         };
-        registerBuilder(ID, builder);
-    }
-
-
-    template<typename T>
-    typename std::enable_if< has_static_method_requiredNodeParameters<T>::value>::type
-    storeNodeManifest(const std::string& ID)
-    {
-        manifests_.push_back( { getType<T>(), ID, T::requiredNodeParameters()} );
-        sortTreeNodeManifests();
-    }
-
-    template<typename T>
-    typename std::enable_if< !has_static_method_requiredNodeParameters<T>::value>::type
-    storeNodeManifest(const std::string& ID)
-    {
-        manifests_.push_back( { getType<T>(), ID, NodeParameters()} );
-        sortTreeNodeManifests();
+        TreeNodeManifest manifest = { getType<T>(), ID, T::requiredNodeParameters() };
+        registerBuilder(manifest, builder);
     }
 
     void sortTreeNodeManifests();

@@ -53,15 +53,17 @@ bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
     return true;
 }
 
-void BehaviorTreeFactory::registerBuilder(const std::string& ID, NodeBuilder builder)
+void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest, NodeBuilder builder)
 {
-    auto it = builders_.find(ID);
+    auto it = builders_.find( manifest.registration_ID);
     if (it != builders_.end())
     {
-        throw BehaviorTreeException("ID '" + ID + "' already registered");
+        throw BehaviorTreeException("ID '" + manifest.registration_ID + "' already registered");
     }
 
-    builders_.insert(std::make_pair(ID, builder));
+    builders_.insert(std::make_pair(manifest.registration_ID, builder));
+    manifests_.push_back(manifest);
+    sortTreeNodeManifests();
 }
 
 void BehaviorTreeFactory::registerSimpleCondition(
@@ -71,8 +73,8 @@ void BehaviorTreeFactory::registerSimpleCondition(
         return std::unique_ptr<TreeNode>(new SimpleConditionNode(name, tick_functor, params));
     };
 
-    registerBuilder(ID, builder);
-    storeNodeManifest<SimpleConditionNode>(ID);
+    TreeNodeManifest manifest = { NodeType::CONDITION, ID, NodeParameters() };
+    registerBuilder(manifest, builder);
 }
 
 void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
@@ -82,8 +84,8 @@ void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
         return std::unique_ptr<TreeNode>(new SimpleActionNode(name, tick_functor, params));
     };
 
-    registerBuilder(ID, builder);
-    storeNodeManifest<SimpleActionNode>(ID);
+    TreeNodeManifest manifest = { NodeType::ACTION, ID, NodeParameters() };
+    registerBuilder(manifest, builder);
 }
 
 void BehaviorTreeFactory::registerSimpleDecorator(
@@ -93,8 +95,8 @@ void BehaviorTreeFactory::registerSimpleDecorator(
         return std::unique_ptr<TreeNode>(new SimpleDecoratorNode(name, tick_functor, params));
     };
 
-    registerBuilder(ID, builder);
-    storeNodeManifest<SimpleDecoratorNode>(ID);
+    TreeNodeManifest manifest = { NodeType::DECORATOR, ID, NodeParameters() };
+    registerBuilder(manifest, builder);
 }
 
 void BehaviorTreeFactory::registerFromPlugin(const std::string file_path)
