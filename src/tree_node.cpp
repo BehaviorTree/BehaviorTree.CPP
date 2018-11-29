@@ -23,12 +23,18 @@ static uint8_t getUID()
 }
 
 TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters)
-  : name_(name), status_(NodeStatus::IDLE), uid_(getUID()), parameters_(parameters)
+  : just_constructed_(true),
+    name_(name),
+    status_(NodeStatus::IDLE),
+    uid_(getUID()),
+    parameters_(parameters)
+
 {
 }
 
 NodeStatus TreeNode::executeTick()
 {
+    just_constructed_ = false;
     const NodeStatus status = tick();
     setStatus(status);
     return status;

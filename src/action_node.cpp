@@ -22,6 +22,7 @@ ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters& pa
 
 NodeStatus ActionNodeBase::executeTick()
 {
+    just_constructed_ = false;
     NodeStatus prev_status = status();
 
     if (prev_status == NodeStatus::IDLE || prev_status == NodeStatus::RUNNING)
