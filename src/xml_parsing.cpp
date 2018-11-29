@@ -12,6 +12,7 @@
 
 #include <functional>
 
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
 #include "behaviortree_cpp/xml_parsing.h"
@@ -135,19 +136,6 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
                 {
                     AppendError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
                                                     "mandatory");
-                }
-                for (auto param_node = xml_root->FirstChildElement("Parameter");
-                     param_node != nullptr;
-                     param_node = param_node->NextSiblingElement("Parameter"))
-                {
-                    const char* label = node->Attribute("label");
-                    const char* type = node->Attribute("type");
-                    if (!label || !type)
-                    {
-                        AppendError(node->GetLineNum(),
-                                    "The node <Parameter> requires the attributes [type] and "
-                                    "[label]");
-                    }
                 }
             }
         }
@@ -520,10 +508,8 @@ std::string writeXML(const BehaviorTreeFactory& factory, const TreeNode* root_no
 
         for (auto& param : model.required_parameters)
         {
-            XMLElement* param_el = doc.NewElement("Parameter");
-            param_el->SetAttribute("label", param.first.c_str());
-            param_el->SetAttribute("default", param.second.c_str());
-            element->InsertEndChild(param_el);
+            element->SetAttribute( param.first.c_str(),
+                                   param.second.c_str() );
         }
 
         model_root->InsertEndChild(element);
@@ -557,4 +543,5 @@ Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& fi
     assignBlackboardToEntireTree(root.get(), blackboard);
     return Tree(root.get(), nodes);
 }
+
 }
