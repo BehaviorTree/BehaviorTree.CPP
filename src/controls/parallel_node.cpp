@@ -42,7 +42,7 @@ ParallelNode::ParallelNode(const std::string &name,
 
 NodeStatus ParallelNode::tick()
 {
-    if(!read_parameter_from_blackboard_)
+    if(read_parameter_from_blackboard_)
     {
         if( !getParam(THRESHOLD_KEY, threshold_) )
         {
