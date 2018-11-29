@@ -32,6 +32,38 @@ struct DeadlineTest : testing::Test
     }
 };
 
+struct RepeatTest : testing::Test
+{
+    BT::RepeatNode root;
+    BT::AsyncActionTest action;
+
+    RepeatTest() : root("repeat", 3), action("action")
+    {
+        root.setChild(&action);
+        action.setTime(0);
+    }
+    ~RepeatTest()
+    {
+        haltAllActions(&root);
+    }
+};
+
+struct RetryTest : testing::Test
+{
+    BT::RetryNode root;
+    BT::AsyncActionTest action;
+
+    RetryTest() : root("retry", 3), action("action")
+    {
+        root.setChild(&action);
+        action.setTime(0);
+    }
+    ~RetryTest()
+    {
+        haltAllActions(&root);
+    }
+};
+
 /****************TESTS START HERE***************************/
 
 TEST_F(DeadlineTest, DeadlineTriggeredTest)
@@ -62,4 +94,80 @@ TEST_F(DeadlineTest, DeadlineNotTriggeredTest)
     state = root.executeTick();
     ASSERT_EQ(NodeStatus::IDLE, action.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
+}
+
+TEST_F(RetryTest, RetryTestA)
+{
+    action.setBoolean(false);
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(1, action.tickCount() );
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(2, action.tickCount() );
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::FAILURE, root.status());
+    ASSERT_EQ(3, action.tickCount() );
+
+    // try again
+    action.resetTicks();
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(1, action.tickCount() );
+
+    action.setBoolean(true);
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::SUCCESS, root.status());
+    ASSERT_EQ(2, action.tickCount() );
+}
+
+TEST_F(RepeatTest, RepeatTestA)
+{
+    action.setBoolean(false);
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::FAILURE, root.status());
+    ASSERT_EQ(1, action.tickCount() );
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::FAILURE, root.status());
+    ASSERT_EQ(2, action.tickCount() );
+
+    //-------------------
+    action.resetTicks();
+    action.setBoolean(true);
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(1, action.tickCount() );
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(2, action.tickCount() );
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::SUCCESS, root.status());
+    ASSERT_EQ(3, action.tickCount() );
+
+    //-------------------
+    action.resetTicks();
+    action.setBoolean(true);
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(1, action.tickCount() );
+
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(2, action.tickCount() );
+
+    action.setBoolean(false);
+    root.executeTick();
+    ASSERT_EQ(NodeStatus::FAILURE, root.status());
+    ASSERT_EQ(3, action.tickCount() );
+
 }

@@ -50,6 +50,11 @@ class AsyncActionTest : public ActionNode
         return tick_count_;
     }
 
+    void resetTicks()
+    {
+        tick_count_ = 0;
+    }
+
   private:
     int time_;
     bool boolean_value_;
