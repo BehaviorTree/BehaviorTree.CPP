@@ -61,8 +61,9 @@ NodeStatus RepeatNode::tick()
             if (try_index_ >= num_cycles_)
             {
                 setStatus(NodeStatus::SUCCESS);
-                child_node_->setStatus(NodeStatus::IDLE);
+                try_index_ = 0;
             }
+            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 

@@ -70,8 +70,8 @@ NodeStatus RetryNode::tick()
             {
                 try_index_ = 0;
                 setStatus(NodeStatus::FAILURE);
-                child_node_->setStatus(NodeStatus::IDLE);
             }
+            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
