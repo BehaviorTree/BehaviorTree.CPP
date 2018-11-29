@@ -14,7 +14,8 @@
 namespace BT
 {
 TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
-  : DecoratorNode(name, {}), child_halted_(false), msec_(milliseconds)
+  : DecoratorNode(name, {}), child_halted_(false), msec_(milliseconds),
+    read_parameter_from_blackboard_(false)
 {
 }
 
