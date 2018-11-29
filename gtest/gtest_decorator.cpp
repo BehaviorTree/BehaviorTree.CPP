@@ -35,12 +35,11 @@ struct DeadlineTest : testing::Test
 struct RepeatTest : testing::Test
 {
     BT::RepeatNode root;
-    BT::AsyncActionTest action;
+    BT::SyncActionTest action;
 
     RepeatTest() : root("repeat", 3), action("action")
     {
         root.setChild(&action);
-        action.setTime(0);
     }
     ~RepeatTest()
     {
@@ -51,12 +50,11 @@ struct RepeatTest : testing::Test
 struct RetryTest : testing::Test
 {
     BT::RetryNode root;
-    BT::AsyncActionTest action;
+    BT::SyncActionTest action;
 
     RetryTest() : root("retry", 3), action("action")
     {
         root.setChild(&action);
-        action.setTime(0);
     }
     ~RetryTest()
     {

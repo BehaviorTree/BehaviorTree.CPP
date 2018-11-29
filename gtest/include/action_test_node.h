@@ -23,6 +23,11 @@ class SyncActionTest : public ActionNodeBase
         return tick_count_;
     }
 
+    void resetTicks()
+    {
+        tick_count_ = 0;
+    }
+
   private:
     bool boolean_value_;
     int tick_count_;
