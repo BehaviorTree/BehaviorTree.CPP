@@ -44,7 +44,7 @@ class ParallelNode : public ControlNode
     unsigned int success_childred_num_;
     unsigned int failure_childred_num_;
 
-    bool refresh_parameter_;
+    bool read_parameter_from_blackboard_;
     static constexpr const char* THRESHOLD_KEY = "threshold";
 
     virtual BT::NodeStatus tick() override;

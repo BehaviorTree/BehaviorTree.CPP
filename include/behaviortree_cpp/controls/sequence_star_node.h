@@ -54,7 +54,7 @@ class SequenceStarNode : public ControlNode
     unsigned int current_child_idx_;
     bool reset_on_failure_;
 
-    bool refresh_parameter_;
+    bool read_parameter_from_blackboard_;
     static constexpr const char* RESET_PARAM = "reset_on_failure";
 
     virtual BT::NodeStatus tick() override;

@@ -21,17 +21,17 @@ RepeatNode::RepeatNode(const std::string& name, unsigned int NTries)
   : DecoratorNode(name, {{NUM_CYCLES, std::to_string(NTries)}}),
     num_cycles_(NTries),
     try_index_(0),
-    refresh_parameter_(false)
+    read_parameter_from_blackboard_(false)
 {
 }
 
 RepeatNode::RepeatNode(const std::string& name, const NodeParameters& params)
   : DecoratorNode(name, params),
     try_index_(0),
-    refresh_parameter_(false)
+    read_parameter_from_blackboard_(false)
 {
-    refresh_parameter_ = isBlackboardPattern( params.at(NUM_CYCLES) );
-    if(!refresh_parameter_)
+    read_parameter_from_blackboard_ = isBlackboardPattern( params.at(NUM_CYCLES) );
+    if(!read_parameter_from_blackboard_)
     {
         if( !getParam(NUM_CYCLES, num_cycles_) )
         {
@@ -42,11 +42,12 @@ RepeatNode::RepeatNode(const std::string& name, const NodeParameters& params)
 
 NodeStatus RepeatNode::tick()
 {
-    if( refresh_parameter_ )
+    if( read_parameter_from_blackboard_ )
     {
-        // Read it at every tick. Since it points to the blackboard,
-        // it may change dynamically
-        getParam(RepeatNode::NUM_CYCLES, num_cycles_);
+        if( !getParam(NUM_CYCLES, num_cycles_) )
+        {
+            throw std::runtime_error("Missing parameter [num_cycles] in RepeatNode");
+        }
     }
 
     setStatus(NodeStatus::RUNNING);

@@ -38,7 +38,7 @@ class RetryNode : public DecoratorNode
     unsigned int max_attempts_;
     unsigned int try_index_;
 
-    bool refresh_parameter_;
+    bool read_parameter_from_blackboard_;
     static constexpr const char* NUM_ATTEMPTS = "num_attempts";
 
     virtual BT::NodeStatus tick() override;

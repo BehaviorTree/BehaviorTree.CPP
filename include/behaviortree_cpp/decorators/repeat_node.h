@@ -38,7 +38,7 @@ class RepeatNode : public DecoratorNode
     unsigned num_cycles_;
     unsigned try_index_;
 
-    bool refresh_parameter_;
+    bool read_parameter_from_blackboard_;
     static constexpr const char* NUM_CYCLES = "num_cycles";
 
     virtual BT::NodeStatus tick() override;

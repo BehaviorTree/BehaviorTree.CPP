@@ -22,16 +22,16 @@ SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failur
   : ControlNode::ControlNode(name, {{RESET_PARAM, std::to_string(reset_on_failure)}})
   , current_child_idx_(0)
   , reset_on_failure_(reset_on_failure)
-  , refresh_parameter_(false)
+  , read_parameter_from_blackboard_(false)
 {
 }
 
 SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters& params)
   : ControlNode::ControlNode(name, params), current_child_idx_(0),
-    refresh_parameter_(false)
+    read_parameter_from_blackboard_(false)
 {
-    refresh_parameter_ = isBlackboardPattern( params.at(RESET_PARAM) );
-    if(!refresh_parameter_)
+    read_parameter_from_blackboard_ = isBlackboardPattern( params.at(RESET_PARAM) );
+    if(!read_parameter_from_blackboard_)
     {
         if( !getParam(RESET_PARAM, reset_on_failure_) )
         {
@@ -42,11 +42,12 @@ SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters
 
 NodeStatus SequenceStarNode::tick()
 {
-    if( refresh_parameter_)
+    if(read_parameter_from_blackboard_)
     {
-        // Read it at every tick. Since it points to the blackboard,
-        // it may change dynamically
-        getParam(RESET_PARAM, reset_on_failure_);
+        if( !getParam(RESET_PARAM, reset_on_failure_) )
+        {
+            throw std::runtime_error("Missing parameter [reset_on_failure] in SequenceStarNode");
+        }
     }
 
     const unsigned children_count = children_nodes_.size();
