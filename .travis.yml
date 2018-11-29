@@ -19,7 +19,9 @@ matrix:
         env: ROS_DISTRO="indigo"
       - ros_kinetic:
         env: ROS_DISTRO="kinetic"
-    fast_finish: true
+      - ros_melodic:
+        env: ROS_DISTRO="melodic"
+    fast_finish: false
 
 before_install:
   - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential libzmqpp-dev
