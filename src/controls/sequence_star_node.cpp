@@ -30,11 +30,14 @@ SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters
   : ControlNode::ControlNode(name, params), current_child_idx_(0),
     refresh_parameter_(false)
 {
-    if( !getParam(RESET_PARAM, reset_on_failure_) )
-    {
-        throw std::runtime_error("Missing parameter [reset_on_failure] in SequenceStarNode");
-    }
     refresh_parameter_ = isBlackboardPattern( params.at(RESET_PARAM) );
+    if(!refresh_parameter_)
+    {
+        if( !getParam(RESET_PARAM, reset_on_failure_) )
+        {
+            throw std::runtime_error("Missing parameter [reset_on_failure] in SequenceStarNode");
+        }
+    }
 }
 
 NodeStatus SequenceStarNode::tick()

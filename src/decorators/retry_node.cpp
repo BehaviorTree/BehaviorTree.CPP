@@ -30,11 +30,14 @@ RetryNode::RetryNode(const std::string& name, const NodeParameters& params)
     try_index_(0),
     refresh_parameter_(false)
 {
-    if( !getParam(NUM_ATTEMPTS, max_attempts_) )
-    {
-        throw std::runtime_error("Missing parameter [num_attempts] in RetryNode");
-    }
     refresh_parameter_ = isBlackboardPattern( params.at(NUM_ATTEMPTS) );
+    if(!refresh_parameter_)
+    {
+        if( !getParam(NUM_ATTEMPTS, max_attempts_) )
+        {
+            throw std::runtime_error("Missing parameter [num_attempts] in RetryNode");
+        }
+    }
 }
 
 NodeStatus RetryNode::tick()

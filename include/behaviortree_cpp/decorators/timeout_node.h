@@ -33,6 +33,7 @@ class TimeoutNode : public DecoratorNode
     uint64_t timer_id_;
 
     unsigned msec_;
+    bool refresh_parameter_;
 };
 }
 

@@ -30,11 +30,14 @@ RepeatNode::RepeatNode(const std::string& name, const NodeParameters& params)
     try_index_(0),
     refresh_parameter_(false)
 {
-    if( !getParam(NUM_CYCLES, num_cycles_) )
-    {
-        throw std::runtime_error("Missing parameter [num_cycles] in RepeatNode");
-    }
     refresh_parameter_ = isBlackboardPattern( params.at(NUM_CYCLES) );
+    if(!refresh_parameter_)
+    {
+        if( !getParam(NUM_CYCLES, num_cycles_) )
+        {
+            throw std::runtime_error("Missing parameter [num_cycles] in RepeatNode");
+        }
+    }
 }
 
 NodeStatus RepeatNode::tick()

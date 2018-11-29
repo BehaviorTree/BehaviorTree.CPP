@@ -21,15 +21,23 @@ TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
 TimeoutNode::TimeoutNode(const std::string& name, const BT::NodeParameters& params)
   : DecoratorNode(name, params), child_halted_(false), msec_(0)
 {
-    auto param = getParam<unsigned>("msec");
-    if (param)
+    refresh_parameter_ = isBlackboardPattern( params.at("msec") );
+    if(!refresh_parameter_)
     {
-        msec_ = param.value();
+        if( !getParam("msec", msec_) )
+        {
+            throw std::runtime_error("Missing parameter [msec] in TimeoutNode");
+        }
     }
 }
 
 NodeStatus TimeoutNode::tick()
 {
+    if( refresh_parameter_ )
+    {
+        getParam("msec", msec_);
+    }
+
     if (status() == NodeStatus::IDLE)
     {
         setStatus(NodeStatus::RUNNING);

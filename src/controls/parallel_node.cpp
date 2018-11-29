@@ -28,14 +28,17 @@ ParallelNode::ParallelNode(const std::string& name, int threshold)
 ParallelNode::ParallelNode(const std::string &name,
                                const NodeParameters &params)
     : ControlNode::ControlNode(name, params),
-    refresh_parameter_(false)
-  {
-    if( !getParam(THRESHOLD_KEY, threshold_) )
-    {
-        throw std::runtime_error("Missing parameter [threshold] in ParallelNode");
-    }
+      refresh_parameter_(false)
+{
     refresh_parameter_ = isBlackboardPattern( params.at(THRESHOLD_KEY) );
-  }
+    if(!refresh_parameter_)
+    {
+        if( !getParam(THRESHOLD_KEY, threshold_) )
+        {
+            throw std::runtime_error("Missing parameter [threshold] in ParallelNode");
+        }
+    }
+}
 
 NodeStatus ParallelNode::tick()
 {
