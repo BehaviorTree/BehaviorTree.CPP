@@ -123,6 +123,11 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     auto it = builders_.find(ID);
     if (it == builders_.end())
     {
+        std::cerr << ID << " not included in this list:" << std::endl;
+        for (const auto& it: builders_)
+        {
+            std::cerr << it.first << std::endl;
+        }
         throw std::invalid_argument("ID '" + ID + "' not registered");
     }
     std::unique_ptr<TreeNode> node = it->second(name, params);
