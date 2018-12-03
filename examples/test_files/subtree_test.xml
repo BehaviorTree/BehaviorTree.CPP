@@ -1,0 +1,16 @@
+<root main_tree_to_execute="BehaviorTree">
+	
+    <include path="Check.xml" />
+    <include path="subtrees/Talk.xml" />
+
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <CheckStatus/>
+            <OpenGripper/>
+            <CloseGripper/>
+            <SayStuff/>
+        </Sequence>
+    </BehaviorTree>
+
+</root>
+

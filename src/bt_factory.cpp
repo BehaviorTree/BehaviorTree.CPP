@@ -40,6 +40,11 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
+
+    for( const auto& it: builders_)
+    {
+        builtin_IDs_.insert( it.first );
+    }
 }
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
@@ -123,6 +128,11 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     auto it = builders_.find(ID);
     if (it == builders_.end())
     {
+        std::cerr << ID << " not included in this list:" << std::endl;
+        for (const auto& it: builders_)
+        {
+            std::cerr << it.first << std::endl;
+        }
         throw std::invalid_argument("ID '" + ID + "' not registered");
     }
     std::unique_ptr<TreeNode> node = it->second(name, params);
@@ -138,6 +148,11 @@ const std::map<std::string, NodeBuilder>& BehaviorTreeFactory::builders() const
 const std::vector<TreeNodeManifest>& BehaviorTreeFactory::manifests() const
 {
     return manifests_;
+}
+
+const std::set<std::string> &BehaviorTreeFactory::builtinNodes() const
+{
+    return builtin_IDs_;
 }
 
 void BehaviorTreeFactory::sortTreeNodeManifests()

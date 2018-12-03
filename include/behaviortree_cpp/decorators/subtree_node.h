@@ -15,24 +15,16 @@ class DecoratorSubtreeNode : public DecoratorNode
     virtual ~DecoratorSubtreeNode() override = default;
 
   private:
-    virtual BT::NodeStatus tick() override
-    {
-        NodeStatus prev_status = status();
-        if (prev_status == NodeStatus::IDLE)
-        {
-            setStatus(NodeStatus::RUNNING);
-        }
-        auto status = child_node_->executeTick();
-        setStatus(status);
+    virtual BT::NodeStatus tick() override;
 
-        // reset child if completed
-        if( status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE)
-        {
-            child_node_->setStatus(NodeStatus::IDLE);
-        }
-        return status;
+    virtual NodeType type() const override final
+    {
+        return NodeType::SUBTREE;
     }
+
 };
+
+
 }
 
 #endif   // DECORATOR_SUBTREE_NODE_H

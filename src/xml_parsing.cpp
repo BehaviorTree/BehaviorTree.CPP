@@ -11,12 +11,17 @@
 */
 
 #include <functional>
-
+#include <list>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "tinyXML2/tinyxml2.h"
+#include "filesystem/path.h"
+
+#ifdef USING_ROS
+#include <ros/package.h>
+#endif
 
 namespace BT
 {
@@ -28,11 +33,27 @@ struct XMLParser::Pimpl
                               std::vector<TreeNode::Ptr>& nodes,
                               const TreeNode::Ptr& root_parent);
 
-    tinyxml2::XMLDocument doc;
+    void openIncludedFiles();
+
+    void loadDocImpl(tinyxml2::XMLDocument *doc);
+
+    void verifyXML(const tinyxml2::XMLDocument* doc) const;
+
+    std::list< std::unique_ptr<tinyxml2::XMLDocument>> opened_documents;
+    std::map<std::string,const tinyxml2::XMLElement*> tree_roots;
 
     const BehaviorTreeFactory& factory;
 
-    Pimpl(const BehaviorTreeFactory &fact): factory(fact) {}
+    filesystem::path current_path;
+
+    int suffix_count;
+
+    Pimpl(const BehaviorTreeFactory &fact):
+        factory(fact),
+        current_path( filesystem::path::getcwd() ),
+        suffix_count(0)
+    {}
+
 };
 #pragma GCC diagnostic pop
 
@@ -47,49 +68,102 @@ XMLParser::~XMLParser()
 
 void XMLParser::loadFromFile(const std::string& filename)
 {
-    tinyxml2::XMLError err = _p->doc.LoadFile(filename.c_str());
+    _p->opened_documents.emplace_back( new tinyxml2::XMLDocument() );
 
-    if (err)
-    {
-        char buffer[200];
-        sprintf(buffer, "Error parsing the XML: %s", tinyxml2::XMLDocument::ErrorIDToName(err));
-        throw std::runtime_error(buffer);
-    }
+    tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
+    doc->LoadFile(filename.c_str());
+
+    filesystem::path file_path( filename );
+    _p->current_path = file_path.parent_path().make_absolute();
+
+    _p->loadDocImpl( doc );
 }
 
 void XMLParser::loadFromText(const std::string& xml_text)
 {
-    tinyxml2::XMLError err = _p->doc.Parse(xml_text.c_str(), xml_text.size());
+    _p->opened_documents.emplace_back( new tinyxml2::XMLDocument() );
 
-    if (err)
-    {
-        char buffer[200];
-        sprintf(buffer, "Error parsing the XML: %s", tinyxml2::XMLDocument::ErrorIDToName(err));
-        throw std::runtime_error(buffer);
-    }
+    tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
+    doc->Parse(xml_text.c_str(), xml_text.size());
+    _p->loadDocImpl( doc );
 }
 
-bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
+void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc)
 {
-    error_messages.clear();
-
-    if (_p->doc.Error())
+    if (doc->Error())
     {
-        error_messages.emplace_back("The XML was not correctly loaded");
-        return false;
+        char buffer[200];
+        sprintf(buffer, "Error parsing the XML: %s", doc->ErrorName() );
+        throw std::runtime_error(buffer);
     }
-    bool is_valid = true;
 
+    const tinyxml2::XMLElement* xml_root = doc->RootElement();
+
+    // recursively include other files
+    for (auto include_node = xml_root->FirstChildElement("include");
+         include_node != nullptr;
+         include_node = include_node->NextSiblingElement("include"))
+    {
+
+        filesystem::path file_path( include_node->Attribute("path") );
+
+        if( include_node->Attribute("ros_pkg") )
+        {
+#ifdef USING_ROS
+            if( file_path.is_absolute() )
+            {
+                std::cout << "WARNING: <include path=\"...\"> containes an absolute path.\n"
+                          << "Attribute [ros_pkg] will be ignored."<< std::endl;
+            }
+            else {
+                auto ros_pkg_path = ros::package::getPath(  include_node->Attribute("ros_pkg") );
+                file_path = filesystem::path( ros_pkg_path ) / file_path;
+            }
+#else
+            throw std::runtime_error("Using attribute [ros_pkg] in <include>, but this library was compiled "
+                                     "without ROS support. Recompile the BehaviorTree.CPP using catkin");
+#endif
+        }
+
+        if( !file_path.is_absolute() )
+        {
+            file_path = current_path / file_path;
+        }
+
+        opened_documents.emplace_back( new tinyxml2::XMLDocument() );
+        tinyxml2::XMLDocument* doc = opened_documents.back().get();
+        doc->LoadFile(file_path.str().c_str());
+        loadDocImpl( doc );
+    }
+
+    for (auto bt_node = xml_root->FirstChildElement("BehaviorTree");
+         bt_node != nullptr;
+         bt_node = bt_node->NextSiblingElement("BehaviorTree"))
+    {
+        std::string tree_name;
+        if (bt_node->Attribute("ID"))
+        {
+            tree_name = bt_node->Attribute("ID");
+        }
+        else{
+            tree_name = "BehaviorTree_" + std::to_string( suffix_count++ );
+        }
+        tree_roots.insert( {tree_name, bt_node} );
+    }
+    verifyXML(doc);
+}
+
+void XMLParser::Pimpl::verifyXML(const tinyxml2::XMLDocument* doc) const
+{
     //-------- Helper functions (lambdas) -----------------
-    auto strEqual = [](const char* str1, const char* str2) -> bool {
+    auto StrEqual = [](const char* str1, const char* str2) -> bool {
         return strcmp(str1, str2) == 0;
     };
 
-    auto AppendError = [&](int line_num, const std::string& text) {
+    auto ThrowError = [&](int line_num, const std::string& text) {
         char buffer[256];
         sprintf(buffer, "Error at line %d: -> %s", line_num, text.c_str());
-        error_messages.emplace_back(buffer);
-        is_valid = false;
+        throw std::runtime_error( buffer );
     };
 
     auto ChildrenCount = [](const tinyxml2::XMLElement* parent_node) {
@@ -101,15 +175,13 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         }
         return count;
     };
-
     //-----------------------------
 
-    const tinyxml2::XMLElement* xml_root = _p->doc.RootElement();
+    const tinyxml2::XMLElement* xml_root = doc->RootElement();
 
-    if (!xml_root || !strEqual(xml_root->Name(), "root"))
+    if (!xml_root || !StrEqual(xml_root->Name(), "root"))
     {
-        error_messages.emplace_back("The XML must have a root node called <root>");
-        return false;
+        throw std::runtime_error("The XML must have a root node called <root>");
     }
     //-------------------------------------------------
     auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
@@ -117,7 +189,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
 
     if (meta_sibling)
     {
-        AppendError(meta_sibling->GetLineNum(), " Only a single node <TreeNodesModel> is "
+        ThrowError(meta_sibling->GetLineNum(), " Only a single node <TreeNodesModel> is "
                                                 "supported");
     }
     if (meta_root)
@@ -128,19 +200,18 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
              node = node->NextSiblingElement())
         {
             const char* name = node->Name();
-            if (strEqual(name, "Action") || strEqual(name, "Decorator") ||
-                strEqual(name, "SubTree") || strEqual(name, "Condition"))
+            if (StrEqual(name, "Action") || StrEqual(name, "Decorator") ||
+                StrEqual(name, "SubTree") || StrEqual(name, "Condition"))
             {
                 const char* ID = node->Attribute("ID");
                 if (!ID)
                 {
-                    AppendError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
+                    ThrowError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
                                                     "mandatory");
                 }
             }
         }
     }
-
     //-------------------------------------------------
 
     // function to be called recursively
@@ -149,65 +220,65 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
     recursiveStep = [&](const tinyxml2::XMLElement* node) {
         const int children_count = ChildrenCount(node);
         const char* name = node->Name();
-        if (strEqual(name, "Decorator"))
+        if (StrEqual(name, "Decorator"))
         {
             if (children_count != 1)
             {
-                AppendError(node->GetLineNum(), "The node <Decorator> must have exactly 1 child");
+                ThrowError(node->GetLineNum(), "The node <Decorator> must have exactly 1 child");
             }
             if (!node->Attribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <Decorator> must have the attribute "
+                ThrowError(node->GetLineNum(), "The node <Decorator> must have the attribute "
                                                 "[ID]");
             }
         }
-        else if (strEqual(name, "Action"))
+        else if (StrEqual(name, "Action"))
         {
             if (children_count != 0)
             {
-                AppendError(node->GetLineNum(), "The node <Action> must not have any child");
+                ThrowError(node->GetLineNum(), "The node <Action> must not have any child");
             }
             if (!node->Attribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <Action> must have the attribute [ID]");
+                ThrowError(node->GetLineNum(), "The node <Action> must have the attribute [ID]");
             }
         }
-        else if (strEqual(name, "Condition"))
+        else if (StrEqual(name, "Condition"))
         {
             if (children_count != 0)
             {
-                AppendError(node->GetLineNum(), "The node <Condition> must not have any child");
+                ThrowError(node->GetLineNum(), "The node <Condition> must not have any child");
             }
             if (!node->Attribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <Condition> must have the attribute "
+                ThrowError(node->GetLineNum(), "The node <Condition> must have the attribute "
                                                 "[ID]");
             }
         }
-        else if (strEqual(name, "Sequence") || strEqual(name, "SequenceStar") ||
-                 strEqual(name, "Fallback") || strEqual(name, "FallbackStar"))
+        else if (StrEqual(name, "Sequence") || StrEqual(name, "SequenceStar") ||
+                 StrEqual(name, "Fallback") || StrEqual(name, "FallbackStar"))
         {
             if (children_count == 0)
             {
-                AppendError(node->GetLineNum(), "A Control node must have at least 1 child");
+                ThrowError(node->GetLineNum(), "A Control node must have at least 1 child");
             }
         }
-        else if (strEqual(name, "SubTree"))
+        else if (StrEqual(name, "SubTree"))
         {
             if (children_count > 0)
             {
-                AppendError(node->GetLineNum(), "The <SubTree> node must have no children");
+                ThrowError(node->GetLineNum(), "The <SubTree> node must have no children");
             }
             if (!node->Attribute("ID"))
             {
-                AppendError(node->GetLineNum(), "The node <SubTree> must have the attribute [ID]");
+                ThrowError(node->GetLineNum(), "The node <SubTree> must have the attribute [ID]");
             }
         }
         else
         {
             // Last resort:  MAYBE used ID as element name?
             bool found = false;
-            for (const auto& model : _p->factory.manifests())
+            for (const auto& model : factory.manifests())
             {
                 if (model.registration_ID == name)
                 {
@@ -215,9 +286,17 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
                     break;
                 }
             }
+            for (const auto& subtrees_it : tree_roots)
+            {
+                if (subtrees_it.first == name)
+                {
+                    found = true;
+                    break;
+                }
+            }
             if (!found)
             {
-                AppendError(node->GetLineNum(), std::string("Node not recognized: ") + name);
+                ThrowError(node->GetLineNum(), std::string("Node not recognized: ") + name);
             }
         }
         //recursion
@@ -241,7 +320,7 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         }
         if (ChildrenCount(bt_root) != 1)
         {
-            AppendError(bt_root->GetLineNum(), "The node <BehaviorTree> must have exactly 1 child");
+            ThrowError(bt_root->GetLineNum(), "The node <BehaviorTree> must have exactly 1 child");
         }
         else
         {
@@ -254,77 +333,59 @@ bool XMLParser::verifyXML(std::vector<std::string>& error_messages) const
         std::string main_tree = xml_root->Attribute("main_tree_to_execute");
         if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
         {
-            error_messages.emplace_back("The tree esecified in [main_tree_to_execute] "
-                                        "can't be found");
-            is_valid = false;
+            throw std::runtime_error("The tree esecified in [main_tree_to_execute] can't be found");
         }
     }
     else
     {
         if (tree_count != 1)
         {
-            error_messages.emplace_back(
+            throw std::runtime_error(
                 "If you don't specify the attribute [main_tree_to_execute], "
                 "Your file must contain a single BehaviorTree");
-            is_valid = false;
         }
     }
-    return is_valid;
 }
 
 TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
 {
     nodes.clear();
 
-    std::vector<std::string> error_messages;
-    this->verifyXML(error_messages);
-
-    if (error_messages.size() > 0)
-    {
-        for (const std::string& str : error_messages)
-        {
-            std::cerr << str << std::endl;
-        }
-        throw std::runtime_error("verifyXML failed");
-    }
-
-    //--------------------------------------
-    tinyxml2::XMLElement* xml_root = _p->doc.RootElement();
+    tinyxml2::XMLElement* xml_root = _p->opened_documents.front()->RootElement();
 
     std::string main_tree_ID;
     if (xml_root->Attribute("main_tree_to_execute"))
     {
         main_tree_ID = xml_root->Attribute("main_tree_to_execute");
     }
-
-    std::map<std::string, tinyxml2::XMLElement*> bt_roots;
-
-    int tree_count = 0;
-
-    for (auto node = xml_root->FirstChildElement("BehaviorTree"); node != nullptr;
-         node = node->NextSiblingElement("BehaviorTree"))
+    else if( _p->tree_roots.size() == 1)
     {
-        std::string tree_name = main_tree_ID;
-        if (tree_count++ > 0)
-        {
-            tree_name += std::string("_") + std::to_string(tree_count);
-        }
-        if (node->Attribute("ID"))
-        {
-            tree_name = node->Attribute("ID");
-        }
-        bt_roots[tree_name] = node;
-        if (main_tree_ID.empty())
-        {
-            main_tree_ID = tree_name;
-        }
+        main_tree_ID = _p->tree_roots.begin()->first;
+    }
+    else{
+        throw std::runtime_error("[main_tree_to_execute] was not specified correctly");
     }
 
     //--------------------------------------
     NodeBuilder node_builder = [&](const std::string& ID, const std::string& name,
                                    const NodeParameters& params,
-                                   TreeNode::Ptr parent) -> TreeNode::Ptr {
-        TreeNode::Ptr child_node = _p->factory.instantiateTreeNode(ID, name, params);
+                                   TreeNode::Ptr parent) -> TreeNode::Ptr
+    {
+
+
+        TreeNode::Ptr child_node;
+
+        if( _p->factory.builders().count(ID) != 0)
+        {
+            child_node = _p->factory.instantiateTreeNode(ID, name, params);
+        }
+        else if( _p->tree_roots.count(ID) != 0) {
+            child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(name) );
+        }
+        else{
+            throw std::runtime_error( ID + " is not a registered node, nor a Subtree");
+        }
+
         nodes.push_back(child_node);
         if (parent)
         {
@@ -343,14 +404,14 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
 
         if (subtree_node)
         {
-            auto subtree_elem = bt_roots[name]->FirstChildElement();
+            auto subtree_elem = _p->tree_roots[name]->FirstChildElement();
             _p->treeParsing(subtree_elem, node_builder, nodes, child_node);
         }
         return child_node;
     };
     //--------------------------------------
 
-    auto root_element = bt_roots[main_tree_ID]->FirstChildElement();
+    auto root_element = _p->tree_roots[main_tree_ID]->FirstChildElement();
     return _p->treeParsing(root_element, node_builder, nodes, TreeNode::Ptr());
 }
 
@@ -421,7 +482,13 @@ TreeNode::Ptr BT::XMLParser::Pimpl::treeParsing(const tinyxml2::XMLElement* root
     return root;
 }
 
-std::string writeXML(const BehaviorTreeFactory& factory, const TreeNode* root_node,
+void XMLParser::Pimpl::openIncludedFiles()
+{
+
+}
+
+std::string writeXML(const BehaviorTreeFactory& factory,
+                     const TreeNode* root_node,
                      bool compact_representation)
 {
     using namespace tinyxml2;
@@ -499,6 +566,11 @@ std::string writeXML(const BehaviorTreeFactory& factory, const TreeNode* root_no
 
     for (auto& model : factory.manifests())
     {
+        if( factory.builtinNodes().count( model.registration_ID ) != 0)
+        {
+            continue;
+        }
+
         if (model.type == NodeType::CONTROL)
         {
             continue;

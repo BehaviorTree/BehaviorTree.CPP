@@ -136,9 +136,12 @@ class BehaviorTreeFactory
     /// Manifests of all the registered TreeNodes.
     const std::vector<TreeNodeManifest>& manifests() const;
 
+    const  std::set<std::string>& builtinNodes() const;
+
   private:
     std::map<std::string, NodeBuilder> builders_;
     std::vector<TreeNodeManifest> manifests_;
+    std::set<std::string> builtin_IDs_;
 
     // template specialization = SFINAE + black magic
 
