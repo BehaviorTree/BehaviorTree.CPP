@@ -13,6 +13,9 @@
   <author>Michele Colledanchise</author>
   <author>Davide Faconti</author>
 
+  <build_depend>roslib</build_depend>
+  <run_depend>roslib</run_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
 
 </package>

@@ -19,6 +19,11 @@
 #include "tinyXML2/tinyxml2.h"
 #include "filesystem/path.h"
 
+#ifdef USING_ROS
+#include <ros/package.h>
+#include <ros/console.h>
+#endif
+
 namespace BT
 {
 
@@ -100,20 +105,36 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc)
          include_node != nullptr;
          include_node = include_node->NextSiblingElement("include"))
     {
+
         filesystem::path file_path( include_node->Attribute("path") );
+
+        if( include_node->Attribute("ros_pkg") )
+        {
+#ifdef USING_ROS
+            if( file_path.is_absolute() )
+            {
+                std::cout << "WARNING: <include path=\"...\"> containes an absolute path.\n"
+                          << "Attribute [ros_pkg] will be ignored."<< std::endl;
+            }
+            else {
+                auto ros_pkg_path = ros::package::getPath(  include_node->Attribute("ros_pkg") );
+                file_path = filesystem::path( ros_pkg_path ) / file_path;
+            }
+#else
+            throw std::runtime_error("Using attribute [ros_pkg] in <include>, but this library was compiled "
+                                     "without ROS support. Recompile the BehaviorTree.CPP using catkin");
+#endif
+        }
+
         if( !file_path.is_absolute() )
         {
             file_path = current_path / file_path;
-            if( !file_path.exists() )
-            {
-                throw std::runtime_error( std::string("Can't open the following file: ") + file_path.str() );
-            }
-
-            opened_documents.emplace_back( new tinyxml2::XMLDocument() );
-            tinyxml2::XMLDocument* doc = opened_documents.back().get();
-            doc->LoadFile(file_path.str().c_str());
-            loadDocImpl( doc );
         }
+
+        opened_documents.emplace_back( new tinyxml2::XMLDocument() );
+        tinyxml2::XMLDocument* doc = opened_documents.back().get();
+        doc->LoadFile(file_path.str().c_str());
+        loadDocImpl( doc );
     }
 
     for (auto bt_node = xml_root->FirstChildElement("BehaviorTree");

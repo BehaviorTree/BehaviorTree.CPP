@@ -38,6 +38,7 @@ if(NOT GTEST_FOUND)
     message(WARNING " GTest not found!")
 endif(NOT GTEST_FOUND)
 
+set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
 
 if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(catkin_FOUND 1)
@@ -45,7 +46,7 @@ if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 endif()
 
 if(catkin_FOUND)
-  find_package(catkin REQUIRED COMPONENTS )
+  find_package(catkin REQUIRED COMPONENTS roslib)
 
   message(STATUS "------------------------------------------")
   message(STATUS "BehaviourTree is being built using CATKIN.")
@@ -53,8 +54,11 @@ if(catkin_FOUND)
 
   catkin_package(
     INCLUDE_DIRS include # do not include "3rdparty" here
-    LIBRARIES ${PROJECT_NAME}
+    LIBRARIES ${BEHAVIOR_TREE_LIBRARY}
+    CATKIN_DEPENDS roslib
     )
+
+  list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES})
 
 else()
 
@@ -103,10 +107,11 @@ list(APPEND BT_SOURCE
     3rdparty/minitrace/minitrace.cpp
     )
 
-set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
+
 
 add_library(${BEHAVIOR_TREE_LIBRARY} ${BT_SOURCE} )
-target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
+    ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES})
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
