@@ -21,7 +21,6 @@
 
 #ifdef USING_ROS
 #include <ros/package.h>
-#include <ros/console.h>
 #endif
 
 namespace BT
