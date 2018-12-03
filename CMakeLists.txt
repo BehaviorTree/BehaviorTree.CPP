@@ -87,6 +87,7 @@ list(APPEND BT_SOURCE
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
     src/decorators/timeout_node.cpp
+    src/decorators/subtree_node.cpp
 
     src/controls/parallel_node.cpp
     src/controls/sequence_node.cpp

@@ -546,6 +546,11 @@ std::string writeXML(const BehaviorTreeFactory& factory,
 
     for (auto& model : factory.manifests())
     {
+        if( factory.builtinNodes().count( model.registration_ID ) != 0)
+        {
+            continue;
+        }
+
         if (model.type == NodeType::CONTROL)
         {
             continue;
