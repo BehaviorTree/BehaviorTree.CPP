@@ -19,8 +19,6 @@ class XMLParser
 
     void loadFromText(const std::string& xml_text);
 
-    bool verifyXML(std::vector<std::string>& error_messages) const noexcept(false);
-
     using NodeBuilder = std::function<TreeNode::Ptr(const std::string&, const std::string&,
                                                     const NodeParameters&, TreeNode::Ptr)>;
 

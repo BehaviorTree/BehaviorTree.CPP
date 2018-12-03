@@ -85,17 +85,6 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     BT::XMLParser parser(factory);
     parser.loadFromText(xml_text);
 
-    std::vector<std::string> errors;
-    bool res = parser.verifyXML(errors);
-
-    for (const std::string& str : errors)
-    {
-        std::cout << str << std::endl;
-    }
-
-    ASSERT_EQ(res, true);
-    ASSERT_EQ(errors.size(), 0);
-
     std::vector<BT::TreeNode::Ptr> nodes;
 
     BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes);
@@ -142,17 +131,6 @@ TEST(BehaviorTreeFactory, Subtree)
     BT::XMLParser parser(factory);
     parser.loadFromText(xml_text_subtree);
 
-    std::vector<std::string> errors;
-    bool res = parser.verifyXML(errors);
-
-    for (const std::string& str : errors)
-    {
-        std::cout << str << std::endl;
-    }
-
-    ASSERT_EQ(res, true);
-    ASSERT_EQ(errors.size(), 0);
-
     std::vector<BT::TreeNode::Ptr> nodes;
 
     BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes);
@@ -194,16 +172,6 @@ const std::string xml_text_issue = R"(
 
     BT::BehaviorTreeFactory factory;
     BT::XMLParser parser(factory);
-    parser.loadFromText(xml_text_issue);
 
-    std::vector<std::string> errors;
-    bool res = parser.verifyXML(errors);
-
-    for (const std::string& str : errors)
-    {
-        std::cout << str << std::endl;
-    }
-
-    ASSERT_EQ(res, false);
-    ASSERT_EQ(errors.size(), 1);
+    EXPECT_THROW( parser.loadFromText(xml_text_issue), std::runtime_error );
 }
