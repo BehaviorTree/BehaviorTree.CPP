@@ -540,6 +540,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../xml_format/" title="the XML format" class="md-nav__link">
+      the XML format
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -742,6 +754,7 @@ a function pointer. </p>
 
 <h2 id="a-dynamically-created-tree">A dynamically created Tree</h2>
 <p>Give the following XML stored in the file <strong>my_tree.xml</strong></p>
+<p>Note that the following syntax is also valid:</p>
 <div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span> <span class="nt">&gt;</span>
      <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
         <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;root_sequence&quot;</span><span class="nt">&gt;</span>
@@ -754,19 +767,10 @@ a function pointer. </p>
  <span class="nt">&lt;/root&gt;</span>
 </pre></div>
 
-<p>Note that the following syntax is also valid:</p>
-<div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span> <span class="nt">&gt;</span>
-     <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;root_sequence&quot;</span><span class="nt">&gt;</span>
-            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;SayHello&quot;</span>       <span class="na">name=</span><span class="s">&quot;action_hello&quot;</span><span class="nt">/&gt;</span>
-            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;OpenGripper&quot;</span>    <span class="na">name=</span><span class="s">&quot;open_gripper&quot;</span><span class="nt">/&gt;</span>
-            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;ApproachObject&quot;</span> <span class="na">name=</span><span class="s">&quot;approach_object&quot;</span><span class="nt">/&gt;</span>
-            <span class="nt">&lt;Action</span> <span class="na">ID=</span><span class="s">&quot;CloseGripper&quot;</span>   <span class="na">name=</span><span class="s">&quot;close_gripper&quot;</span><span class="nt">/&gt;</span>
-        <span class="nt">&lt;/Sequence&gt;</span>
-     <span class="nt">&lt;/BehaviorTree&gt;</span>
- <span class="nt">&lt;/root&gt;</span>
-</pre></div>
-
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can find more details about the XML schema <a href="../xml_format/">here</a>.</p>
+</div>
 <p>We must first register our custom TreeNodes into the <code>BehaviorTreeFactory</code>
  and then load the XML from file or text.</p>
 <p>The identifier used in the XML must coincide with those used to register

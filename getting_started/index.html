@@ -452,6 +452,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#load-trees-at-run-time-using-the-xml-format" title="Load trees at run-time using the XML format" class="md-nav__link">
+    Load trees at run-time using the XML format
+  </a>
+  
+</li>
+      
       
       
       
@@ -547,6 +554,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../xml_format/" title="the XML format" class="md-nav__link">
+      the XML format
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -600,6 +619,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#load-trees-at-run-time-using-the-xml-format" title="Load trees at run-time using the XML format" class="md-nav__link">
+    Load trees at run-time using the XML format
+  </a>
+  
+</li>
+      
       
       
       
@@ -623,7 +649,7 @@
 <p><strong>BehaviorTree.CPP</strong> is a C++ library that can be easily integrated into
 your favourite distributed middleware, such as <strong>ROS</strong> or <strong>SmartSoft</strong>.</p>
 <p>You can also statically link it into your application (for example a game).</p>
-<p>There are some main concepts  that you need to understand first.</p>
+<p>There are some main concepts that you need to understand first.</p>
 <h2 id="nodes-vs-trees">Nodes vs Trees</h2>
 <p>The user must create his/her own ActionNodes and ConditionNodes (LeafNodes) and this 
 library helps you to compose them easily into trees. </p>
@@ -644,9 +670,9 @@ a long calculation.</p>
 class <strong>ActionNodeBase</strong>. </p>
 <p>Alternatively, we provided a mechanism to create a TreeNode passing a 
 <strong>function pointer</strong> to a wrapper (dependency injection).</p>
-<p>This approach reduces the amount of boilerplate in your code but has also 
-some limitations; the most important one is that TreeNodes created using 
-function pointers can not support <a href="../NodeParameters/">NodeParameters</a>.</p>
+<p>This approach reduces the amount of boilerplate in your code; as a reference
+please look at the <a href="../tutorial_A_create_trees/">first tutorial</a> amd the one
+describing <a href="tutorial_g_legacy.md">non intrusive integration with legacy code</a>.</p>
 <h2 id="nodeparameters">NodeParameters</h2>
 <p>NodeParameters are conceptually similar to the arguments of a function.</p>
 <p>They are passed statically when the tree is instantiated.</p>
@@ -655,6 +681,10 @@ key and the value are strings.</p>
 <p>This is not surprising, since NodeParameters are usually parsed from file.</p>
 <p>The library provides some methods and utility functions to correctly convert
 values from string to the desired C++ type.  </p>
+<h2 id="load-trees-at-run-time-using-the-xml-format">Load trees at run-time using the XML format</h2>
+<p>Despite the fact that the library is written in C++, trees themselves
+can be composed at run-time, reading the tree structure from file.</p>
+<p>An XML format is descibed in details <a href="../xml_format/">here</a>.</p>
                 
                   
                 
