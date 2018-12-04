@@ -149,6 +149,8 @@ int main()
 
 Give the following XML stored in the file __my_tree.xml__
 
+Note that the following syntax is also valid:
+
 ``` XML
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
@@ -159,30 +161,12 @@ Give the following XML stored in the file __my_tree.xml__
             <CloseGripper   name="close_gripper"/>
         </Sequence>
      </BehaviorTree>
-     
-     <TreeNodesModel>
-        <Action ID="SayHello"/>
-        <Action ID="OpenGripper"/>
-        <Action ID="ApproachObject"/>
-        <Action ID="CloseGripper"/>
-     </TreeNodesModel>
  </root>
 ```
 
-Note that the following syntax is also valid:
+!!! Note
+    You can find more details about the XML schema [here](xml_format.md).
 
-``` XML
- <root main_tree_to_execute = "MainTree" >
-     <BehaviorTree ID="MainTree">
-        <Sequence name="root_sequence">
-            <Action ID="SayHello"       name="action_hello"/>
-            <Action ID="OpenGripper"    name="open_gripper"/>
-            <Action ID="ApproachObject" name="approach_object"/>
-            <Action ID="CloseGripper"   name="close_gripper"/>
-        </Sequence>
-     </BehaviorTree>
- </root>
-```
 
 We must first register our custom TreeNodes into the `BehaviorTreeFactory`
  and then load the XML from file or text.

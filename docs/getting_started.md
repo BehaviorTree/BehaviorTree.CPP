@@ -5,7 +5,7 @@ your favourite distributed middleware, such as __ROS__ or __SmartSoft__.
 
 You can also statically link it into your application (for example a game).
 
-There are some main concepts  that you need to understand first.
+There are some main concepts that you need to understand first.
 
 ## Nodes vs Trees
 
@@ -39,9 +39,9 @@ class __ActionNodeBase__.
 Alternatively, we provided a mechanism to create a TreeNode passing a 
 __function pointer__ to a wrapper (dependency injection).
 
-This approach reduces the amount of boilerplate in your code but has also 
-some limitations; the most important one is that TreeNodes created using 
-function pointers can not support [NodeParameters](NodeParameters.md).
+This approach reduces the amount of boilerplate in your code; as a reference
+please look at the [first tutorial](tutorial_A_create_trees.md) amd the one
+describing [non intrusive integration with legacy code](tutorial_g_legacy.md).
 
 ## NodeParameters
 
@@ -56,4 +56,13 @@ This is not surprising, since NodeParameters are usually parsed from file.
 
 The library provides some methods and utility functions to correctly convert
 values from string to the desired C++ type.  
+
+## Load trees at run-time using the XML format
+
+Despite the fact that the library is written in C++, trees themselves
+can be composed at run-time, reading the tree structure from file.
+
+An XML format is descibed in details [here](xml_format.md).
+
+
 

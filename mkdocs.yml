@@ -44,4 +44,5 @@ pages:
        - "Tutorial 5: Plugins":          tutorial_E_plugins.md
        - "Tutorial 6: Loggers":          tutorial_F_loggers.md
        - "Tutorial 7: Legacy code":      tutorial_G_legacy.md
+       - "the XML format":               xml_format.md
 
