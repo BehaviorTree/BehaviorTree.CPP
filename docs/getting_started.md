@@ -41,7 +41,7 @@ __function pointer__ to a wrapper (dependency injection).
 
 This approach reduces the amount of boilerplate in your code; as a reference
 please look at the [first tutorial](tutorial_A_create_trees.md) amd the one
-describing [non intrusive integration with legacy code](tutorial_g_legacy.md).
+describing [non intrusive integration with legacy code](tutorial_G_legacy.md).
 
 ## NodeParameters
 
