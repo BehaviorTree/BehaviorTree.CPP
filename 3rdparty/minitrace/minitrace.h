@@ -93,8 +93,8 @@ void internal_mtr_raw_event_arg(const char *category, const char *name, char ph,
 // n - name. Pass __FUNCTION__ in most cases, unless you are marking up parts of one.
 
 // Scopes. In C++, use MTR_SCOPE. In C, always match them within the same scope.
-#define MTR_BEGIN(c, n) internal_mtr_raw_event(c, n, 'B', 0)
-#define MTR_END(c, n) internal_mtr_raw_event(c, n, 'E', 0)
+#define MTR_BEGIN(c, n) internal_mtr_raw_event(c, n, 'B', nullptr)
+#define MTR_END(c, n) internal_mtr_raw_event(c, n, 'E', nullptr)
 #define MTR_SCOPE(c, n) MTRScopedTrace ____mtr_scope(c, n)
 #define MTR_SCOPE_LIMIT(c, n, l) MTRScopedTraceLimit ____mtr_scope(c, n, l)
 
@@ -128,7 +128,7 @@ void internal_mtr_raw_event_arg(const char *category, const char *name, char ph,
 #define MTR_SCOPE_I(c, n, aname, aintval) MTRScopedTraceArg ____mtr_scope(c, n, MTR_ARG_TYPE_INT, aname, (void*)(intptr_t)(aintval))
 
 // Instant events. For things with no duration.
-#define MTR_INSTANT(c, n) internal_mtr_raw_event(c, n, 'I', 0)
+#define MTR_INSTANT(c, n) internal_mtr_raw_event(c, n, 'I', nullptr)
 #define MTR_INSTANT_C(c, n, aname, astrval) internal_mtr_raw_event(c, n, 'I', 0, MTR_ARG_TYPE_STRING_CONST, aname, (void *)(astrval))
 #define MTR_INSTANT_I(c, n, aname, aintval) internal_mtr_raw_event(c, n, 'I', 0, MTR_ARG_TYPE_INT, aname, (void *)(aintval))
 

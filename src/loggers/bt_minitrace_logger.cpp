@@ -26,7 +26,8 @@ MinitraceLogger::~MinitraceLogger()
     minitrace::mtr_shutdown();
 }
 
-void MinitraceLogger::callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
+void MinitraceLogger::callback(Duration /*timestamp*/,
+                               const TreeNode& node, NodeStatus prev_status,
                                NodeStatus status)
 {
     using namespace minitrace;

@@ -41,7 +41,7 @@ if(POLICY CMP0057)
    cmake_policy(SET CMP0057 NEW)
 endif()
 
-find_package(ament_cmake)
+find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
   find_package(ament_cmake_gtest REQUIRED)
@@ -55,14 +55,11 @@ if ( ament_cmake_FOUND )
   set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
 
 elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+
   set(catkin_FOUND 1)
   add_definitions( -DUSING_ROS )
   find_package(catkin REQUIRED COMPONENTS roslib)
   find_package(GTest)
-
-  if(NOT GTEST_FOUND)
-    message(WARNING " GTest not found!")
-  endif(NOT GTEST_FOUND)
 
   message(STATUS "------------------------------------------")
   message(STATUS "BehaviourTree is being built using CATKIN.")

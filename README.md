@@ -19,13 +19,11 @@ which are loaded at run-time.
 - It includes a __logging/profiling__ infrastructure that allows the user 
 to visualize, record, replay and analyze state transitions.
 
-Documentation
-------------
+# Documentation
 
 https://behaviortree.github.io/BehaviorTree.CPP/
 
-GUI Editor
-------------
+# GUI Editor
 
 Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
 
@@ -34,9 +32,25 @@ If you are looking for a more fancy graphical user interface, check
 
 ![Groot screenshot](groot-screenshot.png)
 
+# How to compile
 
-Acknowledgement
-------------
+The only (optional, but recommended) dependency of BehaviorTree.CPP is ZeroMQ.
+On Ubuntu it can be easily installed with
+
+     sudo apt-get install libzmq3-dev
+     
+Any other dependency is already included in the __3rdparty__ folder.
+
+## Catkin and ROS users
+
+You can easily install the package with the command
+
+      sudo apt-get install ros-$ROS_DISTRO-behaviortree-cpp
+      
+If you want to compile it with catkin, just include this package in your catkin warkspace as usual.
+
+# Acknowledgement
+
 This library was developed at  **Eurecat** (main author, Davide Faconti) in a joint effort
 with the **Italian Institute of Technology** (Michele Colledanchise).
 
@@ -45,8 +59,7 @@ which is one of the six **Integrated Technical Projects (ITPs)** selected from t
 [RobMoSys first open call](https://robmosys.eu/itp/) and it received funding from the European
 Union’s Horizon 2020 Research and Innovation Programme.
 
-Further readings
----------------
+# Further readings
 
 - Introductory article: [Behavior trees for AI: How they work](http://www.gamasutra.com/blogs/ChrisSimpson/20140717/221339/Behavior_trees_for_AI_How_they_work.php)
 
@@ -59,8 +72,8 @@ and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction o
  The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
 
 
-License
--------
+# License
+
 The MIT License (MIT)
 
 Copyright (c) 2014-2018 Michele Colledanchise
