@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.0 (2018-12-05)
+------------------
 * Merge pull request #27 from mjeronimo/bt-12-4-2018
   Add support for ament/colcon build
 * updated documentation
