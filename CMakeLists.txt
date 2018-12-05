@@ -37,7 +37,10 @@ set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
 
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
-cmake_policy(SET CMP0057 NEW)
+if(POLICY CMP0057)
+   cmake_policy(SET CMP0057 NEW)
+endif()
+
 find_package(ament_cmake)
 
 if ( ament_cmake_FOUND )
