@@ -21,7 +21,6 @@ option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 # Find packages
 find_package(Threads REQUIRED)
 find_package(ZMQ)
-find_package(GTest)
 
 list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
@@ -34,19 +33,33 @@ else()
     message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
 endif()
 
-if(NOT GTEST_FOUND)
-    message(WARNING " GTest not found!")
-endif(NOT GTEST_FOUND)
-
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
 
-if( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
-    set(catkin_FOUND 1)
-    add_definitions( -DUSING_ROS )
-endif()
+# Update the policy setting to avoid an error when loading the ament_cmake package
+# at the current cmake version level
+cmake_policy(SET CMP0057 NEW)
+find_package(ament_cmake)
 
-if(catkin_FOUND)
+if ( ament_cmake_FOUND )
+  find_package(ament_cmake_gtest REQUIRED)
+
+  # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
+
+  message(STATUS "------------------------------------------")
+  message(STATUS "BehaviourTree is being built using AMENT.")
+  message(STATUS "------------------------------------------")
+
+  set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
+
+elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
+  set(catkin_FOUND 1)
+  add_definitions( -DUSING_ROS )
   find_package(catkin REQUIRED COMPONENTS roslib)
+  find_package(GTest)
+
+  if(NOT GTEST_FOUND)
+    message(WARNING " GTest not found!")
+  endif(NOT GTEST_FOUND)
 
   message(STATUS "------------------------------------------")
   message(STATUS "BehaviourTree is being built using CATKIN.")
@@ -59,8 +72,14 @@ if(catkin_FOUND)
     )
 
   list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES})
+  set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 else()
+    find_package(GTest)
+
+    if(NOT GTEST_FOUND)
+      message(WARNING " GTest not found!")
+    endif(NOT GTEST_FOUND)
 
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -109,15 +128,16 @@ list(APPEND BT_SOURCE
 
 
 
-add_library(${BEHAVIOR_TREE_LIBRARY} ${BT_SOURCE} )
+add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES})
+
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
     $<INSTALL_INTERFACE:3rdparty>
-    ${catkin_INCLUDE_DIRS})
+    ${BUILD_TOOL_INCLUDE_DIRS})
 
 if(MSVC)
   target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
@@ -137,18 +157,29 @@ export(TARGETS ${PROJECT_NAME}
 ######################################################
 # TESTS
 
-list(APPEND BT_TESTS
-    gtest/src/action_test_node.cpp
-    gtest/src/condition_test_node.cpp
-    gtest/gtest_tree.cpp
-    gtest/gtest_sequence.cpp
-    gtest/gtest_parallel.cpp
-    gtest/gtest_fallback.cpp
-    gtest/gtest_factory.cpp
-    gtest/gtest_decorator.cpp
-    )
+set(BT_TESTS
+  gtest/src/action_test_node.cpp
+  gtest/src/condition_test_node.cpp
+  gtest/gtest_tree.cpp
+  gtest/gtest_sequence.cpp
+  gtest/gtest_parallel.cpp
+  gtest/gtest_fallback.cpp
+  gtest/gtest_factory.cpp
+  gtest/gtest_decorator.cpp
+)
 
-if(catkin_FOUND AND CATKIN_ENABLE_TESTING)
+if(ament_cmake_FOUND AND BUILD_TESTING)
+
+    find_package(ament_cmake_gtest REQUIRED)
+
+    ament_add_gtest_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
+                                                        crossdoor_nodes
+                                                        ${ament_LIBRARIES})
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
+    include_directories($<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>)
+
+elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
     catkin_add_gtest(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
@@ -172,7 +203,15 @@ endif()
 
 ######################################################
 # INSTALL
-if(catkin_FOUND)
+if(ament_cmake_FOUND)
+    set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
+    set( BEHAVIOR_TREE_INC_DESTINATION   include )
+    set( BEHAVIOR_TREE_BIN_DESTINATION   bin )
+
+    ament_export_include_directories(include)
+    ament_export_libraries(${BEHAVIOR_TREE_LIBRARY})
+    ament_package()
+elseif(catkin_FOUND)
     set( BEHAVIOR_TREE_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
     set( BEHAVIOR_TREE_INC_DESTINATION   ${CATKIN_PACKAGE_INCLUDE_DESTINATION} )
     set( BEHAVIOR_TREE_BIN_DESTINATION   ${CATKIN_PACKAGE_BIN_DESTINATION} )
