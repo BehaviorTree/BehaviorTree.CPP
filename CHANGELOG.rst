@@ -2,6 +2,12 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* support ament
+* change to ament
+* Contributors: Davide Faconti
+
 2.4.1 (2018-12-05)
 ------------------
 * fix warnings and dependencies in ROS, mainly related to ZMQ
