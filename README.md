@@ -32,6 +32,13 @@ If you are looking for a more fancy graphical user interface, check
 
 ![Groot screenshot](groot-screenshot.png)
 
+## Watch Groot and BehaviorTree.CPP in action
+
+Click on the following image to see a short video of how the C++ library and
+the graphic user interface are used to design and monitor a Behavior Tree.
+
+[![MOOD2Be](video_MOOD2Be.png)](https://vimeo.com/304651183)
+
 # How to compile
 
 The only (optional, but recommended) dependency of BehaviorTree.CPP is ZeroMQ.
