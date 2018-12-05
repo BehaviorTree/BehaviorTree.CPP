@@ -16,6 +16,8 @@
   <build_depend>libzmq3-dev</build_depend>
   <run_depend>libzmq3-dev</run_depend>
 
+  <test_depend>ament_cmake_gest</test_depend>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
   <export>
     <build_type>ament_cmake</build_type>
