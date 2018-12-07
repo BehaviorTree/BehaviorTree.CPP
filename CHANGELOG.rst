@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.3 (2018-12-07)
+------------------
 * Merge branch 'master' into ros2
 * removed old file
 * Fix issue #31 : convertFromString mandatory for TreeNode::getParam, not Blackboard::get
