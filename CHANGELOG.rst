@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.3 (2018-12-07)
+------------------
 * Merge pull request #30 from nuclearsandwich/patch-1
 * Remove extra find_package(ament_cmake_gtest).
 * Merge pull request #29 from nuclearsandwich/ament-gtest-dep
