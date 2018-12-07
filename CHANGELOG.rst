@@ -2,11 +2,23 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.4.3 (2018-12-07)
-------------------
+Forthcoming
+-----------
+* Merge branch 'master' into ros2
+* removed old file
+* Fix issue #31 : convertFromString mandatory for TreeNode::getParam, not Blackboard::get
+* 2.4.3
+* version bump
 * Merge pull request #30 from nuclearsandwich/patch-1
+  Fix typo in package name.
 * Remove extra find_package(ament_cmake_gtest).
+  This package should only be needed if BUILD_TESTING is on and is
+  find_package'd below if ament_cmake is found and BUILD_TESTING is on.
+* Fix typo in package name.
+* added video to readme
+* Cherry piking changes from PR #19 which solve issue #2 CONAN support
 * Merge pull request #29 from nuclearsandwich/ament-gtest-dep
+  Add test dependency on ament_cmake_gtest.
 * Add test dependency on ament_cmake_gtest.
 * fix travis removing CI
 * Contributors: Davide Faconti, Steven! Ragnarök
