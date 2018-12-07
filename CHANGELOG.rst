@@ -2,6 +2,15 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request #30 from nuclearsandwich/patch-1
+* Remove extra find_package(ament_cmake_gtest).
+* Merge pull request #29 from nuclearsandwich/ament-gtest-dep
+* Add test dependency on ament_cmake_gtest.
+* fix travis removing CI
+* Contributors: Davide Faconti, Steven! Ragnarök
+
 2.4.2 (2018-12-05)
 ------------------
 * support ament
