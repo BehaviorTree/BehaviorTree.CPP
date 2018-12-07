@@ -147,7 +147,20 @@ class TreeNode
             if ( bb_ && bb_pattern)
             {
                 const std::string stripped_key(&str[2], str.size() - 3);
-                bool found = bb_->get(stripped_key, destination);
+                const SafeAny::Any* val;
+                bool found = bb_->get(stripped_key, val);
+                if( found )
+                {
+                    if( std::is_same<T,std::string>::value == false &&
+                        (val->type() == typeid (std::string) ||
+                         val->type() == typeid (SafeAny::SimpleString)))
+                    {
+                        destination = convertFromString<T>(val->cast<std::string>());
+                    }
+                    else{
+                        destination = val->cast<T>();
+                    }
+                }
                 return found;
             }
             else{
