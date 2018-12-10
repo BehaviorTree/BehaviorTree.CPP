@@ -38,7 +38,7 @@ class MyAsyncAction: public CoroActionNode
     //    Call setStatusRunningAndYield() to "pause".
     //  - Code to execute after the reply.
     //  - a simple way to handle halt().
-
+    
     NodeStatus tick() override
     {
         std::cout << name() <<": Started. Send Request to server." << std::endl;
@@ -53,10 +53,13 @@ class MyAsyncAction: public CoroActionNode
 
             if( !reply_received )
             {
-				// set status to RUNNING and "pause/sleep"
+                // set status to RUNNING and "pause/sleep"
+                // If halt() is called, we will not resume execution
                 setStatusRunningAndYield();
             }
         }
+
+        // this part of the code is never reached if halt() is invoked.
         std::cout << name() <<": Done." << std::endl;
         return NodeStatus::SUCCESS;
     }

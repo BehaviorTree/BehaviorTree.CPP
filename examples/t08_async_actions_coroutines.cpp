@@ -38,10 +38,12 @@ class MyAsyncAction: public CoroActionNode
             if( !reply_received )
             {
                 // set status to RUNNING and "pause/sleep"
+                // If halt() is called, we will not resume execution
                 setStatusRunningAndYield();
             }
         }
 
+        // this part of the code is never reached if halt() is invoked.
         std::cout << name() <<": Done." << std::endl;
         return NodeStatus::SUCCESS;
     }
@@ -86,10 +88,8 @@ actionA: Started. Request service using async call
 actionA: Waiting reply
 actionA: Waiting reply
 actionA: Waiting reply
-actionA: Waiting reply
 actionA: Done
 actionB: Started. Request service using async call
-actionB: Waiting reply
 actionB: Waiting reply
 actionB: Waiting reply
 actionB: Waiting reply
