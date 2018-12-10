@@ -602,9 +602,12 @@ you can use as template of your own implementation.</p>
             <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">reply_received</span> <span class="p">)</span>
             <span class="p">{</span>
                 <span class="c1">// set status to RUNNING and &quot;pause/sleep&quot;</span>
+                <span class="c1">// If halt() is called, we will not resume execution</span>
                 <span class="n">setStatusRunningAndYield</span><span class="p">();</span>
             <span class="p">}</span>
         <span class="p">}</span>
+
+        <span class="c1">// this part of the code is never reached if halt() is invoked.</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Done.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
