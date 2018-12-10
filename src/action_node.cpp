@@ -12,6 +12,7 @@
 */
 
 #include "behaviortree_cpp/action_node.h"
+#include "coroutine/coroutine.h"
 
 namespace BT
 {
@@ -61,13 +62,13 @@ NodeStatus SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-ActionNode::ActionNode(const std::string& name, const NodeParameters& parameters)
+AsyncActionNode::AsyncActionNode(const std::string& name, const NodeParameters& parameters)
   : ActionNodeBase(name, parameters), loop_(true)
 {
-    thread_ = std::thread(&ActionNode::waitForTick, this);
+    thread_ = std::thread(&AsyncActionNode::waitForTick, this);
 }
 
-ActionNode::~ActionNode()
+AsyncActionNode::~AsyncActionNode()
 {
     if (thread_.joinable())
     {
@@ -75,7 +76,7 @@ ActionNode::~ActionNode()
     }
 }
 
-void ActionNode::waitForTick()
+void AsyncActionNode::waitForTick()
 {
     while (loop_.load())
     {
@@ -91,7 +92,7 @@ void ActionNode::waitForTick()
     }
 }
 
-NodeStatus ActionNode::executeTick()
+NodeStatus AsyncActionNode::executeTick()
 {
     //send signal to other thread.
     // The other thread is in charge for changing the status
@@ -105,7 +106,7 @@ NodeStatus ActionNode::executeTick()
     return stat;
 }
 
-void ActionNode::stopAndJoinThread()
+void AsyncActionNode::stopAndJoinThread()
 {
     loop_.store(false);
     tick_engine_.notify();
@@ -114,4 +115,62 @@ void ActionNode::stopAndJoinThread()
         thread_.join();
     }
 }
+
+//-------------------------------------
+struct CoroActionNode::Pimpl
+{
+    coroutine::routine_t coro;
+    Pimpl(): coro(0) {}
+};
+
+
+CoroActionNode::CoroActionNode(const std::string &name,
+                               const NodeParameters &parameters):
+  ActionNodeBase (name, parameters),
+  _p(new  Pimpl)
+{
+}
+
+CoroActionNode::~CoroActionNode()
+{
+    halt();
+}
+
+void CoroActionNode::setStatusRunningAndYield()
+{
+    setStatus( NodeStatus::RUNNING );
+    coroutine::yield();
+}
+
+NodeStatus CoroActionNode::executeTick()
+{
+    if (status() == NodeStatus::IDLE)
+    {
+        _p->coro = coroutine::create( [this]() { setStatus(tick()); } );
+    }
+
+    if( _p->coro != 0)
+    {
+        auto res = coroutine::resume(_p->coro);
+
+        if( res == coroutine::ResumeResult::FINISHED)
+        {
+            coroutine::destroy(_p->coro);
+            _p->coro = 0;
+        }
+    }
+    return status();
+}
+
+void CoroActionNode::halt()
+{
+    if( _p->coro != 0 )
+    {
+        coroutine::destroy(_p->coro);
+        _p->coro = 0;
+    }
+}
+
+
+
 }

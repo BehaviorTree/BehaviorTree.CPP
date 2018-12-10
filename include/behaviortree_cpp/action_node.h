@@ -79,16 +79,12 @@ class SimpleActionNode : public ActionNodeBase
  * RUNNING, SUCCESS or FAILURE, otherwise the execution of the Behavior Tree is blocked!
  *
  */
-
-class ActionNode : public ActionNodeBase
+class AsyncActionNode : public ActionNodeBase
 {
   public:
     // Constructor
-    ActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
-    virtual ~ActionNode() override;
-
-    // The method that is going to be executed by the thread
-    void waitForTick();
+    AsyncActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    virtual ~AsyncActionNode() override;
 
     // This method triggers the TickEngine. Do NOT remove the "final" keyword.
     virtual NodeStatus executeTick() override final;
@@ -96,6 +92,10 @@ class ActionNode : public ActionNodeBase
     void stopAndJoinThread();
 
   protected:
+
+    // The method that is going to be executed by the thread
+    void waitForTick();
+
     // The thread that will execute the node
     std::thread thread_;
 
@@ -105,6 +105,63 @@ class ActionNode : public ActionNodeBase
 
     std::atomic<bool> loop_;
 };
+
+// Why is the name "ActionNode" deprecated?
+//
+// ActionNode was renamed "AsyncActionNode" because it's implementation, i.e. one thread
+// per action, is too wastefull in terms of resources.
+// The name ActionNode seems to imply that it is the default Node to use for Actions.
+// But, in my opinion, the user should think twice if using it and carefully consider the cost of abstraction.
+// For this reason, AsyncActionNode is a much better name.
+
+
+// The right class to use for synchronous Actions is ActionBase
+[[deprecated]]
+typedef AsyncActionNode ActionNode;
+
+/**
+ * @brief The CoroActionNode class is an ideal candidate for asynchronous actions
+ * which need to communicate with a service provider using an asynch request/reply interface
+ * (being a notable example ActionLib in ROS, MoveIt clients or move_base clients).
+ *
+ * It is up to the user to decide when to suspend execution of the behaviorTree invoking
+ * the method setStatusRunningAndYield().
+ */
+class CoroActionNode : public ActionNodeBase
+{
+  public:
+    // Constructor
+    CoroActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    virtual ~CoroActionNode() override;
+
+    /** When you want to return RUNNING and temporary "pause"
+    *   the Action, use this method.
+    * */
+    void setStatusRunningAndYield();
+
+    // This method triggers the TickEngine. Do NOT remove the "final" keyword.
+    virtual NodeStatus executeTick() override final;
+
+    /** You may want to override this method. But still, call remember to call this
+    * implementation too.
+    *
+    * Example:
+    *
+    *     void MyAction::halt()
+    *     {
+    *         // do your stuff here
+    *         CoroActionNode::halt();
+    *     }
+    */
+    void halt() override;
+
+  protected:
+
+    struct Pimpl; // The Pimpl idiom
+    std::unique_ptr<Pimpl> _p;
+
+};
+
 
 }   //end namespace
 

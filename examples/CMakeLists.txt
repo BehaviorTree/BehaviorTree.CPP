@@ -31,3 +31,6 @@ target_link_libraries(t06_wrap_legacy  crossdoor_nodes ${BEHAVIOR_TREE_LIBRARY} 
 
 add_executable(t07_include_trees  t07_include_trees.cpp )
 target_link_libraries(t07_include_trees ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes )
+
+add_executable(t08_async_actions_coroutines  t08_async_actions_coroutines.cpp )
+target_link_libraries(t08_async_actions_coroutines ${BEHAVIOR_TREE_LIBRARY} )

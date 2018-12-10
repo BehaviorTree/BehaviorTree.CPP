@@ -116,7 +116,7 @@ void assignBlackboardToEntireTree(TreeNode* root_node, const Blackboard::Ptr& bb
 void haltAllActions(TreeNode* root_node)
 {
     auto visitor = [](TreeNode* node) {
-        if (auto action = dynamic_cast<ActionNode*>(node))
+        if (auto action = dynamic_cast<AsyncActionNode*>(node))
         {
             action->stopAndJoinThread();
         }

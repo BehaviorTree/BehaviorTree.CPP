@@ -123,7 +123,7 @@ template <> Pose2D BT::convertFromString(const StringView& key)
 
 We now define a __asynchronous__ ActionNode called __MoveBaseAction__.
 
-The method tick() of an `ActionNode` is executed in its own thread.
+The method tick() of an `AsynActionNode` is executed in its own thread.
 
 The method `getParam()` will call the function `convertFromString<Pose2D>()` under the hood;
 alternatively, we can use the latter funtion directly, for instance to convert the default
@@ -133,12 +133,12 @@ string "0;0;0" into a Pose2D.
 // This is an asynchronous operation that will run in a separate thread.
 // It requires the NodeParameter "goal". 
 // If the key is not provided, the default value "0;0;0" is used instead.
-class MoveBaseAction: public ActionNode
+class MoveBaseAction: public AsynActionNode
 {
 public:
 
     MoveBaseAction(const std::string& name, const NodeParameters& params):
-        ActionNode(name, params) {}
+        AsynActionNode(name, params) {}
 
     static const BT::NodeParameters& requiredNodeParameters()
     {

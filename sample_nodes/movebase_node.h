@@ -46,13 +46,13 @@ Pose2D convertFromString(const StringView& key)
 // It requires the NodeParameter "goal". If the key is not provided, the default
 // value "0;0;0" is used instead.
 
-class MoveBaseAction : public BT::ActionNode
+class MoveBaseAction : public BT::AsyncActionNode
 {
   public:
     // If your TreeNode requires a NodeParameter, you must define a constructor
     // with this signature.
     MoveBaseAction(const std::string& name, const BT::NodeParameters& params)
-      : ActionNode(name, params)
+      : AsyncActionNode(name, params)
     {
     }
 
