@@ -534,8 +534,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_G_legacy/" title="Tutorial 7: Legacy code" class="md-nav__link">
-      Tutorial 7: Legacy code
+    <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
+      Tutorial 7: Wrap legacy code
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_H_coroutines/" title="Tutorial 8: Actions and Coroutines" class="md-nav__link">
+      Tutorial 8: Actions and Coroutines
     </a>
   </li>
 
@@ -732,19 +744,19 @@ semicolons, like this:</p>
 </pre></div>
 
 <p>We now define a <strong>asynchronous</strong> ActionNode called <strong>MoveBaseAction</strong>.</p>
-<p>The method tick() of an <code>ActionNode</code> is executed in its own thread.</p>
+<p>The method tick() of an <code>AsynActionNode</code> is executed in its own thread.</p>
 <p>The method <code>getParam()</code> will call the function <code>convertFromString&lt;Pose2D&gt;()</code> under the hood;
 alternatively, we can use the latter funtion directly, for instance to convert the default
 string "0;0;0" into a Pose2D.</p>
 <div class="codehilite"><pre><span></span><span class="c1">// This is an asynchronous operation that will run in a separate thread.</span>
 <span class="c1">// It requires the NodeParameter &quot;goal&quot;. </span>
 <span class="c1">// If the key is not provided, the default value &quot;0;0;0&quot; is used instead.</span>
-<span class="k">class</span> <span class="nc">MoveBaseAction</span><span class="o">:</span> <span class="k">public</span> <span class="n">ActionNode</span>
+<span class="k">class</span> <span class="nc">MoveBaseAction</span><span class="o">:</span> <span class="k">public</span> <span class="n">AsynActionNode</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
 
     <span class="n">MoveBaseAction</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">params</span><span class="p">)</span><span class="o">:</span>
-        <span class="n">ActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{}</span>
+        <span class="n">AsynActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{}</span>
 
     <span class="k">static</span> <span class="k">const</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
     <span class="p">{</span>

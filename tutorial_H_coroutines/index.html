@@ -40,7 +40,7 @@
     
     
       
-        <title>NodeParameters - BehaviorTree.CPP</title>
+        <title>Tutorial 8: Actions and Coroutines - BehaviorTree.CPP</title>
       
     
     
@@ -102,7 +102,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="../#nodeparameters" tabindex="1" class="md-skip">
+      <a href="../#async-actions-using-coroutines" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -128,7 +128,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                NodeParameters
+                Tutorial 8: Actions and Coroutines
               </span>
             
           
@@ -200,14 +200,16 @@
       
         
 
-<nav class="md-tabs" data-md-component="tabs">
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
       
         
   <li class="md-tabs__item">
     
-      <a href=".." title="Home" class="md-tabs__link md-tabs__link--active">
+      <a href=".." title="Home" class="md-tabs__link">
         Home
       </a>
     
@@ -232,7 +234,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../getting_started/" title="Tutorials" class="md-tabs__link">
+        <a href="../getting_started/" title="Tutorials" class="md-tabs__link md-tabs__link--active">
           Tutorials
         </a>
       
@@ -373,10 +375,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
     
     <label class="md-nav__link" for="nav-3">
       Tutorials
@@ -488,11 +492,20 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../tutorial_H_coroutines/" title="Tutorial 8: Actions and Coroutines" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+    <a href="./" title="Tutorial 8: Actions and Coroutines" class="md-nav__link md-nav__link--active">
       Tutorial 8: Actions and Coroutines
     </a>
+    
   </li>
 
         
@@ -540,10 +553,111 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/NodeParameters.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorial_H_coroutines.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="nodeparameters">NodeParameters</h1>
+                <h1 id="async-actions-using-coroutines">Async Actions using Coroutines</h1>
+<p>BehaviorTree.CPP provides two easy-to-use abstractions to create an 
+asynchronous Action, i.e those actions which:</p>
+<ul>
+<li>Take a long time to be concluded.</li>
+<li>May return "RUNNING".</li>
+<li>Can be <strong>halted</strong>.</li>
+</ul>
+<p>The first class is <strong>AsyncActionNode</strong>, that execute the tick() method in a
+separate thread.</p>
+<p>In this tutorial we present <strong>CoroActionNode</strong>, a different class that uses
+coroutines to achieve a similar results.</p>
+<p>Coroutines do not spawn a new thread and are much more efficient.</p>
+<p>The user should explicitly call a <strong>yield</strong> method where he wants to execution
+of the Action to be suspended.</p>
+<p>In this tutorial we will see how it works with a very simple example that 
+you can use as template of your own implementation.</p>
+<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">MyAsyncAction</span><span class="o">:</span> <span class="k">public</span> <span class="n">CoroActionNode</span>
+<span class="p">{</span>
+  <span class="k">public</span><span class="o">:</span>
+    <span class="n">MyAsyncAction</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">)</span><span class="o">:</span>
+      <span class="n">CoroActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">NodeParameters</span><span class="p">())</span>
+    <span class="p">{}</span>
+
+    <span class="c1">// This is the ideal skeleton/template of an async action:</span>
+    <span class="c1">//  - A request to a remote service provider.</span>
+    <span class="c1">//  - A loop where we check if the reply has been received.</span>
+    <span class="c1">//    Call setStatusRunningAndYield() to &quot;pause&quot;.</span>
+    <span class="c1">//  - Code to execute after the reply.</span>
+    <span class="c1">//  - a simple way to handle halt().</span>
+
+    <span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span> <span class="k">override</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Started. Send Request to server.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+        <span class="kt">int</span> <span class="n">cycle</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="kt">bool</span> <span class="n">reply_received</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+
+        <span class="k">while</span><span class="p">(</span> <span class="o">!</span><span class="n">reply_received</span> <span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Waiting reply.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+            <span class="n">reply_received</span> <span class="o">=</span> <span class="o">++</span><span class="n">cycle</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">;</span>
+
+            <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">reply_received</span> <span class="p">)</span>
+            <span class="p">{</span>
+                <span class="c1">// set status to RUNNING and &quot;pause/sleep&quot;</span>
+                <span class="n">setStatusRunningAndYield</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Done.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span>
+    <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Halted. Do your cleanup here.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+        <span class="c1">// Do not forget to call this at the end.</span>
+        <span class="n">CoroActionNode</span><span class="o">::</span><span class="n">halt</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+<p>To keep the rest of the example simple, we use create a trivial tree
+with two actions executed in sequence, using the programmatic approach. </p>
+<div class="codehilite"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// Simple tree: a sequence of two asycnhronous actions</span>
+    <span class="n">BT</span><span class="o">::</span><span class="n">SequenceNode</span> <span class="n">sequence_root</span><span class="p">(</span><span class="s">&quot;sequence&quot;</span><span class="p">);</span>
+    <span class="n">MyAsyncAction</span> <span class="n">action_A</span><span class="p">(</span><span class="s">&quot;actionA&quot;</span><span class="p">);</span>
+    <span class="n">MyAsyncAction</span> <span class="n">action_B</span><span class="p">(</span><span class="s">&quot;actionB&quot;</span><span class="p">);</span>
+
+    <span class="c1">// Add children to the sequence.</span>
+    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">action_A</span><span class="p">);</span>
+    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">action_B</span><span class="p">);</span>
+
+    <span class="n">NodeStatus</span> <span class="n">status</span> <span class="o">=</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">IDLE</span><span class="p">;</span>
+
+    <span class="k">while</span><span class="p">(</span> <span class="n">status</span> <span class="o">!=</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span> <span class="o">&amp;&amp;</span> <span class="n">status</span> <span class="o">!=</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">FAILURE</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">sequence_root</span><span class="p">.</span><span class="n">executeTick</span><span class="p">();</span>
+
+        <span class="c1">// It is often a good idea to add a sleep here to avoid busy loops</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cm">/* Expected output:</span>
+
+<span class="cm">actionA: Started. Send Request to server.</span>
+<span class="cm">actionA: Waiting reply.</span>
+<span class="cm">actionA: Waiting reply.</span>
+<span class="cm">actionA: Waiting reply.</span>
+<span class="cm">actionA: Done.</span>
+<span class="cm">actionB: Started. Send Request to server.</span>
+<span class="cm">actionB: Waiting reply.</span>
+<span class="cm">actionB: Waiting reply.</span>
+<span class="cm">actionB: Waiting reply.</span>
+<span class="cm">actionB: Done.</span>
+<span class="cm">*/</span>
+</pre></div>
                 
                   
                 
@@ -560,6 +674,41 @@
       
         
 <footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Tutorial 7: Wrap legacy code
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../xml_format/" title="The XML format" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                The XML format
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
