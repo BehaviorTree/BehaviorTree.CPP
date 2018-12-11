@@ -84,7 +84,8 @@ class BehaviorTreeFactory
      * @return         new node.
      */
     std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
-                                                  const NodeParameters& params) const;
+                                                  const NodeParameters& params,
+                                                  const Blackboard::Ptr& blackboard) const;
 
     /** registerNodeType is the method to use to register your custom TreeNode.
      *

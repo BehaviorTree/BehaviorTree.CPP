@@ -347,7 +347,8 @@ void XMLParser::Pimpl::verifyXML(const tinyxml2::XMLDocument* doc) const
     }
 }
 
-TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
+TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes,
+                                         const Blackboard::Ptr& blackboard)
 {
     nodes.clear();
 
@@ -377,7 +378,7 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes)
 
         if( _p->factory.builders().count(ID) != 0)
         {
-            child_node = _p->factory.instantiateTreeNode(ID, name, params);
+            child_node = _p->factory.instantiateTreeNode(ID, name, params, blackboard);
         }
         else if( _p->tree_roots.count(ID) != 0) {
             child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(name) );
@@ -599,8 +600,8 @@ Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& te
     parser.loadFromText(text);
 
     std::vector<TreeNode::Ptr> nodes;
-    auto root = parser.instantiateTree(nodes);
-    assignBlackboardToEntireTree(root.get(), blackboard);
+    auto root = parser.instantiateTree(nodes, blackboard);
+
     return Tree(root.get(), nodes);
 }
 
@@ -611,8 +612,7 @@ Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& fi
     parser.loadFromFile(filename);
 
     std::vector<TreeNode::Ptr> nodes;
-    auto root = parser.instantiateTree(nodes);
-    assignBlackboardToEntireTree(root.get(), blackboard);
+    auto root = parser.instantiateTree(nodes, blackboard);
     return Tree(root.get(), nodes);
 }
 
