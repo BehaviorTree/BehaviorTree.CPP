@@ -9,6 +9,7 @@
 #include <cstring>
 #include <type_traits>
 #include "any.hpp"
+#include "demangle_util.h"
 #include "convert_impl.hpp"
 
 namespace SafeAny
@@ -183,7 +184,8 @@ class Any
     {
         char buffer[1024];
         sprintf(buffer, "[Any::convert]: no known safe conversion between %s and %s",
-                _any.type().name(), typeid(T).name());
+                BT::demangle( _any.type().name() ),
+                BT::demangle( typeid(T).name() ) );
         return std::runtime_error(buffer);
     }
 };

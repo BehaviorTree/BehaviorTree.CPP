@@ -6,12 +6,13 @@
 #include <stdexcept>
 #include <vector>
 #include <sstream>
+#include <exception>
 #include "behaviortree_cpp/string_view.hpp"
+#include "behaviortree_cpp/blackboard/demangle_util.h"
 
 namespace BT
 {
-// Enumerates the possible types of a node, for drawinf we
-// have do discriminate whoich control node it is:
+// Enumerates the possible types of nodes
 enum class NodeType
 {
     UNDEFINED = 0,
@@ -23,14 +24,7 @@ enum class NodeType
 };
 
 // Enumerates the states every node can be in after execution during a particular
-// time step:
-// - "Success" indicates that the node has completed running during this time step;
-// - "Failure" indicates that the node has determined it will not be able to complete
-//   its task;
-// - "Running" indicates that the node has successfully moved forward during this
-//   time step, but the task is not yet complete;
-// - "Idle" indicates that the node hasn't run yet.
-// - "Halted" indicates that the node has been halted by its father.
+// time step.
 enum class NodeStatus
 {
     IDLE = 0,
@@ -63,8 +57,20 @@ enum SuccessPolicy
 
 typedef nonstd::string_view StringView;
 
-template <typename T>
-T convertFromString(const StringView& str);
+/// TreeNode::getParam requires convertFromString to be implemented for your specific type,
+/// unless you are try to read it from a blackboard.
+///
+template <typename T> inline
+T convertFromString(const StringView& /*str*/)
+{
+    auto type_name = BT::demangle( typeid(T).name() );
+
+    std::cerr << "You (maybe indirectly) called BT::convertFromString() for type [" <<
+                 type_name <<"], but I can't find the template specialization.\n" << std::endl;
+
+    throw std::logic_error(std::string("You didn't implement the template specialization of "
+                                       "convertFromString for this type: ") + type_name );
+}
 
 //------------------------------------------------------------------
 
