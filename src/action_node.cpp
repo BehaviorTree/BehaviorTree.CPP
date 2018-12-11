@@ -94,6 +94,8 @@ void AsyncActionNode::waitForTick()
 
 NodeStatus AsyncActionNode::executeTick()
 {
+    just_constructed_ = false;
+
     //send signal to other thread.
     // The other thread is in charge for changing the status
     if (status() == NodeStatus::IDLE)
