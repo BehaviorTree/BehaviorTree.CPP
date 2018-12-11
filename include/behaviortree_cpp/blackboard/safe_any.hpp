@@ -184,8 +184,8 @@ class Any
     {
         char buffer[1024];
         sprintf(buffer, "[Any::convert]: no known safe conversion between %s and %s",
-                BT::demangle( _any.type().name() ),
-                BT::demangle( typeid(T).name() ) );
+                BT::demangle( _any.type().name() ).c_str(),
+                BT::demangle( typeid(T).name() ).c_str() );
         return std::runtime_error(buffer);
     }
 };
