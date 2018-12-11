@@ -138,7 +138,7 @@ class TreeNode
             bool bb_pattern = isBlackboardPattern(str);
             if( bb_pattern && just_constructed_)
             {
-                 std::cerr << "you are calling getParam inside a constructor, but this is not allowed "
+                 std::cerr << "You are calling getParam inside a constructor, but this is not allowed "
                               "when the parameter contains a blackboard.\n"
                               "You should call getParam inside your tick() method"<< std::endl;
                  std::logic_error("Calling getParam inside a constructor");
@@ -147,9 +147,9 @@ class TreeNode
             if ( bb_ && bb_pattern)
             {
                 const std::string stripped_key(&str[2], str.size() - 3);
-                const SafeAny::Any* val;
-                bool found = bb_->get(stripped_key, val);
-                if( found )
+                const SafeAny::Any* val = bb_->getAny(stripped_key);
+
+                if( val )
                 {
                     if( std::is_same<T,std::string>::value == false &&
                         (val->type() == typeid (std::string) ||
@@ -161,7 +161,7 @@ class TreeNode
                         destination = val->cast<T>();
                     }
                 }
-                return found;
+                return val != nullptr;
             }
             else{
                 destination = convertFromString<T>(str.c_str());

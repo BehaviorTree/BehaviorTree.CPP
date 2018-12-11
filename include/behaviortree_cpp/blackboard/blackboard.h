@@ -56,7 +56,7 @@ class Blackboard
     /** Return true if the entry with the given key was found.
      *  Note that this method may throw an exception if the cast to T failed.
      *
-     * return true is succesful
+     * return true if succesful
      */
     template <typename T>
     bool get(const std::string& key, T& value) const
@@ -75,20 +75,13 @@ class Blackboard
         return true;
     }
 
-    template <typename T>
-    bool get(const std::string& key, const SafeAny::Any* value) const
+    const SafeAny::Any* getAny(const std::string& key) const
     {
         if (!impl_)
         {
-            return false;
+            return nullptr;
         }
-        const SafeAny::Any* val = impl_->get(key);
-        if (!val)
-        {
-            return false;
-        }
-        value = val;
-        return true;
+        return impl_->get(key);
     }
 
 
