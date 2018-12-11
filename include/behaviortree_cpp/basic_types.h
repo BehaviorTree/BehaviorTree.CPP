@@ -72,6 +72,37 @@ T convertFromString(const StringView& /*str*/)
                                        "convertFromString for this type: ") + type_name );
 }
 
+template <>
+std::string convertFromString<std::string>(const StringView& str);
+
+template <>
+const char* convertFromString<const char*>(const StringView& str);
+
+template <>
+int convertFromString<int>(const StringView& str);
+
+template <>
+unsigned convertFromString<unsigned>(const StringView& str);
+
+template <>
+double convertFromString<double>(const StringView& str);
+
+template <> // Integer numbers separated by the characted ";"
+std::vector<int> convertFromString<std::vector<int>>(const StringView& str);
+
+template <> // Real numbers separated by the characted ";"
+std::vector<double> convertFromString<std::vector<double>>(const StringView& str);
+
+template <> // This recognizes either 0/1, true/false, TRUE/FALSE
+bool convertFromString<bool>(const StringView& str);
+
+template <> // Names with all capital letters
+NodeStatus convertFromString<NodeStatus>(const StringView& str);
+
+template <>  // Names with all capital letters
+NodeType convertFromString<NodeType>(const StringView& str);
+
+
 //------------------------------------------------------------------
 
 /**
