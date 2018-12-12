@@ -140,7 +140,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     std::unique_ptr<TreeNode> node = it->second(name, params);
     node->setRegistrationName(ID);
     node->setBlackboard(blackboard);
-    node->initialize();
+    node->initializeOnce();
 
     return node;
 }

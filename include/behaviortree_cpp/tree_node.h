@@ -137,7 +137,7 @@ class TreeNode
 
     friend class BehaviorTreeFactory;
 
-    void initialize();
+    void initializeOnce();
 
   private:
 

@@ -34,7 +34,7 @@ TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters)
 
 NodeStatus TreeNode::executeTick()
 {
-
+    initializeOnce();
     const NodeStatus status = tick();
     setStatus(status);
     return status;
@@ -115,12 +115,12 @@ void TreeNode::setRegistrationName(const std::string& registration_name)
     registration_name_ = registration_name;
 }
 
-void TreeNode::initialize()
+void TreeNode::initializeOnce()
 {
     if( not_initialized_ )
     {
-        onInit();
         not_initialized_ = false;
+        onInit();
     }
 }
 
