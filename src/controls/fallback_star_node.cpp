@@ -40,10 +40,7 @@ NodeStatus FallbackStarNode::tick()
             }
             case NodeStatus::SUCCESS:
             {
-                for (unsigned t = 0; t <= current_child_idx_; t++)
-                {
-                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
-                }
+                haltChildren(0);
                 current_child_idx_ = 0;
                 return child_status;
             }
@@ -63,10 +60,7 @@ NodeStatus FallbackStarNode::tick()
     // The entire while loop completed. This means that all the children returned FAILURE.
     if (current_child_idx_ == children_count)
     {
-        for (unsigned t = 0; t < children_count; t++)
-        {
-            children_nodes_[t]->setStatus(NodeStatus::IDLE);
-        }
+        haltChildren(0);
         current_child_idx_ = 0;
     }
     return NodeStatus::FAILURE;

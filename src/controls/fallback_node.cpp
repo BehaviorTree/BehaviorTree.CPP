@@ -42,11 +42,7 @@ NodeStatus FallbackNode::tick()
             }
             case NodeStatus::SUCCESS:
             {
-                for (unsigned t = 0; t <= index; t++)
-                {
-                    children_nodes_[t]->setStatus(NodeStatus::IDLE);
-                }
-                haltChildren(index + 1);
+                haltChildren(0);
                 return child_status;
             }
             case NodeStatus::FAILURE:
@@ -62,10 +58,7 @@ NodeStatus FallbackNode::tick()
         }   // end switch
     }       // end for loop
 
-    for (auto& ch : children_nodes_)
-    {
-        ch->setStatus(NodeStatus::IDLE);
-    }
+    haltChildren(0);
     return NodeStatus::FAILURE;
 }
 }

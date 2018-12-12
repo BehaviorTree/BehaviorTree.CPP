@@ -54,6 +54,7 @@ void DecoratorNode::haltChild()
     {
         child_node_->halt();
     }
+    child_node_->setStatus(NodeStatus::IDLE);
 }
 
 SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,

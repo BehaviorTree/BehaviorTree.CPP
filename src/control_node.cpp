@@ -57,10 +57,12 @@ void ControlNode::haltChildren(int i)
 {
     for (unsigned int j = i; j < children_nodes_.size(); j++)
     {
-        if (children_nodes_[j]->status() == NodeStatus::RUNNING)
+        auto child = children_nodes_[j];
+        if (child->status() == NodeStatus::RUNNING)
         {
-            children_nodes_[j]->halt();
+            child->halt();
         }
+        child->setStatus(NodeStatus::IDLE);
     }
 }
 }
