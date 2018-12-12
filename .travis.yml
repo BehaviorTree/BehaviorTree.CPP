@@ -18,6 +18,8 @@ conan-linux: &conan-linux
     python: "3.7"
     services:
       - docker
+    before_install:
+      - true
     install:
       - ./conan/travis/install.sh
     script:
@@ -26,6 +28,8 @@ conan-linux: &conan-linux
 conan-osx: &conan-osx
     os: osx
     language: generic
+    before_install:
+      - true
     install:
       - ./conan/travis/install.sh
     script:
