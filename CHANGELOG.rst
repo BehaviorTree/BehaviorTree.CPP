@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.5.0 (2018-12-12)
+------------------
 * Introducing SyncActionNode that is more self explaining and less ambiguous
 * fix potential problem related to ControlNode::haltChildren()
 * Adding example/test of navigation and recovery behavior. Related to issue #36
