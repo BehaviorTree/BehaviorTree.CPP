@@ -17,4 +17,4 @@ install:
   - pip.exe install conan_package_tools bincrafters_package_tools
 
 test_script:
-  - python conan/build.py
+  - python conan\build.py

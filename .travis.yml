@@ -33,6 +33,8 @@ conan-osx: &conan-osx
     install:
       - ./conan/travis/install.sh
     script:
+      - pwd
+      - ls -R
       - ./conan/travis/build.sh
 
 matrix:
