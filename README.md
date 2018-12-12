@@ -1,5 +1,5 @@
 ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
-![Version](https://img.shields.io/badge/version-v2.4-green.svg)
+![Version](https://img.shields.io/badge/version-v2.5-green.svg)
 [![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
 
 Question? [![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BehaviorTree-ROS/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
