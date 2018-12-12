@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.4 (2018-12-12)
+------------------
 * adding virtual TreeNode::onInit() [issue #33]
 * fix issue #34 : if you don't implement convertFromString, it will compile but it may throw
 * Pretty demangled names and obsolate comments removed
