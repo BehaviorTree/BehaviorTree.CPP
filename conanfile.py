@@ -19,10 +19,7 @@ class BehaviorTreeConan(ConanFile):
     generators = "cmake"
     exports = "LICENSE"
     exports_sources = ("cmake/*", "include/*", "src/*", "3rdparty/*", "CMakeLists.txt")
-
-    def requirements(self):
-
-        self.requires("cppzmq/4.3.0@bincrafters/stable")
+    requires = "cppzmq/4.3.0@bincrafters/stable"
 
     def _configure_cmake(self):
         """Create CMake instance and execute configure step
