@@ -2,6 +2,48 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* adding virtual TreeNode::onInit() [issue #33]
+* fix issue #34 : if you don't implement convertFromString, it will compile but it may throw
+* Pretty demangled names and obsolate comments removed
+* bug fixes
+* more comments
+* [enhancement #32]: add CoroActionNode and rename ActionNode as "AsynActionNode"
+  The name ActionNode was confusing and it has been deprecated.
+* Update README.md
+* removed old file
+* Fix issue #31 : convertFromString mandatory for TreeNode::getParam, not Blackboard::get
+* Cherry piking changes from PR #19 which solve issue #2 CONAN support
+* Contributors: Davide Faconti
+
+2.4.3 (2018-12-07)
+------------------
+* Merge branch 'master' into ros2
+* removed old file
+* Fix issue #31 : convertFromString mandatory for TreeNode::getParam, not Blackboard::get
+* 2.4.3
+* version bump
+* Merge pull request #30 from nuclearsandwich/patch-1
+  Fix typo in package name.
+* Remove extra find_package(ament_cmake_gtest).
+  This package should only be needed if BUILD_TESTING is on and is
+  find_package'd below if ament_cmake is found and BUILD_TESTING is on.
+* Fix typo in package name.
+* added video to readme
+* Cherry piking changes from PR #19 which solve issue #2 CONAN support
+* Merge pull request #29 from nuclearsandwich/ament-gtest-dep
+  Add test dependency on ament_cmake_gtest.
+* Add test dependency on ament_cmake_gtest.
+* fix travis removing CI
+* Contributors: Davide Faconti, Steven! Ragnarök
+
+2.4.2 (2018-12-05)
+------------------
+* support ament
+* change to ament
+* Contributors: Davide Faconti
+
 2.4.1 (2018-12-05)
 ------------------
 * fix warnings and dependencies in ROS, mainly related to ZMQ
