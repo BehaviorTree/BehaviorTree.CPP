@@ -166,6 +166,7 @@ set(BT_TESTS
   gtest/gtest_fallback.cpp
   gtest/gtest_factory.cpp
   gtest/gtest_decorator.cpp
+  gtest/gtest_blackboard.cpp
 )
 
 if(ament_cmake_FOUND AND BUILD_TESTING)

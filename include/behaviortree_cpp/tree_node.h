@@ -38,6 +38,14 @@ typedef std::chrono::high_resolution_clock::duration Duration;
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
 {
+
+  private:
+
+    /// This calback will be executed only ONCE after the constructor of the node,
+    /// before the very first tick.
+    /// Override if necessary.
+    virtual void onInit() {}
+
   public:
     /**
      * @brief TreeNode main constructor.
@@ -103,77 +111,22 @@ class TreeNode
     /// creation of the TreeNode instance.
     const NodeParameters& initializationParameters() const;
 
-    /** Get a parameter from the passed NodeParameters and convert it to type T.
+    /** Get a parameter from the NodeParameters and convert it to type T.
      */
     template <typename T>
     BT::optional<T> getParam(const std::string& key) const
     {
         T out;
-        if (getParam(key, out))
-        {
-            return std::move(out);
-        }
-        else
-        {
-            return BT::nullopt;
-        }
+        return getParam(key, out) ? std::move(out) : BT::nullopt;
     }
 
     /** Get a parameter from the passed NodeParameters and convert it to type T.
-     *
-     * return false either if there is no parameter with this key or if conversion failed.
+     *  Return false either if there is no parameter with this key or if conversion failed.
      */
     template <typename T>
-    bool getParam(const std::string& key, T& destination) const
-    {
-        auto it = parameters_.find(key);
-        if (it == parameters_.end())
-        {
-            return false;
-        }
-        const std::string& str = it->second;
+    bool getParam(const std::string& key, T& destination) const;
 
-        try
-        {
-            bool bb_pattern = isBlackboardPattern(str);
-            if( bb_pattern && just_constructed_)
-            {
-                 std::cerr << "You are calling getParam inside a constructor, but this is not allowed "
-                              "when the parameter contains a blackboard.\n"
-                              "You should call getParam inside your tick() method"<< std::endl;
-                 std::logic_error("Calling getParam inside a constructor");
-            }
-            // check if it follows this ${pattern}, if it does, search inside the blackboard
-            if ( bb_ && bb_pattern)
-            {
-                const std::string stripped_key(&str[2], str.size() - 3);
-                const SafeAny::Any* val = bb_->getAny(stripped_key);
-
-                if( val )
-                {
-                    if( std::is_same<T,std::string>::value == false &&
-                        (val->type() == typeid (std::string) ||
-                         val->type() == typeid (SafeAny::SimpleString)))
-                    {
-                        destination = convertFromString<T>(val->cast<std::string>());
-                    }
-                    else{
-                        destination = val->cast<T>();
-                    }
-                }
-                return val != nullptr;
-            }
-            else{
-                destination = convertFromString<T>(str.c_str());
-                return true;
-            }
-        }
-        catch (std::runtime_error& err)
-        {
-            std::cout << "Exception at getParam(" << key << "): " << err.what() << std::endl;
-            return false;
-        }
-    }
+    static bool isBlackboardPattern(StringView str);
 
   protected:
     /// Method to be implemented by the user
@@ -184,9 +137,12 @@ class TreeNode
 
     friend class BehaviorTreeFactory;
 
-    bool just_constructed_;
+    void initializeOnce();
 
   private:
+
+    bool not_initialized_;
+
     const std::string name_;
 
     NodeStatus status_;
@@ -205,10 +161,63 @@ class TreeNode
 
     Blackboard::Ptr bb_;
 
-
-protected:
-    static bool isBlackboardPattern(const std::string& str );
 };
+
+//-------------------------------------------------------
+
+
+template <typename T> inline
+bool TreeNode::getParam(const std::string& key, T& destination) const
+{
+    auto it = parameters_.find(key);
+    if (it == parameters_.end())
+    {
+        return false;
+    }
+    const std::string& str = it->second;
+
+    try
+    {
+        bool bb_pattern = isBlackboardPattern(str);
+        if( bb_pattern && not_initialized_)
+        {
+             std::cerr << "you are calling getParam inside a constructor, but this is not allowed "
+                          "when the parameter contains a blackboard.\n"
+                          "You should call getParam inside your tick() method"<< std::endl;
+             std::logic_error("Calling getParam inside a constructor");
+        }
+        // check if it follows this ${pattern}, if it does, search inside the blackboard
+        if ( bb_pattern && blackboard() )
+        {
+            const std::string stripped_key(&str[2], str.size() - 3);
+            const SafeAny::Any* val = blackboard()->getAny(stripped_key);
+            if( val )
+            {
+                if( std::is_same<T,std::string>::value == false &&
+                    (val->type() == typeid (std::string) ||
+                     val->type() == typeid (SafeAny::SimpleString)))
+                {
+                    destination = convertFromString<T>(val->cast<std::string>());
+                }
+                else{
+                    destination = val->cast<T>();
+                }
+            }
+            return val != nullptr;
+        }
+        else{
+            destination = convertFromString<T>(str.c_str());
+            return true;
+        }
+    }
+    catch (std::runtime_error& err)
+    {
+        std::cout << "Exception at getParam(" << key << "): " << err.what() << std::endl;
+        return false;
+    }
+}
+
+
 }
 
 #endif

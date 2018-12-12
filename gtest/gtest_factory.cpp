@@ -87,7 +87,7 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
     std::vector<BT::TreeNode::Ptr> nodes;
 
-    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes);
+    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes, Blackboard::Ptr());
 
     BT::printTreeRecursively(root_node.get());
 
@@ -133,7 +133,7 @@ TEST(BehaviorTreeFactory, Subtree)
 
     std::vector<BT::TreeNode::Ptr> nodes;
 
-    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes);
+    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes, Blackboard::Ptr());
     BT::printTreeRecursively(root_node.get());
 
     ASSERT_EQ(root_node->name(), "root_selector");

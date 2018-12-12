@@ -123,7 +123,9 @@ void BehaviorTreeFactory::registerFromPlugin(const std::string file_path)
 }
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
-    const std::string& ID, const std::string& name, const NodeParameters& params) const
+        const std::string& ID, const std::string& name,
+        const NodeParameters& params,
+        const Blackboard::Ptr& blackboard) const
 {
     auto it = builders_.find(ID);
     if (it == builders_.end())
@@ -137,6 +139,9 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     }
     std::unique_ptr<TreeNode> node = it->second(name, params);
     node->setRegistrationName(ID);
+    node->setBlackboard(blackboard);
+    node->initializeOnce();
+
     return node;
 }
 

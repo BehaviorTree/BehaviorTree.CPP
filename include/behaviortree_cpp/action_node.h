@@ -19,6 +19,14 @@
 
 namespace BT
 {
+/** IMPORTANT: to avoid unexpected behaviors when Sequence (not SequenceStar) is used
+ * an Action that returned SUCCESS or FAILURE will not be ticked again unless
+ * setStatus(IDLE) is called first (reset the Action).
+ *
+ * Usually the parent node takes care of this for you.
+ */
+
+
 class ActionNodeBase : public LeafNode
 {
   public:

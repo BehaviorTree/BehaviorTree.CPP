@@ -22,7 +22,7 @@ class XMLParser
     using NodeBuilder = std::function<TreeNode::Ptr(const std::string&, const std::string&,
                                                     const NodeParameters&, TreeNode::Ptr)>;
 
-    TreeNode::Ptr instantiateTree(std::vector<TreeNode::Ptr>& nodes);
+    TreeNode::Ptr instantiateTree(std::vector<TreeNode::Ptr>& nodes, const Blackboard::Ptr &blackboard);
 
   private:
 

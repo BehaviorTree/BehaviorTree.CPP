@@ -23,7 +23,7 @@ static uint8_t getUID()
 }
 
 TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters)
-  : just_constructed_(true),
+  : not_initialized_(true),
     name_(name),
     status_(NodeStatus::IDLE),
     uid_(getUID()),
@@ -34,7 +34,7 @@ TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters)
 
 NodeStatus TreeNode::executeTick()
 {
-    just_constructed_ = false;
+    initializeOnce();
     const NodeStatus status = tick();
     setStatus(status);
     return status;
@@ -63,6 +63,12 @@ void TreeNode::setBlackboard(const Blackboard::Ptr& bb)
 
 const Blackboard::Ptr& TreeNode::blackboard() const
 {
+    if( not_initialized_ )
+    {
+        throw std::logic_error("You can NOT access the blackboard in the constructor."
+                               " If you need to access the blackboard before the very first tick(), "
+                               " you should override the virtual method TreeNode::onInit()");
+    }
     return bb_;
 }
 
@@ -109,7 +115,16 @@ void TreeNode::setRegistrationName(const std::string& registration_name)
     registration_name_ = registration_name;
 }
 
-bool TreeNode::isBlackboardPattern(const std::string &str)
+void TreeNode::initializeOnce()
+{
+    if( not_initialized_ )
+    {
+        not_initialized_ = false;
+        onInit();
+    }
+}
+
+bool TreeNode::isBlackboardPattern(StringView str)
 {
     return str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}';
 }

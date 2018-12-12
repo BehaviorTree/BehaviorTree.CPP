@@ -33,7 +33,7 @@ class SyncActionTest : public ActionNodeBase
     int tick_count_;
 };
 
-class AsyncActionTest : public ActionNode
+class AsyncActionTest : public AsyncActionNode
 {
   public:
     AsyncActionTest(const std::string& name);
