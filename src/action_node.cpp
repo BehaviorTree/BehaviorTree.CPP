@@ -173,6 +173,20 @@ void CoroActionNode::halt()
     }
 }
 
+SyncActionNode::SyncActionNode(const std::string &name, const NodeParameters &parameters):
+    ActionNodeBase(name, parameters)
+{}
+
+NodeStatus SyncActionNode::executeTick()
+{
+    auto stat = ActionNodeBase::executeTick();
+    if( stat == NodeStatus::RUNNING)
+    {
+        throw std::logic_error("SyncActionNode MUSt never return RUNNING");
+    }
+    return stat;
+}
+
 
 
 }

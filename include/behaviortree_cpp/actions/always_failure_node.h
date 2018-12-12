@@ -17,10 +17,10 @@
 
 namespace BT
 {
-class AlwaysFailure : public ActionNodeBase
+class AlwaysFailure : public SyncActionNode
 {
   public:
-    AlwaysFailure(const std::string& name) : ActionNodeBase(name, NodeParameters())
+    AlwaysFailure(const std::string& name) : SyncActionNode(name, NodeParameters())
     {
     }
 
@@ -28,9 +28,6 @@ class AlwaysFailure : public ActionNodeBase
     virtual BT::NodeStatus tick() override
     {
         return NodeStatus::FAILURE;
-    }
-    virtual void halt() override
-    {
     }
 };
 }

@@ -29,39 +29,31 @@ class GripperInterface
 
 //--------------------------------------
 
-// Example of custom ActionNodeBase (synchronous action)
+// Example of custom SyncActionNode (synchronous action)
 // without NodeParameters.
-class ApproachObject : public BT::ActionNodeBase
+class ApproachObject : public BT::SyncActionNode
 {
   public:
-    ApproachObject(const std::string& name) : BT::ActionNodeBase(name)
+    ApproachObject(const std::string& name) : BT::SyncActionNode(name)
     {
     }
 
     // You must override the virtual function tick()
     BT::NodeStatus tick() override;
-
-    // You must override the virtual function halt()
-    virtual void halt() override;
 };
 
-// Example of custom ActionNodeBase (synchronous action)
+// Example of custom SyncActionNode (synchronous action)
 // with NodeParameters.
-class SaySomething : public BT::ActionNodeBase
+class SaySomething : public BT::SyncActionNode
 {
   public:
     SaySomething(const std::string& name, const BT::NodeParameters& params)
-      : BT::ActionNodeBase(name, params)
+      : BT::SyncActionNode(name, params)
     {
     }
 
     // You must override the virtual function tick()
     BT::NodeStatus tick() override;
-
-    // You must override the virtual function halt()
-    virtual void halt() override
-    {
-    }
 
     // It is mandatory to define this static method.
     // If you don't, BehaviorTreeFactory::registerNodeType will not compile.

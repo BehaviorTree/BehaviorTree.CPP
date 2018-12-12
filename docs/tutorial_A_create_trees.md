@@ -15,24 +15,18 @@ You can find the source code here: **sample_nodes/dummy_nodes.h**.
 The default (and recommended) way to create a TreeNode is by inheritance.
 
 ``` c++
-// Example of custom ActionNodeBase (synchronous Action)
-class ApproachObject: public BT::ActionNodeBase
+// Example of custom SyncActionNode (synchronous Action)
+class ApproachObject: public BT::SyncActionNode
 {
 public:
     ApproachObject(const std::string& name):
-        BT::ActionNodeBase(name) {}
+        BT::SyncActionNode(name) {}
 
     // You must override this virtual function
     BT::NodeStatus tick() override
     {
-		std::cout << "ApproachObject: " << this->name() << std::endl;
-		return BT::NodeStatus::SUCCESS;
-	}
-
-    // You must override this virtual function
-    virtual void halt() override 
-    {
-		// Do nothing. This is used by asynchronous nodes only.
+        std::cout << "ApproachObject: " << this->name() << std::endl;
+        return BT::NodeStatus::SUCCESS;
     }
 };
 ``` 

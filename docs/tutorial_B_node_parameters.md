@@ -7,7 +7,7 @@ read from file.
 
 To create a TreeNodes that accepts NodeParameters, you must follow these rules:
 
-- Inherit from either ActionNodeBase,  ActionNode, ConditionNode or DecoratorNode.
+- Inherit from either ActionNode, ConditionNode or DecoratorNode.
 
 - You must provide a constructor with the following signature:
 
@@ -27,7 +27,7 @@ Check the [tutorial 6](tutorial_G_legacy.md) for details.
 
 ## Example: an Action requiring the parameter "message"
 
-`SaySomething` is a simple synchronous ActionNodeBase which will print the 
+`SaySomething` is a simple SyncActionNode which will print the
 string passed in the NodeParameter called "message".
 
 Please note:
@@ -41,12 +41,12 @@ Please note:
 `tick()` method.
 
 ``` c++ hl_lines="5 9 18"
-class SaySomething: public ActionNodeBase
+class SaySomething: public SyncActionNode
 {
 public:
     // There must be a constructor with this signature
     SaySomething(const std::string& name, const NodeParameters& params):
-        ActionNodeBase(name, params) {}
+        SyncActionNode(name, params) {}
 
     // It is mandatory to define this static method.
     static const NodeParameters& requiredNodeParameters()
@@ -57,19 +57,17 @@ public:
 
     virtual NodeStatus tick() override
     {
-		std::string msg;
-		if( getParam("message", msg) == false )
-		{
-			// if getParam failed, use the default value
-			msg = requiredNodeParameters().at("message");
-		}
-		std::cout << "Robot says: " << msg << std::endl;
-		return BT::NodeStatus::SUCCESS;
-	}
-    virtual void halt() override {}
+        std::string msg;
+        if( getParam("message", msg) == false )
+        {
+            // if getParam failed, use the default value
+            msg = requiredNodeParameters().at("message");
+        }
+        std::cout << "Robot says: " << msg << std::endl;
+        return BT::NodeStatus::SUCCESS;
+    }
 };
 ```
-
 
 ## Example: conversion to user defined C++ types
 
@@ -146,36 +144,36 @@ public:
         return params;
     }
 
-	virtual NodeStatus tick() override
-	{
-	    Pose2D goal;
+    virtual NodeStatus tick() override
+    {
+        Pose2D goal;
         if( getParam<Pose2D>("goal", goal) == false )
         {
             auto default_goal =  requiredNodeParameters().at("goal");
             goal = BT::convertFromString<Pose2D>( default_goal_value );
         }
         
-		printf("[ MoveBase: STARTED ]. goal: x=%.f y=%.1f theta=%.2f\n",
-			   goal.x, goal.y, goal.theta);
+        printf("[ MoveBase: STARTED ]. goal: x=%.f y=%.1f theta=%.2f\n",
+                goal.x, goal.y, goal.theta);
 
-		halt_requested_ = false;
+        halt_requested_ = false;
 		
-		int count = 0;
-		// "compute" for 250 milliseconds or until halt_requested_
-		while( !halt_requested_ && count++ < 25)
-		{
-			SleepMilliseconds(10);
-		}
+        int count = 0;
+        // "compute" for 250 milliseconds or until halt_requested_
+        while( !halt_requested_ && count++ < 25)
+        {
+            SleepMilliseconds(10);
+        }
 
-		std::cout << "[ MoveBase: FINISHED ]" << std::endl;
-		return halt_requested_ ? NodeStatus::FAILURE : 
-		                         NodeStatus::SUCCESS;
-	}
+        std::cout << "[ MoveBase: FINISHED ]" << std::endl;
+        return halt_requested_ ? NodeStatus::FAILURE :
+                                 NodeStatus::SUCCESS;
+    }
 
-	virtual void halt() override 
-	{
-		halt_requested_ = true;
-	}
+    virtual void halt() override
+    {
+        halt_requested_ = true;
+    }
 private:
     bool halt_requested_;
 };

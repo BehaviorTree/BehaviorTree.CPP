@@ -17,11 +17,11 @@
 
 namespace BT
 {
-class SetBlackboard : public ActionNodeBase
+class SetBlackboard : public SyncActionNode
 {
   public:
     SetBlackboard(const std::string& name, const NodeParameters& params)
-      : ActionNodeBase(name, params)
+      : SyncActionNode(name, params)
     {
     }
 
@@ -46,9 +46,6 @@ class SetBlackboard : public ActionNodeBase
             blackboard()->set(key, value);
             return NodeStatus::SUCCESS;
         }
-    }
-    virtual void halt() override
-    {
     }
 };
 }

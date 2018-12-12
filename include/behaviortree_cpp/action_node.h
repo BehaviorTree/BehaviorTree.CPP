@@ -30,7 +30,7 @@ namespace BT
 class ActionNodeBase : public LeafNode
 {
   public:
-    // Constructor
+
     ActionNodeBase(const std::string& name, const NodeParameters& parameters = NodeParameters());
     ~ActionNodeBase() override = default;
 
@@ -39,6 +39,26 @@ class ActionNodeBase : public LeafNode
     virtual NodeType type() const override final
     {
         return NodeType::ACTION;
+    }
+};
+
+/**
+ * @brief The SyncActionNode is an helper derived class that
+ * explicitly forbids the status RUNNING and doesn't require
+ * an implementation of halt()
+ */
+class SyncActionNode : public ActionNodeBase
+{
+  public:
+
+    SyncActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    ~SyncActionNode() override = default;
+
+    virtual NodeStatus executeTick() override;
+
+    virtual void halt() override final // don't need to override this
+    {
+        setStatus(NodeStatus::IDLE);
     }
 };
 
@@ -90,7 +110,7 @@ class SimpleActionNode : public ActionNodeBase
 class AsyncActionNode : public ActionNodeBase
 {
   public:
-    // Constructor
+
     AsyncActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
     virtual ~AsyncActionNode() override;
 
@@ -123,7 +143,7 @@ class AsyncActionNode : public ActionNodeBase
 // For this reason, AsyncActionNode is a much better name.
 
 
-// The right class to use for synchronous Actions is ActionBase
+// The right class to use for synchronous Actions is SyncActionBase
 [[deprecated]]
 typedef AsyncActionNode ActionNode;
 

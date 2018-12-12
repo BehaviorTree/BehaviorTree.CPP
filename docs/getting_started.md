@@ -34,7 +34,7 @@ a long calculation.
 To create a custom TreeNode, you should inherit from the proper class.
 
 For instance, to create your own synchronous Action, you should inherit from the 
-class __ActionNodeBase__. 
+class __SyncActionNode__.
 
 Alternatively, we provided a mechanism to create a TreeNode passing a 
 __function pointer__ to a wrapper (dependency injection).

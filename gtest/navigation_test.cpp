@@ -85,31 +85,25 @@ class IsStuck: public ConditionNode, public TestNode
     }
 };
 
-class BackUpAndSpin: public ActionNodeBase, public TestNode
+class BackUpAndSpin: public SyncActionNode, public TestNode
 {
   public:
-    BackUpAndSpin(const std::string& name): ActionNodeBase(name), TestNode(name){}
+    BackUpAndSpin(const std::string& name): SyncActionNode(name), TestNode(name){}
 
     NodeStatus tick() override
     {
         return tickImpl();
-    }
-    void halt() override {
-        std::cout << "BackUpAndSpin::halt" << std::endl;
     }
 };
 
-class ComputePathToPose: public ActionNodeBase, public TestNode
+class ComputePathToPose: public SyncActionNode, public TestNode
 {
   public:
-    ComputePathToPose(const std::string& name): ActionNodeBase(name), TestNode(name){}
+    ComputePathToPose(const std::string& name): SyncActionNode(name), TestNode(name){}
 
     NodeStatus tick() override
     {
         return tickImpl();
-    }
-    void halt() override {
-        std::cout << "ComputePathToPose::halt" << std::endl;
     }
 };
 

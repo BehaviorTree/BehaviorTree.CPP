@@ -47,11 +47,6 @@ BT::NodeStatus ApproachObject::tick()
     return BT::NodeStatus::SUCCESS;
 }
 
-void ApproachObject::halt()
-{
-    setStatus(BT::NodeStatus::IDLE);
-}
-
 BT::NodeStatus SaySomething::tick()
 {
     std::string msg;

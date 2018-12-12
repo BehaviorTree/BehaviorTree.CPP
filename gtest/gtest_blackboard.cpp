@@ -18,11 +18,11 @@
 
 using namespace BT;
 
-class InitTestNode: public ActionNodeBase
+class InitTestNode: public SyncActionNode
 {
   public:
     InitTestNode(bool try_to_access_bb, const std::string& name):
-      ActionNodeBase(name),
+      SyncActionNode(name),
       _value(0)
     {
         if( try_to_access_bb )
@@ -35,7 +35,6 @@ class InitTestNode: public ActionNodeBase
     void onInit() {
         blackboard()->get(KEY(), _value);
     }
-    void halt() {}
 
     NodeStatus tick()
     {
