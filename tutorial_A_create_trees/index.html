@@ -640,24 +640,18 @@ the former for the sake of completeness.</p>
 <h2 id="how-to-create-your-own-actionnodes">How to create your own ActionNodes</h2>
 <p>You can find the source code here: <strong>sample_nodes/dummy_nodes.h</strong>.</p>
 <p>The default (and recommended) way to create a TreeNode is by inheritance.</p>
-<div class="codehilite"><pre><span></span><span class="c1">// Example of custom ActionNodeBase (synchronous Action)</span>
-<span class="k">class</span> <span class="nc">ApproachObject</span><span class="o">:</span> <span class="k">public</span> <span class="n">BT</span><span class="o">::</span><span class="n">ActionNodeBase</span>
+<div class="codehilite"><pre><span></span><span class="c1">// Example of custom SyncActionNode (synchronous Action)</span>
+<span class="k">class</span> <span class="nc">ApproachObject</span><span class="o">:</span> <span class="k">public</span> <span class="n">BT</span><span class="o">::</span><span class="n">SyncActionNode</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
     <span class="n">ApproachObject</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">)</span><span class="o">:</span>
-        <span class="n">BT</span><span class="o">::</span><span class="n">ActionNodeBase</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="p">{}</span>
+        <span class="n">BT</span><span class="o">::</span><span class="n">SyncActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="p">{}</span>
 
     <span class="c1">// You must override this virtual function</span>
     <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span> <span class="k">override</span>
     <span class="p">{</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;ApproachObject: &quot;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="c1">// You must override this virtual function</span>
-    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span> 
-    <span class="p">{</span>
-        <span class="c1">// Do nothing. This is used by asynchronous nodes only.</span>
     <span class="p">}</span>
 <span class="p">};</span>
 </pre></div>

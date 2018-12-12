@@ -636,7 +636,7 @@ read from file.</p>
 <p>To create a TreeNodes that accepts NodeParameters, you must follow these rules:</p>
 <ul>
 <li>
-<p>Inherit from either ActionNodeBase,  ActionNode, ConditionNode or DecoratorNode.</p>
+<p>Inherit from either ActionNode, ConditionNode or DecoratorNode.</p>
 </li>
 <li>
 <p>You must provide a constructor with the following signature:</p>
@@ -654,7 +654,7 @@ read from file.</p>
 <p>Alternatively, since version 2.2, Simple Nodes can also support NodeParameters.
 Check the <a href="../tutorial_G_legacy/">tutorial 6</a> for details.</p>
 <h2 id="example-an-action-requiring-the-parameter-message">Example: an Action requiring the parameter "message"</h2>
-<p><code>SaySomething</code> is a simple synchronous ActionNodeBase which will print the 
+<p><code>SaySomething</code> is a simple SyncActionNode which will print the
 string passed in the NodeParameter called "message".</p>
 <p>Please note:</p>
 <ul>
@@ -670,12 +670,12 @@ string passed in the NodeParameter called "message".</p>
 <code>tick()</code> method.</p>
 </li>
 </ul>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">SaySomething</span><span class="o">:</span> <span class="k">public</span> <span class="n">ActionNodeBase</span>
+<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">SaySomething</span><span class="o">:</span> <span class="k">public</span> <span class="n">SyncActionNode</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
     <span class="c1">// There must be a constructor with this signature</span>
 <span class="hll">    <span class="n">SaySomething</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">params</span><span class="p">)</span><span class="o">:</span>
-</span>        <span class="n">ActionNodeBase</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{}</span>
+</span>        <span class="n">SyncActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{}</span>
 
     <span class="c1">// It is mandatory to define this static method.</span>
 <span class="hll">    <span class="k">static</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
@@ -695,7 +695,6 @@ string passed in the NodeParameter called "message".</p>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Robot says: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">msg</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
-    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span> <span class="p">{}</span>
 <span class="p">};</span>
 </pre></div>
 
@@ -774,7 +773,7 @@ string "0;0;0" into a Pose2D.</p>
 </span><span class="hll">        <span class="p">}</span>
 </span>
         <span class="n">printf</span><span class="p">(</span><span class="s">&quot;[ MoveBase: STARTED ]. goal: x=%.f y=%.1f theta=%.2f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
-               <span class="n">goal</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">goal</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">goal</span><span class="p">.</span><span class="n">theta</span><span class="p">);</span>
+                <span class="n">goal</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">goal</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">goal</span><span class="p">.</span><span class="n">theta</span><span class="p">);</span>
 
         <span class="n">halt_requested_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
 
@@ -786,11 +785,11 @@ string "0;0;0" into a Pose2D.</p>
         <span class="p">}</span>
 
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[ MoveBase: FINISHED ]&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-        <span class="k">return</span> <span class="n">halt_requested_</span> <span class="o">?</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="nl">FAILURE</span> <span class="p">:</span> 
+        <span class="k">return</span> <span class="n">halt_requested_</span> <span class="o">?</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="nl">FAILURE</span> <span class="p">:</span>
                                  <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
     <span class="p">}</span>
 
-    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span> 
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span>
     <span class="p">{</span>
         <span class="n">halt_requested_</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
     <span class="p">}</span>
