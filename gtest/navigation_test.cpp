@@ -147,6 +147,15 @@ class FollowPath: public CoroActionNode, public TestNode
 
 //-------------------------------------
 
+template <typename Original, typename Casted>
+void TryDynamicCastPtr(Original* ptr, Casted*& destination)
+{
+    if( dynamic_cast<Casted*>(ptr) )
+    {
+        destination = dynamic_cast<Casted*>(ptr);
+    }
+}
+
 /****************TESTS START HERE***************************/
 
 TEST(Navigationtest, MoveBaseReocvery)
@@ -160,6 +169,8 @@ TEST(Navigationtest, MoveBaseReocvery)
 
     auto tree = buildTreeFromText(factory, xml_text);
 
+    // Need to retrieve the node pointers with dynamic cast
+    // In a normal application you would NEVER want to do such a thing.
     IsStuck *first_stuck_node = nullptr;
     IsStuck *second_stuck_node = nullptr;
     BackUpAndSpin* back_spin_node = nullptr;
@@ -169,25 +180,17 @@ TEST(Navigationtest, MoveBaseReocvery)
     for (auto& node: tree.nodes)
     {
         auto ptr = node.get();
-        if( dynamic_cast<IsStuck*>(ptr) )
+
+        if( !first_stuck_node )
         {
-            if( !first_stuck_node )
-            {
-                first_stuck_node = dynamic_cast<IsStuck*>(ptr);
-            }
-            else{
-                second_stuck_node = dynamic_cast<IsStuck*>(ptr);
-            }
+            TryDynamicCastPtr(ptr, first_stuck_node);
         }
-        else if( dynamic_cast<BackUpAndSpin*>(ptr) ){
-            back_spin_node = dynamic_cast<BackUpAndSpin*>(ptr);
+        else{
+            TryDynamicCastPtr(ptr, second_stuck_node);
         }
-        else if( dynamic_cast<ComputePathToPose*>(ptr) ){
-            compute_node = dynamic_cast<ComputePathToPose*>(ptr);
-        }
-        else if( dynamic_cast<FollowPath*>(ptr) ){
-            follow_node = dynamic_cast<FollowPath*>(ptr);
-        }
+        TryDynamicCastPtr(ptr, back_spin_node);
+        TryDynamicCastPtr(ptr, follow_node);
+        TryDynamicCastPtr(ptr, compute_node);
     }
 
     ASSERT_TRUE( first_stuck_node );
@@ -196,14 +199,14 @@ TEST(Navigationtest, MoveBaseReocvery)
     ASSERT_TRUE( compute_node );
     ASSERT_TRUE( follow_node );
 
+    std::cout << "-----------------------" << std::endl;
+
+    // First case: not stuck, everything fine.
     NodeStatus status = NodeStatus::IDLE;
 
     auto deadline = Now() + Milliseconds(100);
 
     first_stuck_node->setExpectedResult(false);
-
-    std::cout << "-----------------------" << std::endl;
-    // First case: not stuck, everything fine.
 
     while( status == NodeStatus::IDLE || status == NodeStatus::RUNNING )
     {
@@ -225,19 +228,23 @@ TEST(Navigationtest, MoveBaseReocvery)
     ASSERT_FALSE( follow_node->wasHalted() );
 
     std::cout << "-----------------------" << std::endl;
+
+    // Second case: get stuck after a while
+
+    // Initialize evrything first
     first_stuck_node->resetTickCount();
     second_stuck_node->resetTickCount();
     compute_node->resetTickCount();
     follow_node->resetTickCount();
     back_spin_node->resetTickCount();
-
     status = NodeStatus::IDLE;
-
     int cycle = 0;
     deadline = Now() + Milliseconds(100);
+
     while( status == NodeStatus::IDLE || status == NodeStatus::RUNNING )
     {
-        if( cycle++ == 5 )
+        // At the fifth cycle get stucked
+        if( ++cycle == 5 )
         {
             first_stuck_node->setExpectedResult(true);
             second_stuck_node->setExpectedResult(true);
