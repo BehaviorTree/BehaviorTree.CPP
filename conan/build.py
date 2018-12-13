@@ -56,10 +56,14 @@ class BuilderSettings(object):
         return os.getenv("CONAN_STABLE_BRANCH_PATTERN", r"\d+\.\d+\.\d+")
 
     @property
+    def version(self):
+        return self.branch if re.match(self.stable_branch_pattern, self.branch) else "latest"
+
+    @property
     def reference(self):
         """ Read project version from branch name to create Conan referece
         """
-        return os.getenv("CONAN_REFERENCE", "BehaviorTree.CPP/{}".format(self.branch))
+        return os.getenv("CONAN_REFERENCE", "BehaviorTree.CPP/{}".format(self.version))
 
 if __name__ == "__main__":
     settings = BuilderSettings()
@@ -70,5 +74,5 @@ if __name__ == "__main__":
         upload_only_when_stable=settings.upload_only_when_stable,
         stable_branch_pattern=settings.stable_branch_pattern,
         test_folder=os.path.join("conan", "test_package"))
-    builder.add()
+    builder.add_common_builds(pure_c=False)
     builder.run()
