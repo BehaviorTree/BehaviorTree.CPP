@@ -4,6 +4,8 @@
 """Conan recipe package for BehaviorTree.CPP
 """
 from conans import ConanFile, CMake, tools
+from conans.model.version import Version
+from conans.errors import ConanInvalidConfiguration
 
 
 class BehaviorTreeConan(ConanFile):
@@ -20,6 +22,15 @@ class BehaviorTreeConan(ConanFile):
     exports = "LICENSE"
     exports_sources = ("cmake/*", "include/*", "src/*", "3rdparty/*", "CMakeLists.txt")
     requires = "cppzmq/4.3.0@bincrafters/stable"
+
+    def configure(self):
+        if self.settings.os == "Linux" and \
+           self.settings.compiler == "gcc" and \
+           Version(self.settings.compiler.version.value) < "5":
+            raise ConanInvalidConfiguration("BehaviorTree.CPP can not be built by GCC < 5")
+        if self.settings.os == "Windows" and \
+           self.settings.compiler == "Visual Studio":
+            raise ConanInvalidConfiguration("BehaviorTree.CPP is not supported on Visual Studio yet")
 
     def _configure_cmake(self):
         """Create CMake instance and execute configure step
