@@ -28,14 +28,14 @@ class BehaviorTreeConan(ConanFile):
            self.settings.compiler == "gcc" and \
            Version(self.settings.compiler.version.value) < "5":
             raise ConanInvalidConfiguration("BehaviorTree.CPP can not be built by GCC < 5")
-        if self.settings.os == "Windows" and \
-           self.settings.compiler == "Visual Studio":
-            raise ConanInvalidConfiguration("BehaviorTree.CPP is not supported on Visual Studio yet")
+        if self.settings.os == "Windows":
+            raise ConanInvalidConfiguration("BehaviorTree.CPP is not prepared to be built on Windows yet")
 
     def _configure_cmake(self):
         """Create CMake instance and execute configure step
         """
         cmake = CMake(self)
+        cmake.verbose = True
         cmake.definitions["BUILD_EXAMPLES"] = False
         cmake.definitions["BUILD_UNIT_TESTS"] = False
         cmake.configure()
