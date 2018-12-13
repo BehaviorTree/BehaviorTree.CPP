@@ -37,18 +37,14 @@ conan-osx: &conan-osx
 
 matrix:
     include:
-      - <<: *conan-osx
-        osx_image: xcode8.3
-        env: CONAN_APPLE_CLANG_VERSIONS=8.1
-      - <<: *conan-osx
-        osx_image: xcode9
-        env: CONAN_APPLE_CLANG_VERSIONS=9.0
-      - <<: *conan-osx
-        osx_image: xcode9.4
-        env: CONAN_APPLE_CLANG_VERSIONS=9.1
-      - <<: *conan-osx
-        osx_image: xcode10.1
-        env: CONAN_APPLE_CLANG_VERSIONS=10.0
+      - bare_linux:
+        env: ROS_DISTRO="none"
+      - ros_indigo:
+        env: ROS_DISTRO="indigo"
+      - ros_kinetic:
+        env: ROS_DISTRO="kinetic"
+      - ros_melodic:
+        env: ROS_DISTRO="melodic"
       - <<: *conan-linux
         env: CONAN_GCC_VERSIONS=5 CONAN_DOCKER_IMAGE=conanio/gcc5
       - <<: *conan-linux
@@ -65,14 +61,18 @@ matrix:
         env: CONAN_CLANG_VERSIONS=5.0 CONAN_DOCKER_IMAGE=conanio/clang50
       - <<: *conan-linux
         env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60
-      - bare_linux:
-        env: ROS_DISTRO="none"
-      - ros_indigo:
-        env: ROS_DISTRO="indigo"
-      - ros_kinetic:
-        env: ROS_DISTRO="kinetic"
-      - ros_melodic:
-        env: ROS_DISTRO="melodic"
+      - <<: *conan-osx
+        osx_image: xcode8.3
+        env: CONAN_APPLE_CLANG_VERSIONS=8.1
+      - <<: *conan-osx
+        osx_image: xcode9
+        env: CONAN_APPLE_CLANG_VERSIONS=9.0
+      - <<: *conan-osx
+        osx_image: xcode9.4
+        env: CONAN_APPLE_CLANG_VERSIONS=9.1
+      - <<: *conan-osx
+        osx_image: xcode10.1
+        env: CONAN_APPLE_CLANG_VERSIONS=10.0
     fast_finish: false
 
 before_install:

@@ -48,6 +48,7 @@ class BehaviorTreeConan(ConanFile):
                               """project(behaviortree_cpp)
                               include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
                               conan_basic_setup()""")
+        # INFO (uilian): zmq could requires libsodium
         tools.replace_in_file("CMakeLists.txt",
                              "BEHAVIOR_TREE_EXTERNAL_LIBRARIES zmq",
                              "BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CONAN_LIBS}")
