@@ -35,7 +35,6 @@ class BehaviorTreeConan(ConanFile):
         """Create CMake instance and execute configure step
         """
         cmake = CMake(self)
-        cmake.verbose = True
         cmake.definitions["BUILD_EXAMPLES"] = False
         cmake.definitions["BUILD_UNIT_TESTS"] = False
         cmake.configure()

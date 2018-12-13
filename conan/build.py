@@ -47,7 +47,7 @@ class BuilderSettings(object):
     def upload_only_when_stable(self):
         """ Force to upload when match stable pattern branch
         """
-        return os.getenv("CONAN_UPLOAD_ONLY_WHEN_STABLE", False)
+        return os.getenv("CONAN_UPLOAD_ONLY_WHEN_STABLE", True)
 
     @property
     def stable_branch_pattern(self):
