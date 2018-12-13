@@ -86,6 +86,7 @@ PublisherZMQ::~PublisherZMQ()
     }
     flush();
     delete zmq_;
+	ref_count = false;
 }
 
 

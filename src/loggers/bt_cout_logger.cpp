@@ -35,6 +35,7 @@ void StdCoutLogger::callback(Duration timestamp, const TreeNode& node, NodeStatu
 void StdCoutLogger::flush()
 {
     std::cout << std::flush;
+	ref_count = false;
 }
 
 }   // end namespace

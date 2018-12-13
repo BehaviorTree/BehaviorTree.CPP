@@ -24,6 +24,7 @@ MinitraceLogger::~MinitraceLogger()
 {
     minitrace::mtr_flush();
     minitrace::mtr_shutdown();
+	ref_count = false;
 }
 
 void MinitraceLogger::callback(Duration /*timestamp*/,
