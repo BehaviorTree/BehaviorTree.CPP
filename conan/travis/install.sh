@@ -1,7 +1,6 @@
 #!/bin/bash
 
-set -e
-set -x
+set -ex
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update || brew update
