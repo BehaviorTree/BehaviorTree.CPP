@@ -49,6 +49,9 @@ class BehaviorTreeConan(ConanFile):
                               """project(behaviortree_cpp)
                               include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
                               conan_basic_setup()""")
+        tools.replace_in_file("CMakeLists.txt",
+                             "BEHAVIOR_TREE_EXTERNAL_LIBRARIES zmq",
+                             "BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CONAN_LIBS}")
         cmake = self._configure_cmake()
         cmake.build()
 
