@@ -18,6 +18,7 @@ namespace BT
 SequenceNode::SequenceNode(const std::string& name)
   : ControlNode::ControlNode(name, NodeParameters())
 {
+    setRegistrationName("Sequence");
 }
 
 NodeStatus SequenceNode::tick()

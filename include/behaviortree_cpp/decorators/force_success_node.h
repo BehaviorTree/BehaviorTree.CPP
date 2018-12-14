@@ -22,6 +22,7 @@ class ForceSuccessDecorator : public DecoratorNode
   public:
     ForceSuccessDecorator(const std::string& name) : DecoratorNode(name, NodeParameters())
     {
+        setRegistrationName("ForceSuccess");
     }
 
   private:

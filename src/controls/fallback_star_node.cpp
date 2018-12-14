@@ -18,6 +18,7 @@ namespace BT
 FallbackStarNode::FallbackStarNode(const std::string& name)
   : ControlNode::ControlNode(name, {}), current_child_idx_(0)
 {
+    setRegistrationName("FallbackStar");
 }
 
 NodeStatus FallbackStarNode::tick()

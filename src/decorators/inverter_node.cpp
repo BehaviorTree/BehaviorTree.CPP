@@ -17,6 +17,7 @@ namespace BT
 {
 InverterNode::InverterNode(const std::string& name) : DecoratorNode(name, NodeParameters())
 {
+    setRegistrationName("Inverter");
 }
 
 NodeStatus InverterNode::tick()

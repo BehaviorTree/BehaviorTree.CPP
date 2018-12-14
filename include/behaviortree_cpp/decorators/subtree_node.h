@@ -8,9 +8,7 @@ namespace BT
 class DecoratorSubtreeNode : public DecoratorNode
 {
   public:
-    DecoratorSubtreeNode(const std::string& name) : DecoratorNode(name, NodeParameters())
-    {
-    }
+    DecoratorSubtreeNode(const std::string& name);
 
     virtual ~DecoratorSubtreeNode() override = default;
 

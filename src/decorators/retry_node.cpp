@@ -23,6 +23,7 @@ RetryNode::RetryNode(const std::string& name, unsigned int NTries)
     try_index_(0),
     read_parameter_from_blackboard_(false)
 {
+    setRegistrationName("RetryUntilSuccesful");
 }
 
 RetryNode::RetryNode(const std::string& name, const NodeParameters& params)

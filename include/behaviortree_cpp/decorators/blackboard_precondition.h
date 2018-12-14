@@ -24,6 +24,12 @@ class BlackboardPreconditionNode : public DecoratorNode
     BlackboardPreconditionNode(const std::string& name, const NodeParameters& params)
       : DecoratorNode(name, params)
     {
+        if( std::is_same<T,int>::value)
+            setRegistrationName("BlackboardCheckInt");
+        else if( std::is_same<T,double>::value)
+            setRegistrationName("BlackboardCheckDouble");
+        else if( std::is_same<T,std::string>::value)
+            setRegistrationName("BlackboardCheckString");
     }
 
     virtual ~BlackboardPreconditionNode() override = default;

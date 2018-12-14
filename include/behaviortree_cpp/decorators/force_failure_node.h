@@ -22,6 +22,7 @@ class ForceFailureDecorator : public DecoratorNode
   public:
     ForceFailureDecorator(const std::string& name) : DecoratorNode(name, NodeParameters())
     {
+        setRegistrationName("ForceFailure");
     }
 
   private:

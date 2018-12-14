@@ -23,6 +23,7 @@ ParallelNode::ParallelNode(const std::string& name, int threshold)
     threshold_(threshold),
     read_parameter_from_blackboard_(false)
 {
+    setRegistrationName("Parallel");
 }
 
 ParallelNode::ParallelNode(const std::string &name,

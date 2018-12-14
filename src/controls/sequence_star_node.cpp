@@ -24,6 +24,7 @@ SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failur
   , reset_on_failure_(reset_on_failure)
   , read_parameter_from_blackboard_(false)
 {
+    setRegistrationName("SequenceStar");
 }
 
 SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters& params)

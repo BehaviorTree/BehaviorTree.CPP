@@ -1,6 +1,12 @@
 #include "behaviortree_cpp/decorators/subtree_node.h"
 
 
+BT::DecoratorSubtreeNode::DecoratorSubtreeNode(const std::string &name) :
+  DecoratorNode(name, NodeParameters())
+{
+    setRegistrationName("SubTree");
+}
+
 BT::NodeStatus BT::DecoratorSubtreeNode::tick()
 {
     NodeStatus prev_status = status();
