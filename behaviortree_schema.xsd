@@ -35,7 +35,13 @@
         <xs:anyAttribute />
     </xs:complexType>
     <xs:complexType name="DecoratorType">
-        <xs:group minOccurs="1" maxOccurs="unbounded" ref="BuiltInMultipleTypes" />
+        <xs:group ref="BuiltInMultipleTypes" />
+        <xs:attribute name="name" type="xs:string" use="optional" />
+        <xs:attribute name="ID" type="xs:string" use="required" />
+        <xs:anyAttribute />
+    </xs:complexType>
+	<xs:complexType name="SubtreeType">
+        <xs:group ref="BuiltInMultipleTypes" />
         <xs:attribute name="name" type="xs:string" use="optional" />
         <xs:attribute name="ID" type="xs:string" use="required" />
         <xs:anyAttribute />
@@ -118,6 +124,7 @@
             <xs:element name="Condition" type="ConditionType" />
             <xs:element name="Control" type="ControlType" />
             <xs:element name="Decorator" type="DecoratorType" />
+			<xs:element name="Subtree" type="SubtreeType" />
             <xs:element name="Sequence" type="SequenceType" />
             <xs:element name="SequenceStar" type="SequenceStarType" />
             <xs:element name="Fallback" type="FallbackType" />
