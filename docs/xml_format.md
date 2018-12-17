@@ -97,6 +97,10 @@ To make the compact version of our tree compatible with Groot, the XML must be m
  </root>
 ```
 
+!!! Note "XML Schema available for explicit version"
+    You can download the [XML Schema](https://www.w3schools.com/xml/schema_intro.asp) here:
+    [behaviortree_schema.xsd](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/behaviortree_schema.xsd).
+
 ## Subtrees
 
 As we saw in [this tutorial](tutorial_D_subtrees.md), it is possible to include
