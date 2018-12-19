@@ -171,8 +171,8 @@ class SaySomething: public SyncActionNode
 class ComputePath: public SyncActionNode
 {
   public:
-    ComputePath(const std::string& name, const NodeParameters& params): 
-        SyncActionNode(name, params){}
+    ComputePath(const std::string& name, const NodeConfiguration& config):
+        SyncActionNode(name, config){}
 
     NodeStatus tick() override
     {
@@ -192,8 +192,8 @@ class ComputePath: public SyncActionNode
 class FollowPath: public AsyncActionNode
 {
   public:
-    FollowPath(const std::string& name, const NodeParameters& params): 
-        AsyncActionNode(name, params){}
+    FollowPath(const std::string& name, const NodeConfiguration& config):
+        AsyncActionNode(name, config){}
 
     NodeStatus tick() override
     {
@@ -221,7 +221,7 @@ __Under development...__
 
 It might make sense to change the signature of the TreeNode constructor from:
 
-    TreeNode(const string& name, const NodeParameters& params)
+    TreeNode(const string& name, const NodeConfiguration& config)
 
 to:
 

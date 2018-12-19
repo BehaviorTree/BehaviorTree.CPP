@@ -27,7 +27,7 @@ class ControlNode : public TreeNode
 
   public:
     // Constructor
-    ControlNode(const std::string& name, const NodeParameters& parameters);
+    ControlNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~ControlNode() override = default;
 

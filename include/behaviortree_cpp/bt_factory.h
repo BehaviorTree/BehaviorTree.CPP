@@ -26,17 +26,8 @@
 namespace BT
 {
 /// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
-typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)>
+typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeConfiguration&)>
     NodeBuilder;
-
-/// This information is used mostly by the XMLParser.
-struct TreeNodeManifest
-{
-    NodeType type;
-    std::string registration_ID;
-    NodeParameters required_parameters;
-    std::unordered_set<std::string> list_outputs;
-};
 
 const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
 #define BT_REGISTER_NODES(factory)                                                                 \
@@ -79,14 +70,12 @@ class BehaviorTreeFactory
     /**
      * @brief instantiateTreeNode creates a TreeNode
      *
-     * @param ID       unique ID used to register the node type
      * @param name     name of this particular instance
      * @param params   parameters (usually read from the XML definition)
      * @return         new node.
      */
-    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
-                                                  const NodeParameters& params,
-                                                  const Blackboard::Ptr& blackboard) const;
+    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& name,
+                                                  const NodeConfiguration& config) const;
 
     /** registerNodeType is the method to use to register your custom TreeNode.
      *
@@ -111,7 +100,7 @@ class BehaviorTreeFactory
 
         constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
         constexpr bool param_constructable =
-            std::is_constructible<T, const std::string&, const NodeParameters&>::value;
+            std::is_constructible<T, const std::string&, const NodeConfiguration&>::value;
         constexpr bool has_static_required_parameters =
             has_static_method_requiredParams<T>::value;
 
@@ -154,22 +143,14 @@ class BehaviorTreeFactory
     using has_default_constructor = typename std::is_constructible<T, const std::string&>;
 
     template <typename T>
-    using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeParameters&>;
+    using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeConfiguration&>;
 
     template <typename T, typename = void>
     struct has_static_method_requiredParams: std::false_type {};
 
     template <typename T>
     struct has_static_method_requiredParams<T,
-            typename std::enable_if<std::is_same<decltype(T::requiredNodeParameters()), const NodeParameters&>::value>::type>
-        : std::true_type {};
-
-    template <typename T, typename = void>
-    struct has_static_method_providedOutputs: std::false_type {};
-
-    template <typename T>
-    struct has_static_method_providedOutputs<T,
-            typename std::enable_if<std::is_same<decltype(T::providedOutputs()), const std::unordered_set<std::string>&>::value>::type>
+            typename std::enable_if<std::is_same<decltype(T::providedPorts()), const PortsList&>::value>::type>
         : std::true_type {};
 
     template <typename Predicate>
@@ -182,9 +163,9 @@ class BehaviorTreeFactory
     void registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = getBuilder<T>();
-        TreeNodeManifest manifest = { getType<T>(), ID,
-                                      getRequiredParams<T>(),
-                                      getProvidedOutputs<T>(),
+        TreeNodeManifest manifest = { getType<T>(),
+                                      ID,
+                                      getProvidedPorts<T>(),
                                     };
         registerBuilder(manifest, builder);
     }
@@ -192,7 +173,7 @@ class BehaviorTreeFactory
     template <typename T>
     NodeBuilder getBuilder(enable_if_not< has_params_constructor<T> > = nullptr)
     {
-        return [](const std::string& name, const NodeParameters&)
+        return [](const std::string& name, const NodeConfiguration&)
         {
             return std::unique_ptr<TreeNode>(new T(name));
         };
@@ -201,46 +182,20 @@ class BehaviorTreeFactory
     template <typename T>
     NodeBuilder getBuilder(enable_if< has_params_constructor<T> > = nullptr)
     {
-        return [this](const std::string& name, const NodeParameters& params)
+        return [](const std::string& name, const NodeConfiguration& config)
         {
-            // Special case. Use default constructor if parameters are empty
-            if( params.empty() && has_default_constructor<T>::value && getRequiredParamsImpl<T>().size()>0)
-            {
-                return std::unique_ptr<TreeNode>(new T(name));
-            }
-            return std::unique_ptr<TreeNode>(new T(name, params));
+            return std::unique_ptr<TreeNode>(new T(name, config));
         };
     }
 
     template <typename T>
-    NodeBuilder getBuilderImpl(typename std::enable_if<!has_default_constructor<T>::value && has_params_constructor<T>::value >::type* = nullptr)
+    PortsList getProvidedPorts(enable_if< has_static_method_requiredParams<T> > = nullptr)
     {
-        return [](const std::string& name, const NodeParameters& params)
-        {
-            return std::unique_ptr<TreeNode>(new T(name, params));
-        };
+        return T::providedPorts();
     }
 
     template <typename T>
-    NodeParameters getRequiredParams(enable_if< has_static_method_requiredParams<T> > = nullptr)
-    {
-        return T::requiredNodeParameters();
-    }
-
-    template <typename T>
-    NodeParameters getRequiredParams(enable_if_not< has_static_method_requiredParams<T> > = nullptr)
-    {
-        return NodeParameters();
-    }
-
-    template <typename T>
-    std::unordered_set<std::string> getProvidedOutputs(enable_if< has_static_method_providedOutputs<T> > = nullptr)
-    {
-        return T::providedOutputs();
-    }
-
-    template <typename T>
-    std::unordered_set<std::string> getProvidedOutputs(enable_if_not< has_static_method_providedOutputs<T> > = nullptr)
+    PortsList getProvidedPorts(enable_if_not< has_static_method_requiredParams<T> > = nullptr)
     {
         return {};
     }

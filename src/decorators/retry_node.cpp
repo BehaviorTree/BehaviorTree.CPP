@@ -18,27 +18,18 @@ namespace BT
 constexpr const char* RetryNode::NUM_ATTEMPTS;
 
 RetryNode::RetryNode(const std::string& name, unsigned int NTries)
-  : DecoratorNode(name, {{NUM_ATTEMPTS, std::to_string(NTries)}}),
+  : DecoratorNode(name, { {}, "RetryUntilSuccesful", {} }),
     max_attempts_(NTries),
     try_index_(0),
-    read_parameter_from_blackboard_(false)
+    read_parameter_from_ports_(false)
 {
-    setRegistrationName("RetryUntilSuccesful");
 }
 
-RetryNode::RetryNode(const std::string& name, const NodeParameters& params)
-  : DecoratorNode(name, params),
+RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config)
+  : DecoratorNode(name, config),
     try_index_(0),
-    read_parameter_from_blackboard_(false)
+    read_parameter_from_ports_(true)
 {
-    read_parameter_from_blackboard_ = isBlackboardPattern( params.at(NUM_ATTEMPTS) );
-    if(!read_parameter_from_blackboard_)
-    {
-        if( !getParam(NUM_ATTEMPTS, max_attempts_) )
-        {
-            throw std::runtime_error("Missing parameter [num_attempts] in RetryNode");
-        }
-    }
 }
 
 void RetryNode::halt()
@@ -49,7 +40,7 @@ void RetryNode::halt()
 
 NodeStatus RetryNode::tick()
 {
-    if( read_parameter_from_blackboard_ )
+    if( read_parameter_from_ports_ )
     {
         if( !getParam(NUM_ATTEMPTS, max_attempts_) )
         {

@@ -14,8 +14,8 @@
 
 namespace BT
 {
-DecoratorNode::DecoratorNode(const std::string& name, const NodeParameters& parameters)
-  : TreeNode::TreeNode(name, parameters), child_node_(nullptr)
+DecoratorNode::DecoratorNode(const std::string& name, const NodeConfiguration& config)
+  : TreeNode::TreeNode(name, config), child_node_(nullptr)
 {
     // TODO(...) In case it is desired to set to idle remove the ReturnStatus
     // type in order to set the member variable
@@ -58,8 +58,8 @@ void DecoratorNode::haltChild()
 }
 
 SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,
-                                         const NodeParameters &params)
-  : DecoratorNode(name, params), tick_functor_(std::move(tick_functor))
+                                         const NodeConfiguration& config)
+  : DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
 {
 }
 

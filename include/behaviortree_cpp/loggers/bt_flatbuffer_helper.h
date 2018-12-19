@@ -64,7 +64,7 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
         }
 
         std::vector<flatbuffers::Offset<BT_Serialization::KeyValue>> params;
-        const NodeParameters& init_params = node->initializationParameters();
+        const auto& init_params = node->config();
         for (const auto& it : init_params)
         {
             params.push_back(BT_Serialization::CreateKeyValueDirect(builder, it.first.c_str(),

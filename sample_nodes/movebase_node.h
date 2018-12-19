@@ -51,18 +51,16 @@ class MoveBaseAction : public BT::AsyncActionNode
   public:
     // If your TreeNode requires a NodeParameter, you must define a constructor
     // with this signature.
-    MoveBaseAction(const std::string& name, const BT::NodeParameters& params)
-      : AsyncActionNode(name, params)
+    MoveBaseAction(const std::string& name, const BT::NodeConfiguration& config)
+      : AsyncActionNode(name, config)
     {
     }
 
     // It is mandatory to define this static method.
-    // If you don't, BehaviorTreeFactory::registerNodeType will not compile.
-    //
-    static const BT::NodeParameters& requiredNodeParameters()
+    static const BT::PortsList& providedPorts()
     {
-        static BT::NodeParameters params = {{"goal", "0;0;0"}};
-        return params;
+        static BT::PortsList ports = {{"goal"}};
+        return ports;
     }
 
     BT::NodeStatus tick() override;

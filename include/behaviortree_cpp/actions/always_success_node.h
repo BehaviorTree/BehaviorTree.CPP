@@ -20,7 +20,8 @@ namespace BT
 class AlwaysSuccess : public SyncActionNode
 {
   public:
-    AlwaysSuccess(const std::string& name) : SyncActionNode(name, NodeParameters())
+    AlwaysSuccess(const std::string& name) :
+        SyncActionNode(name, { {}, "AlwaysSuccess", {} } )
     {
     }
 

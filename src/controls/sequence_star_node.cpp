@@ -19,31 +19,22 @@ namespace BT
 constexpr const char* SequenceStarNode::RESET_PARAM;
 
 SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failure)
-  : ControlNode::ControlNode(name, {{RESET_PARAM, std::to_string(reset_on_failure)}})
+  : ControlNode::ControlNode(name, { {}, "SequenceStar", {} })
   , current_child_idx_(0)
   , reset_on_failure_(reset_on_failure)
-  , read_parameter_from_blackboard_(false)
+  , read_parameter_from_ports_(false)
 {
-    setRegistrationName("SequenceStar");
 }
 
-SequenceStarNode::SequenceStarNode(const std::string& name, const NodeParameters& params)
-  : ControlNode::ControlNode(name, params), current_child_idx_(0),
-    read_parameter_from_blackboard_(false)
+SequenceStarNode::SequenceStarNode(const std::string& name, const NodeConfiguration& config)
+  : ControlNode::ControlNode(name, config), current_child_idx_(0),
+    read_parameter_from_ports_(true)
 {
-    read_parameter_from_blackboard_ = isBlackboardPattern( params.at(RESET_PARAM) );
-    if(!read_parameter_from_blackboard_)
-    {
-        if( !getParam(RESET_PARAM, reset_on_failure_) )
-        {
-            throw std::runtime_error("Missing parameter [reset_on_failure] in SequenceStarNode");
-        }
-    }
 }
 
 NodeStatus SequenceStarNode::tick()
 {
-    if(read_parameter_from_blackboard_)
+    if(read_parameter_from_ports_)
     {
         if( !getParam(RESET_PARAM, reset_on_failure_) )
         {

@@ -13,7 +13,7 @@
 
 #include "behaviortree_cpp/leaf_node.h"
 
-BT::LeafNode::LeafNode(const std::string& name, const NodeParameters& parameters)
-  : TreeNode(name, parameters)
+BT::LeafNode::LeafNode(const std::string& name, const NodeConfiguration& config)
+  : TreeNode(name, config)
 {
 }
