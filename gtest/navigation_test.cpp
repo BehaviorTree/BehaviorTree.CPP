@@ -77,7 +77,7 @@ class TestNode
 class IsStuck: public ConditionNode, public TestNode
 {
   public:
-    IsStuck(const std::string& name): ConditionNode(name), TestNode(name) {}
+    IsStuck(const std::string& name): ConditionNode(name, {}), TestNode(name) {}
 
     NodeStatus tick() override
     {
@@ -88,7 +88,7 @@ class IsStuck: public ConditionNode, public TestNode
 class BackUpAndSpin: public SyncActionNode, public TestNode
 {
   public:
-    BackUpAndSpin(const std::string& name): SyncActionNode(name), TestNode(name){}
+    BackUpAndSpin(const std::string& name): SyncActionNode(name, {}), TestNode(name){}
 
     NodeStatus tick() override
     {
@@ -99,7 +99,7 @@ class BackUpAndSpin: public SyncActionNode, public TestNode
 class ComputePathToPose: public SyncActionNode, public TestNode
 {
   public:
-    ComputePathToPose(const std::string& name): SyncActionNode(name), TestNode(name){}
+    ComputePathToPose(const std::string& name): SyncActionNode(name, {}), TestNode(name){}
 
     NodeStatus tick() override
     {
@@ -110,7 +110,7 @@ class ComputePathToPose: public SyncActionNode, public TestNode
 class FollowPath: public CoroActionNode, public TestNode
 {
   public:
-    FollowPath(const std::string& name): CoroActionNode(name), TestNode(name), _halted(false){}
+    FollowPath(const std::string& name): CoroActionNode(name, {}), TestNode(name), _halted(false){}
 
     NodeStatus tick() override
     {

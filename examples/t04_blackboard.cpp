@@ -43,17 +43,9 @@ NodeStatus CalculateGoalPose(TreeNode& self)
 {
     const Pose2D mygoal = {1.1, 2.3, 1.54};
 
-    // RECOMMENDED: check if the blackboard is nullptr first
-    if (self.blackboard())
-    {
-        // store it in the blackboard
-        self.blackboard()->set("GoalPose", mygoal);
-        return NodeStatus::SUCCESS;
-    }
-    else
-    {
-        return NodeStatus::FAILURE;
-    }
+    // store it in the blackboard
+    self.setOutput("GoalPose", mygoal);
+    return NodeStatus::SUCCESS;
 }
 
 int main()

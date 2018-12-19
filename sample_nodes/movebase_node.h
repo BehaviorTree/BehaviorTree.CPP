@@ -23,7 +23,7 @@ namespace BT
 //   TreeNode::getParam<Pose2D>(key, ...)
 //
 template <>
-Pose2D convertFromString(const StringView& key)
+Pose2D convertFromString(StringView key)
 {
     // three real numbers separated by semicolons
     auto parts = BT::splitString(key, ';');

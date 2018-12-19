@@ -83,8 +83,6 @@ class TreeNode
 
     void setStatus(NodeStatus new_status);
 
-    void setBlackboard(const Blackboard::Ptr& bb);
-
     const std::string& name() const;
 
     /// Blocking function that will sleep until the setStatus() is called with
@@ -124,7 +122,7 @@ class TreeNode
     BT::optional<T> getParam(const std::string& key) const
     {
         T out;
-        return getParam(key, out) ? std::move(out) : BT::nullopt;
+        return getParam(key, out) ? BT::optional<T>(std::move(out)) : BT::nullopt;
     }
 
     /** Get a parameter from the passed NodeParameters and convert it to type T.

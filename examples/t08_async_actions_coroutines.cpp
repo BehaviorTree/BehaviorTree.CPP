@@ -13,7 +13,7 @@ class MyAsyncAction: public CoroActionNode
 {
   public:
     MyAsyncAction(const std::string& name):
-      CoroActionNode(name, NodeParameters())
+        CoroActionNode(name, {})
     {}
 
     // This is the ideal skeleton/template of an async action:
