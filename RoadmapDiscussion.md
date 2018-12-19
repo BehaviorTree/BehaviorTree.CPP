@@ -244,4 +244,4 @@ This would solve multiple problems, including:
 
 - The fact that BB are not available in the constructor.
 - Potential errors when `setRegistrationName()` in not called.
-- provides remapping.  
+
