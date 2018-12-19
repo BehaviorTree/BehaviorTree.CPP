@@ -14,7 +14,7 @@
 #include <string>
 
 BT::ConditionTestNode::ConditionTestNode(const std::string& name)
-  : ConditionNode::ConditionNode(name)
+    : ConditionNode::ConditionNode(name, {})
 {
     boolean_value_ = true;
     tick_count_ = 0;

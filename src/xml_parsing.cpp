@@ -25,23 +25,29 @@
 
 namespace BT
 {
+using namespace tinyxml2;
 
 using namespace tinyxml2;
 
 
 struct XMLParser::Pimpl
 {
-    TreeNode::Ptr treeParsing(const tinyxml2::XMLElement* root_element,
-                              std::vector<TreeNode::Ptr>& nodes,
-                              const TreeNode::Ptr& root_parent);
 
-    void loadDocImpl(tinyxml2::XMLDocument *doc);
+    TreeNode::Ptr createNodeFromXML(const XMLElement* element,
+                                    const Blackboard::Ptr blackboard,
+                                    const TreeNode::Ptr& node_parent);
+
+    TreeNode::Ptr recursivelyCreateTree(const XMLElement* root_element,
+                                        std::vector<TreeNode::Ptr>& nodes,
+                                        const TreeNode::Ptr& root_parent,
+                                        const Blackboard::Ptr blackboard);
+
+    void loadDocImpl(XMLDocument *doc);
 
     void verifyXML(const XMLDocument* doc) const;
 
     std::list< std::unique_ptr<XMLDocument>> opened_documents;
-
-    std::map<std::string,const XMLElement*> tree_roots;
+    std::map<std::string,const XMLElement*>  tree_roots;
 
     const BehaviorTreeFactory& factory;
 
@@ -79,7 +85,6 @@ XMLParser::~XMLParser()
 
 void XMLParser::loadFromFile(const std::string& filename)
 {
-    _p->clear();
     _p->opened_documents.emplace_back( new XMLDocument() );
 
     XMLDocument* doc = _p->opened_documents.back().get();
@@ -93,7 +98,6 @@ void XMLParser::loadFromFile(const std::string& filename)
 
 void XMLParser::loadFromText(const std::string& xml_text)
 {
-    _p->clear();
     _p->opened_documents.emplace_back( new XMLDocument() );
 
     XMLDocument* doc = _p->opened_documents.back().get();
@@ -204,7 +208,7 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
     if (meta_sibling)
     {
         ThrowError(meta_sibling->GetLineNum(), " Only a single node <TreeNodesModel> is "
-                                                "supported");
+                                               "supported");
     }
     if (meta_root)
     {
@@ -215,13 +219,13 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
         {
             const char* name = node->Name();
             if (StrEqual(name, "Action") || StrEqual(name, "Decorator") ||
-                StrEqual(name, "SubTree") || StrEqual(name, "Condition"))
+                    StrEqual(name, "SubTree") || StrEqual(name, "Condition"))
             {
                 const char* ID = node->Attribute("ID");
                 if (!ID)
                 {
                     ThrowError(node->GetLineNum(), "Error at line %d: -> The attribute [ID] is "
-                                                    "mandatory");
+                                                   "mandatory");
                 }
             }
         }
@@ -243,7 +247,7 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
             if (!node->Attribute("ID"))
             {
                 ThrowError(node->GetLineNum(), "The node <Decorator> must have the attribute "
-                                                "[ID]");
+                                               "[ID]");
             }
         }
         else if (StrEqual(name, "Action"))
@@ -266,7 +270,7 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
             if (!node->Attribute("ID"))
             {
                 ThrowError(node->GetLineNum(), "The node <Condition> must have the attribute "
-                                                "[ID]");
+                                               "[ID]");
             }
         }
         else if (StrEqual(name, "Sequence") || StrEqual(name, "SequenceStar") ||
@@ -355,8 +359,8 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
         if (tree_count != 1)
         {
             throw std::runtime_error(
-                "If you don't specify the attribute [main_tree_to_execute], "
-                "Your file must contain a single BehaviorTree");
+                        "If you don't specify the attribute [main_tree_to_execute], "
+                        "Your file must contain a single BehaviorTree");
         }
     }
 }
@@ -380,56 +384,21 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes,
     else{
         throw std::runtime_error("[main_tree_to_execute] was not specified correctly");
     }
-
     //--------------------------------------
-    auto node_builder = [&](const std::string& name,
-                            const std::string& ID,
-                            TreeNode::Ptr parent) -> TreeNode::Ptr
-    {
-        TreeNode::Ptr child_node = buildNodeFromElement(element, parent);
-        nodes.push_back(child_node);
-        NodeConfiguration config;
-        config.registration_ID = ID;
-        config.blackboard = blackboard;
-        DecoratorSubtreeNode* subtree_node = dynamic_cast<DecoratorSubtreeNode*>(child_node.get());
 
-        if (subtree_node)
-        {
-            child_node = _p->factory.instantiateTreeNode(name, config);
-        }
-        else if( _p->tree_roots.count(ID) != 0) {
-            child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(name) );
-        }
-        else{
-            throw std::runtime_error( ID + " is not a registered node, nor a Subtree");
-        }
-
-        for (auto child_element = element->FirstChildElement(); child_element;
-             child_element = child_element->NextSiblingElement())
-        {
-            recursiveStep(child_element, child_node);
-        }
-
-        return child_node;
-    };
-
-    // start recursion
-    TreeNode::Ptr root = recursiveStep(root_element, root_parent );
-    return root;
+    auto root_element = _p->tree_roots[main_tree_ID]->FirstChildElement();
+    return _p->recursivelyCreateTree(root_element, nodes, TreeNode::Ptr(), blackboard);
 }
 
-TreeNode::Ptr BT::XMLParser::Pimpl::treeParsing(const tinyxml2::XMLElement* root_element,
-                                                std::vector<TreeNode::Ptr>& nodes,
-                                                const TreeNode::Ptr& root_parent)
+TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, const Blackboard::Ptr blackboard, const TreeNode::Ptr &node_parent)
 {
     const std::string element_name = element->Name();
     std::string ID;
-    std::string node_name;
-    NodeParameters params;
+    std::string instance_name;
+    NodeConfiguration config;
 
-    if (element_name == "Action" ||
-        element_name == "Decorator" ||
-        element_name == "Condition")
+    // Actions and Decorators have their own ID
+    if (element_name == "Action" || element_name == "Decorator" || element_name == "Condition")
     {
         ID = element->Attribute("ID");
     }
@@ -437,82 +406,86 @@ TreeNode::Ptr BT::XMLParser::Pimpl::treeParsing(const tinyxml2::XMLElement* root
     {
         ID = element_name;
     }
+
     const char* attr_alias = element->Attribute("name");
     if (attr_alias)
     {
-        node_name = attr_alias;
+        instance_name = attr_alias;
     }
     else
     {
-        node_name = ID;
+        instance_name = ID;
     }
 
-        // Actions and Decorators have their own ID
-        if (element_name == "Action" || element_name == "Decorator" || element_name == "Condition")
-        {
-            node_ID = element->Attribute("ID");
-        }
-        else
-        {
-            node_ID = element_name;
-        }
+    if (element_name == "SubTree")
+    {
+        instance_name = element->Attribute("ID");
+    }
 
     for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
     {
         const std::string attribute_name = att->Name();
         if (attribute_name != "ID" && attribute_name != "name")
         {
-            params[attribute_name] = att->Value();
+            config.ports_remapping[attribute_name] = att->Value();
         }
     }
+    config.registration_ID = ID;
+    config.blackboard = blackboard;
 
+    //---------------------------------------------
     TreeNode::Ptr child_node;
 
     if( factory.builders().count(ID) != 0)
     {
-        child_node = factory.instantiateTreeNode(ID, node_name, params, blackboard);
+        child_node = factory.instantiateTreeNode(instance_name, config);
     }
     else if( tree_roots.count(ID) != 0) {
-        child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(node_name) );
+        child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(instance_name) );
     }
     else{
         throw std::runtime_error( ID + " is not a registered node, nor a Subtree");
     }
 
-    if (parent)
+    if (node_parent)
     {
-        ControlNode* control_parent = dynamic_cast<ControlNode*>(parent.get());
+        ControlNode* control_parent = dynamic_cast<ControlNode*>(node_parent.get());
         if (control_parent)
         {
-            instance_name = element->Attribute("ID");
+            control_parent->addChild(child_node.get());
         }
-        DecoratorNode* decorator_parent = dynamic_cast<DecoratorNode*>(parent.get());
+        DecoratorNode* decorator_parent = dynamic_cast<DecoratorNode*>(node_parent.get());
         if (decorator_parent)
         {
-            const std::string attribute_name = att->Name();
-            if (attribute_name != "ID" && attribute_name != "name")
-            {
-                node_config.ports_remapping[attribute_name] = att->Value();
-            }
+            decorator_parent->setChild(child_node.get());
         }
     }
+    return child_node;
+}
 
-        node_config.registration_ID = node_ID;
-        node_config.blackboard = bb;
+TreeNode::Ptr BT::XMLParser::Pimpl::recursivelyCreateTree(const XMLElement* root_element,
+                                                          std::vector<TreeNode::Ptr>& nodes_list,
+                                                          const TreeNode::Ptr& root_parent,
+                                                          const Blackboard::Ptr blackboard)
+{
+    std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
 
-        TreeNode::Ptr node = node_builder(instance_name, node_config, parent);
-        nodes.push_back(node);
+    recursiveStep = [&](const TreeNode::Ptr& parent,
+                        const XMLElement* element)
+    {
+        auto node = createNodeFromXML(element, blackboard, parent);
+        nodes_list.push_back(node);
 
         for (auto child_element = element->FirstChildElement(); child_element;
              child_element = child_element->NextSiblingElement())
         {
             recursiveStep(node, child_element);
         }
+    };
 
-    std::vector<TreeNode::Ptr> nodes;
-    auto root = parser.instantiateTree(nodes, blackboard);
-
-    return Tree(root.get(), nodes);
+    // start recursion
+    recursiveStep(root_parent, root_element);
+    return nodes_list.front();
 }
 
 
@@ -624,6 +597,6 @@ std::string writeXML(const BehaviorTreeFactory& factory,
     doc.Print(&printer);
     return std::string(printer.CStr(), printer.CStrSize() - 1);
 }
-
 */
+
 }
