@@ -124,6 +124,11 @@ void TreeNode::initializeOnce()
     }
 }
 
+const TreeNode::PortsRemap &TreeNode::outputPortsRemap() const &
+{
+    return output_remap_;
+}
+
 bool TreeNode::isBlackboardPattern(StringView str)
 {
     return str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}';

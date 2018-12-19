@@ -105,6 +105,9 @@ class Blackboard
         {
             impl_->set(key, SafeAny::Any(value));
         }
+        else{
+            throw  std::runtime_error("called set on an invalid BlackBoard");
+        }
     }
 
     bool contains(const std::string& key) const

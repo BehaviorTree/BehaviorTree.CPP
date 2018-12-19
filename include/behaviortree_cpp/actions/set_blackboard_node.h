@@ -35,7 +35,7 @@ class SetBlackboard : public SyncActionNode
     virtual BT::NodeStatus tick() override
     {
         std::string key;
-        if (!blackboard() || !getParam("key", key) || key.empty())
+        if (!getParam("key", key) || key.empty())
         {
             return NodeStatus::FAILURE;
         }
@@ -43,7 +43,7 @@ class SetBlackboard : public SyncActionNode
         {
             std::string value;
             getParam("value", value);
-            blackboard()->set(key, value);
+            setOutput(key, value);
             return NodeStatus::SUCCESS;
         }
     }
