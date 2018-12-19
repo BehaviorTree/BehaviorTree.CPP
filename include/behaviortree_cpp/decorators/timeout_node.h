@@ -12,12 +12,12 @@ class TimeoutNode : public DecoratorNode
   public:
     TimeoutNode(const std::string& name, unsigned milliseconds);
 
-    TimeoutNode(const std::string& name, const NodeParameters& params);
+    TimeoutNode(const std::string& name, const NodeConfiguration& config);
 
-    static const NodeParameters& requiredNodeParameters()
+    static const PortsList& providedPorts()
     {
-        static NodeParameters params = {{"msec", "0"}};
-        return params;
+        static PortsList ports = {{"msec"}};
+        return ports;
     }
 
   private:
@@ -33,7 +33,7 @@ class TimeoutNode : public DecoratorNode
     uint64_t timer_id_;
 
     unsigned msec_;
-    bool read_parameter_from_blackboard_;
+    bool read_parameter_from_ports_;
 };
 }
 

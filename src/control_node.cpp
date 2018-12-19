@@ -15,25 +15,13 @@
 
 namespace BT
 {
-ControlNode::ControlNode(const std::string& name, const NodeParameters& parameters)
-  : TreeNode::TreeNode(name, parameters)
+ControlNode::ControlNode(const std::string& name, const NodeConfiguration& config)
+  : TreeNode::TreeNode(name, config)
 {
-    // TODO(...) In case it is desired to set to idle remove the ReturnStatus
-    // type in order to set the member variable
-    // ReturnStatus const NodeStatus child_status = NodeStatus::IDLE;  // commented out as unused
 }
 
 void ControlNode::addChild(TreeNode* child)
 {
-    //    Checking if the child is not already present
-    //    for (auto node : children_nodes_)
-    //    {
-    //        if (node == child)
-    //        {
-    //            throw BehaviorTreeException("'" + child->name() + "' is already a '" + name() + "' child.");
-    //        }
-    //    }
-
     children_nodes_.push_back(child);
 }
 

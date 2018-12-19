@@ -34,7 +34,8 @@ class GripperInterface
 class ApproachObject : public BT::SyncActionNode
 {
   public:
-    ApproachObject(const std::string& name) : BT::SyncActionNode(name)
+    ApproachObject(const std::string& name) :
+        BT::SyncActionNode(name, {})
     {
     }
 
@@ -47,8 +48,8 @@ class ApproachObject : public BT::SyncActionNode
 class SaySomething : public BT::SyncActionNode
 {
   public:
-    SaySomething(const std::string& name, const BT::NodeParameters& params)
-      : BT::SyncActionNode(name, params)
+    SaySomething(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::SyncActionNode(name, config)
     {
     }
 
@@ -56,11 +57,10 @@ class SaySomething : public BT::SyncActionNode
     BT::NodeStatus tick() override;
 
     // It is mandatory to define this static method.
-    // If you don't, BehaviorTreeFactory::registerNodeType will not compile.
-    static const BT::NodeParameters& requiredNodeParameters()
+    static const BT::PortsList& providedPorts()
     {
-        static BT::NodeParameters params = {{"message", ""}};
-        return params;
+        static BT::PortsList ports = {{"message"}};
+        return ports;
     }
 };
 

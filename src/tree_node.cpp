@@ -22,19 +22,17 @@ static uint8_t getUID()
     return uid++;
 }
 
-TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters)
-  : not_initialized_(true),
-    name_(name),
+TreeNode::TreeNode(const std::string& name, const NodeConfiguration& config)
+  : name_(name),
     status_(NodeStatus::IDLE),
     uid_(getUID()),
-    parameters_(parameters)
-
+    config_(config),
+    bb_(config_.blackboard)
 {
 }
 
 NodeStatus TreeNode::executeTick()
 {
-    initializeOnce();
     const NodeStatus status = tick();
     setStatus(status);
     return status;
@@ -54,22 +52,6 @@ void TreeNode::setStatus(NodeStatus new_status)
         state_change_signal_.notify(std::chrono::high_resolution_clock::now(), *this, prev_status,
                                     new_status);
     }
-}
-
-void TreeNode::setBlackboard(const Blackboard::Ptr& bb)
-{
-    bb_ = bb;
-}
-
-const Blackboard::Ptr& TreeNode::blackboard() const
-{
-    if( not_initialized_ )
-    {
-        throw std::logic_error("You can NOT access the blackboard in the constructor."
-                               " If you need to access the blackboard before the very first tick(), "
-                               " you should override the virtual method TreeNode::onInit()");
-    }
-    return bb_;
 }
 
 NodeStatus TreeNode::status() const
@@ -110,38 +92,19 @@ uint16_t TreeNode::UID() const
     return uid_;
 }
 
-void TreeNode::setRegistrationName(const std::string& registration_name)
+bool TreeNode::isParseableString(StringView str)
 {
-    registration_name_ = registration_name;
-}
-
-void TreeNode::initializeOnce()
-{
-    if( not_initialized_ )
-    {
-        not_initialized_ = false;
-        onInit();
-    }
-}
-
-const TreeNode::PortsRemap &TreeNode::outputPortsRemap() const &
-{
-    return output_remap_;
-}
-
-bool TreeNode::isBlackboardPattern(StringView str)
-{
-    return str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}';
+    return str.size() >= 3 && str.front() == '{' && str.back() == '}';
 }
 
 const std::string& TreeNode::registrationName() const
 {
-    return registration_name_;
+    return config_.registration_ID;
 }
 
-const NodeParameters& TreeNode::initializationParameters() const
+const NodeConfiguration &TreeNode::config() const
 {
-    return parameters_;
+    return config_;
 }
 
 }   // end namespace

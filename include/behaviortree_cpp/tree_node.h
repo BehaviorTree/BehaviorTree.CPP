@@ -18,6 +18,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <unordered_set>
 
 #include "behaviortree_cpp/optional.hpp"
 #include "behaviortree_cpp/tick_engine.h"
@@ -28,9 +29,25 @@
 
 namespace BT
 {
-// We call Parameters the set of Key/Values that can be read from file and are
-// used to parametrize an object. It is up to the user's code to parse the string.
-typedef std::unordered_map<std::string, std::string> NodeParameters;
+
+typedef std::unordered_map<std::string, std::string> PortsRemapping;
+
+struct NodeConfiguration
+{
+    Blackboard::Ptr blackboard;
+    std::string     registration_ID;
+    PortsRemapping  ports_remapping;
+};
+
+typedef std::unordered_set<std::string> PortsList;
+
+/// This information is used mostly by the XMLParser.
+struct TreeNodeManifest
+{
+    NodeType type;
+    std::string registration_ID;
+    PortsList ports;
+};
 
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
 typedef std::chrono::high_resolution_clock::duration Duration;
@@ -38,14 +55,6 @@ typedef std::chrono::high_resolution_clock::duration Duration;
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
 {
-
-  private:
-
-    /// This calback will be executed only ONCE after the constructor of the node,
-    /// before the very first tick.
-    /// Override if necessary.
-    virtual void onInit() {}
-
   public:
     /**
      * @brief TreeNode main constructor.
@@ -55,9 +64,9 @@ class TreeNode
      *
      * Note: a node that accepts a not empty set of NodeParameters must also implement the method:
      *
-     * static const NodeParameters& requiredNodeParameters();
+     * static const PortsList& providedPorts();
      */
-    TreeNode(const std::string& name, const NodeParameters& parameters);
+    TreeNode(const std::string& name, const NodeConfiguration& config);
     virtual ~TreeNode() = default;
 
     typedef std::shared_ptr<TreeNode> Ptr;
@@ -107,7 +116,7 @@ class TreeNode
 
     /// Parameters passed at construction time. Can never change after the
     /// creation of the TreeNode instance.
-    const NodeParameters& initializationParameters() const;
+    const NodeConfiguration& config() const;
 
     /** Get a parameter from the NodeParameters and convert it to type T.
      */
@@ -124,35 +133,18 @@ class TreeNode
     template <typename T>
     bool getParam(const std::string& key, T& destination) const;
 
-    static bool isBlackboardPattern(StringView str);
-
-    typedef std::unordered_map<std::string, std::string> PortsRemap;
-
-    const PortsRemap& outputPortsRemap() const&;
-
-    bool setOutputPortRemap(const std::string& original_key, const std::string& remapped_key);
+    static bool isParseableString(StringView str);
 
     template <typename T>
     bool setOutput(const std::string& key, const T& value);
-
-    // deprecated because the user should use instead getParam() to read
-    // and setOutput() to write
-    [[deprecated]] const Blackboard::Ptr& blackboard() const;
 
 protected:
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
 
-    /// registrationName() is set by the BehaviorTreeFactory
-    void setRegistrationName(const std::string& registration_name);
-
     friend class BehaviorTreeFactory;
 
-    void initializeOnce();
-
   private:
-
-    bool not_initialized_;
 
     const std::string name_;
 
@@ -166,13 +158,9 @@ protected:
 
     const uint16_t uid_;
 
-    std::string registration_name_;
-
-    const NodeParameters parameters_;
+    const NodeConfiguration config_;
 
     Blackboard::Ptr bb_;
-
-    PortsRemap output_remap_;
 
 };
 
@@ -180,46 +168,46 @@ protected:
 template <typename T> inline
 bool TreeNode::getParam(const std::string& key, T& destination) const
 {
-    auto it = parameters_.find(key);
-    if (it == parameters_.end())
+    auto remap_it = config_.ports_remapping.find(key);
+    if( remap_it == config_.ports_remapping.end() )
     {
+        std::cerr << "getParam() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
         return false;
     }
-    const std::string& str = it->second;
-
+    StringView remapped_key = remap_it->second;
+    if( remapped_key == "=")
+    {
+        remapped_key = key;
+    }
     try
     {
-        bool bb_pattern = isBlackboardPattern(str);
-        if( bb_pattern && not_initialized_)
+        if( isParseableString(remapped_key) )
         {
-             std::cerr << "you are calling getParam inside a constructor, but this is not allowed "
-                          "when the parameter contains a blackboard.\n"
-                          "You should call getParam inside your tick() method"<< std::endl;
-             std::logic_error("Calling getParam inside a constructor");
-        }
-        // check if it follows this ${pattern}, if it does, search inside the blackboard
-        if ( bb_pattern && bb_ )
-        {
-            const std::string stripped_key(&str[2], str.size() - 3);
-            const SafeAny::Any* val = bb_->getAny(stripped_key);
-            if( val )
-            {
-                if( std::is_same<T,std::string>::value == false &&
-                    (val->type() == typeid (std::string) ||
-                     val->type() == typeid (SafeAny::SimpleString)))
-                {
-                    destination = convertFromString<T>(val->cast<std::string>());
-                }
-                else{
-                    destination = val->cast<T>();
-                }
-            }
-            return val != nullptr;
-        }
-        else{
-            destination = convertFromString<T>(str.c_str());
+            remapped_key.substr( 1, remapped_key.size()-2 );
+            destination = convertFromString<T>(remapped_key);
             return true;
         }
+
+        if ( !bb_ )
+        {
+            std::cerr << "getParam() trying to access a Blackboard (BB) entry, but BB is invalid" << std::endl;
+            return false;
+        }
+
+        const SafeAny::Any* val = bb_->getAny( remapped_key.to_string() );
+        if( val )
+        {
+            if( std::is_same<T,std::string>::value == false &&
+                    (val->type() == typeid (std::string) ||
+                     val->type() == typeid (SafeAny::SimpleString)))
+            {
+                destination = convertFromString<T>(val->cast<std::string>());
+            }
+            else{
+                destination = val->cast<T>();
+            }
+        }
+        return val != nullptr;
     }
     catch (std::runtime_error& err)
     {
@@ -231,14 +219,24 @@ bool TreeNode::getParam(const std::string& key, T& destination) const
 template <typename T> inline
 bool TreeNode::setOutput(const std::string& key, const T& value)
 {
-    if( !bb_ || not_initialized_ )
+    auto remap_it = config_.ports_remapping.find(key);
+    if( remap_it == config_.ports_remapping.end() )
     {
+        std::cerr << "setOutput() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
         return false;
     }
-    auto remap_it = output_remap_.find(key);
-    const auto& KEY = ( remap_it == output_remap_.end()) ? key : remap_it->second;
+    StringView remapped_key = remap_it->second;
+    if( remapped_key == "=")
+    {
+        remapped_key = key;
+    }
+    if( isParseableString(remapped_key) )
+    {
+        std::cerr << "setOutput() failed because you are using a parseable string" << std::endl;
+        return false;
+    }
 
-    bb_->set(KEY, value);
+    bb_->set( remapped_key.to_string(), value);
     return true;
 }
 

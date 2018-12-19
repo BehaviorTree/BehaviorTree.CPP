@@ -24,14 +24,14 @@ class RetryNode : public DecoratorNode
     // Constructor
     RetryNode(const std::string& name, unsigned int NTries);
 
-    RetryNode(const std::string& name, const NodeParameters& params);
+    RetryNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~RetryNode() override = default;
 
-    static const NodeParameters& requiredNodeParameters()
+    static const PortsList& providedPorts()
     {
-        static NodeParameters params = {{NUM_ATTEMPTS, "1"}};
-        return params;
+        static PortsList ports = {{NUM_ATTEMPTS}};
+        return ports;
     }
 
     virtual void halt() override;
@@ -40,7 +40,7 @@ class RetryNode : public DecoratorNode
     unsigned int max_attempts_;
     unsigned int try_index_;
 
-    bool read_parameter_from_blackboard_;
+    bool read_parameter_from_ports_;
     static constexpr const char* NUM_ATTEMPTS = "num_attempts";
 
     virtual BT::NodeStatus tick() override;

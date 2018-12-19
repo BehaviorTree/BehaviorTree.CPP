@@ -16,9 +16,8 @@
 namespace BT
 {
 FallbackNode::FallbackNode(const std::string& name)
-  : ControlNode::ControlNode(name, NodeParameters())
+  : ControlNode::ControlNode(name, { {}, "Fallback", {} })
 {
-    setRegistrationName("Fallback");
 }
 
 NodeStatus FallbackNode::tick()

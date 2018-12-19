@@ -15,8 +15,8 @@
 
 namespace BT
 {
-ConditionNode::ConditionNode(const std::string& name, const NodeParameters& parameters)
-  : LeafNode::LeafNode(name, parameters)
+ConditionNode::ConditionNode(const std::string& name, const NodeConfiguration& config)
+  : LeafNode::LeafNode(name, config)
 {
 }
 
@@ -25,8 +25,8 @@ void ConditionNode::halt()
 }
 
 SimpleConditionNode::SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
-                                         const NodeParameters &params)
-  : ConditionNode(name, params), tick_functor_(std::move(tick_functor))
+                                         const NodeConfiguration& config)
+  : ConditionNode(name, config), tick_functor_(std::move(tick_functor))
 {
 }
 

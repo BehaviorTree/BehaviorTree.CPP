@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
         {
             continue;
         }
-        auto& params = manifest.required_parameters;
+        auto& params = manifest.ports;
         std::cout << "---------------\n"
                   << manifest.registration_ID << " [" << manifest.type
                   << "]\n  NodeParameters: " << params.size();
@@ -42,8 +42,7 @@ int main(int argc, char* argv[])
 
         for (auto& param : params)
         {
-            std::cout << "    - [Key]: \"" << param.first << "\" / [Default]: \"" << param.second
-                      << "\"" << std::endl;
+            std::cout << "    - [Key]: \"" << param << "\"" << std::endl;
         }
     }
 

@@ -16,14 +16,13 @@
 
 namespace BT
 {
-ActionNodeBase::ActionNodeBase(const std::string& name, const NodeParameters& parameters)
-  : LeafNode::LeafNode(name, parameters)
+ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfiguration& config)
+  : LeafNode::LeafNode(name, config)
 {
 }
 
 NodeStatus ActionNodeBase::executeTick()
 {
-    initializeOnce();
     NodeStatus prev_status = status();
 
     if (prev_status == NodeStatus::IDLE || prev_status == NodeStatus::RUNNING)
@@ -37,8 +36,8 @@ NodeStatus ActionNodeBase::executeTick()
 
 SimpleActionNode::SimpleActionNode(const std::string& name,
                                    SimpleActionNode::TickFunctor tick_functor,
-                                   const NodeParameters& params)
-  : ActionNodeBase(name, params), tick_functor_(std::move(tick_functor))
+                                   const NodeConfiguration& config)
+  : ActionNodeBase(name, config), tick_functor_(std::move(tick_functor))
 {
 }
 
@@ -62,8 +61,8 @@ NodeStatus SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-AsyncActionNode::AsyncActionNode(const std::string& name, const NodeParameters& parameters)
-  : ActionNodeBase(name, parameters), loop_(true)
+AsyncActionNode::AsyncActionNode(const std::string& name, const NodeConfiguration& config)
+  : ActionNodeBase(name, config), loop_(true)
 {
     thread_ = std::thread(&AsyncActionNode::waitForTick, this);
 }
@@ -94,7 +93,6 @@ void AsyncActionNode::waitForTick()
 
 NodeStatus AsyncActionNode::executeTick()
 {
-    initializeOnce();
     //send signal to other thread.
     // The other thread is in charge for changing the status
     if (status() == NodeStatus::IDLE)
@@ -126,8 +124,8 @@ struct CoroActionNode::Pimpl
 
 
 CoroActionNode::CoroActionNode(const std::string &name,
-                               const NodeParameters &parameters):
-  ActionNodeBase (name, parameters),
+                               const NodeConfiguration& config):
+  ActionNodeBase (name, config),
   _p(new  Pimpl)
 {
 }
@@ -145,7 +143,6 @@ void CoroActionNode::setStatusRunningAndYield()
 
 NodeStatus CoroActionNode::executeTick()
 {
-    initializeOnce();
     if (status() == NodeStatus::IDLE)
     {
         _p->coro = coroutine::create( [this]() { setStatus(tick()); } );
@@ -173,8 +170,8 @@ void CoroActionNode::halt()
     }
 }
 
-SyncActionNode::SyncActionNode(const std::string &name, const NodeParameters &parameters):
-    ActionNodeBase(name, parameters)
+SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):
+    ActionNodeBase(name, config)
 {}
 
 NodeStatus SyncActionNode::executeTick()

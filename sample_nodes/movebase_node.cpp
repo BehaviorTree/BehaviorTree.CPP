@@ -11,11 +11,9 @@ BT_REGISTER_NODES(factory)
 BT::NodeStatus MoveBaseAction::tick()
 {
     Pose2D goal;
-    if (getParam<Pose2D>("goal", goal) == false)
+    if ( !getParam<Pose2D>("goal", goal))
     {
-        auto default_goal_value = requiredNodeParameters().at("goal");
-        // use the convertFromString function
-        goal = BT::convertFromString<Pose2D>(default_goal_value);
+        throw std::runtime_error("missing required input [goal]");
     }
 
     printf("[ MoveBase: STARTED ]. goal: x=%.f y=%.1f theta=%.2f\n", goal.x, goal.y, goal.theta);

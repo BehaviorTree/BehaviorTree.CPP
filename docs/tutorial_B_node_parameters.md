@@ -12,7 +12,7 @@ To create a TreeNodes that accepts NodeParameters, you must follow these rules:
 - You must provide a constructor with the following signature:
 
 ``` c++
-MyAction(const std::string& name, const BT::NodeParameters& params) 
+MyAction(const std::string& name, const BT::NodeConfiguration& config) 
 ```
 
 - The following static member function must be defined:
@@ -45,14 +45,14 @@ class SaySomething: public SyncActionNode
 {
 public:
     // There must be a constructor with this signature
-    SaySomething(const std::string& name, const NodeParameters& params):
-        SyncActionNode(name, params) {}
+    SaySomething(const std::string& name, const NodeConfiguration& config):
+        SyncActionNode(name, config) {}
 
     // It is mandatory to define this static method.
-    static const NodeParameters& requiredNodeParameters()
+    static const PortsList& providedPorts()
     {
-        static NodeParameters params = {{"message","default message"}};
-        return params;
+        static PortsList ports = {{"message","default message"}};
+        return ports;
     }
 
     virtual NodeStatus tick() override
@@ -135,13 +135,13 @@ class MoveBaseAction: public AsynActionNode
 {
 public:
 
-    MoveBaseAction(const std::string& name, const NodeParameters& params):
-        AsynActionNode(name, params) {}
+    MoveBaseAction(const std::string& name, const NodeConfiguration& config):
+        AsynActionNode(name, config) {}
 
     static const BT::NodeParameters& requiredNodeParameters()
     {
-        static BT::NodeParameters params = {{"goal","0;0;0"}};
-        return params;
+        static BT::PortsList ports = {{"goal","0;0;0"}};
+        return ports;
     }
 
     virtual NodeStatus tick() override

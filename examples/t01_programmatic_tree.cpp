@@ -21,11 +21,11 @@ int main()
 
     // Function pointers can be wrapped inside ActionNodeBase
     // using the SimpleActionNode
-    SimpleActionNode say_hello("action_hello", std::bind(SayHello));
+    SimpleActionNode say_hello("action_hello", std::bind(SayHello), {});
 
     // SimpleActionNode works also with class methods, using std::bind
-    SimpleActionNode open_gripper("open_gripper", std::bind(&GripperInterface::open, &gripper));
-    SimpleActionNode close_gripper("close_gripper", std::bind(&GripperInterface::close, &gripper));
+    SimpleActionNode open_gripper("open_gripper", std::bind(&GripperInterface::open, &gripper), {});
+    SimpleActionNode close_gripper("close_gripper", std::bind(&GripperInterface::close, &gripper), {});
 
     // To be able to use ALL the functionalities of a TreeNode,
     //  your should create a class that inherits from either:

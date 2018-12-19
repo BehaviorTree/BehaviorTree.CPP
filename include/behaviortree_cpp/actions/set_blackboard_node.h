@@ -20,15 +20,15 @@ namespace BT
 class SetBlackboard : public SyncActionNode
 {
   public:
-    SetBlackboard(const std::string& name, const NodeParameters& params)
-      : SyncActionNode(name, params)
+    SetBlackboard(const std::string& name, const NodeConfiguration& config)
+      : SyncActionNode(name, config)
     {
     }
 
-    static const NodeParameters& requiredNodeParameters()
+    static const PortsList& providedPorts()
     {
-        static NodeParameters params = {{"key", ""}, {"value", ""}};
-        return params;
+        static PortsList ports = {{"key"}, {"value"}};
+        return ports;
     }
 
   private:

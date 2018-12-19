@@ -65,37 +65,37 @@ const char* toStr(const NodeType& type)
 }
 
 template <>
-std::string convertFromString<std::string>(const StringView& str)
+std::string convertFromString<std::string>(StringView str)
 {
     return std::string( str.data(), str.size() );
 }
 
 template <>
-const char* convertFromString<const char*>(const StringView& str)
+const char* convertFromString<const char*>(StringView str)
 {
     return str.to_string().c_str();
 }
 
 template <>
-int convertFromString<int>(const StringView& str)
+int convertFromString<int>(StringView str)
 {
     return  std::stoi(str.data());
 }
 
 template <>
-unsigned convertFromString<unsigned>(const StringView& str)
+unsigned convertFromString<unsigned>(StringView str)
 {
     return std::stoul(str.data());
 }
 
 template <>
-double convertFromString<double>(const StringView& str)
+double convertFromString<double>(StringView str)
 {
     return std::stod(str.data());
 }
 
 template <>
-std::vector<int> convertFromString<std::vector<int>>(const StringView& str)
+std::vector<int> convertFromString<std::vector<int>>(StringView str)
 {
     auto parts = splitString(str, ';');
     std::vector<int> output;
@@ -109,7 +109,7 @@ std::vector<int> convertFromString<std::vector<int>>(const StringView& str)
 }
 
 template <>
-std::vector<double> convertFromString<std::vector<double>>(const StringView& str)
+std::vector<double> convertFromString<std::vector<double>>(StringView str)
 {
     auto parts = splitString(str, ';');
     std::vector<double> output;
@@ -123,7 +123,7 @@ std::vector<double> convertFromString<std::vector<double>>(const StringView& str
 }
 
 template <>
-bool convertFromString<bool>(const StringView& str)
+bool convertFromString<bool>(StringView str)
 {
     if (str.size() == 1)
     {
@@ -168,7 +168,7 @@ bool convertFromString<bool>(const StringView& str)
 }
 
 template <>
-NodeStatus convertFromString<NodeStatus>(const StringView& str)
+NodeStatus convertFromString<NodeStatus>(StringView str)
 {
     for (auto status :
          {NodeStatus::IDLE, NodeStatus::RUNNING, NodeStatus::SUCCESS, NodeStatus::FAILURE})
@@ -182,7 +182,7 @@ NodeStatus convertFromString<NodeStatus>(const StringView& str)
 }
 
 template <>
-NodeType convertFromString<NodeType>(const StringView& str)
+NodeType convertFromString<NodeType>(StringView str)
 {
     for (auto status : {NodeType::ACTION, NodeType::CONDITION, NodeType::CONTROL,
                         NodeType::DECORATOR, NodeType::SUBTREE, NodeType::UNDEFINED})

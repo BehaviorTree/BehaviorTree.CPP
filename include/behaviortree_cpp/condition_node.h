@@ -21,7 +21,7 @@ namespace BT
 class ConditionNode : public LeafNode
 {
   public:
-    ConditionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    ConditionNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~ConditionNode() override = default;
 
@@ -52,7 +52,7 @@ class SimpleConditionNode : public ConditionNode
 
     // Constructor: you must provide the function to call when tick() is invoked
     SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
-                        const NodeParameters& params = NodeParameters());
+                        const NodeConfiguration& config);
 
     ~SimpleConditionNode() override = default;
 

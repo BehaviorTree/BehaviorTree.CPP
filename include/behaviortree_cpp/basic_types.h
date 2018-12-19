@@ -61,7 +61,7 @@ typedef nonstd::string_view StringView;
 /// unless you are try to read it from a blackboard.
 ///
 template <typename T> inline
-T convertFromString(const StringView& /*str*/)
+T convertFromString(StringView /*str*/)
 {
     auto type_name = BT::demangle( typeid(T).name() );
 
@@ -73,34 +73,34 @@ T convertFromString(const StringView& /*str*/)
 }
 
 template <>
-std::string convertFromString<std::string>(const StringView& str);
+std::string convertFromString<std::string>(StringView str);
 
 template <>
-const char* convertFromString<const char*>(const StringView& str);
+const char* convertFromString<const char*>(StringView str);
 
 template <>
-int convertFromString<int>(const StringView& str);
+int convertFromString<int>(StringView str);
 
 template <>
-unsigned convertFromString<unsigned>(const StringView& str);
+unsigned convertFromString<unsigned>(StringView str);
 
 template <>
-double convertFromString<double>(const StringView& str);
+double convertFromString<double>(StringView str);
 
 template <> // Integer numbers separated by the characted ";"
-std::vector<int> convertFromString<std::vector<int>>(const StringView& str);
+std::vector<int> convertFromString<std::vector<int>>(StringView str);
 
 template <> // Real numbers separated by the characted ";"
-std::vector<double> convertFromString<std::vector<double>>(const StringView& str);
+std::vector<double> convertFromString<std::vector<double>>(StringView str);
 
 template <> // This recognizes either 0/1, true/false, TRUE/FALSE
-bool convertFromString<bool>(const StringView& str);
+bool convertFromString<bool>(StringView str);
 
 template <> // Names with all capital letters
-NodeStatus convertFromString<NodeStatus>(const StringView& str);
+NodeStatus convertFromString<NodeStatus>(StringView str);
 
 template <>  // Names with all capital letters
-NodeType convertFromString<NodeType>(const StringView& str);
+NodeType convertFromString<NodeType>(StringView str);
 
 
 //------------------------------------------------------------------

@@ -21,23 +21,23 @@ template <typename T>
 class BlackboardPreconditionNode : public DecoratorNode
 {
   public:
-    BlackboardPreconditionNode(const std::string& name, const NodeParameters& params)
-      : DecoratorNode(name, params)
+    BlackboardPreconditionNode(const std::string& name, const NodeConfiguration& config)
+      : DecoratorNode(name, config)
     {
-        if( std::is_same<T,int>::value)
-            setRegistrationName("BlackboardCheckInt");
-        else if( std::is_same<T,double>::value)
-            setRegistrationName("BlackboardCheckDouble");
-        else if( std::is_same<T,std::string>::value)
-            setRegistrationName("BlackboardCheckString");
+//        if( std::is_same<T,int>::value)
+//            setRegistrationName("BlackboardCheckInt");
+//        else if( std::is_same<T,double>::value)
+//            setRegistrationName("BlackboardCheckDouble");
+//        else if( std::is_same<T,std::string>::value)
+//            setRegistrationName("BlackboardCheckString");
     }
 
     virtual ~BlackboardPreconditionNode() override = default;
 
-    static const NodeParameters& requiredNodeParameters()
+    static const PortsList& providedPorts()
     {
-        static NodeParameters params = {{"current", "${BB_key}"}, {"expected", "*"}};
-        return params;
+        static PortsList ports = {{"current"}, {"expected"}};
+        return ports;
     }
 
   private:
