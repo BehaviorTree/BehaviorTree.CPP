@@ -112,7 +112,7 @@ class BehaviorTreeFactory
         constexpr bool param_constructable =
             std::is_constructible<T, const std::string&, const NodeParameters&>::value;
         constexpr bool has_static_required_parameters =
-            has_static_method_requiredNodeParameters<T>::value;
+            has_static_method_requiredParams<T>::value;
 
         static_assert(default_constructable || param_constructable,
                       "[registerBuilder]: the registered class must have at least one of these two "
@@ -154,57 +154,55 @@ class BehaviorTreeFactory
     using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeParameters&>;
 
     template <typename T, typename = void>
-    struct has_static_method_requiredNodeParameters: std::false_type {};
+    struct has_static_method_requiredParams: std::false_type {};
 
     template <typename T>
-    struct has_static_method_requiredNodeParameters<T,
+    struct has_static_method_requiredParams<T,
             typename std::enable_if<std::is_same<decltype(T::requiredNodeParameters()), const NodeParameters&>::value>::type>
         : std::true_type {};
 
     template <typename T>
-    typename std::enable_if< has_default_constructor<T>::value && !has_params_constructor<T>::value>::type
-    registerNodeTypeImpl(const std::string& ID)
+    void registerNodeTypeImpl(const std::string& ID)
     {
-        NodeBuilder builder = [](const std::string& name, const NodeParameters&)
+        NodeBuilder builder = getBuilderImpl<T>();
+        TreeNodeManifest manifest = { getType<T>(), ID,
+                                      getRequiredParamsImpl<T>() };
+        registerBuilder(manifest, builder);
+    }
+
+    template <typename T>
+    NodeBuilder getBuilderImpl(typename std::enable_if< !has_params_constructor<T>::value >::type* = nullptr)
+    {
+        return [](const std::string& name, const NodeParameters&)
         {
             return std::unique_ptr<TreeNode>(new T(name));
         };
-        TreeNodeManifest manifest = { NodeType::ACTION, ID, NodeParameters() };
-        registerBuilder(manifest, builder);
     }
 
     template <typename T>
-    typename std::enable_if< !has_default_constructor<T>::value && has_params_constructor<T>::value>::type
-    registerNodeTypeImpl(const std::string& ID)
+    NodeBuilder getBuilderImpl(typename std::enable_if< has_params_constructor<T>::value >::type* = nullptr)
     {
-        NodeBuilder builder = [](const std::string& name, const NodeParameters& params)
+        return [](const std::string& name, const NodeParameters& params)
         {
             return std::unique_ptr<TreeNode>(new T(name, params));
         };
-        TreeNodeManifest manifest = { getType<T>(), ID, T::requiredNodeParameters() };
-        registerBuilder(manifest, builder);
     }
 
     template <typename T>
-    typename std::enable_if< has_default_constructor<T>::value && has_params_constructor<T>::value>::type
-    registerNodeTypeImpl(const std::string& ID)
+    NodeParameters getRequiredParamsImpl(typename std::enable_if< has_static_method_requiredParams<T>::value >::type* = nullptr)
     {
-        NodeBuilder builder = [](const std::string& name, const NodeParameters& params)
-        {
-            if( params.empty() )
-            {
-                // call this one that MIGHT use default initialization
-                return std::unique_ptr<TreeNode>(new T(name));
-            }
-            return std::unique_ptr<TreeNode>(new T(name, params));
-        };
-        TreeNodeManifest manifest = { getType<T>(), ID, T::requiredNodeParameters() };
-        registerBuilder(manifest, builder);
+        return T::requiredNodeParameters();
     }
+
+    template <typename T>
+    NodeParameters getRequiredParamsImpl(typename std::enable_if< !has_static_method_requiredParams<T>::value >::type* = nullptr)
+    {
+        return NodeParameters();
+    }
+    // clang-format on
 
     void sortTreeNodeManifests();
 
-    // clang-format on
 };
 
 }   // end namespace
