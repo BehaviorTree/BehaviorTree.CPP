@@ -1,6 +1,4 @@
-# Roadmap: input/output ports in TreeNode
-
-## Introduction to the problem
+# 1. Roadmap: input/output ports in TreeNode
 
 One of the goals of this project is to separate the role of the Component
 Developer from the Behavior Designed and System Integrator.
@@ -25,7 +23,7 @@ there are several issues:
 SMACH solved this problem using [input and output ports](http://wiki.ros.org/smach/Tutorials/User%20Data)
 and remapping to connect them.
 
-## Suggested changes
+# 2. Suggested changes
 
 Goals of the new design:
 
@@ -38,7 +36,7 @@ to external tools.
 - We want to solve the previous problems but trying to keep the API as consistent
 as possible with the previous one.
 
-### Deprecate TreeNode::blackboard()
+## 2.1 Deprecate TreeNode::blackboard()
 
 Accessing directly the BB allows the users to do whatever they wants.
 There is no way to introspect which entries are accessed.
@@ -48,7 +46,9 @@ Therefore, the only reasonable thing to do is to deprecate `TreeNode::blackboard
 The problem is that `SimpleActionNodes` and `SimpleDecoratorNodes` 
 will loose the ability to access ports.
 
-### NameParameters as input ports
+## 2.2 Solution A
+
+###  2.2.1 NameParameters as input ports
 
 We know that NodeParameters are a mechanism to add "arguments" to a Node.
 
@@ -66,7 +66,7 @@ __input port__.
 From a practical point of view, the user should encourage the user to use
 `TreeNode::getParam` as much as possible and deprecate `TreeNode::blackboard()::get`
 
-### Output Ports
+### 2.2.1 Output Ports
 
 We need to add automatically the output ports to the TreeNodeManifest.
 
@@ -99,9 +99,118 @@ at run-time __only for the output ports__.
 We don't need remapping of input ports, because the name of the entry is 
 already provided at run-time (in the XML).
 
+From the user prospective, `TreeNode::blackboard()::set(key,value)` is replaced by a new method
+`TreeNode::setOutput((key,value)`.
+
 Example:
 
-__TODO__
+If the remapping __["goal","navigation_goal"]__ is passed and the user invoke
+
+      setOutput("goal", "kitchen");
+
+The actual entry to be written will be the `navigation_goal`.
+
+
+## 2.3 Solution B
+
+An alternative solution is to make no distintion between input and output ports.
+
+This would make the code more consistent with the old one, but would break the API.
+
+### 2.3.1 New manifest 
+
+```c++
+
+enum PortType { INPUT, OUTPUT, INOUT };
+
+typedef std::unordered_map<std::string, PortType> PortsList;
+
+// New Manifest
+struct TreeNodeManifest
+{
+    NodeType type;
+    std::string registration_ID;
+    PortsList ports;
+};
+
+// What was previously MyNode::requiredNodeParameters() becomes:
+
+static const PortsList& MyNode::providedPorts();
+
+```
+
+In other words, requiredNodeParameters, which used to focus only on inputs,
+is substituted for anothe static method that provide both inputs and outputs.
+
+### 2.3.1 from XML attributes to ports in/out/remaping 
+
+Let's illustrate this change with a practical example.
+
+In this example __path__ is an output port in `ComputePath` but an input port
+in `FollowPath`.
+
+```XML
+    <SequenceStar name="navigate">
+        <Action ID="ComputePath" endpoints="${navigation_endpoints}" path="${navigation_path}"  />
+        <Action ID="FollowPath" path="${navigation_path}" />
+    </SequenceStar>
+```
+
+The actual entries to be read/written are the one specified in the remapping:
+
+ - navigation_endpoints
+ - navigation_path 
+
+Since these names are specified in the XML, name clash can be avoided without modifying
+the C++ code.
+
+The C++ code would be:
+
+```C++
+class ComputePath: public SyncActionNode
+{
+  public:
+    ComputePath(const std::string& name, const NodeParameters& params): 
+        SyncActionNode(name, params){}
+
+    NodeStatus tick() override
+    {
+        auto end_points = getParam<EndPointsType>("endpoints");
+        // do your stuff
+        setOutput("path", my_computed_path);
+        // return result...
+    }
+    
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports_list = { {"endpoints", INPUT}, 
+                                        {"path",      OUTPUT} };
+        return ports_list;
+    } 
+};
+
+class FollowPath: public AsyncActionNode
+{
+  public:
+    FollowPath(const std::string& name, const NodeParameters& params): 
+        AsyncActionNode(name, params){}
+
+    NodeStatus tick() override
+    {
+        auto path = getParam<pathType>("path");
+        // do your stuff
+        // return result...
+    }
+    
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports_list = { {"path", INPUT} };
+        return ports_list;
+    } 
+};
+```
+
+# 3. Further changes
 
 ### Major (breaking) changes in the signature of TreeNodes
 
@@ -126,12 +235,8 @@ struct NodeConfiguration
     // needed to register this in the constructor 
     std::string registration_ID;
     
-    // input parameters. Might be strings or pointers to BB entries
+    // input/output parameters. Might be strings or pointers to BB entries
     NodeParameters parameters;
-    
-    // Provide simulatenously a list of output ports and
-    // their remapped keys.
-    std::unordered_map<std::string, std::string> remapped_outputs;
 };
 ```
 
