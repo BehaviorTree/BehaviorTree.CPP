@@ -76,8 +76,6 @@ class TreeNode
 
     void setBlackboard(const Blackboard::Ptr& bb);
 
-    const Blackboard::Ptr& blackboard() const;
-
     const std::string& name() const;
 
     /// Blocking function that will sleep until the setStatus() is called with
@@ -128,7 +126,20 @@ class TreeNode
 
     static bool isBlackboardPattern(StringView str);
 
-  protected:
+    typedef std::unordered_map<std::string, std::string> PortsRemap;
+
+    const PortsRemap& outputPortsRemap() const&;
+
+    bool setOutputPortRemap(const std::string& original_key, const std::string& remapped_key);
+
+    template <typename T>
+    bool setOutput(const std::string& key, const T& value);
+
+    // deprecated because the user should use instead getParam() to read
+    // and setOutput() to write
+    [[deprecated]] const Blackboard::Ptr& blackboard() const;
+
+protected:
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
 
@@ -161,11 +172,11 @@ class TreeNode
 
     Blackboard::Ptr bb_;
 
+    PortsRemap output_remap_;
+
 };
 
 //-------------------------------------------------------
-
-
 template <typename T> inline
 bool TreeNode::getParam(const std::string& key, T& destination) const
 {
@@ -187,10 +198,10 @@ bool TreeNode::getParam(const std::string& key, T& destination) const
              std::logic_error("Calling getParam inside a constructor");
         }
         // check if it follows this ${pattern}, if it does, search inside the blackboard
-        if ( bb_pattern && blackboard() )
+        if ( bb_pattern && bb_ )
         {
             const std::string stripped_key(&str[2], str.size() - 3);
-            const SafeAny::Any* val = blackboard()->getAny(stripped_key);
+            const SafeAny::Any* val = bb_->getAny(stripped_key);
             if( val )
             {
                 if( std::is_same<T,std::string>::value == false &&
@@ -217,7 +228,19 @@ bool TreeNode::getParam(const std::string& key, T& destination) const
     }
 }
 
+template <typename T> inline
+bool TreeNode::setOutput(const std::string& key, const T& value)
+{
+    if( !bb_ || not_initialized_ )
+    {
+        return false;
+    }
+    auto remap_it = output_remap_.find(key);
+    const auto& KEY = ( remap_it == output_remap_.end()) ? key : remap_it->second;
 
+    bb_->set(KEY, value);
+    return true;
 }
 
+}
 #endif

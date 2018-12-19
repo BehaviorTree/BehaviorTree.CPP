@@ -36,7 +36,7 @@ class BlackboardPreconditionNode : public DecoratorNode
 
     static const NodeParameters& requiredNodeParameters()
     {
-        static NodeParameters params = {{"key", ""}, {"expected", "*"}};
+        static NodeParameters params = {{"current", "${BB_key}"}, {"expected", "*"}};
         return params;
     }
 
@@ -49,39 +49,23 @@ class BlackboardPreconditionNode : public DecoratorNode
 template<typename T> inline
 NodeStatus BlackboardPreconditionNode<T>::tick()
 {
-    std::string key;
     T expected_value;
     T current_value;
 
-    getParam("key", key);
     setStatus(NodeStatus::RUNNING);
 
-    // check if the key is present in the blackboard
-    if ( !blackboard() ||  !(blackboard()->contains(key)) )
+    if( !getParam("current", current_value) ||
+        !getParam("expected", expected_value) ||
+        current_value != expected_value )
     {
         return NodeStatus::FAILURE;
     }
-
-    if( initializationParameters().at("expected") == "*" )
+    auto child_status = child_node_->executeTick();
+    if( child_status != NodeStatus::RUNNING )
     {
-        return child_node_->executeTick();
+        haltChild();
     }
-
-    bool same = ( getParam("expected", expected_value) &&
-                  blackboard()->get(key, current_value) &&
-                  current_value == expected_value ) ;
-    if(same)
-    {
-        return child_node_->executeTick();
-    }
-    else{
-        if( child()->status() == NodeStatus::RUNNING)
-        {
-            haltChild();
-        }
-        return NodeStatus::FAILURE;
-    }
-
+    return child_status;
 }
 
 }

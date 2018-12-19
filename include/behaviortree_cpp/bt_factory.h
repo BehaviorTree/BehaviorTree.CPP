@@ -16,8 +16,8 @@
 
 #include <functional>
 #include <memory>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <cstring>
 #include <algorithm>
 
@@ -35,6 +35,7 @@ struct TreeNodeManifest
     NodeType type;
     std::string registration_ID;
     NodeParameters required_parameters;
+    std::unordered_set<std::string> list_outputs;
 };
 
 const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
@@ -144,6 +145,8 @@ class BehaviorTreeFactory
     std::vector<TreeNodeManifest> manifests_;
     std::set<std::string> builtin_IDs_;
 
+    void sortTreeNodeManifests();
+
     // template specialization = SFINAE + black magic
 
     // clang-format off
@@ -161,17 +164,33 @@ class BehaviorTreeFactory
             typename std::enable_if<std::is_same<decltype(T::requiredNodeParameters()), const NodeParameters&>::value>::type>
         : std::true_type {};
 
+    template <typename T, typename = void>
+    struct has_static_method_providedOutputs: std::false_type {};
+
+    template <typename T>
+    struct has_static_method_providedOutputs<T,
+            typename std::enable_if<std::is_same<decltype(T::providedOutputs()), const std::unordered_set<std::string>&>::value>::type>
+        : std::true_type {};
+
+    template <typename Predicate>
+    using enable_if = typename std::enable_if< Predicate::value >::type*;
+
+    template <typename Predicate>
+    using enable_if_not = typename std::enable_if< !Predicate::value >::type*;
+
     template <typename T>
     void registerNodeTypeImpl(const std::string& ID)
     {
-        NodeBuilder builder = getBuilderImpl<T>();
+        NodeBuilder builder = getBuilder<T>();
         TreeNodeManifest manifest = { getType<T>(), ID,
-                                      getRequiredParamsImpl<T>() };
+                                      getRequiredParams<T>(),
+                                      getProvidedOutputs<T>(),
+                                    };
         registerBuilder(manifest, builder);
     }
 
     template <typename T>
-    NodeBuilder getBuilderImpl(typename std::enable_if< !has_params_constructor<T>::value >::type* = nullptr)
+    NodeBuilder getBuilder(enable_if_not< has_params_constructor<T> > = nullptr)
     {
         return [](const std::string& name, const NodeParameters&)
         {
@@ -180,7 +199,7 @@ class BehaviorTreeFactory
     }
 
     template <typename T>
-    NodeBuilder getBuilderImpl(typename std::enable_if<has_default_constructor<T>::value && has_params_constructor<T>::value >::type* = nullptr)
+    NodeBuilder getBuilder(enable_if< has_params_constructor<T> > = nullptr)
     {
         return [this](const std::string& name, const NodeParameters& params)
         {
@@ -203,20 +222,30 @@ class BehaviorTreeFactory
     }
 
     template <typename T>
-    NodeParameters getRequiredParamsImpl(typename std::enable_if< has_static_method_requiredParams<T>::value >::type* = nullptr)
+    NodeParameters getRequiredParams(enable_if< has_static_method_requiredParams<T> > = nullptr)
     {
         return T::requiredNodeParameters();
     }
 
     template <typename T>
-    NodeParameters getRequiredParamsImpl(typename std::enable_if< !has_static_method_requiredParams<T>::value >::type* = nullptr)
+    NodeParameters getRequiredParams(enable_if_not< has_static_method_requiredParams<T> > = nullptr)
     {
         return NodeParameters();
     }
+
+    template <typename T>
+    std::unordered_set<std::string> getProvidedOutputs(enable_if< has_static_method_providedOutputs<T> > = nullptr)
+    {
+        return T::providedOutputs();
+    }
+
+    template <typename T>
+    std::unordered_set<std::string> getProvidedOutputs(enable_if_not< has_static_method_providedOutputs<T> > = nullptr)
+    {
+        return {};
+    }
+
     // clang-format on
-
-    void sortTreeNodeManifests();
-
 };
 
 }   // end namespace
