@@ -1,5 +1,5 @@
 # 1. Roadmap: input/output ports in TreeNode 
-##(Updated the 2018_12_20)
+## (Updated the 2018_12_20)
 
 One of the goals of this project is to separate the role of the Component
 Developer from the Behavior Designed and System Integrator.
