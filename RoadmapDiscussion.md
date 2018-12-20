@@ -154,11 +154,11 @@ class SaySomething: public SyncActionNode
     NodeStatus tick() override
     {
         auto msg = getInput<std::string>("message");
-        if( !msg) // msg is optional<std::string>
+        if( !msg ) // msg is optional<std::string>
         { 
-			return NodeStatus::FAILURE;
+	    return NodeStatus::FAILURE;
         }
-		std::cout << msg.value() << std::endl;
+	std::cout << msg.value() << std::endl;
         return NodeStatus::SUCCESS;
     }
     static const PortsList& providedPorts()
@@ -207,7 +207,7 @@ class FollowPath: public AsyncActionNode
         return ports_list;
     } 
 };
-```.
+```
 
 The user's code doesn't need to know if inputs where passed as "static text" 
 or "blackboard pointers".
