@@ -19,9 +19,6 @@ class XMLParser
 
     void loadFromText(const std::string& xml_text);
 
-    using NodeBuilder = std::function<TreeNode::Ptr(const std::string&, const std::string&,
-                                                    const NodeParameters&, TreeNode::Ptr)>;
-
     TreeNode::Ptr instantiateTree(std::vector<TreeNode::Ptr>& nodes, const Blackboard::Ptr &blackboard);
 
   private:

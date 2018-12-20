@@ -67,6 +67,8 @@ int main()
     PublisherZMQ publisher_zmq(tree.root_node);
 #endif
 
+    printTreeRecursively(tree.root_node);
+
     //while (1)
     {
         NodeStatus status = NodeStatus::RUNNING;
