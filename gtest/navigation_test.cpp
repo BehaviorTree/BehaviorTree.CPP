@@ -151,7 +151,7 @@ void TryDynamicCastPtr(Original* ptr, Casted*& destination)
 
 /****************TESTS START HERE***************************/
 
-TEST(Navigationtest, MoveBaseReocvery)
+TEST(Navigationtest, MoveBaseRecovery)
 {
     BehaviorTreeFactory factory;
 

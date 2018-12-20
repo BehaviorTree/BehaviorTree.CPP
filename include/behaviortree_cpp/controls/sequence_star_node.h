@@ -37,7 +37,7 @@ class SequenceStarNode : public ControlNode
   public:
     SequenceStarNode(const std::string& name, bool reset_on_failure = true);
 
-    // Reset policy passed by parameter [reset_policy]
+    // Reset policy passed by parameter [reset_on_failure]
     SequenceStarNode(const std::string& name, const NodeParameters& params);
 
     virtual ~SequenceStarNode() override = default;
