@@ -47,9 +47,7 @@ Therefore, the only reasonable thing to do is to deprecate `TreeNode::blackboard
 The problem is that `SimpleActionNodes` and `SimpleDecoratorNodes` 
 will loose the ability to access ports.
 
-## 2.2 Solution A
-
-###  2.2.1 NameParameters as input ports
+##  2.2 NameParameters as input ports
 
 We know that NodeParameters are a mechanism to add "arguments" to a Node.
 
@@ -65,60 +63,16 @@ As a consequence, we may consider NodeParameters a valid implementation of an
 __input port__.
 
 From a practical point of view, we should encourage the use of
-`TreeNode::getParam` as much as possible and deprecate `TreeNode::blackboard()::get`
+`TreeNode::getParam` as much as possible and deprecate `TreeNode::blackboard()::get`.
 
-### 2.2.1 Output Ports
+Furthermore, it make sense, for consistency, to rename `getParam` to __getInput__.
 
-We need to add automatically the output ports to the TreeNodeManifest.
+## 2.3 Output Ports
 
-To do that, we can just add the static method
+We need to add the output ports to the TreeNodeManifest.
 
-       const std::set<std::string>& providedOutputPorts() //outputs
-      
-for consistency, we might consider to change the signature of  `requiredNodeParameters()` to
-   
-       const std::set<std::string>& requiredNodeParameters() //inputs
+To do that, we should change `requiredNodeParameters` and use instead:
 
-In other words, requiredNodeParameters provides only the key, but not a default value;
-in fact, we have seen that there is little practical use for a default value.
-
-The new manifest definition would become:
-
-```c++
-struct TreeNodeManifest
-{
-    NodeType type;
-    std::string registration_ID;
-    std::set<std::string> required_parameters;
-    std::set<std::string> provided_outputs;
-};
-```
-
-About remapping, to avoid name cashing it is sufficient to provide remapping
-at run-time __only for the output ports__.
-
-We don't need remapping of input ports, because the name of the entry is 
-already provided at run-time (in the XML).
-
-From the user prospective, `TreeNode::blackboard()::set(key,value)` is replaced by a new method
-`TreeNode::setOutput(key,value)`.
-
-Example:
-
-If the remapping __["goal","navigation_goal"]__ is passed and the user invokes
-
-      setOutput("goal", "kitchen");
-
-The actual entry to be written will be the `navigation_goal`.
-
-
-## 2.3 Solution B
-
-An alternative solution is to make no distintion between input and output ports.
-
-This would make the code more consistent with the old one, but would break the API.
-
-### 2.3.1 New manifest 
 
 ```c++
 
@@ -139,11 +93,26 @@ struct TreeNodeManifest
 static const PortsList& MyNode::providedPorts();
 
 ```
+ 
+About remapping, to avoid name clashing it is sufficient to provide remapping
+at run-time __only for the output ports__.
 
-In other words, requiredNodeParameters, which used to focus only on inputs,
-is substituted by another static method that provides both inputs and outputs.
+We don't need remapping of input ports, because the name of the entry is 
+already provided at run-time (in the XML).
 
-### 2.3.1 from XML attributes to ports in/out/remaping 
+From the user prospective, `TreeNode::blackboard()::set(key,value)` is replaced by a new method
+`TreeNode::setOutput(key,value)`.
+
+Example:
+
+If the remapping __["goal","navigation_goal"]__ is passed as a `NodeParameter'
+ and the user invokes
+
+      setOutput("goal", "kitchen");
+
+The actual entry to be written will be the `navigation_goal`.
+
+## 2.4 Code example
 
 Let's illustrate this change with a practical example.
 
@@ -153,8 +122,8 @@ in `FollowPath`.
 ```XML
     <SequenceStar name="navigate">
         <Action ID="SaySomething" message="hello World"/>
-        <Action ID="ComputePath" endpoints="${navigation_endpoints}" path="${navigation_path}"  />
-        <Action ID="FollowPath"  path="${navigation_path}" />
+        <Action ID="ComputePath" endpoints="{navigation_endpoints}" path="{navigation_path}"  />
+        <Action ID="FollowPath"  path="{navigation_path}" />
     </SequenceStar>
 ```
 
@@ -184,11 +153,14 @@ class SaySomething: public SyncActionNode
 
     NodeStatus tick() override
     {
-        auto end_points = getInput<std::string>("message");
-		std::cout << message << std::endl;
+        auto msg = getInput<std::string>("message");
+        if( !msg) // msg is optional<std::string>
+        { 
+			return NodeStatus::FAILURE;
+        }
+		std::cout << msg.value() << std::endl;
         return NodeStatus::SUCCESS;
     }
-    
     static const PortsList& providedPorts()
     {
         static PortsList ports_list = { {"message", INPUT} );
@@ -209,7 +181,6 @@ class ComputePath: public SyncActionNode
         setOutput("path", my_computed_path);
         // return result...
     }
-    
     static const PortsList& providedPorts()
     {
         static PortsList ports_list = { {"endpoints", INPUT}, 
@@ -230,17 +201,13 @@ class FollowPath: public AsyncActionNode
         // do your stuff
         // return result...
     }
-    
     static const PortsList& providedPorts()
     {
         static PortsList ports_list = { {"path", INPUT} };
         return ports_list;
     } 
 };
-```
-
-Notice that the method `getInput` is used instead of `getPatam` for consistency
-with the new methos `setOutput`.
+```.
 
 The user's code doesn't need to know if inputs where passed as "static text" 
 or "blackboard pointers".
