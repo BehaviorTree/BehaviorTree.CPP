@@ -1,4 +1,5 @@
-# 1. Roadmap: input/output ports in TreeNode
+# 1. Roadmap: input/output ports in TreeNode 
+##(Updated the 2018_12_20)
 
 One of the goals of this project is to separate the role of the Component
 Developer from the Behavior Designed and System Integrator.
@@ -151,12 +152,17 @@ in `FollowPath`.
 
 ```XML
     <SequenceStar name="navigate">
+        <Action ID="SaySomething" message="hello World"/>
         <Action ID="ComputePath" endpoints="${navigation_endpoints}" path="${navigation_path}"  />
         <Action ID="FollowPath"  path="${navigation_path}" />
     </SequenceStar>
 ```
 
-You may notice that no distinction is made in the XML between inputs and outputs.
+You may notice that no distinction is made in the XML between inputs and outputs;
+additionally, passing static parameters is __still__ possible (see SaySomething).
+
+In other words, static text ("Hello world" in SaySomething) and pointers to Blackboard
+( "${navigation_path}" is FollowPath) are __both__ valid inputs.
 
 The actual entries to be read/written are the one specified in the remapping:
 
@@ -169,6 +175,27 @@ modifying the source code.
 The C++ code might be:
 
 ```C++
+
+class SaySomething: public SyncActionNode
+{
+  public:
+    SaySomething(const std::string& name, const NodeParameters& params): 
+        SyncActionNode(name, params){}
+
+    NodeStatus tick() override
+    {
+        auto end_points = getInput<std::string>("message");
+		std::cout << message << std::endl;
+        return NodeStatus::SUCCESS;
+    }
+    
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports_list = { {"message", INPUT} );
+        return ports_list;
+    } 
+};
+
 class ComputePath: public SyncActionNode
 {
   public:
@@ -177,7 +204,7 @@ class ComputePath: public SyncActionNode
 
     NodeStatus tick() override
     {
-        auto end_points = getParam<EndPointsType>("endpoints");
+        auto end_points = getInput<EndPointsType>("endpoints");
         // do your stuff
         setOutput("path", my_computed_path);
         // return result...
@@ -199,7 +226,7 @@ class FollowPath: public AsyncActionNode
 
     NodeStatus tick() override
     {
-        auto path = getParam<PathType>("path");
+        auto path = getInput<PathType>("path");
         // do your stuff
         // return result...
     }
@@ -211,6 +238,13 @@ class FollowPath: public AsyncActionNode
     } 
 };
 ```
+
+Notice that the method `getInput` is used instead of `getPatam` for consistency
+with the new methos `setOutput`.
+
+The user's code doesn't need to know if inputs where passed as "static text" 
+or "blackboard pointers".
+
 
 # 3. Further changes
 
