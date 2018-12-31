@@ -11,6 +11,30 @@ os:
 compiler:
   - gcc
 
+conan-linux: &conan-linux
+    os: linux
+    dist: xenial
+    language: python
+    python: "3.7"
+    services:
+      - docker
+    before_install:
+      - true
+    install:
+      - ./conan/travis/install.sh
+    script:
+      - ./conan/travis/build.sh
+
+conan-osx: &conan-osx
+    os: osx
+    language: generic
+    before_install:
+      - true
+    install:
+      - ./conan/travis/install.sh
+    script:
+      - ./conan/travis/build.sh
+
 matrix:
     include:
       - bare_linux:
@@ -21,10 +45,38 @@ matrix:
         env: ROS_DISTRO="kinetic"
       - ros_melodic:
         env: ROS_DISTRO="melodic"
+      - <<: *conan-linux
+        env: CONAN_GCC_VERSIONS=5 CONAN_DOCKER_IMAGE=conanio/gcc5
+      - <<: *conan-linux
+        env: CONAN_GCC_VERSIONS=6 CONAN_DOCKER_IMAGE=conanio/gcc6
+      - <<: *conan-linux
+        env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7
+      - <<: *conan-linux
+        env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8
+      - <<: *conan-linux
+        env: CONAN_CLANG_VERSIONS=3.9 CONAN_DOCKER_IMAGE=conanio/clang39
+      - <<: *conan-linux
+        env: CONAN_CLANG_VERSIONS=4.0 CONAN_DOCKER_IMAGE=conanio/clang40
+      - <<: *conan-linux
+        env: CONAN_CLANG_VERSIONS=5.0 CONAN_DOCKER_IMAGE=conanio/clang50
+      - <<: *conan-linux
+        env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60
+      - <<: *conan-osx
+        osx_image: xcode8.3
+        env: CONAN_APPLE_CLANG_VERSIONS=8.1
+      - <<: *conan-osx
+        osx_image: xcode9
+        env: CONAN_APPLE_CLANG_VERSIONS=9.0
+      - <<: *conan-osx
+        osx_image: xcode9.4
+        env: CONAN_APPLE_CLANG_VERSIONS=9.1
+      - <<: *conan-osx
+        osx_image: xcode10.1
+        env: CONAN_APPLE_CLANG_VERSIONS=10.0
     fast_finish: false
 
 before_install:
-  - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential 
+  - sudo apt-get update && sudo apt-get --reinstall install -qq build-essential
   - if [ "$ROS_DISTRO" = "none" ]; then sudo apt-get --reinstall install -qq libzmq3-dev; fi
   # GTest: see motivation here https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
   - sudo apt-get --reinstall install -qq libgtest-dev cmake
@@ -40,7 +92,7 @@ install:
 before_script:
   # Prepare build directory
   - mkdir -p build
-  
+
 script:
   - if [ "$ROS_DISTRO"  = "none" ]; then (cd build; cmake .. ; sudo cmake --build . --target install; ./bin/behaviortree_cpp_test); fi
   - if [ "$ROS_DISTRO" != "none" ]; then (.ci_config/travis.sh); fi
