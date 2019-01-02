@@ -36,7 +36,7 @@ class BlackboardPreconditionNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"current"}, {"expected"}};
+        static PortsList ports = {{"current", PortType::INPUT}, {"expected", PortType::INPUT}};
         return ports;
     }
 

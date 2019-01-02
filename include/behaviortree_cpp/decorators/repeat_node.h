@@ -30,7 +30,7 @@ class RepeatNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{NUM_CYCLES}};
+        static PortsList ports = {{NUM_CYCLES, PortType::INPUT}};
         return ports;
     }
 

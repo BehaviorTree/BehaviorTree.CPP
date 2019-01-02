@@ -30,7 +30,7 @@ class RetryNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{NUM_ATTEMPTS}};
+        static PortsList ports = {{NUM_ATTEMPTS, PortType::INPUT}};
         return ports;
     }
 

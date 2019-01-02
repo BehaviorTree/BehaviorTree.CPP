@@ -18,36 +18,34 @@
 
 using namespace BT;
 
-//class InitTestNode: public SyncActionNode
-//{
-//  public:
-//    InitTestNode(bool try_to_access_bb, const std::string& name):
-//      SyncActionNode(name, {}),
-//      _value(0)
-//    {
-//        if( try_to_access_bb )
-//        {
-//            // this should throw
-//            setOutput(KEY(), 33);
-//        }
-//    }
+class BB_TestNode: public SyncActionNode
+{
+  public:
+    BB_TestNode(const std::string& name, const NodeConfiguration& config):
+      SyncActionNode(name, config),
+      _value(0)
+    {
+        getParam(KEY(), _value);
+    }
 
-//    void onInit() {
-//        blackboard()->get(KEY(), _value);
-//    }
+    NodeStatus tick()
+    {
+        _value *= 2;
+        setOutput(KEY(), _value);
+        return NodeStatus::SUCCESS;
+    }
 
-//    NodeStatus tick()
-//    {
-//        _value *= 2;
-//        setOutput(KEY(), _value);
-//        return NodeStatus::SUCCESS;
-//    }
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports = {{KEY(), PortType::INOUT}};
+        return ports;
+    }
 
-//    static const char* KEY() { return "my_entry"; }
+    static const char* KEY() { return "my_entry"; }
 
-//  private:
-//    int _value;
-//};
+  private:
+    int _value;
+};
 
 
 
