@@ -37,7 +37,7 @@ struct XMLParser::Pimpl
                                     const Blackboard::Ptr blackboard,
                                     const TreeNode::Ptr& node_parent);
 
-    TreeNode::Ptr recursivelyCreateTree(const XMLElement* root_element,
+    TreeNode::Ptr recursivelyCreateTree(const std::string& tree_ID,
                                         std::vector<TreeNode::Ptr>& nodes,
                                         const TreeNode::Ptr& root_parent,
                                         const Blackboard::Ptr blackboard);
@@ -385,9 +385,7 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes,
         throw std::runtime_error("[main_tree_to_execute] was not specified correctly");
     }
     //--------------------------------------
-
-    auto root_element = _p->tree_roots[main_tree_ID]->FirstChildElement();
-    return _p->recursivelyCreateTree(root_element, nodes, TreeNode::Ptr(), blackboard);
+    return _p->recursivelyCreateTree(main_tree_ID, nodes, TreeNode::Ptr(), blackboard);
 }
 
 TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, const Blackboard::Ptr blackboard, const TreeNode::Ptr &node_parent)
@@ -463,11 +461,12 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
     return child_node;
 }
 
-TreeNode::Ptr BT::XMLParser::Pimpl::recursivelyCreateTree(const XMLElement* root_element,
+TreeNode::Ptr BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                                                           std::vector<TreeNode::Ptr>& nodes_list,
                                                           const TreeNode::Ptr& root_parent,
                                                           const Blackboard::Ptr blackboard)
 {
+    auto root_element = tree_roots[tree_ID]->FirstChildElement();
     std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
 
     recursiveStep = [&](const TreeNode::Ptr& parent,
@@ -476,10 +475,17 @@ TreeNode::Ptr BT::XMLParser::Pimpl::recursivelyCreateTree(const XMLElement* root
         auto node = createNodeFromXML(element, blackboard, parent);
         nodes_list.push_back(node);
 
-        for (auto child_element = element->FirstChildElement(); child_element;
-             child_element = child_element->NextSiblingElement())
+        if( node->type() == NodeType::SUBTREE )
         {
-            recursiveStep(node, child_element);
+            recursivelyCreateTree( node->name(), nodes_list, node, blackboard );
+        }
+        else
+        {
+            for (auto child_element = element->FirstChildElement(); child_element;
+                 child_element = child_element->NextSiblingElement())
+            {
+                recursiveStep(node, child_element);
+            }
         }
     };
 
