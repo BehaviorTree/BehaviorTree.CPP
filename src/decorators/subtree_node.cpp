@@ -2,7 +2,7 @@
 
 
 BT::DecoratorSubtreeNode::DecoratorSubtreeNode(const std::string &name) :
-  DecoratorNode(name, { {}, "SubTree", {} } )
+  DecoratorNode(name, NodeConfiguration("SubTree") )
 {
 }
 

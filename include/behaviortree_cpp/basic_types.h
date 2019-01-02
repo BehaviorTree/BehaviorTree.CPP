@@ -7,6 +7,9 @@
 #include <vector>
 #include <sstream>
 #include <exception>
+#include <unordered_map>
+#include <unordered_set>
+#include <chrono>
 #include "behaviortree_cpp/string_view.hpp"
 #include "behaviortree_cpp/blackboard/demangle_util.h"
 
@@ -122,6 +125,44 @@ std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
 // small utility, unless you want to use <boost/algorithm/string.hpp>
 std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
+
+template <typename Predicate>
+using enable_if = typename std::enable_if< Predicate::value >::type*;
+
+template <typename Predicate>
+using enable_if_not = typename std::enable_if< !Predicate::value >::type*;
+
+
+typedef std::unordered_map<std::string, std::string> PortsRemapping;
+
+enum class PortType { INPUT, OUTPUT, INOUT };
+
+typedef std::unordered_map<std::string, PortType> PortsList;
+
+template <typename T, typename = void>
+struct has_static_method_providedPorts: std::false_type {};
+
+template <typename T>
+struct has_static_method_providedPorts<T,
+        typename std::enable_if<std::is_same<decltype(T::providedPorts()), const PortsList&>::value>::type>
+    : std::true_type {};
+
+template <typename T> inline
+PortsList getProvidedPorts(enable_if< has_static_method_providedPorts<T> > = nullptr)
+{
+    return T::providedPorts();
 }
+
+template <typename T> inline
+PortsList getProvidedPorts(enable_if_not< has_static_method_providedPorts<T> > = nullptr)
+{
+    return {};
+}
+
+typedef std::chrono::high_resolution_clock::time_point TimePoint;
+typedef std::chrono::high_resolution_clock::duration Duration;
+
+} // end namespace
+
 
 #endif   // BT_BASIC_TYPES_H

@@ -21,7 +21,7 @@ class ForceSuccessDecorator : public DecoratorNode
 {
   public:
     ForceSuccessDecorator(const std::string& name) :
-        DecoratorNode(name, { {}, "ForceSuccess", {} })
+        DecoratorNode(name, NodeConfiguration("ForceSuccess") )
     {
     }
 

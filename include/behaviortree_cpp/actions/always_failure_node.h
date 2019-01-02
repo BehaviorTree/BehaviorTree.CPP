@@ -21,7 +21,7 @@ class AlwaysFailure : public SyncActionNode
 {
   public:
     AlwaysFailure(const std::string& name) :
-        SyncActionNode(name, { {}, "AlwaysFailure", {} })
+        SyncActionNode(name, NodeConfiguration("AlwaysFailure"))
     {
     }
 

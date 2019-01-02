@@ -16,7 +16,7 @@
 namespace BT
 {
 InverterNode::InverterNode(const std::string& name) :
-    DecoratorNode(name, { {}, "Inverter", {} })
+    DecoratorNode(name, NodeConfiguration("Inverter") )
 {
 }
 

@@ -10,7 +10,7 @@ BT_REGISTER_NODES(factory)
 NodeStatus CrossDoor::IsDoorOpen(TreeNode& self)
 {
     SleepMS(500);
-    bool door_open = self.getParam<bool>("door_open").value();
+    bool door_open = self.getInput<bool>("door_open").value();
 
     return door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
@@ -18,7 +18,7 @@ NodeStatus CrossDoor::IsDoorOpen(TreeNode& self)
 NodeStatus CrossDoor::IsDoorLocked(TreeNode& self)
 {
     SleepMS(500);
-    bool door_locked = self.getParam<bool>("door_locked").value();
+    bool door_locked = self.getInput<bool>("door_locked").value();
 
     return door_locked ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
@@ -34,7 +34,7 @@ NodeStatus CrossDoor::UnlockDoor(TreeNode& self)
 NodeStatus CrossDoor::PassThroughDoor(TreeNode& self)
 {
     SleepMS(1000);
-    bool door_open = self.getParam<bool>("door_open").value();
+    bool door_open = self.getInput<bool>("door_open").value();
 
     return door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
@@ -48,7 +48,7 @@ NodeStatus CrossDoor::PassThroughWindow(TreeNode& )
 NodeStatus CrossDoor::OpenDoor(TreeNode& self)
 {
     SleepMS(2000);
-    bool door_locked = self.getParam<bool>("door_locked").value();
+    bool door_locked = self.getInput<bool>("door_locked").value();
 
     if (door_locked)
     {
@@ -61,7 +61,7 @@ NodeStatus CrossDoor::OpenDoor(TreeNode& self)
 
 NodeStatus CrossDoor::CloseDoor(TreeNode& self)
 {
-    bool door_open = self.getParam<bool>("door_open").value();
+    bool door_open = self.getInput<bool>("door_open").value();
 
     if (door_open)
     {

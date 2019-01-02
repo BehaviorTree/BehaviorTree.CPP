@@ -19,7 +19,7 @@ namespace BT
 constexpr const char* SequenceStarNode::RESET_PARAM;
 
 SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failure)
-  : ControlNode::ControlNode(name, { {}, "SequenceStar", {} })
+  : ControlNode::ControlNode(name, NodeConfiguration("SequenceStar") )
   , current_child_idx_(0)
   , reset_on_failure_(reset_on_failure)
   , read_parameter_from_ports_(false)
@@ -36,7 +36,7 @@ NodeStatus SequenceStarNode::tick()
 {
     if(read_parameter_from_ports_)
     {
-        if( !getParam(RESET_PARAM, reset_on_failure_) )
+        if( !getInput(RESET_PARAM, reset_on_failure_) )
         {
             throw std::runtime_error("Missing parameter [reset_on_failure] in SequenceStarNode");
         }

@@ -11,7 +11,7 @@ BT_REGISTER_NODES(factory)
 BT::NodeStatus MoveBaseAction::tick()
 {
     Pose2D goal;
-    if ( !getParam<Pose2D>("goal", goal))
+    if ( !getInput<Pose2D>("goal", goal))
     {
         throw std::runtime_error("missing required input [goal]");
     }

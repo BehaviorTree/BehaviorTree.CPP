@@ -47,7 +47,7 @@ struct XMLParser::Pimpl
     void verifyXML(const XMLDocument* doc) const;
 
     std::list< std::unique_ptr<XMLDocument>> opened_documents;
-    std::map<std::string,const XMLElement*>  tree_roots;
+    std::unordered_map<std::string,const XMLElement*>  tree_roots;
 
     const BehaviorTreeFactory& factory;
 
@@ -420,12 +420,14 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
         instance_name = element->Attribute("ID");
     }
 
+    PortsRemapping remapping_parameters;
+
     for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
     {
         const std::string attribute_name = att->Name();
         if (attribute_name != "ID" && attribute_name != "name")
         {
-            config.ports_remapping[attribute_name] = att->Value();
+            remapping_parameters[attribute_name] = att->Value();
         }
     }
     config.registration_ID = ID;
@@ -436,6 +438,25 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
 
     if( factory.builders().count(ID) != 0)
     {
+        const auto& manifest = factory.manifest(ID);
+        for(const auto& port_it: manifest.ports)
+        {
+            const auto& port_name = port_it.first;
+            auto port_type = port_it.second;
+
+            auto remap_it = remapping_parameters.find( port_name );
+            if( remap_it != remapping_parameters.end() )
+            {
+                if( port_type != PortType::OUTPUT )
+                {
+                    config.input_ports.insert( *remap_it );
+                }
+                if( port_type != PortType::INPUT )
+                {
+                    config.output_ports.insert( *remap_it );
+                }
+            }
+        }
         child_node = factory.instantiateTreeNode(instance_name, config);
     }
     else if( tree_roots.count(ID) != 0) {

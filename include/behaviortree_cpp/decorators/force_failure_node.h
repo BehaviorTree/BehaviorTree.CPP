@@ -21,7 +21,7 @@ class ForceFailureDecorator : public DecoratorNode
 {
   public:
     ForceFailureDecorator(const std::string& name) :
-        DecoratorNode(name, { {}, "ForceFailure", {} })
+        DecoratorNode(name, NodeConfiguration("ForceFailure") )
     {
     }
 

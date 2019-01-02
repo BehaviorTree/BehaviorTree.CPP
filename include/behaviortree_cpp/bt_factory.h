@@ -101,19 +101,19 @@ public:
         constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
         constexpr bool param_constructable =
                 std::is_constructible<T, const std::string&, const NodeConfiguration&>::value;
-        constexpr bool has_static_required_parameters =
-                has_static_method_requiredParams<T>::value;
+        constexpr bool has_static_ports_list =
+                has_static_method_providedPorts<T>::value;
 
         static_assert(default_constructable || param_constructable,
                       "[registerBuilder]: the registered class must have at least one of these two "
                       "constructors: "
                       "  (const std::string&, const NodeParameters&) or (const std::string&).");
 
-        static_assert(!(param_constructable && !has_static_required_parameters),
+        static_assert(!(param_constructable && !has_static_ports_list),
                       "[registerBuilder]: you MUST implement the static method: "
-                      "  const NodeParameters& requiredNodeParameters();\n");
+                      "  const PortsList& providedPorts();\n");
 
-        static_assert(!(has_static_required_parameters && !param_constructable),
+        static_assert(!(has_static_ports_list && !param_constructable),
                       "[registerBuilder]: since you have a static method requiredNodeParameters(), "
                       "you MUST add a constructor sign signature (const std::string&, const "
                       "NodeParameters&)\n");
@@ -122,17 +122,19 @@ public:
     }
 
     /// All the builders. Made available mostly for debug purposes.
-    const std::map<std::string, NodeBuilder>& builders() const;
+    const std::unordered_map<std::string, NodeBuilder>& builders() const;
 
     /// Manifests of all the registered TreeNodes.
     const std::vector<TreeNodeManifest>& manifests() const;
 
-    const  std::set<std::string>& builtinNodes() const;
+    const TreeNodeManifest& manifest(StringView ID) const;
+
+    const std::unordered_set<std::string>& builtinNodes() const;
 
 private:
-    std::map<std::string, NodeBuilder> builders_;
+    std::unordered_map<std::string, NodeBuilder> builders_;
     std::vector<TreeNodeManifest> manifests_;
-    std::set<std::string> builtin_IDs_;
+    std::unordered_set<std::string> builtin_IDs_;
 
     void sortTreeNodeManifests();
 
@@ -144,20 +146,6 @@ private:
 
     template <typename T>
     using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeConfiguration&>;
-
-    template <typename T, typename = void>
-    struct has_static_method_requiredParams: std::false_type {};
-
-    template <typename T>
-    struct has_static_method_requiredParams<T,
-            typename std::enable_if<std::is_same<decltype(T::providedPorts()), const PortsList&>::value>::type>
-        : std::true_type {};
-
-    template <typename Predicate>
-    using enable_if = typename std::enable_if< Predicate::value >::type*;
-
-    template <typename Predicate>
-    using enable_if_not = typename std::enable_if< !Predicate::value >::type*;
 
     template <typename T>
     void registerNodeTypeImpl(const std::string& ID)
@@ -177,10 +165,12 @@ private:
     {
         return [this](const std::string& name, const NodeConfiguration& config)
         {
+            //TODO FIXME
+
             // Special case. Use default constructor if parameters are empty
-            if( config.ports_remapping.empty() &&
-                has_default_constructor<T>::value &&
-                getProvidedPorts<T>().size() > 0 )
+            if( config.input_ports.empty() &&
+                config.output_ports.empty() &&
+                has_default_constructor<T>::value)
             {
                 return std::unique_ptr<TreeNode>(new T(name));
             }
@@ -207,20 +197,6 @@ private:
             return std::unique_ptr<TreeNode>(new T(name));
         };
     }
-
-
-    template <typename T>
-    PortsList getProvidedPorts(enable_if< has_static_method_requiredParams<T> > = nullptr)
-    {
-        return T::providedPorts();
-    }
-
-    template <typename T>
-    PortsList getProvidedPorts(enable_if_not< has_static_method_requiredParams<T> > = nullptr)
-    {
-        return {};
-    }
-
     // clang-format on
 };
 

@@ -142,7 +142,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     return node;
 }
 
-const std::map<std::string, NodeBuilder>& BehaviorTreeFactory::builders() const
+const std::unordered_map<std::string, NodeBuilder> &BehaviorTreeFactory::builders() const
 {
     return builders_;
 }
@@ -152,7 +152,15 @@ const std::vector<TreeNodeManifest>& BehaviorTreeFactory::manifests() const
     return manifests_;
 }
 
-const std::set<std::string> &BehaviorTreeFactory::builtinNodes() const
+const TreeNodeManifest& BehaviorTreeFactory::manifest(StringView ID) const
+{
+    return *std::find_if( manifests_.begin(), manifests_.end(),
+                         [ID](const TreeNodeManifest& manifest) -> bool
+    { return manifest.registration_ID == ID; } );
+}
+
+
+const std::unordered_set<std::string> &BehaviorTreeFactory::builtinNodes() const
 {
     return builtin_IDs_;
 }

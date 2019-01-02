@@ -25,7 +25,7 @@ class BB_TestNode: public SyncActionNode
       SyncActionNode(name, config),
       _value(0)
     {
-        getParam(KEY(), _value);
+        getInput(KEY(), _value);
     }
 
     NodeStatus tick()

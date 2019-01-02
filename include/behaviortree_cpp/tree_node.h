@@ -14,12 +14,6 @@
 #ifndef BEHAVIORTREECORE_TREENODE_H
 #define BEHAVIORTREECORE_TREENODE_H
 
-#include <iostream>
-#include <string>
-#include <map>
-#include <set>
-#include <unordered_set>
-
 #include "behaviortree_cpp/optional.hpp"
 #include "behaviortree_cpp/tick_engine.h"
 #include "behaviortree_cpp/exceptions.h"
@@ -30,17 +24,6 @@
 namespace BT
 {
 
-typedef std::unordered_map<std::string, std::string> PortsRemapping;
-
-struct NodeConfiguration
-{
-    Blackboard::Ptr blackboard;
-    std::string     registration_ID;
-    PortsRemapping  ports_remapping;
-};
-
-typedef std::unordered_set<std::string> PortsList;
-
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
 {
@@ -49,8 +32,21 @@ struct TreeNodeManifest
     PortsList ports;
 };
 
-typedef std::chrono::high_resolution_clock::time_point TimePoint;
-typedef std::chrono::high_resolution_clock::duration Duration;
+struct NodeConfiguration
+{
+    NodeConfiguration() {}
+
+    // initialize with no remapping and no blackboard
+    NodeConfiguration(StringView ID)
+    {
+        registration_ID = ID.to_string();
+    }
+
+    Blackboard::Ptr blackboard;
+    std::string     registration_ID;
+    PortsRemapping  input_ports;
+    PortsRemapping  output_ports;
+};
 
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
@@ -66,7 +62,8 @@ class TreeNode
      *
      * static const PortsList& providedPorts();
      */
-    TreeNode(const std::string& name, const NodeConfiguration& config);
+    TreeNode(const std::string& name, const NodeConfiguration& config); 
+
     virtual ~TreeNode() = default;
 
     typedef std::shared_ptr<TreeNode> Ptr;
@@ -119,17 +116,17 @@ class TreeNode
     /** Get a parameter from the NodeParameters and convert it to type T.
      */
     template <typename T>
-    BT::optional<T> getParam(const std::string& key) const
+    BT::optional<T> getInput(const std::string& key) const
     {
         T out;
-        return getParam(key, out) ? BT::optional<T>(std::move(out)) : BT::nullopt;
+        return getInput(key, out) ? BT::optional<T>(std::move(out)) : BT::nullopt;
     }
 
     /** Get a parameter from the passed NodeParameters and convert it to type T.
      *  Return false either if there is no parameter with this key or if conversion failed.
      */
     template <typename T>
-    bool getParam(const std::string& key, T& destination) const;
+    bool getInput(const std::string& key, T& destination) const;
 
     static bool isParseableString(StringView str);
 
@@ -164,10 +161,10 @@ protected:
 
 //-------------------------------------------------------
 template <typename T> inline
-bool TreeNode::getParam(const std::string& key, T& destination) const
+bool TreeNode::getInput(const std::string& key, T& destination) const
 {
-    auto remap_it = config_.ports_remapping.find(key);
-    if( remap_it == config_.ports_remapping.end() )
+    auto remap_it = config_.input_ports.find(key);
+    if( remap_it == config_.input_ports.end() )
     {
         std::cerr << "getParam() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
         return false;
@@ -217,8 +214,8 @@ bool TreeNode::getParam(const std::string& key, T& destination) const
 template <typename T> inline
 bool TreeNode::setOutput(const std::string& key, const T& value)
 {
-    auto remap_it = config_.ports_remapping.find(key);
-    if( remap_it == config_.ports_remapping.end() )
+    auto remap_it = config_.output_ports.find(key);
+    if( remap_it == config_.output_ports.end() )
     {
         std::cerr << "setOutput() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
         return false;
