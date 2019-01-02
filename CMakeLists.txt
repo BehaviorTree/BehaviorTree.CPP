@@ -247,7 +247,7 @@ install(EXPORT ${PROJECT_CONFIG}
 if( BUILD_EXAMPLES )
     add_subdirectory(tools)
     add_subdirectory(sample_nodes)
-#    add_subdirectory(examples)
+    add_subdirectory(examples)
 endif()
 
 

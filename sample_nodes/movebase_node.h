@@ -20,7 +20,7 @@ namespace BT
 // to AUTOMATICALLY convert a NodeParameter into a Pose2D
 // In other words, implement it if you want to be able to do:
 //
-//   TreeNode::getParam<Pose2D>(key, ...)
+//   TreeNode::getInput<Pose2D>(key, ...)
 //
 template <>
 Pose2D convertFromString(StringView key)
@@ -43,14 +43,12 @@ Pose2D convertFromString(StringView key)
 }
 
 // This is an asynchronous operation that will run in a separate thread.
-// It requires the NodeParameter "goal". If the key is not provided, the default
-// value "0;0;0" is used instead.
+// It requires the NodeParameter "goal".
 
 class MoveBaseAction : public BT::AsyncActionNode
 {
   public:
-    // If your TreeNode requires a NodeParameter, you must define a constructor
-    // with this signature.
+    // Any TreeNode with ports must have a constructor with this signature
     MoveBaseAction(const std::string& name, const BT::NodeConfiguration& config)
       : AsyncActionNode(name, config)
     {

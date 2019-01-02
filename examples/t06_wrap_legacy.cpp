@@ -42,7 +42,7 @@ public:
 // providing a specialization of BT::convertFromString
 namespace BT
 {
-template <> Point3D convertFromString(const StringView& key)
+template <> Point3D convertFromString(StringView key)
 {
     // three real numbers separated by semicolons
     auto parts = BT::splitString(key, ';');
@@ -73,10 +73,7 @@ int main()
     {
         Point3D goal;
         // thanks to paren_node, you can access easily the NodeParameters and the blackboard
-        parent_node.getParam("goal", goal);
-
-        // you can write and read the blackboard if you like
-        //parent_node.blackboard() ....
+        parent_node.getInput("goal", goal);
 
         bool res = move_to.go( goal );
         // convert bool to NodeStatus

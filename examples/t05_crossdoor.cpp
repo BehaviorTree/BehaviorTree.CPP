@@ -48,16 +48,11 @@ int main()
 {
     BT::BehaviorTreeFactory factory;
 
-    // The state of the door is read/written using these keys of the blackboard.
-    auto blackboard = Blackboard::create<BlackboardLocal>();
-    blackboard->set("door_open", false);
-    blackboard->set("door_locked", true);
-
     // register all the actions into the factory
     CrossDoor::RegisterNodes(factory);
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromText(factory, xml_text, blackboard);
+    auto tree = buildTreeFromText(factory, xml_text);
 
     // Create some loggers
     StdCoutLogger logger_cout(tree.root_node);

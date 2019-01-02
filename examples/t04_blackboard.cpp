@@ -26,9 +26,9 @@ const std::string xml_text = R"(
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <SequenceStar name="root">
-            <CalculateGoalPose/>
+            <CalculateGoalPose goal="${GoalPose}" />
             <MoveBase  goal="${GoalPose}" />
-            <SetBlackboard key="OtherGoal" value="-1;3;0.5" />
+            <SetBlackboard output_key="OtherGoal" value="-1;3;0.5" />
             <MoveBase  goal="${OtherGoal}" />
         </SequenceStar>
      </BehaviorTree>
@@ -44,7 +44,7 @@ NodeStatus CalculateGoalPose(TreeNode& self)
     const Pose2D mygoal = {1.1, 2.3, 1.54};
 
     // store it in the blackboard
-    self.setOutput("GoalPose", mygoal);
+    self.setOutput("goal", mygoal);
     return NodeStatus::SUCCESS;
 }
 

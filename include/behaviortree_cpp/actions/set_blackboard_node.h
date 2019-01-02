@@ -27,25 +27,20 @@ class SetBlackboard : public SyncActionNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"key", PortType::INPUT}, {"value", PortType::INPUT}};
+        static PortsList ports = {{"value", PortType::INPUT}, {"output_key", PortType::INOUT} };
         return ports;
     }
 
   private:
     virtual BT::NodeStatus tick() override
     {
-        std::string key;
-        if (!getInput("key", key) || key.empty())
+        std::string key, value;
+        if (!getInput("output_key", key) || !getInput("value", value) )
         {
-            return NodeStatus::FAILURE;
+            throw std::runtime_error("missing port [output_key]");
         }
-        else
-        {
-            std::string value;
-            getInput("value", value);
-            setOutput(key, value);
-            return NodeStatus::SUCCESS;
-        }
+        setOutput("output_key", value);
+        return NodeStatus::SUCCESS;
     }
 };
 }

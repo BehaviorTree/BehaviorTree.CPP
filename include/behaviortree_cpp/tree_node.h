@@ -122,13 +122,13 @@ class TreeNode
         return getInput(key, out) ? BT::optional<T>(std::move(out)) : BT::nullopt;
     }
 
-    /** Get a parameter from the passed NodeParameters and convert it to type T.
+    /** Read an Input Port and convert it to type T.
      *  Return false either if there is no parameter with this key or if conversion failed.
      */
     template <typename T>
     bool getInput(const std::string& key, T& destination) const;
 
-    static bool isParseableString(StringView str);
+    static bool isBlackboardPointer(StringView str);
 
     template <typename T>
     bool setOutput(const std::string& key, const T& value);
@@ -155,8 +155,6 @@ protected:
 
     const NodeConfiguration config_;
 
-    Blackboard::Ptr bb_;
-
 };
 
 //-------------------------------------------------------
@@ -166,7 +164,7 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
     auto remap_it = config_.input_ports.find(key);
     if( remap_it == config_.input_ports.end() )
     {
-        std::cerr << "getParam() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
+        std::cerr << "getInput() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
         return false;
     }
     StringView remapped_key = remap_it->second;
@@ -176,20 +174,21 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
     }
     try
     {
-        if( isParseableString(remapped_key) )
+        if( !isBlackboardPointer(remapped_key))
         {
-            remapped_key.substr( 1, remapped_key.size()-2 );
             destination = convertFromString<T>(remapped_key);
             return true;
         }
 
-        if ( !bb_ )
+        if ( !config_.blackboard )
         {
-            std::cerr << "getParam() trying to access a Blackboard (BB) entry, but BB is invalid" << std::endl;
+            std::cerr << "getInput() trying to access a Blackboard (BB) entry, but BB is invalid" << std::endl;
             return false;
         }
 
-        const SafeAny::Any* val = bb_->getAny( remapped_key.to_string() );
+        remapped_key = remapped_key.substr( 2, remapped_key.size()-3 );
+
+        const SafeAny::Any* val = config_.blackboard->getAny( remapped_key.to_string() );
         if( val )
         {
             if( std::is_same<T,std::string>::value == false &&
@@ -206,7 +205,7 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
     }
     catch (std::runtime_error& err)
     {
-        std::cout << "Exception at getParam(" << key << "): " << err.what() << std::endl;
+        std::cerr << "Exception at getParam(" << key << "): " << err.what() << std::endl;
         return false;
     }
 }
@@ -214,6 +213,12 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
 template <typename T> inline
 bool TreeNode::setOutput(const std::string& key, const T& value)
 {
+    if ( !config_.blackboard )
+    {
+        std::cerr << "getInput() trying to access a Blackboard (BB) entry, but BB is invalid" << std::endl;
+        return false;
+    }
+
     auto remap_it = config_.output_ports.find(key);
     if( remap_it == config_.output_ports.end() )
     {
@@ -225,13 +230,12 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
     {
         remapped_key = key;
     }
-    if( isParseableString(remapped_key) )
+    if( isBlackboardPointer(remapped_key) )
     {
-        std::cerr << "setOutput() failed because you are using a parseable string" << std::endl;
-        return false;
+        remapped_key = remapped_key.substr( 2, remapped_key.size() -3 );
     }
 
-    bb_->set( remapped_key.to_string(), value);
+    config_.blackboard->set( remapped_key.to_string(), value);
     return true;
 }
 

@@ -26,8 +26,7 @@ TreeNode::TreeNode(const std::string& name, const NodeConfiguration& config)
   : name_(name),
     status_(NodeStatus::IDLE),
     uid_(getUID()),
-    config_(config),
-    bb_(config_.blackboard)
+    config_(config)
 {
 }
 
@@ -92,9 +91,9 @@ uint16_t TreeNode::UID() const
     return uid_;
 }
 
-bool TreeNode::isParseableString(StringView str)
+bool TreeNode::isBlackboardPointer(StringView str)
 {
-    return str.size() >= 3 && str.front() == '{' && str.back() == '}';
+    return str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}';
 }
 
 const std::string& TreeNode::registrationName() const
