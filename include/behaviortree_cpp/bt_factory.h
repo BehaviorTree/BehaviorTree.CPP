@@ -27,16 +27,16 @@ namespace BT
 {
 /// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
 typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeConfiguration&)>
-    NodeBuilder;
+NodeBuilder;
 
 const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
 #define BT_REGISTER_NODES(factory)                                                                 \
     extern "C" void __attribute__((visibility("default")))                                         \
-        BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+    BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
 
 class BehaviorTreeFactory
 {
-  public:
+public:
     BehaviorTreeFactory();
 
     bool unregisterBuilder(const std::string& ID);
@@ -88,9 +88,9 @@ class BehaviorTreeFactory
     void registerNodeType(const std::string& ID)
     {
         static_assert(std::is_base_of<ActionNodeBase, T>::value ||
-                          std::is_base_of<ControlNode, T>::value ||
-                          std::is_base_of<DecoratorNode, T>::value ||
-                          std::is_base_of<ConditionNode, T>::value,
+                      std::is_base_of<ControlNode, T>::value ||
+                      std::is_base_of<DecoratorNode, T>::value ||
+                      std::is_base_of<ConditionNode, T>::value,
                       "[registerBuilder]: accepts only classed derived from either ActionNodeBase, "
                       "DecoratorNode, ControlNode or ConditionNode");
 
@@ -100,9 +100,9 @@ class BehaviorTreeFactory
 
         constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
         constexpr bool param_constructable =
-            std::is_constructible<T, const std::string&, const NodeConfiguration&>::value;
+                std::is_constructible<T, const std::string&, const NodeConfiguration&>::value;
         constexpr bool has_static_required_parameters =
-            has_static_method_requiredParams<T>::value;
+                has_static_method_requiredParams<T>::value;
 
         static_assert(default_constructable || param_constructable,
                       "[registerBuilder]: the registered class must have at least one of these two "
@@ -129,7 +129,7 @@ class BehaviorTreeFactory
 
     const  std::set<std::string>& builtinNodes() const;
 
-  private:
+private:
     std::map<std::string, NodeBuilder> builders_;
     std::vector<TreeNodeManifest> manifests_;
     std::set<std::string> builtin_IDs_;
@@ -170,8 +170,37 @@ class BehaviorTreeFactory
         registerBuilder(manifest, builder);
     }
 
+
     template <typename T>
-    NodeBuilder getBuilder(enable_if_not< has_params_constructor<T> > = nullptr)
+    NodeBuilder getBuilder(typename std::enable_if<has_default_constructor<T>::value &&
+                                                   has_params_constructor<T>::value >::type* = nullptr)
+    {
+        return [this](const std::string& name, const NodeConfiguration& config)
+        {
+            // Special case. Use default constructor if parameters are empty
+            if( config.ports_remapping.empty() &&
+                has_default_constructor<T>::value &&
+                getProvidedPorts<T>().size() > 0 )
+            {
+                return std::unique_ptr<TreeNode>(new T(name));
+            }
+            return std::unique_ptr<TreeNode>(new T(name, config));
+        };
+    }
+
+    template <typename T>
+    NodeBuilder getBuilder(typename std::enable_if<!has_default_constructor<T>::value &&
+                                                    has_params_constructor<T>::value >::type* = nullptr)
+    {
+        return [this](const std::string& name, const NodeConfiguration& params)
+        {
+            return std::unique_ptr<TreeNode>(new T(name, params));
+        };
+    }
+
+    template <typename T>
+    NodeBuilder getBuilder(typename std::enable_if<has_default_constructor<T>::value &&
+                                                   !has_params_constructor<T>::value >::type* = nullptr)
     {
         return [](const std::string& name, const NodeConfiguration&)
         {
@@ -179,14 +208,6 @@ class BehaviorTreeFactory
         };
     }
 
-    template <typename T>
-    NodeBuilder getBuilder(enable_if< has_params_constructor<T> > = nullptr)
-    {
-        return [](const std::string& name, const NodeConfiguration& config)
-        {
-            return std::unique_ptr<TreeNode>(new T(name, config));
-        };
-    }
 
     template <typename T>
     PortsList getProvidedPorts(enable_if< has_static_method_requiredParams<T> > = nullptr)
