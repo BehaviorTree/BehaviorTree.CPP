@@ -39,13 +39,6 @@ const std::string xml_text = R"(
         <Action ID="CloseDoor" />
         <Action ID="OpenDoor" />
         <Action ID="PassThroughWindow" />
-        <Decorator ID="Invert" />
-        <Decorator ID="RetryUntilSuccesful">
-            <Parameter label="num_attempts" type="Int" />
-        </Decorator>
-        <Decorator ID="Repeat">
-            <Parameter label="num_cycles" type="Int" />
-        </Decorator>
     </TreeNodesModel>
 </root>
         )";
