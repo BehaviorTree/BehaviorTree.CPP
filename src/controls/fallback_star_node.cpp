@@ -16,7 +16,7 @@
 namespace BT
 {
 FallbackStarNode::FallbackStarNode(const std::string& name)
-    : ControlNode::ControlNode(name, { {}, "FallbackStar", {} }),
+    : ControlNode::ControlNode(name, NodeConfiguration("FallbackStar") ),
       current_child_idx_(0)
 {
 }

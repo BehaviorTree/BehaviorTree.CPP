@@ -54,8 +54,8 @@ NodeStatus BlackboardPreconditionNode<T>::tick()
 
     setStatus(NodeStatus::RUNNING);
 
-    if( !getParam("current", current_value) ||
-        !getParam("expected", expected_value) ||
+    if( !getInput("current", current_value) ||
+        !getInput("expected", expected_value) ||
         current_value != expected_value )
     {
         return NodeStatus::FAILURE;

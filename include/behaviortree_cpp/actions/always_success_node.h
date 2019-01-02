@@ -21,7 +21,7 @@ class AlwaysSuccess : public SyncActionNode
 {
   public:
     AlwaysSuccess(const std::string& name) :
-        SyncActionNode(name, { {}, "AlwaysSuccess", {} } )
+        SyncActionNode(name, NodeConfiguration("AlwaysSuccess") )
     {
     }
 

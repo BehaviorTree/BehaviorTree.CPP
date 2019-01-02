@@ -19,7 +19,7 @@ namespace BT
 constexpr const char* ParallelNode::THRESHOLD_KEY;
 
 ParallelNode::ParallelNode(const std::string& name, int threshold)
-  : ControlNode::ControlNode(name, { {}, "Parallel", {} }),
+  : ControlNode::ControlNode(name, NodeConfiguration("Parallel") ),
     threshold_(threshold),
     read_parameter_from_ports_(false)
 {
@@ -36,7 +36,7 @@ NodeStatus ParallelNode::tick()
 {
     if(read_parameter_from_ports_)
     {
-        if( !getParam(THRESHOLD_KEY, threshold_) )
+        if( !getInput(THRESHOLD_KEY, threshold_) )
         {
             throw std::runtime_error("Missing parameter [threshold] in ParallelNode");
         }

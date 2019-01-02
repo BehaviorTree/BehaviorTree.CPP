@@ -14,7 +14,7 @@
 namespace BT
 {
 TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
-  : DecoratorNode(name, { {}, "Timeout", {} } ),
+  : DecoratorNode(name, NodeConfiguration("Timeout") ),
     child_halted_(false),
     msec_(milliseconds),
     read_parameter_from_ports_(false)
@@ -32,7 +32,7 @@ NodeStatus TimeoutNode::tick()
 {
     if( read_parameter_from_ports_ )
     {
-        if( !getParam("msec", msec_) )
+        if( !getInput("msec", msec_) )
         {
             throw std::runtime_error("Missing parameter [msec] in TimeoutNode");
         }

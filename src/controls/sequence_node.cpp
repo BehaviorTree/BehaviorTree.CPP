@@ -16,7 +16,7 @@
 namespace BT
 {
 SequenceNode::SequenceNode(const std::string& name)
-  : ControlNode::ControlNode(name, { {}, "Sequence", {} })
+  : ControlNode::ControlNode(name, NodeConfiguration("Sequence") )
 {
 }
 

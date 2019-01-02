@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
     BT::BehaviorTreeFactory factory;
 
-    std::set<std::string> default_nodes;
+    std::unordered_set<std::string> default_nodes;
     for (auto& manifest : factory.manifests())
     {
         default_nodes.insert(manifest.registration_ID);
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
         for (auto& param : params)
         {
-            std::cout << "    - [Key]: \"" << param << "\"" << std::endl;
+            std::cout << "    - [Key]: \"" << param.first << "\"" << std::endl;
         }
     }
 

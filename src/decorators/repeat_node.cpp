@@ -18,7 +18,7 @@ namespace BT
 constexpr const char* RepeatNode::NUM_CYCLES;
 
 RepeatNode::RepeatNode(const std::string& name, unsigned int NTries)
-    : DecoratorNode(name, { {}, "Repeat", {} } ),
+    : DecoratorNode(name, NodeConfiguration("Repeat") ),
     num_cycles_(NTries),
     try_index_(0),
     read_parameter_from_ports_(false)
@@ -37,7 +37,7 @@ NodeStatus RepeatNode::tick()
 {
     if( read_parameter_from_ports_ )
     {
-        if( !getParam(NUM_CYCLES, num_cycles_) )
+        if( !getInput(NUM_CYCLES, num_cycles_) )
         {
             throw std::runtime_error("Missing parameter [num_cycles] in RepeatNode");
         }

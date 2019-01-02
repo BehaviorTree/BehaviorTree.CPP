@@ -64,11 +64,17 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
         }
 
         std::vector<flatbuffers::Offset<BT_Serialization::KeyValue>> params;
-        for (const auto& it : node->config().ports)
+        for (const auto& it : node->config().input_ports)
         {
             params.push_back(BT_Serialization::CreateKeyValueDirect(builder,
                                                                     it.first.c_str(),
-                                                                    it.second.remapped_key.c_str()));
+                                                                    it.second.c_str()));
+        }
+        for (const auto& it : node->config().output_ports)
+        {
+            params.push_back(BT_Serialization::CreateKeyValueDirect(builder,
+                                                                    it.first.c_str(),
+                                                                    it.second.c_str()));
         }
 
         auto tn = BT_Serialization::CreateTreeNode(

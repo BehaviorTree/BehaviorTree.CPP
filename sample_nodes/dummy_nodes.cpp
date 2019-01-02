@@ -50,7 +50,7 @@ BT::NodeStatus ApproachObject::tick()
 BT::NodeStatus SaySomething::tick()
 {
     std::string msg;
-    if (!getParam("message", msg))
+    if (!getInput("message", msg))
     {
         throw std::runtime_error("missing required input [message]");
     }
