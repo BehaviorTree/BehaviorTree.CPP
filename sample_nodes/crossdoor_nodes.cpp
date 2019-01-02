@@ -7,77 +7,70 @@ BT_REGISTER_NODES(factory)
     CrossDoor::RegisterNodes(factory);
 }
 
-NodeStatus CrossDoor::IsDoorOpen(TreeNode& self)
+// For simplicity, in this example the status of the door is not shared
+// using ports and blackboards
+static bool _door_open   = false;
+static bool _door_locked = true;
+
+NodeStatus CrossDoor::IsDoorOpen()
 {
     SleepMS(500);
-    bool door_open = self.getInput<bool>("door_open").value();
-
-    return door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+    return _door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-NodeStatus CrossDoor::IsDoorLocked(TreeNode& self)
+NodeStatus CrossDoor::IsDoorLocked()
 {
     SleepMS(500);
-    bool door_locked = self.getInput<bool>("door_locked").value();
-
-    return door_locked ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+    return _door_locked ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-NodeStatus CrossDoor::UnlockDoor(TreeNode& self)
+NodeStatus CrossDoor::UnlockDoor()
 {
     SleepMS(2000);
-    self.setOutput("door_locked", false);
-
+    _door_locked = false;
     return NodeStatus::SUCCESS;
 }
 
-NodeStatus CrossDoor::PassThroughDoor(TreeNode& self)
+NodeStatus CrossDoor::PassThroughDoor()
 {
     SleepMS(1000);
-    bool door_open = self.getInput<bool>("door_open").value();
-
-    return door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+    return _door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
-NodeStatus CrossDoor::PassThroughWindow(TreeNode& )
+NodeStatus CrossDoor::PassThroughWindow()
 {
     SleepMS(1000);
     return NodeStatus::SUCCESS;
 }
 
-NodeStatus CrossDoor::OpenDoor(TreeNode& self)
+NodeStatus CrossDoor::OpenDoor()
 {
-    SleepMS(2000);
-    bool door_locked = self.getInput<bool>("door_locked").value();
-
-    if (door_locked)
+    if (_door_locked)
     {
-        return NodeStatus::FAILURE;
+        SleepMS(2000);
+        _door_open = true;
     }
 
-    self.setOutput("door_open", true);
     return NodeStatus::SUCCESS;
 }
 
-NodeStatus CrossDoor::CloseDoor(TreeNode& self)
+NodeStatus CrossDoor::CloseDoor()
 {
-    bool door_open = self.getInput<bool>("door_open").value();
-
-    if (door_open)
+    if (_door_open)
     {
         SleepMS(1500);
-        self.setOutput("door_open", false);
+        _door_open = false;
     }
     return NodeStatus::SUCCESS;
 }
 
 void CrossDoor::RegisterNodes(BehaviorTreeFactory& factory)
 {
-    factory.registerSimpleCondition("IsDoorOpen", IsDoorOpen);
-    factory.registerSimpleAction("PassThroughDoor", PassThroughDoor);
-    factory.registerSimpleAction("PassThroughWindow", PassThroughWindow);
-    factory.registerSimpleAction("OpenDoor", OpenDoor);
-    factory.registerSimpleAction("CloseDoor", CloseDoor);
-    factory.registerSimpleCondition("IsDoorLocked", IsDoorLocked);
-    factory.registerSimpleAction("UnlockDoor", UnlockDoor);
+    factory.registerSimpleCondition("IsDoorOpen", std::bind(IsDoorOpen));
+    factory.registerSimpleAction("PassThroughDoor", std::bind(PassThroughDoor));
+    factory.registerSimpleAction("PassThroughWindow", std::bind(PassThroughWindow));
+    factory.registerSimpleAction("OpenDoor", std::bind(OpenDoor));
+    factory.registerSimpleAction("CloseDoor", std::bind(CloseDoor));
+    factory.registerSimpleCondition("IsDoorLocked", std::bind(IsDoorLocked));
+    factory.registerSimpleAction("UnlockDoor", std::bind(UnlockDoor));
 }

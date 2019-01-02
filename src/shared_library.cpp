@@ -16,7 +16,7 @@ void* BT::SharedLibrary::getSymbol(const std::string& name)
 
 bool BT::SharedLibrary::hasSymbol(const std::string& name)
 {
-    return findSymbol(name) != 0;
+    return findSymbol(name) != nullptr;
 }
 
 std::string BT::SharedLibrary::getOSName(const std::string& name)

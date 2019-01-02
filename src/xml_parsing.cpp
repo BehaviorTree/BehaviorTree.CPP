@@ -439,22 +439,24 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
     if( factory.builders().count(ID) != 0)
     {
         const auto& manifest = factory.manifest(ID);
-        for(const auto& port_it: manifest.ports)
-        {
-            const auto& port_name = port_it.first;
-            auto port_type = port_it.second;
 
-            auto remap_it = remapping_parameters.find( port_name );
-            if( remap_it != remapping_parameters.end() )
+        for(const auto& remap_it: remapping_parameters)
+        {
+            const auto& port_name = remap_it.first;
+            auto port_type = PortType::INOUT; // default if missing from manifest
+
+            auto port_it = manifest.ports.find( port_name );
+            if( port_it != manifest.ports.end() )
             {
-                if( port_type != PortType::OUTPUT )
-                {
-                    config.input_ports.insert( *remap_it );
-                }
-                if( port_type != PortType::INPUT )
-                {
-                    config.output_ports.insert( *remap_it );
-                }
+                port_type = port_it->second;
+            }
+            if( port_type != PortType::OUTPUT )
+            {
+                config.input_ports.insert( remap_it );
+            }
+            if( port_type != PortType::INPUT )
+            {
+                config.output_ports.insert( remap_it );
             }
         }
         child_node = factory.instantiateTreeNode(instance_name, config);
