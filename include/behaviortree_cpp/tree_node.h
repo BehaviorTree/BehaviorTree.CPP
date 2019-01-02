@@ -55,8 +55,8 @@ class TreeNode
     /**
      * @brief TreeNode main constructor.
      *
-     * @param name         name of the instance, not the type of sensor.
-     * @param parameters   this might be empty. use getParam<T>(key) to parse the value.
+     * @param name     name of the instance, not the type of sensor.
+     * @param config
      *
      * Note: a node that accepts a not empty set of NodeParameters must also implement the method:
      *
@@ -164,7 +164,8 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
     auto remap_it = config_.input_ports.find(key);
     if( remap_it == config_.input_ports.end() )
     {
-        std::cerr << "getInput() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
+        std::cerr << "getInput() failed because NodeConfiguration::input_ports "
+                  << "does not contain the key: [" << key << "]" << std::endl;
         return false;
     }
     StringView remapped_key = remap_it->second;
@@ -182,7 +183,8 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
 
         if ( !config_.blackboard )
         {
-            std::cerr << "getInput() trying to access a Blackboard (BB) entry, but BB is invalid" << std::endl;
+            std::cerr << "getInput() trying to access a Blackboard(BB) entry, but BB is invalid"
+                      << std::endl;
             return false;
         }
 
@@ -200,12 +202,16 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
             else{
                 destination = val->cast<T>();
             }
+            return true;
         }
-        return val != nullptr;
+
+        std::cerr << "getInput() failed because it was unable to find the key ["
+                  << key << "] remapped to [" << remapped_key << "]" << std::endl;
+        return false;
     }
     catch (std::runtime_error& err)
     {
-        std::cerr << "Exception at getParam(" << key << "): " << err.what() << std::endl;
+        std::cerr << "Exception at getInput(" << key << "): " << err.what() << std::endl;
         return false;
     }
 }
@@ -215,14 +221,16 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
 {
     if ( !config_.blackboard )
     {
-        std::cerr << "getInput() trying to access a Blackboard (BB) entry, but BB is invalid" << std::endl;
+        std::cerr << "setOutput() trying to access a Blackboard(BB) entry, but BB is invalid"
+                  << std::endl;
         return false;
     }
 
     auto remap_it = config_.output_ports.find(key);
     if( remap_it == config_.output_ports.end() )
     {
-        std::cerr << "setOutput() will fail unless you correctly set remapping in NodeConfiguration" << std::endl;
+        std::cerr << "setOutput() failed because NodeConfiguration::output_ports "
+                  << "does not contain the key: [" << key << "]" << std::endl;
         return false;
     }
     StringView remapped_key = remap_it->second;

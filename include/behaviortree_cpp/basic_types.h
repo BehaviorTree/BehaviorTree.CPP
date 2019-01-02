@@ -60,7 +60,7 @@ enum SuccessPolicy
 
 typedef nonstd::string_view StringView;
 
-/// TreeNode::getParam requires convertFromString to be implemented for your specific type,
+/// TreeNode::getInput requires convertFromString to be implemented for your specific type,
 /// unless you are try to read it from a blackboard.
 ///
 template <typename T> inline
