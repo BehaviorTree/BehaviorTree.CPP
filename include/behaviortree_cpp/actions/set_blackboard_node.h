@@ -37,7 +37,7 @@ class SetBlackboard : public SyncActionNode
         std::string key, value;
         if (!getInput("output_key", key) || !getInput("value", value) )
         {
-            throw std::runtime_error("missing port [output_key]");
+            throw RuntimeError("missing port [output_key]");
         }
         setOutput("output_key", value);
         return NodeStatus::SUCCESS;

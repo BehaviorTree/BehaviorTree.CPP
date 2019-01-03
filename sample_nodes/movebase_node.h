@@ -29,7 +29,7 @@ Pose2D convertFromString(StringView key)
     auto parts = BT::splitString(key, ';');
     if (parts.size() != 3)
     {
-        throw std::runtime_error("invalid input)");
+        throw BT::RuntimeError("invalid input)");
     }
     else
     {

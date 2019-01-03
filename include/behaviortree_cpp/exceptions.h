@@ -16,13 +16,17 @@
 
 #include <string>
 #include <stdexcept>
+#include "string_view.hpp"
 
 namespace BT
 {
 class BehaviorTreeException : public std::exception
 {
   public:
-    BehaviorTreeException(const std::string& Message);
+    BehaviorTreeException(std::string message)
+        : message_( std::move(message) )
+    {
+    }
 
     const char* what() const noexcept
     {
@@ -32,6 +36,26 @@ class BehaviorTreeException : public std::exception
   private:
     std::string message_;
 };
+
+// This errors are usually related to problems that "probably" require code refactoring
+// to be fixed.
+class LogicError: public BehaviorTreeException
+{
+public:
+    LogicError(std::string message): BehaviorTreeException( std::move(message) )
+    {}
+};
+
+// This errors are usually related to problems that are relted to data or conditions
+// that happen only at run-time
+class RuntimeError: public BehaviorTreeException
+{
+public:
+    RuntimeError(std::string message): BehaviorTreeException( std::move(message) )
+    {}
+};
+
+
 }
 
 #endif

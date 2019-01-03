@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <chrono>
+#include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/string_view.hpp"
 #include "behaviortree_cpp/blackboard/demangle_util.h"
 
@@ -71,8 +72,8 @@ T convertFromString(StringView /*str*/)
     std::cerr << "You (maybe indirectly) called BT::convertFromString() for type [" <<
                  type_name <<"], but I can't find the template specialization.\n" << std::endl;
 
-    throw std::logic_error(std::string("You didn't implement the template specialization of "
-                                       "convertFromString for this type: ") + type_name );
+    throw LogicError(std::string("You didn't implement the template specialization of "
+                                 "convertFromString for this type: ") + type_name );
 }
 
 template <>

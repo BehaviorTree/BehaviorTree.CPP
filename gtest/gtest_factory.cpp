@@ -166,5 +166,5 @@ const std::string xml_text_issue = R"(
     BT::BehaviorTreeFactory factory;
     BT::XMLParser parser(factory);
 
-    EXPECT_THROW( parser.loadFromText(xml_text_issue), std::runtime_error );
+    EXPECT_THROW( parser.loadFromText(xml_text_issue), RuntimeError );
 }

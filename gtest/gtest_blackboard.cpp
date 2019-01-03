@@ -29,7 +29,7 @@ class BB_TestNode: public SyncActionNode
     {
         if(!getInput("in_port", _value))
         {
-            throw  std::runtime_error("need input");
+            throw RuntimeError("need input");
         }
     }
 
@@ -38,7 +38,7 @@ class BB_TestNode: public SyncActionNode
         _value *= 2;
         if( !setOutput("out_port", _value) )
         {
-            throw  std::runtime_error("need output");
+            throw RuntimeError("need output");
         }
         return NodeStatus::SUCCESS;
     }
@@ -66,12 +66,12 @@ TEST(BlackboardTest, GetInputsFromBlackboard)
     NodeConfiguration config;
 
     //Fails because config does not contain input/output ports
-    EXPECT_ANY_THROW( BB_TestNode("missing_port", config) );
+    EXPECT_THROW( BB_TestNode("missing_port", config), RuntimeError );
 
     assignDefaultRemapping<BB_TestNode>( config );
 
     //Fails because config.blackboard is still empty.
-    EXPECT_ANY_THROW( BB_TestNode("missing_bb", config) );
+    EXPECT_THROW( BB_TestNode("missing_bb", config), RuntimeError );
 
     config.blackboard = bb;
     bb->set("in_port", 11 );
@@ -110,7 +110,7 @@ TEST(BlackboardTest, GetInputsFromText)
     config.input_ports["in_port"] = "11";
 
     BB_TestNode missing_out("missing_output", config);
-    EXPECT_ANY_THROW( missing_out.executeTick() );
+    EXPECT_THROW( missing_out.executeTick(), RuntimeError );
 
     config.blackboard = bb;
     config.output_ports["out_port"] = "=";

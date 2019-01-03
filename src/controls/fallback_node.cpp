@@ -54,7 +54,7 @@ NodeStatus FallbackNode::tick()
 
             case NodeStatus::IDLE:
             {
-                throw std::runtime_error("This is not supposed to happen");
+                throw LogicError("This is not supposed to happen");
             }
         }   // end switch
     }       // end for loop

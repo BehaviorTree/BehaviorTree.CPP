@@ -112,7 +112,7 @@ void XMLParser::Pimpl::loadDocImpl(XMLDocument* doc)
     {
         char buffer[200];
         sprintf(buffer, "Error parsing the XML: %s", doc->ErrorName() );
-        throw std::runtime_error(buffer);
+        throw RuntimeError(buffer);
     }
 
     const XMLElement* xml_root = doc->RootElement();
@@ -138,8 +138,8 @@ void XMLParser::Pimpl::loadDocImpl(XMLDocument* doc)
                 file_path = filesystem::path( ros_pkg_path ) / file_path;
             }
 #else
-            throw std::runtime_error("Using attribute [ros_pkg] in <include>, but this library was compiled "
-                                     "without ROS support. Recompile the BehaviorTree.CPP using catkin");
+            throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was compiled "
+                               "without ROS support. Recompile the BehaviorTree.CPP using catkin");
 #endif
         }
 
@@ -181,7 +181,7 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
     auto ThrowError = [&](int line_num, const std::string& text) {
         char buffer[256];
         sprintf(buffer, "Error at line %d: -> %s", line_num, text.c_str());
-        throw std::runtime_error( buffer );
+        throw RuntimeError( buffer );
     };
 
     auto ChildrenCount = [](const XMLElement* parent_node) {
@@ -199,7 +199,7 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
 
     if (!xml_root || !StrEqual(xml_root->Name(), "root"))
     {
-        throw std::runtime_error("The XML must have a root node called <root>");
+        throw RuntimeError("The XML must have a root node called <root>");
     }
     //-------------------------------------------------
     auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
@@ -338,14 +338,14 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
         std::string main_tree = xml_root->Attribute("main_tree_to_execute");
         if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
         {
-            throw std::runtime_error("The tree esecified in [main_tree_to_execute] can't be found");
+            throw RuntimeError("The tree specified in [main_tree_to_execute] can't be found");
         }
     }
     else
     {
         if (tree_count != 1)
         {
-            throw std::runtime_error(
+            throw RuntimeError(
                         "If you don't specify the attribute [main_tree_to_execute], "
                         "Your file must contain a single BehaviorTree");
         }
@@ -369,7 +369,7 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes,
         main_tree_ID = _p->tree_roots.begin()->first;
     }
     else{
-        throw std::runtime_error("[main_tree_to_execute] was not specified correctly");
+        throw RuntimeError("[main_tree_to_execute] was not specified correctly");
     }
     //--------------------------------------
     return _p->recursivelyCreateTree(main_tree_ID, nodes, TreeNode::Ptr(), blackboard);
@@ -451,7 +451,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
         child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(instance_name) );
     }
     else{
-        throw std::runtime_error( ID + " is not a registered node, nor a Subtree");
+        throw RuntimeError( ID + " is not a registered node, nor a Subtree");
     }
 
     if (node_parent)

@@ -54,7 +54,7 @@ const std::string xml_text_sequence_star = R"(
 void Assert(bool condition)
 {
     if (!condition)
-        throw std::runtime_error("this is not what I expected");
+        throw RuntimeError("this is not what I expected");
 }
 
 int main()

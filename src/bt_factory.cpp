@@ -51,7 +51,7 @@ bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
 {
     if( builtinNodes().count(ID) )
     {
-        throw std::logic_error("You can not remove a builtin registration ID");
+        throw LogicError("You can not remove a builtin registration ID");
     }
     auto it = builders_.find(ID);
     if (it == builders_.end())
@@ -139,7 +139,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
         {
             std::cerr << it.first << std::endl;
         }
-        throw std::invalid_argument("ID '" + ID + "' not registered");
+        throw RuntimeError("ID '" + ID + "' not registered");
     }
 
     std::unique_ptr<TreeNode> node = it->second(name, config);

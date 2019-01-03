@@ -196,7 +196,7 @@ NodeStatus SyncActionNode::executeTick()
     auto stat = ActionNodeBase::executeTick();
     if( stat == NodeStatus::RUNNING)
     {
-        throw std::logic_error("SyncActionNode MUSt never return RUNNING");
+        throw LogicError("SyncActionNode MUST never return RUNNING");
     }
     return stat;
 }

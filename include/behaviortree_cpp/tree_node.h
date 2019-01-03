@@ -217,7 +217,7 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
                   << key << "] remapped to [" << remapped_key << "]" << std::endl;
         return false;
     }
-    catch (std::runtime_error& err)
+    catch (BehaviorTreeException& err)
     {
         std::cerr << "Exception at getInput(" << key << "): " << err.what() << std::endl;
         return false;

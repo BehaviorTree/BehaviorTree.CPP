@@ -35,7 +35,7 @@ NodeStatus TimeoutNode::tick()
     {
         if( !getInput("msec", msec_) )
         {
-            throw std::runtime_error("Missing parameter [msec] in TimeoutNode");
+            throw RuntimeError("Missing parameter [msec] in TimeoutNode");
         }
     }
 

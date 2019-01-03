@@ -52,7 +52,7 @@ BT::NodeStatus SaySomething::tick()
     std::string msg;
     if (!getInput("message", msg))
     {
-        throw std::runtime_error("missing required input [message]");
+        throw BT::RuntimeError("missing required input [message]");
     }
     std::cout << "Robot says: " << msg << std::endl;
     return BT::NodeStatus::SUCCESS;
