@@ -38,17 +38,11 @@ struct NodeConfiguration
 {
     NodeConfiguration() {}
 
-    // initialize with no remapping and no blackboard
-    NodeConfiguration(StringView ID)
-    {
-        registration_ID = ID.to_string();
-    }
-
     Blackboard::Ptr blackboard;
-    std::string     registration_ID;
     PortsRemapping  input_ports;
     PortsRemapping  output_ports;
 };
+
 
 // Abstract base class for Behavior Tree Nodes
 class TreeNode
@@ -135,11 +129,18 @@ class TreeNode
     template <typename T>
     bool setOutput(const std::string& key, const T& value);
 
+
 protected:
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
 
     friend class BehaviorTreeFactory;
+
+    // Only BehaviorTreeFactory should call this
+    void setRegistrationID( StringView ID )
+    {
+        registration_ID_.assign( ID.data(), ID.size() );
+    }
 
   private:
 
@@ -157,6 +158,7 @@ protected:
 
     const NodeConfiguration config_;
 
+    std::string registration_ID_;
 };
 
 //-------------------------------------------------------
@@ -171,16 +173,21 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
         return false;
     }
     StringView remapped_key = remap_it->second;
-    if( remapped_key == "=")
-    {
-        remapped_key = key;
-    }
     try
     {
-        if( !isBlackboardPointer(remapped_key))
+        if( remapped_key == "=")
         {
-            destination = convertFromString<T>(remapped_key);
-            return true;
+            remapped_key = key;
+        }
+        else{
+            if( !isBlackboardPointer(remapped_key))
+            {
+                destination = convertFromString<T>(remapped_key);
+                return true;
+            }
+            else{
+                remapped_key = remapped_key.substr( 2, remapped_key.size()-3 );
+            }
         }
 
         if ( !config_.blackboard )
@@ -189,8 +196,6 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
                       << std::endl;
             return false;
         }
-
-        remapped_key = remapped_key.substr( 2, remapped_key.size()-3 );
 
         const SafeAny::Any* val = config_.blackboard->getAny( remapped_key.to_string() );
         if( val )
@@ -247,6 +252,25 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
 
     config_.blackboard->set( remapped_key.to_string(), value);
     return true;
+}
+
+// Utility function to fill the list of ports using T::providedPorts();
+template <typename T> inline
+void assignDefaultRemapping(NodeConfiguration& config)
+{
+    for(const auto& it: getProvidedPorts<T>() )
+    {
+          const auto& port_name = it.first;
+          const auto port_type = it.second;
+          if( port_type != PortType::OUTPUT )
+          {
+              config.input_ports[port_name] = "=";
+          }
+          if( port_type != PortType::INPUT )
+          {
+              config.output_ports[port_name] = "=";
+          }
+    }
 }
 
 }

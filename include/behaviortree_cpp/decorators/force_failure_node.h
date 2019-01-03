@@ -17,12 +17,13 @@
 
 namespace BT
 {
-class ForceFailureDecorator : public DecoratorNode
+class ForceFailureNode : public DecoratorNode
 {
   public:
-    ForceFailureDecorator(const std::string& name) :
-        DecoratorNode(name, NodeConfiguration("ForceFailure") )
+    ForceFailureNode(const std::string& name) :
+        DecoratorNode(name, {} )
     {
+        setRegistrationID("ForceFailure");
     }
 
   private:
@@ -31,7 +32,7 @@ class ForceFailureDecorator : public DecoratorNode
 
 //------------ implementation ----------------------------
 
-inline NodeStatus ForceFailureDecorator::tick()
+inline NodeStatus ForceFailureNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
 

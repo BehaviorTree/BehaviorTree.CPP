@@ -17,12 +17,13 @@
 
 namespace BT
 {
-class AlwaysFailure : public SyncActionNode
+class AlwaysFailureNode : public SyncActionNode
 {
   public:
-    AlwaysFailure(const std::string& name) :
-        SyncActionNode(name, NodeConfiguration("AlwaysFailure"))
+    AlwaysFailureNode(const std::string& name) :
+        SyncActionNode(name, {})
     {
+        setRegistrationID("AlwaysFailure");
     }
 
   private:

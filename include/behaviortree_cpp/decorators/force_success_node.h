@@ -17,12 +17,13 @@
 
 namespace BT
 {
-class ForceSuccessDecorator : public DecoratorNode
+class ForceSuccessNode : public DecoratorNode
 {
   public:
-    ForceSuccessDecorator(const std::string& name) :
-        DecoratorNode(name, NodeConfiguration("ForceSuccess") )
+    ForceSuccessNode(const std::string& name) :
+        DecoratorNode(name, {} )
     {
+        setRegistrationID("ForceSuccess");
     }
 
   private:
@@ -31,7 +32,7 @@ class ForceSuccessDecorator : public DecoratorNode
 
 //------------ implementation ----------------------------
 
-inline NodeStatus ForceSuccessDecorator::tick()
+inline NodeStatus ForceSuccessNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
 

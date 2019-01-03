@@ -18,11 +18,12 @@ namespace BT
 constexpr const char* RetryNode::NUM_ATTEMPTS;
 
 RetryNode::RetryNode(const std::string& name, unsigned int NTries)
-  : DecoratorNode(name, NodeConfiguration("RetryUntilSuccesful") ),
+    : DecoratorNode(name, {} ),
     max_attempts_(NTries),
     try_index_(0),
     read_parameter_from_ports_(false)
 {
+    setRegistrationID("RetryUntilSuccesful");
 }
 
 RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config)

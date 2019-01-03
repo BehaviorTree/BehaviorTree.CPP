@@ -28,11 +28,11 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<RepeatNode>("Repeat");
     registerNodeType<TimeoutNode>("Timeout");
 
-    registerNodeType<ForceSuccessDecorator>("ForceSuccess");
-    registerNodeType<ForceFailureDecorator>("ForceFailure");
+    registerNodeType<ForceSuccessNode>("ForceSuccess");
+    registerNodeType<ForceFailureNode>("ForceFailure");
 
-    registerNodeType<AlwaysSuccess>("AlwaysSuccess");
-    registerNodeType<AlwaysFailure>("AlwaysFailure");
+    registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
+    registerNodeType<AlwaysFailureNode>("AlwaysFailure");
     registerNodeType<SetBlackboard>("SetBlackboard");
 
     registerNodeType<DecoratorSubtreeNode>("SubTree");
@@ -124,9 +124,9 @@ void BehaviorTreeFactory::registerFromPlugin(const std::string file_path)
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
         const std::string& name,
+        const std::string& ID,
         const NodeConfiguration& config) const
 {
-    const auto& ID = config.registration_ID;
     auto it = builders_.find(ID);
     if (it == builders_.end())
     {
@@ -139,6 +139,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     }
 
     std::unique_ptr<TreeNode> node = it->second(name, config);
+    node->setRegistrationID( ID );
     return node;
 }
 

@@ -19,10 +19,11 @@ namespace BT
 constexpr const char* ParallelNode::THRESHOLD_KEY;
 
 ParallelNode::ParallelNode(const std::string& name, int threshold)
-  : ControlNode::ControlNode(name, NodeConfiguration("Parallel") ),
+    : ControlNode::ControlNode(name, {} ),
     threshold_(threshold),
     read_parameter_from_ports_(false)
 {
+    setRegistrationID("Parallel");
 }
 
 ParallelNode::ParallelNode(const std::string &name,
@@ -45,7 +46,7 @@ NodeStatus ParallelNode::tick()
     success_childred_num_ = 0;
     failure_childred_num_ = 0;
     // Vector size initialization. children_count_ could change at runtime if you edit the tree
-    const unsigned children_count = children_nodes_.size();
+    const size_t children_count = children_nodes_.size();
 
     // Routing the tree according to the sequence node's logic:
     for (unsigned int i = 0; i < children_count; i++)

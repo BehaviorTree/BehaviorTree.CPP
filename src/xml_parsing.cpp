@@ -393,7 +393,6 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
     const std::string element_name = element->Name();
     std::string ID;
     std::string instance_name;
-    NodeConfiguration config;
 
     // Actions and Decorators have their own ID
     if (element_name == "Action" || element_name == "Decorator" || element_name == "Condition")
@@ -430,7 +429,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
             remapping_parameters[attribute_name] = att->Value();
         }
     }
-    config.registration_ID = ID;
+    NodeConfiguration config;
     config.blackboard = blackboard;
 
     //---------------------------------------------
@@ -459,7 +458,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
                 config.output_ports.insert( remap_it );
             }
         }
-        child_node = factory.instantiateTreeNode(instance_name, config);
+        child_node = factory.instantiateTreeNode(instance_name, ID, config);
     }
     else if( tree_roots.count(ID) != 0) {
         child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(instance_name) );

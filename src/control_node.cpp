@@ -41,9 +41,9 @@ const std::vector<TreeNode*>& ControlNode::children() const
     return children_nodes_;
 }
 
-void ControlNode::haltChildren(int i)
+void ControlNode::haltChildren(size_t i)
 {
-    for (unsigned int j = i; j < children_nodes_.size(); j++)
+    for (size_t j = i; j < children_nodes_.size(); j++)
     {
         auto child = children_nodes_[j];
         if (child->status() == NodeStatus::RUNNING)

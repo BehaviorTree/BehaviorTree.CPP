@@ -98,7 +98,7 @@ bool TreeNode::isBlackboardPointer(StringView str)
 
 const std::string& TreeNode::registrationName() const
 {
-    return config_.registration_ID;
+    return registration_ID_;
 }
 
 const NodeConfiguration &TreeNode::config() const

@@ -47,7 +47,7 @@ class ControlNode : public TreeNode
     // The method used to interrupt the execution of the node
     virtual void halt() override;
 
-    void haltChildren(int i);
+    void haltChildren(size_t i);
 
     virtual NodeType type() const override final
     {

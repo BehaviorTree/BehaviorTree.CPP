@@ -16,13 +16,14 @@
 namespace BT
 {
 SequenceNode::SequenceNode(const std::string& name)
-  : ControlNode::ControlNode(name, NodeConfiguration("Sequence") )
+    : ControlNode::ControlNode(name, {} )
 {
+    setRegistrationID("Sequence");
 }
 
 NodeStatus SequenceNode::tick()
 {
-    const unsigned children_count = children_nodes_.size();
+    const size_t children_count = children_nodes_.size();
 
     setStatus(NodeStatus::RUNNING);
 

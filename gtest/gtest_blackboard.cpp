@@ -25,7 +25,10 @@ class BB_TestNode: public SyncActionNode
       SyncActionNode(name, config),
       _value(0)
     {
-        getInput(KEY(), _value);
+        if(!getInput(KEY(), _value))
+        {
+            throw  std::runtime_error("need input");
+        }
     }
 
     NodeStatus tick()
@@ -52,22 +55,31 @@ class BB_TestNode: public SyncActionNode
 
 /****************TESTS START HERE***************************/
 
-//TEST(BlackboardTest, CheckOInit)
-//{
-//    auto bb = Blackboard::create<BlackboardLocal>();
-//    const auto KEY = InitTestNode::KEY();
+TEST(BlackboardTest, GetInputs)
+{
+    auto bb = Blackboard::create<BlackboardLocal>();
+    auto key = BB_TestNode::KEY();
 
-//    EXPECT_THROW( InitTestNode(true,"init_test"), std::logic_error );
+    NodeConfiguration config;
 
-//    InitTestNode node(false,"init_test");
-//    node.setBlackboard(bb);
+    //Fails because config does not contain input/output ports
+    EXPECT_ANY_THROW( BB_TestNode("missing_port", config) );
 
-//    bb->set(KEY, 11 );
+    assignDefaultRemapping<BB_TestNode>( config );
 
-//    // this should read and write "my_entry", respectively in onInit() and tick()
-//    node.executeTick();
+    //Fails because config.blackboard is still empty.
+    EXPECT_ANY_THROW( BB_TestNode("missing_bb", config) );
 
-//    ASSERT_EQ( bb->get<int>(KEY), 22 );
+    config.blackboard = bb;
+    bb->set(key, 11 );
+
+    // NO throw
+    BB_TestNode node("missing_bb", config);
+
+    // this should read and write "my_entry", respectively in onInit() and tick()
+    node.executeTick();
+
+    ASSERT_EQ( bb->get<int>(key), 22 );
 
 //    // check that onInit is executed only once
 //    bb->set(KEY, 1 );
@@ -76,4 +88,4 @@ class BB_TestNode: public SyncActionNode
 //    node.setStatus( NodeStatus::IDLE );
 //    node.executeTick();
 //    ASSERT_EQ( bb->get<int>(KEY), 44 );
-//}
+}
