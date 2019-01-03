@@ -93,30 +93,29 @@ endif()
 list(APPEND BT_SOURCE
     src/action_node.cpp
     src/basic_types.cpp
+    src/behavior_tree.cpp
+    src/bt_factory.cpp
     src/decorator_node.cpp
     src/condition_node.cpp
     src/control_node.cpp
     src/exceptions.cpp
     src/leaf_node.cpp
-    src/tick_engine.cpp
-    src/tree_node.cpp
-    src/bt_factory.cpp
-    src/behavior_tree.cpp
-    src/xml_parsing.cpp
     src/shared_library.cpp
     src/shared_library_UNIX.cpp
+    src/tree_node.cpp
+    src/xml_parsing.cpp
 
     src/decorators/inverter_node.cpp
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
-    src/decorators/timeout_node.cpp
     src/decorators/subtree_node.cpp
+    src/decorators/timeout_node.cpp
 
+    src/controls/fallback_node.cpp
+    src/controls/fallback_star_node.cpp
     src/controls/parallel_node.cpp
     src/controls/sequence_node.cpp
     src/controls/sequence_star_node.cpp
-    src/controls/fallback_node.cpp
-    src/controls/fallback_star_node.cpp
 
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger.cpp

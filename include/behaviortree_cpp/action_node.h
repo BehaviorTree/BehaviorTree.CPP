@@ -15,6 +15,7 @@
 #define BEHAVIORTREECORE_ACTIONNODE_H
 
 #include <atomic>
+#include <thread>
 #include "leaf_node.h"
 
 namespace BT
@@ -119,19 +120,24 @@ class AsyncActionNode : public ActionNodeBase
 
     void stopAndJoinThread();
 
-  protected:
+  private:
 
     // The method that is going to be executed by the thread
     void waitForTick();
 
-    // The thread that will execute the node
+    void waitStart();
+
+    void notifyStart();
+
     std::thread thread_;
 
-    // Node semaphore to simulate the tick
-    // (and to synchronize fathers and children)
-    TickEngine tick_engine_;
-
     std::atomic<bool> loop_;
+
+    bool start_action_;
+
+    std::mutex mutex_;
+
+    std::condition_variable condition_variable_;
 };
 
 // Why is the name "ActionNode" deprecated?
