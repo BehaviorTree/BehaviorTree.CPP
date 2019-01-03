@@ -36,7 +36,10 @@ class BB_TestNode: public SyncActionNode
     NodeStatus tick()
     {
         _value *= 2;
-        setOutput("out_port", _value);
+        if( !setOutput("out_port", _value) )
+        {
+            throw  std::runtime_error("need output");
+        }
         return NodeStatus::SUCCESS;
     }
 
@@ -104,9 +107,12 @@ TEST(BlackboardTest, GetInputsFromText)
     auto bb = Blackboard::create<BlackboardLocal>();
 
     NodeConfiguration config;
+    config.input_ports["in_port"] = "11";
+
+    BB_TestNode missing_out("missing_output", config);
+    EXPECT_ANY_THROW( missing_out.executeTick() );
 
     config.blackboard = bb;
-    config.input_ports["in_port"] = "11";
     config.output_ports["out_port"] = "=";
 
     BB_TestNode node("good_one", config);
@@ -127,10 +133,14 @@ TEST(BlackboardTest, WithFactory)
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
             <Sequence>
-                <BB_TestNode name="nodeA" in_port="11"
-                                          out_port="${my_output_port_A}"/>
-                <BB_TestNode name="nodeB" in_port="${my_input_port}"
-                                          out_port="${my_output_port_B}" />
+                <BB_TestNode in_port="11"
+                             out_port="${my_output_port_A}"/>
+
+                <BB_TestNode in_port="${my_input_port}"
+                             out_port="${my_output_port_B}" />
+
+                <BB_TestNode in_port="${my_input_port}"
+                             out_port="${my_input_port}" />
             </Sequence>
         </BehaviorTree>
     </root>)";
@@ -143,6 +153,7 @@ TEST(BlackboardTest, WithFactory)
     ASSERT_EQ( status, NodeStatus::SUCCESS );
     ASSERT_EQ( bb->get<int>("my_output_port_A"), 22 );
     ASSERT_EQ( bb->get<int>("my_output_port_B"), 84 );
+    ASSERT_EQ( bb->get<int>("my_input_port"), 84 );
 
 }
 
