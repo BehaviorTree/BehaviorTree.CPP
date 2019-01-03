@@ -14,7 +14,9 @@
 #include "action_test_node.h"
 #include "condition_test_node.h"
 #include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 using namespace BT;
 
@@ -25,7 +27,7 @@ class BB_TestNode: public SyncActionNode
       SyncActionNode(name, config),
       _value(0)
     {
-        if(!getInput(KEY(), _value))
+        if(!getInput("in_port", _value))
         {
             throw  std::runtime_error("need input");
         }
@@ -34,17 +36,16 @@ class BB_TestNode: public SyncActionNode
     NodeStatus tick()
     {
         _value *= 2;
-        setOutput(KEY(), _value);
+        setOutput("out_port", _value);
         return NodeStatus::SUCCESS;
     }
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{KEY(), PortType::INOUT}};
+        static PortsList ports = {{"in_port", PortType::INPUT},
+                                  {"out_port", PortType::OUTPUT}};
         return ports;
     }
-
-    static const char* KEY() { return "my_entry"; }
 
   private:
     int _value;
@@ -55,10 +56,9 @@ class BB_TestNode: public SyncActionNode
 
 /****************TESTS START HERE***************************/
 
-TEST(BlackboardTest, GetInputs)
+TEST(BlackboardTest, GetInputsFromBlackboard)
 {
     auto bb = Blackboard::create<BlackboardLocal>();
-    auto key = BB_TestNode::KEY();
 
     NodeConfiguration config;
 
@@ -71,21 +71,78 @@ TEST(BlackboardTest, GetInputs)
     EXPECT_ANY_THROW( BB_TestNode("missing_bb", config) );
 
     config.blackboard = bb;
-    bb->set(key, 11 );
+    bb->set("in_port", 11 );
 
     // NO throw
-    BB_TestNode node("missing_bb", config);
+    BB_TestNode node("good_one", config);
 
     // this should read and write "my_entry", respectively in onInit() and tick()
     node.executeTick();
 
-    ASSERT_EQ( bb->get<int>(key), 22 );
-
-//    // check that onInit is executed only once
-//    bb->set(KEY, 1 );
-
-//    // since this value is read in OnInit(), the node will not notice the change in bb
-//    node.setStatus( NodeStatus::IDLE );
-//    node.executeTick();
-//    ASSERT_EQ( bb->get<int>(KEY), 44 );
+    ASSERT_EQ( bb->get<int>("out_port"), 22 );
 }
+
+TEST(BlackboardTest, BasicRemapping)
+{
+    auto bb = Blackboard::create<BlackboardLocal>();
+
+    NodeConfiguration config;
+
+    config.blackboard = bb;
+    config.input_ports["in_port"]   = "${my_input_port}";
+    config.output_ports["out_port"] = "${my_output_port}";
+    bb->set("my_input_port", 11 );
+
+    BB_TestNode node("good_one", config);
+    node.executeTick();
+
+    ASSERT_EQ( bb->get<int>("my_output_port"), 22 );
+}
+
+TEST(BlackboardTest, GetInputsFromText)
+{
+    auto bb = Blackboard::create<BlackboardLocal>();
+
+    NodeConfiguration config;
+
+    config.blackboard = bb;
+    config.input_ports["in_port"] = "11";
+    config.output_ports["out_port"] = "=";
+
+    BB_TestNode node("good_one", config);
+    node.executeTick();
+
+    ASSERT_EQ( bb->get<int>("out_port"), 22 );
+}
+
+TEST(BlackboardTest, WithFactory)
+{
+    auto bb = Blackboard::create<BlackboardLocal>();
+    BehaviorTreeFactory factory;
+
+    factory.registerNodeType<BB_TestNode>("BB_TestNode");
+
+    const std::string xml_text = R"(
+
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <BB_TestNode name="nodeA" in_port="11"
+                                          out_port="${my_output_port_A}"/>
+                <BB_TestNode name="nodeB" in_port="${my_input_port}"
+                                          out_port="${my_output_port_B}" />
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+    bb->set( "my_input_port", 42 );
+
+    auto tree = buildTreeFromText(factory, xml_text, bb);
+    NodeStatus status = tree.root_node->executeTick();
+
+    ASSERT_EQ( status, NodeStatus::SUCCESS );
+    ASSERT_EQ( bb->get<int>("my_output_port_A"), 22 );
+    ASSERT_EQ( bb->get<int>("my_output_port_B"), 84 );
+
+}
+
