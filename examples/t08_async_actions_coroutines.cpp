@@ -4,8 +4,9 @@
 using namespace BT;
 
 /**
- * In this first tutorial we demonstrate how use the CoroActionNode, which
- * should be preferred over AsyncActionNode.
+ * In this tutorial we demonstrate how to use the CoroActionNode, which
+ * should be preferred over AsyncActionNode when the functions you
+ * use are non-blocking.
  *
  */
 
@@ -19,9 +20,9 @@ class MyAsyncAction: public CoroActionNode
     // This is the ideal skeleton/template of an async action:
     //  - A request to a remote service provider.
     //  - A loop where we check if the reply has been received.
-    //    Call setStatusRunningAndYield() to "pause".
+    //  - You may call setStatusRunningAndYield() to "pause".
     //  - Code to execute after the reply.
-    //  - a simple way to handle halt().
+    //  - A simple way to handle halt().
 
     NodeStatus tick() override
     {
@@ -33,7 +34,10 @@ class MyAsyncAction: public CoroActionNode
         while( !reply_received )
         {
             std::cout << name() <<": Waiting reply." << std::endl;
-            reply_received = ++cycle >= 3;
+            if( ++cycle >= 3 )
+            {
+                reply_received = true;
+            }
 
             if( !reply_received )
             {
@@ -43,7 +47,8 @@ class MyAsyncAction: public CoroActionNode
             }
         }
 
-        // this part of the code is never reached if halt() is invoked.
+        // this part of the code is never reached if halt() is invoked,
+        // only if reply_received == true;
         std::cout << name() <<": Done." << std::endl;
         return NodeStatus::SUCCESS;
     }

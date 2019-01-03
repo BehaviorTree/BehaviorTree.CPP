@@ -132,9 +132,6 @@ using enable_if = typename std::enable_if< Predicate::value >::type*;
 template <typename Predicate>
 using enable_if_not = typename std::enable_if< !Predicate::value >::type*;
 
-
-typedef std::unordered_map<std::string, std::string> PortsRemapping;
-
 enum class PortType { INPUT, OUTPUT, INOUT };
 
 typedef std::unordered_map<std::string, PortType> PortsList;
