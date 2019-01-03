@@ -62,7 +62,7 @@ NodeStatus SimpleActionNode::tick()
 //-------------------------------------------------------
 
 AsyncActionNode::AsyncActionNode(const std::string& name, const NodeConfiguration& config)
-  : ActionNodeBase(name, config), loop_(true)
+  : ActionNodeBase(name, config), loop_(true), start_action_(false)
 {
     thread_ = std::thread(&AsyncActionNode::waitForTick, this);
 }
@@ -75,11 +75,28 @@ AsyncActionNode::~AsyncActionNode()
     }
 }
 
+void AsyncActionNode::waitStart()
+{
+    std::unique_lock<std::mutex> UniqueLock(mutex_);
+    while (!start_action_)
+    {
+        condition_variable_.wait(UniqueLock);
+    }
+    start_action_ = false;
+}
+
+void AsyncActionNode::notifyStart()
+{
+    std::lock_guard<std::mutex> LockGuard(mutex_);
+    start_action_ = true;
+    condition_variable_.notify_all();
+}
+
 void AsyncActionNode::waitForTick()
 {
     while (loop_.load())
     {
-        tick_engine_.wait();
+        waitStart();
 
         // check loop_ again because the tick_engine_ could be
         // notified from the method stopAndJoinThread
@@ -97,7 +114,7 @@ NodeStatus AsyncActionNode::executeTick()
     // The other thread is in charge for changing the status
     if (status() == NodeStatus::IDLE)
     {
-        tick_engine_.notify();
+        notifyStart();
     }
 
     // block as long as the state is NodeStatus::IDLE
@@ -108,7 +125,7 @@ NodeStatus AsyncActionNode::executeTick()
 void AsyncActionNode::stopAndJoinThread()
 {
     loop_.store(false);
-    tick_engine_.notify();
+    notifyStart();
     if (thread_.joinable())
     {
         thread_.join();
