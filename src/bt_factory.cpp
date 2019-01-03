@@ -49,12 +49,17 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
 {
+    if( builtinNodes().count(ID) )
+    {
+        throw std::logic_error("You can not remove a builtin registration ID");
+    }
     auto it = builders_.find(ID);
     if (it == builders_.end())
     {
         return false;
     }
     builders_.erase(ID);
+    manifests_.erase(ID);
     return true;
 }
 
@@ -66,9 +71,8 @@ void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest, Node
         throw BehaviorTreeException("ID '" + manifest.registration_ID + "' already registered");
     }
 
-    builders_.insert(std::make_pair(manifest.registration_ID, builder));
-    manifests_.push_back(manifest);
-    sortTreeNodeManifests();
+    builders_.insert(  {manifest.registration_ID, builder} );
+    manifests_.insert( {manifest.registration_ID, manifest} );
 }
 
 void BehaviorTreeFactory::registerSimpleCondition(
@@ -148,35 +152,15 @@ const std::unordered_map<std::string, NodeBuilder> &BehaviorTreeFactory::builder
     return builders_;
 }
 
-const std::vector<TreeNodeManifest>& BehaviorTreeFactory::manifests() const
+const std::unordered_map<std::string,TreeNodeManifest>& BehaviorTreeFactory::manifests() const
 {
     return manifests_;
 }
-
-const TreeNodeManifest& BehaviorTreeFactory::manifest(StringView ID) const
-{
-    return *std::find_if( manifests_.begin(), manifests_.end(),
-                         [ID](const TreeNodeManifest& manifest) -> bool
-    { return manifest.registration_ID == ID; } );
-}
-
 
 const std::unordered_set<std::string> &BehaviorTreeFactory::builtinNodes() const
 {
     return builtin_IDs_;
 }
 
-void BehaviorTreeFactory::sortTreeNodeManifests()
-{
-    std::sort(manifests_.begin(), manifests_.end(),
-              [](const TreeNodeManifest& a, const TreeNodeManifest& b) {
-                  int comp = std::strcmp(toStr(a.type), toStr(b.type));
-                  if (comp == 0)
-                  {
-                      return a.registration_ID < b.registration_ID;
-                  }
-                  return comp < 0;
-              });
-}
 
 }   // end namespace

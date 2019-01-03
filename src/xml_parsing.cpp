@@ -294,24 +294,11 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
         }
         else
         {
-            // Last resort:  MAYBE used ID as element name?
-            bool found = false;
-            for (const auto& model : factory.manifests())
-            {
-                if (model.registration_ID == name)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            for (const auto& subtrees_it : tree_roots)
-            {
-                if (subtrees_it.first == name)
-                {
-                    found = true;
-                    break;
-                }
-            }
+            // search in the factory and the list of subtrees
+            const auto& manifests = factory.manifests();
+
+            bool found = ( manifests.find(name)  != manifests.end() ||
+                           tree_roots.find(name) != tree_roots.end() );
             if (!found)
             {
                 ThrowError(node->GetLineNum(), std::string("Node not recognized: ") + name);
@@ -437,7 +424,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
 
     if( factory.builders().count(ID) != 0)
     {
-        const auto& manifest = factory.manifest(ID);
+        const auto& manifest = factory.manifests().at(ID);
 
         for(const auto& remap_it: remapping_parameters)
         {
