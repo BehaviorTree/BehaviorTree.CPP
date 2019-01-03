@@ -14,11 +14,12 @@
 namespace BT
 {
 TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
-  : DecoratorNode(name, NodeConfiguration("Timeout") ),
+    : DecoratorNode(name, {} ),
     child_halted_(false),
     msec_(milliseconds),
     read_parameter_from_ports_(false)
 {
+    setRegistrationID("Timeout");
 }
 
 TimeoutNode::TimeoutNode(const std::string& name, const NodeConfiguration& config)

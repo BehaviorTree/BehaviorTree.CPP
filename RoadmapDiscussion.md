@@ -182,7 +182,7 @@ The actual entries to be read/written are the one specified in the remapping,
 in this case:
 
  - when application code reads `endpoints`, it is actually reading `navigation_endpoints`.
- - when application code reads/writes `path`, it is actually reading `navigation_path`. 
+ - when application code reads/writes `path`, it is actually accessing `navigation_path`. 
 
 Since these names are specified in the XML, name clashing can be avoided without 
 modifying the source code.
@@ -202,13 +202,13 @@ class SaySomething: public SyncActionNode
         auto msg = getInput<std::string>("message");
         if( !msg ) // msg is optional<std::string>
         { 
-        	return NodeStatus::FAILURE;
+       	    return NodeStatus::FAILURE;
             // or...
             // throw if you think that this should not happen
             // or...
             // replace with default value 
         }
-	    std::cout << msg.value() << std::endl;
+        std::cout << msg.value() << std::endl;
         return NodeStatus::SUCCESS;
     }
     static const PortsList& providedPorts()

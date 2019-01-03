@@ -16,15 +16,15 @@
 namespace BT
 {
 FallbackStarNode::FallbackStarNode(const std::string& name)
-    : ControlNode::ControlNode(name, NodeConfiguration("FallbackStar") ),
+    : ControlNode::ControlNode(name, {} ),
       current_child_idx_(0)
 {
+    setRegistrationID("FallbackStar");
 }
 
 NodeStatus FallbackStarNode::tick()
 {
-    // Vector size initialization. children_count_ could change at runtime if you edit the tree
-    const unsigned children_count = children_nodes_.size();
+    const size_t children_count = children_nodes_.size();
 
     setStatus(NodeStatus::RUNNING);
 

@@ -17,12 +17,13 @@
 
 namespace BT
 {
-class AlwaysSuccess : public SyncActionNode
+class AlwaysSuccessNode : public SyncActionNode
 {
   public:
-    AlwaysSuccess(const std::string& name) :
-        SyncActionNode(name, NodeConfiguration("AlwaysSuccess") )
+    AlwaysSuccessNode(const std::string& name) :
+        SyncActionNode(name, {} )
     {
+        setRegistrationID("AlwaysSuccess");
     }
 
   private:

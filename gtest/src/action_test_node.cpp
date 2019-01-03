@@ -14,7 +14,8 @@
 #include "action_test_node.h"
 #include <string>
 
-BT::AsyncActionTest::AsyncActionTest(const std::string& name) : ActionNode(name, {})
+BT::AsyncActionTest::AsyncActionTest(const std::string& name) :
+    ActionNode(name, {})
 {
     boolean_value_ = true;
     time_ = 3;
@@ -65,7 +66,8 @@ void BT::AsyncActionTest::setBoolean(bool boolean_value)
 
 //----------------------------------------------
 
-BT::SyncActionTest::SyncActionTest(const std::string& name) : SyncActionNode(name, {})
+BT::SyncActionTest::SyncActionTest(const std::string& name) :
+    SyncActionNode(name, {})
 {
     tick_count_ = 0;
     boolean_value_ = true;

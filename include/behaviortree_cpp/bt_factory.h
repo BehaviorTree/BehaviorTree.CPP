@@ -74,7 +74,7 @@ public:
      * @param params   parameters (usually read from the XML definition)
      * @return         new node.
      */
-    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& name,
+    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& name, const std::string &ID,
                                                   const NodeConfiguration& config) const;
 
     /** registerNodeType is the method to use to register your custom TreeNode.

@@ -18,11 +18,12 @@ namespace BT
 constexpr const char* RepeatNode::NUM_CYCLES;
 
 RepeatNode::RepeatNode(const std::string& name, unsigned int NTries)
-    : DecoratorNode(name, NodeConfiguration("Repeat") ),
+    : DecoratorNode(name, {} ),
     num_cycles_(NTries),
     try_index_(0),
     read_parameter_from_ports_(false)
 {
+     setRegistrationID("Repeat");
 }
 
 RepeatNode::RepeatNode(const std::string& name, const NodeConfiguration& config)
