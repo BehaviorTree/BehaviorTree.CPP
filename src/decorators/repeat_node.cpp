@@ -40,7 +40,7 @@ NodeStatus RepeatNode::tick()
     {
         if( !getInput(NUM_CYCLES, num_cycles_) )
         {
-            throw std::runtime_error("Missing parameter [num_cycles] in RepeatNode");
+            throw RuntimeError("Missing parameter [num_cycles] in RepeatNode");
         }
     }
 

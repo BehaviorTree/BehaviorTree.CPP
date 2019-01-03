@@ -48,7 +48,7 @@ template <> Point3D convertFromString(StringView key)
     auto parts = BT::splitString(key, ';');
     if (parts.size() != 3)
     {
-        throw std::runtime_error("invalid input)");
+        throw RuntimeError("invalid input)");
     }
     else
     {

@@ -137,7 +137,7 @@ bool convertFromString<bool>(StringView str)
         }
         else
         {
-            std::runtime_error("invalid bool conversion");
+            throw RuntimeError("invalid bool conversion");
         }
     }
     else if (str.size() == 4)
@@ -148,7 +148,7 @@ bool convertFromString<bool>(StringView str)
         }
         else
         {
-            std::runtime_error("invalid bool conversion");
+            throw RuntimeError("invalid bool conversion");
         }
     }
     else if (str.size() == 5)
@@ -159,12 +159,11 @@ bool convertFromString<bool>(StringView str)
         }
         else
         {
-            std::runtime_error("invalid bool conversion");
+            throw RuntimeError("invalid bool conversion");
         }
     }
 
-    std::runtime_error("invalid bool conversion");
-    return false;
+    throw RuntimeError("invalid bool conversion");
 }
 
 template <>
@@ -178,7 +177,7 @@ NodeStatus convertFromString<NodeStatus>(StringView str)
             return status;
         }
     }
-    throw std::invalid_argument(std::string("Cannot convert this to NodeStatus: ") + str.to_string() );
+    throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") + str.to_string() );
 }
 
 template <>
@@ -192,7 +191,7 @@ NodeType convertFromString<NodeType>(StringView str)
             return status;
         }
     }
-    throw std::invalid_argument(std::string("Cannot convert this to NodeType: ") + str.to_string());
+    throw RuntimeError(std::string("Cannot convert this to NodeType: ") + str.to_string());
 }
 
 std::ostream& operator<<(std::ostream& os, const NodeType& type)

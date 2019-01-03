@@ -35,7 +35,7 @@ PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
     }
     else
     {
-        throw std::logic_error("Only one instance of PublisherZMQ shall be created");
+        throw LogicError("Only one instance of PublisherZMQ shall be created");
     }
 
     flatbuffers::FlatBufferBuilder builder(1024);

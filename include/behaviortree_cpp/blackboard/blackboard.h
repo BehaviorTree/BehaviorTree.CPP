@@ -9,7 +9,7 @@
 #include <mutex>
 
 #include "behaviortree_cpp/blackboard/safe_any.hpp"
-
+#include "behaviortree_cpp/exceptions.h"
 
 namespace BT
 {
@@ -37,7 +37,7 @@ class Blackboard
     {
         if (!impl_)
         {
-            throw std::runtime_error("An empty BlackboardImpl passed to Blackboard");
+            throw LogicError("An empty BlackboardImpl passed to Blackboard");
         }
     }
 
@@ -93,7 +93,7 @@ class Blackboard
         bool found = get(key, value);
         if (!found)
         {
-            throw std::runtime_error("Missing key");
+            throw RuntimeError("Missing key");
         }
         return value;
     }

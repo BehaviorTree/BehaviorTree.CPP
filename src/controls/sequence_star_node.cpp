@@ -39,7 +39,7 @@ NodeStatus SequenceStarNode::tick()
     {
         if( !getInput(RESET_PARAM, reset_on_failure_) )
         {
-            throw std::runtime_error("Missing parameter [reset_on_failure] in SequenceStarNode");
+            throw RuntimeError("Missing parameter [reset_on_failure] in SequenceStarNode");
         }
     }
 
@@ -79,7 +79,7 @@ NodeStatus SequenceStarNode::tick()
 
             case NodeStatus::IDLE:
             {
-                throw std::runtime_error("This is not supposed to happen");
+                throw LogicError("This is not supposed to happen");
             }
         }   // end switch
     }       // end while loop
