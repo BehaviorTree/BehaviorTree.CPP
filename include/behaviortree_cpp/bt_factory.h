@@ -125,18 +125,14 @@ public:
     const std::unordered_map<std::string, NodeBuilder>& builders() const;
 
     /// Manifests of all the registered TreeNodes.
-    const std::vector<TreeNodeManifest>& manifests() const;
-
-    const TreeNodeManifest& manifest(StringView ID) const;
+    const std::unordered_map<std::string, TreeNodeManifest>& manifests() const;
 
     const std::unordered_set<std::string>& builtinNodes() const;
 
 private:
     std::unordered_map<std::string, NodeBuilder> builders_;
-    std::vector<TreeNodeManifest> manifests_;
+    std::unordered_map<std::string, TreeNodeManifest> manifests_;
     std::unordered_set<std::string> builtin_IDs_;
-
-    void sortTreeNodeManifests();
 
     // template specialization = SFINAE + black magic
 
