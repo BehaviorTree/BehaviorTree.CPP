@@ -35,6 +35,10 @@ class Blackboard
     // This is intentionally private. Use Blackboard::create instead
     Blackboard(std::unique_ptr<BlackboardImpl> base) : impl_(std::move(base))
     {
+        if (!impl_)
+        {
+            throw std::runtime_error("An empty BlackboardImpl passed to Blackboard");
+        }
     }
 
   public:
@@ -65,10 +69,6 @@ class Blackboard
         const SafeAny::Any* val = nullptr;
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            if (!impl_)
-            {
-                return false;
-            }
             val = impl_->get(key);
         }
         if (!val)
@@ -82,10 +82,6 @@ class Blackboard
     const SafeAny::Any* getAny(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        if (!impl_)
-        {
-            return nullptr;
-        }
         return impl_->get(key);
     }
 
@@ -107,19 +103,13 @@ class Blackboard
     void set(const std::string& key, const T& value)
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        if (impl_)
-        {
-            impl_->set(key, SafeAny::Any(value));
-        }
-        else{
-            throw  std::runtime_error("called set on an invalid BlackBoard");
-        }
+        impl_->set(key, SafeAny::Any(value));
     }
 
     bool contains(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        return (impl_ && impl_->contains(key));
+        return (impl_->contains(key));
     }
 
   private:
