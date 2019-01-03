@@ -130,10 +130,7 @@ The actual entry to be written will be the `navigation_goal`.
 Since we are breaking the API, it makes sense to add another improvement that
 is not backward compatible.
 
-- `registration_ID` is set only once by the factory. It seems to work just fine
-but I dislike the way it is done.
-
-- People want to read/write  from/to the blackboard in their constructor.
+People want to read/write  from/to the blackboard in their constructor.
 The callback `onInit()` was a workaround.
 
 For these reasons, we propose to change the signature of the TreeNode constructor from:
@@ -152,7 +149,6 @@ typedef std::unordered_map<std::string, std::string> PortsRemapping;
 struct NodeConfiguration
 {
     Blackboard::Ptr blackboard;
-    std::string     registration_ID;
     PortsRemapping  input_ports;
     PortsRemapping  output_ports;
 };
