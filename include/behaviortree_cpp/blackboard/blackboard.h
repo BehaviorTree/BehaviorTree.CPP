@@ -6,6 +6,7 @@
 #include <memory>
 #include <stdint.h>
 #include <unordered_map>
+#include <mutex>
 
 #include "behaviortree_cpp/blackboard/safe_any.hpp"
 
@@ -61,22 +62,26 @@ class Blackboard
     template <typename T>
     bool get(const std::string& key, T& value) const
     {
-        if (!impl_)
+        const SafeAny::Any* val = nullptr;
         {
-            return false;
+            std::unique_lock<std::mutex> lock(mutex_);
+            if (!impl_)
+            {
+                return false;
+            }
+            val = impl_->get(key);
         }
-        const SafeAny::Any* val = impl_->get(key);
         if (!val)
         {
             return false;
         }
-
         value = val->cast<T>();
         return true;
     }
 
     const SafeAny::Any* getAny(const std::string& key) const
     {
+        std::unique_lock<std::mutex> lock(mutex_);
         if (!impl_)
         {
             return nullptr;
@@ -101,6 +106,7 @@ class Blackboard
     template <typename T>
     void set(const std::string& key, const T& value)
     {
+        std::unique_lock<std::mutex> lock(mutex_);
         if (impl_)
         {
             impl_->set(key, SafeAny::Any(value));
@@ -112,11 +118,13 @@ class Blackboard
 
     bool contains(const std::string& key) const
     {
+        std::unique_lock<std::mutex> lock(mutex_);
         return (impl_ && impl_->contains(key));
     }
 
   private:
     std::unique_ptr<BlackboardImpl> impl_;
+    mutable std::mutex mutex_;
 };
 }
 
