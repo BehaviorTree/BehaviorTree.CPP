@@ -16,6 +16,11 @@ namespace BT
 // This is the "backend" of the blackboard.
 // To create a new blackboard, user must inherit from BlackboardImpl
 // and override set and get.
+/**
+ * @brief The BlackboardImpl is the "backend" of the blackboard.
+ * To create a new blackboard, user must inherit from BlackboardImpl
+ * and override set and get.
+ */
 class BlackboardImpl
 {
   public:
@@ -26,10 +31,14 @@ class BlackboardImpl
     virtual bool contains(const std::string& key) const = 0;
 };
 
-// This is the "frontend" to be used by the developer.
-//
-// Even if the abstract class BlackboardImpl can be used directly,
-// the templatized methods set() and get() are more user-friendly
+
+/**
+ * @brief The Blackboard is the mechanism used by BehaviorTrees to exchange
+ * typed data.
+ *
+ * This is the "frontend" to be used by the developer. The actual implementation
+ * is defined as a derived class of BlackboardImpl.
+ */
 class Blackboard
 {
     // This is intentionally private. Use Blackboard::create instead
@@ -60,8 +69,6 @@ class Blackboard
 
     /** Return true if the entry with the given key was found.
      *  Note that this method may throw an exception if the cast to T failed.
-     *
-     * return true if succesful
      */
     template <typename T>
     bool get(const std::string& key, T& value) const
@@ -79,13 +86,21 @@ class Blackboard
         return true;
     }
 
+    /**
+     * @brief The method getAny allow the user to access directly the type
+     * erased value.
+     *
+     * @return the pointer or nullptr if it fails.
+     */
     const SafeAny::Any* getAny(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);
         return impl_->get(key);
     }
 
-
+    /**
+     * Version of get() that throws if it fails.
+     */
     template <typename T>
     T get(const std::string& key) const
     {
@@ -106,6 +121,7 @@ class Blackboard
         impl_->set(key, SafeAny::Any(value));
     }
 
+    /// Return true if the BB contains an entry with the given key.
     bool contains(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);

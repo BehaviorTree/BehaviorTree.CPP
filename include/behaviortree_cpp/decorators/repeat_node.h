@@ -18,10 +18,25 @@
 
 namespace BT
 {
+/**
+ * @brief The RepeatNode is used to execute a child several times, as long
+ * as it succeed.
+ *
+ * To succeed, the child must return SUCCESS N times (port "num_cycles").
+ *
+ * If the child returns FAILURE, the loop is stopped and this node
+ * returns FAILURE.
+ *
+ * Example:
+ *
+ * <Repeat num_cycles="3">
+ *   <ClapYourHandsOnce/>
+ * </Repeat>
+ */
 class RepeatNode : public DecoratorNode
 {
   public:
-    // Constructor
+
     RepeatNode(const std::string& name, unsigned int NTries);
 
     RepeatNode(const std::string& name, const NodeConfiguration& config);

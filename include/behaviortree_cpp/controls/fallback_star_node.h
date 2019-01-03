@@ -28,7 +28,7 @@ namespace BT
  * - If a child returns RUNNING, this node returns RUNNING.
  *   Loop is NOT restarted, the same running child will be ticked again.
  *
- * - If a child returns SUCCESS, stop the loop and returns SUCCESS.
+ * - If a child returns SUCCESS, stop the loop and return SUCCESS.
  */
 
 class FallbackStarNode : public ControlNode

@@ -15,7 +15,7 @@
 #include <string>
 
 BT::AsyncActionTest::AsyncActionTest(const std::string& name) :
-    ActionNode(name, {})
+    AsyncActionNode(name, {})
 {
     boolean_value_ = true;
     time_ = 3;

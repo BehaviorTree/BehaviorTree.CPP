@@ -17,6 +17,9 @@
 
 namespace BT
 {
+/**
+ * Simple actions that always returns SUCCESS.
+ */
 class AlwaysSuccessNode : public SyncActionNode
 {
   public:

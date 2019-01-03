@@ -17,6 +17,9 @@
 
 namespace BT
 {
+/**
+ * @brief The ForceSuccessNode returns always SUCCESS or RUNNING.
+ */
 class ForceSuccessNode : public DecoratorNode
 {
   public:

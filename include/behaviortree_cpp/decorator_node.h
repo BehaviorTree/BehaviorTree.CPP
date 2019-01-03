@@ -11,20 +11,21 @@ class DecoratorNode : public TreeNode
     TreeNode* child_node_;
 
   public:
-    // Constructor
+
     DecoratorNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~DecoratorNode() override = default;
 
-    // The method used to fill the child vector
     void setChild(TreeNode* child);
 
     const TreeNode* child() const;
+
     TreeNode* child();
 
-    // The method used to interrupt the execution of the node
+    /// The method used to interrupt the execution of this node
     virtual void halt() override;
 
+    /// Halt() the child node
     void haltChild();
 
     virtual NodeType type() const override
@@ -51,7 +52,7 @@ class SimpleDecoratorNode : public DecoratorNode
   public:
     typedef std::function<NodeStatus(NodeStatus, TreeNode&)> TickFunctor;
 
-    // Constructor: you must provide the function to call when tick() is invoked
+    // You must provide the function to call when tick() is invoked
     SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor, const NodeConfiguration& config);
 
     ~SimpleDecoratorNode() override = default;

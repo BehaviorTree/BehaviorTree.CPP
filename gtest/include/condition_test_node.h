@@ -8,7 +8,7 @@ namespace BT
 class ConditionTestNode : public ConditionNode
 {
   public:
-    // Constructor
+    
     ConditionTestNode(const std::string& name);
 
     void setBoolean(bool boolean_value);
