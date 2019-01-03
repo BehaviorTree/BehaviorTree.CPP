@@ -29,9 +29,9 @@ int main()
 
     // To be able to use ALL the functionalities of a TreeNode,
     //  your should create a class that inherits from either:
-    // - ConditionNode  (synchronous execution)
-    // - ActionNodeBase (synchronous execution)
-    // - ActionNode     (asynchronous execution in a separate thread).
+    // - ConditionNode
+    // - ActionNode (Sync, Asyn, Coro)
+
     ApproachObject approach_object("approach_object");
 
     // Add children to the sequence.

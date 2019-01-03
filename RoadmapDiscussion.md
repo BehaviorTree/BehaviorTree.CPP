@@ -9,12 +9,11 @@ Rephrasing:
 - Custom Actions (or, in general, custom TreeNodes) must be reusable building
 blocks.
 
-- To build a Tree out of Nodes, the Behavior Designer must not need to read 
+- To build a BehaviorTree out of TreeNodes, the Behavior Designer must not need to read 
 nor modify the source code of the a given TreeNode.
 
-We realized that there is a __major design flow__ that undermines this goal: the way
+There is a __major design flow__ that undermines this goal: the way
 the BlackBoard is currently used to implement dataflow between nodes.
-
 
 As described in [issue #18](https://github.com/BehaviorTree/BehaviorTree.CPP/issues/18)
 there are several potential problems:
@@ -27,7 +26,7 @@ there are several potential problems:
 SMACH solved this problem using [input and output ports](http://wiki.ros.org/smach/Tutorials/User%20Data)
 and remapping to connect them.
 
-In the ROS community we potentially have the same problem with topics,
+In the ROS community, we potentially have the same problem with topics,
 but tools such as __rosinfo__ provides introspection at run-time and name
 clashing is avoided using remapping.
 
@@ -35,9 +34,8 @@ clashing is avoided using remapping.
 
 Goals of the new design:
 
-- The [TreeNodeManifest](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/include/behaviortree_cpp/bt_factory.h#L33)
-should contain information about input and outputs ports, to make this information available
-to external tools.
+- The `TreeNodeManifest` should contain information about input and outputs ports, 
+to make this information available to external tools.
 
 - Avoid name clashing using key remapping.
 
@@ -52,7 +50,7 @@ As a consequence, there is no way to introspect which entries are accessed.
 For this reason, we must deprecate `TreeNode::blackboard()` and use instead
 a more sensible API such as `getInput` and `setOutput`.
 
-The latter methods should access only a limited number of entries.
+The latter methods should access only a limited number of entries, the __ports__.
 
 ##  2.2 NameParameters == Input Ports
 
@@ -60,12 +58,11 @@ In version 2.X, `NodeParameters` are a mechanism to add "arguments" to a Node.
 
 A NodeParameter can be either:
 
-- text that is parsed by the user's code or 
+- text that is parsed by the user's code using `convertFromString()` or 
 - a "pointer" to an entry of the BB.
 
-After few months, it became clear that the latter case is the rule rather than the exception.
-
-In probably 80-90% of the cases, NodeParameters are passed through the BB.
+After few months, it became clear that the latter case is the rule rather than the exception:
+in probably 80-90% of the cases, NodeParameters are passed through the BB.
 
 Furthermore, `requiredNodeParameters` is already an effective way to 
 automatically create a manifest.
@@ -74,7 +71,7 @@ For these reasons, we may consider NodeParameters a valid implementation of an
 __input port__.
 
 The implementation would still be the same, what changes is our interpretation,
-i.e. NodeParameter __are__ already input ports.
+i.e. NodeParameter __are__ input ports.
 
 From a practical point of view, we should encourage the use of
 `TreeNode::getParam` and deprecate `TreeNode::blackboard()::get`.
@@ -85,7 +82,8 @@ Furthermore, it makes sense, for consistency, to rename `getParam` to __getInput
 
 We need to add the output ports to the TreeNodeManifest.
 
-We propose to remove `requiredNodeParameters` and use instead:
+The static method `requiredNodeParameters` should be replaced by 
+`providedPorts`:
 
 
 ```c++
@@ -94,7 +92,7 @@ enum class PortType { INPUT, OUTPUT, INOUT };
 
 typedef std::unordered_map<std::string, PortType> PortsList;
 
-// New Manifest
+// New Manifest.
 struct TreeNodeManifest
 {
     NodeType type;
@@ -117,7 +115,7 @@ already provided at run-time (in the XML).
 From the user prospective, `TreeNode::blackboard()::set(key,value)` is replaced 
 by a new method `TreeNode::setOutput(key,value)`.
 
-Example:
+__Example__:
 
 If the remapping pair __["goal","navigation_goal"]__ is passed and the user invokes
 
@@ -125,119 +123,17 @@ If the remapping pair __["goal","navigation_goal"]__ is passed and the user invo
 
 The actual entry to be written will be the `navigation_goal`.
 
-# 3. Code example
-
-Let's illustrate this change with a practical example.
-
-In this example __path__ is an output port in `ComputePath` but an input port
-in `FollowPath`.
-
-```XML
-    <SequenceStar name="navigate">
-        <Action ID="SaySomething" message="hello World"/>
-        <Action ID="ComputePath" endpoints="{navigation_endpoints}" 
-                                 path="{navigation_path}" />
-        <Action ID="FollowPath"  path="{navigation_path}" />
-    </SequenceStar>
-```
-
-You may notice that no distinction is made in the XML between inputs and outputs;
-additionally, passing static text parameters is __still__ possible (see SaySomething).
-
-In other words, static text ("Hello world" in SaySomething) and pointers to Blackboard
-( "${navigation_path}" is FollowPath) are __both__ valid inputs.
-
-The actual entries to be read/written are the one specified in the remapping:
-
- - navigation_endpoints
- - navigation_path 
-
-Since these names are specified in the XML, name clashing can be avoided without 
-modifying the source code.
-
-The C++ code might be:
-
-```C++
-
-class SaySomething: public SyncActionNode
-{
-  public:
-    SaySomething(const std::string& name, const NodeParameters& params): 
-        SyncActionNode(name, params){}
-
-    NodeStatus tick() override
-    {
-        auto msg = getInput<std::string>("message");
-        if( !msg ) // msg is optional<std::string>
-        { 
-	        return NodeStatus::FAILURE;
-        }
-	    std::cout << msg.value() << std::endl;
-        return NodeStatus::SUCCESS;
-    }
-    static const PortsList& providedPorts()
-    {
-        static PortsList ports_list = { {"message", INPUT} );
-        return ports_list;
-    } 
-};
-
-class ComputePath: public SyncActionNode
-{
-  public:
-    ComputePath(const std::string& name, const NodeConfiguration& config):
-        SyncActionNode(name, config){}
-
-    NodeStatus tick() override
-    {
-        auto end_points = getInput<EndPointsType>("endpoints");
-        // do your stuff
-        setOutput("path", my_computed_path);
-        // return result...
-    }
-    static const PortsList& providedPorts()
-    {
-        static PortsList ports_list = { {"endpoints", INPUT}, 
-                                        {"path",      OUTPUT} };
-        return ports_list;
-    } 
-};
-
-class FollowPath: public AsyncActionNode
-{
-  public:
-    FollowPath(const std::string& name, const NodeConfiguration& config):
-        AsyncActionNode(name, config){}
-
-    NodeStatus tick() override
-    {
-        auto path = getInput<PathType>("path");
-        // do your stuff
-        // return result...
-    }
-    static const PortsList& providedPorts()
-    {
-        static PortsList ports_list = { {"path", INPUT} };
-        return ports_list;
-    } 
-};
-```
-
-The user's code doesn't need to know if inputs where passed as "static text" 
-or "blackboard pointers".
-
-
-# 4. Further changes: NodeConfiguration
+# 3. Further changes: NodeConfiguration
 
 ### Major (breaking) changes in the signature of TreeNodes
 
-Since we are breaking the API, it make sense to add another improvement that
+Since we are breaking the API, it makes sense to add another improvement that
 is not backward compatible.
 
 - `registration_ID` is set only once by the factory. It seems to work just fine
 but I dislike the way it is done.
 
-- People want to read/write  from/to the blacbboard in their constructor.
+- People want to read/write  from/to the blackboard in their constructor.
 The callback `onInit()` was a workaround.
 
 For these reasons, we propose to change the signature of the TreeNode constructor from:
@@ -257,8 +153,116 @@ struct NodeConfiguration
 {
     Blackboard::Ptr blackboard;
     std::string     registration_ID;
-    PortsRemapping  ports_remapping;
+    PortsRemapping  input_ports;
+    PortsRemapping  output_ports;
 };
 ```
+
+# 4. Code example
+
+Let's illustrate these changes with a practical example.
+
+In this example __path__ is an output port in `ComputePath` but an input port
+in `FollowPath`.
+
+```XML
+    <SequenceStar name="navigate">
+        <Action ID="SaySomething" message="hello World"/>
+        <Action ID="ComputePath" endpoints="{navigation_endpoints}" 
+                                 path="{navigation_path}" />
+        <Action ID="FollowPath"  path="{navigation_path}" />
+    </SequenceStar>
+```
+
+No distinction is made in the XML between inputs, outputs;
+additionally, passing static text parameters is __still__ possible 
+(see "hello World" in SaySomething).
+
+The actual entries to be read/written are the one specified in the remapping,
+in this case:
+
+ - when application code reads `endpoints`, it is actually reading `navigation_endpoints`.
+ - when application code reads/writes `path`, it is actually reading `navigation_path`. 
+
+Since these names are specified in the XML, name clashing can be avoided without 
+modifying the source code.
+
+The corresponfing C++ code might be:
+
+```C++
+
+class SaySomething: public SyncActionNode
+{
+  public:
+    SaySomething(const std::string& name, const NodeConfiguration& config): 
+        SyncActionNode(name, config){}
+
+    NodeStatus tick() override
+    {
+        auto msg = getInput<std::string>("message");
+        if( !msg ) // msg is optional<std::string>
+        { 
+        	return NodeStatus::FAILURE;
+            // or...
+            // throw if you think that this should not happen
+            // or...
+            // replace with default value 
+        }
+	    std::cout << msg.value() << std::endl;
+        return NodeStatus::SUCCESS;
+    }
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports_list = { {"message", PortType::INPUT} );
+        return ports_list;
+    } 
+};
+
+class ComputePath: public SyncActionNode
+{
+  public:
+    ComputePath(const std::string& name, const NodeConfiguration& config):
+        SyncActionNode(name, config){}
+
+    NodeStatus tick() override
+    {
+        auto end_points = getInput<EndPointsType>("endpoints");
+        // do your stuff
+        setOutput("path", my_computed_path);
+        // return result...
+    }
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports_list = { {"endpoints", PortType::INPUT}, 
+                                        {"path",      PortType::OUTPUT} };
+        return ports_list;
+    } 
+};
+
+class FollowPath: public AsyncActionNode
+{
+  public:
+    FollowPath(const std::string& name, const NodeConfiguration& config):
+        AsyncActionNode(name, config){}
+
+    NodeStatus tick() override
+    {
+        auto path = getInput<PathType>("path");
+        // do your stuff
+        // return result...
+    }
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports_list = { {"path", PortType::INPUT} };
+        return ports_list;
+    } 
+};
+```
+
+The user's code doesn't need to know if inputs where passed as "static text" 
+or "blackboard pointers".
+
+
+
 
 
