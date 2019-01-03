@@ -712,7 +712,9 @@ public:
 
     nssv_constexpr size_type find_last_of( basic_string_view v, size_type pos = npos ) const nssv_noexcept  // (1)
     {
-        return pos >= size()
+        return empty()
+            ? npos
+            : pos >= size()
             ? find_last_of( v, size() - 1 )
             : to_pos( std::find_first_of( const_reverse_iterator( cbegin() + pos + 1 ), crend(), v.cbegin(), v.cend(), Traits::eq ) );
     }
@@ -760,7 +762,9 @@ public:
 
     nssv_constexpr size_type find_last_not_of( basic_string_view v, size_type pos = npos ) const nssv_noexcept  // (1)
     {
-        return pos >= size()
+        return empty()
+            ? npos
+            : pos >= size()
             ? find_last_not_of( v, size() - 1 )
             : to_pos( std::find_if( const_reverse_iterator( cbegin() + pos + 1 ), crend(), not_in_view( v ) ) );
     }
@@ -944,7 +948,7 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator==(
     nssv_BASIC_STRING_VIEW_I(CharT, Traits) lhs,
          basic_string_view  <CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) == 0; }
+{ return lhs.size() == rhs.size() && lhs.compare( rhs ) == 0; }
 
 // !=
 
@@ -952,7 +956,7 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(1) >
 nssv_constexpr bool operator!= (
          basic_string_view  < CharT, Traits > lhs,
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) != 0 ; }
+{ return lhs.size() != rhs.size() || lhs.compare( rhs ) != 0 ; }
 
 template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator!= (
@@ -1288,4 +1292,3 @@ nssv_RESTORE_WARNINGS()
 
 #endif // nssv_HAVE_STD_STRING_VIEW
 #endif // NONSTD_SV_LITE_H_INCLUDED
-
