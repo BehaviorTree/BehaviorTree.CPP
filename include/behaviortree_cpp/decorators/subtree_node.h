@@ -5,6 +5,7 @@
 
 namespace BT
 {
+
 class DecoratorSubtreeNode : public DecoratorNode
 {
   public:

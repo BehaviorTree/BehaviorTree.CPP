@@ -17,12 +17,23 @@
 
 namespace BT
 {
+/**
+ * @brief The SetBlackboard is action used to store a string
+ * into an entry of the Blackboard specified in "output_key".
+ *
+ * Example usage:
+ *
+ *  <SetBlackboard value="42" output_key="${the_answer}" />
+ *
+ * Will store the string "42" in the entry with key "the_answer".
+ */
 class SetBlackboard : public SyncActionNode
 {
   public:
     SetBlackboard(const std::string& name, const NodeConfiguration& config)
       : SyncActionNode(name, config)
     {
+        setRegistrationID("SetBlackboard");
     }
 
     static const PortsList& providedPorts()
@@ -35,9 +46,13 @@ class SetBlackboard : public SyncActionNode
     virtual BT::NodeStatus tick() override
     {
         std::string key, value;
-        if (!getInput("output_key", key) || !getInput("value", value) )
+        if ( !getInput("output_key", key) )
         {
             throw RuntimeError("missing port [output_key]");
+        }
+        if ( !getInput("value", value) )
+        {
+            throw RuntimeError("missing port [value]");
         }
         setOutput("output_key", value);
         return NodeStatus::SUCCESS;

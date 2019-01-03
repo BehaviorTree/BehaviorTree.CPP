@@ -34,16 +34,22 @@ const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
     extern "C" void __attribute__((visibility("default")))                                         \
     BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
 
+/**
+ * @brief The BehaviorTreeFactory is used to create instances of a
+ * TreeNode at run-time.
+ *
+ * Some node types are "builtin", whilst other are used defined and need
+ * to be registered using a unique ID.
+ */
 class BehaviorTreeFactory
 {
 public:
     BehaviorTreeFactory();
 
+    /// Remove a registered ID.
     bool unregisterBuilder(const std::string& ID);
 
-    /** More generic way to register your own builder.
-     *  Most of the time you should use registerSimple???? or registerNodeType<> instead.
-     */
+    /// The most generic way to register your own builder.
     void registerBuilder(const TreeNodeManifest& manifest, NodeBuilder builder);
 
     /// Register a SimpleActionNode
@@ -61,17 +67,16 @@ public:
     /**
      * @brief registerFromPlugin load a shared library and execute the function BT_REGISTER_NODES (see macro).
      *
-     * This method may throw.
-     *
      * @param file_path path of the file
      */
     void registerFromPlugin(const std::string file_path);
 
     /**
-     * @brief instantiateTreeNode creates a TreeNode
+     * @brief instantiateTreeNode creates an instance of a previously registered TreeNode.
      *
      * @param name     name of this particular instance
-     * @param params   parameters (usually read from the XML definition)
+     * @param ID       ID used when it was registered
+     * @param config   configuration that is passed to the constructor of the TreeNode.
      * @return         new node.
      */
     std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& name, const std::string &ID,
@@ -81,8 +86,6 @@ public:
      *
      *  It accepts only classed derived from either ActionNodeBase, DecoratorNode,
      *  ControlNode or ConditionNode.
-     *
-     *  REMINDER: If you want your derived class to
      */
     template <typename T>
     void registerNodeType(const std::string& ID)
@@ -127,6 +130,7 @@ public:
     /// Manifests of all the registered TreeNodes.
     const std::unordered_map<std::string, TreeNodeManifest>& manifests() const;
 
+    /// List of builtin IDs.
     const std::unordered_set<std::string>& builtinNodes() const;
 
 private:
@@ -197,4 +201,5 @@ private:
 };
 
 }   // end namespace
+
 #endif   // BT_FACTORY_H

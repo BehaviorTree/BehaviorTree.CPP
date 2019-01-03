@@ -18,6 +18,7 @@
 
 namespace BT
 {
+
 class ParallelNode : public ControlNode
 {
   public:

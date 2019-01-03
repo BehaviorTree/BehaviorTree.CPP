@@ -7,6 +7,19 @@
 
 namespace BT
 {
+/**
+ * @brief The TimeoutNode will halt() a running child if
+ * the latter has been RUNNING for more than a give time.
+ * The timeout is in millisecons and it is passed using the port "msec".
+ *
+ * If timeout is reached it returns FAILURE.
+ *
+ * Example:
+ *
+ * <Timeout msec="5000">
+ *    <KeepYourBreath/>
+ * </Timeout>
+ */
 class TimeoutNode : public DecoratorNode
 {
   public:

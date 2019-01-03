@@ -20,10 +20,6 @@ ConditionNode::ConditionNode(const std::string& name, const NodeConfiguration& c
 {
 }
 
-void ConditionNode::halt()
-{
-}
-
 SimpleConditionNode::SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
                                          const NodeConfiguration& config)
   : ConditionNode(name, config), tick_functor_(std::move(tick_functor))

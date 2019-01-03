@@ -25,8 +25,12 @@ class ConditionNode : public LeafNode
 
     virtual ~ConditionNode() override = default;
 
-    // The method used to interrupt the execution of the node
-    virtual void halt() override;
+    //Do nothing
+    virtual void halt() override final
+    {
+        // just in case, but it should not be needed
+        setStatus(NodeStatus::IDLE);
+    }
 
     virtual NodeType type() const override final
     {
@@ -50,16 +54,11 @@ class SimpleConditionNode : public ConditionNode
   public:
     typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
 
-    // Constructor: you must provide the function to call when tick() is invoked
+    // You must provide the function to call when tick() is invoked
     SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
                         const NodeConfiguration& config);
 
     ~SimpleConditionNode() override = default;
-
-    virtual void halt() override
-    {
-        // not supported
-    }
 
   protected:
     virtual NodeStatus tick() override;

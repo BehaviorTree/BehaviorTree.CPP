@@ -17,6 +17,18 @@
 
 namespace BT
 {
+/**
+ * This node excute its child only if the value of a given input port
+ * is equal to the expected one.
+ * If this precondition is met, this node will return the same status of the
+ * child, otherwise it will return the value specified in "return_on_mismatch".
+ *
+ * Example:
+ *
+ * <BlackboardCheckInt key="${the_answer}"
+ *                     expected="42"
+ *                     return_on_mismatch="FAILURE" />
+ */
 template <typename T>
 class BlackboardPreconditionNode : public DecoratorNode
 {
@@ -24,19 +36,21 @@ class BlackboardPreconditionNode : public DecoratorNode
     BlackboardPreconditionNode(const std::string& name, const NodeConfiguration& config)
       : DecoratorNode(name, config)
     {
-//        if( std::is_same<T,int>::value)
-//            setRegistrationName("BlackboardCheckInt");
-//        else if( std::is_same<T,double>::value)
-//            setRegistrationName("BlackboardCheckDouble");
-//        else if( std::is_same<T,std::string>::value)
-//            setRegistrationName("BlackboardCheckString");
+        if( std::is_same<T,int>::value)
+            setRegistrationID("BlackboardCheckInt");
+        else if( std::is_same<T,double>::value)
+            setRegistrationID("BlackboardCheckDouble");
+        else if( std::is_same<T,std::string>::value)
+            setRegistrationID("BlackboardCheckString");
     }
 
     virtual ~BlackboardPreconditionNode() override = default;
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"current", PortType::INPUT}, {"expected", PortType::INPUT}};
+        static PortsList ports = {{"key", PortType::INPUT},
+                                  {"expected", PortType::INPUT},
+                                  {"return_on_mismatch", PortType::INPUT}};
         return ports;
     }
 
@@ -51,14 +65,16 @@ NodeStatus BlackboardPreconditionNode<T>::tick()
 {
     T expected_value;
     T current_value;
+    NodeStatus default_return_status = NodeStatus::FAILURE;
 
     setStatus(NodeStatus::RUNNING);
 
-    if( !getInput("current", current_value) ||
+    if( !getInput("key", current_value) ||
         !getInput("expected", expected_value) ||
         current_value != expected_value )
     {
-        return NodeStatus::FAILURE;
+        getInput("return_on_mismatch", default_return_status);
+        return default_return_status;
     }
     auto child_status = child_node_->executeTick();
     if( child_status != NodeStatus::RUNNING )

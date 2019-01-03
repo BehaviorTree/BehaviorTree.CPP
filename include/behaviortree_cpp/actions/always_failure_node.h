@@ -17,6 +17,9 @@
 
 namespace BT
 {
+/**
+ * Simple actions that always returns FAILURE.
+ */
 class AlwaysFailureNode : public SyncActionNode
 {
   public:

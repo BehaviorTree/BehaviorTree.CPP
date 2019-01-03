@@ -22,19 +22,16 @@ namespace BT
 class ControlNode : public TreeNode
 {
   protected:
-    // Children vector
     std::vector<TreeNode*> children_nodes_;
 
   public:
-    // Constructor
     ControlNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~ControlNode() override = default;
 
-    // The method used to fill the child vector
+    /// The method used to add nodes to the children vector
     void addChild(TreeNode* child);
 
-    // The method used to know the number of children
     unsigned int childrenCount() const;
 
     const std::vector<TreeNode*>& children() const;
@@ -44,9 +41,9 @@ class ControlNode : public TreeNode
         return children().at(index);
     }
 
-    // The method used to interrupt the execution of the node
     virtual void halt() override;
 
+    /// call halt() for all the children in the range [i, childrenCount() )
     void haltChildren(size_t i);
 
     virtual NodeType type() const override final

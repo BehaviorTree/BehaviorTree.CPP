@@ -18,10 +18,25 @@
 
 namespace BT
 {
+/**
+ * @brief The RetryNode is used to execute a child several times if it fails.
+ *
+ * If the child returns SUCCESS, the loop is stopped and this node
+ * returns SUCCESS.
+ *
+ * If the child returns FAILURE, this node will try again up to N times
+ * (N is read from port "num_attempts").
+ *
+ * Example:
+ *
+ * <RetryUntilSuccesful num_attempts="3">
+ *     <OpenDoor/>
+ * </RetryUntilSuccesful>
+ */
 class RetryNode : public DecoratorNode
 {
   public:
-    // Constructor
+    
     RetryNode(const std::string& name, unsigned int NTries);
 
     RetryNode(const std::string& name, const NodeConfiguration& config);

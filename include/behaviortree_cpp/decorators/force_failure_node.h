@@ -17,6 +17,9 @@
 
 namespace BT
 {
+/**
+ * @brief The ForceFailureNode returns always FAILURE or RUNNING.
+ */
 class ForceFailureNode : public DecoratorNode
 {
   public:

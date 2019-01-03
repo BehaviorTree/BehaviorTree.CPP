@@ -40,22 +40,28 @@
 
 namespace BT
 {
+
+//Call the visitor for each node of the tree, given a root.
 void applyRecursiveVisitor(const TreeNode* root_node,
                            const std::function<void(const TreeNode*)>& visitor);
 
+//Call the visitor for each node of the tree, given a root.
 void applyRecursiveVisitor(TreeNode* root_node, const std::function<void(TreeNode*)>& visitor);
 
 /**
- * Debug function to print on a stream
+ * Debug function to print on screen the hierarchy of the tree.
  */
 void printTreeRecursively(const TreeNode* root_node);
 
+/// Invoke AsyncActionNode::stopAndJoinThread() to the entire tree,
+/// when needed.
 void haltAllActions(TreeNode* root_node);
+
 
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
 /**
- * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
+ * @brief buildSerializedStatusSnapshot can be used to create a buffer that can be stored
  * (or sent to a client application) to know the status of all the nodes of a tree.
  * It is not "human readable".
  *

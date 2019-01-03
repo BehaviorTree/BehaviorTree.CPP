@@ -19,7 +19,7 @@
 namespace BT
 {
 /**
- * @brief The SequenceStarNode is used to execute a sequence of children.
+ * @brief The SequenceStarNode is used to tick children in an ordered sequence.
  * If any child returns RUNNING, previous children are not ticked again.
  *
  * - If all the children return SUCCESS, this node returns SUCCESS.
@@ -27,7 +27,7 @@ namespace BT
  * - If a child returns RUNNING, this node returns RUNNING.
  *   Loop is NOT restarted, the same running child will be ticked again.
  *
- * - If a child returns FAILURE, stop the loop and returns FAILURE.
+ * - If a child returns FAILURE, stop the loop and return FAILURE.
  *   Restart the loop only if (reset_on_failure == true)
  *
  */

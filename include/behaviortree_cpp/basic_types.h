@@ -2,11 +2,8 @@
 #define BT_BASIC_TYPES_H
 
 #include <iostream>
-#include <string>
-#include <stdexcept>
 #include <vector>
 #include <sstream>
-#include <exception>
 #include <unordered_map>
 #include <unordered_set>
 #include <chrono>
@@ -16,7 +13,7 @@
 
 namespace BT
 {
-// Enumerates the possible types of nodes
+/// Enumerates the possible types of nodes
 enum class NodeType
 {
     UNDEFINED = 0,
@@ -27,8 +24,9 @@ enum class NodeType
     SUBTREE
 };
 
-// Enumerates the states every node can be in after execution during a particular
-// time step.
+/// Enumerates the states every node can be in after execution during a particular
+/// time step.
+/// IMPORTANT: Your custom nodes should NEVER return IDLE.
 enum class NodeStatus
 {
     IDLE = 0,
@@ -37,33 +35,16 @@ enum class NodeStatus
     FAILURE
 };
 
-// Enumerates the options for when a parallel node is considered to have failed:
-// - "FAIL_ON_ONE" indicates that the node will return failure as soon as one of
-//   its children fails;
-// - "FAIL_ON_ALL" indicates that all of the node's children must fail before it
-//   returns failure.
-enum FailurePolicy
-{
-    FAIL_ON_ONE,
-    FAIL_ON_ALL
-};
-
-// Enumerates the options for when a parallel node is considered to have succeeded:
-// - "SUCCEED_ON_ONE" indicates that the node will return success as soon as one
-//   of its children succeeds;
-// - "BT::SUCCEED_ON_ALL" indicates that all of the node's children must succeed before
-//   it returns success.
-enum SuccessPolicy
-{
-    SUCCEED_ON_ONE,
-    SUCCEED_ON_ALL
-};
-
 typedef nonstd::string_view StringView;
 
-/// TreeNode::getInput requires convertFromString to be implemented for your specific type,
-/// unless you are try to read it from a blackboard.
-///
+/**
+ * convertFromString is used to convert a string into a custom type.
+ *
+ * This function is invoked under the hood by TreeNode::getInput(), but only when the
+ * input port contains a string.
+ *
+ * If you have a custom type, you need to implement the corresponding template specialization.
+ */
 template <typename T> inline
 T convertFromString(StringView /*str*/)
 {
@@ -124,7 +105,7 @@ const char* toStr(const BT::NodeType& type);
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
 
-// small utility, unless you want to use <boost/algorithm/string.hpp>
+// Small utility, unless you want to use <boost/algorithm/string.hpp>
 std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
 
 template <typename Predicate>
