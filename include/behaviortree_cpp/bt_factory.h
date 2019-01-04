@@ -30,7 +30,7 @@ namespace BT
 typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeConfiguration&)>
 NodeBuilder;
 
-const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
+constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 #define BT_REGISTER_NODES(factory)                                                                 \
     extern "C" void __attribute__((visibility("default")))                                         \
     BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
@@ -70,7 +70,7 @@ public:
      *
      * @param file_path path of the file
      */
-    void registerFromPlugin(const std::string file_path);
+    void registerFromPlugin(const std::string &file_path);
 
     /**
      * @brief instantiateTreeNode creates an instance of a previously registered TreeNode.

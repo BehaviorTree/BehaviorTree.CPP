@@ -25,21 +25,21 @@ const char* toStr(const NodeStatus& status, bool colored)
         switch (status)
         {
             case NodeStatus::SUCCESS:
-                return ("\x1b[32m"
+                return "\x1b[32m"
                         "SUCCESS"
-                        "\x1b[0m");   // RED
+                        "\x1b[0m";   // RED
             case NodeStatus::FAILURE:
-                return ("\x1b[31m"
+                return "\x1b[31m"
                         "FAILURE"
-                        "\x1b[0m");   // GREEN
+                        "\x1b[0m";   // GREEN
             case NodeStatus::RUNNING:
-                return ("\x1b[33m"
+                return "\x1b[33m"
                         "RUNNING"
-                        "\x1b[0m");   // YELLOW
+                        "\x1b[0m";   // YELLOW
             case NodeStatus::IDLE:
-                return ("\x1b[36m"
+                return "\x1b[36m"
                         "IDLE"
-                        "\x1b[0m");   // CYAN
+                        "\x1b[0m";   // CYAN
         }
     }
     return "Undefined";
@@ -85,7 +85,7 @@ int convertFromString<int>(StringView str)
 template <>
 unsigned convertFromString<unsigned>(StringView str)
 {
-    return std::stoul(str.data());
+    return unsigned(std::stoul(str.data()));
 }
 
 template <>
@@ -131,13 +131,9 @@ bool convertFromString<bool>(StringView str)
         {
             return false;
         }
-        else if (str[0] == '1')
+        if (str[0] == '1')
         {
             return true;
-        }
-        else
-        {
-            throw RuntimeError("invalid bool conversion");
         }
     }
     else if (str.size() == 4)
@@ -146,20 +142,12 @@ bool convertFromString<bool>(StringView str)
         {
             return true;
         }
-        else
-        {
-            throw RuntimeError("invalid bool conversion");
-        }
     }
     else if (str.size() == 5)
     {
         if (str == "false" || str == "FALSE" || str == "False")
         {
             return false;
-        }
-        else
-        {
-            throw RuntimeError("invalid bool conversion");
         }
     }
     throw RuntimeError("invalid bool conversion");

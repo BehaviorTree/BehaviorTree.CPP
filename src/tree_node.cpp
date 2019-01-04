@@ -22,11 +22,11 @@ static uint8_t getUID()
     return uid++;
 }
 
-TreeNode::TreeNode(const std::string& name, const NodeConfiguration& config)
-  : name_(name),
+TreeNode::TreeNode(std::string name, NodeConfiguration config)
+  : name_(std::move(name)),
     status_(NodeStatus::IDLE),
     uid_(getUID()),
-    config_(config)
+    config_(std::move(config))
 {
 }
 

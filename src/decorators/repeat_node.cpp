@@ -28,6 +28,7 @@ RepeatNode::RepeatNode(const std::string& name, unsigned int NTries)
 
 RepeatNode::RepeatNode(const std::string& name, const NodeConfiguration& config)
   : DecoratorNode(name, config),
+    num_cycles_(0),
     try_index_(0),
     read_parameter_from_ports_(true)
 {

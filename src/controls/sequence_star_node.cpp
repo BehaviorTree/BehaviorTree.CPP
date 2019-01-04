@@ -28,8 +28,10 @@ SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failur
 }
 
 SequenceStarNode::SequenceStarNode(const std::string& name, const NodeConfiguration& config)
-  : ControlNode::ControlNode(name, config), current_child_idx_(0),
-    read_parameter_from_ports_(true)
+  : ControlNode::ControlNode(name, config)
+  , current_child_idx_(0)
+  , reset_on_failure_(true)
+  , read_parameter_from_ports_(true)
 {
 }
 

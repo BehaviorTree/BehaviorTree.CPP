@@ -137,8 +137,7 @@ void AsyncActionNode::stopAndJoinThread()
 //-------------------------------------
 struct CoroActionNode::Pimpl
 {
-    coroutine::routine_t coro;
-    Pimpl(): coro(0) {}
+    coroutine::routine_t coro = 0;
 };
 
 

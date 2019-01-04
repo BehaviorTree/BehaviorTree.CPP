@@ -34,13 +34,13 @@ struct XMLParser::Pimpl
 {
 
     TreeNode::Ptr createNodeFromXML(const XMLElement* element,
-                                    const Blackboard::Ptr blackboard,
+                                    const Blackboard::Ptr& blackboard,
                                     const TreeNode::Ptr& node_parent);
 
     TreeNode::Ptr recursivelyCreateTree(const std::string& tree_ID,
-                                        std::vector<TreeNode::Ptr>& nodes,
+                                        std::vector<TreeNode::Ptr>& nodes_list,
                                         const TreeNode::Ptr& root_parent,
-                                        const Blackboard::Ptr blackboard);
+                                        const Blackboard::Ptr& blackboard);
 
     void loadDocImpl(XMLDocument *doc);
 
@@ -321,7 +321,7 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
         tree_count++;
         if (bt_root->Attribute("ID"))
         {
-            tree_names.push_back(bt_root->Attribute("ID"));
+            tree_names.emplace_back(bt_root->Attribute("ID"));
         }
         if (ChildrenCount(bt_root) != 1)
         {
@@ -375,7 +375,9 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes,
     return _p->recursivelyCreateTree(main_tree_ID, nodes, TreeNode::Ptr(), blackboard);
 }
 
-TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, const Blackboard::Ptr blackboard, const TreeNode::Ptr &node_parent)
+TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
+                                                  const Blackboard::Ptr &blackboard,
+                                                  const TreeNode::Ptr &node_parent)
 {
     const std::string element_name = element->Name();
     std::string ID;
@@ -456,13 +458,11 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
 
     if (node_parent)
     {
-        ControlNode* control_parent = dynamic_cast<ControlNode*>(node_parent.get());
-        if (control_parent)
+        if (auto control_parent = dynamic_cast<ControlNode*>(node_parent.get()))
         {
             control_parent->addChild(child_node.get());
         }
-        DecoratorNode* decorator_parent = dynamic_cast<DecoratorNode*>(node_parent.get());
-        if (decorator_parent)
+        if (auto decorator_parent = dynamic_cast<DecoratorNode*>(node_parent.get()))
         {
             decorator_parent->setChild(child_node.get());
         }
@@ -473,7 +473,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element, con
 TreeNode::Ptr BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                                                           std::vector<TreeNode::Ptr>& nodes_list,
                                                           const TreeNode::Ptr& root_parent,
-                                                          const Blackboard::Ptr blackboard)
+                                                          const Blackboard::Ptr& blackboard)
 {
     auto root_element = tree_roots[tree_ID]->FirstChildElement();
     std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
@@ -667,7 +667,7 @@ std::string writeXML(const BehaviorTreeFactory& factory,
 
     XMLPrinter printer;
     doc.Print(&printer);
-    return std::string(printer.CStr(), printer.CStrSize() - 1);
+    return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 }
 (??)*/
 (??)Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,

@@ -108,7 +108,7 @@ void BehaviorTreeFactory::registerSimpleDecorator(
     registerBuilder(manifest, builder);
 }
 
-void BehaviorTreeFactory::registerFromPlugin(const std::string file_path)
+void BehaviorTreeFactory::registerFromPlugin(const std::string& file_path)
 {
     BT::SharedLibrary loader;
     loader.load(file_path);
