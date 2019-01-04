@@ -143,6 +143,8 @@ class TreeNode
     /// two patterns:  {...} or ${...}
     static bool isBlackboardPointer(StringView str);
 
+    static StringView stripBlackboardPointer(StringView str);
+
 protected:
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
@@ -199,7 +201,7 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
                 return true;
             }
             else{
-                remapped_key = remapped_key.substr( 2, remapped_key.size()-3 );
+                remapped_key = stripBlackboardPointer(remapped_key);
             }
         }
 
@@ -260,7 +262,7 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
     }
     if( isBlackboardPointer(remapped_key) )
     {
-        remapped_key = remapped_key.substr( 2, remapped_key.size() -3 );
+        remapped_key = stripBlackboardPointer(remapped_key);
     }
 
     config_.blackboard->set( remapped_key.to_string(), value);
