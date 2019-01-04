@@ -22,7 +22,9 @@ class LeafNode : public TreeNode
 {
   protected:
   public:
-    LeafNode(const std::string& name, const NodeConfiguration& config);
+    LeafNode(const std::string& name, const NodeConfiguration& config)
+      : TreeNode(name, config)
+    { }
 
     virtual ~LeafNode() override = default;
 };

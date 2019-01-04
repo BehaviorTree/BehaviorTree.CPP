@@ -62,7 +62,7 @@ void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>&
 
 void printTreeRecursively(const TreeNode* root_node)
 {
-    std::function<void(int, const BT::TreeNode*)> recursivePrint;
+    std::function<void(unsigned, const BT::TreeNode*)> recursivePrint;
 
     recursivePrint = [&recursivePrint](unsigned indent, const BT::TreeNode* node) {
         for (unsigned i = 0; i < indent; i++)
@@ -117,4 +117,5 @@ void haltAllActions(TreeNode* root_node)
     };
     applyRecursiveVisitor(root_node, visitor);
 }
-}
+
+} // end namespace

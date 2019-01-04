@@ -5,6 +5,11 @@
 
 namespace BT
 {
+/**
+ * @brief The XMLParser is a class used to read the model
+ * of a BehaviorTree from file or text and instantiate the
+ * corresponding tree using the BehaviorTreeFactory.
+ */
 class XMLParser
 {
   public:
@@ -19,7 +24,8 @@ class XMLParser
 
     void loadFromText(const std::string& xml_text);
 
-    TreeNode::Ptr instantiateTree(std::vector<TreeNode::Ptr>& nodes, const Blackboard::Ptr &blackboard);
+    TreeNode::Ptr instantiateTree(std::vector<TreeNode::Ptr>& nodes,
+                                  const Blackboard::Ptr &blackboard);
 
   private:
 
@@ -28,21 +34,25 @@ class XMLParser
 
 };
 
+/**
+ * @brief Struct used to store a tree.
+ * If this object goes out of scope, the tree is destroyed.
+ *
+ * To tick the tree, simply call:
+ *
+ *    NodeStatus status = my_tree.root_node->executeTick();
+ */
 struct Tree
 {
     TreeNode* root_node;
     std::vector<TreeNode::Ptr> nodes;
 
     Tree() : root_node(nullptr)
-    {
-        
-    }
+    { }
 
     Tree(TreeNode* root_node, std::vector<TreeNode::Ptr> nodes)
         : root_node(root_node), nodes(nodes)
-    {
-
-    }
+    { }
 
     ~Tree()
     {
@@ -52,12 +62,10 @@ struct Tree
     }
 };
 
-/** Helper function to do the most common steps all at once:
+/** Helper function to do the most common steps, all at once:
 * 1) Create an instance of XMLParse and call loadFromText.
 * 2) Instantiate the entire tree.
-* 3) Assign the given Blackboard
 *
-* return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
 */
 Tree buildTreeFromText(const BehaviorTreeFactory& factory,
                        const std::string& text,
@@ -66,15 +74,14 @@ Tree buildTreeFromText(const BehaviorTreeFactory& factory,
 /** Helper function to do the most common steps all at once:
 * 1) Create an instance of XMLParse and call loadFromFile.
 * 2) Instantiate the entire tree.
-* 3) Assign the given Blackboard
 *
-* return: a pair containing the root node (first) and a vector with all the instantiated nodes (second).
 */
 Tree buildTreeFromFile(const BehaviorTreeFactory& factory,
                        const std::string& filename,
                        const Blackboard::Ptr& blackboard = Blackboard::Ptr());
 
-std::string writeXML(const BehaviorTreeFactory& factory, const TreeNode* root_node,
+std::string writeXML(const BehaviorTreeFactory& factory,
+                     const TreeNode* root_node,
                      bool compact_representation = false);
 }
 

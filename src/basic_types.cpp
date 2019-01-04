@@ -162,36 +162,28 @@ bool convertFromString<bool>(StringView str)
             throw RuntimeError("invalid bool conversion");
         }
     }
-
     throw RuntimeError("invalid bool conversion");
 }
 
 template <>
 NodeStatus convertFromString<NodeStatus>(StringView str)
 {
-    for (auto status :
-         {NodeStatus::IDLE, NodeStatus::RUNNING, NodeStatus::SUCCESS, NodeStatus::FAILURE})
-    {
-        if ( StringView(toStr(status)) == str )
-        {
-            return status;
-        }
-    }
+    if( str == "IDLE" )    return NodeStatus::IDLE;
+    if( str == "RUNNING" ) return NodeStatus::RUNNING;
+    if( str == "SUCCESS" ) return NodeStatus::SUCCESS;
+    if( str == "FAILURE" ) return NodeStatus::FAILURE;
     throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") + str.to_string() );
 }
 
 template <>
 NodeType convertFromString<NodeType>(StringView str)
 {
-    for (auto status : {NodeType::ACTION, NodeType::CONDITION, NodeType::CONTROL,
-                        NodeType::DECORATOR, NodeType::SUBTREE, NodeType::UNDEFINED})
-    {
-        if (StringView(toStr(status)) == str)
-        {
-            return status;
-        }
-    }
-    throw RuntimeError(std::string("Cannot convert this to NodeType: ") + str.to_string());
+    if( str == "Action" )    return NodeType::ACTION;
+    if( str == "Condition" ) return NodeType::CONDITION;
+    if( str == "Control" )   return NodeType::CONTROL;
+    if( str == "Decorator" ) return NodeType::DECORATOR;
+    if( str == "SubTree" || str == "Subtree" ) return NodeType::SUBTREE;
+    return NodeType::UNDEFINED;
 }
 
 std::ostream& operator<<(std::ostream& os, const NodeType& type)

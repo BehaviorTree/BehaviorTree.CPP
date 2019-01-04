@@ -25,9 +25,9 @@ void ControlNode::addChild(TreeNode* child)
     children_nodes_.push_back(child);
 }
 
-unsigned int ControlNode::childrenCount() const
+unsigned ControlNode::childrenCount() const
 {
-    return children_nodes_.size();
+    return unsigned(children_nodes_.size());
 }
 
 void ControlNode::halt()
@@ -41,7 +41,7 @@ const std::vector<TreeNode*>& ControlNode::children() const
     return children_nodes_;
 }
 
-void ControlNode::haltChildren(size_t i)
+void ControlNode::haltChildren(unsigned i)
 {
     for (size_t j = i; j < children_nodes_.size(); j++)
     {
@@ -53,4 +53,5 @@ void ControlNode::haltChildren(size_t i)
         child->setStatus(NodeStatus::IDLE);
     }
 }
-}
+
+} // end namespace

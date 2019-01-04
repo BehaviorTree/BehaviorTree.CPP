@@ -32,7 +32,7 @@ int main()
 {
     /* In this example we build a tree at run-time.
      * The tree is defined using an XML (see xml_text).
-     * To achieve this we must first register our TreeNodes into
+     * To achieve this, we must first register our TreeNodes into
      * a BehaviorTreeFactory.
      */
     BehaviorTreeFactory factory;

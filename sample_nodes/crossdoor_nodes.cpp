@@ -64,6 +64,7 @@ NodeStatus CrossDoor::CloseDoor()
     return NodeStatus::SUCCESS;
 }
 
+// Register at once all the Actions and Conditions in this file
 void CrossDoor::RegisterNodes(BehaviorTreeFactory& factory)
 {
     factory.registerSimpleCondition("IsDoorOpen", std::bind(IsDoorOpen));
