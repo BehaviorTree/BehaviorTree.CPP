@@ -15,7 +15,7 @@ const std::string xml_text = R"(
      <BehaviorTree ID="MainTree">
         <SequenceStar name="root">
             <MoveTo  goal="-1;3;0.5" />
-            <MoveTo  goal="${myGoal}" />
+            <MoveTo  goal="{myGoal}" />
         </SequenceStar>
      </BehaviorTree>
  </root>
