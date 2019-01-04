@@ -115,7 +115,7 @@
 // On linux, backward can extract detailed information about a stack trace
 // using one of the following libraries:
 //
-#define BACKWARD_HAS_DW 1
+// #define BACKWARD_HAS_DW 1
 //  - libdw gives you the most juicy details out of your stack traces:
 //    - object filename
 //    - function name

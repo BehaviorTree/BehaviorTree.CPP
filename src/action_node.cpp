@@ -13,6 +13,7 @@
 
 #include "behaviortree_cpp/action_node.h"
 #include "coroutine/coroutine.h"
+#include "backward-cpp/backward.hpp"
 
 namespace BT
 {
@@ -105,7 +106,16 @@ void AsyncActionNode::asyncThreadLoop()
             // this will unlock the parent thread
             setStatus(NodeStatus::RUNNING);
             // this will execute the blocking code.
-            setStatus(tick());
+            try {
+                setStatus(tick());
+            }
+            catch (std::exception&)
+            {
+                std::cerr << "\nUncaught exception from the method tick() of an AsyncActionNode: ["
+                          << registrationName() << "/" << name() << "]\n" << std::endl;
+                exptr_ = std::current_exception();
+                keep_thread_alive_ = false;
+            }
         }
     }
 }
@@ -121,6 +131,10 @@ NodeStatus AsyncActionNode::executeTick()
 
     // block as long as the state is NodeStatus::IDLE
     const NodeStatus stat = waitValidStatus();
+    if( exptr_ )
+    {
+        std::rethrow_exception(exptr_);
+    }
     return stat;
 }
 
