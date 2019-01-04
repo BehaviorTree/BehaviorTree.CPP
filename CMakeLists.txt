@@ -10,7 +10,6 @@ endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 
@@ -86,6 +85,9 @@ else()
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 endif()
+if(NOT MSVC)
+    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES "dw")
+endif()
 
 #############################################################
 # LIBRARY
@@ -121,9 +123,10 @@ list(APPEND BT_SOURCE
 
     3rdparty/tinyXML2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp
+    3rdparty/backward-cpp/backward.cpp
     )
 
-
+######################################################
 
 add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
@@ -139,7 +142,7 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
 if(MSVC)
   target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
 else()
-  target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE -Wall -Wextra -Werror=return-type)
+  target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE -Wall -Wextra -Werror=return-type -g)
 endif()
 
 ######################################################
