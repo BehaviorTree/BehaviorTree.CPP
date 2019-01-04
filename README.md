@@ -43,10 +43,9 @@ the graphic user interface are used to design and monitor a Behavior Tree.
 
 # How to compile
 
-The only (optional, but recommended) dependency of BehaviorTree.CPP is ZeroMQ.
-On Ubuntu it can be easily installed with
+On Ubuntu, you must install the following dependencies:
 
-     sudo apt-get install libzmq3-dev
+     sudo apt-get install libzmq3-dev libdw-dev
      
 Any other dependency is already included in the __3rdparty__ folder.
 
