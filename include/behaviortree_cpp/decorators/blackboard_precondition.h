@@ -25,8 +25,8 @@ namespace BT
  *
  * Example:
  *
- * <BlackboardCheckInt key="{the_answer}"
- *                     expected="42"
+ * <BlackboardCheckInt value_A="{the_answer}"
+ *                     value_B="42"
  *                     return_on_mismatch="FAILURE" />
  */
 template <typename T>
@@ -48,8 +48,8 @@ class BlackboardPreconditionNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"key", PortType::INPUT},
-                                  {"expected", PortType::INPUT},
+        static PortsList ports = {{"value_A", PortType::INPUT},
+                                  {"value_B", PortType::INPUT},
                                   {"return_on_mismatch", PortType::INPUT}};
         return ports;
     }
@@ -63,27 +63,27 @@ class BlackboardPreconditionNode : public DecoratorNode
 template<typename T> inline
 NodeStatus BlackboardPreconditionNode<T>::tick()
 {
-    T expected_value;
-    T current_value;
+    T value_A;
+    T value_B;
     NodeStatus default_return_status = NodeStatus::FAILURE;
 
     setStatus(NodeStatus::RUNNING);
 
-    if( !getInput("key", current_value) ||
-        !getInput("expected", expected_value) ||
-        current_value != expected_value )
+    if( getInput("value_A", value_A) &&
+        getInput("value_B", value_B) &&
+        value_B == value_A )
     {
-        getInput("return_on_mismatch", default_return_status);
-        return default_return_status;
+        return child_node_->executeTick();
     }
-    auto child_status = child_node_->executeTick();
-    if( child_status != NodeStatus::RUNNING )
+
+    if( child()->status() == NodeStatus::RUNNING )
     {
         haltChild();
     }
-    return child_status;
+    getInput("return_on_mismatch", default_return_status);
+    return default_return_status;
 }
 
-}
+} // end namespace
 
 #endif
