@@ -23,7 +23,7 @@ namespace BT
  *
  * Example usage:
  *
- *  <SetBlackboard value="42" output_key="${the_answer}" />
+ *  <SetBlackboard value="42" output_key="the_answer" />
  *
  * Will store the string "42" in the entry with key "the_answer".
  */

@@ -106,6 +106,21 @@ bool TreeNode::isBlackboardPointer(StringView str)
     return false;
 }
 
+StringView TreeNode::stripBlackboardPointer(StringView str)
+{
+    const auto size = str.size();
+    if( size >= 3 && str.back() == '}')
+    {
+        if( str[0] == '{') {
+            return str.substr(1, size-2);
+        }
+        if( str[0] == '$' && str[1] == '{') {
+            return str.substr(2, size-3);
+        }
+    }
+    return {};
+}
+
 const std::string& TreeNode::registrationName() const
 {
     return registration_ID_;
