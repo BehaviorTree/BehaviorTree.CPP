@@ -21,9 +21,6 @@ int main(int argc, char** argv)
 
     printTreeRecursively( tree.root_node );
 
-    //TODO std::cout << writeXML(factory, tree.root_node, true) << std::endl;
-    std::cout <<"-----------------------" << std::endl;
-
     tree.root_node->executeTick();
 
     return 0;
