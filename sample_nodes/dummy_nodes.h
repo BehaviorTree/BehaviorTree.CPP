@@ -30,7 +30,7 @@ class GripperInterface
 //--------------------------------------
 
 // Example of custom SyncActionNode (synchronous action)
-// without NodeParameters.
+// without ports.
 class ApproachObject : public BT::SyncActionNode
 {
   public:
@@ -44,7 +44,7 @@ class ApproachObject : public BT::SyncActionNode
 };
 
 // Example of custom SyncActionNode (synchronous action)
-// with NodeParameters.
+// with an input port.
 class SaySomething : public BT::SyncActionNode
 {
   public:
@@ -75,6 +75,7 @@ inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
     factory.registerNodeType<ApproachObject>("ApproachObject");
     factory.registerNodeType<SaySomething>("SaySomething");
 }
-}
+
+} // end namespace
 
 #endif   // SIMPLE_BT_NODES_H

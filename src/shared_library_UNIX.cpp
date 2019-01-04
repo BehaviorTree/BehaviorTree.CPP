@@ -2,6 +2,7 @@
 #include <mutex>
 #include <dlfcn.h>
 #include "behaviortree_cpp/shared_library.h"
+#include "behaviortree_cpp/exceptions.h"
 
 namespace BT
 {
@@ -16,14 +17,14 @@ void SharedLibrary::load(const std::string& path, int)
 
     if (_handle)
     {
-        throw std::runtime_error("Library already loaded: " + path);
+        throw RuntimeError("Library already loaded: " + path);
     }
 
     _handle = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
     if (!_handle)
     {
         const char* err = dlerror();
-        throw std::runtime_error("Could not load library: " + (err ? std::string(err) : path));
+        throw RuntimeError("Could not load library: " + (err ? std::string(err) : path));
     }
     _path = path;
 }

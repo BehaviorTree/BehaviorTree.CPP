@@ -32,7 +32,7 @@ class ControlNode : public TreeNode
     /// The method used to add nodes to the children vector
     void addChild(TreeNode* child);
 
-    unsigned int childrenCount() const;
+    unsigned childrenCount() const;
 
     const std::vector<TreeNode*>& children() const;
 
@@ -44,7 +44,7 @@ class ControlNode : public TreeNode
     virtual void halt() override;
 
     /// call halt() for all the children in the range [i, childrenCount() )
-    void haltChildren(size_t i);
+    void haltChildren(unsigned i);
 
     virtual NodeType type() const override final
     {

@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -25,6 +25,9 @@
 namespace BT
 {
 
+template <typename T> using optional = nonstd::optional<T>;
+constexpr auto nullopt = nonstd::nullopt;
+
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
 {
@@ -45,30 +48,32 @@ struct NodeConfiguration
 };
 
 
-// Abstract base class for Behavior Tree Nodes
+/// Abstract base class for Behavior Tree Nodes
 class TreeNode
 {
   public:
+
+    typedef std::shared_ptr<TreeNode> Ptr;
+
     /**
      * @brief TreeNode main constructor.
      *
-     * @param name     name of the instance, not the type of sensor.
-     * @param config
+     * @param name     name of the instance, not the type.
+     * @param config   information about input/outpu ports. See NodeConfiguration
      *
-     * Note: a node that accepts a not empty set of NodeParameters must also implement the method:
+     * Note: If your custom node has ports, the derived class must implement:
      *
-     * static const PortsList& providedPorts();
+     *     static const PortsList& providedPorts();
      */
     TreeNode(const std::string& name, const NodeConfiguration& config); 
 
     virtual ~TreeNode() = default;
 
-    typedef std::shared_ptr<TreeNode> Ptr;
-
-    /// The method that will be executed to invoke tick(); and setStatus();
+    /// The method that should be used to invoke tick() and setStatus();
     virtual BT::NodeStatus executeTick();
 
-    /// The method used to interrupt the execution of a RUNNING node
+    /// The method used to interrupt the execution of a RUNNING node.
+    /// Only Async nodes that may return RUNNING should implement it.
     virtual void halt() = 0;
 
     bool isHalted() const;
@@ -77,6 +82,7 @@ class TreeNode
 
     void setStatus(NodeStatus new_status);
 
+    /// Name of the instance, not the type
     const std::string& name() const;
 
     /// Blocking function that will sleep until the setStatus() is called with
@@ -94,9 +100,9 @@ class TreeNode
      * When StatusChangeSubscriber goes out of scope (it is a shared_ptr) the callback
      * is unsubscribed automatically.
      *
-     * @param callback. Must have signature void funcname(NodeStatus prev_status, NodeStatus new_status)
+     * @param callback The callback to be execute when status change.
      *
-     * @return the subscriber.
+     * @return the subscriber handle.
      */
     StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
 
@@ -106,30 +112,36 @@ class TreeNode
     /// registrationName is the ID used by BehaviorTreeFactory to create an instance.
     const std::string& registrationName() const;
 
-    /// Parameters passed at construction time. Can never change after the
+    /// Configuration passed at construction time. Can never change after the
     /// creation of the TreeNode instance.
     const NodeConfiguration& config() const;
 
-    /** Get a parameter from the NodeParameters and convert it to type T.
+    /** Read an input port, which, in practice, is an entry in the blackboard.
+     * If the blackboard contains a std::string and T is not a string,
+     * convertFromString<T>() is used automatically to parse the text.
+     *
+     * @param key   the identifier (before remapping) of the port.
+     * @return      false if an error occurs.
+     */
+    template <typename T>
+    bool getInput(const std::string& key, T& destination) const;
+
+    /** Same as bool getInput(const std::string& key, T& destination)
+     * but using optional.
      */
     template <typename T>
     BT::optional<T> getInput(const std::string& key) const
     {
         T out;
-        return getInput(key, out) ? BT::optional<T>(std::move(out)) : BT::nullopt;
+        return getInput(key, out) ? BT::optional<T>(std::move(out)) : nonstd::nullopt;
     }
-
-    /** Read an Input Port and convert it to type T.
-     *  Return false either if there is no parameter with this key or if conversion failed.
-     */
-    template <typename T>
-    bool getInput(const std::string& key, T& destination) const;
-
-    static bool isBlackboardPointer(StringView str);
 
     template <typename T>
     bool setOutput(const std::string& key, const T& value);
 
+    /// Check a string and return true if it matches either one of these
+    /// two patterns:  {...} or ${...}
+    static bool isBlackboardPointer(StringView str);
 
 protected:
     /// Method to be implemented by the user

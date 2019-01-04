@@ -31,7 +31,6 @@ int main()
     //  your should create a class that inherits from either:
     // - ConditionNode
     // - ActionNode (Sync, Asyn, Coro)
-
     ApproachObject approach_object("approach_object");
 
     // Add children to the sequence.

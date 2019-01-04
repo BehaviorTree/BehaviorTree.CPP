@@ -93,7 +93,17 @@ uint16_t TreeNode::UID() const
 
 bool TreeNode::isBlackboardPointer(StringView str)
 {
-    return str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}';
+    const auto size = str.size();
+    if( size >= 3 && str.back() == '}')
+    {
+        if( str[0] == '{') {
+            return true;
+        }
+        if( size >= 4 && str[0] == '$' && str[1] == '{') {
+            return true;
+        }
+    }
+    return false;
 }
 
 const std::string& TreeNode::registrationName() const

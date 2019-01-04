@@ -98,7 +98,6 @@ list(APPEND BT_SOURCE
     src/decorator_node.cpp
     src/condition_node.cpp
     src/control_node.cpp
-    src/leaf_node.cpp
     src/shared_library.cpp
     src/shared_library_UNIX.cpp
     src/tree_node.cpp

@@ -157,7 +157,7 @@ const std::unordered_map<std::string,TreeNodeManifest>& BehaviorTreeFactory::man
     return manifests_;
 }
 
-const std::unordered_set<std::string> &BehaviorTreeFactory::builtinNodes() const
+const std::set<std::string> &BehaviorTreeFactory::builtinNodes() const
 {
     return builtin_IDs_;
 }

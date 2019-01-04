@@ -23,8 +23,8 @@ const std::string xml_text = R"(
 
 // clang-format on
 
-// This is my custom type.
-// By default, we don't know how to read this from a NodeParameter.
+// This is my custom type. We won't know how to read this from a string,
+// unless we implement convertFromString<Point3D>()
 struct Point3D { double x,y,z; };
 
 // We want to create an ActionNode that calls the method MyLegacyMoveTo::go
@@ -72,7 +72,7 @@ int main()
     auto MoveToWrapperWithLambda = [&move_to](TreeNode& parent_node) -> NodeStatus
     {
         Point3D goal;
-        // thanks to paren_node, you can access easily the NodeParameters and the blackboard
+        // thanks to paren_node, you can access easily the inpyt and output ports.
         parent_node.getInput("goal", goal);
 
         bool res = move_to.go( goal );

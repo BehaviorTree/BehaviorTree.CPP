@@ -8,7 +8,7 @@ using namespace BT;
 /** This tutorial will tech you:
  *
  *  - The difference between Sequence and SequenceStar
- *  - How to create and use a TreeNode that accepts NodeParameters
+ *  - How to create and use a TreeNode with input ports
  *  - How to create an asynchronous ActionNode (an action that is execute in
  *    its own thread).
 */

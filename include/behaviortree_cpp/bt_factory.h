@@ -20,6 +20,7 @@
 #include <unordered_set>
 #include <cstring>
 #include <algorithm>
+#include <set>
 
 #include "behaviortree_cpp/behavior_tree.h"
 
@@ -131,12 +132,12 @@ public:
     const std::unordered_map<std::string, TreeNodeManifest>& manifests() const;
 
     /// List of builtin IDs.
-    const std::unordered_set<std::string>& builtinNodes() const;
+    const std::set<std::string>& builtinNodes() const;
 
 private:
     std::unordered_map<std::string, NodeBuilder> builders_;
     std::unordered_map<std::string, TreeNodeManifest> manifests_;
-    std::unordered_set<std::string> builtin_IDs_;
+    std::set<std::string> builtin_IDs_;
 
     // template specialization = SFINAE + black magic
 

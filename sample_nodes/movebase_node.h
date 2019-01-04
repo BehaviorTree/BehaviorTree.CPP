@@ -40,10 +40,10 @@ Pose2D convertFromString(StringView key)
         return output;
     }
 }
-}
+} // end namespace BT
 
 // This is an asynchronous operation that will run in a separate thread.
-// It requires the NodeParameter "goal".
+// It requires the input port "goal".
 
 class MoveBaseAction : public BT::AsyncActionNode
 {
