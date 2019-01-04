@@ -18,7 +18,7 @@ namespace BT
 
 constexpr const char* ParallelNode::THRESHOLD_KEY;
 
-ParallelNode::ParallelNode(const std::string& name, int threshold)
+ParallelNode::ParallelNode(const std::string& name, unsigned threshold)
     : ControlNode::ControlNode(name, {} ),
     threshold_(threshold),
     read_parameter_from_ports_(false)
@@ -29,6 +29,7 @@ ParallelNode::ParallelNode(const std::string& name, int threshold)
 ParallelNode::ParallelNode(const std::string &name,
                                const NodeConfiguration& config)
     : ControlNode::ControlNode(name, config),
+      threshold_(0),
       read_parameter_from_ports_(true)
 {
 }

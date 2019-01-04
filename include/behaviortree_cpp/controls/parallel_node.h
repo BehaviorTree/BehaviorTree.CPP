@@ -23,7 +23,7 @@ class ParallelNode : public ControlNode
 {
   public:
 
-    ParallelNode(const std::string& name, int threshold);
+    ParallelNode(const std::string& name, unsigned threshold);
 
     ParallelNode(const std::string& name, const NodeConfiguration& config);
 

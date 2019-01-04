@@ -16,6 +16,7 @@ namespace BT
 TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
     : DecoratorNode(name, {} ),
     child_halted_(false),
+    timer_id_(0),
     msec_(milliseconds),
     read_parameter_from_ports_(false)
 {
@@ -25,7 +26,9 @@ TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
 TimeoutNode::TimeoutNode(const std::string& name, const NodeConfiguration& config)
   : DecoratorNode(name, config),
     child_halted_(false),
-    msec_(0)
+    timer_id_(0),
+    msec_(0),
+    read_parameter_from_ports_(true)
 {
 }
 

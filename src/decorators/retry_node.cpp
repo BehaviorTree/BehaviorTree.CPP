@@ -28,6 +28,7 @@ RetryNode::RetryNode(const std::string& name, unsigned int NTries)
 
 RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config)
   : DecoratorNode(name, config),
+    max_attempts_(0),
     try_index_(0),
     read_parameter_from_ports_(true)
 {

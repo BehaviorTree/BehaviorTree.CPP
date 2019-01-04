@@ -65,7 +65,7 @@ class TreeNode
      *
      *     static const PortsList& providedPorts();
      */
-    TreeNode(const std::string& name, const NodeConfiguration& config); 
+    TreeNode(std::string name, NodeConfiguration config);
 
     virtual ~TreeNode() = default;
 
