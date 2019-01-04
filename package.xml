@@ -18,6 +18,9 @@
 
   <build_depend>libzmq3-dev</build_depend>
   <run_depend>libzmq3-dev</run_depend>
+  
+  <build_depend>libdw-dev</build_depend>
+  <run_depend>libdw-dev</run_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
