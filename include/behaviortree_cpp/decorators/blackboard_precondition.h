@@ -25,7 +25,7 @@ namespace BT
  *
  * Example:
  *
- * <BlackboardCheckInt key="${the_answer}"
+ * <BlackboardCheckInt key="{the_answer}"
  *                     expected="42"
  *                     return_on_mismatch="FAILURE" />
  */

@@ -92,8 +92,8 @@ TEST(BlackboardTest, BasicRemapping)
     NodeConfiguration config;
 
     config.blackboard = bb;
-    config.input_ports["in_port"]   = "${my_input_port}";
-    config.output_ports["out_port"] = "${my_output_port}";
+    config.input_ports["in_port"]   = "{my_input_port}";
+    config.output_ports["out_port"] = "{my_output_port}";
     bb->set("my_input_port", 11 );
 
     BB_TestNode node("good_one", config);
@@ -134,13 +134,13 @@ TEST(BlackboardTest, WithFactory)
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <BB_TestNode in_port="11"
-                             out_port="${my_output_port_A}"/>
+                             out_port="{my_output_port_A}"/>
 
-                <BB_TestNode in_port="${my_input_port}"
-                             out_port="${my_output_port_B}" />
+                <BB_TestNode in_port="{my_input_port}"
+                             out_port="{my_output_port_B}" />
 
-                <BB_TestNode in_port="${my_input_port}"
-                             out_port="${my_input_port}" />
+                <BB_TestNode in_port="{my_input_port}"
+                             out_port="{my_input_port}" />
             </Sequence>
         </BehaviorTree>
     </root>)";
