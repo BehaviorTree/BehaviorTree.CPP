@@ -25,10 +25,10 @@ const std::string xml_text = R"(
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <SequenceStar name="root">
-            <CalculateGoalPose goal="${GoalPose}" />
-            <MoveBase  goal="${GoalPose}" />
+            <CalculateGoalPose goal="{GoalPose}" />
+            <MoveBase  goal="{GoalPose}" />
             <SetBlackboard output_key="OtherGoal" value="-1;3;0.5" />
-            <MoveBase  goal="${OtherGoal}" />
+            <MoveBase  goal="{OtherGoal}" />
         </SequenceStar>
      </BehaviorTree>
  </root>
@@ -78,5 +78,9 @@ int main()
         status = tree.root_node->executeTick();
         SleepMS(1);   // optional sleep to avoid "busy loops"
     }
+
+    std::cout <<"-----------------------" << std::endl;
+    std::cout << writeXML(factory, tree.root_node, true) << std::endl;
+
     return 0;
 }
