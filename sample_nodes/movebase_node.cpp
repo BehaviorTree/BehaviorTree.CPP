@@ -28,7 +28,7 @@ BT::NodeStatus MoveBaseAction::tick()
     }
 
     std::cout << "[ MoveBase: FINISHED ]" << std::endl;
-    return _halt_requested ? BT::NodeStatus::SUCCESS : BT::NodeStatus::SUCCESS;
+    return _halt_requested ? BT::NodeStatus::FAILURE : BT::NodeStatus::SUCCESS;
 }
 
 void MoveBaseAction::halt()
