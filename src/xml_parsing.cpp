@@ -23,6 +23,8 @@
 #include <ros/package.h>
 #endif
 
+#include "behaviortree_cpp/blackboard/blackboard_local.h"
+
 namespace BT
 {
 using namespace tinyxml2;
@@ -37,10 +39,9 @@ struct XMLParser::Pimpl
                                     const Blackboard::Ptr& blackboard,
                                     const TreeNode::Ptr& node_parent);
 
-    TreeNode::Ptr recursivelyCreateTree(const std::string& tree_ID,
-                                        std::vector<TreeNode::Ptr>& nodes_list,
-                                        const TreeNode::Ptr& root_parent,
-                                        const Blackboard::Ptr& blackboard);
+    void recursivelyCreateTree(const std::string& tree_ID,
+                                        Tree& output_tree,
+                                        const TreeNode::Ptr& root_parent);
 
     void loadDocImpl(XMLDocument *doc);
 
@@ -352,10 +353,9 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
     }
 }
 
-TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes,
-                                         const Blackboard::Ptr& blackboard)
+Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard)
 {
-    nodes.clear();
+    Tree output_tree;
 
     XMLElement* xml_root = _p->opened_documents.front()->RootElement();
 
@@ -372,7 +372,22 @@ TreeNode::Ptr XMLParser::instantiateTree(std::vector<TreeNode::Ptr>& nodes,
         throw RuntimeError("[main_tree_to_execute] was not specified correctly");
     }
     //--------------------------------------
-    return _p->recursivelyCreateTree(main_tree_ID, nodes, TreeNode::Ptr(), blackboard);
+    if( !root_blackboard )
+    {
+        throw RuntimeError("XMLParser::instantiateTree needs a non-empty root_blackboard");
+    }
+    // first blackboard
+    output_tree.blackboard_stack.push_back( root_blackboard );
+
+    _p->recursivelyCreateTree(main_tree_ID,
+                              output_tree,
+                              TreeNode::Ptr() );
+
+    if( output_tree.nodes.size() > 0)
+    {
+        output_tree.root_node = output_tree.nodes.front().get();
+    }
+    return output_tree;
 }
 
 TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
@@ -468,23 +483,30 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
     return child_node;
 }
 
-TreeNode::Ptr BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
-                                                          std::vector<TreeNode::Ptr>& nodes_list,
-                                                          const TreeNode::Ptr& root_parent,
-                                                          const Blackboard::Ptr& blackboard)
+void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
+                                                 Tree& output_tree,
+                                                 const TreeNode::Ptr& root_parent)
 {
     auto root_element = tree_roots[tree_ID]->FirstChildElement();
+    auto& nodes_list = output_tree.nodes;
+
     std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
 
     recursiveStep = [&](const TreeNode::Ptr& parent,
                         const XMLElement* element)
     {
+        auto blackboard  = output_tree.blackboard_stack.back();
+
         auto node = createNodeFromXML(element, blackboard, parent);
         nodes_list.push_back(node);
 
         if( node->type() == NodeType::SUBTREE )
         {
-            recursivelyCreateTree( node->name(), nodes_list, node, blackboard );
+            auto parent_bb = output_tree.blackboard_stack.back();
+            auto new_bb = parent_bb->createOther();
+            new_bb->setParentBlackboard( parent_bb );
+            output_tree.blackboard_stack.emplace_back(new_bb);
+            recursivelyCreateTree( node->name(), output_tree, node );
         }
         else
         {
@@ -498,30 +520,22 @@ TreeNode::Ptr BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tre
 
     // start recursion
     recursiveStep(root_parent, root_element);
-    return nodes_list.front();
 }
 
 Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,
-                       const Blackboard::Ptr& blackboard)
+                       Blackboard::Ptr blackboard)
 {
     XMLParser parser(factory);
     parser.loadFromText(text);
-
-    std::vector<TreeNode::Ptr> nodes;
-    auto root = parser.instantiateTree(nodes, blackboard);
-
-    return Tree(root.get(), nodes);
+    return parser.instantiateTree(blackboard);
 }
 
 Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& filename,
-                       const Blackboard::Ptr& blackboard)
+                       Blackboard::Ptr blackboard)
 {
     XMLParser parser(factory);
     parser.loadFromFile(filename);
-
-    std::vector<TreeNode::Ptr> nodes;
-    auto root = parser.instantiateTree(nodes, blackboard);
-    return Tree(root.get(), nodes);
+    return parser.instantiateTree(blackboard);
 }
 
 

@@ -119,7 +119,6 @@ TEST(BlackboardTest, GetInputsFromText)
 
 TEST(BlackboardTest, WithFactory)
 {
-    auto bb = Blackboard::create<BlackboardLocal>();
     BehaviorTreeFactory factory;
 
     factory.registerNodeType<BB_TestNode>("BB_TestNode");
@@ -141,6 +140,7 @@ TEST(BlackboardTest, WithFactory)
         </BehaviorTree>
     </root>)";
 
+    auto bb = Blackboard::create<BlackboardLocal>();
     bb->set( "my_input_port", 42 );
 
     auto tree = buildTreeFromText(factory, xml_text, bb);

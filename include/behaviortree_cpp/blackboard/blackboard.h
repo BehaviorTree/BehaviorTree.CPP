@@ -29,6 +29,8 @@ class BlackboardImpl
     virtual const SafeAny::Any* get(const std::string& key) const = 0;
     virtual void set(const std::string& key, const SafeAny::Any& value) = 0;
     virtual bool contains(const std::string& key) const = 0;
+
+    virtual BlackboardImpl* createOther()  const = 0;
 };
 
 
@@ -136,6 +138,12 @@ class Blackboard
     {
         std::unique_lock<std::mutex> lock(mutex_);
         return (impl_->contains(key));
+    }
+
+    Blackboard::Ptr createOther() const
+    {
+        auto base = std::unique_ptr<BlackboardImpl>( impl_->createOther() );
+        return std::shared_ptr<Blackboard>(new Blackboard(std::move(base)));
     }
 
   private:
