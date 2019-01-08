@@ -57,4 +57,16 @@ BT::NodeStatus SaySomething::tick()
     std::cout << "Robot says: " << msg << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
+
+BT::NodeStatus SaySomethingSimple(BT::TreeNode &self)
+{
+    std::string msg;
+    if (!self.getInput("message", msg))
+    {
+        throw BT::RuntimeError("missing required input [message]");
+    }
+    std::cout << "Robot says: " << msg << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
 }

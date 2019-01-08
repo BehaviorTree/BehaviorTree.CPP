@@ -64,6 +64,10 @@ class SaySomething : public BT::SyncActionNode
     }
 };
 
+//Same as class SaySomething, but to be registered with SimpleActionNode
+BT::NodeStatus SaySomethingSimple(BT::TreeNode& self);
+
+
 inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
 {
     static GripperInterface gi;

@@ -63,7 +63,7 @@ bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
     return true;
 }
 
-void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest, NodeBuilder builder)
+void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest, const NodeBuilder& builder)
 {
     auto it = builders_.find( manifest.registration_ID);
     if (it != builders_.end())
@@ -75,36 +75,39 @@ void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest, Node
     manifests_.insert( {manifest.registration_ID, manifest} );
 }
 
-void BehaviorTreeFactory::registerSimpleCondition(
-    const std::string& ID, const SimpleConditionNode::TickFunctor& tick_functor)
+void BehaviorTreeFactory::registerSimpleCondition(const std::string& ID,
+                                                  const SimpleConditionNode::TickFunctor& tick_functor,
+                                                  PortsList ports)
 {
     NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeConfiguration& config) {
         return std::unique_ptr<TreeNode>(new SimpleConditionNode(name, tick_functor, config));
     };
 
-    TreeNodeManifest manifest = { NodeType::CONDITION, ID, {} };
+    TreeNodeManifest manifest = { NodeType::CONDITION, ID, std::move(ports) };
     registerBuilder(manifest, builder);
 }
 
 void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
-                                               const SimpleActionNode::TickFunctor& tick_functor)
+                                               const SimpleActionNode::TickFunctor& tick_functor,
+                                               PortsList ports)
 {
     NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeConfiguration& config) {
         return std::unique_ptr<TreeNode>(new SimpleActionNode(name, tick_functor, config));
     };
 
-    TreeNodeManifest manifest = { NodeType::ACTION, ID, {} };
+    TreeNodeManifest manifest = { NodeType::ACTION, ID, std::move(ports) };
     registerBuilder(manifest, builder);
 }
 
-void BehaviorTreeFactory::registerSimpleDecorator(
-    const std::string& ID, const SimpleDecoratorNode::TickFunctor& tick_functor)
+void BehaviorTreeFactory::registerSimpleDecorator(const std::string& ID,
+                                                  const SimpleDecoratorNode::TickFunctor& tick_functor,
+                                                  PortsList ports)
 {
     NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeConfiguration& config) {
         return std::unique_ptr<TreeNode>(new SimpleDecoratorNode(name, tick_functor, config));
     };
 
-    TreeNodeManifest manifest = { NodeType::DECORATOR, ID, {} };
+    TreeNodeManifest manifest = { NodeType::DECORATOR, ID, std::move(ports) };
     registerBuilder(manifest, builder);
 }
 

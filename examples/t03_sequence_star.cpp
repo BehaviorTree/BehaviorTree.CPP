@@ -15,7 +15,7 @@ using namespace BT;
 
 // clang-format off
 
-const std::string xml_text_sequence = R"(
+static const char* xml_text_sequence = R"(
 
  <root main_tree_to_execute = "MainTree" >
 
@@ -25,14 +25,14 @@ const std::string xml_text_sequence = R"(
             <TemperatureOK />
             <SaySomething   message="mission started..." />
             <MoveBase goal="1;2;3"/>
-            <SaySomething   message="mission completed!" />
+            <SaySomething2  message="mission completed!" />
         </Sequence>
      </BehaviorTree>
 
  </root>
  )";
 
-const std::string xml_text_sequence_star = R"(
+static const char* xml_text_sequence_star = R"(
 
  <root main_tree_to_execute = "MainTree" >
 
@@ -42,7 +42,7 @@ const std::string xml_text_sequence_star = R"(
             <TemperatureOK />
             <SaySomething   message="mission started..." />
             <MoveBase goal="1;2;3"/>
-            <SaySomething   message="mission completed!" />
+            <SaySomething2  message="mission completed!" />
         </SequenceStar>
      </BehaviorTree>
 
@@ -66,6 +66,9 @@ int main()
     factory.registerSimpleCondition("BatteryOK", std::bind(CheckTemperature));
     factory.registerNodeType<MoveBaseAction>("MoveBase");
     factory.registerNodeType<SaySomething>("SaySomething");
+
+    PortsList say_something_ports = {{"message", PortType::INPUT}};
+    factory.registerSimpleAction("SaySomething2", SaySomethingSimple, say_something_ports );
 
     // Compare the state transitions and messages using either
     // xml_text_sequence and xml_text_sequence_star
