@@ -51,19 +51,41 @@ public:
     bool unregisterBuilder(const std::string& ID);
 
     /// The most generic way to register your own builder.
-    void registerBuilder(const TreeNodeManifest& manifest, NodeBuilder builder);
+    void registerBuilder(const TreeNodeManifest& manifest, const NodeBuilder& builder);
 
-    /// Register a SimpleActionNode
+    /**
+    * @brief registerSimpleAction help you register nodes of type SimpleActionNode.
+    *
+    * @param ID            registration ID
+    * @param tick_functor  the callback to be invoked in the tick() method.
+    * @param ports         if your SimpleNode requires ports, provide the list here.
+    *
+    * */
     void registerSimpleAction(const std::string& ID,
-                              const SimpleActionNode::TickFunctor& tick_functor);
-
-    /// Register a SimpleConditionNode
+                              const SimpleActionNode::TickFunctor& tick_functor,
+                              PortsList ports = {});
+    /**
+    * @brief registerSimpleCondition help you register nodes of type SimpleConditionNode.
+    *
+    * @param ID            registration ID
+    * @param tick_functor  the callback to be invoked in the tick() method.
+    * @param ports         if your SimpleNode requires ports, provide the list here.
+    *
+    * */
     void registerSimpleCondition(const std::string& ID,
-                                 const SimpleConditionNode::TickFunctor& tick_functor);
-
-    /// Register a SimpleDecoratorNode
+                                 const SimpleConditionNode::TickFunctor& tick_functor,
+                                 PortsList ports = {});
+    /**
+    * @brief registerSimpleDecorator help you register nodes of type SimpleDecoratorNode.
+    *
+    * @param ID            registration ID
+    * @param tick_functor  the callback to be invoked in the tick() method.
+    * @param ports         if your SimpleNode requires ports, provide the list here.
+    *
+    * */
     void registerSimpleDecorator(const std::string& ID,
-                                 const SimpleDecoratorNode::TickFunctor& tick_functor);
+                                 const SimpleDecoratorNode::TickFunctor& tick_functor,
+                                 PortsList ports = {});
 
     /**
      * @brief registerFromPlugin load a shared library and execute the function BT_REGISTER_NODES (see macro).
