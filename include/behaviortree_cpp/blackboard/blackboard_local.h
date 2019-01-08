@@ -32,6 +32,11 @@ class BlackboardLocal : public BlackboardImpl
         return storage_.find(key) != storage_.end();
     }
 
+    virtual BlackboardImpl* createOther()  const override
+    {
+        return new BlackboardLocal();
+    }
+
   private:
     std::unordered_map<std::string, SafeAny::Any> storage_;
 };

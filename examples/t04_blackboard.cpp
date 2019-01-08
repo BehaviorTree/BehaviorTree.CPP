@@ -20,7 +20,7 @@ using namespace BT;
 */
 
 // clang-format off
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
@@ -66,11 +66,8 @@ int main()
     factory.registerNodeType<CalculateGoalPose>("CalculateGoalPose");
     factory.registerNodeType<MoveBaseAction>("MoveBase");
 
-    // create a Blackboard from BlackboardLocal (simple, not persistent, local storage)
-    auto blackboard = Blackboard::create<BlackboardLocal>();
-
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromText(factory, xml_text, blackboard);
+    auto tree = buildTreeFromText(factory, xml_text);
 
     NodeStatus status = NodeStatus::RUNNING;
     while (status == NodeStatus::RUNNING)

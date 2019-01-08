@@ -118,7 +118,7 @@ class AsyncActionNode : public ActionNodeBase
 
   private:
 
-    // The method that is going to be executed by the thread
+    // The method that will be executed by the thread
     void asyncThreadLoop();
 
     void waitStart();
@@ -129,13 +129,13 @@ class AsyncActionNode : public ActionNodeBase
 
     bool start_action_;
 
-    std::thread thread_;
-
     std::mutex start_mutex_;
 
     std::condition_variable start_signal_;
 
     std::exception_ptr exptr_;
+
+    std::thread thread_;
 };
 
 /**
@@ -143,8 +143,8 @@ class AsyncActionNode : public ActionNodeBase
  * which need to communicate with an external service using an asynch request/reply interface
  * (being notable examples ActionLib in ROS, MoveIt clients or move_base clients).
  *
- * It is up to the user to decide when to suspend execution of the BehaviorTree invoking
- * the method setStatusRunningAndYield().
+ * It is up to the user to decide when to suspend execution of the Action and resume
+ * the parent node, invoking the method setStatusRunningAndYield().
  */
 class CoroActionNode : public ActionNodeBase
 {

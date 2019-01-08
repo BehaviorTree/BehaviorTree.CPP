@@ -20,7 +20,6 @@ class DecoratorSubtreeNode : public DecoratorNode
     {
         return NodeType::SUBTREE;
     }
-
 };
 
 

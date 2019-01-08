@@ -84,12 +84,12 @@ int main()
     // Register the lambda with BehaviorTreeFactory::registerSimpleAction
     factory.registerSimpleAction("MoveTo", MoveToWrapperWithLambda);
 
-    auto blackboard = Blackboard::create<BlackboardLocal>();
-    auto tree = buildTreeFromText(factory, xml_text, blackboard);
+    auto tree = buildTreeFromText(factory, xml_text);
 
     // We set the entry "myGoal" in the blackboard.
     Point3D my_goal = {3,4,5};
-    blackboard->set("myGoal", my_goal);
+
+    tree.rootBlackboard()->set("myGoal", my_goal);
 
     NodeStatus status = NodeStatus::RUNNING;
     while (status == NodeStatus::RUNNING)

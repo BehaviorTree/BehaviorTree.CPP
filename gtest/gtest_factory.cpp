@@ -4,6 +4,8 @@
 #include "behaviortree_cpp/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
 
+using namespace BT;
+
 // clang-format off
 
 const std::string xml_text = R"(
@@ -72,21 +74,16 @@ const std::string xml_text_subtree = R"(
 
 TEST(BehaviorTreeFactory, VerifyLargeTree)
 {
-    BT::BehaviorTreeFactory factory;
+    BehaviorTreeFactory factory;
     CrossDoor::RegisterNodes(factory);
 
-    BT::XMLParser parser(factory);
-    parser.loadFromText(xml_text);
+    Tree tree = buildTreeFromText(factory, xml_text);
 
-    std::vector<BT::TreeNode::Ptr> nodes;
+    printTreeRecursively(tree.root_node);
 
-    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes, Blackboard::Ptr());
+    ASSERT_EQ(tree.root_node->name(), "root_selector");
 
-    BT::printTreeRecursively(root_node.get());
-
-    ASSERT_EQ(root_node->name(), "root_selector");
-
-    auto fallback = dynamic_cast<const BT::FallbackNode*>(root_node.get());
+    auto fallback = dynamic_cast<const FallbackNode*>(tree.root_node);
     ASSERT_TRUE(fallback != nullptr);
 
     ASSERT_EQ(fallback->children().size(), 3);
@@ -94,14 +91,14 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_EQ(fallback->child(1)->name(), "door_closed_sequence");
     ASSERT_EQ(fallback->child(2)->name(), "PassThroughWindow");
 
-    auto sequence_open = dynamic_cast<const BT::SequenceNode*>(fallback->child(0));
+    auto sequence_open = dynamic_cast<const SequenceNode*>(fallback->child(0));
     ASSERT_TRUE(sequence_open != nullptr);
 
     ASSERT_EQ(sequence_open->children().size(), 2);
     ASSERT_EQ(sequence_open->child(0)->name(), "IsDoorOpen");
     ASSERT_EQ(sequence_open->child(1)->name(), "PassThroughDoor");
 
-    auto sequence_closed = dynamic_cast<const BT::SequenceNode*>(fallback->child(1));
+    auto sequence_closed = dynamic_cast<const SequenceNode*>(fallback->child(1));
     ASSERT_TRUE(sequence_closed != nullptr);
 
     ASSERT_EQ(sequence_closed->children().size(), 4);
@@ -110,7 +107,7 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_EQ(sequence_closed->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence_closed->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::InverterNode*>(sequence_closed->child(0));
+    auto decorator = dynamic_cast<const InverterNode*>(sequence_closed->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorOpen");
@@ -118,29 +115,26 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
 TEST(BehaviorTreeFactory, Subtree)
 {
-    BT::BehaviorTreeFactory factory;
+    BehaviorTreeFactory factory;
     CrossDoor::RegisterNodes(factory);
 
-    BT::XMLParser parser(factory);
-    parser.loadFromText(xml_text_subtree);
 
-    std::vector<BT::TreeNode::Ptr> nodes;
+    Tree tree = buildTreeFromText(factory, xml_text_subtree);
 
-    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes, Blackboard::Ptr());
-    BT::printTreeRecursively(root_node.get());
+    printTreeRecursively(tree.root_node);
 
-    ASSERT_EQ(root_node->name(), "root_selector");
+    ASSERT_EQ(tree.root_node->name(), "root_selector");
 
-    auto root_selector = dynamic_cast<const BT::FallbackNode*>(root_node.get());
+    auto root_selector = dynamic_cast<const FallbackNode*>(tree.root_node);
     ASSERT_TRUE(root_selector != nullptr);
     ASSERT_EQ(root_selector->children().size(), 2);
     ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
     ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
 
-    auto subtree = dynamic_cast<const BT::DecoratorSubtreeNode*>(root_selector->child(0));
+    auto subtree = dynamic_cast<const DecoratorSubtreeNode*>(root_selector->child(0));
     ASSERT_TRUE(subtree != nullptr);
 
-    auto sequence = dynamic_cast<const BT::SequenceNode*>(subtree->child());
+    auto sequence = dynamic_cast<const SequenceNode*>(subtree->child());
     ASSERT_TRUE(sequence != nullptr);
 
     ASSERT_EQ(sequence->children().size(), 4);
@@ -149,7 +143,7 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_EQ(sequence->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::InverterNode*>(sequence->child(0));
+    auto decorator = dynamic_cast<const InverterNode*>(sequence->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorLocked");
@@ -163,8 +157,8 @@ const std::string xml_text_issue = R"(
     </BehaviorTree>
 </root> )";
 
-    BT::BehaviorTreeFactory factory;
-    BT::XMLParser parser(factory);
+    BehaviorTreeFactory factory;
+    XMLParser parser(factory);
 
     EXPECT_THROW( parser.loadFromText(xml_text_issue), RuntimeError );
 }
