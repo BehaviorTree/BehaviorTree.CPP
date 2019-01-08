@@ -55,10 +55,6 @@ class BB_TestNode: public SyncActionNode
 };
 
 
-
-
-/****************TESTS START HERE***************************/
-
 TEST(BlackboardTest, GetInputsFromBlackboard)
 {
     auto bb = Blackboard::create<BlackboardLocal>();
@@ -154,6 +150,42 @@ TEST(BlackboardTest, WithFactory)
     ASSERT_EQ( bb->get<int>("my_output_port_A"), 22 );
     ASSERT_EQ( bb->get<int>("my_output_port_B"), 84 );
     ASSERT_EQ( bb->get<int>("my_input_port"), 84 );
+}
 
+TEST(BlackboardTest, NestedBlackboards)
+{
+
+    auto bb_A = Blackboard::create<BlackboardLocal>();
+    auto bb_B = Blackboard::create<BlackboardLocal>();
+    auto bb_C = Blackboard::create<BlackboardLocal>();
+
+    bb_B->setParentBlackboard( bb_A );
+    bb_C->setParentBlackboard( bb_B );
+
+    bb_A->set("value", 11);
+    bb_B->set("value", 22);
+    bb_C->set("value", 33);
+
+    bb_A->set("number", 44);
+    bb_B->set("number", 55);
+
+    bb_A->set("answer", 66);
+
+    ASSERT_EQ( bb_A->get<int>("value"), 11 );
+    ASSERT_EQ( bb_B->get<int>("value"), 22 );
+    ASSERT_EQ( bb_C->get<int>("value"), 33 );
+
+    ASSERT_EQ( bb_A->get<int>("number"), 44 );
+    ASSERT_EQ( bb_B->get<int>("number"), 55 );
+    ASSERT_EQ( bb_C->get<int>("number"), 55 );
+
+    ASSERT_EQ( bb_A->get<int>("answer"), 66 );
+    ASSERT_EQ( bb_B->get<int>("answer"), 66 );
+    ASSERT_EQ( bb_C->get<int>("answer"), 66 );
+
+
+    ASSERT_ANY_THROW( bb_A->get<int>("not_there") );
+    ASSERT_ANY_THROW( bb_B->get<int>("not_there") );
+    ASSERT_ANY_THROW( bb_C->get<int>("not_there") );
 }
 

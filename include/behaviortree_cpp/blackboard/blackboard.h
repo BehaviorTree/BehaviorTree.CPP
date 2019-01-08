@@ -73,17 +73,12 @@ class Blackboard
     template <typename T>
     bool get(const std::string& key, T& value) const
     {
-        const SafeAny::Any* val = nullptr;
+        const SafeAny::Any* val = getAny(key);
+        if (val)
         {
-            std::unique_lock<std::mutex> lock(mutex_);
-            val = impl_->get(key);
+            value = val->cast<T>();
         }
-        if (!val)
-        {
-            return false;
-        }
-        value = val->cast<T>();
-        return true;
+        return (bool)val;
     }
 
     /**
@@ -95,7 +90,17 @@ class Blackboard
     const SafeAny::Any* getAny(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);
-        return impl_->get(key);
+        auto val = impl_->get(key);
+
+        if (!val) // not found. try the parent
+        {
+            if( auto parent_bb = parent_blackboard_.lock() )
+            {
+                // this should work recursively
+                val = parent_bb->getAny(key);
+            }
+        }
+        return val;
     }
 
     /**
@@ -111,6 +116,11 @@ class Blackboard
             throw RuntimeError("Missing key");
         }
         return value;
+    }
+
+    void setParentBlackboard(const Blackboard::Ptr& parent_bb )
+    {
+        parent_blackboard_ = parent_bb;
     }
 
     /// Update the entry with the given key
@@ -131,7 +141,9 @@ class Blackboard
   private:
     std::unique_ptr<BlackboardImpl> impl_;
     mutable std::mutex mutex_;
+    mutable std::weak_ptr<Blackboard> parent_blackboard_;
 };
-}
+
+} // end namespace
 
 #endif   // BLACKBOARD_H
