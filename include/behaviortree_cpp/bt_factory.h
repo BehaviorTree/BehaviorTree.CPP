@@ -183,7 +183,7 @@ private:
     NodeBuilder getBuilder(typename std::enable_if<!has_default_constructor<T>::value &&
                                                     has_params_constructor<T>::value >::type* = nullptr)
     {
-        return [this](const std::string& name, const NodeConfiguration& params)
+        return [](const std::string& name, const NodeConfiguration& params)
         {
             return std::unique_ptr<TreeNode>(new T(name, params));
         };
