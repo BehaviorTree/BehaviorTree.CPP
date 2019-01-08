@@ -55,18 +55,18 @@ void TreeNode::setStatus(NodeStatus new_status)
 
 NodeStatus TreeNode::status() const
 {
-    std::lock_guard<std::mutex> LockGuard(state_mutex_);
+    std::lock_guard<std::mutex> lock(state_mutex_);
     return status_;
 }
 
 NodeStatus TreeNode::waitValidStatus()
 {
-    std::unique_lock<std::mutex> lk(state_mutex_);
+    std::unique_lock<std::mutex> lock(state_mutex_);
 
-    state_condition_variable_.wait(lk, [&]() {
-        return (status_ == NodeStatus::RUNNING || status_ == NodeStatus::SUCCESS ||
-                status_ == NodeStatus::FAILURE);
-    });
+    while( isHalted() )
+    {
+        state_condition_variable_.wait(lock);
+    }
     return status_;
 }
 
@@ -77,7 +77,7 @@ const std::string& TreeNode::name() const
 
 bool TreeNode::isHalted() const
 {
-    return status() == NodeStatus::IDLE;
+    return status_ == NodeStatus::IDLE;
 }
 
 TreeNode::StatusChangeSubscriber
