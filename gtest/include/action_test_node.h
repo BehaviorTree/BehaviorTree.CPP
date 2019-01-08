@@ -57,9 +57,10 @@ class AsyncActionTest : public AsyncActionNode
     }
 
   private:
-    int time_;
-    bool boolean_value_;
-    int tick_count_;
+    // using atomic because these variables might be accessed from different threads
+    std::atomic<int> time_;
+    std::atomic_bool boolean_value_;
+    std::atomic<int> tick_count_;
     std::atomic_bool stop_loop_;
 };
 }

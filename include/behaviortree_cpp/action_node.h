@@ -131,9 +131,9 @@ class AsyncActionNode : public ActionNodeBase
 
     std::thread thread_;
 
-    std::mutex mutex_;
+    std::mutex start_mutex_;
 
-    std::condition_variable condition_variable_;
+    std::condition_variable start_signal_;
 
     std::exception_ptr exptr_;
 };

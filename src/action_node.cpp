@@ -63,9 +63,11 @@ NodeStatus SimpleActionNode::tick()
 //-------------------------------------------------------
 
 AsyncActionNode::AsyncActionNode(const std::string& name, const NodeConfiguration& config)
-  : ActionNodeBase(name, config), keep_thread_alive_(true), start_action_(false),
-  thread_(&AsyncActionNode::asyncThreadLoop, this)
+  : ActionNodeBase(name, config),
+  keep_thread_alive_(true),
+  start_action_(false)
 {
+    thread_ = std::thread(&AsyncActionNode::asyncThreadLoop, this);
 }
 
 AsyncActionNode::~AsyncActionNode()
@@ -78,19 +80,19 @@ AsyncActionNode::~AsyncActionNode()
 
 void AsyncActionNode::waitStart()
 {
-    std::unique_lock<std::mutex> UniqueLock(mutex_);
+    std::unique_lock<std::mutex> lock(start_mutex_);
     while (!start_action_)
     {
-        condition_variable_.wait(UniqueLock);
+        start_signal_.wait(lock);
     }
     start_action_ = false;
 }
 
 void AsyncActionNode::notifyStart()
 {
-    std::lock_guard<std::mutex> LockGuard(mutex_);
+    std::unique_lock<std::mutex> lock(start_mutex_);
     start_action_ = true;
-    condition_variable_.notify_all();
+    start_signal_.notify_all();
 }
 
 void AsyncActionNode::asyncThreadLoop()
