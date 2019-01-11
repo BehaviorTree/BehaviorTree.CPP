@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <mutex>
+#include <sstream>
 
 #include "behaviortree_cpp/blackboard/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
@@ -26,6 +27,7 @@ class BlackboardImpl
   public:
     virtual ~BlackboardImpl() = default;
 
+    virtual SafeAny::Any* get(const std::string& key) = 0;
     virtual const SafeAny::Any* get(const std::string& key) const = 0;
     virtual void set(const std::string& key, const SafeAny::Any& value) = 0;
     virtual bool contains(const std::string& key) const = 0;
@@ -89,19 +91,10 @@ class Blackboard
      *
      * @return the pointer or nullptr if it fails.
      */
-    const SafeAny::Any* getAny(const std::string& key) const
+    SafeAny::Any* getAny(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);
         auto val = impl_->get(key);
-
-        if (!val) // not found. try the parent
-        {
-            if( auto parent_bb = parent_blackboard_.lock() )
-            {
-                // this should work recursively
-                val = parent_bb->getAny(key);
-            }
-        }
         return val;
     }
 
@@ -120,28 +113,29 @@ class Blackboard
         return value;
     }
 
-    void setParentBlackboard(const Blackboard::Ptr& parent_bb )
-    {
-        parent_blackboard_ = parent_bb;
-    }
-
     /// Update the entry with the given key
     template <typename T>
     void set(const std::string& key, const T& value)
     {
         std::unique_lock<std::mutex> lock(mutex_);
 
-        auto existin_entry = impl_->get(key);
+        SafeAny::Any* existin_entry = impl_->get(key);
         if( existin_entry )
         {
-            bool both_arithmetic = std::is_arithmetic<T>::value && existin_entry->isArithmeticType();
-
-            if( existin_entry->type() != typeid (T) && !both_arithmetic )
+            const auto& prev_type =  existin_entry->type();
+            SafeAny::Any any_val(value);
+            const auto& new_type = any_val.type();
+            if( prev_type != new_type )
             {
-                throw LogicError("Blackboard::set() failed: once created, the type of a port must not change");
+                std::stringstream ss;
+                ss << "Blackboard::set() failed: once created, the type of a port must not change.";
+                ss << " Previous: [ " <<  existin_entry->type().name() << " ] ";
+                ss << " Current: [ " <<  typeid (T).name() << " ]";
+                throw LogicError( ss.str() );
             }
-        }
 
+            impl_->set(key, std::move(any_val));
+        }
         impl_->set(key, SafeAny::Any(value));
     }
 
@@ -161,8 +155,27 @@ class Blackboard
   private:
     std::unique_ptr<BlackboardImpl> impl_;
     mutable std::mutex mutex_;
-    mutable std::weak_ptr<Blackboard> parent_blackboard_;
 };
+
+template <> inline
+void Blackboard::set<SafeAny::Any>(const std::string& key, const SafeAny::Any& value)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+
+    auto existin_entry = impl_->get(key);
+    if( existin_entry )
+    {
+        if( existin_entry->type() != value.type() )
+        {
+            std::stringstream ss;
+            ss << "Blackboard::set() failed: once created, the type of a port must not change.";
+            ss << " Previous: [ " <<  existin_entry->type().name() << " ] ";
+            ss << " Current: [ " <<   value.type().name() << " ]";
+            throw LogicError( ss.str() );
+        }
+    }
+    impl_->set(key, value);
+}
 
 } // end namespace
 

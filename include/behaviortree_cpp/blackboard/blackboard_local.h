@@ -15,11 +15,13 @@ class BlackboardLocal : public BlackboardImpl
     virtual const SafeAny::Any* get(const std::string& key) const override
     {
         auto it = storage_.find(key);
-        if (it == storage_.end())
-        {
-            return nullptr;
-        }
-        return &(it->second);
+        return (it == storage_.end()) ? nullptr : &(it->second);
+    }
+
+    virtual SafeAny::Any* get(const std::string& key) override
+    {
+        auto it = storage_.find(key);
+        return (it == storage_.end()) ? nullptr : &(it->second);
     }
 
     virtual void set(const std::string& key, const SafeAny::Any& value) override

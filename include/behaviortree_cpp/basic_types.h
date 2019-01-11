@@ -134,7 +134,7 @@ public:
 
     const std::type_info &info() const;
 
-    SafeAny::Any createEmptyAny() const
+    const SafeAny::Any& createEmptyAny() const
     {
         return _empty_any;
     }

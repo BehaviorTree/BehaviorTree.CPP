@@ -121,6 +121,20 @@ StringView TreeNode::stripBlackboardPointer(StringView str)
     return {};
 }
 
+std::pair<bool, StringView> TreeNode::getRemappedKey(StringView port_name,
+                                                     StringView remapping_value)
+{
+     if( remapping_value == "=" )
+     {
+         return {true, port_name};
+     }
+     if( isBlackboardPointer( remapping_value ) )
+     {
+         return {true, stripBlackboardPointer(remapping_value)};
+     }
+     return {false, remapping_value};
+}
+
 const std::string& TreeNode::registrationName() const
 {
     return registration_ID_;

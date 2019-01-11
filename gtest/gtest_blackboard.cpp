@@ -24,21 +24,21 @@ class BB_TestNode: public SyncActionNode
 {
   public:
     BB_TestNode(const std::string& name, const NodeConfiguration& config):
-      SyncActionNode(name, config),
-      _value(0)
-    {
-        if(!getInput("in_port", _value))
-        {
-            throw RuntimeError("need input");
-        }
-    }
+      SyncActionNode(name, config)
+    { }
 
     NodeStatus tick()
     {
-        _value *= 2;
-        if( !setOutput("out_port", _value) )
+        int value = 0;
+        if(!getInput("in_port", value))
         {
-            throw RuntimeError("need output");
+            throw RuntimeError("BB_TestNode needs input");
+        }
+
+        value *= 2;
+        if( !setOutput("out_port", value) )
+        {
+            throw RuntimeError("BB_TestNode failed output");
         }
         return NodeStatus::SUCCESS;
     }
@@ -51,7 +51,7 @@ class BB_TestNode: public SyncActionNode
     }
 
   private:
-    int _value;
+
 };
 
 
@@ -60,14 +60,7 @@ TEST(BlackboardTest, GetInputsFromBlackboard)
     auto bb = Blackboard::create<BlackboardLocal>();
 
     NodeConfiguration config;
-
-    //Fails because config does not contain input/output ports
-    EXPECT_THROW( BB_TestNode("missing_port", config), RuntimeError );
-
     assignDefaultRemapping<BB_TestNode>( config );
-
-    //Fails because config.blackboard is still empty.
-    EXPECT_THROW( BB_TestNode("missing_bb", config), RuntimeError );
 
     config.blackboard = bb;
     bb->set("in_port", 11 );
@@ -128,64 +121,25 @@ TEST(BlackboardTest, WithFactory)
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
             <Sequence>
-                <BB_TestNode in_port="11"
-                             out_port="{my_output_port_A}"/>
+                <BB_TestNode name = "first" in_port="11"
+                             out_port="{my_input_port}"/>
 
-                <BB_TestNode in_port="{my_input_port}"
-                             out_port="{my_output_port_B}" />
-
-                <BB_TestNode in_port="{my_input_port}"
+                <BB_TestNode name = "second" in_port="{my_input_port}"
                              out_port="{my_input_port}" />
+
+                <BB_TestNode name = "third" in_port="{my_input_port}"
+                             out_port="{my_output_port}" />
             </Sequence>
         </BehaviorTree>
     </root>)";
 
     auto bb = Blackboard::create<BlackboardLocal>();
-    bb->set( "my_input_port", 42 );
 
     auto tree = buildTreeFromText(factory, xml_text, bb);
     NodeStatus status = tree.root_node->executeTick();
 
     ASSERT_EQ( status, NodeStatus::SUCCESS );
-    ASSERT_EQ( bb->get<int>("my_output_port_A"), 22 );
-    ASSERT_EQ( bb->get<int>("my_output_port_B"), 84 );
-    ASSERT_EQ( bb->get<int>("my_input_port"), 84 );
-}
-
-TEST(BlackboardTest, NestedBlackboards)
-{
-
-    auto bb_A = Blackboard::create<BlackboardLocal>();
-    auto bb_B = Blackboard::create<BlackboardLocal>();
-    auto bb_C = Blackboard::create<BlackboardLocal>();
-
-    bb_B->setParentBlackboard( bb_A );
-    bb_C->setParentBlackboard( bb_B );
-
-    bb_A->set("value", 11);
-    bb_B->set("value", 22);
-    bb_C->set("value", 33);
-
-    bb_A->set("number", 44);
-    bb_B->set("number", 55);
-
-    bb_A->set("answer", 66);
-
-    ASSERT_EQ( bb_A->get<int>("value"), 11 );
-    ASSERT_EQ( bb_B->get<int>("value"), 22 );
-    ASSERT_EQ( bb_C->get<int>("value"), 33 );
-
-    ASSERT_EQ( bb_A->get<int>("number"), 44 );
-    ASSERT_EQ( bb_B->get<int>("number"), 55 );
-    ASSERT_EQ( bb_C->get<int>("number"), 55 );
-
-    ASSERT_EQ( bb_A->get<int>("answer"), 66 );
-    ASSERT_EQ( bb_B->get<int>("answer"), 66 );
-    ASSERT_EQ( bb_C->get<int>("answer"), 66 );
-
-
-    ASSERT_ANY_THROW( bb_A->get<int>("not_there") );
-    ASSERT_ANY_THROW( bb_B->get<int>("not_there") );
-    ASSERT_ANY_THROW( bb_C->get<int>("not_there") );
+    ASSERT_EQ( bb->get<int>("my_input_port"), 44 );
+    ASSERT_EQ( bb->get<int>("my_output_port"), 88 );
 }
 

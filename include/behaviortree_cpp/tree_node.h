@@ -145,6 +145,9 @@ class TreeNode
 
     static StringView stripBlackboardPointer(StringView str);
 
+    static std::pair<bool,StringView> getRemappedKey(StringView port_name,
+                                                     StringView remapping_value);
+
 protected:
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
@@ -187,22 +190,15 @@ bool TreeNode::getInput(const std::string& key, T& destination) const
                   << "does not contain the key: [" << key << "]" << std::endl;
         return false;
     }
-    StringView remapped_key = remap_it->second;
+    auto remapped_pair = getRemappedKey( key, remap_it->second );
+    bool is_bb_entry = remapped_pair.first;
+    auto remapped_key = remapped_pair.second;
     try
     {
-        if( remapped_key == "=")
+        if( !is_bb_entry )
         {
-            remapped_key = key;
-        }
-        else{
-            if( !isBlackboardPointer(remapped_key))
-            {
-                destination = convertFromString<T>(remapped_key);
-                return true;
-            }
-            else{
-                remapped_key = stripBlackboardPointer(remapped_key);
-            }
+            destination = convertFromString<T>(remapped_key);
+            return true;
         }
 
         if ( !config_.blackboard )
