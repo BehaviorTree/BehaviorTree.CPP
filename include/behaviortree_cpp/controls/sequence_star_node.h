@@ -46,7 +46,7 @@ class SequenceStarNode : public ControlNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{RESET_PARAM, PortType::INPUT}};
+        static PortsList ports = {{RESET_PARAM, PortInfo::createInputPort<bool>()}};
         return ports;
     }
 
