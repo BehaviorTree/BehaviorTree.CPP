@@ -58,7 +58,7 @@ struct XMLParser::Pimpl
 
     Blackboard::Ptr blackboard;
 
-    Pimpl(const BehaviorTreeFactory &fact):
+    explicit Pimpl(const BehaviorTreeFactory &fact):
         factory(fact),
         current_path( filesystem::path::getcwd() ),
         suffix_count(0)
@@ -443,13 +443,35 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
     {
         const auto& manifest = factory.manifests().at(ID);
 
+        // Initialize the type of ports in the BB
+        for(const auto& port_it: manifest.ports)
+        {
+            const auto& key = port_it.first;
+            const auto& port = port_it.second;
+
+            if( port.info() != typeid(void) )
+            {
+                if( blackboard->contains( key) )
+                {
+                    if(  blackboard->getAny( key )->type() != port.info() )
+                    {
+                        throw LogicError("Mismatch in port type between two different Nodes of the tree");
+                    }
+                }
+                else{
+                    blackboard->set(key, port.createEmptyAny());
+                }
+            }
+        }
+        
+        // use manifest to initialize NodeConfiguration
         for(const auto& remap_it: remapping_parameters)
         {
             const auto& port_name = remap_it.first;
             auto port_it = manifest.ports.find( port_name );
             if( port_it != manifest.ports.end() )
             {
-                auto port_type = port_it->second;
+                auto port_type = port_it->second.type();
                 if( port_type != PortType::OUTPUT )
                 {
                     config.input_ports.insert( remap_it );
@@ -649,7 +671,7 @@ std::string writeXML(const BehaviorTreeFactory& factory,
         {
             const auto type = port.second;
             std::string *str;
-            switch( type )
+            switch( type.type() )
             {
                 case PortType::INPUT:  str = &in_ports_list; break;
                 case PortType::OUTPUT: str = &out_ports_list; break;

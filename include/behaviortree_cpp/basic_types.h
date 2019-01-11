@@ -6,10 +6,12 @@
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
+#include <typeinfo>
+#include <functional>
 #include <chrono>
 #include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/string_view.hpp"
-#include "behaviortree_cpp/blackboard/demangle_util.h"
+#include "behaviortree_cpp/blackboard/safe_any.hpp"
 
 namespace BT
 {
@@ -114,9 +116,53 @@ using enable_if = typename std::enable_if< Predicate::value >::type*;
 template <typename Predicate>
 using enable_if_not = typename std::enable_if< !Predicate::value >::type*;
 
-enum class PortType { INPUT, OUTPUT, INOUT };
+enum class PortType{INPUT, OUTPUT, INOUT };
 
-typedef std::unordered_map<std::string, PortType> PortsList;
+class PortInfo
+{
+    template<typename T>
+    PortInfo( PortType direction, T*):
+        _type(direction),
+        _info(typeid(T)),
+        _empty_any(T())
+    { }
+
+public:
+    PortInfo( PortType direction ): _type(direction), _info(typeid(void)) {}
+
+    PortType type() const;
+
+    const std::type_info &info() const;
+
+    SafeAny::Any createEmptyAny() const
+    {
+        return _empty_any;
+    }
+
+    template<typename T> static PortInfo createInputPort()
+    {
+        return PortInfo(PortType::INPUT, static_cast<T*>(nullptr));
+    }
+
+    template<typename T> static PortInfo createOutputPort()
+    {
+        return PortInfo(PortType::OUTPUT, static_cast<T*>(nullptr));
+    }
+
+    template<typename T> static PortInfo createInoutPort()
+    {
+        return PortInfo(PortType::INOUT, static_cast<T*>(nullptr));
+    }
+
+private:
+
+    PortType _type;
+    const std::type_info& _info;
+    SafeAny::Any _empty_any;
+};
+
+
+typedef std::unordered_map<std::string, PortInfo> PortsList;
 
 template <typename T, typename = void>
 struct has_static_method_providedPorts: std::false_type {};
