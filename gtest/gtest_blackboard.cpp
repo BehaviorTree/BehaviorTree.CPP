@@ -45,8 +45,8 @@ class BB_TestNode: public SyncActionNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"in_port", PortType::INPUT},
-                                  {"out_port", PortType::OUTPUT}};
+        static PortsList ports = {{"in_port",  PortInfo::createInputPort<int>()},
+                                  {"out_port", PortInfo::createOutputPort<int>()}};
         return ports;
     }
 
