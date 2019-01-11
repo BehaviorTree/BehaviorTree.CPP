@@ -47,31 +47,42 @@ class Any
 
     ~Any() = default;
 
-    explicit Any(const double& value) : _any(value), _arithmetic(true)
+    explicit Any(const Any& other) : _any(other._any)
     {
     }
 
-    explicit Any(const uint64_t& value) : _any(value), _arithmetic(true)
+    explicit Any(const double& value) : _any(value)
     {
     }
 
-    explicit Any(const float& value) : _any(double(value)), _arithmetic(true)
+    explicit Any(const uint64_t& value) : _any(value)
     {
     }
 
-    explicit Any(const std::string& str) : _any(SimpleString(str)), _arithmetic(false)
+    explicit Any(const float& value) : _any(double(value))
     {
+    }
+
+    explicit Any(const std::string& str) : _any(SimpleString(str))
+    {
+    }
+
+    bool isNumber() const
+    {
+        return  type() == typeid(int64_t) ||
+                type() ==typeid(uint64_t) ||
+                type() == typeid(double);
     }
 
     // all the other integrals are casted to int64_t
     template <typename T>
-    explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _arithmetic(true)
+    explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value))
     {
     }
 
     // default for other custom types
     template <typename T>
-    explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value), _arithmetic(false)
+    explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value)
     {
     }
 
@@ -95,11 +106,6 @@ class Any
         return _any.type();
     }
 
-    bool isArithmeticType() const
-    {
-        return _arithmetic;
-    }
-
     bool empty() const noexcept
     {
         return _any.empty();
@@ -107,7 +113,6 @@ class Any
 
   private:
     linb::any _any;
-    bool _arithmetic;
 
     //----------------------------
 

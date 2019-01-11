@@ -122,7 +122,6 @@ class FollowPath: public CoroActionNode, public TestNode
         while( Now() < initial_time + Milliseconds(600) )
         {
             setStatusRunningAndYield();
-
         }
         return tickImpl();
     }

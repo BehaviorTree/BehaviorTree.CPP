@@ -34,7 +34,6 @@ using namespace tinyxml2;
 
 struct XMLParser::Pimpl
 {
-
     TreeNode::Ptr createNodeFromXML(const XMLElement* element,
                                     const Blackboard::Ptr& blackboard,
                                     const TreeNode::Ptr& node_parent);
@@ -443,27 +442,28 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
     {
         const auto& manifest = factory.manifests().at(ID);
 
-        // Initialize the type of ports in the BB
+        // Initialize the ports in the BB to set the type
         for(const auto& port_it: manifest.ports)
         {
-            const auto& key = port_it.first;
+            const auto& port_name = port_it.first;
             const auto& port = port_it.second;
 
             if( port.info() != typeid(void) )
             {
-                if( blackboard->contains( key) )
+                auto remap_it = remapping_parameters.find(port_name);
+                if( remap_it != remapping_parameters.end())
                 {
-                    if(  blackboard->getAny( key )->type() != port.info() )
+                    StringView remapping_value = remap_it->second;
+                    auto pair = TreeNode::getRemappedKey(port_name, remapping_value);
+                    if( pair.first )
                     {
-                        throw LogicError("Mismatch in port type between two different Nodes of the tree");
+                        blackboard->set(pair.second.to_string(),
+                                        port.createEmptyAny());
                     }
-                }
-                else{
-                    blackboard->set(key, port.createEmptyAny());
                 }
             }
         }
-        
+
         // use manifest to initialize NodeConfiguration
         for(const auto& remap_it: remapping_parameters)
         {
@@ -526,7 +526,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
         {
             auto parent_bb = output_tree.blackboard_stack.back();
             auto new_bb = parent_bb->createOther();
-            new_bb->setParentBlackboard( parent_bb );
+
             output_tree.blackboard_stack.emplace_back(new_bb);
             recursivelyCreateTree( node->name(), output_tree, node );
         }
