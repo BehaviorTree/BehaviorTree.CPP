@@ -243,7 +243,7 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
 {
     if ( !config_.blackboard )
     {
-        std::cerr << "setOutput() trying to access a Blackboard(BB) entry, but BB is invalid"
+        std::cerr << "setOutput() failed: trying to access a Blackboard(BB) entry, but BB is invalid"
                   << std::endl;
         return false;
     }
@@ -251,7 +251,7 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
     auto remap_it = config_.output_ports.find(key);
     if( remap_it == config_.output_ports.end() )
     {
-        std::cerr << "setOutput() failed because NodeConfiguration::output_ports "
+        std::cerr << "setOutput() failed: NodeConfiguration::output_ports "
                   << "does not contain the key: [" << key << "]" << std::endl;
         return false;
     }
@@ -264,8 +264,9 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
     {
         remapped_key = stripBlackboardPointer(remapped_key);
     }
+    const auto& key_str = remapped_key.to_string();
+    config_.blackboard->set( key_str, value);
 
-    config_.blackboard->set( remapped_key.to_string(), value);
     return true;
 }
 
@@ -276,7 +277,7 @@ void assignDefaultRemapping(NodeConfiguration& config)
     for(const auto& it: getProvidedPorts<T>() )
     {
           const auto& port_name = it.first;
-          const auto port_type = it.second;
+          const auto port_type = it.second.type();
           if( port_type != PortType::OUTPUT )
           {
               config.input_ports[port_name] = "=";

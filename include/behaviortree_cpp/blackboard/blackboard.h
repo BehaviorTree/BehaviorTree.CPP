@@ -130,6 +130,18 @@ class Blackboard
     void set(const std::string& key, const T& value)
     {
         std::unique_lock<std::mutex> lock(mutex_);
+
+        auto existin_entry = impl_->get(key);
+        if( existin_entry )
+        {
+            bool both_arithmetic = std::is_arithmetic<T>::value && existin_entry->isArithmeticType();
+
+            if( existin_entry->type() != typeid (T) && !both_arithmetic )
+            {
+                throw LogicError("Blackboard::set() failed: once created, the type of a port must not change");
+            }
+        }
+
         impl_->set(key, SafeAny::Any(value));
     }
 

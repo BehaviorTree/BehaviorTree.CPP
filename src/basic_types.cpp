@@ -206,4 +206,14 @@ std::vector<StringView> splitString(const StringView &strToSplit, char delimeter
     return splitted_strings;
 }
 
+PortType PortInfo::type() const
+{
+    return _type;
+}
+
+const std::type_info &PortInfo::info() const
+{
+    return _info;
+}
+
 }   // end namespace
