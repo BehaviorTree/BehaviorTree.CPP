@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.5.1 (2019-01-14)
+------------------
 * fix installation directory
 * #39 Fix Conan version (#42)
   Signed-off-by: Uilian Ries <uilianries@gmail.com>
