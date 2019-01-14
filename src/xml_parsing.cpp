@@ -443,10 +443,24 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
     {
         const auto& manifest = factory.manifests().at(ID);
 
+        //Check that name in remapping can be found in the manifest
+        for(const auto& remapping_it: remapping_parameters)
+        {
+            if( manifest.ports.count( remapping_it.first ) == 0 )
+            {
+                char buffer[1024];
+                sprintf(buffer, "Possible typo. In the XML, you specified the port [%s] for node [%s / %s], but the "
+                                "manifest of this node does not contain a port with this name.",
+                        remapping_it.first.c_str(),
+                        ID.c_str(), instance_name.c_str() );
+                throw RuntimeError(buffer);
+            }
+        }
+
         // Initialize the ports in the BB to set the type
         for(const auto& port_it: manifest.ports)
         {
-            const auto& port_name = port_it.first;
+            const std::string& port_name = port_it.first;
             const auto& port = port_it.second;
 
             // type is currently optional. just skip if unspecified
@@ -479,7 +493,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                                         port_key.c_str(),
                                         demangle( prev_type->name() ).c_str(),
                                         demangle( port.info()->name() ).c_str() );
-                                throw LogicError( buffer );
+                                throw RuntimeError( buffer );
                             }
                         }
                     }

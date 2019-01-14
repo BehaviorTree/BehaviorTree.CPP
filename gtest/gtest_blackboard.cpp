@@ -50,9 +50,34 @@ class BB_TestNode: public SyncActionNode
                                  };
         return ports;
     }
+};
 
-  private:
 
+class BB_TypedTestNode: public SyncActionNode
+{
+  public:
+    BB_TypedTestNode(const std::string& name, const NodeConfiguration& config):
+      SyncActionNode(name, config)
+    { }
+
+    NodeStatus tick()
+    {
+        return NodeStatus::SUCCESS;
+    }
+
+    static const PortsList& providedPorts()
+    {
+        static PortsList ports = {
+            {"input",  PortType::INPUT},
+            {"input_int",     {PortType::INPUT, typeid(int)}},
+            {"input_string",  {PortType::INPUT, typeid(std::string)}},
+
+            {"output",  PortType::OUTPUT},
+            {"output_int",    {PortType::OUTPUT, typeid(int)}},
+            {"output_string", {PortType::OUTPUT, typeid(std::string)}}
+        };
+        return ports;
+    }
 };
 
 
@@ -143,4 +168,55 @@ TEST(BlackboardTest, WithFactory)
     ASSERT_EQ( bb->get<int>("my_input_port"), 44 );
     ASSERT_EQ( bb->get<int>("my_output_port"), 88 );
 }
+
+
+TEST(BlackboardTest, TypoInPortName)
+{
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<BB_TestNode>("BB_TestNode");
+
+    const std::string xml_text = R"(
+
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree">
+             <BB_TestNode inpuuuut_port="{value}" />
+        </BehaviorTree>
+    </root>)";
+
+    ASSERT_THROW( buildTreeFromText(factory, xml_text), RuntimeError );
+}
+
+
+TEST(BlackboardTest, CheckPortType)
+{
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<BB_TypedTestNode>("TypedNode");
+
+    //-----------------------------
+    std::string good_one = R"(
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <TypedNode name = "first"  output_int="{matching}"  output_string="{whatever}" output="{no_problem}" />
+                <TypedNode name = "second" input_int="{matching}"   input="{whatever}"         input_string="{no_problem}"  />
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+    auto tree = buildTreeFromText(factory, good_one);
+    ASSERT_NE( tree.root_node, nullptr );
+    //-----------------------------
+    std::string bad_one = R"(
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <TypedNode name = "first"  output_int="{value}" />
+                <TypedNode name = "second" input_string="{value}" />
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+    ASSERT_THROW( buildTreeFromText(factory, bad_one), RuntimeError);
+}
+
 
