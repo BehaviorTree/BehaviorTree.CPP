@@ -2,6 +2,22 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix installation directory
+* #39 Fix Conan version (#42)
+  Signed-off-by: Uilian Ries <uilianries@gmail.com>
+* Update .travis.yml
+* Conan package distribution (#39)
+* Non-functional refactoring of xml_parsing to clean up the code
+* cosmetic changes in the code of BehaviorTreeFactory
+* XML schema. Related to enchancement #40
+* call setRegistrationName() for built-in Nodes
+  The methos is called by BehaviorTreefactory, therefore it
+  registrationName is empty if trees are created programmatically.
+* Reset reference count when destroying logger (issue #38)
+* Contributors: Davide Facont, Davide Faconti, Uilian Ries
+
 2.5.0 (2018-12-12)
 ------------------
 * Introducing SyncActionNode that is more self explaining and less ambiguous
