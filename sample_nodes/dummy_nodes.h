@@ -59,7 +59,7 @@ class SaySomething : public BT::SyncActionNode
     // It is mandatory to define this static method.
     static const BT::PortsList& providedPorts()
     {
-        static BT::PortsList ports = {{"message", BT::PortInfo::createInputPort<std::string>()}};
+        static BT::PortsList ports = {{"message", {BT::PortType::INPUT, typeid(std::string)} }};
         return ports;
     }
 };

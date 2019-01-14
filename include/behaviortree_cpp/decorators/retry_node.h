@@ -45,7 +45,7 @@ class RetryNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{NUM_ATTEMPTS, PortInfo::createInputPort<unsigned>()}};
+        static PortsList ports = {{NUM_ATTEMPTS, {PortType::INPUT, typeid(unsigned)}}};
         return ports;
     }
 

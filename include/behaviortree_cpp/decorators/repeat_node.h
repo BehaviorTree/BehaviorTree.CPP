@@ -45,7 +45,7 @@ class RepeatNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{NUM_CYCLES, PortInfo::createInputPort<unsigned>()}};
+        static PortsList ports = {{NUM_CYCLES, {PortType::INPUT, typeid(unsigned)}}};
         return ports;
     }
 
