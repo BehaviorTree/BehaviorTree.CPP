@@ -127,11 +127,12 @@ class Blackboard
             const auto& new_type = any_val.type();
             if( prev_type != new_type )
             {
-                std::stringstream ss;
-                ss << "Blackboard::set() failed: once created, the type of a port must not change.";
-                ss << " Previous: [ " <<  existin_entry->type().name() << " ] ";
-                ss << " Current: [ " <<  typeid (T).name() << " ]";
-                throw LogicError( ss.str() );
+                char buffer[1024];
+                sprintf(buffer, "Blackboard::set() failed: once created, the type of a port shall not change. "
+                                "Previous type [%s] != current type [%s]",
+                        BT::demangle( existin_entry->type().name() ).c_str(),
+                        BT::demangle( typeid(T).name() ).c_str() );
+                throw LogicError( buffer );
             }
 
             impl_->set(key, std::move(any_val));

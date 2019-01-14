@@ -52,7 +52,7 @@ public:
     }
     static const BT::PortsList& providedPorts()
     {
-        static BT::PortsList ports = {{"goal", PortInfo::createOutputPort<Pose2D>()}};
+        static BT::PortsList ports = {{"goal", {PortType::OUTPUT, typeid(Pose2D)} }};
         return ports;
     }
 };

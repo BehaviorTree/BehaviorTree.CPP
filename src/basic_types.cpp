@@ -211,7 +211,7 @@ PortType PortInfo::type() const
     return _type;
 }
 
-const std::type_info &PortInfo::info() const
+const std::type_info* PortInfo::info() const
 {
     return _info;
 }

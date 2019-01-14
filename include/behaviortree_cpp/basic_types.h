@@ -120,45 +120,22 @@ enum class PortType{INPUT, OUTPUT, INOUT };
 
 class PortInfo
 {
-    template<typename T>
-    PortInfo( PortType direction, T*):
-        _type(direction),
-        _info(typeid(T)),
-        _empty_any(T())
-    { }
 
 public:
-    PortInfo( PortType direction ): _type(direction), _info(typeid(void)) {}
+    PortInfo( PortType direction ):
+        _type(direction), _info(nullptr) {}
+
+    PortInfo( PortType direction, const std::type_info& type_info):
+        _type(direction), _info( &type_info ) {}
 
     PortType type() const;
 
-    const std::type_info &info() const;
-
-    const SafeAny::Any& createEmptyAny() const
-    {
-        return _empty_any;
-    }
-
-    template<typename T> static PortInfo createInputPort()
-    {
-        return PortInfo(PortType::INPUT, static_cast<T*>(nullptr));
-    }
-
-    template<typename T> static PortInfo createOutputPort()
-    {
-        return PortInfo(PortType::OUTPUT, static_cast<T*>(nullptr));
-    }
-
-    template<typename T> static PortInfo createInoutPort()
-    {
-        return PortInfo(PortType::INOUT, static_cast<T*>(nullptr));
-    }
+    const std::type_info* info() const;
 
 private:
 
     PortType _type;
-    const std::type_info& _info;
-    SafeAny::Any _empty_any;
+    const std::type_info* _info;
 };
 
 

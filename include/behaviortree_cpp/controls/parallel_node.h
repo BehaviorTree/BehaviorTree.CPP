@@ -29,7 +29,7 @@ class ParallelNode : public ControlNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{THRESHOLD_KEY, PortInfo::createInputPort<unsigned>()}};
+        static PortsList ports = {{THRESHOLD_KEY, {PortType::INPUT, typeid(unsigned)}}};
         return ports;
     }
 

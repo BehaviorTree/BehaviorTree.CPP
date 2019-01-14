@@ -29,13 +29,13 @@ namespace BT
 {
 using namespace tinyxml2;
 
-using namespace tinyxml2;
-
+typedef std::unordered_map<std::string, const std::type_info*> PortsTypeMap;
 
 struct XMLParser::Pimpl
 {
     TreeNode::Ptr createNodeFromXML(const XMLElement* element,
                                     const Blackboard::Ptr& blackboard,
+                                    PortsTypeMap *ports_type,
                                     const TreeNode::Ptr& node_parent);
 
     void recursivelyCreateTree(const std::string& tree_ID,
@@ -391,6 +391,7 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard)
 
 TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                                                   const Blackboard::Ptr &blackboard,
+                                                  PortsTypeMap* ports_type,
                                                   const TreeNode::Ptr &node_parent)
 {
     const std::string element_name = element->Name();
@@ -448,7 +449,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             const auto& port_name = port_it.first;
             const auto& port = port_it.second;
 
-            if( port.info() != typeid(void) )
+            // type is currently optional. just skip if unspecified
+            if( port.info() != nullptr )
             {
                 auto remap_it = remapping_parameters.find(port_name);
                 if( remap_it != remapping_parameters.end())
@@ -457,8 +459,29 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                     auto pair = TreeNode::getRemappedKey(port_name, remapping_value);
                     if( pair.first )
                     {
-                        blackboard->set(pair.second.to_string(),
-                                        port.createEmptyAny());
+                        const auto& port_key = pair.second.to_string();
+
+                        auto found_port_type = ports_type->find( port_key );
+                        if( found_port_type == ports_type->end())
+                        {
+                            // not found, insert
+                            ports_type->insert( {port_key, port.info() } );
+                        }
+                        else{
+                            // found. check consistency
+                            auto prev_type = found_port_type->second;
+                            if( prev_type != port.info())
+                            {
+                                char buffer[1024];
+                                sprintf(buffer, "The creation of the tree failed because the port [%s] "
+                                                "was initially created with type [%s] and, later, "
+                                                "type [%s] was used somewhere else.",
+                                        port_key.c_str(),
+                                        demangle( prev_type->name() ).c_str(),
+                                        demangle( port.info()->name() ).c_str() );
+                                throw LogicError( buffer );
+                            }
+                        }
                     }
                 }
             }
@@ -509,18 +532,18 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                                                  Tree& output_tree,
                                                  const TreeNode::Ptr& root_parent)
 {
-    auto root_element = tree_roots[tree_ID]->FirstChildElement();
-    auto& nodes_list = output_tree.nodes;
 
-    std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
+
+    std::function<void(const TreeNode::Ptr&, const XMLElement*, PortsTypeMap*)> recursiveStep;
 
     recursiveStep = [&](const TreeNode::Ptr& parent,
-                        const XMLElement* element)
+                        const XMLElement* element,
+                        PortsTypeMap* ports_type_map)
     {
-        auto blackboard  = output_tree.blackboard_stack.back();
+        auto blackboard      = output_tree.blackboard_stack.back();
 
-        auto node = createNodeFromXML(element, blackboard, parent);
-        nodes_list.push_back(node);
+        auto node = createNodeFromXML(element, blackboard, ports_type_map, parent);
+        output_tree.nodes.push_back(node);
 
         if( node->type() == NodeType::SUBTREE )
         {
@@ -535,13 +558,16 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
             for (auto child_element = element->FirstChildElement(); child_element;
                  child_element = child_element->NextSiblingElement())
             {
-                recursiveStep(node, child_element);
+                recursiveStep(node, child_element, ports_type_map);
             }
         }
     };
 
+    auto root_element = tree_roots[tree_ID]->FirstChildElement();
+    PortsTypeMap ports_type_by_subtree; // one for each Tree/SubTree
+
     // start recursion
-    recursiveStep(root_parent, root_element);
+    recursiveStep(root_parent, root_element, &ports_type_by_subtree);
 }
 
 Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,
