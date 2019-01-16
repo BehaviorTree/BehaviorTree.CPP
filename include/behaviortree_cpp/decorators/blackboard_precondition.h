@@ -70,9 +70,18 @@ NodeStatus BlackboardPreconditionNode<T>::tick()
     bool same = ( getParam("expected", expected_value) &&
                   blackboard()->get(key, current_value) &&
                   current_value == expected_value ) ;
+    if(same)
+    {
+        return child_node_->executeTick();
+    }
+    else{
+        if( child()->status() == NodeStatus::RUNNING)
+        {
+            haltChild();
+        }
+        return NodeStatus::FAILURE;
+    }
 
-    return same ? child_node_->executeTick() :
-                  NodeStatus::FAILURE;
 }
 
 }
