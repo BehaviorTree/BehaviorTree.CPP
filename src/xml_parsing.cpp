@@ -29,13 +29,10 @@ namespace BT
 {
 using namespace tinyxml2;
 
-typedef std::unordered_map<std::string, const std::type_info*> PortsTypeMap;
-
 struct XMLParser::Pimpl
 {
     TreeNode::Ptr createNodeFromXML(const XMLElement* element,
                                     const Blackboard::Ptr& blackboard,
-                                    PortsTypeMap *ports_type,
                                     const TreeNode::Ptr& node_parent);
 
     void recursivelyCreateTree(const std::string& tree_ID,
@@ -391,7 +388,6 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard)
 
 TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                                                   const Blackboard::Ptr &blackboard,
-                                                  PortsTypeMap* ports_type,
                                                   const TreeNode::Ptr &node_parent)
 {
     const std::string element_name = element->Name();
@@ -475,15 +471,14 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                     {
                         const auto& port_key = pair.second.to_string();
 
-                        auto found_port_type = ports_type->find( port_key );
-                        if( found_port_type == ports_type->end())
+                        auto prev_type = blackboard->portType( port_key );
+                        if( !prev_type)
                         {
                             // not found, insert
-                            ports_type->insert( {port_key, port.info() } );
+                            blackboard->setPortType( port_key, port.info() );
                         }
                         else{
                             // found. check consistency
-                            auto prev_type = found_port_type->second;
                             if( prev_type != port.info())
                             {
                                 char buffer[1024];
@@ -546,17 +541,14 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                                                  Tree& output_tree,
                                                  const TreeNode::Ptr& root_parent)
 {
-
-
-    std::function<void(const TreeNode::Ptr&, const XMLElement*, PortsTypeMap*)> recursiveStep;
+    std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
 
     recursiveStep = [&](const TreeNode::Ptr& parent,
-                        const XMLElement* element,
-                        PortsTypeMap* ports_type_map)
+                        const XMLElement* element)
     {
         auto blackboard      = output_tree.blackboard_stack.back();
 
-        auto node = createNodeFromXML(element, blackboard, ports_type_map, parent);
+        auto node = createNodeFromXML(element, blackboard, parent);
         output_tree.nodes.push_back(node);
 
         if( node->type() == NodeType::SUBTREE )
@@ -572,16 +564,15 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
             for (auto child_element = element->FirstChildElement(); child_element;
                  child_element = child_element->NextSiblingElement())
             {
-                recursiveStep(node, child_element, ports_type_map);
+                recursiveStep(node, child_element);
             }
         }
     };
 
     auto root_element = tree_roots[tree_ID]->FirstChildElement();
-    PortsTypeMap ports_type_by_subtree; // one for each Tree/SubTree
 
     // start recursion
-    recursiveStep(root_parent, root_element, &ports_type_by_subtree);
+    recursiveStep(root_parent, root_element);
 }
 
 Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,

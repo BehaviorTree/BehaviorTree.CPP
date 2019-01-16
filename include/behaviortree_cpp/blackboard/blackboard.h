@@ -119,25 +119,19 @@ class Blackboard
     {
         std::unique_lock<std::mutex> lock(mutex_);
 
-        SafeAny::Any* existin_entry = impl_->get(key);
-        if( existin_entry )
-        {
-            const auto& prev_type =  existin_entry->type();
-            SafeAny::Any any_val(value);
-            const auto& new_type = any_val.type();
-            if( prev_type != new_type )
-            {
-                char buffer[1024];
-                sprintf(buffer, "Blackboard::set() failed: once created, the type of a port shall not change. "
-                                "Previous type [%s] != current type [%s]",
-                        BT::demangle( existin_entry->type().name() ).c_str(),
-                        BT::demangle( typeid(T).name() ).c_str() );
-                throw LogicError( buffer );
-            }
+        const auto type_it = _locked_port_types.find( key );
 
-            impl_->set(key, std::move(any_val));
+        if( type_it != _locked_port_types.end() &&
+            type_it->second != &typeid(T) )
+        {
+            char buffer[1024];
+            sprintf(buffer, "Blackboard::set() failed: once declared, the type of a port shall not change. "
+                            "Declared type [%s] != current type [%s]",
+                    BT::demangle( type_it->second->name() ).c_str(),
+                    BT::demangle( typeid(T).name() ).c_str() );
+            throw LogicError( buffer );
         }
-        impl_->set(key, SafeAny::Any(value));
+        impl_->set(key,  SafeAny::Any(value));
     }
 
     /// Return true if the BB contains an entry with the given key.
@@ -153,9 +147,27 @@ class Blackboard
         return std::shared_ptr<Blackboard>(new Blackboard(std::move(base)));
     }
 
+    void setPortType(std::string key, const std::type_info* type)
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        _locked_port_types.insert( {std::move(key), type} );
+    }
+
+    const std::type_info* portType(const std::string& key)
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        auto it = _locked_port_types.find(key);
+        if( it == _locked_port_types.end() )
+        {
+            return nullptr;
+        }
+        return it->second;
+    }
+
   private:
     std::unique_ptr<BlackboardImpl> impl_;
     mutable std::mutex mutex_;
+    std::unordered_map<std::string, const std::type_info*> _locked_port_types;
 };
 
 template <> inline
