@@ -41,6 +41,12 @@ RetryNode::RetryNode(const std::string& name, const NodeParameters& params)
     }
 }
 
+void RetryNode::halt()
+{
+    try_index_ = 0;
+    DecoratorNode::halt();
+}
+
 NodeStatus RetryNode::tick()
 {
     if( read_parameter_from_blackboard_ )

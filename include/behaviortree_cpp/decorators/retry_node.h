@@ -34,6 +34,8 @@ class RetryNode : public DecoratorNode
         return params;
     }
 
+    virtual void halt() override;
+
   private:
     unsigned int max_attempts_;
     unsigned int try_index_;
