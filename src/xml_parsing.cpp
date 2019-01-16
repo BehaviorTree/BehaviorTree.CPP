@@ -743,28 +743,21 @@ std::string writeXML(const BehaviorTreeFactory& factory,
     doc.Print(&printer);
     return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 }
-(??)*/
-(??)Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,
-(??)                       const Blackboard::Ptr& blackboard)
-(??){
-(??)    XMLParser parser(factory);
-(??)    parser.loadFromText(text);
-(??)
-(??)    std::vector<TreeNode::Ptr> nodes;
-(??)    auto root = parser.instantiateTree(nodes, blackboard);
-(??)
-(??)    return Tree(root.get(), nodes);
-(??)}
-(??)
-(??)Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& filename,
-(??)                       const Blackboard::Ptr& blackboard)
-(??){
-(??)    XMLParser parser(factory);
-(??)    parser.loadFromFile(filename);
-(??)
-(??)    std::vector<TreeNode::Ptr> nodes;
-(??)    auto root = parser.instantiateTree(nodes, blackboard);
-(??)    return Tree(root.get(), nodes);
-(??)}
-(??)
-(??)}
+
+Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,
+                       const Blackboard::Ptr& blackboard)
+{
+    XMLParser parser(factory);
+    parser.loadFromText(text);
+    return parser.instantiateTree(blackboard);
+}
+
+Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& filename,
+                       const Blackboard::Ptr& blackboard)
+{
+    XMLParser parser(factory);
+    parser.loadFromFile(filename);
+    return parser.instantiateTree(blackboard);
+}
+
+}
