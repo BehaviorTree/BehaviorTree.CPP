@@ -31,6 +31,8 @@ class DecoratorNode : public TreeNode
     {
         return NodeType::DECORATOR;
     }
+
+    NodeStatus executeTick() override;
 };
 
 /**

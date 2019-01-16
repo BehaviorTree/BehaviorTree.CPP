@@ -54,7 +54,6 @@ NodeStatus TimeoutNode::tick()
                 if (!aborted && child()->status() == NodeStatus::RUNNING)
                 {
                     child()->halt();
-                    child()->setStatus(NodeStatus::IDLE);
                     child_halted_ = true;
                 }
             });
@@ -70,7 +69,6 @@ NodeStatus TimeoutNode::tick()
         auto child_status = child()->executeTick();
         if (child_status != NodeStatus::RUNNING)
         {
-            child()->setStatus(NodeStatus::IDLE);
             timer().cancel(timer_id_);
         }
         setStatus(child_status);
@@ -78,4 +76,5 @@ NodeStatus TimeoutNode::tick()
 
     return status();
 }
+
 }

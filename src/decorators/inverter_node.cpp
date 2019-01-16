@@ -30,23 +30,18 @@ NodeStatus InverterNode::tick()
     {
         case NodeStatus::SUCCESS:
         {
-            setStatus(NodeStatus::FAILURE);
-            child_node_->setStatus(NodeStatus::IDLE);
+            return NodeStatus::FAILURE;
         }
-        break;
 
         case NodeStatus::FAILURE:
         {
-            setStatus(NodeStatus::SUCCESS);
-            child_node_->setStatus(NodeStatus::IDLE);
+            return NodeStatus::SUCCESS;
         }
-        break;
 
         case NodeStatus::RUNNING:
         {
-            setStatus(NodeStatus::RUNNING);
+            return NodeStatus::RUNNING;
         }
-        break;
 
         default:
         {

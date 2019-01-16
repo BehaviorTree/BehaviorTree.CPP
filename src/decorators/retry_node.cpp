@@ -65,10 +65,8 @@ NodeStatus RetryNode::tick()
         case NodeStatus::SUCCESS:
         {
             try_index_ = 0;
-            setStatus(NodeStatus::SUCCESS);
-            child_node_->setStatus(NodeStatus::IDLE);
+            return (NodeStatus::SUCCESS);
         }
-        break;
 
         case NodeStatus::FAILURE:
         {
@@ -76,17 +74,15 @@ NodeStatus RetryNode::tick()
             if (try_index_ >= max_attempts_)
             {
                 try_index_ = 0;
-                setStatus(NodeStatus::FAILURE);
+                return (NodeStatus::FAILURE);
             }
-            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
         case NodeStatus::RUNNING:
         {
-            setStatus(NodeStatus::RUNNING);
+            return (NodeStatus::RUNNING);
         }
-        break;
 
         default:
         {
@@ -96,4 +92,5 @@ NodeStatus RetryNode::tick()
 
     return status();
 }
+
 }

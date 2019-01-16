@@ -61,33 +61,35 @@ NodeStatus RepeatNode::tick()
             try_index_++;
             if (try_index_ >= num_cycles_)
             {
-                setStatus(NodeStatus::SUCCESS);
                 try_index_ = 0;
+                return (NodeStatus::SUCCESS);
             }
-            child_node_->setStatus(NodeStatus::IDLE);
         }
         break;
 
         case NodeStatus::FAILURE:
         {
             try_index_ = 0;
-            setStatus(NodeStatus::FAILURE);
-            child_node_->setStatus(NodeStatus::IDLE);
+            return (NodeStatus::FAILURE);
         }
-        break;
 
         case NodeStatus::RUNNING:
         {
-            setStatus(NodeStatus::RUNNING);
+            return (NodeStatus::RUNNING);
         }
-        break;
 
         default:
         {
             // TODO throw?
         }
     }
-
     return status();
 }
+
+void RepeatNode::halt()
+{
+    try_index_ = 0;
+    DecoratorNode::halt();
+}
+
 }

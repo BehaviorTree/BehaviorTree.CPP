@@ -41,8 +41,11 @@ class RepeatNode : public DecoratorNode
     bool read_parameter_from_blackboard_;
     static constexpr const char* NUM_CYCLES = "num_cycles";
 
-    virtual BT::NodeStatus tick() override;
+    virtual NodeStatus tick() override;
+
+    void halt() override;
 };
+
 }
 
 #endif

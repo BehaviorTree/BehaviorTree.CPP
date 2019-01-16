@@ -14,14 +14,6 @@ BT::NodeStatus BT::DecoratorSubtreeNode::tick()
     {
         setStatus(NodeStatus::RUNNING);
     }
-    auto status = child_node_->executeTick();
-    setStatus(status);
-
-    // reset child if completed
-    if( status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE)
-    {
-        child_node_->setStatus(NodeStatus::IDLE);
-    }
-    return status;
+    return child_node_->executeTick();
 }
 

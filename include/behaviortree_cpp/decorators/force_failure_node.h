@@ -42,7 +42,6 @@ inline NodeStatus ForceFailureDecorator::tick()
         case NodeStatus::FAILURE:
         case NodeStatus::SUCCESS:
         {
-            child_node_->setStatus(NodeStatus::IDLE);
             return NodeStatus::FAILURE;
         }
 
