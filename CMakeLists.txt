@@ -5,7 +5,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.1)
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -176,7 +176,7 @@ if(ament_cmake_FOUND AND BUILD_TESTING)
 
     ament_add_gtest_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                        crossdoor_nodes
+                                                        crossdoor_nodes dummy_nodes
                                                         ${ament_LIBRARIES})
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
     include_directories($<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>)
@@ -185,7 +185,7 @@ elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
     catkin_add_gtest(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                        crossdoor_nodes
+                                                        crossdoor_nodes dummy_nodes
                                                         ${catkin_LIBRARIES})
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
 
@@ -195,7 +195,7 @@ elseif(GTEST_FOUND AND BUILD_UNIT_TESTS)
 
     add_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${PROJECT_NAME}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                crossdoor_nodes
+                                                crossdoor_nodes dummy_nodes
                                                 ${GTEST_LIBRARIES}
                                                 ${GTEST_MAIN_LIBRARIES})
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include ${GTEST_INCLUDE_DIRS})
