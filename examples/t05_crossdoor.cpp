@@ -3,7 +3,7 @@
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 #include "behaviortree_cpp/loggers/bt_file_logger.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 
 #ifdef ZMQ_FOUND
 #include "behaviortree_cpp/loggers/bt_zmq_publisher.h"

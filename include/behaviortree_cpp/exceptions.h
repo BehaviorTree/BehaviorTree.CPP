@@ -16,7 +16,7 @@
 
 #include <string>
 #include <stdexcept>
-#include "string_view.hpp"
+#include "utils/string_view.hpp"
 
 namespace BT
 {

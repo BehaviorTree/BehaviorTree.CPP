@@ -1,6 +1,6 @@
 #include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 
 
 /** In this tutorial we will see how to wrap legacy code into a

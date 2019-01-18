@@ -15,7 +15,7 @@
 #include "condition_test_node.h"
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
 using namespace BT;
@@ -83,7 +83,7 @@ class BB_TypedTestNode: public SyncActionNode
 
 TEST(BlackboardTest, GetInputsFromBlackboard)
 {
-    auto bb = Blackboard::create<BlackboardLocal>();
+    auto bb = Blackboard::create();
 
     NodeConfiguration config;
     assignDefaultRemapping<BB_TestNode>( config );
@@ -102,7 +102,7 @@ TEST(BlackboardTest, GetInputsFromBlackboard)
 
 TEST(BlackboardTest, BasicRemapping)
 {
-    auto bb = Blackboard::create<BlackboardLocal>();
+    auto bb = Blackboard::create();
 
     NodeConfiguration config;
 
@@ -119,7 +119,7 @@ TEST(BlackboardTest, BasicRemapping)
 
 TEST(BlackboardTest, GetInputsFromText)
 {
-    auto bb = Blackboard::create<BlackboardLocal>();
+    auto bb = Blackboard::create();
 
     NodeConfiguration config;
     config.input_ports["in_port"] = "11";
@@ -159,7 +159,7 @@ TEST(BlackboardTest, WithFactory)
         </BehaviorTree>
     </root>)";
 
-    auto bb = Blackboard::create<BlackboardLocal>();
+    auto bb = Blackboard::create();
 
     auto tree = buildTreeFromText(factory, xml_text, bb);
     NodeStatus status = tree.root_node->executeTick();

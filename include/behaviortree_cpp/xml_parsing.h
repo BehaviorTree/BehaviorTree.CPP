@@ -2,7 +2,7 @@
 #define XML_PARSING_BT_H
 
 #include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 
 namespace BT
 {
@@ -78,7 +78,7 @@ class XMLParser
 */
 Tree buildTreeFromText(const BehaviorTreeFactory& factory,
                        const std::string& text,
-                       Blackboard::Ptr blackboard = Blackboard::create<BlackboardLocal>());
+                       Blackboard::Ptr blackboard = Blackboard::create());
 
 /** Helper function to do the most common steps all at once:
 * 1) Create an instance of XMLParse and call loadFromFile.
@@ -87,7 +87,7 @@ Tree buildTreeFromText(const BehaviorTreeFactory& factory,
 */
 Tree buildTreeFromFile(const BehaviorTreeFactory& factory,
                        const std::string& filename,
-                       Blackboard::Ptr blackboard = Blackboard::create<BlackboardLocal>());
+                       Blackboard::Ptr blackboard = Blackboard::create());
 
 std::string writeXML(const BehaviorTreeFactory& factory,
                      const TreeNode* root_node,

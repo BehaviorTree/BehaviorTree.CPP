@@ -38,7 +38,7 @@
 #ifndef Foundation_SharedLibrary_INCLUDED
 #define Foundation_SharedLibrary_INCLUDED
 
-#include "behaviortree_cpp/platform.hpp"
+#include "platform.hpp"
 #include <string>
 #include <mutex>
 
