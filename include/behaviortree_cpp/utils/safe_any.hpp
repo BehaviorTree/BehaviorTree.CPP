@@ -97,6 +97,10 @@ class Any
     template <typename T>
     T cast() const
     {
+        if( _any.empty() )
+        {
+            throw std::runtime_error("Any::cast failed because it is empty");
+        }
         if (_any.type() == typeid(T))
         {
             return linb::any_cast<T>(_any);
