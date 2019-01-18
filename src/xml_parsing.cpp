@@ -280,10 +280,15 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
         }
         else if (StrEqual(name, "SubTree"))
         {
-            if (children_count > 0)
+            for (auto child = node->FirstChildElement(); child != nullptr;
+                 child = child->NextSiblingElement())
             {
-                ThrowError(node->GetLineNum(), "The <SubTree> node must have no children");
+                if( StrEqual(child->Name(), "remap") == false)
+                {
+                    ThrowError(node->GetLineNum(), "<SubTree> accept only childs of type <remap>");
+                }
             }
+
             if (!node->Attribute("ID"))
             {
                 ThrowError(node->GetLineNum(), "The node <SubTree> must have the attribute [ID]");
@@ -302,10 +307,13 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
             }
         }
         //recursion
-        for (auto child = node->FirstChildElement(); child != nullptr;
-             child = child->NextSiblingElement())
+        if (StrEqual(name, "SubTree") == false)
         {
-            recursiveStep(child);
+            for (auto child = node->FirstChildElement(); child != nullptr;
+                 child = child->NextSiblingElement())
+            {
+                recursiveStep(child);
+            }
         }
     };
 

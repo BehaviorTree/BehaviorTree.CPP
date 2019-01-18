@@ -3,6 +3,7 @@
 #include "condition_test_node.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
+#include "../sample_nodes/dummy_nodes.h"
 
 using namespace BT;
 
@@ -68,8 +69,36 @@ const std::string xml_text_subtree = R"(
     </Fallback>
   </BehaviorTree>
 
-</root>
-        )";
+</root>  )";
+
+const std::string xml_ports_subtree = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+  <BehaviorTree ID="TalkToMe">
+    <Sequence>
+      <SaySomething message="{hello_msg}" />
+      <SaySomething message="{bye_msg}" />
+      <SetBlackboard output_key="output" value="done!" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SetBlackboard output_key="talk__hello" value="hello" />
+      <SetBlackboard output_key="talk__bye"   value="bye bye" />
+      <SubTree ID="TalkToMe">
+            <remap external="talk_hello" internal="hello_msg" />
+            <remap external="talk_bye"   internal="bye_msg" />
+            <remap external="talk_out"   internal="output" />
+      </SubTree>
+      <SaySomething message="{talk_out}" />
+    </Sequence>
+  </BehaviorTree>
+
+</root> )";
+
+
 // clang-format on
 
 TEST(BehaviorTreeFactory, VerifyLargeTree)
@@ -118,7 +147,6 @@ TEST(BehaviorTreeFactory, Subtree)
     BehaviorTreeFactory factory;
     CrossDoor::RegisterNodes(factory);
 
-
     Tree tree = buildTreeFromText(factory, xml_text_subtree);
 
     printTreeRecursively(tree.root_node);
@@ -162,3 +190,16 @@ const std::string xml_text_issue = R"(
 
     EXPECT_THROW( parser.loadFromText(xml_text_issue), RuntimeError );
 }
+
+
+
+TEST(BehaviorTreeFactory, SubTreeWithRemapping)
+{
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+
+    Tree tree = buildTreeFromText(factory, xml_ports_subtree);
+
+    tree.root_node->executeTick();
+}
+

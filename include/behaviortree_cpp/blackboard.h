@@ -146,13 +146,6 @@ public:
         it->second.value =  SafeAny::Any(value);
     }
 
-//    /// Return true if the BB contains an entry with the given key.
-//    bool contains(const std::string& key) const
-//    {
-//        std::unique_lock<std::mutex> lock(mutex_);
-//        return (storage_.find(key) != storage_.end());
-//    }
-
     void setPortType(std::string key, const std::type_info* new_type)
     {
         std::unique_lock<std::mutex> lock(mutex_);
