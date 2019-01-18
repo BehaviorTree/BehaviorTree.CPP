@@ -41,6 +41,44 @@ public:
 
     virtual ~Blackboard() = default;
 
+    /**
+     * @brief The method getAny allow the user to access directly the type
+     * erased value.
+     *
+     * @return the pointer or nullptr if it fails.
+     */
+    const SafeAny::Any* getAny(const std::string& key) const
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+
+        if( auto parent = parent_bb_.lock())
+        {
+            auto remapping_it = internal_to_external_.find(key);
+            if( remapping_it != internal_to_external_.end())
+            {
+                return parent->getAny( remapping_it->second );
+            }
+        }
+        auto it = storage_.find(key);
+        return ( it == storage_.end()) ? nullptr : &(it->second.value);
+    }
+
+    SafeAny::Any* getAny(const std::string& key)
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+
+        if( auto parent = parent_bb_.lock())
+        {
+            auto remapping_it = internal_to_external_.find(key);
+            if( remapping_it != internal_to_external_.end())
+            {
+                return parent->getAny( remapping_it->second );
+            }
+        }
+        auto it = storage_.find(key);
+        return ( it == storage_.end()) ? nullptr : &(it->second.value);
+    }
+
     /** Return true if the entry with the given key was found.
      *  Note that this method may throw an exception if the cast to T failed.
      */
@@ -56,39 +94,19 @@ public:
     }
 
     /**
-     * @brief The method getAny allow the user to access directly the type
-     * erased value.
-     *
-     * @return the pointer or nullptr if it fails.
-     */
-    const SafeAny::Any* getAny(const std::string& key) const
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        auto it = storage_.find(key);
-        return ( it == storage_.end()) ? nullptr : &(it->second.value);
-    }
-
-    SafeAny::Any* getAny(const std::string& key)
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        auto it = storage_.find(key);
-        return ( it == storage_.end()) ? nullptr : &(it->second.value);
-    }
-
-    /**
      * Version of get() that throws if it fails.
-     */
-    template <typename T>
-    T get(const std::string& key) const
-    {
-        T value;
-        bool found = get(key, value);
-        if (!found)
-        {
-            throw RuntimeError("Missing key");
-        }
-        return value;
-    }
+    */
+   template <typename T>
+   T get(const std::string& key) const
+   {
+       T value;
+       bool found = get(key, value);
+       if (!found)
+       {
+           throw RuntimeError("Missing key");
+       }
+       return value;
+   }
 
     /// Update the entry with the given key
     template <typename T>
@@ -97,7 +115,7 @@ public:
         std::unique_lock<std::mutex> lock(mutex_);
 
         auto it = storage_.find(key);
-        if( it != storage_.end() )
+        if( it != storage_.end() ) // already there. check the type
         {
             const auto locked_type = it->second.locked_port_type;
 
@@ -111,19 +129,29 @@ public:
                         BT::demangle( typeid(T).name() ).c_str() );
                 throw LogicError( buffer );
             }
-            it->second.value =  SafeAny::Any(value);
         }
-        else{
-            storage_[key].value = SafeAny::Any(value);
+        else{ // create for the first time without type_lock
+            it = storage_.insert( {key, Entry()} ).first;
         }
+
+        if( auto parent = parent_bb_.lock())
+        {
+            auto remapping_it = internal_to_external_.find(key);
+            if( remapping_it != internal_to_external_.end())
+            {
+                parent->set( remapping_it->second, value );
+                return;
+            }
+        }
+        it->second.value =  SafeAny::Any(value);
     }
 
-    /// Return true if the BB contains an entry with the given key.
-    bool contains(const std::string& key) const
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        return (storage_.find(key) != storage_.end());
-    }
+//    /// Return true if the BB contains an entry with the given key.
+//    bool contains(const std::string& key) const
+//    {
+//        std::unique_lock<std::mutex> lock(mutex_);
+//        return (storage_.find(key) != storage_.end());
+//    }
 
     void setPortType(std::string key, const std::type_info* new_type)
     {
@@ -177,6 +205,7 @@ public:
     mutable std::mutex mutex_;
     std::unordered_map<std::string, Entry> storage_;
     std::weak_ptr<Blackboard> parent_bb_;
+    std::unordered_map<std::string,std::string> internal_to_external_;
 };
 
 } // end namespace
