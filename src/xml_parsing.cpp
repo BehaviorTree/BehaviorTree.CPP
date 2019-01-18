@@ -23,7 +23,7 @@
 #include <ros/package.h>
 #endif
 
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 
 namespace BT
 {
@@ -554,7 +554,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
         if( node->type() == NodeType::SUBTREE )
         {
             auto parent_bb = output_tree.blackboard_stack.back();
-            auto new_bb = parent_bb->createOther();
+            auto new_bb = Blackboard::create(parent_bb);
 
             output_tree.blackboard_stack.emplace_back(new_bb);
             recursivelyCreateTree( node->name(), output_tree, node );

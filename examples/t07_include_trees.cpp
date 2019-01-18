@@ -1,5 +1,5 @@
 #include "behaviortree_cpp/xml_parsing.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 #include "dummy_nodes.h"
 
 using namespace BT;

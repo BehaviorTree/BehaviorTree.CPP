@@ -9,9 +9,9 @@
 #include <typeinfo>
 #include <functional>
 #include <chrono>
+#include "behaviortree_cpp/utils/string_view.hpp"
+#include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
-#include "behaviortree_cpp/string_view.hpp"
-#include "behaviortree_cpp/blackboard/safe_any.hpp"
 
 namespace BT
 {

@@ -16,11 +16,11 @@
 
 #include <condition_variable>
 #include <mutex>
-#include "behaviortree_cpp/optional.hpp"
+#include "behaviortree_cpp/utils/optional.hpp"
+#include "behaviortree_cpp/utils/signal.h"
 #include "behaviortree_cpp/exceptions.h"
-#include "behaviortree_cpp/signal.h"
 #include "behaviortree_cpp/basic_types.h"
-#include "behaviortree_cpp/blackboard/blackboard.h"
+#include "behaviortree_cpp/blackboard.h"
 
 namespace BT
 {

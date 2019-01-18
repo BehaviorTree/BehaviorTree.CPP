@@ -1,4 +1,4 @@
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/behavior_tree.h"
 
 using namespace BT;

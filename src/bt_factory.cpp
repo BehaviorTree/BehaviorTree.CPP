@@ -11,7 +11,7 @@
 */
 
 #include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/shared_library.h"
+#include "behaviortree_cpp/utils/shared_library.h"
 
 namespace BT
 {

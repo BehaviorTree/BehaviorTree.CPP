@@ -67,6 +67,12 @@ class Any
     {
     }
 
+    Any& operator = (const Any& other)
+    {
+        this->_any = other._any;
+        return *this;
+    }
+
     bool isNumber() const
     {
         return  type() == typeid(int64_t) ||
