@@ -96,6 +96,7 @@ list(APPEND BT_SOURCE
     src/action_node.cpp
     src/basic_types.cpp
     src/behavior_tree.cpp
+    src/blackboard.cpp
     src/bt_factory.cpp
     src/decorator_node.cpp
     src/condition_node.cpp

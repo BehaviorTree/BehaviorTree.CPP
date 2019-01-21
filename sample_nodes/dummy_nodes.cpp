@@ -49,23 +49,25 @@ BT::NodeStatus ApproachObject::tick()
 
 BT::NodeStatus SaySomething::tick()
 {
-    std::string msg;
-    if (!getInput("message", msg))
+    auto msg = getInput<std::string>("message");
+    if (!msg)
     {
-        throw BT::RuntimeError("missing required input [message]");
+        throw BT::RuntimeError( std::string("missing required input [message]: ") + msg.error() );
     }
-    std::cout << "Robot says: " << msg << std::endl;
+
+    std::cout << "Robot says: " << msg.value() << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
 
 BT::NodeStatus SaySomethingSimple(BT::TreeNode &self)
 {
-    std::string msg;
-    if (!self.getInput("message", msg))
+    auto msg = self.getInput<std::string>("message");
+    if (!msg)
     {
-        throw BT::RuntimeError("missing required input [message]");
+        throw BT::RuntimeError( std::string("missing required input [message]: ") + msg.error() );
     }
-    std::cout << "Robot says: " << msg << std::endl;
+
+    std::cout << "Robot says: " << msg.value() << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
 

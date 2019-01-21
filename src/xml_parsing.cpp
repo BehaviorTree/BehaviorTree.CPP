@@ -36,8 +36,9 @@ struct XMLParser::Pimpl
                                     const TreeNode::Ptr& node_parent);
 
     void recursivelyCreateTree(const std::string& tree_ID,
-                                        Tree& output_tree,
-                                        const TreeNode::Ptr& root_parent);
+                               Tree& output_tree,
+                               Blackboard::Ptr blackboard,
+                               const TreeNode::Ptr& root_parent);
 
     void loadDocImpl(XMLDocument *doc);
 
@@ -308,7 +309,7 @@ void XMLParser::Pimpl::verifyXML(const XMLDocument* doc) const
         }
         //recursion
         if (StrEqual(name, "SubTree") == false)
-        {
+        {           
             for (auto child = node->FirstChildElement(); child != nullptr;
                  child = child->NextSiblingElement())
             {
@@ -385,6 +386,7 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard)
 
     _p->recursivelyCreateTree(main_tree_ID,
                               output_tree,
+                              root_blackboard,
                               TreeNode::Ptr() );
 
     if( output_tree.nodes.size() > 0)
@@ -480,7 +482,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                         const auto& port_key = pair.second.to_string();
 
                         auto prev_type = blackboard->portType( port_key );
-                        if( !prev_type)
+                        if( !prev_type && port.info() )
                         {
                             // not found, insert
                             blackboard->setPortType( port_key, port.info() );
@@ -547,6 +549,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
 
 void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                                                  Tree& output_tree,
+                                                 Blackboard::Ptr blackboard,
                                                  const TreeNode::Ptr& root_parent)
 {
     std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
@@ -554,8 +557,6 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
     recursiveStep = [&](const TreeNode::Ptr& parent,
                         const XMLElement* element)
     {
-        auto blackboard      = output_tree.blackboard_stack.back();
-
         auto node = createNodeFromXML(element, blackboard, parent);
         output_tree.nodes.push_back(node);
 
@@ -564,8 +565,15 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
             auto parent_bb = output_tree.blackboard_stack.back();
             auto new_bb = Blackboard::create(parent_bb);
 
+            for (auto remap_el = element->FirstChildElement("remap"); remap_el != nullptr;
+                 remap_el = remap_el->NextSiblingElement("remap"))
+            {
+                new_bb->addSubtreeRemapping( remap_el->Attribute("internal"),
+                                            remap_el->Attribute("external") );
+            }
+
             output_tree.blackboard_stack.emplace_back(new_bb);
-            recursivelyCreateTree( node->name(), output_tree, node );
+            recursivelyCreateTree( node->name(), output_tree, new_bb, node );
         }
         else
         {

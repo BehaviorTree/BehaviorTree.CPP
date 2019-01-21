@@ -9,7 +9,7 @@ using namespace BT;
 
 // clang-format off
 
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -46,7 +46,7 @@ const std::string xml_text = R"(
 </root>
         )";
 
-const std::string xml_text_subtree = R"(
+static const char* xml_text_subtree = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -70,34 +70,6 @@ const std::string xml_text_subtree = R"(
   </BehaviorTree>
 
 </root>  )";
-
-const std::string xml_ports_subtree = R"(
-
-<root main_tree_to_execute = "MainTree" >
-
-  <BehaviorTree ID="TalkToMe">
-    <Sequence>
-      <SaySomething message="{hello_msg}" />
-      <SaySomething message="{bye_msg}" />
-      <SetBlackboard output_key="output" value="done!" />
-    </Sequence>
-  </BehaviorTree>
-
-  <BehaviorTree ID="MainTree">
-    <Sequence>
-      <SetBlackboard output_key="talk__hello" value="hello" />
-      <SetBlackboard output_key="talk__bye"   value="bye bye" />
-      <SubTree ID="TalkToMe">
-            <remap external="talk_hello" internal="hello_msg" />
-            <remap external="talk_bye"   internal="bye_msg" />
-            <remap external="talk_out"   internal="output" />
-      </SubTree>
-      <SaySomething message="{talk_out}" />
-    </Sequence>
-  </BehaviorTree>
-
-</root> )";
-
 
 // clang-format on
 
@@ -192,6 +164,35 @@ const std::string xml_text_issue = R"(
 }
 
 
+// clang-format off
+static const char* xml_ports_subtree = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+  <BehaviorTree ID="TalkToMe">
+    <Sequence>
+      <SaySomething message="{hello_msg}" />
+      <SaySomething message="{bye_msg}" />
+      <SetBlackboard output_key="output" value="done!" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SetBlackboard output_key="talk_hello" value="hello" />
+      <SetBlackboard output_key="talk_bye"   value="bye bye" />
+      <SubTree ID="TalkToMe">
+            <remap external="talk_hello" internal="hello_msg" />
+            <remap external="talk_bye"   internal="bye_msg" />
+            <remap external="talk_out"   internal="output" />
+      </SubTree>
+      <SaySomething message="{talk_out}" />
+    </Sequence>
+  </BehaviorTree>
+
+</root> )";
+
+// clang-format on
 
 TEST(BehaviorTreeFactory, SubTreeWithRemapping)
 {
@@ -200,6 +201,12 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
 
     Tree tree = buildTreeFromText(factory, xml_ports_subtree);
 
+    // Should not throw
     tree.root_node->executeTick();
+
+    auto main_bb = tree.blackboard_stack.at(0);
+    ASSERT_EQ( main_bb->get<std::string>("talk_hello"), "hello");
+    ASSERT_EQ( main_bb->get<std::string>("talk_bye"), "bye bye");
+    ASSERT_EQ( main_bb->get<std::string>("talk_out"), "done!");
 }
 
