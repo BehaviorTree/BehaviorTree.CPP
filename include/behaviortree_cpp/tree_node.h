@@ -135,10 +135,10 @@ class TreeNode
         auto res = getInput(key, out);
         if(res && res.value())
         {
-            return true;
+            return out;
         }
         else{
-            return res.error;
+            return nonstd::make_unexpected( res.error() );
         }
     }
 

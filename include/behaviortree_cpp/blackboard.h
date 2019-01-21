@@ -21,15 +21,15 @@ namespace BT
  */
 class Blackboard
 {
-public:
+  public:
     typedef std::shared_ptr<Blackboard> Ptr;
 
-protected:
+  protected:
     // This is intentionally protected. Use Blackboard::create instead
     Blackboard(Blackboard::Ptr parent): parent_bb_(parent)
     {}
 
-public:
+  public:
 
     /** Use this static method to create an instance of the BlackBoard
     *   to share among all your NodeTrees.
@@ -96,23 +96,34 @@ public:
     /**
      * Version of get() that throws if it fails.
     */
-   template <typename T>
-   T get(const std::string& key) const
-   {
-       T value;
-       bool found = get(key, value);
-       if (!found)
-       {
-           throw RuntimeError("Missing key");
-       }
-       return value;
-   }
+    template <typename T>
+    T get(const std::string& key) const
+    {
+        T value;
+        bool found = get(key, value);
+        if (!found)
+        {
+            throw RuntimeError("Missing key");
+        }
+        return value;
+    }
+
 
     /// Update the entry with the given key
     template <typename T>
     void set(const std::string& key, const T& value)
     {
         std::unique_lock<std::mutex> lock(mutex_);
+
+        if( auto parent = parent_bb_.lock())
+        {
+            auto remapping_it = internal_to_external_.find(key);
+            if( remapping_it != internal_to_external_.end())
+            {
+                parent->set( remapping_it->second, value );
+                return;
+            }
+        }
 
         auto it = storage_.find(key);
         if( it != storage_.end() ) // already there. check the type
@@ -131,53 +142,21 @@ public:
             }
         }
         else{ // create for the first time without type_lock
-            it = storage_.insert( {key, Entry()} ).first;
+            storage_.insert( {key, Entry( SafeAny::Any(value) )} );
+            return;
         }
 
-        if( auto parent = parent_bb_.lock())
-        {
-            auto remapping_it = internal_to_external_.find(key);
-            if( remapping_it != internal_to_external_.end())
-            {
-                parent->set( remapping_it->second, value );
-                return;
-            }
-        }
         it->second.value =  SafeAny::Any(value);
+        return;
     }
 
-    void setPortType(std::string key, const std::type_info* new_type)
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        auto it = storage_.find(key);
-        if( it == storage_.end() )
-        {
-            storage_.insert( { key, Entry(new_type)} );
-        }
-        else{
-            auto old_type = it->second.locked_port_type;
-            if( old_type && old_type != new_type )
-            {
-                char buffer[1024];
-                sprintf(buffer, "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                                "Declared type [%s] != current type [%s]",
-                        BT::demangle( old_type->name() ).c_str(),
-                        BT::demangle( new_type->name() ).c_str() );
-                throw LogicError( buffer );
-            }
-        }
-    }
+    void setPortType(std::string key, const std::type_info* new_type);
 
-    const std::type_info* portType(const std::string& key)
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        auto it = storage_.find(key);
-        if( it == storage_.end() )
-        {
-            return nullptr;
-        }
-        return it->second.locked_port_type;
-    }
+    const std::type_info* portType(const std::string& key);
+
+    void addSubtreeRemapping(std::string internal, std::string external);
+
+    void debugMessage() const;
 
   private:
 
@@ -186,12 +165,12 @@ public:
         const std::type_info* locked_port_type;
 
         Entry(const std::type_info* type = nullptr):
-            locked_port_type(type)
+          locked_port_type(type)
         {}
 
         Entry(SafeAny::Any&& other_any, const std::type_info* type = nullptr):
-            value(std::move(other_any)),
-            locked_port_type(type)
+          value(std::move(other_any)),
+          locked_port_type(type)
         {}
     };
 
@@ -199,7 +178,9 @@ public:
     std::unordered_map<std::string, Entry> storage_;
     std::weak_ptr<Blackboard> parent_bb_;
     std::unordered_map<std::string,std::string> internal_to_external_;
+
 };
+
 
 } // end namespace
 
