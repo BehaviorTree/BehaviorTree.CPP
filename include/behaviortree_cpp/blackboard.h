@@ -114,18 +114,22 @@ class Blackboard
     void set(const std::string& key, const T& value)
     {
         std::unique_lock<std::mutex> lock(mutex_);
+        auto it = storage_.find(key);
 
         if( auto parent = parent_bb_.lock())
         {
             auto remapping_it = internal_to_external_.find(key);
             if( remapping_it != internal_to_external_.end())
             {
+                if( it == storage_.end() )
+                {
+                    storage_.insert( {key, Entry( &typeid(T) ) } );
+                }
                 parent->set( remapping_it->second, value );
                 return;
             }
         }
 
-        auto it = storage_.find(key);
         if( it != storage_.end() ) // already there. check the type
         {
             const auto locked_type = it->second.locked_port_type;
@@ -134,8 +138,8 @@ class Blackboard
             if( locked_type && locked_type != &typeid(T) )
             {
                 throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                                 "Declared type [",BT::demangle( locked_type->name() ),
-                                 "] != current type [", BT::demangle( typeid(T).name() ),"]" );
+                                 "Declared type [",BT::demangle( *locked_type ),
+                                 "] != current type [", BT::demangle( typeid(T) ),"]" );
             }
         }
         else{ // create for the first time without type_lock

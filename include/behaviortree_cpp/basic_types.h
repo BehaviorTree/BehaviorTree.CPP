@@ -51,7 +51,7 @@ typedef nonstd::string_view StringView;
 template <typename T> inline
 T convertFromString(StringView /*str*/)
 {
-    auto type_name = BT::demangle( typeid(T).name() );
+    auto type_name = BT::demangle( typeid(T) );
 
     std::cerr << "You (maybe indirectly) called BT::convertFromString() for type [" <<
                  type_name <<"], but I can't find the template specialization.\n" << std::endl;

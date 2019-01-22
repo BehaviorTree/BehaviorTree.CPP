@@ -182,10 +182,33 @@ static const char* xml_ports_subtree = R"(
       <SetBlackboard output_key="talk_hello" value="hello" />
       <SetBlackboard output_key="talk_bye"   value="bye bye" />
       <SubTree ID="TalkToMe">
-            <remap external="talk_hello" internal="hello_msg" />
-            <remap external="talk_bye"   internal="bye_msg" />
-            <remap external="talk_out"   internal="output" />
+            <remap internal="hello_msg" external="talk_hello"  />
+            <remap internal="bye_msg"   external="talk_bye"    />
+            <remap internal="output"    external="talk_out" />
       </SubTree>
+      <SaySomething message="{talk_out}" />
+    </Sequence>
+  </BehaviorTree>
+
+</root> )";
+
+static const char* xml_ports_subtre_compact = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+  <BehaviorTree ID="TalkToMe">
+    <Sequence>
+      <SaySomething message="{hello_msg}" />
+      <SaySomething message="{bye_msg}" />
+      <SetBlackboard output_key="output" value="done!" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SetBlackboard output_key="talk_hello" value="hello" />
+      <SetBlackboard output_key="talk_bye"   value="bye bye" />
+      <SubTree ID="TalkToMe" hello_msg="{talk_hello}" bye_msg="{talk_bye}" output="{talk_out}" />
       <SaySomething message="{talk_out}" />
     </Sequence>
   </BehaviorTree>
@@ -201,16 +224,37 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
 
     Tree tree = buildTreeFromText(factory, xml_ports_subtree);
 
+    auto main_bb = tree.blackboard_stack.at(0);
+    auto talk_bb = tree.blackboard_stack.at(1);
+
+    ASSERT_EQ( main_bb->portType("talk_hello"), &typeid(std::string) );
+    ASSERT_EQ( main_bb->portType("talk_bye"),   &typeid(std::string) );
+    ASSERT_EQ( main_bb->portType("talk_out"),   &typeid(std::string) );
+
+    ASSERT_EQ( talk_bb->portType("bye_msg"),   &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portType("hello_msg"), &typeid(std::string) );
+
     // Should not throw
     tree.root_node->executeTick();
 
-    auto main_bb = tree.blackboard_stack.at(0);
+    ASSERT_EQ( main_bb->portType("talk_hello"), &typeid(std::string) );
+    ASSERT_EQ( main_bb->portType("talk_bye"),   &typeid(std::string) );
+    ASSERT_EQ( main_bb->portType("talk_out"),   &typeid(std::string) );
+
+    ASSERT_EQ( talk_bb->portType("bye_msg"),   &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portType("hello_msg"), &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portType("output"),    &typeid(std::string) );
+
+    std::cout << "\n --------------------------------- \n" << std::endl;
+    main_bb->debugMessage();
+    std::cout << "\n ----- \n" << std::endl;
+    talk_bb->debugMessage();
+
     ASSERT_EQ( main_bb->get<std::string>("talk_hello"), "hello");
     ASSERT_EQ( main_bb->get<std::string>("talk_bye"), "bye bye");
     ASSERT_EQ( main_bb->get<std::string>("talk_out"), "done!");
 
-    // these ports should not be present in the subtree
-    auto talk_bb = tree.blackboard_stack.at(1);
+    // these ports should not be present in the subtree TalkToMe
     ASSERT_FALSE( talk_bb->getAny("talk_hello") );
     ASSERT_FALSE( talk_bb->getAny("talk_bye") );
     ASSERT_FALSE( talk_bb->getAny("talk_out") );
