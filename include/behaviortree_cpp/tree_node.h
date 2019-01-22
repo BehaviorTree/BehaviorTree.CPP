@@ -16,16 +16,14 @@
 
 #include <condition_variable>
 #include <mutex>
-#include "behaviortree_cpp/utils/expected.hpp"
 #include "behaviortree_cpp/utils/signal.h"
 #include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/utils/strcat.hpp"
 
 namespace BT
 {
-
-template <typename T> using Optional = nonstd::expected<T, std::string>;
 
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
@@ -123,7 +121,7 @@ class TreeNode
      * @return      false if an error occurs.
      */
     template <typename T>
-    Optional<bool> getInput(const std::string& key, T& destination) const;
+    Result getInput(const std::string& key, T& destination) const;
 
     /** Same as bool getInput(const std::string& key, T& destination)
      * but using optional.
@@ -133,7 +131,7 @@ class TreeNode
     {
         T out;
         auto res = getInput(key, out);
-        if(res && res.value())
+        if(res)
         {
             return out;
         }
@@ -143,7 +141,7 @@ class TreeNode
     }
 
     template <typename T>
-    bool setOutput(const std::string& key, const T& value);
+    Result setOutput(const std::string& key, const T& value);
 
     /// Check a string and return true if it matches either one of these
     /// two patterns:  {...} or ${...}
@@ -151,8 +149,8 @@ class TreeNode
 
     static StringView stripBlackboardPointer(StringView str);
 
-    static std::pair<bool,StringView> getRemappedKey(StringView port_name,
-                                                     StringView remapping_value);
+    static Optional<StringView> getRemappedKey(StringView port_name,
+                                               StringView remapping_value);
 
 protected:
     /// Method to be implemented by the user
@@ -187,30 +185,29 @@ protected:
 
 //-------------------------------------------------------
 template <typename T> inline
-Optional<bool> TreeNode::getInput(const std::string& key, T& destination) const
+Result TreeNode::getInput(const std::string& key, T& destination) const
 {
     auto remap_it = config_.input_ports.find(key);
     if( remap_it == config_.input_ports.end() )
     {
-        return nonstd::make_unexpected( std::string(
-                    "getInput() failed because NodeConfiguration::input_ports "
-                    "does not contain the key: [") + key + "]" );
+        return nonstd::make_unexpected(
+            StrCat("getInput() failed because NodeConfiguration::input_ports "
+                   "does not contain the key: [", key, "]") );
     }
-    auto remapped_pair = getRemappedKey( key, remap_it->second );
-    bool is_bb_entry = remapped_pair.first;
-    auto remapped_key = remapped_pair.second;
+    auto remapped_res = getRemappedKey( key, remap_it->second );
     try
     {
-        if( !is_bb_entry )
+        if( !remapped_res )
         {
-            destination = convertFromString<T>(remapped_key);
-            return true;
+            destination = convertFromString<T>(remap_it->second);
+            return {};
         }
+        const auto& remapped_key = remapped_res.value();
 
         if ( !config_.blackboard )
         {
-            return nonstd::make_unexpected(
-                        "getInput() trying to access a Blackboard(BB) entry, but BB is invalid");
+            return nonstd::make_unexpected("getInput() trying to access a Blackboard(BB) entry, "
+                                           "but BB is invalid");
         }
 
         const SafeAny::Any* val = config_.blackboard->getAny( remapped_key.to_string() );
@@ -225,12 +222,12 @@ Optional<bool> TreeNode::getInput(const std::string& key, T& destination) const
             else{
                 destination = val->cast<T>();
             }
-            return true;
+            return {};
         }
 
-        return nonstd::make_unexpected( std::string("getInput() failed because it was unable "
-                                                    "to find the key [")
-                                        + key + "] remapped to [" + remapped_key.to_string() + "]" );
+        return nonstd::make_unexpected(
+            StrCat("getInput() failed because it was unable to find the key [",
+                   key, "] remapped to [", remapped_key, "]") );
     }
     catch (std::exception& err)
     {
@@ -239,21 +236,20 @@ Optional<bool> TreeNode::getInput(const std::string& key, T& destination) const
 }
 
 template <typename T> inline
-bool TreeNode::setOutput(const std::string& key, const T& value)
+Result TreeNode::setOutput(const std::string& key, const T& value)
 {
     if ( !config_.blackboard )
     {
-        std::cerr << "setOutput() failed: trying to access a Blackboard(BB) entry, but BB is invalid"
-                  << std::endl;
-        return false;
+        return nonstd::make_unexpected( "setOutput() failed: trying to access a "
+                                       "Blackboard(BB) entry, but BB is invalid");
     }
 
     auto remap_it = config_.output_ports.find(key);
     if( remap_it == config_.output_ports.end() )
     {
-        std::cerr << "setOutput() failed: NodeConfiguration::output_ports "
-                  << "does not contain the key: [" << key << "]" << std::endl;
-        return false;
+        return nonstd::make_unexpected(
+            StrCat("setOutput() failed: NodeConfiguration::output_ports does not "
+                   "contain the key: [", key, "]") );
     }
     StringView remapped_key = remap_it->second;
     if( remapped_key == "=")
@@ -267,7 +263,7 @@ bool TreeNode::setOutput(const std::string& key, const T& value)
     const auto& key_str = remapped_key.to_string();
     config_.blackboard->set( key_str, value);
 
-    return true;
+    return {};
 }
 
 // Utility function to fill the list of ports using T::providedPorts();

@@ -14,12 +14,9 @@ void Blackboard::setPortType(std::string key, const std::type_info *new_type)
         auto old_type = it->second.locked_port_type;
         if( old_type && old_type != new_type )
         {
-            char buffer[1024];
-            sprintf(buffer, "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                            "Declared type [%s] != current type [%s]",
-                    BT::demangle( old_type->name() ).c_str(),
-                    BT::demangle( new_type->name() ).c_str() );
-            throw LogicError( buffer );
+            throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
+                             "Declared type [",     BT::demangle( old_type->name() ),
+                             "] != current type [", BT::demangle( new_type->name() ), "]" );
         }
     }
 }

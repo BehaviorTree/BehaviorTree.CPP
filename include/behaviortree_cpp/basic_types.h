@@ -12,6 +12,7 @@
 #include "behaviortree_cpp/utils/string_view.hpp"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
+#include "behaviortree_cpp/utils/expected.hpp"
 
 namespace BT
 {
@@ -163,6 +164,45 @@ PortsList getProvidedPorts(enable_if_not< has_static_method_providedPorts<T> > =
 
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
 typedef std::chrono::high_resolution_clock::duration Duration;
+
+
+/** Usage: given a function/method like:
+ *
+ *     Optional<double> getAnswer();
+ *
+ * User code can check result and error message like this:
+ *
+ *     auto res = getAnswer();
+ *     if( res )
+ *     {
+ *         std::cout << "answer was: " << res.value() << std::endl;
+ *     }
+ *     else{
+ *         std::cerr << "failed to get the answer: " << res.error() << std::endl;
+ *     }
+ *
+ * */
+template <typename T> using Optional = nonstd::expected<T, std::string>;
+// note: we use the name Optional instead of expected because it is more intuitive
+// for users that are not up to date with "modern" C++
+
+/** Usage: given a function/method like:
+ *
+ *     Result DoSomething();
+ *
+ * User code can check result and error message like this:
+ *
+ *     auto res = DoSomething();
+ *     if( res )
+ *     {
+ *         std::cout << "DoSomething() done " << std::endl;
+ *     }
+ *     else{
+ *         std::cerr << "DoSomething() failed with message: " << res.error() << std::endl;
+ *     }
+ *
+ * */
+using Result = Optional<void>;
 
 } // end namespace
 

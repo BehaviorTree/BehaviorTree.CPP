@@ -41,7 +41,7 @@ NodeStatus SequenceStarNode::tick()
     {
         if( !getInput(RESET_PARAM, reset_on_failure_) )
         {
-            throw RuntimeError("Missing parameter [reset_on_failure] in SequenceStarNode");
+            throw RuntimeError("Missing parameter [", RESET_PARAM ,"] in SequenceStarNode");
         }
     }
 

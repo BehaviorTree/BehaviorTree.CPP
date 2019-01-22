@@ -121,18 +121,18 @@ StringView TreeNode::stripBlackboardPointer(StringView str)
     return {};
 }
 
-std::pair<bool, StringView> TreeNode::getRemappedKey(StringView port_name,
-                                                     StringView remapping_value)
+Optional<StringView> TreeNode::getRemappedKey(StringView port_name,
+                                              StringView remapping_value)
 {
      if( remapping_value == "=" )
      {
-         return {true, port_name};
+         return {port_name};
      }
      if( isBlackboardPointer( remapping_value ) )
      {
-         return {true, stripBlackboardPointer(remapping_value)};
+         return {stripBlackboardPointer(remapping_value)};
      }
-     return {false, remapping_value};
+     return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
 const std::string& TreeNode::registrationName() const
