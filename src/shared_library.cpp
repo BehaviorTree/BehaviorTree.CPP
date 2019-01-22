@@ -12,7 +12,7 @@ void* BT::SharedLibrary::getSymbol(const std::string& name)
     if (result)
         return result;
     else
-        throw RuntimeError( std::string("[SharedLibrary::getSymbol]: can't find symbol ") + name );
+        throw RuntimeError( "[SharedLibrary::getSymbol]: can't find symbol ", name );
 }
 
 bool BT::SharedLibrary::hasSymbol(const std::string& name)

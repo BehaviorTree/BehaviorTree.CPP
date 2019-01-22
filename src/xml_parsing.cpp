@@ -454,12 +454,9 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         {
             if( manifest.ports.count( remapping_it.first ) == 0 )
             {
-                char buffer[1024];
-                sprintf(buffer, "Possible typo. In the XML, you specified the port [%s] for node [%s / %s], but the "
-                                "manifest of this node does not contain a port with this name.",
-                        remapping_it.first.c_str(),
-                        ID.c_str(), instance_name.c_str() );
-                throw RuntimeError(buffer);
+                throw RuntimeError("Possible typo. In the XML, you tried to remap port \"",
+                                   remapping_it.first, "\" in node [", ID," / ", instance_name,
+                                   "], but the manifest of this node does not contain a port with this name.");
             }
         }
 
@@ -470,37 +467,35 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             const auto& port = port_it.second;
 
             // type is currently optional. just skip if unspecified
-            if( port.info() != nullptr )
+            if( port.info() == nullptr )
             {
-                auto remap_it = remapping_parameters.find(port_name);
-                if( remap_it != remapping_parameters.end())
-                {
-                    StringView remapping_value = remap_it->second;
-                    auto pair = TreeNode::getRemappedKey(port_name, remapping_value);
-                    if( pair.first )
-                    {
-                        const auto& port_key = pair.second.to_string();
+                continue;
+            }
+            auto remap_it = remapping_parameters.find(port_name);
+            if( remap_it == remapping_parameters.end())
+            {
+                continue;
+            }
+            StringView remapping_value = remap_it->second;
+            auto remapped_res = TreeNode::getRemappedKey(port_name, remapping_value);
+            if( remapped_res )
+            {
+                const auto& port_key = remapped_res.value().to_string();
 
-                        auto prev_type = blackboard->portType( port_key );
-                        if( !prev_type && port.info() )
-                        {
-                            // not found, insert
-                            blackboard->setPortType( port_key, port.info() );
-                        }
-                        else{
-                            // found. check consistency
-                            if( prev_type != port.info())
-                            {
-                                char buffer[1024];
-                                sprintf(buffer, "The creation of the tree failed because the port [%s] "
-                                                "was initially created with type [%s] and, later, "
-                                                "type [%s] was used somewhere else.",
-                                        port_key.c_str(),
-                                        demangle( prev_type->name() ).c_str(),
-                                        demangle( port.info()->name() ).c_str() );
-                                throw RuntimeError( buffer );
-                            }
-                        }
+                auto prev_type = blackboard->portType( port_key );
+                if( !prev_type && port.info() )
+                {
+                    // not found, insert
+                    blackboard->setPortType( port_key, port.info() );
+                }
+                else{
+                    // found. check consistency
+                    if( prev_type != port.info())
+                    {
+                        throw RuntimeError( "The creation of the tree failed because the port [", port_key,
+                                           "] was initially created with type [",demangle( prev_type->name() ),
+                                           "] and, later type [", demangle( port.info()->name() ),
+                                           "] was used somewhere else." );
                     }
                 }
             }
@@ -530,7 +525,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(instance_name) );
     }
     else{
-        throw RuntimeError( ID + " is not a registered node, nor a Subtree");
+        throw RuntimeError( ID, " is not a registered node, nor a Subtree");
     }
 
     if (node_parent)

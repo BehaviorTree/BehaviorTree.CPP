@@ -24,7 +24,7 @@ void DecoratorNode::setChild(TreeNode* child)
 {
     if (child_node_)
     {
-        throw BehaviorTreeException("Decorator '" + name() + "' has already a child assigned");
+        throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
     }
 
     child_node_ = child;

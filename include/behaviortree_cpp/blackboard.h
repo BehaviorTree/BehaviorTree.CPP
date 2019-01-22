@@ -103,7 +103,7 @@ class Blackboard
         bool found = get(key, value);
         if (!found)
         {
-            throw RuntimeError("Missing key");
+            throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
         }
         return value;
     }
@@ -133,12 +133,9 @@ class Blackboard
             // TODO check isNumber
             if( locked_type && locked_type != &typeid(T) )
             {
-                char buffer[1024];
-                sprintf(buffer, "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                                "Declared type [%s] != current type [%s]",
-                        BT::demangle( locked_type->name() ).c_str(),
-                        BT::demangle( typeid(T).name() ).c_str() );
-                throw LogicError( buffer );
+                throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
+                                 "Declared type [",BT::demangle( locked_type->name() ),
+                                 "] != current type [", BT::demangle( typeid(T).name() ),"]" );
             }
         }
         else{ // create for the first time without type_lock

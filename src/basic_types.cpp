@@ -150,7 +150,7 @@ bool convertFromString<bool>(StringView str)
             return false;
         }
     }
-    throw RuntimeError("invalid bool conversion");
+    throw RuntimeError("convertFromString(): invalid bool conversion");
 }
 
 template <>

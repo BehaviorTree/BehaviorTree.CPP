@@ -46,7 +46,7 @@ NodeStatus RetryNode::tick()
     {
         if( !getInput(NUM_ATTEMPTS, max_attempts_) )
         {
-            throw RuntimeError("Missing parameter [num_attempts] in RetryNode");
+            throw RuntimeError("Missing parameter [", NUM_ATTEMPTS,"] in RetryNode");
         }
     }
 

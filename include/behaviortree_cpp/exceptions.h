@@ -16,17 +16,21 @@
 
 #include <string>
 #include <stdexcept>
-#include "utils/string_view.hpp"
+#include "utils/strcat.hpp"
 
 namespace BT
 {
 class BehaviorTreeException : public std::exception
 {
   public:
-    BehaviorTreeException(std::string message)
-        : message_( std::move(message) )
-    {
-    }
+
+    BehaviorTreeException(nonstd::string_view message):  message_(message.to_string())
+    {}
+
+    template <typename... SV>
+    BehaviorTreeException(const SV&... args): message_(StrCat (args...))
+    { }
+
 
     const char* what() const noexcept
     {
@@ -41,18 +45,27 @@ class BehaviorTreeException : public std::exception
 // to be fixed.
 class LogicError: public BehaviorTreeException
 {
-public:
-    LogicError(std::string message): BehaviorTreeException( std::move(message) )
+  public:
+    LogicError(nonstd::string_view message):  BehaviorTreeException(message)
     {}
+
+    template <typename... SV>
+    LogicError(const SV&... args): BehaviorTreeException(args...)
+    { }
+
 };
 
 // This errors are usually related to problems that are relted to data or conditions
 // that happen only at run-time
 class RuntimeError: public BehaviorTreeException
 {
-public:
-    RuntimeError(std::string message): BehaviorTreeException( std::move(message) )
+  public:
+    RuntimeError(nonstd::string_view message):  BehaviorTreeException(message)
     {}
+
+    template <typename... SV>
+    RuntimeError(const SV&... args): BehaviorTreeException(args...)
+    { }
 };
 
 

@@ -208,5 +208,11 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
     ASSERT_EQ( main_bb->get<std::string>("talk_hello"), "hello");
     ASSERT_EQ( main_bb->get<std::string>("talk_bye"), "bye bye");
     ASSERT_EQ( main_bb->get<std::string>("talk_out"), "done!");
+
+    // these ports should not be present in the subtree
+    auto talk_bb = tree.blackboard_stack.at(1);
+    ASSERT_FALSE( talk_bb->getAny("talk_hello") );
+    ASSERT_FALSE( talk_bb->getAny("talk_bye") );
+    ASSERT_FALSE( talk_bb->getAny("talk_out") );
 }
 

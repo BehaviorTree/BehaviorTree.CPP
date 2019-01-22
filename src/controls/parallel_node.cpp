@@ -40,7 +40,7 @@ NodeStatus ParallelNode::tick()
     {
         if( !getInput(THRESHOLD_KEY, threshold_) )
         {
-            throw RuntimeError("Missing parameter [threshold] in ParallelNode");
+            throw RuntimeError("Missing parameter [", THRESHOLD_KEY, "] in ParallelNode");
         }
     }
 
