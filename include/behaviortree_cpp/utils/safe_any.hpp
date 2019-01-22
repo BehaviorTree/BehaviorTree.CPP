@@ -41,56 +41,58 @@ class Any
                                 !std::is_same<T, std::string>::value>::type*;
 
   public:
-    explicit Any()
+    explicit Any(): _original_type(nullptr)
     {
     }
 
     ~Any() = default;
 
-    explicit Any(const Any& other) : _any(other._any)
+    explicit Any(const Any& other) : _any(other._any), _original_type( &other.type() )
     {
     }
 
-    explicit Any(const double& value) : _any(value)
+    explicit Any(const double& value) : _any(value), _original_type( &typeid(double) )
     {
     }
 
-    explicit Any(const uint64_t& value) : _any(value)
+    explicit Any(const uint64_t& value) : _any(value), _original_type( &typeid(uint64_t) )
     {
     }
 
-    explicit Any(const float& value) : _any(double(value))
+    explicit Any(const float& value) : _any(double(value)), _original_type( &typeid(float) )
     {
     }
 
-    explicit Any(const std::string& str) : _any(SimpleString(str))
+    explicit Any(const std::string& str) : _any(SimpleString(str)), _original_type( &typeid(std::string) )
+    {
+    }
+
+    // all the other integrals are casted to int64_t
+    template <typename T>
+    explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( &typeid(T) )
+    {
+    }
+
+    // default for other custom types
+    template <typename T>
+    explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value), _original_type( &typeid(T) )
     {
     }
 
     Any& operator = (const Any& other)
     {
         this->_any = other._any;
+        this->_original_type = other._original_type;
         return *this;
     }
 
     bool isNumber() const
     {
-        return  type() == typeid(int64_t) ||
-                type() ==typeid(uint64_t) ||
-                type() == typeid(double);
+        return _any.type() == typeid(int64_t) ||
+               _any.type() ==typeid(uint64_t) ||
+               _any.type() == typeid(double);
     }
 
-    // all the other integrals are casted to int64_t
-    template <typename T>
-    explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value))
-    {
-    }
-
-    // default for other custom types
-    template <typename T>
-    explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value)
-    {
-    }
 
     // this is different from any_cast, because if allows safe
     // conversions between arithmetic values.
@@ -113,7 +115,7 @@ class Any
 
     const std::type_info& type() const noexcept
     {
-        return _any.type();
+        return *_original_type;
     }
 
     bool empty() const noexcept
@@ -123,6 +125,7 @@ class Any
 
   private:
     linb::any _any;
+    const std::type_info* _original_type;
 
     //----------------------------
 
@@ -210,8 +213,8 @@ class Any
     {
         char buffer[1024];
         sprintf(buffer, "[Any::convert]: no known safe conversion between %s and %s",
-                BT::demangle( _any.type().name() ).c_str(),
-                BT::demangle( typeid(T).name() ).c_str() );
+                BT::demangle( _any.type() ).c_str(),
+                BT::demangle( typeid(T) ).c_str() );
         return std::runtime_error(buffer);
     }
 };

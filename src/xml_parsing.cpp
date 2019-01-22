@@ -493,8 +493,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                     if( prev_type != port.info())
                     {
                         throw RuntimeError( "The creation of the tree failed because the port [", port_key,
-                                           "] was initially created with type [",demangle( prev_type->name() ),
-                                           "] and, later type [", demangle( port.info()->name() ),
+                                           "] was initially created with type [", demangle( prev_type ),
+                                           "] and, later type [", demangle( port.info() ),
                                            "] was used somewhere else." );
                     }
                 }

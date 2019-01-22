@@ -91,6 +91,16 @@ uint16_t TreeNode::UID() const
     return uid_;
 }
 
+const std::string& TreeNode::registrationName() const
+{
+    return registration_ID_;
+}
+
+const NodeConfiguration &TreeNode::config() const
+{
+    return config_;
+}
+
 bool TreeNode::isBlackboardPointer(StringView str)
 {
     const auto size = str.size();
@@ -121,28 +131,17 @@ StringView TreeNode::stripBlackboardPointer(StringView str)
     return {};
 }
 
-Optional<StringView> TreeNode::getRemappedKey(StringView port_name,
-                                              StringView remapping_value)
+Optional<StringView> TreeNode::getRemappedKey(StringView port_name, StringView remapping_value)
 {
-     if( remapping_value == "=" )
-     {
-         return {port_name};
-     }
-     if( isBlackboardPointer( remapping_value ) )
-     {
-         return {stripBlackboardPointer(remapping_value)};
-     }
-     return nonstd::make_unexpected("Not a blackboard pointer");
-}
-
-const std::string& TreeNode::registrationName() const
-{
-    return registration_ID_;
-}
-
-const NodeConfiguration &TreeNode::config() const
-{
-    return config_;
+    if( remapping_value == "=" )
+    {
+        return {port_name};
+    }
+    if( isBlackboardPointer( remapping_value ) )
+    {
+        return {stripBlackboardPointer(remapping_value)};
+    }
+    return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
 }   // end namespace

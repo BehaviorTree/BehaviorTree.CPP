@@ -131,13 +131,7 @@ class TreeNode
     {
         T out;
         auto res = getInput(key, out);
-        if(res)
-        {
-            return out;
-        }
-        else{
-            return nonstd::make_unexpected( res.error() );
-        }
+        return (res) ? Optional<T>(out) : nonstd::make_unexpected( res.error() );
     }
 
     template <typename T>
@@ -285,5 +279,6 @@ void assignDefaultRemapping(NodeConfiguration& config)
     }
 }
 
-}
+} // end namespace
+
 #endif
