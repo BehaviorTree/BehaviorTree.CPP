@@ -30,12 +30,12 @@ class BB_TestNode: public SyncActionNode
     NodeStatus tick()
     {
         int value = 0;
-        if(!getInput("in_port", value))
+        auto res = getInput<int>("in_port");
+        if(!res)
         {
-            throw RuntimeError("BB_TestNode needs input");
+            throw RuntimeError("BB_TestNode needs input", res.error());
         }
-
-        value *= 2;
+        value = res.value()*2;
         if( !setOutput("out_port", value) )
         {
             throw RuntimeError("BB_TestNode failed output");
@@ -91,10 +91,9 @@ TEST(BlackboardTest, GetInputsFromBlackboard)
     config.blackboard = bb;
     bb->set("in_port", 11 );
 
-    // NO throw
     BB_TestNode node("good_one", config);
 
-    // this should read and write "my_entry", respectively in onInit() and tick()
+    // this should read and write "my_entry" in tick()
     node.executeTick();
 
     ASSERT_EQ( bb->get<int>("out_port"), 22 );

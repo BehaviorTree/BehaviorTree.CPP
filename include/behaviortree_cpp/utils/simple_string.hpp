@@ -13,15 +13,18 @@ class SimpleString
     SimpleString(const std::string& str) : SimpleString(str.data(), str.size())
     {
     }
-    SimpleString(const char* data) : SimpleString(data, strlen(data))
+    SimpleString(const char* input_data) : SimpleString(input_data, strlen(input_data))
     {
     }
 
-    SimpleString(const char* data, std::size_t size) : _size(size)
+    SimpleString(const char* input_data, std::size_t size) : _size(size)
     {
-        _data = new char[_size + 1];
-        strncpy(_data, data, _size);
-        _data[_size] = '\0';
+        if(size >= sizeof(void*) )
+        {
+            _data.ptr = new char[_size + 1];
+        }
+        strncpy(data(), input_data, _size);
+        data()[_size] = '\0';
     }
 
     SimpleString(const SimpleString& other) : SimpleString(other.data(), other.size())
@@ -30,20 +33,37 @@ class SimpleString
 
     ~SimpleString()
     {
-        if (_data)
+        if ( _size >= sizeof(void*) && _data.ptr )
         {
-            delete[] _data;
+            delete[] _data.ptr;
         }
     }
 
     std::string toStdString() const
     {
-        return std::string(_data, _size);
+        return std::string(data(), _size);
     }
 
     const char* data() const
     {
-        return _data;
+        if( _size >= sizeof(void*))
+        {
+            return _data.ptr;
+        }
+        else{
+            return _data.soo;
+        }
+    }
+
+    char* data()
+    {
+        if( _size >= sizeof(void*))
+        {
+            return _data.ptr;
+        }
+        else{
+            return _data.soo;
+        }
     }
 
     std::size_t size() const
@@ -52,9 +72,14 @@ class SimpleString
     }
 
   private:
-    char* _data;
+    union{
+        char*  ptr;
+        char   soo[sizeof(void*)] ;
+    }_data;
+
     std::size_t _size;
 };
+
 }
 
 #endif   // SIMPLE_STRING_HPP
