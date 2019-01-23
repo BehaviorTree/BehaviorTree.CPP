@@ -218,4 +218,38 @@ TEST(BlackboardTest, CheckPortType)
     ASSERT_THROW( buildTreeFromText(factory, bad_one), RuntimeError);
 }
 
+class RefCountClass {
+  public:
+    RefCountClass(std::shared_ptr<int> value): sptr_(std::move(value))
+    {
+        std::cout<< "Constructor: ref_count " << sptr_.use_count() << std::endl;
+    }
+
+    RefCountClass(const RefCountClass &from) : sptr_(from.sptr_)
+    {
+        std::cout<< "copy: ref_count " << sptr_.use_count() << std::endl;
+    }
+    virtual ~RefCountClass() {
+        std::cout<<("Destructor")<< std::endl;
+    }
+
+    int refCount() const { return sptr_.use_count(); }
+
+  private:
+    std::shared_ptr<int> sptr_;
+};
+
+TEST(BlackboardTest, MoveVsCopy)
+{
+    auto blackboard = Blackboard::create();
+
+    RefCountClass test( std::make_shared<int>() );
+
+    std::cout<<("----- before set -----")<< std::endl;
+    blackboard->set("testmove", test );
+    std::cout<<(" ----- after set -----")<< std::endl;
+
+    ASSERT_EQ( test.refCount(), 2);
+}
+
 

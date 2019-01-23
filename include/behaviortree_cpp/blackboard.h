@@ -146,7 +146,7 @@ class Blackboard
             previous_any = std::move(temp);
         }
         else{ // create for the first time without type_lock
-            storage_.insert( {key, Entry( Any(value) )} );
+            storage_.emplace( key, Entry( Any(value) ) );
         }
         return;
     }
@@ -173,6 +173,11 @@ class Blackboard
           value(std::move(other_any)),
           locked_port_type(type)
         {}
+
+//        Entry(Entry&& other):
+//          value( std::move(other.value) ),
+//          locked_port_type( other.locked_port_type )
+//        {}
     };
 
     mutable std::mutex mutex_;

@@ -50,7 +50,11 @@ class Any
 
     ~Any() = default;
 
-    explicit Any(const Any& other) : _any(other._any), _original_type( &other.type() )
+    explicit Any(const Any& other) : _any(other._any), _original_type( other._original_type )
+    {
+    }
+
+    explicit Any(Any&& other) : _any( std::move(other._any) ), _original_type( other._original_type )
     {
     }
 
