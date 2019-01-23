@@ -48,14 +48,19 @@ int main()
 
     using namespace DummyNodes;
 
+    // Registering a SimpleActionNode using a simple fucntion pointer
     factory.registerSimpleAction("SayHello", std::bind(SayHello));
     factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
     factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
 
+    //You can also create SimpleActionNodes using methods of a class
     GripperInterface gripper;
     factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &gripper));
     factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &gripper));
 
+    // The recommended way to create node is through inheritance, though.
+    // Even if it is more boilerplate, it allows you to use more functionalities
+    // (we will discuss this in future tutorials).
     factory.registerNodeType<ApproachObject>("ApproachObject");
 
 #else
@@ -63,12 +68,12 @@ int main()
     factory.registerFromPlugin("./libdummy_nodes.so");
 #endif
 
-    // IMPORTANT: when the object tree goes out of scope, all the TreeNodes are destroyed
+    // IMPORTANT: when the object "tree" goes out of scope, all the TreeNodes are destroyed
     auto tree = buildTreeFromText(factory, xml_text);
 
     // The tick is propagated to all the children.
     // until one of the returns FAILURE or RUNNING.
-    // In this case all of the return SUCCESS
+    // In this case it will return SUCCESS
     tree.root_node->executeTick();
 
     return 0;
