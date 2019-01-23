@@ -135,6 +135,29 @@ TEST(BlackboardTest, GetInputsFromText)
     ASSERT_EQ( bb->get<int>("out_port"), 22 );
 }
 
+TEST(BlackboardTest, SetOutputFromText)
+{
+    const char* xml_text = R"(
+
+     <root main_tree_to_execute = "MainTree" >
+         <BehaviorTree ID="MainTree">
+            <Sequence>
+                <BB_TestNode in_port="11" out_port="{my_port}"/>
+                <SetBlackboard output_key="my_port" value="-43" />
+            </Sequence>
+         </BehaviorTree>
+     </root>
+    )";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<BB_TestNode>("BB_TestNode");
+
+    auto bb = Blackboard::create();
+
+    auto tree = buildTreeFromText(factory, xml_text, bb);
+    tree.root_node->executeTick();
+}
+
 TEST(BlackboardTest, WithFactory)
 {
     BehaviorTreeFactory factory;

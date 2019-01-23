@@ -14,13 +14,13 @@ target_link_libraries(t01_first_tree_dynamic ${BEHAVIOR_TREE_LIBRARY}  )
 add_executable(t02_basic_ports  t02_basic_ports.cpp )
 target_link_libraries(t02_basic_ports ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )
 
-# This tutorial shows how the difference between Sequence and SequenceStar
-add_executable(t03_sequence_star        t03_sequence_star.cpp )
-target_link_libraries(t03_sequence_star movebase_node dummy_nodes ${BEHAVIOR_TREE_LIBRARY}  )
-
 # This tutorial demonstrates how to use blackboards and NodeParameters
-add_executable(t04_blackboard         t04_blackboard.cpp )
-target_link_libraries(t04_blackboard  movebase_node ${BEHAVIOR_TREE_LIBRARY}  )
+add_executable(t03_generic_ports        t03_generic_ports.cpp )
+target_link_libraries(t03_generic_ports movebase_node dummy_nodes ${BEHAVIOR_TREE_LIBRARY}  )
+
+# This tutorial shows how the difference between Sequence and SequenceStar
+add_executable(t04_sequence_star         t04_sequence_star.cpp )
+target_link_libraries(t04_sequence_star  movebase_node dummy_nodes ${BEHAVIOR_TREE_LIBRARY}  )
 
 add_executable(t05_crossdoor         t05_crossdoor.cpp )
 target_link_libraries(t05_crossdoor  crossdoor_nodes ${BEHAVIOR_TREE_LIBRARY}  )
