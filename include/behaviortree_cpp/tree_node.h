@@ -204,7 +204,7 @@ Result TreeNode::getInput(const std::string& key, T& destination) const
                                            "but BB is invalid");
         }
 
-        const SafeAny::Any* val = config_.blackboard->getAny( remapped_key.to_string() );
+        const Any* val = config_.blackboard->getAny( remapped_key.to_string() );
         if( val && val->empty() == false)
         {
             if( std::is_same<T,std::string>::value == false &&

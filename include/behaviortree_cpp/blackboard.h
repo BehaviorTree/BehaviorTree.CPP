@@ -47,7 +47,7 @@ class Blackboard
      *
      * @return the pointer or nullptr if it fails.
      */
-    const SafeAny::Any* getAny(const std::string& key) const
+    const Any* getAny(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);
 
@@ -63,7 +63,7 @@ class Blackboard
         return ( it == storage_.end()) ? nullptr : &(it->second.value);
     }
 
-    SafeAny::Any* getAny(const std::string& key)
+    Any* getAny(const std::string& key)
     {
         std::unique_lock<std::mutex> lock(mutex_);
 
@@ -85,7 +85,7 @@ class Blackboard
     template <typename T>
     bool get(const std::string& key, T& value) const
     {
-        const SafeAny::Any* val = getAny(key);
+        const Any* val = getAny(key);
         if (val)
         {
             value = val->cast<T>();
@@ -132,22 +132,22 @@ class Blackboard
 
         if( it != storage_.end() ) // already there. check the type
         {
+            auto& previous_any = it->second.value;
             const auto locked_type = it->second.locked_port_type;
 
-            // TODO check isNumber
-            if( locked_type && locked_type != &typeid(T) )
+            Any temp(value);
+
+            if( locked_type && locked_type != &typeid(T) && locked_type != &temp.type() )
             {
                 throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                                 "Declared type [",BT::demangle( *locked_type ),
-                                 "] != current type [", BT::demangle( typeid(T) ),"]" );
+                                  "Declared type [", demangle( locked_type ),
+                                  "] != current type [", demangle( typeid(T) ),"]" );
             }
+            previous_any = std::move(temp);
         }
         else{ // create for the first time without type_lock
-            storage_.insert( {key, Entry( SafeAny::Any(value) )} );
-            return;
+            storage_.insert( {key, Entry( Any(value) )} );
         }
-
-        it->second.value =  SafeAny::Any(value);
         return;
     }
 
@@ -162,14 +162,14 @@ class Blackboard
   private:
 
     struct Entry{
-        SafeAny::Any value;
+        Any value;
         const std::type_info* locked_port_type;
 
         Entry(const std::type_info* type = nullptr):
           locked_port_type(type)
         {}
 
-        Entry(SafeAny::Any&& other_any, const std::type_info* type = nullptr):
+        Entry(Any&& other_any, const std::type_info* type = nullptr):
           value(std::move(other_any)),
           locked_port_type(type)
         {}

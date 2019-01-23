@@ -11,8 +11,11 @@
 #include "any.hpp"
 #include "demangle_util.h"
 #include "convert_impl.hpp"
+#include "expected.hpp"
+#include "strcat.hpp"
+#include "strcat.hpp"
 
-namespace SafeAny
+namespace BT
 {
 // Rational: since type erased numbers will always use at least 8 bytes
 // it is faster to cast everything to either double, uint64_t or int64_t.
@@ -63,7 +66,11 @@ class Any
     {
     }
 
-    explicit Any(const std::string& str) : _any(SimpleString(str)), _original_type( &typeid(std::string) )
+    explicit Any(const std::string& str) : _any(SafeAny::SimpleString(str)), _original_type( &typeid(std::string) )
+    {
+    }
+
+    explicit Any(const char* str) : _any(SafeAny::SimpleString(str)), _original_type( &typeid(std::string) )
     {
     }
 
@@ -89,10 +96,9 @@ class Any
     bool isNumber() const
     {
         return _any.type() == typeid(int64_t) ||
-               _any.type() ==typeid(uint64_t) ||
+               _any.type() == typeid(uint64_t) ||
                _any.type() == typeid(double);
     }
-
 
     // this is different from any_cast, because if allows safe
     // conversions between arithmetic values.
@@ -109,13 +115,23 @@ class Any
         }
         else
         {
-            return convert<T>();
+            auto res = convert<T>();
+            if( !res )
+            {
+                throw std::runtime_error( res.error() );
+            }
+            return res.value();
         }
     }
 
     const std::type_info& type() const noexcept
     {
         return *_original_type;
+    }
+
+    const std::type_info& castedType() const noexcept
+    {
+        return _any.type();
     }
 
     bool empty() const noexcept
@@ -130,13 +146,13 @@ class Any
     //----------------------------
 
     template <typename DST>
-    DST convert(EnableString<DST> = 0) const
+    nonstd::expected<DST,std::string> convert(EnableString<DST> = 0) const
     {
         const auto& type = _any.type();
 
-        if (type == typeid(SimpleString))
+        if (type == typeid(SafeAny::SimpleString))
         {
-            return linb::any_cast<SimpleString>(_any).toStdString();
+            return linb::any_cast<SafeAny::SimpleString>(_any).toStdString();
         }
         else if (type == typeid(int64_t))
         {
@@ -151,13 +167,13 @@ class Any
             return std::to_string(linb::any_cast<double>(_any));
         }
 
-        throw errorMsg<DST>();
+        return nonstd::make_unexpected( errorMsg<DST>() );
     }
 
     template <typename DST>
-    DST convert(EnableArithmetic<DST> = 0) const
+    nonstd::expected<DST,std::string> convert(EnableArithmetic<DST> = 0) const
     {
-        using details::convertNumber;
+        using SafeAny::details::convertNumber;
         DST out;
 
         const auto& type = _any.type();
@@ -174,17 +190,16 @@ class Any
         {
             convertNumber<double, DST>(linb::any_cast<double>(_any), out);
         }
-        else
-        {
-            throw errorMsg<DST>();
+        else{
+            return nonstd::make_unexpected( errorMsg<DST>() );
         }
         return out;
     }
 
     template <typename DST>
-    DST convert(EnableEnum<DST> = 0) const
+    nonstd::expected<DST,std::string> convert(EnableEnum<DST> = 0) const
     {
-        using details::convertNumber;
+        using SafeAny::details::convertNumber;
 
         const auto& type = _any.type();
 
@@ -199,26 +214,23 @@ class Any
             return static_cast<DST>(out);
         }
 
-        throw errorMsg<DST>();
+        return nonstd::make_unexpected( errorMsg<DST>() );
     }
 
     template <typename DST>
-    DST convert(EnableUnknownType<DST> = 0) const
+    nonstd::expected<DST,std::string> convert(EnableUnknownType<DST> = 0) const
     {
-        throw errorMsg<DST>();
+        return nonstd::make_unexpected( errorMsg<DST>() );
     }
 
     template <typename T>
-    std::runtime_error errorMsg() const
+    std::string errorMsg() const
     {
-        char buffer[1024];
-        sprintf(buffer, "[Any::convert]: no known safe conversion between %s and %s",
-                BT::demangle( _any.type() ).c_str(),
-                BT::demangle( typeid(T) ).c_str() );
-        return std::runtime_error(buffer);
+        return StrCat("[Any::convert]: no known safe conversion between [",
+                      demangle( _any.type() ), "] and [", demangle( typeid(T) ),"]");
     }
 };
 
-}   // end namespace VarNumber
+}   // end namespace BT
 
 #endif   // VARNUMBER_H
