@@ -12,6 +12,7 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 namespace BT
 {
@@ -163,6 +164,38 @@ const std::unordered_map<std::string,TreeNodeManifest>& BehaviorTreeFactory::man
 const std::set<std::string> &BehaviorTreeFactory::builtinNodes() const
 {
     return builtin_IDs_;
+}
+
+Tree BehaviorTreeFactory::createTreeFromText(const std::string &text,
+                                             Blackboard::Ptr blackboard)
+{
+    XMLParser parser(*this);
+    parser.loadFromText(text);
+    return parser.instantiateTree(blackboard);
+}
+
+Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
+                                             Blackboard::Ptr blackboard)
+{
+    XMLParser parser(*this);
+    parser.loadFromFile(file_path);
+    return parser.instantiateTree(blackboard);
+}
+
+Tree::~Tree()
+{
+    if (root_node) {
+        haltAllActions(root_node);
+    }
+}
+
+Blackboard::Ptr Tree::rootBlackboard()
+{
+    if( blackboard_stack.size() > 0)
+    {
+        return blackboard_stack.front();
+    }
+    return {};
 }
 
 

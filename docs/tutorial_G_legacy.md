@@ -95,7 +95,7 @@ int main()
     factory.registerSimpleAction("MoveTo", MoveToWrapperWithLambda);
 
     auto blackboard = Blackboard::create<BlackboardLocal>();
-    auto tree = buildTreeFromText(factory, xml_text, blackboard);
+    auto tree = factory.createTreeFromText(xml_text, blackboard);
 
     // We set the entry "myGoal" in the blackboard.
     Point3D my_goal = {3,4,5};

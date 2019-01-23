@@ -16,8 +16,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    // IMPORTANT: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromFile(factory, argv[1]);
+    // IMPORTANT: when the object tree goes out of scope,
+    // all the TreeNodes are destroyed
+    auto tree = factory.createTreeFromFile(argv[1]);
 
     printTreeRecursively( tree.root_node );
 

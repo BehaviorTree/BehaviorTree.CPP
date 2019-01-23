@@ -45,9 +45,8 @@ class BB_TestNode: public SyncActionNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"in_port",  {PortType::INPUT, typeid(int)}},
-                                  {"out_port", {PortType::OUTPUT, typeid(int)}}
-                                 };
+        static PortsList ports = { BT::InputPort<int>("in_port"),
+                                   BT::OutputPort<int>("out_port") };
         return ports;
     }
 };
@@ -67,15 +66,13 @@ class BB_TypedTestNode: public SyncActionNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {
-            {"input",  PortType::INPUT},
-            {"input_int",     {PortType::INPUT, typeid(int)}},
-            {"input_string",  {PortType::INPUT, typeid(std::string)}},
+        static PortsList ports = { BT::InputPort("input"),
+                                   BT::InputPort<int>("input_int"),
+                                   BT::InputPort<std::string>("input_string"),
 
-            {"output",  PortType::OUTPUT},
-            {"output_int",    {PortType::OUTPUT, typeid(int)}},
-            {"output_string", {PortType::OUTPUT, typeid(std::string)}}
-        };
+                                   BT::OutputPort("output"),
+                                   BT::OutputPort<int>("output_int"),
+                                   BT::OutputPort<std::string>("output_string") };
         return ports;
     }
 };
@@ -154,7 +151,7 @@ TEST(BlackboardTest, SetOutputFromText)
 
     auto bb = Blackboard::create();
 
-    auto tree = buildTreeFromText(factory, xml_text, bb);
+    auto tree = factory.createTreeFromText(xml_text, bb);
     tree.root_node->executeTick();
 }
 
@@ -183,7 +180,7 @@ TEST(BlackboardTest, WithFactory)
 
     auto bb = Blackboard::create();
 
-    auto tree = buildTreeFromText(factory, xml_text, bb);
+    auto tree = factory.createTreeFromText(xml_text, bb);
     NodeStatus status = tree.root_node->executeTick();
 
     ASSERT_EQ( status, NodeStatus::SUCCESS );
@@ -205,7 +202,7 @@ TEST(BlackboardTest, TypoInPortName)
         </BehaviorTree>
     </root>)";
 
-    ASSERT_THROW( buildTreeFromText(factory, xml_text), RuntimeError );
+    ASSERT_THROW( factory.createTreeFromText(xml_text), RuntimeError );
 }
 
 
@@ -225,7 +222,7 @@ TEST(BlackboardTest, CheckPortType)
         </BehaviorTree>
     </root>)";
 
-    auto tree = buildTreeFromText(factory, good_one);
+    auto tree = factory.createTreeFromText(good_one);
     ASSERT_NE( tree.root_node, nullptr );
     //-----------------------------
     std::string bad_one = R"(
@@ -238,7 +235,7 @@ TEST(BlackboardTest, CheckPortType)
         </BehaviorTree>
     </root>)";
 
-    ASSERT_THROW( buildTreeFromText(factory, bad_one), RuntimeError);
+    ASSERT_THROW( factory.createTreeFromText(bad_one), RuntimeError);
 }
 
 class RefCountClass {

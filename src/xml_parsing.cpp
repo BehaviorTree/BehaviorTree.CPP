@@ -72,7 +72,8 @@ struct XMLParser::Pimpl
 };
 #pragma GCC diagnostic pop
 
-XMLParser::XMLParser(const BehaviorTreeFactory &factory) : _p( new Pimpl(factory) )
+XMLParser::XMLParser(const BehaviorTreeFactory &factory) :
+    _p( new Pimpl(factory) )
 {
 }
 
@@ -584,22 +585,6 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
     // start recursion
     recursiveStep(root_parent, root_element);
-}
-
-Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,
-                       Blackboard::Ptr blackboard)
-{
-    XMLParser parser(factory);
-    parser.loadFromText(text);
-    return parser.instantiateTree(blackboard);
-}
-
-Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& filename,
-                       Blackboard::Ptr blackboard)
-{
-    XMLParser parser(factory);
-    parser.loadFromFile(filename);
-    return parser.instantiateTree(blackboard);
 }
 
 

@@ -159,7 +159,7 @@ TEST(Navigationtest, MoveBaseRecovery)
     factory.registerNodeType<ComputePathToPose>("ComputePathToPose");
     factory.registerNodeType<FollowPath>("FollowPath");
 
-    auto tree = buildTreeFromText(factory, xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
     // Need to retrieve the node pointers with dynamic cast
     // In a normal application you would NEVER want to do such a thing.

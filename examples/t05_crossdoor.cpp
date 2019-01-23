@@ -52,7 +52,7 @@ int main()
     CrossDoor::RegisterNodes(factory);
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromText(factory, xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
     // Create some loggers
     StdCoutLogger logger_cout(tree.root_node);

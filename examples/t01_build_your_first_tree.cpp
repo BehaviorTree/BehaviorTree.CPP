@@ -69,7 +69,7 @@ int main()
 #endif
 
     // IMPORTANT: when the object "tree" goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromText(factory, xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
     // The tick is propagated to all the children.
     // until one of the returns FAILURE or RUNNING.

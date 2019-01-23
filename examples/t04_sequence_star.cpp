@@ -78,7 +78,7 @@ int main()
     {
         std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
 
-        auto tree = buildTreeFromText(factory, xml_text);
+        auto tree = factory.createTreeFromText(xml_text);
 
         NodeStatus status;
 

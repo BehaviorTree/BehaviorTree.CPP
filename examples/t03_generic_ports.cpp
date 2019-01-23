@@ -52,7 +52,7 @@ public:
     }
     static const BT::PortsList& providedPorts()
     {
-        static BT::PortsList ports = {{"goal", {PortType::OUTPUT, typeid(Pose2D)} }};
+        static BT::PortsList ports =  { BT::OutputPort<Pose2D>("goal") };
         return ports;
     }
 };
@@ -65,8 +65,11 @@ int main()
     factory.registerNodeType<CalculateGoalPose>("CalculateGoalPose");
     factory.registerNodeType<MoveBaseAction>("MoveBase");
 
+    // It is recommended to register the type to allow automatic conversions.
+    factory.registerCustomType<Pose2D>();
+
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromText(factory, xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
     NodeStatus status = NodeStatus::RUNNING;
     while (status == NodeStatus::RUNNING)
