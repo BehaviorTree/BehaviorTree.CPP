@@ -44,17 +44,17 @@ class Any
                                 !std::is_same<T, std::string>::value>::type*;
 
   public:
-    explicit Any(): _original_type(nullptr)
+    Any(): _original_type(nullptr)
     {
     }
 
     ~Any() = default;
 
-    explicit Any(const Any& other) : _any(other._any), _original_type( other._original_type )
+    Any(const Any& other) : _any(other._any), _original_type( other._original_type )
     {
     }
 
-    explicit Any(Any&& other) : _any( std::move(other._any) ), _original_type( other._original_type )
+    Any(Any&& other) : _any( std::move(other._any) ), _original_type( other._original_type )
     {
     }
 

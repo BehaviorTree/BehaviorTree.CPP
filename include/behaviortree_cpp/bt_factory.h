@@ -22,10 +22,12 @@
 #include <algorithm>
 #include <set>
 
+
 #include "behaviortree_cpp/behavior_tree.h"
 
 namespace BT
 {
+
 /// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
 typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeConfiguration&)>
 NodeBuilder;
@@ -34,6 +36,26 @@ constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 #define BT_REGISTER_NODES(factory)                                                                 \
     extern "C" void __attribute__((visibility("default")))                                         \
     BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+
+/**
+ * @brief Struct used to store a tree.
+ * If this object goes out of scope, the tree is destroyed.
+ *
+ * To tick the tree, simply call:
+ *
+ *    NodeStatus status = my_tree.root_node->executeTick();
+ */
+struct Tree
+{
+    TreeNode* root_node;
+    std::vector<TreeNode::Ptr> nodes;
+    std::vector<Blackboard::Ptr> blackboard_stack;
+
+    Tree() : root_node(nullptr) { }
+    ~Tree();
+
+    Blackboard::Ptr rootBlackboard();
+};
 
 /**
  * @brief The BehaviorTreeFactory is used to create instances of a
@@ -156,9 +178,22 @@ public:
     /// List of builtin IDs.
     const std::set<std::string>& builtinNodes() const;
 
+    Tree createTreeFromText(const std::string& text,
+                            Blackboard::Ptr blackboard = Blackboard::create());
+
+    Tree createTreeFromFile(const std::string& file_path,
+                            Blackboard::Ptr blackboard = Blackboard::create());
+
+    template <typename T>
+    void registerCustomType()
+    {
+        string_converters_.emplace( &typeid(T), GetAnyFromStringFunctor<T>() );
+    }
+
 private:
     std::unordered_map<std::string, NodeBuilder> builders_;
     std::unordered_map<std::string, TreeNodeManifest> manifests_;
+    StringConvertersMap string_converters_;
     std::set<std::string> builtin_IDs_;
 
     // template specialization = SFINAE + black magic

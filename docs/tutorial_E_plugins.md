@@ -79,7 +79,7 @@ int main()
     BehaviorTreeFactory factory;
     factory.registerFromPlugin("./libdummy_nodes.so");
 
-    auto tree = buildTreeFromText(factory, xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
     tree.root_node->executeTick();
     return 0;

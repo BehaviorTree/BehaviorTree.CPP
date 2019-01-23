@@ -88,9 +88,9 @@ int main()
     auto blackboard = Blackboard::create<BlackboardLocal>();
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromText(factory, xml_text, blackboard);
+    auto tree = factory.createTreeFromText(xml_text, blackboard);
     // alternatively:
-    //  auto tree = buildTreeFromText(factory, xml_text);
+    //  auto tree = factory.createTreeFromText(xml_text);
     //  assignBlackboardToEntireTree( tree.root_node, blackboard );
 
     NodeStatus status = NodeStatus::RUNNING;

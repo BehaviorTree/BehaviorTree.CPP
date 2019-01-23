@@ -29,7 +29,7 @@ class TimeoutNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"msec", {PortType::INPUT, typeid(unsigned)}}};
+        static PortsList ports = { InputPort<unsigned>("msec") };
         return ports;
     }
 

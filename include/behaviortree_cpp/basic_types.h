@@ -90,6 +90,23 @@ NodeStatus convertFromString<NodeStatus>(StringView str);
 template <>  // Names with all capital letters
 NodeType convertFromString<NodeType>(StringView str);
 
+typedef std::function<Any(StringView)> StringConverter;
+
+typedef std::unordered_map<const std::type_info*, StringConverter> StringConvertersMap;
+
+
+// helper function
+template <typename T> inline
+StringConverter GetAnyFromStringFunctor()
+{
+    return [](StringView str){ return Any(convertFromString<T>(str)); };
+}
+
+template <> inline
+StringConverter GetAnyFromStringFunctor<void>()
+{
+    return {};
+}
 
 //------------------------------------------------------------------
 
@@ -126,18 +143,48 @@ public:
     PortInfo( PortType direction ):
         _type(direction), _info(nullptr) {}
 
-    PortInfo( PortType direction, const std::type_info& type_info):
-        _type(direction), _info( &type_info ) {}
+    PortInfo( PortType direction,
+              const std::type_info& type_info,
+              StringConverter conv):
+        _type(direction),
+        _info( &type_info ),
+        _converter(conv)
+    {}
 
     PortType type() const;
 
     const std::type_info* info() const;
 
+    StringConverter stringConverter() const { return _converter; }
+
 private:
 
     PortType _type;
     const std::type_info* _info;
+    StringConverter _converter;
 };
+
+template <typename T = void>
+std::pair<std::string,PortInfo> InputPort(std::string name)
+{
+    if( std::is_same<T, void>::value)
+    {
+        return  {std::move(name), PortInfo(PortType::INPUT) };
+    }
+    return {std::move(name), PortInfo(PortType::INPUT, typeid(T),
+                                      GetAnyFromStringFunctor<T>() ) };
+}
+
+template <typename T = void>
+std::pair<std::string,PortInfo> OutputPort(std::string name)
+{
+    if( std::is_same<T, void>::value)
+    {
+        return  {std::move(name), PortInfo(PortType::OUTPUT) };
+    }
+    return {std::move(name), PortInfo(PortType::OUTPUT, typeid(T),
+                                      GetAnyFromStringFunctor<T>() ) };
+}
 
 
 typedef std::unordered_map<std::string, PortInfo> PortsList;

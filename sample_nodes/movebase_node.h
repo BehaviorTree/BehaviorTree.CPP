@@ -57,7 +57,7 @@ class MoveBaseAction : public BT::AsyncActionNode
     // It is mandatory to define this static method.
     static const BT::PortsList& providedPorts()
     {
-        static BT::PortsList ports = {{"goal", {BT::PortType::INPUT, typeid(Pose2D)} }};
+        static BT::PortsList ports = { BT::InputPort<Pose2D>("goal") };
         return ports;
     }
 

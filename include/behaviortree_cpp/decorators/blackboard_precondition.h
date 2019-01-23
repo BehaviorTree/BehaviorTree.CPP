@@ -48,9 +48,9 @@ class BlackboardPreconditionNode : public DecoratorNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"value_A", PortType::INPUT},
-                                  {"value_B", PortType::INPUT},
-                                  {"return_on_mismatch", {PortType::INPUT, typeid(NodeStatus)}}};
+        static PortsList ports = {InputPort("value_A"),
+                                  InputPort("value_B"),
+                                  InputPort<NodeStatus>("return_on_mismatch") };
         return ports;
     }
 

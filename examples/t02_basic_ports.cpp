@@ -43,7 +43,7 @@ class ThinkWhatToSay : public BT::SyncActionNode
 
     static const BT::PortsList& providedPorts()
     {
-        static BT::PortsList ports = {{"text", {BT::PortType::OUTPUT, typeid(std::string)} }};
+        static BT::PortsList ports = { BT::OutputPort<std::string>("text") };
         return ports;
     }
 };
@@ -80,7 +80,7 @@ int main()
      *     <SaySomething message="{the_answer}" />
      */
 
-    auto tree = buildTreeFromText(factory, xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
     tree.root_node->executeTick();
 

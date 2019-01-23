@@ -78,7 +78,7 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     BehaviorTreeFactory factory;
     CrossDoor::RegisterNodes(factory);
 
-    Tree tree = buildTreeFromText(factory, xml_text);
+    Tree tree = factory.createTreeFromText(xml_text);
 
     printTreeRecursively(tree.root_node);
 
@@ -119,7 +119,7 @@ TEST(BehaviorTreeFactory, Subtree)
     BehaviorTreeFactory factory;
     CrossDoor::RegisterNodes(factory);
 
-    Tree tree = buildTreeFromText(factory, xml_text_subtree);
+    Tree tree = factory.createTreeFromText(xml_text_subtree);
 
     printTreeRecursively(tree.root_node);
 
@@ -222,7 +222,7 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
     BehaviorTreeFactory factory;
     factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-    Tree tree = buildTreeFromText(factory, xml_ports_subtree);
+    Tree tree = factory.createTreeFromText(xml_ports_subtree);
 
     auto main_bb = tree.blackboard_stack.at(0);
     auto talk_bb = tree.blackboard_stack.at(1);
