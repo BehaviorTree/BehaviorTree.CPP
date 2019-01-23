@@ -57,7 +57,6 @@ public:
     }
 };
 
-
 int main()
 {
     using namespace BT;

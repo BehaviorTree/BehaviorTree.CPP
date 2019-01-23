@@ -208,8 +208,7 @@ Result TreeNode::getInput(const std::string& key, T& destination) const
         if( val && val->empty() == false)
         {
             if( std::is_same<T,std::string>::value == false &&
-                    (val->type() == typeid (std::string) ||
-                     val->type() == typeid (SafeAny::SimpleString)))
+                (val->type() == typeid (std::string) ))
             {
                 destination = convertFromString<T>(val->cast<std::string>());
             }
@@ -255,6 +254,7 @@ Result TreeNode::setOutput(const std::string& key, const T& value)
         remapped_key = stripBlackboardPointer(remapped_key);
     }
     const auto& key_str = remapped_key.to_string();
+
     config_.blackboard->set( key_str, value);
 
     return {};

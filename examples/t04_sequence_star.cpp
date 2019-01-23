@@ -8,7 +8,7 @@ using namespace BT;
 /** This tutorial will tech you:
  *
  *  - The difference between Sequence and SequenceStar
- *  - How to create and use a TreeNode with input ports
+ *  - How custom types may requires convertFromString<>() to be implemented.
  *  - How to create an asynchronous ActionNode (an action that is execute in
  *    its own thread).
 */
@@ -42,7 +42,7 @@ static const char* xml_text_sequence_star = R"(
             <TemperatureOK />
             <SaySomething   message="mission started..." />
             <MoveBase goal="1;2;3"/>
-            <SaySomething2  message="mission completed!" />
+            <SaySomething   message="mission completed!" />
         </SequenceStar>
      </BehaviorTree>
 
@@ -66,9 +66,6 @@ int main()
     factory.registerSimpleCondition("BatteryOK", std::bind(CheckTemperature));
     factory.registerNodeType<MoveBaseAction>("MoveBase");
     factory.registerNodeType<SaySomething>("SaySomething");
-
-    PortsList say_something_ports = {{"message", PortType::INPUT}};
-    factory.registerSimpleAction("SaySomething2", SaySomethingSimple, say_something_ports );
 
     // Compare the state transitions and messages using either
     // xml_text_sequence and xml_text_sequence_star
