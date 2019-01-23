@@ -1,19 +1,18 @@
 cmake_minimum_required(VERSION 2.8)
 
 
-# This tutorial demonstrates how to compile statically a tree (no factory)
-add_executable(t01_programmatic_tree         t01_programmatic_tree.cpp )
-target_link_libraries(t01_programmatic_tree  dummy_nodes ${BEHAVIOR_TREE_LIBRARY}  )
-
 # The plugin libdummy_nodes.so can be linked statically or
 # loaded dynamically at run-time.
-add_executable(t02_factory_static  t02_factory_tree.cpp )
-target_compile_definitions(t02_factory_static PRIVATE "MANUAL_STATIC_LINKING")
-target_link_libraries(t02_factory_static ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes )
+add_executable(t01_first_tree_static  t01_build_your_first_tree.cpp )
+target_compile_definitions(t01_first_tree_static PRIVATE "MANUAL_STATIC_LINKING")
+target_link_libraries(t01_first_tree_static ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes )
 
-add_executable(t02_factory_dynamic  t02_factory_tree.cpp )
-target_link_libraries(t02_factory_dynamic ${BEHAVIOR_TREE_LIBRARY}  )
+add_executable(t01_first_tree_dynamic  t01_build_your_first_tree.cpp )
+target_link_libraries(t01_first_tree_dynamic ${BEHAVIOR_TREE_LIBRARY}  )
 
+
+add_executable(t02_basic_ports  t02_basic_ports.cpp )
+target_link_libraries(t02_basic_ports ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )
 
 # This tutorial shows how the difference between Sequence and SequenceStar
 add_executable(t03_sequence_star        t03_sequence_star.cpp )
