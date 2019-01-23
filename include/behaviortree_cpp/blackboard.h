@@ -139,7 +139,7 @@ class Blackboard
 
             Any temp(value);
 
-            if( locked_type && locked_type != &typeid(T) && locked_type != &temp.type() )
+            if( locked_type && locked_type != &typeid(T) && locked_type != &temp.type() && !temp.isString()  )
             {
                 throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
                                   "Declared type [", demangle( locked_type ),

@@ -287,7 +287,13 @@ TEST(BlackboardTest, MoveVsCopy)
     RefCountClass other( blackboard->get<RefCountClass>("testmove") );
 
     ASSERT_EQ( test.refCount(), 3);
-
 }
 
+
+TEST(BlackboardTest, CheckTypeSafety)
+{
+    //TODO check type safety when ports are created.
+    // remember that std::string is considered a type erased type.
+
+}
 
