@@ -78,6 +78,10 @@ class Any
     {
     }
 
+    explicit Any(const SafeAny::SimpleString& str) : _any(str), _original_type( &typeid(std::string) )
+    {
+    }
+
     // all the other integrals are casted to int64_t
     template <typename T>
     explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( &typeid(T) )
@@ -102,6 +106,11 @@ class Any
         return _any.type() == typeid(int64_t) ||
                _any.type() == typeid(uint64_t) ||
                _any.type() == typeid(double);
+    }
+
+    bool isString() const
+    {
+        return _any.type() == typeid(SafeAny::SimpleString);
     }
 
     // this is different from any_cast, because if allows safe
