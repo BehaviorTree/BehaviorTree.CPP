@@ -24,8 +24,8 @@ static const char* xml_text_sequence = R"(
             <BatteryOK/>
             <TemperatureOK />
             <SaySomething   message="mission started..." />
-            <MoveBase goal="1;2;3"/>
-            <SaySomething2  message="mission completed!" />
+            <MoveBase       goal="1;2;3"/>
+            <SaySomething   message="mission completed!" />
         </Sequence>
      </BehaviorTree>
 
@@ -41,7 +41,7 @@ static const char* xml_text_sequence_star = R"(
             <BatteryOK/>
             <TemperatureOK />
             <SaySomething   message="mission started..." />
-            <MoveBase goal="1;2;3"/>
+            <MoveBase       goal="1;2;3"/>
             <SaySomething   message="mission completed!" />
         </SequenceStar>
      </BehaviorTree>
