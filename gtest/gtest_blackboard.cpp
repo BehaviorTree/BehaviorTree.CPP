@@ -227,8 +227,16 @@ class RefCountClass {
 
     RefCountClass(const RefCountClass &from) : sptr_(from.sptr_)
     {
-        std::cout<< "copy: ref_count " << sptr_.use_count() << std::endl;
+        std::cout<< "ctor copy: ref_count " << sptr_.use_count() << std::endl;
     }
+
+    RefCountClass& operator=(const RefCountClass &from)
+    {
+        sptr_ = (from.sptr_);
+        std::cout<< "equal copied: ref_count " << sptr_.use_count() << std::endl;
+        return *this;
+    }
+
     virtual ~RefCountClass() {
         std::cout<<("Destructor")<< std::endl;
     }
@@ -245,11 +253,18 @@ TEST(BlackboardTest, MoveVsCopy)
 
     RefCountClass test( std::make_shared<int>() );
 
+    ASSERT_EQ( test.refCount(), 1);
+
     std::cout<<("----- before set -----")<< std::endl;
     blackboard->set("testmove", test );
     std::cout<<(" ----- after set -----")<< std::endl;
 
     ASSERT_EQ( test.refCount(), 2);
+
+    RefCountClass other( blackboard->get<RefCountClass>("testmove") );
+
+    ASSERT_EQ( test.refCount(), 3);
+
 }
 
 

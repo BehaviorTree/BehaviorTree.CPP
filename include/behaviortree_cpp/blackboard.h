@@ -99,13 +99,15 @@ class Blackboard
     template <typename T>
     T get(const std::string& key) const
     {
-        T value;
-        bool found = get(key, value);
-        if (!found)
+        const Any* val = getAny(key);
+        if (val)
+        {
+            return val->cast<T>();
+        }
+        else
         {
             throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
         }
-        return value;
     }
 
 
