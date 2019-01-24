@@ -216,4 +216,22 @@ const std::type_info* PortInfo::type() const
     return _info;
 }
 
+Any PortInfo::parseString(const char *str) const
+{
+    if( _converter)
+    {
+        return _converter(str);
+    }
+    return {};
+}
+
+Any PortInfo::parseString(const std::string &str) const
+{
+    if( _converter)
+    {
+        return _converter(str);
+    }
+    return {};
+}
+
 }   // end namespace

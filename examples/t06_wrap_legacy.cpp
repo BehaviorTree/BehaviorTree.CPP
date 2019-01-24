@@ -82,7 +82,9 @@ int main()
 
     BehaviorTreeFactory factory;
     // Register the lambda with BehaviorTreeFactory::registerSimpleAction
-    factory.registerSimpleAction("MoveTo", MoveToWrapperWithLambda);
+
+    PortsList ports = { BT::InputPort<Point3D>("goal") };
+    factory.registerSimpleAction("MoveTo", MoveToWrapperWithLambda, ports );
 
     auto tree = factory.createTreeFromText(xml_text);
 
