@@ -267,12 +267,12 @@ void assignDefaultRemapping(NodeConfiguration& config)
     for(const auto& it: getProvidedPorts<T>() )
     {
           const auto& port_name = it.first;
-          const auto port_type = it.second.type();
-          if( port_type != PortType::OUTPUT )
+          const auto direction = it.second.direction();
+          if( direction != PortDirection::OUTPUT )
           {
               config.input_ports[port_name] = "=";
           }
-          if( port_type != PortType::INPUT )
+          if( direction != PortDirection::INPUT )
           {
               config.output_ports[port_name] = "=";
           }

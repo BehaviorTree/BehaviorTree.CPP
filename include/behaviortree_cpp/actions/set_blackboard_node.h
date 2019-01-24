@@ -38,7 +38,7 @@ class SetBlackboard : public SyncActionNode
 
     static const PortsList& providedPorts()
     {
-        static PortsList ports = {{"value", PortType::INPUT}, {"output_key", PortType::INOUT} };
+        static PortsList ports = {{"value", PortDirection::INPUT}, {"output_key", PortDirection::INOUT} };
         return ports;
     }
 

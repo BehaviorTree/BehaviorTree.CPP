@@ -184,16 +184,9 @@ public:
     Tree createTreeFromFile(const std::string& file_path,
                             Blackboard::Ptr blackboard = Blackboard::create());
 
-    template <typename T>
-    void registerCustomType()
-    {
-        string_converters_.emplace( &typeid(T), GetAnyFromStringFunctor<T>() );
-    }
-
 private:
     std::unordered_map<std::string, NodeBuilder> builders_;
     std::unordered_map<std::string, TreeNodeManifest> manifests_;
-    StringConvertersMap string_converters_;
     std::set<std::string> builtin_IDs_;
 
     // template specialization = SFINAE + black magic

@@ -67,7 +67,7 @@ int main()
     // SimpleActionNodes can not define their own method providedPorts(), therefore
     // we have to pass the PortsList explicitly if we want the Action to use getInput()
     // or setOutput();
-    PortsList say_something_ports = {{"message", PortType::INPUT}};
+    PortsList say_something_ports = { InputPort<std::string>("message") };
     factory.registerSimpleAction("SaySomething2", SaySomethingSimple, say_something_ports );
 
     /* An INPUT can be either be a string, for instance:
