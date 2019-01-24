@@ -194,12 +194,14 @@ public:
 
     const std::type_info* type() const;
 
-    Any parseString(StringView str) const
+    Any parseString(const char *str) const;
+
+    Any parseString(const std::string& str) const;
+
+    template <typename T>
+    Any parseString(const T& ) const
     {
-        if( _converter)
-        {
-            return _converter(str);
-        }
+        // avoid compilation errors
         return {};
     }
 

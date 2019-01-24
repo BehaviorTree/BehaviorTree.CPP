@@ -151,12 +151,21 @@ class Blackboard
 
             if( locked_type && locked_type != &typeid(T) && locked_type != &temp.type() )
             {
-                if( std::is_convertible<T,StringView>::value )
+                bool mismatching = true;
+                if( std::is_constructible<StringView, T>::value )
                 {
-                    throw LogicError("one day I will be able to convert this...");
+                    Any any_from_string = port_info.parseString( value );
+                    if( any_from_string.empty() == false)
+                    {
+                        mismatching = false;
+                        temp = std::move( any_from_string );
+                    }
                 }
-                else
+
+                if( mismatching )
                 {
+                    debugMessage();
+
                     throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
                                      "Declared type [", demangle( locked_type ),
                                      "] != current type [", demangle( typeid(T) ),"]" );

@@ -292,5 +292,10 @@ TEST(BlackboardTest, CheckTypeSafety)
     //TODO check type safety when ports are created.
     // remember that std::string is considered a type erased type.
 
+    bool is = std::is_constructible<BT::StringView, char*>::value;
+    ASSERT_TRUE( is );
+
+    is = std::is_constructible<BT::StringView, std::string>::value;
+    ASSERT_TRUE( is );
 }
 
