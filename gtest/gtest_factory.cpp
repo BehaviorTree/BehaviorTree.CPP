@@ -227,28 +227,30 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
     auto main_bb = tree.blackboard_stack.at(0);
     auto talk_bb = tree.blackboard_stack.at(1);
 
-    ASSERT_EQ( main_bb->portType("talk_hello"), &typeid(std::string) );
-    ASSERT_EQ( main_bb->portType("talk_bye"),   &typeid(std::string) );
-    ASSERT_EQ( main_bb->portType("talk_out"),   &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_hello")->type(), &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_bye")->type(),   &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_out")->type(),   &typeid(std::string) );
 
-    ASSERT_EQ( talk_bb->portType("bye_msg"),   &typeid(std::string) );
-    ASSERT_EQ( talk_bb->portType("hello_msg"), &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portInfo("bye_msg")->type(),   &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portInfo("hello_msg")->type(), &typeid(std::string) );
 
     // Should not throw
     tree.root_node->executeTick();
-
-    ASSERT_EQ( main_bb->portType("talk_hello"), &typeid(std::string) );
-    ASSERT_EQ( main_bb->portType("talk_bye"),   &typeid(std::string) );
-    ASSERT_EQ( main_bb->portType("talk_out"),   &typeid(std::string) );
-
-    ASSERT_EQ( talk_bb->portType("bye_msg"),   &typeid(std::string) );
-    ASSERT_EQ( talk_bb->portType("hello_msg"), &typeid(std::string) );
-    ASSERT_EQ( talk_bb->portType("output"),    &typeid(std::string) );
 
     std::cout << "\n --------------------------------- \n" << std::endl;
     main_bb->debugMessage();
     std::cout << "\n ----- \n" << std::endl;
     talk_bb->debugMessage();
+    std::cout << "\n --------------------------------- \n" << std::endl;
+
+    ASSERT_EQ( main_bb->portInfo("talk_hello")->type(), &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_bye")->type(),   &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_out")->type(),   &typeid(std::string) );
+
+    ASSERT_EQ( talk_bb->portInfo("bye_msg")->type(),   &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portInfo("hello_msg")->type(), &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portInfo("output")->type(),    &typeid(std::string) );
+
 
     ASSERT_EQ( main_bb->get<std::string>("talk_hello"), "hello");
     ASSERT_EQ( main_bb->get<std::string>("talk_bye"), "bye bye");

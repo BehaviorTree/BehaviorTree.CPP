@@ -9,6 +9,7 @@
 #include <mutex>
 #include <sstream>
 
+#include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
 
@@ -123,39 +124,55 @@ class Blackboard
             auto remapping_it = internal_to_external_.find(key);
             if( remapping_it != internal_to_external_.end())
             {
-                if( it == storage_.end() )
+                const auto& remapped_key = remapping_it->second;
+                if( it == storage_.end() ) // virgin entry
                 {
-                    storage_.insert( {key, Entry( &typeid(T) ) } );
+                    auto parent_info = parent->portInfo(remapped_key);
+                    if( parent_info )
+                    {
+                        storage_.insert( {key, Entry( *parent_info ) } );
+                    }
+                    else{
+                        storage_.insert( {key, Entry( PortInfo() ) } );
+                    }
                 }
-                parent->set( remapping_it->second, value );
+                parent->set( remapped_key, value );
                 return;
             }
         }
 
         if( it != storage_.end() ) // already there. check the type
         {
+            const PortInfo& port_info = it->second.port_info;
             auto& previous_any = it->second.value;
-            const auto locked_type = it->second.locked_port_type;
+            const auto locked_type = port_info.type();
 
             Any temp(value);
 
-            if( locked_type && locked_type != &typeid(T) && locked_type != &temp.type() && !temp.isString()  )
+            if( locked_type && locked_type != &typeid(T) && locked_type != &temp.type() )
             {
-                throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                                  "Declared type [", demangle( locked_type ),
-                                  "] != current type [", demangle( typeid(T) ),"]" );
+                if( std::is_convertible<T,StringView>::value )
+                {
+                    throw LogicError("one day I will be able to convert this...");
+                }
+                else
+                {
+                    throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
+                                     "Declared type [", demangle( locked_type ),
+                                     "] != current type [", demangle( typeid(T) ),"]" );
+                }
             }
             previous_any = std::move(temp);
         }
-        else{ // create for the first time without type_lock
-            storage_.emplace( key, Entry( Any(value) ) );
+        else{ // create for the first time without any info
+            storage_.emplace( key, Entry( Any(value), PortInfo() ) );
         }
         return;
     }
 
-    void setPortType(std::string key, const std::type_info* new_type);
+    void setPortInfo(std::string key, const PortInfo& info);
 
-    const std::type_info* portType(const std::string& key);
+    const PortInfo *portInfo(const std::string& key);
 
     void addSubtreeRemapping(std::string internal, std::string external);
 
@@ -165,21 +182,16 @@ class Blackboard
 
     struct Entry{
         Any value;
-        const std::type_info* locked_port_type;
+        const PortInfo port_info;
 
-        Entry(const std::type_info* type = nullptr):
-          locked_port_type(type)
+        Entry( const PortInfo& info ):
+          port_info(info)
         {}
 
-        Entry(Any&& other_any, const std::type_info* type = nullptr):
+        Entry(Any&& other_any, const PortInfo& info):
           value(std::move(other_any)),
-          locked_port_type(type)
+          port_info(info)
         {}
-
-//        Entry(Entry&& other):
-//          value( std::move(other.value) ),
-//          locked_port_type( other.locked_port_type )
-//        {}
     };
 
     mutable std::mutex mutex_;

@@ -65,9 +65,6 @@ int main()
     factory.registerNodeType<CalculateGoalPose>("CalculateGoalPose");
     factory.registerNodeType<MoveBaseAction>("MoveBase");
 
-    // It is recommended to register the type to allow automatic conversions.
-    factory.registerCustomType<Pose2D>();
-
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
     auto tree = factory.createTreeFromText(xml_text);
 

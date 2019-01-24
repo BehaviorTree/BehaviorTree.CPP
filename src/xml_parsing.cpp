@@ -44,7 +44,7 @@ struct XMLParser::Pimpl
 
     void verifyXML(const XMLDocument* doc) const;
 
-    std::list< std::unique_ptr<XMLDocument>> opened_documents;
+    std::list< std::unique_ptr<XMLDocument> > opened_documents;
     std::unordered_map<std::string,const XMLElement*>  tree_roots;
 
     const BehaviorTreeFactory& factory;
@@ -465,13 +465,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         for(const auto& port_it: manifest.ports)
         {
             const std::string& port_name = port_it.first;
-            const auto& port = port_it.second;
+            const auto& port_info = port_it.second;
 
-            // type is currently optional. just skip if unspecified
-            if( port.info() == nullptr )
-            {
-                continue;
-            }
             auto remap_it = remapping_parameters.find(port_name);
             if( remap_it == remapping_parameters.end())
             {
@@ -483,19 +478,22 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             {
                 const auto& port_key = remapped_res.value().to_string();
 
-                auto prev_type = blackboard->portType( port_key );
-                if( !prev_type && port.info() )
+                auto prev_info = blackboard->portInfo( port_key );
+                if( !prev_info  )
                 {
-                    // not found, insert
-                    blackboard->setPortType( port_key, port.info() );
+                    // not found, insert for the first time.
+                    blackboard->setPortInfo( port_key, port_info );
                 }
                 else{
                     // found. check consistency
-                    if( prev_type != port.info())
+                    if( prev_info->type() && port_info.type()  && // null type means that everything is valid
+                        prev_info->type()!= port_info.type())
                     {
+                        blackboard->debugMessage();
+
                         throw RuntimeError( "The creation of the tree failed because the port [", port_key,
-                                           "] was initially created with type [", demangle( prev_type ),
-                                           "] and, later type [", demangle( port.info() ),
+                                           "] was initially created with type [", demangle( prev_info->type() ),
+                                           "] and, later type [", demangle( port_info.type() ),
                                            "] was used somewhere else." );
                     }
                 }
@@ -509,12 +507,12 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             auto port_it = manifest.ports.find( port_name );
             if( port_it != manifest.ports.end() )
             {
-                auto port_type = port_it->second.type();
-                if( port_type != PortType::OUTPUT )
+                auto direction = port_it->second.direction();
+                if( direction != PortDirection::OUTPUT )
                 {
                     config.input_ports.insert( remap_it );
                 }
-                if( port_type != PortType::INPUT )
+                if( direction != PortDirection::INPUT )
                 {
                     config.output_ports.insert( remap_it );
                 }
@@ -696,13 +694,13 @@ std::string writeXML(const BehaviorTreeFactory& factory,
 
         for (auto& port : model.ports)
         {
-            const auto type = port.second;
+            const auto& port_info = port.second;
             std::string *str;
-            switch( type.type() )
+            switch( port_info.direction() )
             {
-                case PortType::INPUT:  str = &in_ports_list; break;
-                case PortType::OUTPUT: str = &out_ports_list; break;
-                case PortType::INOUT:  str = &inout_ports_list; break;
+                case PortDirection::INPUT:  str = &in_ports_list; break;
+                case PortDirection::OUTPUT: str = &out_ports_list; break;
+                case PortDirection::INOUT:  str = &inout_ports_list; break;
             }
             *str += port.first;
             str->append(";");

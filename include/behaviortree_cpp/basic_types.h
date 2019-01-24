@@ -1,4 +1,4 @@
-#ifndef BT_BASIC_TYPES_H
+ #ifndef BT_BASIC_TYPES_H
 #define BT_BASIC_TYPES_H
 
 #include <iostream>
@@ -134,84 +134,6 @@ using enable_if = typename std::enable_if< Predicate::value >::type*;
 template <typename Predicate>
 using enable_if_not = typename std::enable_if< !Predicate::value >::type*;
 
-enum class PortType{INPUT, OUTPUT, INOUT };
-
-class PortInfo
-{
-
-public:
-    PortInfo( PortType direction ):
-        _type(direction), _info(nullptr) {}
-
-    PortInfo( PortType direction,
-              const std::type_info& type_info,
-              StringConverter conv):
-        _type(direction),
-        _info( &type_info ),
-        _converter(conv)
-    {}
-
-    PortType type() const;
-
-    const std::type_info* info() const;
-
-    StringConverter stringConverter() const { return _converter; }
-
-private:
-
-    PortType _type;
-    const std::type_info* _info;
-    StringConverter _converter;
-};
-
-template <typename T = void>
-std::pair<std::string,PortInfo> InputPort(std::string name)
-{
-    if( std::is_same<T, void>::value)
-    {
-        return  {std::move(name), PortInfo(PortType::INPUT) };
-    }
-    return {std::move(name), PortInfo(PortType::INPUT, typeid(T),
-                                      GetAnyFromStringFunctor<T>() ) };
-}
-
-template <typename T = void>
-std::pair<std::string,PortInfo> OutputPort(std::string name)
-{
-    if( std::is_same<T, void>::value)
-    {
-        return  {std::move(name), PortInfo(PortType::OUTPUT) };
-    }
-    return {std::move(name), PortInfo(PortType::OUTPUT, typeid(T),
-                                      GetAnyFromStringFunctor<T>() ) };
-}
-
-
-typedef std::unordered_map<std::string, PortInfo> PortsList;
-
-template <typename T, typename = void>
-struct has_static_method_providedPorts: std::false_type {};
-
-template <typename T>
-struct has_static_method_providedPorts<T,
-        typename std::enable_if<std::is_same<decltype(T::providedPorts()), const PortsList&>::value>::type>
-    : std::true_type {};
-
-template <typename T> inline
-PortsList getProvidedPorts(enable_if< has_static_method_providedPorts<T> > = nullptr)
-{
-    return T::providedPorts();
-}
-
-template <typename T> inline
-PortsList getProvidedPorts(enable_if_not< has_static_method_providedPorts<T> > = nullptr)
-{
-    return {};
-}
-
-typedef std::chrono::high_resolution_clock::time_point TimePoint;
-typedef std::chrono::high_resolution_clock::duration Duration;
-
 
 /** Usage: given a function/method like:
  *
@@ -250,6 +172,94 @@ template <typename T> using Optional = nonstd::expected<T, std::string>;
  *
  * */
 using Result = Optional<void>;
+
+enum class PortDirection{INPUT, OUTPUT, INOUT };
+
+class PortInfo
+{
+
+public:
+  PortInfo( PortDirection direction = PortDirection::INOUT  ):
+        _type(direction), _info(nullptr) {}
+
+    PortInfo( PortDirection direction,
+              const std::type_info& type_info,
+              StringConverter conv):
+        _type(direction),
+        _info( &type_info ),
+        _converter(conv)
+    {}
+
+    PortDirection direction() const;
+
+    const std::type_info* type() const;
+
+    Any parseString(StringView str) const
+    {
+        if( _converter)
+        {
+            return _converter(str);
+        }
+        return {};
+    }
+
+private:
+
+    PortDirection _type;
+    const std::type_info* _info;
+    StringConverter _converter;
+};
+
+template <typename T = void>
+std::pair<std::string,PortInfo> InputPort(std::string name)
+{
+    if( std::is_same<T, void>::value)
+    {
+        return  {std::move(name), PortInfo(PortDirection::INPUT) };
+    }
+    return {std::move(name), PortInfo(PortDirection::INPUT, typeid(T),
+                                      GetAnyFromStringFunctor<T>() ) };
+}
+
+template <typename T = void>
+std::pair<std::string,PortInfo> OutputPort(std::string name)
+{
+    if( std::is_same<T, void>::value)
+    {
+        return  {std::move(name), PortInfo(PortDirection::OUTPUT) };
+    }
+    return {std::move(name), PortInfo(PortDirection::OUTPUT, typeid(T),
+                                      GetAnyFromStringFunctor<T>() ) };
+}
+
+
+typedef std::unordered_map<std::string, PortInfo> PortsList;
+
+template <typename T, typename = void>
+struct has_static_method_providedPorts: std::false_type {};
+
+template <typename T>
+struct has_static_method_providedPorts<T,
+        typename std::enable_if<std::is_same<decltype(T::providedPorts()), const PortsList&>::value>::type>
+    : std::true_type {};
+
+template <typename T> inline
+PortsList getProvidedPorts(enable_if< has_static_method_providedPorts<T> > = nullptr)
+{
+    return T::providedPorts();
+}
+
+template <typename T> inline
+PortsList getProvidedPorts(enable_if_not< has_static_method_providedPorts<T> > = nullptr)
+{
+    return {};
+}
+
+typedef std::chrono::high_resolution_clock::time_point TimePoint;
+typedef std::chrono::high_resolution_clock::duration Duration;
+
+
+
 
 } // end namespace
 
