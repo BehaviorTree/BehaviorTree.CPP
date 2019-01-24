@@ -16,7 +16,8 @@ const std::string xml_text = R"(
 
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <SayHello       name="action_hello"/>
+            <ApproachObject name="approach"/>
+            <CheckBattery   name="open_ok"/>
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>
             <CloseGripper   name="close_gripper"/>
@@ -48,20 +49,18 @@ int main()
 
     using namespace DummyNodes;
 
+    // The recommended way to create node is through inheritance, though.
+    // Even if it is more boilerplate, it allows you to use more functionalities
+    // (we will discuss this in future tutorials).
+    factory.registerNodeType<ApproachObject>("ApproachObject");
+
     // Registering a SimpleActionNode using a simple fucntion pointer
-    factory.registerSimpleAction("SayHello", std::bind(SayHello));
     factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
-    factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
 
     //You can also create SimpleActionNodes using methods of a class
     GripperInterface gripper;
     factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &gripper));
     factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &gripper));
-
-    // The recommended way to create node is through inheritance, though.
-    // Even if it is more boilerplate, it allows you to use more functionalities
-    // (we will discuss this in future tutorials).
-    factory.registerNodeType<ApproachObject>("ApproachObject");
 
 #else
     // Load dynamically a plugin and register the TreeNodes it contains
@@ -78,3 +77,11 @@ int main()
 
     return 0;
 }
+
+/* Expected output:
+*
+       [ Battery: OK ]
+       GripperInterface::open
+       ApproachObject: approach_object
+       GripperInterface::close
+*/

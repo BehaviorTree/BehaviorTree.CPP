@@ -70,7 +70,7 @@ int main()
     PortsList say_something_ports = { InputPort<std::string>("message") };
     factory.registerSimpleAction("SaySomething2", SaySomethingSimple, say_something_ports );
 
-    /* An INPUT can be either be a string, for instance:
+    /* An INPUT can be either a string, for instance:
      *
      *     <SaySomething message="start thinking..." />
      *

@@ -9,21 +9,10 @@ BT_REGISTER_NODES(factory)
 
 namespace DummyNodes
 {
-BT::NodeStatus SayHello()
-{
-    std::cout << "Robot says: \"Hello!!!\"" << std::endl;
-    return BT::NodeStatus::SUCCESS;
-}
 
 BT::NodeStatus CheckBattery()
 {
     std::cout << "[ Battery: OK ]" << std::endl;
-    return BT::NodeStatus::SUCCESS;
-}
-
-BT::NodeStatus CheckTemperature()
-{
-    std::cout << "[ Temperature: OK ]" << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
 

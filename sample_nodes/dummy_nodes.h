@@ -10,8 +10,6 @@ BT::NodeStatus SayHello();
 
 BT::NodeStatus CheckBattery();
 
-BT::NodeStatus CheckTemperature();
-
 class GripperInterface
 {
   public:
@@ -70,12 +68,11 @@ BT::NodeStatus SaySomethingSimple(BT::TreeNode& self);
 
 inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
 {
-    static GripperInterface gi;
-    factory.registerSimpleAction("SayHello", std::bind(SayHello));
+    static GripperInterface grip_singleton;
+
     factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
-    factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
-    factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &gi));
-    factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &gi));
+    factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &grip_singleton));
+    factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &grip_singleton));
     factory.registerNodeType<ApproachObject>("ApproachObject");
     factory.registerNodeType<SaySomething>("SaySomething");
 }
