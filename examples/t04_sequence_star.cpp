@@ -22,7 +22,6 @@ static const char* xml_text_sequence = R"(
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
             <BatteryOK/>
-            <TemperatureOK />
             <SaySomething   message="mission started..." />
             <MoveBase       goal="1;2;3"/>
             <SaySomething   message="mission completed!" />
@@ -39,7 +38,6 @@ static const char* xml_text_sequence_star = R"(
      <BehaviorTree ID="MainTree">
         <SequenceStar name="root">
             <BatteryOK/>
-            <TemperatureOK />
             <SaySomething   message="mission started..." />
             <MoveBase       goal="1;2;3"/>
             <SaySomething   message="mission completed!" />
@@ -62,8 +60,7 @@ int main()
     using namespace DummyNodes;
 
     BehaviorTreeFactory factory;
-    factory.registerSimpleCondition("TemperatureOK", std::bind(CheckBattery));
-    factory.registerSimpleCondition("BatteryOK", std::bind(CheckTemperature));
+    factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
     factory.registerNodeType<MoveBaseAction>("MoveBase");
     factory.registerNodeType<SaySomething>("SaySomething");
 
@@ -107,18 +104,15 @@ int main()
 ------------ BUILDING A NEW TREE ------------
 
 --- 1st executeTick() ---
-[ Temperature: OK ]
 [ Battery: OK ]
 Robot says: "mission started..."
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
 
 --- 2nd executeTick() ---
-[ Temperature: OK ]
 [ Battery: OK ]
 [ MoveBase: FINISHED ]
 
 --- 3rd executeTick() ---
-[ Temperature: OK ]
 [ Battery: OK ]
 Robot says: "mission completed!"
 
@@ -126,7 +120,6 @@ Robot says: "mission completed!"
 ------------ BUILDING A NEW TREE ------------
 
 --- 1st executeTick() ---
-[ Temperature: OK ]
 [ Battery: OK ]
 Robot says: "mission started..."
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
