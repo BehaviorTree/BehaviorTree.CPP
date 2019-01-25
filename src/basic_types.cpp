@@ -234,4 +234,15 @@ Any PortInfo::parseString(const std::string &str) const
     return {};
 }
 
+void PortInfo::setDescription(StringView description)
+{
+    description_ = description.to_string();
+}
+
+const std::string &PortInfo::description()
+{
+    return  description_;
+}
+
+
 }   // end namespace

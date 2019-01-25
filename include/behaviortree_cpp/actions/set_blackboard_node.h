@@ -38,7 +38,8 @@ class SetBlackboard : public SyncActionNode
 
     static PortsList providedPorts()
     {
-        return {{"value", PortDirection::INPUT}, {"output_key", PortDirection::INOUT} };
+        return { InputPort("value", "Value represented as a string. convertFromString must be implemented."),
+                 BidirectionalPort("output_key" "Name of the blackboard entry where the value should be written") };
     }
 
   private:

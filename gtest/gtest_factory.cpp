@@ -227,6 +227,12 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
     auto main_bb = tree.blackboard_stack.at(0);
     auto talk_bb = tree.blackboard_stack.at(1);
 
+    std::cout << "\n --------------------------------- \n" << std::endl;
+    main_bb->debugMessage();
+    std::cout << "\n ----- \n" << std::endl;
+    talk_bb->debugMessage();
+    std::cout << "\n --------------------------------- \n" << std::endl;
+
     ASSERT_EQ( main_bb->portInfo("talk_hello")->type(), &typeid(std::string) );
     ASSERT_EQ( main_bb->portInfo("talk_bye")->type(),   &typeid(std::string) );
     ASSERT_EQ( main_bb->portInfo("talk_out")->type(),   &typeid(std::string) );

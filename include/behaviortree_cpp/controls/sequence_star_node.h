@@ -46,7 +46,8 @@ class SequenceStarNode : public ControlNode
 
     static PortsList providedPorts()
     {
-        return { InputPort<bool>(RESET_PARAM) };
+        return { InputPort<bool>(RESET_PARAM, "If true, a failed child will reset "
+                                              "the index of the sequence to 0.") };
     }
 
   private:
