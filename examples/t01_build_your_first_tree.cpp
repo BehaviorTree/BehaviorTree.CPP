@@ -9,6 +9,15 @@
 
 using namespace BT;
 
+/** Behavior Tree are used to create a logic to decide what
+ * to "do". For this reason the main important building blocks are
+ * Actions and Conditions.
+ *
+ * In this tutorial we will learn how to create custom ActionNodes.
+ * It is important to remmebr that NodeTree are just a way to
+ * invoke callbacks. The latters are written by the user.
+ */
+
 // clang-format off
 const std::string xml_text = R"(
 
@@ -17,7 +26,7 @@ const std::string xml_text = R"(
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
             <ApproachObject name="approach"/>
-            <CheckBattery   name="open_ok"/>
+            <CheckBattery   name="battery_ok"/>
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>
             <CloseGripper   name="close_gripper"/>
@@ -31,15 +40,11 @@ const std::string xml_text = R"(
 
 int main()
 {
-    /* In this example we build a tree at run-time.
-     * The tree is defined using an XML (see xml_text).
-     * To achieve this, we must first register our TreeNodes into
-     * a BehaviorTreeFactory.
-     */
+    // We use the BehaviorTreeFactory to register our custom nodes
     BehaviorTreeFactory factory;
 
     /* There are two ways to register nodes:
-    *    - statically, including directly DummyNodes.
+    *    - statically, i.e. registering all the nodes one by one.
     *    - dynamically, loading the TreeNodes from a shared library (plugin).
     * */
 
@@ -49,12 +54,13 @@ int main()
 
     using namespace DummyNodes;
 
-    // The recommended way to create node is through inheritance, though.
-    // Even if it is more boilerplate, it allows you to use more functionalities
-    // (we will discuss this in future tutorials).
+    // The recommended way to create a Node is through inheritance.
+    // Even if it requires more boilerplate, it allows you to use more functionalities
+    // like ports (we will discuss this in future tutorials).
     factory.registerNodeType<ApproachObject>("ApproachObject");
 
-    // Registering a SimpleActionNode using a simple fucntion pointer
+    // Registering a SimpleActionNode using a function pointer.
+    // you may also use C++11 lambdas instead of std::bind
     factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
 
     //You can also create SimpleActionNodes using methods of a class
@@ -64,15 +70,19 @@ int main()
 
 #else
     // Load dynamically a plugin and register the TreeNodes it contains
+    // it automated the registering step.
     factory.registerFromPlugin("./libdummy_nodes.so");
 #endif
 
+    // Trees are created at deployment-time (i.e. at run-time, but only once at the beginning).
+    // The currently supported format is XML.
     // IMPORTANT: when the object "tree" goes out of scope, all the TreeNodes are destroyed
     auto tree = factory.createTreeFromText(xml_text);
 
-    // The tick is propagated to all the children.
-    // until one of the returns FAILURE or RUNNING.
-    // In this case it will return SUCCESS
+    // To "execute" a Tree you need to "tick" it.
+    // The tick is propagated to the children based on the logic of the tree.
+    // In this case the entire sequence is executed, because all the children
+    // of the Sequence return SUCCESS.
     tree.root_node->executeTick();
 
     return 0;
