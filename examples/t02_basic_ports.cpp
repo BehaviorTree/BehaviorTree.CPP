@@ -1,4 +1,4 @@
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 #include "dummy_nodes.h"
 #include "movebase_node.h"

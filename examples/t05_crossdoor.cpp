@@ -1,13 +1,25 @@
 #include "crossdoor_nodes.h"
-#include "behaviortree_cpp/xml_parsing.h"
+
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 #include "behaviortree_cpp/loggers/bt_file_logger.h"
-#include "behaviortree_cpp/blackboard.h"
+
+#include "behaviortree_cpp/bt_factory.h"
 
 #ifdef ZMQ_FOUND
 #include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
 #endif
+
+/** This is a more complex example that use also FallbackNode,
+ * decorators and Subtrees
+ *
+ * For the sake of simplicity, we didn't focus on ports remapping
+ * in this example.
+ *
+ * Furthermore, we introduce Loggers, which are a mechanism to
+ * trace the state transitions in the tree for debugging purposes.
+ */
+
 
 // clang-format off
 
