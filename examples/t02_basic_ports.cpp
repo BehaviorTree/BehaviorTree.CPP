@@ -6,6 +6,23 @@
 using namespace BT;
 
 /** This tutorial will teach you how basic input/output ports work.
+ *
+ * Ports are a mechanism to exchange information between Nodes using
+ * a key/value storage called "Blackboard".
+ * The type and number of ports of a Node is statically defined.
+ *
+ * Input Ports are like "argument" of a functions.
+ * Output ports conceptually resemble "return values".
+ *
+ * In this example, a Sequence of 5 Actions is executed:
+ *
+ *   - Actions 1 and 4 read the input "message" from a static string.
+ *
+ *   - Actions 3 and 5 read the input "message" from an entry in the
+ *     blackboard called "the answer".
+ *
+ *   - Action 2 writes something into the entry of the blackboard
+ *     called "the answer".
 */
 
 // clang-format off
@@ -27,6 +44,7 @@ static const char* xml_text = R"(
  )";
 // clang-format on
 
+
 class ThinkWhatToSay : public BT::SyncActionNode
 {
   public:
@@ -35,12 +53,14 @@ class ThinkWhatToSay : public BT::SyncActionNode
     {
     }
 
+    // This Action simply write a value in the port "text"
     BT::NodeStatus tick() override
     {
         setOutput("text", "The answer is 42" );
         return BT::NodeStatus::SUCCESS;
     }
 
+    // A node having ports must implement this static method
     static const BT::PortsList& providedPorts()
     {
         static BT::PortsList ports = { BT::OutputPort<std::string>("text") };
