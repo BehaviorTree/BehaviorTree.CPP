@@ -45,7 +45,7 @@ class RetryNode : public DecoratorNode
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>(NUM_ATTEMPTS) };
+        return { InputPort<unsigned>(NUM_ATTEMPTS, "Execute again a failing child up to N times") };
     }
 
     virtual void halt() override;

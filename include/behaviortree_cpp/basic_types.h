@@ -205,33 +205,57 @@ public:
         return {};
     }
 
+    void setDescription(StringView description);
+
+    const std::string& description() ;
+
 private:
 
     PortDirection _type;
     const std::type_info* _info;
     StringConverter _converter;
+    std::string description_;
 };
 
 template <typename T = void>
-std::pair<std::string,PortInfo> InputPort(std::string name)
+std::pair<std::string,PortInfo> CreatePort(PortDirection direction,
+                                           StringView name,
+                                           StringView description = {})
 {
+    std::pair<std::string,PortInfo> out;
+
     if( std::is_same<T, void>::value)
     {
-        return  {std::move(name), PortInfo(PortDirection::INPUT) };
+        out = {name.to_string(), PortInfo(direction) };
     }
-    return {std::move(name), PortInfo(PortDirection::INPUT, typeid(T),
-                                      GetAnyFromStringFunctor<T>() ) };
+    else{
+        out =  {name.to_string(), PortInfo(direction, typeid(T),
+                                          GetAnyFromStringFunctor<T>() ) };
+    }
+    if( !description.empty() )
+    {
+        out.second.setDescription(description);
+    }
+    return out;
 }
 
-template <typename T = void>
-std::pair<std::string,PortInfo> OutputPort(std::string name)
+
+template <typename T = void> inline
+std::pair<std::string,PortInfo> InputPort(StringView name, StringView description = {})
 {
-    if( std::is_same<T, void>::value)
-    {
-        return  {std::move(name), PortInfo(PortDirection::OUTPUT) };
-    }
-    return {std::move(name), PortInfo(PortDirection::OUTPUT, typeid(T),
-                                      GetAnyFromStringFunctor<T>() ) };
+    return CreatePort<T>(PortDirection::INPUT, name, description );
+}
+
+template <typename T = void> inline
+std::pair<std::string,PortInfo> OutputPort(StringView name, StringView description = {})
+{
+    return CreatePort<T>(PortDirection::OUTPUT, name, description );
+}
+
+template <typename T = void> inline
+std::pair<std::string,PortInfo> BidirectionalPort(StringView name, StringView description = {})
+{
+    return CreatePort<T>(PortDirection::INOUT, name, description );
 }
 
 

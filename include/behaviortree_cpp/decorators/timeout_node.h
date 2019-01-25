@@ -29,7 +29,8 @@ class TimeoutNode : public DecoratorNode
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>("msec") };
+        return { InputPort<unsigned>("msec", "After a certain amount of time, "
+                                             "halt() the child if it is still running.") };
     }
 
   private:
