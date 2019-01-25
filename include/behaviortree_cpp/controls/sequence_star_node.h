@@ -44,10 +44,9 @@ class SequenceStarNode : public ControlNode
 
     virtual void halt() override;
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = { InputPort<bool>(RESET_PARAM) };
-        return ports;
+        return { InputPort<bool>(RESET_PARAM) };
     }
 
   private:

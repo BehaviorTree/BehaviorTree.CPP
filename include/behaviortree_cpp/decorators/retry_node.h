@@ -43,10 +43,9 @@ class RetryNode : public DecoratorNode
 
     virtual ~RetryNode() override = default;
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = { InputPort<unsigned>(NUM_ATTEMPTS) };
-        return ports;
+        return { InputPort<unsigned>(NUM_ATTEMPTS) };
     }
 
     virtual void halt() override;

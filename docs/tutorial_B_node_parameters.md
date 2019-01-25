@@ -49,7 +49,7 @@ public:
         SyncActionNode(name, config) {}
 
     // It is mandatory to define this static method.
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
         static PortsList ports = {{"message","default message"}};
         return ports;

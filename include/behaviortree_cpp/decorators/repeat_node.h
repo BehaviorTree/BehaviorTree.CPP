@@ -43,10 +43,9 @@ class RepeatNode : public DecoratorNode
 
     virtual ~RepeatNode() override = default;
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = { InputPort<unsigned>(NUM_CYCLES) };
-        return ports;
+        return { InputPort<unsigned>(NUM_CYCLES) };
     }
 
   private:

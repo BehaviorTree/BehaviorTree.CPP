@@ -242,7 +242,7 @@ struct has_static_method_providedPorts: std::false_type {};
 
 template <typename T>
 struct has_static_method_providedPorts<T,
-        typename std::enable_if<std::is_same<decltype(T::providedPorts()), const PortsList&>::value>::type>
+        typename std::enable_if<std::is_same<decltype(T::providedPorts()), PortsList>::value>::type>
     : std::true_type {};
 
 template <typename T> inline

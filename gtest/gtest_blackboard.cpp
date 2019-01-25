@@ -43,11 +43,10 @@ class BB_TestNode: public SyncActionNode
         return NodeStatus::SUCCESS;
     }
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = { BT::InputPort<int>("in_port"),
-                                   BT::OutputPort<int>("out_port") };
-        return ports;
+        return { BT::InputPort<int>("in_port"),
+                 BT::OutputPort<int>("out_port") };
     }
 };
 
@@ -64,16 +63,15 @@ class BB_TypedTestNode: public SyncActionNode
         return NodeStatus::SUCCESS;
     }
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = { BT::InputPort("input"),
-                                   BT::InputPort<int>("input_int"),
-                                   BT::InputPort<std::string>("input_string"),
+        return { BT::InputPort("input"),
+                 BT::InputPort<int>("input_int"),
+                 BT::InputPort<std::string>("input_string"),
 
-                                   BT::OutputPort("output"),
-                                   BT::OutputPort<int>("output_int"),
-                                   BT::OutputPort<std::string>("output_string") };
-        return ports;
+                 BT::OutputPort("output"),
+                 BT::OutputPort<int>("output_int"),
+                 BT::OutputPort<std::string>("output_string") };
     }
 };
 

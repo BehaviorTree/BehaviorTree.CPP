@@ -46,12 +46,11 @@ class BlackboardPreconditionNode : public DecoratorNode
 
     virtual ~BlackboardPreconditionNode() override = default;
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = {InputPort("value_A"),
-                                  InputPort("value_B"),
-                                  InputPort<NodeStatus>("return_on_mismatch") };
-        return ports;
+        return {InputPort("value_A"),
+                InputPort("value_B"),
+                InputPort<NodeStatus>("return_on_mismatch") };
     }
 
   private:

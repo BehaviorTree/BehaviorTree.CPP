@@ -55,10 +55,9 @@ class SaySomething : public BT::SyncActionNode
     BT::NodeStatus tick() override;
 
     // It is mandatory to define this static method.
-    static const BT::PortsList& providedPorts()
+    static BT::PortsList providedPorts()
     {
-        static BT::PortsList ports = { BT::InputPort<std::string>("message") };
-        return ports;
+        return{ BT::InputPort<std::string>("message") };
     }
 };
 

@@ -27,10 +27,9 @@ class ParallelNode : public ControlNode
 
     ParallelNode(const std::string& name, const NodeConfiguration& config);
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = { InputPort<unsigned>(THRESHOLD_KEY) };
-        return ports;
+        return { InputPort<unsigned>(THRESHOLD_KEY) };
     }
 
     ~ParallelNode() = default;

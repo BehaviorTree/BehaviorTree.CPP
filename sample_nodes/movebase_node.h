@@ -22,7 +22,7 @@ namespace BT
 //
 //   TreeNode::getInput<Pose2D>(key, ...)
 //
-template <>
+template <> inline
 Pose2D convertFromString(StringView key)
 {
     // three real numbers separated by semicolons
@@ -55,10 +55,9 @@ class MoveBaseAction : public BT::AsyncActionNode
     }
 
     // It is mandatory to define this static method.
-    static const BT::PortsList& providedPorts()
+    static BT::PortsList providedPorts()
     {
-        static BT::PortsList ports = { BT::InputPort<Pose2D>("goal") };
-        return ports;
+        return{ BT::InputPort<Pose2D>("goal") };
     }
 
     BT::NodeStatus tick() override;

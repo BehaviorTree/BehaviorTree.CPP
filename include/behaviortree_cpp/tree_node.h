@@ -60,7 +60,7 @@ class TreeNode
      *
      * Note: If your custom node has ports, the derived class must implement:
      *
-     *     static const PortsList& providedPorts();
+     *     static PortsList providedPorts();
      */
     TreeNode(std::string name, NodeConfiguration config);
 

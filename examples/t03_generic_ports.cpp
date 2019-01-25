@@ -2,21 +2,101 @@
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/blackboard.h"
 
-#include "movebase_node.h"
 
 using namespace BT;
 
-/** This tutorial will tech you:
- *
- *  - How to use the Blackboard to shared data between TreeNodes
- *
- * The tree is a Sequence of 4 actions
+/** This tutorial will tech you how to deal with ports which type
+ * is different from std:string.
+*/
 
- *  1) Store a value of Pose2D in the key "GoalPose" of the blackboard using the action CalculateGoalPose.
- *  2) Call MoveAction. The input "GoalPose"  will be read from the Blackboard at run-time.
- *  3) Use the built-in action SetBlackboard to write the key "OtherGoal".
- *  4) Call MoveAction. The input "goal" will be read from the Blackboard entry "OtherGoal".
- *
+
+// In this example we want to be able to use the type Position2D
+struct Position2D { double x,y; };
+
+// It ie recommended (and in some case mandatory) to define a template
+// specialization of convertFromString that convert a string to Position2D.
+
+namespace BT
+{
+template <> inline Position2D convertFromString(StringView key)
+{
+    printf("Converting string: \"%s\"\n", key.data() );
+    // real numbers separated by semicolons
+    auto parts = BT::splitString(key, ';');
+    if (parts.size() != 2)
+    {
+        throw BT::RuntimeError("invalid input)");
+    }
+    else{
+        Position2D output;
+        output.x     = convertFromString<double>(parts[0]);
+        output.y     = convertFromString<double>(parts[1]);
+        return output;
+    }
+}
+} // end namespace BT
+
+
+class CalculateGoal: public SyncActionNode
+{
+public:
+    CalculateGoal(const std::string& name, const NodeConfiguration& config):
+        SyncActionNode(name,config)
+    {}
+
+    NodeStatus tick() override
+    {
+        const Position2D mygoal = {1.1, 2.3};
+        setOutput("goal", mygoal);
+        return NodeStatus::SUCCESS;
+    }
+    static BT::PortsList providedPorts()
+    {
+        return { BT::OutputPort<Position2D>("goal") };
+    }
+};
+
+
+// Write into the blackboard.
+class PrintGoal: public SyncActionNode
+{
+public:
+    PrintGoal(const std::string& name, const NodeConfiguration& config):
+        SyncActionNode(name,config)
+    {}
+
+    NodeStatus tick() override
+    {
+        auto res = getInput<Position2D>("goal");
+        if( !res )
+        {
+            throw BT::RuntimeError("error reading port [goal]:", res.error() );
+        }
+        Position2D goal = res.value();
+        printf("Goal positions: %.1f %.1f\n", goal.x, goal.y );
+        return NodeStatus::SUCCESS;
+    }
+    static BT::PortsList providedPorts()
+    {
+        return { BT::InputPort<Position2D>("goal") };
+    }
+};
+
+//----------------------------------------------------------------
+
+/** The tree is a Sequence of 4 actions
+
+*  1) Store a value of Position2D in the key "GoalPosition" of the blackboard
+*     using the action CalculateGoal.
+*
+*  2) Call PrintGoal. The input "GoalPosition"  will be read from the
+*     Blackboard at run-time.
+*
+*  3) Use the built-in action SetBlackboard to write the key "OtherGoal".
+*     A conversion from string to Position2D will be done under the hood.
+*
+*  4) Call MoveAction. The input "goal" will be read from the Blackboard
+*     entry "OtherGoal".
 */
 
 // clang-format off
@@ -25,10 +105,10 @@ static const char* xml_text = R"(
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <SequenceStar name="root">
-            <CalculateGoalPose goal="{GoalPose}" />
-            <MoveBase  goal="{GoalPose}" />
-            <SetBlackboard output_key="OtherGoal" value="-1;3;0.5" />
-            <MoveBase  goal="{OtherGoal}" />
+            <CalculateGoal goal="{GoalPosition}" />
+            <PrintGoal  goal="{GoalPosition}" />
+            <SetBlackboard output_key="OtherGoal" value="-1;3" />
+            <PrintGoal  goal="{OtherGoal}" />
         </SequenceStar>
      </BehaviorTree>
  </root>
@@ -36,47 +116,23 @@ static const char* xml_text = R"(
 
 // clang-format on
 
-// Write into the blackboard.
-class CalculateGoalPose: public SyncActionNode
-{
-public:
-    CalculateGoalPose(const std::string& name, const NodeConfiguration& config):
-        SyncActionNode(name,config)
-    {}
-
-    NodeStatus tick() override
-    {
-        const Pose2D mygoal = {1.1, 2.3, 1.54};
-        setOutput("goal", mygoal);
-        return NodeStatus::SUCCESS;
-    }
-    static const BT::PortsList& providedPorts()
-    {
-        static BT::PortsList ports =  { BT::OutputPort<Pose2D>("goal") };
-        return ports;
-    }
-};
-
 int main()
 {
     using namespace BT;
 
     BehaviorTreeFactory factory;
-    factory.registerNodeType<CalculateGoalPose>("CalculateGoalPose");
-    factory.registerNodeType<MoveBaseAction>("MoveBase");
+    factory.registerNodeType<CalculateGoal>("CalculateGoal");
+    factory.registerNodeType<PrintGoal>("PrintGoal");
 
-    // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
     auto tree = factory.createTreeFromText(xml_text);
-
-    NodeStatus status = NodeStatus::RUNNING;
-    while (status == NodeStatus::RUNNING)
-    {
-        status = tree.root_node->executeTick();
-        SleepMS(1);   // optional sleep to avoid "busy loops"
-    }
-
-    std::cout <<"-----------------------" << std::endl;
-    std::cout << writeXML(factory, tree.root_node, true) << std::endl;
+    tree.root_node->executeTick();
 
     return 0;
 }
+
+/* Expected output:
+ *
+    Goal positions: 1.1 2.3
+    Converting string: "-1;3"
+    Goal positions: -1.0 3.0
+*/
