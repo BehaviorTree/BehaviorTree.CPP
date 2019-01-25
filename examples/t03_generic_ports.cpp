@@ -1,7 +1,4 @@
-#include "behaviortree_cpp/xml_parsing.h"
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
-#include "behaviortree_cpp/blackboard.h"
-
+#include "behaviortree_cpp/bt_factory.h"
 
 using namespace BT;
 
@@ -46,7 +43,7 @@ public:
 
     NodeStatus tick() override
     {
-        const Position2D mygoal = {1.1, 2.3};
+        Position2D mygoal = {1.1, 2.3};
         setOutput("goal", mygoal);
         return NodeStatus::SUCCESS;
     }
@@ -76,9 +73,12 @@ public:
         printf("Goal positions: %.1f %.1f\n", goal.x, goal.y );
         return NodeStatus::SUCCESS;
     }
+
     static BT::PortsList providedPorts()
     {
-        return { BT::InputPort<Position2D>("goal") };
+        // Optionally, a port can have a human readable description
+        const char*  description = "Simply print the goal on console...";
+        return { BT::InputPort<Position2D>("goal", description) };
     }
 };
 

@@ -14,22 +14,23 @@ target_link_libraries(t01_first_tree_dynamic ${BEHAVIOR_TREE_LIBRARY}  )
 add_executable(t02_basic_ports  t02_basic_ports.cpp )
 target_link_libraries(t02_basic_ports ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )
 
-# This tutorial demonstrates how to use blackboards and NodeParameters
 add_executable(t03_generic_ports        t03_generic_ports.cpp )
-target_link_libraries(t03_generic_ports movebase_node dummy_nodes ${BEHAVIOR_TREE_LIBRARY}  )
+target_link_libraries(t03_generic_ports ${BEHAVIOR_TREE_LIBRARY}  movebase_node dummy_nodes  )
 
-# This tutorial shows how the difference between Sequence and SequenceStar
 add_executable(t04_sequence_star         t04_sequence_star.cpp )
-target_link_libraries(t04_sequence_star  movebase_node dummy_nodes ${BEHAVIOR_TREE_LIBRARY}  )
+target_link_libraries(t04_sequence_star  ${BEHAVIOR_TREE_LIBRARY} movebase_node dummy_nodes  )
 
 add_executable(t05_crossdoor         t05_crossdoor.cpp )
-target_link_libraries(t05_crossdoor  crossdoor_nodes ${BEHAVIOR_TREE_LIBRARY}  )
+target_link_libraries(t05_crossdoor   ${BEHAVIOR_TREE_LIBRARY} crossdoor_nodes )
 
 add_executable(t06_wrap_legacy         t06_wrap_legacy.cpp )
-target_link_libraries(t06_wrap_legacy  crossdoor_nodes ${BEHAVIOR_TREE_LIBRARY}  )
+target_link_libraries(t06_wrap_legacy   ${BEHAVIOR_TREE_LIBRARY} )
 
-add_executable(t07_include_trees  t07_include_trees.cpp )
-target_link_libraries(t07_include_trees ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes )
+add_executable(t07_subtree_port_remapping  t07_subtree_port_remapping.cpp )
+target_link_libraries(t07_subtree_port_remapping ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes movebase_node )
 
 add_executable(t08_async_actions_coroutines  t08_async_actions_coroutines.cpp )
 target_link_libraries(t08_async_actions_coroutines ${BEHAVIOR_TREE_LIBRARY} )
+
+add_executable(t09_include_trees  t09_include_trees.cpp )
+target_link_libraries(t09_include_trees  ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )

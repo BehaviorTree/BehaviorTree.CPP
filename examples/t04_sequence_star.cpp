@@ -1,4 +1,4 @@
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 #include "dummy_nodes.h"
 #include "movebase_node.h"
@@ -8,7 +8,10 @@ using namespace BT;
 /** This tutorial will tech you:
  *
  *  - The difference between Sequence and SequenceStar
- *  - How custom types may requires convertFromString<>() to be implemented.
+ *
+ *  - Another example of a custom types that requires convertFromString<>()
+ *    to be implemented.
+ *
  *  - How to create an asynchronous ActionNode (an action that is execute in
  *    its own thread).
 */
@@ -68,8 +71,8 @@ int main()
     // xml_text_sequence and xml_text_sequence_star
 
     // The main difference that you should notice is:
-    //  1) When Sequence is used, BatteryOK and TempearaturOK is executed at each tick()
-    //  2) When SequenceStar is used, those ConditionNodes are executed only once.
+    //  1) When Sequence is used, BatteryOK is executed at __each__ tick()
+    //  2) When SequenceStar is used, those ConditionNodes are executed only __once__.
 
     for (auto& xml_text : {xml_text_sequence, xml_text_sequence_star})
     {
