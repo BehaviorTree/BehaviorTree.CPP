@@ -61,10 +61,9 @@ class ThinkWhatToSay : public BT::SyncActionNode
     }
 
     // A node having ports must implement this static method
-    static const BT::PortsList& providedPorts()
+    static BT::PortsList providedPorts()
     {
-        static BT::PortsList ports = { BT::OutputPort<std::string>("text") };
-        return ports;
+        return { BT::OutputPort<std::string>("text") };
     }
 };
 

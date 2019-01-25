@@ -27,10 +27,9 @@ class TimeoutNode : public DecoratorNode
 
     TimeoutNode(const std::string& name, const NodeConfiguration& config);
 
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
-        static PortsList ports = { InputPort<unsigned>("msec") };
-        return ports;
+        return { InputPort<unsigned>("msec") };
     }
 
   private:

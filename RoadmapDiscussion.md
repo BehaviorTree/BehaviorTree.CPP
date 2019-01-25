@@ -101,7 +101,7 @@ struct TreeNodeManifest
 };
 
 // What was previously MyNode::requiredNodeParameters() becomes:
-static const PortsList& MyNode::providedPorts();
+static PortsList MyNode::providedPorts();
 
 ```
  
@@ -207,7 +207,7 @@ class SaySomething: public SyncActionNode
         std::cout << msg.value() << std::endl;
         return NodeStatus::SUCCESS;
     }
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
         static PortsList ports_list = { {"message", PortType::INPUT} );
         return ports_list;
@@ -227,7 +227,7 @@ class ComputePath: public SyncActionNode
         setOutput("path", my_computed_path);
         // return result...
     }
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
         static PortsList ports_list = { {"endpoints", PortType::INPUT}, 
                                         {"path",      PortType::OUTPUT} };
@@ -247,7 +247,7 @@ class FollowPath: public AsyncActionNode
         // do your stuff
         // return result...
     }
-    static const PortsList& providedPorts()
+    static PortsList providedPorts()
     {
         static PortsList ports_list = { {"path", PortType::INPUT} };
         return ports_list;
