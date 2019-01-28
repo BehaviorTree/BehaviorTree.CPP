@@ -19,10 +19,10 @@ using namespace BT;
  *   - Actions 1 and 4 read the input "message" from a static string.
  *
  *   - Actions 3 and 5 read the input "message" from an entry in the
- *     blackboard called "the answer".
+ *     blackboard called "the_answer".
  *
  *   - Action 2 writes something into the entry of the blackboard
- *     called "the answer".
+ *     called "the_answer".
 */
 
 // clang-format off
