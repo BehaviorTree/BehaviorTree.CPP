@@ -6,7 +6,6 @@
 
 namespace DummyNodes
 {
-BT::NodeStatus SayHello();
 
 BT::NodeStatus CheckBattery();
 
