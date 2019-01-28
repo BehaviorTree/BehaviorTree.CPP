@@ -10,11 +10,10 @@
 #include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
 #endif
 
-/** This is a more complex example that use also FallbackNode,
- * decorators and Subtrees
+/** This is a more complex example that uses Fallback,
+ * Decorators and Subtrees
  *
- * For the sake of simplicity, we didn't focus on ports remapping
- * in this example.
+ * For the sake of simplicity, we aren't focusing on ports remapping to the time being.
  *
  * Furthermore, we introduce Loggers, which are a mechanism to
  * trace the state transitions in the tree for debugging purposes.
@@ -23,7 +22,7 @@
 
 // clang-format off
 
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 <root main_tree_to_execute = "MainTree">
 	<!--------------------------------------->
     <BehaviorTree ID="DoorClosed">

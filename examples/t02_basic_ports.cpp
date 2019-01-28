@@ -12,7 +12,7 @@ using namespace BT;
  * The type and number of ports of a Node is statically defined.
  *
  * Input Ports are like "argument" of a functions.
- * Output ports conceptually resemble "return values".
+ * Output ports are, conceptually, like "return values".
  *
  * In this example, a Sequence of 5 Actions is executed:
  *
@@ -60,7 +60,7 @@ class ThinkWhatToSay : public BT::SyncActionNode
         return BT::NodeStatus::SUCCESS;
     }
 
-    // A node having ports must implement this static method
+    // A node having ports MUST implement this STATIC method
     static BT::PortsList providedPorts()
     {
         return { BT::OutputPort<std::string>("text") };
@@ -74,8 +74,8 @@ int main()
 
     BehaviorTreeFactory factory;
 
-    // The class SaySomething has a method called providedPorts() that define the INPUTS
-    // in this case it requires an input called "message"
+    // The class SaySomething has a method called providedPorts() that define the INPUTS.
+    // In this case, it requires an input called "message"
     factory.registerNodeType<SaySomething>("SaySomething");
 
 
@@ -110,7 +110,7 @@ int main()
         Robot says: SaySomething2 works too...
         Robot says: The answer is 42
     *
-    * The way we "connect output ports to input ports is to "point" to the same
+    * The way we "connect" output ports to input ports is to "point" to the same
     * Blackboard entry.
     *
     * This means that ThinkSomething will write into the entry with key "the_answer";

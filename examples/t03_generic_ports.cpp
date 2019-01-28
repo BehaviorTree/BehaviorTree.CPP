@@ -2,22 +2,22 @@
 
 using namespace BT;
 
-/** This tutorial will tech you how to deal with ports which type
- * is different from std:string.
+/* This tutorial will tech you how to deal with ports when its
+ *  type is not std::string.
 */
 
 
-// In this example we want to be able to use the type Position2D
+// We want to be able to use the this custom type
 struct Position2D { double x,y; };
 
-// It ie recommended (and in some case mandatory) to define a template
-// specialization of convertFromString that convert a string to Position2D.
-
+// It is recommended (or, in some cases, mandatory) to define a template
+// specialization of convertFromString that converts a string to Position2D.
 namespace BT
 {
 template <> inline Position2D convertFromString(StringView key)
 {
     printf("Converting string: \"%s\"\n", key.data() );
+
     // real numbers separated by semicolons
     auto parts = BT::splitString(key, ';');
     if (parts.size() != 2)
@@ -70,7 +70,7 @@ public:
             throw BT::RuntimeError("error reading port [goal]:", res.error() );
         }
         Position2D goal = res.value();
-        printf("Goal positions: %.1f %.1f\n", goal.x, goal.y );
+        printf("Goal positions: [ %.1f, %.1f ]\n", goal.x, goal.y );
         return NodeStatus::SUCCESS;
     }
 
@@ -95,7 +95,7 @@ public:
 *  3) Use the built-in action SetBlackboard to write the key "OtherGoal".
 *     A conversion from string to Position2D will be done under the hood.
 *
-*  4) Call MoveAction. The input "goal" will be read from the Blackboard
+*  4) Call PrintGoal. The input "goal" will be read from the Blackboard
 *     entry "OtherGoal".
 */
 
@@ -132,7 +132,7 @@ int main()
 
 /* Expected output:
  *
-    Goal positions: 1.1 2.3
+    Goal positions: [ 1.1, 2.3 ]
     Converting string: "-1;3"
-    Goal positions: -1.0 3.0
+    Goal positions: [ -1.0, 3.0 ]
 */

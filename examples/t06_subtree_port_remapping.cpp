@@ -7,11 +7,11 @@
 /** In the CrossDoor example we did not exchange any information
  * between the Maintree and the DoorClosed subtree.
  *
- * If we tried to do that we would have noticed that it can be done, because
- * each of the tree/subtree has its own Blackboard to avoid the problem of name
+ * If we tried to do that, we would have noticed that it can't be done, because
+ * each of the tree/subtree has its own Blackboard, to avoid the problem of name
  * clashing in very large trees.
  *
- * But a SubTree can have input/output ports itself.
+ * But a SubTree can have its own input/output ports.
  * In practice, these ports are nothing more than "soft links" between the
  * ports inside the SubTree (called "internal") and those in the parent
  * Tree (called "external").
@@ -21,7 +21,7 @@
 
 // clang-format off
 
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 <root main_tree_to_execute = "MainTree">
     <!-- .................................. -->
     <BehaviorTree ID="MainTree">
@@ -70,19 +70,16 @@ int main()
     DummyNodes::RegisterNodes(factory);
     factory.registerNodeType<MoveBaseAction>("MoveBase");
 
-    // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
     auto tree = factory.createTreeFromText(xml_text);
 
-
+    NodeStatus status = NodeStatus::RUNNING;
+    // Keep on ticking until you get either a SUCCESS or FAILURE state
+    while( status == NodeStatus::RUNNING)
     {
-        NodeStatus status = NodeStatus::RUNNING;
-        // Keep on ticking until you get either a SUCCESS or FAILURE state
-        while( status == NodeStatus::RUNNING)
-        {
-            status = tree.root_node->executeTick();
-            SleepMS(1);   // optional sleep to avoid "busy loops"
-        }
+        status = tree.root_node->executeTick();
+        SleepMS(1);   // optional sleep to avoid "busy loops"
     }
+
 
     // let's visualize some information about the current state of the blackboards.
     std::cout << "--------------" << std::endl;

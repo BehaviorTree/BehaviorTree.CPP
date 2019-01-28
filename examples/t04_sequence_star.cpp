@@ -5,12 +5,9 @@
 
 using namespace BT;
 
-/** This tutorial will tech you:
+/** This tutorial will teach you:
  *
  *  - The difference between Sequence and SequenceStar
- *
- *  - Another example of a custom types that requires convertFromString<>()
- *    to be implemented.
  *
  *  - How to create an asynchronous ActionNode (an action that is execute in
  *    its own thread).

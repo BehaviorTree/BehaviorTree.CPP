@@ -9,16 +9,16 @@
 using namespace BT;
 
 /** Behavior Tree are used to create a logic to decide what
- * to "do". For this reason the main important building blocks are
+ * to "do" and when. For this reason, our main building blocks are
  * Actions and Conditions.
  *
- * In this tutorial we will learn how to create custom ActionNodes.
- * It is important to remmebr that NodeTree are just a way to
- * invoke callbacks. The latters are written by the user.
+ * In this tutorial, we will learn how to create custom ActionNodes.
+ * It is important to remember that NodeTree are just a way to
+ * invoke callbacks (called tick() ). These callbacks are implemented by the user.
  */
 
 // clang-format off
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 
  <root main_tree_to_execute = "MainTree" >
 
@@ -80,7 +80,7 @@ int main()
 
     // To "execute" a Tree you need to "tick" it.
     // The tick is propagated to the children based on the logic of the tree.
-    // In this case the entire sequence is executed, because all the children
+    // In this case, the entire sequence is executed, because all the children
     // of the Sequence return SUCCESS.
     tree.root_node->executeTick();
 

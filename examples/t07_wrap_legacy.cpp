@@ -3,11 +3,11 @@
 
 /** In this tutorial we will see how to wrap legacy code into a
  * BehaviorTree in a non-intrusive way, i.e. without modifying the
- * original class
+ * original class.
 */
 
 // clang-format off
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
@@ -57,7 +57,7 @@ template <> Point3D convertFromString(StringView key)
         return output;
     }
 }
-}
+} // end anmespace BT
 
 
 int main()
@@ -79,6 +79,7 @@ int main()
     };
 
     BehaviorTreeFactory factory;
+
     // Register the lambda with BehaviorTreeFactory::registerSimpleAction
 
     PortsList ports = { BT::InputPort<Point3D>("goal") };

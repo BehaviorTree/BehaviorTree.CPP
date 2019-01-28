@@ -4,10 +4,10 @@ using namespace BT;
 
 /*
  * Sometimes it is convenient to pass additional (static) arguments to a Node.
- * If these parameters are known at comiplation time and they don't change at
- * run-time, input ports are probably overkill.
+ * If these parameters are known at compilation time and they don't change at
+ * run-time, input ports are probably overkill or even cumbersome.
  *
- * This tutorial demonstrate two possible ways to initialize a custom node with
+ * This tutorial demonstrates two possible ways to initialize a custom node with
  * some additional arguments.
  *
  * Action_A will have a different constructor than the default one.
@@ -31,7 +31,7 @@ public:
 
     NodeStatus tick() override
     {
-        std::cout << "Action_B: " << _arg1 << " / " << _arg2 << " / " << _arg3 << std::endl;
+        std::cout << "Action_A: " << _arg1 << " / " << _arg2 << " / " << _arg3 << std::endl;
         return NodeStatus::SUCCESS;
     }
 
@@ -72,18 +72,16 @@ private:
     std::string _arg3;
 };
 
-// Simple tree, just to show the outputs of the respective tick()
+// Simple tree, used to execute once each action.
 static const char* xml_text = R"(
 
- <root main_tree_to_execute = "MainTree" >
-
-     <BehaviorTree ID="MainTree">
+ <root >
+     <BehaviorTree>
         <Sequence>
             <Action_A/>
             <Action_B/>
         </Sequence>
      </BehaviorTree>
-
  </root>
  )";
 
@@ -91,19 +89,19 @@ int main()
 {
     BehaviorTreeFactory factory;
 
-    // A node builder is nothing more than a funtion pointer to create a std::unique_ptr<TreeNode>
-    // using lambdas or std::bind we an easily "inject" additional arguments.
+    // A node builder is nothing more than a function pointer to create a std::unique_ptr<TreeNode>.
+    // Using lambdas or std::bind we an easily "inject" additional arguments.
     NodeBuilder builder_A = [](const std::string& name, const NodeConfiguration& config)
     {
         return std::unique_ptr<Action_A>( new Action_A(name, config, 42, 3.14, "hello world") );
     };
 
-    // You may create this by hand, but in this case you have a convenient helper function
+    // You may create this by hand, but in this case we can use a convenient helper function
     // called BehaviorTreeFactory::buildManifest
     TreeNodeManifest manifest_A = BehaviorTreeFactory::buildManifest<Action_A>("Action_A");
 
     // BehaviorTreeFactory::registerBuilder is the more general way to register a custom node.
-    // Not the most user friendly, but defenetively the most flexible one.
+    // Not the most user friendly, but definitely the most flexible one.
     factory.registerBuilder( manifest_A, builder_A);
 
     // The regitration of  Action_B is done as usual, but we still need to call Action_B::init()
@@ -124,7 +122,7 @@ int main()
 
     /* Expected output:
 
-        Action_B: 42 / 3.14 / hello world
+        Action_A: 42 / 3.14 / hello world
         Action_B: 69 / 9.99 / interesting_value
     */
     return 0;
