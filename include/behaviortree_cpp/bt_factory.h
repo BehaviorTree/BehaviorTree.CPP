@@ -159,7 +159,7 @@ public:
 
         static_assert(!(param_constructable && !has_static_ports_list),
                       "[registerBuilder]: you MUST implement the static method: "
-                      "  const PortsList& providedPorts();\n");
+                      "  PortsList providedPorts();\n");
 
         static_assert(!(has_static_ports_list && !param_constructable),
                       "[registerBuilder]: since you have a static method requiredNodeParameters(), "
