@@ -16,9 +16,9 @@
 
 namespace BT
 {
-static uint8_t getUID()
+static uint16_t getUID()
 {
-    static uint8_t uid = 1;
+    static uint16_t uid = 1;
     return uid++;
 }
 
