@@ -23,14 +23,17 @@ target_link_libraries(t04_sequence_star  ${BEHAVIOR_TREE_LIBRARY} movebase_node 
 add_executable(t05_crossdoor         t05_crossdoor.cpp )
 target_link_libraries(t05_crossdoor   ${BEHAVIOR_TREE_LIBRARY} crossdoor_nodes )
 
-add_executable(t06_wrap_legacy         t06_wrap_legacy.cpp )
-target_link_libraries(t06_wrap_legacy   ${BEHAVIOR_TREE_LIBRARY} )
+add_executable(t06_subtree_port_remapping  t06_subtree_port_remapping.cpp )
+target_link_libraries(t06_subtree_port_remapping ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes movebase_node )
 
-add_executable(t07_subtree_port_remapping  t07_subtree_port_remapping.cpp )
-target_link_libraries(t07_subtree_port_remapping ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes movebase_node )
+add_executable(t07_wrap_legacy         t07_wrap_legacy.cpp )
+target_link_libraries(t07_wrap_legacy   ${BEHAVIOR_TREE_LIBRARY} )
 
 add_executable(t08_async_actions_coroutines  t08_async_actions_coroutines.cpp )
 target_link_libraries(t08_async_actions_coroutines ${BEHAVIOR_TREE_LIBRARY} )
 
-add_executable(t09_include_trees  t09_include_trees.cpp )
-target_link_libraries(t09_include_trees  ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )
+add_executable(t09_additional_node_args   t09_additional_node_args.cpp )
+target_link_libraries(t09_additional_node_args   ${BEHAVIOR_TREE_LIBRARY} )
+
+add_executable(t10_include_trees  t10_include_trees.cpp )
+target_link_libraries(t10_include_trees  ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )

@@ -1,5 +1,4 @@
 #include "behaviortree_cpp/bt_factory.h"
-
 #include "dummy_nodes.h"
 
 using namespace BT;

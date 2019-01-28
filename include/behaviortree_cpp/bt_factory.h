@@ -184,6 +184,12 @@ public:
     Tree createTreeFromFile(const std::string& file_path,
                             Blackboard::Ptr blackboard = Blackboard::create());
 
+    template <typename T> static
+    TreeNodeManifest buildManifest(const std::string& ID)
+    {
+        return { getType<T>(), ID, getProvidedPorts<T>() };
+    }
+
 private:
     std::unordered_map<std::string, NodeBuilder> builders_;
     std::unordered_map<std::string, TreeNodeManifest> manifests_;
@@ -202,19 +208,14 @@ private:
     void registerNodeTypeImpl(const std::string& ID)
     {
         NodeBuilder builder = getBuilder<T>();
-        TreeNodeManifest manifest = { getType<T>(),
-                                      ID,
-                                      getProvidedPorts<T>(),
-                                    };
-        registerBuilder(manifest, builder);
+        registerBuilder( buildManifest<T>(ID), builder);
     }
 
-
-    template <typename T>
+    template <typename T> static
     NodeBuilder getBuilder(typename std::enable_if<has_default_constructor<T>::value &&
                                                    has_params_constructor<T>::value >::type* = nullptr)
     {
-        return [this](const std::string& name, const NodeConfiguration& config)
+        return [](const std::string& name, const NodeConfiguration& config)
         {
             //TODO FIXME
 
@@ -229,9 +230,9 @@ private:
         };
     }
 
-    template <typename T>
+    template <typename T> static
     NodeBuilder getBuilder(typename std::enable_if<!has_default_constructor<T>::value &&
-                                                    has_params_constructor<T>::value >::type* = nullptr)
+                                                   has_params_constructor<T>::value >::type* = nullptr)
     {
         return [](const std::string& name, const NodeConfiguration& params)
         {
@@ -239,7 +240,7 @@ private:
         };
     }
 
-    template <typename T>
+    template <typename T> static
     NodeBuilder getBuilder(typename std::enable_if<has_default_constructor<T>::value &&
                                                    !has_params_constructor<T>::value >::type* = nullptr)
     {
