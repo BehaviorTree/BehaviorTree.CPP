@@ -261,7 +261,7 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
 
-    // continue until succesfull
+    // continue until succesful
     while (state != NodeStatus::SUCCESS && system_clock::now() < timeout)
     {
         std::this_thread::sleep_for(milliseconds(20));

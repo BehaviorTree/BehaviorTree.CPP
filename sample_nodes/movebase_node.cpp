@@ -21,7 +21,9 @@ BT::NodeStatus MoveBaseAction::tick()
     _halt_requested.store(false);
     int count = 0;
 
-    // "compute" for 250 milliseconds or until _halt_requested is true
+    // Pretend that "computing" takes 250 milliseconds.
+    // It is up to you to check periodicall _halt_requested and interrupt
+    // this tick() if it is true.
     while (!_halt_requested && count++ < 25)
     {
         SleepMS(10);

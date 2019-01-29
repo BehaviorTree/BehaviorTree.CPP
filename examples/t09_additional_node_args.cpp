@@ -96,7 +96,7 @@ int main()
         return std::unique_ptr<Action_A>( new Action_A(name, config, 42, 3.14, "hello world") );
     };
 
-    // You may create this by hand, but in this case we can use a convenient helper function
+    // You may create manifest_A by hand, but in this case we can use a convenient helper function
     // called BehaviorTreeFactory::buildManifest
     TreeNodeManifest manifest_A = BehaviorTreeFactory::buildManifest<Action_A>("Action_A");
 

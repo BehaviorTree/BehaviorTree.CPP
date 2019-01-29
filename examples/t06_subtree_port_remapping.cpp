@@ -23,7 +23,7 @@
 
 static const char* xml_text = R"(
 <root main_tree_to_execute = "MainTree">
-    <!-- .................................. -->
+
     <BehaviorTree ID="MainTree">
 
         <Sequence name="main_sequence">
@@ -36,7 +36,7 @@ static const char* xml_text = R"(
         </Sequence>
 
     </BehaviorTree>
-    <!-- .................................. -->
+
     <BehaviorTree ID="MoveRobot">
         <Fallback name="move_robot_main">
             <SequenceStar>
@@ -48,7 +48,7 @@ static const char* xml_text = R"(
             </ForceFailure>
         </Fallback>
     </BehaviorTree>
-    <!---------------------------------------> 
+
 </root>
  )";
 

@@ -45,7 +45,7 @@ class RepeatNode : public DecoratorNode
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>(NUM_CYCLES, "Repeat a succesfull child up to N times") };
+        return { InputPort<unsigned>(NUM_CYCLES, "Repeat a succesful child up to N times") };
     }
 
   private:
