@@ -39,7 +39,7 @@ pages:
        - Getting started:                  getting_started.md
        - "Tutorial 1: Create a Tree":      tutorial_01_first_tree.md
        - "Tutorial 2: Basic Ports":        tutorial_02_basic_ports.md
-       - "Tutorial 3: Blackboards":        tutorial_C_blackboard.md
+       - "Tutorial 3: Generic ports":      tutorial_03_generic_ports.md
        - "Tutorial 4: Subtrees":           tutorial_D_subtrees.md
        - "Tutorial 5: Plugins":            tutorial_E_plugins.md
        - "Tutorial 6: Loggers":            tutorial_F_loggers.md
