@@ -36,14 +36,14 @@ pages:
        - Fallback Nodes:    FallbackNode.md
        - Decorators Nodes:  DecoratorNode.md
     - Tutorials: 
-       - Getting started:                  getting_started.md
-       - "Tutorial 1: Create a Tree":      tutorial_01_first_tree.md
-       - "Tutorial 2: Basic Ports":        tutorial_02_basic_ports.md
-       - "Tutorial 3: Generic ports":      tutorial_03_generic_ports.md
-       - "Tutorial 4: Sequences":          tutorial_04_sequence_star.md
-       - "Tutorial 5: Plugins":            tutorial_E_plugins.md
-       - "Tutorial 6: Loggers":            tutorial_F_loggers.md
-       - "Tutorial 7: Wrap legacy code":   tutorial_G_legacy.md
+       - Getting started:                     getting_started.md
+       - "Tutorial 1: Create a Tree":         tutorial_01_first_tree.md
+       - "Tutorial 2: Basic Ports":           tutorial_02_basic_ports.md
+       - "Tutorial 3: Generic ports":         tutorial_03_generic_ports.md
+       - "Tutorial 4: Sequences":             tutorial_04_sequence_star.md
+       - "Tutorial 5: Subtrees and Loggers":  tutorial_05_subtrees.md
+       - "Tutorial 6: Ports remapping":       tutorial_06_subtree_ports.md
+       - "Tutorial 7: Wrap legacy code":      tutorial_G_legacy.md
        - "Tutorial 8: Actions and Coroutines": tutorial_H_coroutines.md
-       - "The XML format":                  xml_format.md
+       - "The XML format":                    xml_format.md
 

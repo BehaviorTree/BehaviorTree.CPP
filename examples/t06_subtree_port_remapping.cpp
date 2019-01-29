@@ -18,7 +18,6 @@
  *
  */
 
-
 // clang-format off
 
 static const char* xml_text = R"(
