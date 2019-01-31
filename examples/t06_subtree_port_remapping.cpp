@@ -61,12 +61,13 @@ static const char* xml_text = R"(
  */
 
 using namespace BT;
+using namespace DummyNodes;
 
 int main()
 {
-    BT::BehaviorTreeFactory factory;
+    BehaviorTreeFactory factory;
 
-    DummyNodes::RegisterNodes(factory);
+    factory.registerNodeType<SaySomething>("SaySomething");
     factory.registerNodeType<MoveBaseAction>("MoveBase");
 
     auto tree = factory.createTreeFromText(xml_text);
@@ -78,7 +79,6 @@ int main()
         status = tree.root_node->executeTick();
         SleepMS(1);   // optional sleep to avoid "busy loops"
     }
-
 
     // let's visualize some information about the current state of the blackboards.
     std::cout << "--------------" << std::endl;

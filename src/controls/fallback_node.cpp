@@ -26,8 +26,6 @@ NodeStatus FallbackNode::tick()
     // gets the number of children. The number could change if, at runtime, one edits the tree.
     const size_t children_count = children_nodes_.size();
 
-    // Routing the ticks according to the fallback node's logic:
-
     setStatus(NodeStatus::RUNNING);
 
     for (size_t index = 0; index < children_count; index++)
