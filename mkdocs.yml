@@ -44,6 +44,6 @@ pages:
        - "Tutorial 5: Subtrees and Loggers":  tutorial_05_subtrees.md
        - "Tutorial 6: Ports remapping":       tutorial_06_subtree_ports.md
        - "Tutorial 7: Wrap legacy code":      tutorial_07_legacy.md
-       - "Tutorial 8: Actions and Coroutines": tutorial_H_coroutines.md
+       - "Tutorial 8: Class parameters":      tutorial_08_additional_args.md
        - "The XML format":                    xml_format.md
 

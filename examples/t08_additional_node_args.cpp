@@ -3,20 +3,15 @@
 using namespace BT;
 
 /*
- * Sometimes it is convenient to pass additional (static) arguments to a Node.
- * If these parameters are known at compilation time and they don't change at
- * run-time, input ports are probably overkill or even cumbersome.
+ * Sometimes, it is convenient to pass additional (static) arguments to a Node.
+ * If these parameters are known at compilation time or at deployment-time
+ * and they don't change at run-time, input ports are probably overkill and cumbersome.
  *
  * This tutorial demonstrates two possible ways to initialize a custom node with
- * some additional arguments.
- *
- * Action_A will have a different constructor than the default one.
- *
- * Action_B instead implements an init(...) method that must be called at the beginning.
+ * additional arguments.
  */
 
-
-
+// Action_A has a different constructor than the default one.
 class Action_A: public SyncActionNode
 {
 
@@ -34,7 +29,6 @@ public:
         std::cout << "Action_A: " << _arg1 << " / " << _arg2 << " / " << _arg3 << std::endl;
         return NodeStatus::SUCCESS;
     }
-
     static PortsList providedPorts() { return {}; }
 
 private:
@@ -43,6 +37,7 @@ private:
     std::string _arg3;
 };
 
+// Action_B implements an init(...) method that must be called once at the beginning.
 class Action_B: public SyncActionNode
 {
 
@@ -63,7 +58,6 @@ public:
         std::cout << "Action_B: " << _arg1 << " / " << _arg2 << " / " << _arg3 << std::endl;
         return NodeStatus::SUCCESS;
     }
-
     static PortsList providedPorts() { return {}; }
 
 private:
@@ -89,8 +83,9 @@ int main()
 {
     BehaviorTreeFactory factory;
 
-    // A node builder is nothing more than a function pointer to create a std::unique_ptr<TreeNode>.
-    // Using lambdas or std::bind we an easily "inject" additional arguments.
+    // A node builder is nothing more than a function pointer to create a
+    // std::unique_ptr<TreeNode>.
+    // Using lambdas or std::bind, we can easily "inject" additional arguments.
     NodeBuilder builder_A = [](const std::string& name, const NodeConfiguration& config)
     {
         return std::unique_ptr<Action_A>( new Action_A(name, config, 42, 3.14, "hello world") );
