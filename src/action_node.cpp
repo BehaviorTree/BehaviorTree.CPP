@@ -22,16 +22,6 @@ ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfiguration&
 {
 }
 
-NodeStatus ActionNodeBase::executeTick()
-{
-    NodeStatus prev_status = status();
-
-    if (prev_status == NodeStatus::IDLE || prev_status == NodeStatus::RUNNING)
-    {
-        setStatus(tick());
-    }
-    return status();
-}
 
 //-------------------------------------------------------
 

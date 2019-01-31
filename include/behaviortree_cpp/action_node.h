@@ -38,8 +38,6 @@ class ActionNodeBase : public LeafNode
     ActionNodeBase(const std::string& name, const NodeConfiguration& config);
     ~ActionNodeBase() override = default;
 
-    virtual NodeStatus executeTick() override;
-
     virtual NodeType type() const override final
     {
         return NodeType::ACTION;

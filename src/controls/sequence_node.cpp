@@ -12,9 +12,12 @@
 */
 
 #include "behaviortree_cpp/controls/sequence_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 namespace BT
 {
+
+
 SequenceNode::SequenceNode(const std::string& name)
     : ControlNode::ControlNode(name, {} )
 {
@@ -30,7 +33,24 @@ NodeStatus SequenceNode::tick()
     for (unsigned int index = 0; index < children_count; index++)
     {
         TreeNode* child_node = children_nodes_[index];
-        const NodeStatus child_status = child_node->executeTick();
+
+        NodeStatus child_status;
+
+        // special case just for Actions
+        if (auto action_child = dynamic_cast<ActionNodeBase*>(child_node) )
+        {
+            NodeStatus prev_status = action_child->status();
+            if (prev_status == NodeStatus::IDLE || prev_status == NodeStatus::RUNNING)
+            {
+                child_status = action_child->executeTick();
+            }
+            else{
+                child_status = prev_status;
+            }
+        }
+        else{
+            child_status = child_node->executeTick();
+        }
 
         switch (child_status)
         {
