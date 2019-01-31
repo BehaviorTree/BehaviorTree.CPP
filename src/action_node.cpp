@@ -143,7 +143,9 @@ void AsyncActionNode::stopAndJoinThread()
 //-------------------------------------
 struct CoroActionNode::Pimpl
 {
-    coroutine::routine_t coro = 0;
+    coroutine::routine_t coro;
+    std::atomic<bool> pending_destroy;
+
 };
 
 
@@ -152,11 +154,16 @@ CoroActionNode::CoroActionNode(const std::string &name,
   ActionNodeBase (name, config),
   _p(new  Pimpl)
 {
+    _p->coro = 0;
+    _p->pending_destroy = false;
 }
 
 CoroActionNode::~CoroActionNode()
 {
-    halt();
+    if( _p->coro != 0 )
+    {
+        coroutine::destroy(_p->coro);
+    }
 }
 
 void CoroActionNode::setStatusRunningAndYield()
@@ -167,19 +174,29 @@ void CoroActionNode::setStatusRunningAndYield()
 
 NodeStatus CoroActionNode::executeTick()
 {
-    if ( _p->coro == 0 )
+    if( _p->pending_destroy && _p->coro != 0 )
     {
-        _p->coro = coroutine::create( [this]() { setStatus(tick()); } );
+        coroutine::destroy(_p->coro);
+        _p->coro = 0;
+        _p->pending_destroy = false;
     }
 
-    if( _p->coro != 0)
+    if ( _p->coro == 0)
     {
-        auto res = coroutine::resume(_p->coro);
+        _p->coro = coroutine::create( [this]()
+        {
+            setStatus(tick());
+        } );
+    }
 
-        if( res == coroutine::ResumeResult::FINISHED)
+    if( _p->coro != 0 )
+    {
+        if( _p->pending_destroy ||
+            coroutine::resume(_p->coro) == coroutine::ResumeResult::FINISHED )
         {
             coroutine::destroy(_p->coro);
             _p->coro = 0;
+            _p->pending_destroy = false;
         }
     }
     return status();
@@ -187,11 +204,8 @@ NodeStatus CoroActionNode::executeTick()
 
 void CoroActionNode::halt()
 {
-    if( _p->coro != 0 )
-    {
-        coroutine::destroy(_p->coro);
-        _p->coro = 0;
-    }
+     std::cout << "halting " << std::endl;
+    _p->pending_destroy = true;
 }
 
 SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):

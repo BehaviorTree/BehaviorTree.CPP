@@ -45,8 +45,6 @@ NodeStatus TimeoutNode::tick()
         }
     }
 
-    bool child_is_coroutine = (dynamic_cast<CoroActionNode*>( child() ) != nullptr);
-
     if ( !timeout_started_ )
     {
         timeout_started_ = true;
@@ -56,15 +54,13 @@ NodeStatus TimeoutNode::tick()
         if (msec_ > 0)
         {
             timer_id_ = timer().add(std::chrono::milliseconds(msec_),
-                                    [this, child_is_coroutine](bool aborted)
+                                    [this](bool aborted)
             {
                 if (!aborted && child()->status() == NodeStatus::RUNNING)
                 {
                     child_halted_ = true;
-                    if( !child_is_coroutine )
-                    {
-                        child()->halt();
-                    }
+                    child()->halt();
+                    child()->setStatus(NodeStatus::IDLE);
                 }
             });
         }
@@ -72,11 +68,6 @@ NodeStatus TimeoutNode::tick()
 
     if (child_halted_)
     {
-        if( child_is_coroutine )
-        {
-            child()->halt();
-        }
-        child()->setStatus(NodeStatus::IDLE);
         timeout_started_ = false;
         return NodeStatus::FAILURE;
     }
