@@ -42,17 +42,19 @@ NodeStatus TimeoutNode::tick()
         }
     }
 
-    if (status() == NodeStatus::IDLE)
+    setStatus(NodeStatus::RUNNING);
+
+    if ( child()->status() != NodeStatus::RUNNING)
     {
-        setStatus(NodeStatus::RUNNING);
         child_halted_ = false;
 
         if (msec_ > 0)
         {
-            timer_id_ = timer().add(std::chrono::milliseconds(msec_), [this](bool aborted) {
+            timer_id_ = timer().add(std::chrono::milliseconds(msec_),
+                                    [this](bool aborted)
+            {
                 if (!aborted && child()->status() == NodeStatus::RUNNING)
                 {
-                    child()->halt();
                     child_halted_ = true;
                 }
             });
@@ -61,7 +63,9 @@ NodeStatus TimeoutNode::tick()
 
     if (child_halted_)
     {
-        setStatus(NodeStatus::FAILURE);
+        child()->halt();
+        child()->setStatus(NodeStatus::IDLE);
+        return NodeStatus::FAILURE;
     }
     else
     {

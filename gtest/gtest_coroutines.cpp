@@ -24,9 +24,14 @@ class SimpleCoroAction : public BT::CoroActionNode
     virtual void halt() override
     {
         std::cout << "Action was halted. doing cleanup here" << std::endl;
-     //   start_time_ = Timepoint::min();
-     //  setStatus(BT::NodeStatus::FAILURE);
-     //   BT::CoroActionNode::halt();
+        start_time_ = Timepoint::min();
+        halted_ = true;
+        BT::CoroActionNode::halt();
+    }
+
+    bool wasHalted()
+    {
+        return halted_;
     }
 
     void setRequiredTime(Millisecond ms)
@@ -38,6 +43,7 @@ class SimpleCoroAction : public BT::CoroActionNode
     virtual BT::NodeStatus tick() override
     {
         std::cout << "Starting action " << std::endl;
+        halted_ = false;
 
         if (start_time_ == Timepoint::min())
         {
@@ -48,6 +54,8 @@ class SimpleCoroAction : public BT::CoroActionNode
         {
             setStatusRunningAndYield();
         }
+
+        halted_ = false;
 
         std::cout << "Done" << std::endl;
         start_time_ = Timepoint::min();
@@ -60,6 +68,7 @@ class SimpleCoroAction : public BT::CoroActionNode
   private:
     std::chrono::milliseconds timeout_;
     Timepoint start_time_;
+    bool halted_;
 };
 
 BT::NodeStatus executeWhileRunning(BT::TreeNode &node)
@@ -68,6 +77,7 @@ BT::NodeStatus executeWhileRunning(BT::TreeNode &node)
     while (status == BT::NodeStatus::RUNNING)
     {
         status = node.executeTick();
+        std::this_thread::sleep_for(Millisecond(1));
     }
     return status;
 }
@@ -78,18 +88,23 @@ TEST(SimpleCoroTest, do_action)
     BT::NodeConfiguration node_config_;
     node_config_.blackboard = BT::Blackboard::create();
     BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
-    SimpleCoroAction node( milliseconds(1000), false, "Action", node_config_);
+    SimpleCoroAction node( milliseconds(200), false, "Action", node_config_);
 
     EXPECT_EQ(BT::NodeStatus::SUCCESS, executeWhileRunning(node));
+    EXPECT_FALSE( node.wasHalted() );
+
     EXPECT_EQ(BT::NodeStatus::SUCCESS, executeWhileRunning(node)) << "Second call to coro action";
+    EXPECT_FALSE( node.wasHalted() );
+
     node.will_fail_ = true;
     EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(node))
         << "Should execute again and retun failure";
+    EXPECT_FALSE( node.wasHalted() );
 
-    node.setStatus(BT::NodeStatus::IDLE);  // We are forced to set this to ensure the action
-                                            // is run again
+
     EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(node))
         << "Shoudln't fail because we set status to idle";
+    EXPECT_FALSE( node.wasHalted() );
 }
 
 
@@ -99,16 +114,17 @@ TEST(SimpleCoroTest, do_action_timeout)
     node_config_.blackboard = BT::Blackboard::create();
     BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
-    SimpleCoroAction node( milliseconds(1000), false, "Action", node_config_);
-    BT::TimeoutNode timeout("TimeoutAction", 500);
+    SimpleCoroAction node( milliseconds(500), false, "Action", node_config_);
+    BT::TimeoutNode timeout("TimeoutAction", 300);
 
     timeout.setChild(&node);
 
     EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(timeout) ) << "should timeout";
+    EXPECT_TRUE( node.wasHalted() );
 
-    node.setRequiredTime( Millisecond(300) );
+    node.setRequiredTime( Millisecond(100) );
 
-    timeout.setStatus(BT::NodeStatus::IDLE);
     EXPECT_EQ(BT::NodeStatus::SUCCESS, executeWhileRunning(timeout) );
+    EXPECT_FALSE( node.wasHalted() );
 }
 
