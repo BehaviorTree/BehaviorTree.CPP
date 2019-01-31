@@ -168,6 +168,7 @@ set(BT_TESTS
   gtest/gtest_factory.cpp
   gtest/gtest_decorator.cpp
   gtest/gtest_blackboard.cpp
+  gtest/gtest_coroutines.cpp
   gtest/navigation_test.cpp
 )
 

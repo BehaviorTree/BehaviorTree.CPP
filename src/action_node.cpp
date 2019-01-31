@@ -167,7 +167,7 @@ void CoroActionNode::setStatusRunningAndYield()
 
 NodeStatus CoroActionNode::executeTick()
 {
-    if (status() == NodeStatus::IDLE)
+    if ( _p->coro == 0 )
     {
         _p->coro = coroutine::create( [this]() { setStatus(tick()); } );
     }
