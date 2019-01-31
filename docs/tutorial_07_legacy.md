@@ -1,16 +1,15 @@
-#include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
+# Wraping legacy code
 
-/** In this tutorial we will see how to wrap legacy code into a
- * BehaviorTree in a non-intrusive way, i.e. without modifying the
- * original class.
-*/
+In this tutorial we will see how to deal with legacy code that was not meant to be used
+with BehaviorTree.CPP.
 
-// This is my custom type. We won't know how to read this from a string,
-// unless we implement convertFromString<Point3D>()
+Your class might look like this one:
+
+``` C++
+// This is my custom type.
 struct Point3D { double x,y,z; };
 
-// We want to create an ActionNode that calls the method MyLegacyMoveTo::go
+// We want to create an ActionNode to calls method MyLegacyMoveTo::go
 class MyLegacyMoveTo
 {
 public:
@@ -20,32 +19,38 @@ public:
         return true; // true means success in my legacy code
     }
 };
+```
 
-// Similarly to the previous tutorials, we need to implement this parsing method,
-// providing a specialization of BT::convertFromString
+## C++ code
+
+As usuall, we need to implement the template specialization of `convertFromString`.
+
+``` C++
 namespace BT
 {
-template <> Point3D convertFromString(StringView key)
-{
-    // three real numbers separated by semicolons
-    auto parts = BT::splitString(key, ';');
-    if (parts.size() != 3)
+    template <> Point3D convertFromString(StringView key)
     {
-        throw RuntimeError("invalid input)");
+        // three real numbers separated by semicolons
+        auto parts = BT::splitString(key, ';');
+        if (parts.size() != 3)
+        {
+            throw RuntimeError("invalid input)");
+        }
+        else{
+            Point3D output;
+            output.x  = convertFromString<double>(parts[0]);
+            output.y  = convertFromString<double>(parts[1]);
+            output.z  = convertFromString<double>(parts[2]);
+            return output;
+        }
     }
-    else
-    {
-        Point3D output;
-        output.x  = convertFromString<double>(parts[0]);
-        output.y  = convertFromString<double>(parts[1]);
-        output.z  = convertFromString<double>(parts[2]);
-        return output;
-    }
-}
 } // end anmespace BT
+```
 
+To wrap the method `MyLegacyMoveTo::go`, we may use a __lambda or std::bind__ 
+to create a funtion pointer and `SimpleActionNode`.
 
-// clang-format off
+```C++
 static const char* xml_text = R"(
 
  <root>
@@ -54,8 +59,6 @@ static const char* xml_text = R"(
      </BehaviorTree>
  </root>
  )";
-
-// clang-format on
 
 int main()
 {
@@ -94,3 +97,8 @@ int main()
 Going to: -1.000000 3.000000 0.500000
 
 */
+```
+ 
+
+
+

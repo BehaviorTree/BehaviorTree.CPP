@@ -16,7 +16,7 @@ remapping is done entirely in the XML definition.
 
 Le't consider this Beahavior Tree.
 
-```XML
+```XML hl_lines="8 9"
 <root main_tree_to_execute = "MainTree">
 
     <BehaviorTree ID="MainTree">
