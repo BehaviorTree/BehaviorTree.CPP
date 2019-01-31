@@ -69,7 +69,7 @@ NodeStatus SimpleDecoratorNode::tick()
 NodeStatus DecoratorNode::executeTick()
 {
     NodeStatus status = TreeNode::executeTick();
-    NodeStatus child_status =child()->status();
+    NodeStatus child_status = child()->status();
     if( child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE )
     {
         child()->setStatus(NodeStatus::IDLE);

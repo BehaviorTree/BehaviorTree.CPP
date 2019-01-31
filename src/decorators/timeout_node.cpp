@@ -10,15 +10,17 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "behaviortree_cpp/decorators/timeout_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 namespace BT
 {
 TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
-    : DecoratorNode(name, {} ),
-    child_halted_(false),
-    timer_id_(0),
-    msec_(milliseconds),
-    read_parameter_from_ports_(false)
+  : DecoratorNode(name, {} ),
+  child_halted_(false),
+  timer_id_(0),
+  msec_(milliseconds),
+  read_parameter_from_ports_(false),
+  timeout_started_(false)
 {
     setRegistrationID("Timeout");
 }
@@ -28,7 +30,8 @@ TimeoutNode::TimeoutNode(const std::string& name, const NodeConfiguration& confi
     child_halted_(false),
     timer_id_(0),
     msec_(0),
-    read_parameter_from_ports_(true)
+    read_parameter_from_ports_(true),
+    timeout_started_(false)
 {
 }
 
@@ -42,20 +45,26 @@ NodeStatus TimeoutNode::tick()
         }
     }
 
-    setStatus(NodeStatus::RUNNING);
+    bool child_is_coroutine = (dynamic_cast<CoroActionNode*>( child() ) != nullptr);
 
-    if ( child()->status() != NodeStatus::RUNNING)
+    if ( !timeout_started_ )
     {
+        timeout_started_ = true;
+        setStatus(NodeStatus::RUNNING);
         child_halted_ = false;
 
         if (msec_ > 0)
         {
             timer_id_ = timer().add(std::chrono::milliseconds(msec_),
-                                    [this](bool aborted)
+                                    [this, child_is_coroutine](bool aborted)
             {
                 if (!aborted && child()->status() == NodeStatus::RUNNING)
                 {
                     child_halted_ = true;
+                    if( !child_is_coroutine )
+                    {
+                        child()->halt();
+                    }
                 }
             });
         }
@@ -63,8 +72,12 @@ NodeStatus TimeoutNode::tick()
 
     if (child_halted_)
     {
-        child()->halt();
+        if( child_is_coroutine )
+        {
+            child()->halt();
+        }
         child()->setStatus(NodeStatus::IDLE);
+        timeout_started_ = false;
         return NodeStatus::FAILURE;
     }
     else
@@ -73,11 +86,10 @@ NodeStatus TimeoutNode::tick()
         if (child_status != NodeStatus::RUNNING)
         {
             timer().cancel(timer_id_);
+            timeout_started_ = false;
         }
-        setStatus(child_status);
+        return child_status;
     }
-
-    return status();
 }
 
 }

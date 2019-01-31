@@ -33,9 +33,9 @@ BT::NodeStatus BT::AsyncActionTest::tick()
     tick_count_++;
     stop_loop_ = false;
     int i = 0;
-    while (!stop_loop_ && i++ < time_)
+    while (!stop_loop_ && i++ < time_*10)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     if (!stop_loop_)
@@ -51,7 +51,6 @@ BT::NodeStatus BT::AsyncActionTest::tick()
 void BT::AsyncActionTest::halt()
 {
     stop_loop_ = true;
-    setStatus(NodeStatus::IDLE);
 }
 
 void BT::AsyncActionTest::setTime(int time)

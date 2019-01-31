@@ -47,6 +47,7 @@ class TimeoutNode : public DecoratorNode
 
     unsigned msec_;
     bool read_parameter_from_ports_;
+    bool timeout_started_;
 };
 }
 

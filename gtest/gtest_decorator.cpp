@@ -22,7 +22,7 @@ struct DeadlineTest : testing::Test
     BT::TimeoutNode root;
     BT::AsyncActionTest action;
 
-    DeadlineTest() : root("deadline", 250), action("action")
+    DeadlineTest() : root("deadline", 300), action("action")
     {
         root.setChild(&action);
     }
@@ -66,29 +66,30 @@ struct RetryTest : testing::Test
 
 TEST_F(DeadlineTest, DeadlineTriggeredTest)
 {
-    BT::NodeStatus state = root.executeTick();
-    // deadline in 250 ms
-    action.setTime(3);
+    action.setTime(4);
 
+    BT::NodeStatus state = root.executeTick();
+    // deadline in 300 ms
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(350));
+    std::this_thread::sleep_for(std::chrono::milliseconds(450));
     state = root.executeTick();
-    ASSERT_EQ(NodeStatus::IDLE, action.status());
     ASSERT_EQ(NodeStatus::FAILURE, state);
+    ASSERT_EQ(NodeStatus::IDLE, action.status());
 }
 
 TEST_F(DeadlineTest, DeadlineNotTriggeredTest)
 {
-    BT::NodeStatus state = root.executeTick();
-    // deadline in 250 ms
     action.setTime(2);
+    // deadline in 300 ms
+
+    BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(350));
+    std::this_thread::sleep_for(std::chrono::milliseconds(400));
     state = root.executeTick();
     ASSERT_EQ(NodeStatus::IDLE, action.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
