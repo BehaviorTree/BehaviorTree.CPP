@@ -433,12 +433,15 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
 
     PortsRemapping remapping_parameters;
 
-    for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
+    if (element_name != "SubTree") // in Subtree attributes have different meaning...
     {
-        const std::string attribute_name = att->Name();
-        if (attribute_name != "ID" && attribute_name != "name")
+        for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
         {
-            remapping_parameters[attribute_name] = att->Value();
+            const std::string attribute_name = att->Name();
+            if (attribute_name != "ID" && attribute_name != "name")
+            {
+                remapping_parameters[attribute_name] = att->Value();
+            }
         }
     }
     NodeConfiguration config;
@@ -456,7 +459,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         {
             if( manifest.ports.count( remapping_it.first ) == 0 )
             {
-                throw RuntimeError("Possible typo. In the XML, you tried to remap port \"",
+                throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
                                    remapping_it.first, "\" in node [", ID," / ", instance_name,
                                    "], but the manifest of this node does not contain a port with this name.");
             }
@@ -565,6 +568,11 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
             {
                 new_bb->addSubtreeRemapping( remap_el->Attribute("internal"),
                                             remap_el->Attribute("external") );
+            }
+
+            for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
+            {
+                new_bb->addSubtreeRemapping( attr->Name(), attr->Value() );
             }
 
             output_tree.blackboard_stack.emplace_back(new_bb);

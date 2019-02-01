@@ -27,10 +27,13 @@ static const char* xml_text = R"(
 
         <Sequence name="main_sequence">
             <SetBlackboard output_key="move_goal" value="1;2;3" />
+            <SubTree ID="MoveRobot" target="move_goal" output="move_result" />
+            <!-- elternatively use the verbose version...
             <SubTree ID="MoveRobot">
                 <remap internal="target" external="move_goal"/>
                 <remap internal="output" external="move_result"/>
             </SubTree>
+            -->
             <SaySomething message="{move_result}"/>
         </Sequence>
 
