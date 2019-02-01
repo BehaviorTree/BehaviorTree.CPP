@@ -1,17 +1,17 @@
 
 ## Basics of the XML schema
 
-In the [first tutorial](tutorial_A_create_trees.md) this simple tree
+In the [first tutorial](tutorial_01_first_tree.md) this simple tree
 was presented.
 
 ``` XML
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-           <SaySomething   name="action_hello" message="Hello"/>
-           <OpenGripper    name="open_gripper"/>
-           <ApproachObject name="approach_object"/>
-           <CloseGripper   name="close_gripper"/>
+            <SaySomething   name="action_hello" message="Hello"/>
+            <OpenGripper    name="open_gripper"/>
+            <ApproachObject name="approach_object"/>
+            <CloseGripper   name="close_gripper"/>
         </Sequence>
      </BehaviorTree>
  </root>
@@ -19,10 +19,9 @@ was presented.
 
 You may notice that:
 
-- The first tag of the tree is `<root>`. It should contain 1 or more tags `<BehaviorTree>`.
+- The first tag of the tree is `<root>`. It should contain __1 or more__ tags `<BehaviorTree>`.
 
 - The tag `<BehaviorTree>` should have the attribute `[ID]`.
-
 
 - The tag `<root>` should contain the attribute `[main_tree_to_execute]`,refering the ID of the main tree. 
 
@@ -33,8 +32,8 @@ You may notice that:
 
      - The name of the tag is the __ID__ used to register the TreeNode in the factory.
      - The attribute `[name]` refers to the name of the instance and is __optional__.
-     - Nodeparameters are passed as attribute as well. In the previous example, the action 
-     `SaySomething` requires the NodeParameter `message`.
+     - Ports are configured using attributes. In the previous example, the action 
+     `SaySomething` requires the input port `message`.
 
 - In terms of number of children:
 
@@ -73,7 +72,8 @@ too little information about the model of the TreeNode. Tools like __Groot__ req
 the _explicit_ syntax or additional information.
 This information can be added using the tag `<TreeNodeModel>`.
 
-To make the compact version of our tree compatible with Groot, the XML must be modified as follows:
+To make the compact version of our tree compatible with Groot, the XML 
+must be modified as follows:
 
 
 ``` XML
