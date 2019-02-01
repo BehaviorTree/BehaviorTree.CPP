@@ -24,6 +24,7 @@
 #endif
 
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/utils/demangle_util.h"
 
 namespace BT
 {
@@ -586,9 +587,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 }
 
 
-std::string writeXML(const BehaviorTreeFactory& factory,
-                     const TreeNode* root_node,
-                     bool compact_representation)
+std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory)
 {
     using namespace tinyxml2;
 
@@ -596,79 +595,6 @@ std::string writeXML(const BehaviorTreeFactory& factory,
 
     XMLElement* rootXML = doc.NewElement("root");
     doc.InsertFirstChild(rootXML);
-
-    if (root_node)
-    {
-        XMLElement* bt_root = doc.NewElement("BehaviorTree");
-        rootXML->InsertEndChild(bt_root);
-
-        std::function<void(const TreeNode*, XMLElement* parent)> recursiveVisitor;
-
-        recursiveVisitor = [&recursiveVisitor, &doc, compact_representation,
-                &factory](const TreeNode* node, XMLElement* parent) -> void {
-            std::string node_type = toStr(node->type());
-            std::string node_ID = node->registrationName();
-            std::string node_name = node->name();
-
-            if (node->type() == NodeType::CONTROL)
-            {
-                node_type = node_ID;
-            }
-            else if (compact_representation)
-            {
-                for (const auto& model_it : factory.manifests())
-                {
-                    if (model_it.first == node_ID)
-                    {
-                        node_type = node_ID;
-                        break;
-                    }
-                }
-            }
-
-            XMLElement* element = doc.NewElement(node_type.c_str());
-            if (node_type != node_ID && !node_ID.empty())
-            {
-                element->SetAttribute("ID", node_ID.c_str());
-            }
-            if (node_type != node_name && !node_name.empty() && node_name != node_ID)
-            {
-                element->SetAttribute("name", node_name.c_str());
-            }
-
-            std::unordered_set<std::string> added_input_ports;
-            for (const auto& port_it : node->config().input_ports)
-            {
-                element->SetAttribute(port_it.first.c_str(), port_it.second.c_str());
-                added_input_ports.insert( port_it.first );
-            }
-            for (const auto& port_it : node->config().output_ports)
-            {
-                // Don'-t't add twice INOUT ports
-                if( added_input_ports.count(port_it.first) == 0 )
-                {
-                    element->SetAttribute(port_it.first.c_str(), port_it.second.c_str());
-                }
-            }
-
-            parent->InsertEndChild(element);
-
-            if (auto control = dynamic_cast<const BT::ControlNode*>(node))
-            {
-                for (const auto& child : control->children())
-                {
-                    recursiveVisitor(static_cast<const TreeNode*>(child), element);
-                }
-            }
-            else if (auto decorator = dynamic_cast<const BT::DecoratorNode*>(node))
-            {
-                recursiveVisitor(decorator->child(), element);
-            }
-        };
-
-        recursiveVisitor(root_node, bt_root);
-    }
-    //--------------------------
 
     XMLElement* model_root = doc.NewElement("TreeNodesModel");
     rootXML->InsertEndChild(model_root);
@@ -690,35 +616,39 @@ std::string writeXML(const BehaviorTreeFactory& factory,
         XMLElement* element = doc.NewElement(toStr(model.type));
         element->SetAttribute("ID", model.registration_ID.c_str());
 
-        std::string in_ports_list, out_ports_list, inout_ports_list;
-
         for (auto& port : model.ports)
         {
+            const auto& port_name = port.first;
             const auto& port_info = port.second;
-            std::string *str;
+
+             XMLElement* port_element = nullptr;
+
             switch( port_info.direction() )
             {
-                case PortDirection::INPUT:  str = &in_ports_list; break;
-                case PortDirection::OUTPUT: str = &out_ports_list; break;
-                case PortDirection::INOUT:  str = &inout_ports_list; break;
+                case PortDirection::INPUT:
+                    port_element = doc.NewElement("input_port");
+                break;
+
+                case PortDirection::OUTPUT:
+                    port_element = doc.NewElement("input_port");
+                break;
+
+                case PortDirection::INOUT:
+                    port_element = doc.NewElement("inout_port");
+                break;
             }
-            *str += port.first;
-            str->append(";");
-        }
-        if( !in_ports_list.empty())
-        {
-            in_ports_list.resize( in_ports_list.size()-1 );
-            element->SetAttribute("input_ports", in_ports_list.c_str() );
-        }
-        if( !out_ports_list.empty())
-        {
-            out_ports_list.resize( out_ports_list.size()-1 );
-            element->SetAttribute("output_ports", out_ports_list.c_str() );
-        }
-        if( !inout_ports_list.empty())
-        {
-            inout_ports_list.resize( inout_ports_list.size()-1 );
-            element->SetAttribute("inout_ports", inout_ports_list.c_str() );
+
+            port_element->SetAttribute("name", port_name.c_str() );
+            if( port_info.type() )
+            {
+                port_element->SetAttribute("type", BT::demangle( port_info.type() ).c_str() );
+            }
+            if( !port_info.description().empty() )
+            {
+                port_element->SetText( port_info.description().c_str() );
+            }
+
+            element->InsertEndChild(port_element);
         }
 
         model_root->InsertEndChild(element);

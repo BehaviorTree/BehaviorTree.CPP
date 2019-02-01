@@ -34,9 +34,9 @@ class XMLParser: public Parser
 
 };
 
-std::string writeXML(const BehaviorTreeFactory& factory,
-                     const TreeNode* root_node,
-                     bool compact_representation = false);
+
+std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory);
+
 }
 
 #endif   // XML_PARSING_BT_H

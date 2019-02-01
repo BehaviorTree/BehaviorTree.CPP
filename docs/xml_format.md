@@ -89,7 +89,9 @@ must be modified as follows:
 	
 	<!-- the BT executor don't require this, but Groot does --> 	
     <TreeNodeModel>
-        <Action ID="SaySomething"   message="default message"/>
+        <Action ID="SaySomething">
+            <input_port name="message" type="std::string" />
+        </Action>
         <Action ID="OpenGripper"/>
         <Action ID="ApproachObject"/>
         <Action ID="CloseGripper"/>      

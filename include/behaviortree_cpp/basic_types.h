@@ -207,7 +207,7 @@ public:
 
     void setDescription(StringView description);
 
-    const std::string& description() ;
+    const std::string& description() const;
 
 private:
 

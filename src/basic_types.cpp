@@ -239,7 +239,7 @@ void PortInfo::setDescription(StringView description)
     description_ = description.to_string();
 }
 
-const std::string &PortInfo::description()
+const std::string &PortInfo::description() const
 {
     return  description_;
 }
