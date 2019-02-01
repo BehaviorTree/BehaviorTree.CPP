@@ -204,7 +204,6 @@ NodeStatus CoroActionNode::executeTick()
 
 void CoroActionNode::halt()
 {
-     std::cout << "halting " << std::endl;
     _p->pending_destroy = true;
 }
 

@@ -1,5 +1,5 @@
 #include "behaviortree_cpp/decorators/timeout_node.h"
-#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp/behavior_tree.h"
 #include <chrono>
 #include <gtest/gtest.h>
 
@@ -83,7 +83,7 @@ BT::NodeStatus executeWhileRunning(BT::TreeNode &node)
 }
 
 
-TEST(SimpleCoroTest, do_action)
+TEST(CoroTest, do_action)
 {
     BT::NodeConfiguration node_config_;
     node_config_.blackboard = BT::Blackboard::create();
@@ -108,14 +108,14 @@ TEST(SimpleCoroTest, do_action)
 }
 
 
-TEST(SimpleCoroTest, do_action_timeout)
+TEST(CoroTest, do_action_timeout)
 {
     BT::NodeConfiguration node_config_;
     node_config_.blackboard = BT::Blackboard::create();
     BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
-    SimpleCoroAction node( milliseconds(500), false, "Action", node_config_);
-    BT::TimeoutNode timeout("TimeoutAction", 300);
+    SimpleCoroAction node( milliseconds(300), false, "Action", node_config_);
+    BT::TimeoutNode timeout("TimeoutAction", 200);
 
     timeout.setChild(&node);
 
@@ -126,5 +126,26 @@ TEST(SimpleCoroTest, do_action_timeout)
 
     EXPECT_EQ(BT::NodeStatus::SUCCESS, executeWhileRunning(timeout) );
     EXPECT_FALSE( node.wasHalted() );
+}
+
+TEST(CoroTest, sequence_child)
+{
+    BT::NodeConfiguration node_config_;
+    node_config_.blackboard = BT::Blackboard::create();
+    BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
+
+    SimpleCoroAction actionA( milliseconds(200), false, "action_A", node_config_);
+    SimpleCoroAction actionB( milliseconds(200), false, "action_B", node_config_);
+    BT::TimeoutNode timeout("timeout", 300);
+    BT::SequenceNode sequence("sequence");
+
+    timeout.setChild(&sequence);
+    sequence.addChild(&actionA);
+    sequence.addChild(&actionB);
+
+    EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(timeout) ) << "should timeout";
+    EXPECT_FALSE( actionA.wasHalted() );
+    EXPECT_TRUE( actionB.wasHalted() );
+
 }
 

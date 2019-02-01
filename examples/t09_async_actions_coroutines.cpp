@@ -3,7 +3,7 @@
 using namespace BT;
 
 /**
- * In this tutorial we demonstrate how to use the CoroActionNode, which
+ * In this tutorial, we demonstrate how to use the CoroActionNode, which
  * should be preferred over AsyncActionNode when the functions you
  * use are non-blocking.
  *
@@ -16,6 +16,7 @@ class MyAsyncAction: public CoroActionNode
         CoroActionNode(name, {})
     {}
 
+  private:
     // This is the ideal skeleton/template of an async action:
     //  - A request to a remote service provider.
     //  - A loop where we check if the reply has been received.
@@ -24,16 +25,27 @@ class MyAsyncAction: public CoroActionNode
     //  - A simple way to handle halt().
 
     NodeStatus tick() override
+
     {
         std::cout << name() <<": Started. Send Request to server." << std::endl;
 
-        int cycle = 0;
+        auto Now = [](){ return std::chrono::high_resolution_clock::now(); };
+
+        TimePoint initial_time = Now();
+        TimePoint time_before_reply = initial_time + std::chrono::milliseconds(100);
+
+        int count = 0;
         bool reply_received = false;
 
         while( !reply_received )
         {
-            std::cout << name() <<": Waiting reply." << std::endl;
-            if( ++cycle >= 3 )
+            if( count++ == 0)
+            {
+                // call this only once
+                std::cout << name() <<": Waiting Reply..." << std::endl;
+            }
+            // pretend that we received a reply
+            if( Now() >= time_before_reply )
             {
                 reply_received = true;
             }
@@ -41,61 +53,86 @@ class MyAsyncAction: public CoroActionNode
             if( !reply_received )
             {
                 // set status to RUNNING and "pause/sleep"
-                // If halt() is called, we will not resume execution
+                // If halt() is called, we will not resume execution (stack destroyed)
                 setStatusRunningAndYield();
             }
         }
 
-        // this part of the code is never reached if halt() is invoked,
+        // This part of the code is never reached if halt() is invoked,
         // only if reply_received == true;
-        std::cout << name() <<": Done." << std::endl;
+        std::cout << name() <<": Done. 'Waiting Reply' loop repeated "
+                  << count << " times" << std::endl;
+        cleanup(false);
         return NodeStatus::SUCCESS;
     }
 
+    // you might want to cleanup differently if it was halted or successful
+    void cleanup(bool halted)
+    {
+        if( halted )
+        {
+            std::cout << name() <<": cleaning up after an halt()\n" << std::endl;
+        }
+        else{
+            std::cout << name() <<": cleaning up after SUCCESS\n" << std::endl;
+        }
+    }
     void halt() override
     {
-        std::cout << name() <<": Halted. Do your cleanup here." << std::endl;
-
+        std::cout << name() <<": Halted." << std::endl;
+        cleanup(true);
         // Do not forget to call this at the end.
         CoroActionNode::halt();
     }
 };
 
 
+// clang-format off
+static const char* xml_text = R"(
+
+ <root >
+     <BehaviorTree>
+        <Timeout msec="150">
+            <SequenceStar name="sequence">
+                <MyAsyncAction name="action_A"/>
+                <MyAsyncAction name="action_B"/>
+            </SequenceStar>
+        </Timeout>
+     </BehaviorTree>
+ </root>
+ )";
+
+// clang-format on
+
 int main()
 {
-    // Simple tree: a sequence of two asycnhronous actions
-    BT::SequenceNode sequence_root("sequence");
-    MyAsyncAction action_A("actionA");
-    MyAsyncAction action_B("actionB");
+    // Simple tree: a sequence of two asycnhronous actions,
+    // but the second will be halted because of the timeout.
 
-    // Add children to the sequence.
-    sequence_root.addChild(&action_A);
-    sequence_root.addChild(&action_B);
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<MyAsyncAction>("MyAsyncAction");
 
-    NodeStatus status = NodeStatus::IDLE;
+    auto tree = factory.createTreeFromText(xml_text);
 
-    while( status != NodeStatus::SUCCESS && status != NodeStatus::FAILURE)
+    //---------------------------------------
+    // keep executin tick until it returns etiher SUCCESS or FAILURE
+    while( tree.root_node->executeTick() == NodeStatus::RUNNING)
     {
-        status = sequence_root.executeTick();
-
-        // It is often a good idea to add a sleep here to avoid busy loops
-        std::this_thread::sleep_for( std::chrono::milliseconds(1) );
+        std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
-
     return 0;
 }
 
 /* Expected output:
 
-actionA: Started. Request service using async call
-actionA: Waiting reply
-actionA: Waiting reply
-actionA: Waiting reply
-actionA: Done
-actionB: Started. Request service using async call
-actionB: Waiting reply
-actionB: Waiting reply
-actionB: Waiting reply
-actionB: Done
+action_A: Started. Send Request to server.
+action_A: Waiting Reply...
+action_A: Done. 'Waiting Reply' loop repeated 11 times
+action_A: cleaning up after SUCCESS
+
+action_B: Started. Send Request to server.
+action_B: Waiting Reply...
+action_B: Halted.
+action_B: cleaning up after an halt()
+
 */
