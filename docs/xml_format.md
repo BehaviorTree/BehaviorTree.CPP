@@ -105,7 +105,7 @@ must be modified as follows:
 
 ## Subtrees
 
-As we saw in [this tutorial](tutorial_D_subtrees.md), it is possible to include
+As we saw in [this tutorial](tutorial_06_subtree_ports.md), it is possible to include
 a Subtree inside another tree to avoid "copy and pasting" the same tree in
 multiple location and to reduce complexity.
 
