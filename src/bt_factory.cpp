@@ -171,7 +171,9 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string &text,
 {
     XMLParser parser(*this);
     parser.loadFromText(text);
-    return parser.instantiateTree(blackboard);
+    auto tree = parser.instantiateTree(blackboard);
+    tree.manifests = this->manifests();
+    return tree;
 }
 
 Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
@@ -179,7 +181,9 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
 {
     XMLParser parser(*this);
     parser.loadFromFile(file_path);
-    return parser.instantiateTree(blackboard);
+    auto tree = parser.instantiateTree(blackboard);
+    tree.manifests = this->manifests();
+    return tree;
 }
 
 Tree::~Tree()

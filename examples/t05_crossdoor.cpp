@@ -66,11 +66,11 @@ int main()
     auto tree = factory.createTreeFromText(xml_text);
 
     // Create some loggers
-    StdCoutLogger logger_cout(tree.root_node);
-    MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
-    FileLogger logger_file(tree.root_node, "bt_trace.fbl");
+    StdCoutLogger logger_cout(tree);
+    MinitraceLogger logger_minitrace(tree, "bt_trace.json");
+    FileLogger logger_file(tree, "bt_trace.fbl");
 #ifdef ZMQ_FOUND
-    PublisherZMQ publisher_zmq(tree.root_node);
+    PublisherZMQ publisher_zmq(tree);
 #endif
 
     printTreeRecursively(tree.root_node);

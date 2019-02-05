@@ -1,13 +1,13 @@
-namespace BT_Serialization;
+namespace Serialization;
 
-enum Status : byte {
+enum NodeStatus : byte {
     IDLE = 0,
     RUNNING,
     SUCCESS,
     FAILURE
 }
 
-enum Type : byte {
+enum NodeType : byte {
     UNDEFINED = 0,
     ACTION,
     CONDITION,
@@ -16,38 +16,62 @@ enum Type : byte {
     SUBTREE
 }
 
-struct Timestamp 
+enum PortDirection : byte {
+    INPUT = 0,
+    OUTPUT,
+    INOUT
+}
+
+table PortModel
 {
-  usec_since_epoch : uint64;
+  port_name : string;
+  direction : PortDirection;
+  type_info : string;
+  description: string;
 }
 
 table PortConfig
 {
-  port_name  : string;
-  value : string;
+  port_name : string;
+  remap : string;
 }
 
 table TreeNode
 {
   uid           : uint16;
   children_uid  : [uint16];
-  status        : Status;
+  status        : NodeStatus;
   instance_name : string   (required);
   registration_name : string (required);
-  ports  : [PortConfig];
+  port_remaps  : [PortConfig];
 }
+
+table NodeModel
+{
+  registration_name : string (required);
+  type : NodeType;
+  ports : [PortModel];
+}
+
 
 table BehaviorTree 
 {
   root_uid : uint16;
   nodes    : [TreeNode];
+  node_models : [NodeModel];
 }
+
+struct Timestamp
+{
+  usec_since_epoch : uint64;
+}
+
 
 struct StatusChange 
 {
   uid         : uint16;
-  prev_status : Status;
-  status      : Status;
+  prev_status : NodeStatus;
+  status      : NodeStatus;
   timestamp   : Timestamp;
 }
 

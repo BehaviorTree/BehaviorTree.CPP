@@ -4,7 +4,7 @@ namespace BT
 {
 std::atomic<bool> StdCoutLogger::ref_count(false);
 
-StdCoutLogger::StdCoutLogger(TreeNode* root_node) : StatusChangeLogger(root_node)
+StdCoutLogger::StdCoutLogger(const BT::Tree& tree) : StatusChangeLogger(tree.root_node)
 {
     bool expected = false;
     if (!ref_count.compare_exchange_strong(expected, true))

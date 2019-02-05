@@ -50,6 +50,7 @@ struct Tree
     TreeNode* root_node;
     std::vector<TreeNode::Ptr> nodes;
     std::vector<Blackboard::Ptr> blackboard_stack;
+    std::unordered_map<std::string, TreeNodeManifest> manifests;
 
     Tree() : root_node(nullptr) { }
     ~Tree();
