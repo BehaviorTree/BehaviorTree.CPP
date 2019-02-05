@@ -6,7 +6,7 @@
 
 namespace BT
 {
-inline BT_Serialization::Type convertToFlatbuffers(NodeType type)
+inline BT_Serialization::Type convertToFlatbuffers(BT::NodeType type)
 {
     switch (type)
     {
@@ -26,7 +26,7 @@ inline BT_Serialization::Type convertToFlatbuffers(NodeType type)
     return BT_Serialization::Type::UNDEFINED;
 }
 
-inline BT_Serialization::Status convertToFlatbuffers(NodeStatus type)
+inline BT_Serialization::Status convertToFlatbuffers(BT::NodeStatus type)
 {
     switch (type)
     {
@@ -63,25 +63,26 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
             children_uid.push_back(child->UID());
         }
 
-        std::vector<flatbuffers::Offset<BT_Serialization::KeyValue>> params;
+        std::vector<flatbuffers::Offset<BT_Serialization::PortConfig>> ports;
         for (const auto& it : node->config().input_ports)
         {
-            params.push_back(BT_Serialization::CreateKeyValueDirect(builder,
-                                                                    it.first.c_str(),
-                                                                    it.second.c_str()));
+            ports.push_back(BT_Serialization::CreatePortConfigDirect(
+                                builder, it.first.c_str(), it.second.c_str()));
         }
         for (const auto& it : node->config().output_ports)
         {
-            params.push_back(BT_Serialization::CreateKeyValueDirect(builder,
-                                                                    it.first.c_str(),
-                                                                    it.second.c_str()));
+            ports.push_back(BT_Serialization::CreatePortConfigDirect(
+                                builder, it.first.c_str(), it.second.c_str()));
         }
 
         auto tn = BT_Serialization::CreateTreeNode(
-            builder, node->UID(), builder.CreateVector(children_uid),
-            convertToFlatbuffers(node->type()), convertToFlatbuffers(node->status()),
-            builder.CreateString(node->name().c_str()),
-            builder.CreateString(node->registrationName().c_str()), builder.CreateVector(params));
+                    builder,
+                    node->UID(),
+                    builder.CreateVector(children_uid),
+                    convertToFlatbuffers(node->status()),
+                    builder.CreateString(node->name().c_str()),
+                    builder.CreateString(node->registrationName().c_str()),
+                    builder.CreateVector(ports));
 
         fb_nodes.push_back(tn);
     });

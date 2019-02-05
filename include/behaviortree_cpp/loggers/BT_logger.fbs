@@ -21,9 +21,9 @@ struct Timestamp
   usec_since_epoch : uint64;
 }
 
-table KeyValue
+table PortConfig
 {
-  key   : string;
+  port_name  : string;
   value : string;
 }
 
@@ -31,11 +31,10 @@ table TreeNode
 {
   uid           : uint16;
   children_uid  : [uint16];
-  type          : Type;
   status        : Status;
   instance_name : string   (required);
-  registration_name : string   (required);
-  params : [KeyValue];
+  registration_name : string (required);
+  ports  : [PortConfig];
 }
 
 table BehaviorTree 
