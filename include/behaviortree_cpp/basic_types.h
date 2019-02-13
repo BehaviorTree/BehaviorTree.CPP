@@ -175,6 +175,11 @@ using Result = Optional<void>;
 
 enum class PortDirection{INPUT, OUTPUT, INOUT };
 
+const char* toStr(PortDirection type);
+
+std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
+
+
 class PortInfo
 {
 

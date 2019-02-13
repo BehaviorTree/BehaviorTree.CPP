@@ -15,6 +15,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 
 option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
+option(BUILD_TOOLS "Build commandline tools" ON)
 
 #############################################################
 # Find packages
@@ -245,9 +246,11 @@ install(EXPORT ${PROJECT_CONFIG}
 
 ######################################################
 # EXAMPLES and TOOLS
+if(BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
 
 if( BUILD_EXAMPLES )
-    add_subdirectory(tools)
     add_subdirectory(sample_nodes)
     add_subdirectory(examples)
 endif()

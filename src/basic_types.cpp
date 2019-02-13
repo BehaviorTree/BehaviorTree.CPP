@@ -186,6 +186,12 @@ std::ostream& operator<<(std::ostream& os, const NodeStatus& status)
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const PortDirection& type)
+{
+    os << toStr(type);
+    return os;
+}
+
 std::vector<StringView> splitString(const StringView &strToSplit, char delimeter)
 {
     std::vector<StringView> splitted_strings;
@@ -242,6 +248,16 @@ void PortInfo::setDescription(StringView description)
 const std::string &PortInfo::description() const
 {
     return  description_;
+}
+
+const char *toStr(PortDirection type)
+{
+    switch(type)
+    {
+    case PortDirection::INPUT:  return "input_port";
+    case PortDirection::OUTPUT: return "output_port";
+    case PortDirection::INOUT:  return "input_port";
+    }
 }
 
 
