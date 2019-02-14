@@ -74,6 +74,12 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
   list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES})
   set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
+  find_package(backward_ros QUIET)
+  if (backward_ros_FOUND)
+      message(STATUS "backward_ros found, using it.")
+      list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES} ${backward_ros_LIBRARIES})
+  endif()
+
 else()
     find_package(GTest)
 
@@ -125,8 +131,11 @@ list(APPEND BT_SOURCE
 
     3rdparty/tinyXML2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp
-    3rdparty/backward-cpp/backward.cpp
     )
+if (NOT backward_ros_FOUND)
+    list(APPEND BT_SOURCE
+        3rdparty/backward-cpp/backward.cpp)
+endif()
 
 ######################################################
 
