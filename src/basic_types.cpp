@@ -256,8 +256,9 @@ const char *toStr(PortDirection type)
     {
     case PortDirection::INPUT:  return "input_port";
     case PortDirection::OUTPUT: return "output_port";
-    case PortDirection::INOUT:  return "input_port";
+    case PortDirection::INOUT:  return "inout_port";
     }
+    return "inout_port";
 }
 
 
