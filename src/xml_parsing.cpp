@@ -54,8 +54,6 @@ struct XMLParser::Pimpl
 
     int suffix_count;
 
-    Blackboard::Ptr blackboard;
-
     explicit Pimpl(const BehaviorTreeFactory &fact):
         factory(fact),
         current_path( filesystem::path::getcwd() ),
@@ -629,7 +627,13 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory)
             const auto& port_name = port.first;
             const auto& port_info = port.second;
 
-            XMLElement* port_element = doc.NewElement( toStr( port_info.direction()) );
+            XMLElement* port_element = nullptr;
+            switch(  port_info.direction() )
+            {
+            case PortDirection::INPUT:  port_element = doc.NewElement("input_port");  break;
+            case PortDirection::OUTPUT: port_element = doc.NewElement("output_port"); break;
+            case PortDirection::INOUT:  port_element = doc.NewElement("inout_port");  break;
+            }
 
             port_element->SetAttribute("name", port_name.c_str() );
             if( port_info.type() )
