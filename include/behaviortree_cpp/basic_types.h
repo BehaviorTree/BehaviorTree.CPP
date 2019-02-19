@@ -38,6 +38,13 @@ enum class NodeStatus
     FAILURE
 };
 
+enum class PortDirection{
+    INPUT,
+    OUTPUT,
+    INOUT
+};
+
+
 typedef nonstd::string_view StringView;
 
 /**
@@ -90,6 +97,10 @@ NodeStatus convertFromString<NodeStatus>(StringView str);
 template <>  // Names with all capital letters
 NodeType convertFromString<NodeType>(StringView str);
 
+template <>
+PortDirection convertFromString<PortDirection>(StringView str);
+
+
 typedef std::function<Any(StringView)> StringConverter;
 
 typedef std::unordered_map<const std::type_info*, StringConverter> StringConvertersMap;
@@ -113,17 +124,21 @@ StringConverter GetAnyFromStringFunctor<void>()
 /**
  * @brief toStr converts NodeStatus to string. Optionally colored.
  */
-const char* toStr(const BT::NodeStatus& status, bool colored = false);
+const char* toStr(BT::NodeStatus status, bool colored = false);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
 
 /**
  * @brief toStr converts NodeType to string.
  */
-const char* toStr(const BT::NodeType& type);
+const char* toStr(BT::NodeType type);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
+
+const char* toStr(BT::PortDirection direction);
+
+std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
 
 // Small utility, unless you want to use <boost/algorithm/string.hpp>
 std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
@@ -172,13 +187,6 @@ template <typename T> using Optional = nonstd::expected<T, std::string>;
  *
  * */
 using Result = Optional<void>;
-
-enum class PortDirection{INPUT, OUTPUT, INOUT };
-
-const char* toStr(PortDirection type);
-
-std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
-
 
 class PortInfo
 {

@@ -4,7 +4,7 @@
 
 namespace BT
 {
-const char* toStr(const NodeStatus& status, bool colored)
+const char* toStr(NodeStatus status, bool colored)
 {
     if (!colored)
     {
@@ -45,7 +45,7 @@ const char* toStr(const NodeStatus& status, bool colored)
     return "Undefined";
 }
 
-const char* toStr(const NodeType& type)
+const char* toStr(NodeType type)
 {
     switch (type)
     {
@@ -174,6 +174,15 @@ NodeType convertFromString<NodeType>(StringView str)
     return NodeType::UNDEFINED;
 }
 
+template <>
+PortDirection convertFromString<PortDirection>(StringView str)
+{
+    if( str == "Input"  || str == "INPUT" )    return PortDirection::INPUT;
+    if( str == "Output" || str == "OUTPUT")    return PortDirection::OUTPUT;
+    return PortDirection::INOUT;
+}
+
+
 std::ostream& operator<<(std::ostream& os, const NodeType& type)
 {
     os << toStr(type);
@@ -217,10 +226,6 @@ PortDirection PortInfo::direction() const
     return _type;
 }
 
-const std::type_info* PortInfo::type() const
-{
-    return _info;
-}
 
 Any PortInfo::parseString(const char *str) const
 {
@@ -254,10 +259,15 @@ const char *toStr(PortDirection type)
 {
     switch(type)
     {
-    case PortDirection::INPUT:  return "input_port";
-    case PortDirection::OUTPUT: return "output_port";
-    case PortDirection::INOUT:  return "input_port";
+    case PortDirection::INPUT:  return "Input";
+    case PortDirection::OUTPUT: return "Output";
+    case PortDirection::INOUT:  return "InOut";
     }
+}
+
+const std::type_info* PortInfo::type() const
+{
+    return _info;
 }
 
 
