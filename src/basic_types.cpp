@@ -226,6 +226,10 @@ PortDirection PortInfo::direction() const
     return _type;
 }
 
+const std::type_info* PortInfo::type() const
+{
+    return _info;
+}
 
 Any PortInfo::parseString(const char *str) const
 {
@@ -263,11 +267,7 @@ const char *toStr(PortDirection type)
     case PortDirection::OUTPUT: return "Output";
     case PortDirection::INOUT:  return "InOut";
     }
-}
-
-const std::type_info* PortInfo::type() const
-{
-    return _info;
+    return "InOut";
 }
 
 
