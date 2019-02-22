@@ -254,9 +254,19 @@ void PortInfo::setDescription(StringView description)
     description_ = description.to_string();
 }
 
+void PortInfo::setDefaultValue(StringView default_value_as_string)
+{
+    default_value_ = default_value_as_string.to_string();
+}
+
 const std::string &PortInfo::description() const
 {
     return  description_;
+}
+
+const std::string &PortInfo::defaultValue() const
+{
+    return  default_value_;
 }
 
 const char *toStr(PortDirection type)

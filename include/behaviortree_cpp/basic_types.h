@@ -220,7 +220,11 @@ public:
 
     void setDescription(StringView description);
 
+    void setDefaultValue(StringView default_value_as_string);
+
     const std::string& description() const;
+
+    const std::string& defaultValue() const;
 
 private:
 
@@ -228,6 +232,7 @@ private:
     const std::type_info* _info;
     StringConverter _converter;
     std::string description_;
+    std::string default_value_;
 };
 
 template <typename T = void>
