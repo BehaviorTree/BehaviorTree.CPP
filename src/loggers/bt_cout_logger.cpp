@@ -4,7 +4,7 @@ namespace BT
 {
 std::atomic<bool> StdCoutLogger::ref_count(false);
 
-StdCoutLogger::StdCoutLogger(TreeNode* root_node) : StatusChangeLogger(root_node)
+StdCoutLogger::StdCoutLogger(const BT::Tree& tree) : StatusChangeLogger(tree.root_node)
 {
     bool expected = false;
     if (!ref_count.compare_exchange_strong(expected, true))
@@ -26,9 +26,11 @@ void StdCoutLogger::callback(Duration timestamp, const TreeNode& node, NodeStatu
     constexpr const size_t ws_count = 25;
 
     double since_epoch = duration<double>(timestamp).count();
-    printf("[%.3f]: %s%s %s -> %s", since_epoch, node.name().c_str(),
-           &whitespaces[std::min(ws_count, node.name().size())], toStr(prev_status, true),
-           toStr(status, true));
+    printf("[%.3f]: %s%s %s -> %s",
+           since_epoch, node.name().c_str(),
+           &whitespaces[std::min(ws_count, node.name().size())],
+           toStr(prev_status, true).c_str(),
+           toStr(status, true).c_str() );
     std::cout << std::endl;
 }
 

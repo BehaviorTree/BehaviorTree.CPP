@@ -4,21 +4,29 @@
 
 namespace BT
 {
-const char* toStr(const NodeStatus& status, bool colored)
+
+template <>
+std::string toStr<NodeStatus>(NodeStatus status)
+{
+    switch (status)
+    {
+        case NodeStatus::SUCCESS:
+            return "SUCCESS";
+        case NodeStatus::FAILURE:
+            return "FAILURE";
+        case NodeStatus::RUNNING:
+            return "RUNNING";
+        case NodeStatus::IDLE:
+            return "IDLE";
+    }
+    return "";
+}
+
+std::string toStr(NodeStatus status, bool colored)
 {
     if (!colored)
     {
-        switch (status)
-        {
-            case NodeStatus::SUCCESS:
-                return "SUCCESS";
-            case NodeStatus::FAILURE:
-                return "FAILURE";
-            case NodeStatus::RUNNING:
-                return "RUNNING";
-            case NodeStatus::IDLE:
-                return "IDLE";
-        }
+        return toStr(status);
     }
     else
     {
@@ -45,7 +53,22 @@ const char* toStr(const NodeStatus& status, bool colored)
     return "Undefined";
 }
 
-const char* toStr(const NodeType& type)
+
+
+template <>
+std::string toStr<PortDirection>(PortDirection direction)
+{
+    switch(direction)
+    {
+        case PortDirection::INPUT:  return "Input";
+        case PortDirection::OUTPUT: return "Output";
+        case PortDirection::INOUT:  return "InOut";
+    }
+    return "InOut";
+}
+
+
+template<> std::string toStr<NodeType>(NodeType type)
 {
     switch (type)
     {
@@ -64,11 +87,13 @@ const char* toStr(const NodeType& type)
     }
 }
 
+
 template <>
 std::string convertFromString<std::string>(StringView str)
 {
     return std::string( str.data(), str.size() );
 }
+
 
 template <>
 const char* convertFromString<const char*>(StringView str)
@@ -174,6 +199,15 @@ NodeType convertFromString<NodeType>(StringView str)
     return NodeType::UNDEFINED;
 }
 
+template <>
+PortDirection convertFromString<PortDirection>(StringView str)
+{
+    if( str == "Input"  || str == "INPUT" )    return PortDirection::INPUT;
+    if( str == "Output" || str == "OUTPUT")    return PortDirection::OUTPUT;
+    return PortDirection::INOUT;
+}
+
+
 std::ostream& operator<<(std::ostream& os, const NodeType& type)
 {
     os << toStr(type);
@@ -183,6 +217,12 @@ std::ostream& operator<<(std::ostream& os, const NodeType& type)
 std::ostream& operator<<(std::ostream& os, const NodeStatus& status)
 {
     os << toStr(status);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const PortDirection& type)
+{
+    os << toStr(type);
     return os;
 }
 
@@ -239,10 +279,21 @@ void PortInfo::setDescription(StringView description)
     description_ = description.to_string();
 }
 
+void PortInfo::setDefaultValue(StringView default_value_as_string)
+{
+    default_value_ = default_value_as_string.to_string();
+}
+
 const std::string &PortInfo::description() const
 {
     return  description_;
 }
+
+const std::string &PortInfo::defaultValue() const
+{
+    return  default_value_;
+}
+
 
 
 }   // end namespace

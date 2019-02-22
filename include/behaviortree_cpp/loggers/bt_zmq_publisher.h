@@ -13,7 +13,7 @@ class PublisherZMQ : public StatusChangeLogger
     static std::atomic<bool> ref_count;
 
   public:
-    PublisherZMQ(TreeNode* root_node, int max_msg_per_second = 25);
+    PublisherZMQ(const BT::Tree& tree, int max_msg_per_second = 25);
 
     virtual ~PublisherZMQ();
 
@@ -23,7 +23,7 @@ class PublisherZMQ : public StatusChangeLogger
 
     virtual void flush() override;
 
-    TreeNode* root_node_;
+    const BT::Tree& tree_;
     std::vector<uint8_t> tree_buffer_;
     std::vector<uint8_t> status_buffer_;
     std::vector<SerializedTransition> transition_buffer_;
