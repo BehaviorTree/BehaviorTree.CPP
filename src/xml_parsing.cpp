@@ -224,15 +224,15 @@ void VerifyXML(const std::string& xml_text,
         throw RuntimeError("The XML must have a root node called <root>");
     }
     //-------------------------------------------------
-    auto meta_root = xml_root->FirstChildElement("TreeNodesModel");
-    auto meta_sibling = meta_root ? meta_root->NextSiblingElement("TreeNodesModel") : nullptr;
+    auto models_root = xml_root->FirstChildElement("TreeNodesModel");
+    auto meta_sibling = models_root ? models_root->NextSiblingElement("TreeNodesModel") : nullptr;
 
     if (meta_sibling)
     {
        ThrowError(meta_sibling->GetLineNum(),
                            " Only a single node <TreeNodesModel> is supported");
     }
-    if (meta_root)
+    if (models_root)
     {
         // not having a MetaModel is not an error. But consider that the
         // Graphical editor needs it.
@@ -669,6 +669,11 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory)
             {
                 port_element->SetAttribute("type", BT::demangle( port_info.type() ).c_str() );
             }
+            if( !port_info.defaultValue().empty() )
+            {
+                port_element->SetAttribute("default", port_info.defaultValue().c_str() );
+            }
+
             if( !port_info.description().empty() )
             {
                 port_element->SetText( port_info.description().c_str() );
