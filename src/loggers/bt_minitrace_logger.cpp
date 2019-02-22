@@ -35,20 +35,20 @@ void MinitraceLogger::callback(Duration /*timestamp*/,
 
     const bool statusCompleted = (status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE);
 
-    const char* category = toStr(node.type());
+    const std::string& category = toStr(node.type());
     const char* name = node.name().c_str();
 
     if (prev_status == NodeStatus::IDLE && statusCompleted)
     {
-        MTR_INSTANT(category, name);
+        MTR_INSTANT(category.c_str(), name);
     }
     else if (status == NodeStatus::RUNNING)
     {
-        MTR_BEGIN(category, name);
+        MTR_BEGIN(category.c_str(), name);
     }
     else if (prev_status == NodeStatus::RUNNING && statusCompleted)
     {
-        MTR_END(category, name);
+        MTR_END(category.c_str(), name);
     }
 }
 

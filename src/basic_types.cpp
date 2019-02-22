@@ -4,21 +4,29 @@
 
 namespace BT
 {
-const char* toStr(NodeStatus status, bool colored)
+
+template <>
+std::string toStr<NodeStatus>(NodeStatus status)
+{
+    switch (status)
+    {
+        case NodeStatus::SUCCESS:
+            return "SUCCESS";
+        case NodeStatus::FAILURE:
+            return "FAILURE";
+        case NodeStatus::RUNNING:
+            return "RUNNING";
+        case NodeStatus::IDLE:
+            return "IDLE";
+    }
+    return "";
+}
+
+std::string toStr(NodeStatus status, bool colored)
 {
     if (!colored)
     {
-        switch (status)
-        {
-            case NodeStatus::SUCCESS:
-                return "SUCCESS";
-            case NodeStatus::FAILURE:
-                return "FAILURE";
-            case NodeStatus::RUNNING:
-                return "RUNNING";
-            case NodeStatus::IDLE:
-                return "IDLE";
-        }
+        return toStr(status);
     }
     else
     {
@@ -45,7 +53,22 @@ const char* toStr(NodeStatus status, bool colored)
     return "Undefined";
 }
 
-const char* toStr(NodeType type)
+
+
+template <>
+std::string toStr<PortDirection>(PortDirection direction)
+{
+    switch(direction)
+    {
+        case PortDirection::INPUT:  return "Input";
+        case PortDirection::OUTPUT: return "Output";
+        case PortDirection::INOUT:  return "InOut";
+    }
+    return "InOut";
+}
+
+
+template<> std::string toStr<NodeType>(NodeType type)
 {
     switch (type)
     {
@@ -64,11 +87,13 @@ const char* toStr(NodeType type)
     }
 }
 
+
 template <>
 std::string convertFromString<std::string>(StringView str)
 {
     return std::string( str.data(), str.size() );
 }
+
 
 template <>
 const char* convertFromString<const char*>(StringView str)
@@ -269,16 +294,6 @@ const std::string &PortInfo::defaultValue() const
     return  default_value_;
 }
 
-const char *toStr(PortDirection type)
-{
-    switch(type)
-    {
-    case PortDirection::INPUT:  return "Input";
-    case PortDirection::OUTPUT: return "Output";
-    case PortDirection::INOUT:  return "InOut";
-    }
-    return "InOut";
-}
 
 
 }   // end namespace

@@ -121,22 +121,30 @@ StringConverter GetAnyFromStringFunctor<void>()
 
 //------------------------------------------------------------------
 
+template <typename T>
+std::string toStr(T value)
+{
+    return std::to_string(value);
+}
+
+template<> std::string toStr<BT::NodeStatus>(BT::NodeStatus status);
+
 /**
  * @brief toStr converts NodeStatus to string. Optionally colored.
  */
-const char* toStr(BT::NodeStatus status, bool colored = false);
+std::string toStr(BT::NodeStatus status, bool colored);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
 
 /**
  * @brief toStr converts NodeType to string.
  */
-const char* toStr(BT::NodeType type);
+template<> std::string toStr<BT::NodeType>(BT::NodeType type);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
 
-const char* toStr(BT::PortDirection direction);
+template<> std::string toStr<BT::PortDirection>(BT::PortDirection direction);
 
 std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
 
@@ -257,9 +265,9 @@ std::pair<std::string,PortInfo> CreatePort(PortDirection direction,
     return out;
 }
 
-
+//----------
 template <typename T = void> inline
-std::pair<std::string,PortInfo> InputPort(StringView name, StringView description = {})
+    std::pair<std::string,PortInfo> InputPort(StringView name, StringView description = {})
 {
     return CreatePort<T>(PortDirection::INPUT, name, description );
 }
@@ -271,11 +279,35 @@ std::pair<std::string,PortInfo> OutputPort(StringView name, StringView descripti
 }
 
 template <typename T = void> inline
-std::pair<std::string,PortInfo> BidirectionalPort(StringView name, StringView description = {})
+    std::pair<std::string,PortInfo> BidirectionalPort(StringView name, StringView description = {})
 {
     return CreatePort<T>(PortDirection::INOUT, name, description );
 }
+//----------
+template <typename T = void> inline
+    std::pair<std::string,PortInfo> InputPort(StringView name, const T& default_value, StringView description)
+{
+    auto out = CreatePort<T>(PortDirection::INPUT, name, description );
+    out.second.setDefaultValue( BT::toStr(default_value) );
+    return out;
+}
 
+template <typename T = void> inline
+    std::pair<std::string,PortInfo> OutputPort(StringView name, const T& default_value, StringView description)
+{
+    auto out = CreatePort<T>(PortDirection::OUTPUT, name, description );
+    out.second.setDefaultValue( BT::toStr(default_value) );
+    return out;
+}
+
+template <typename T = void> inline
+    std::pair<std::string,PortInfo> BidirectionalPort(StringView name, const T& default_value, StringView description)
+{
+    auto out = CreatePort<T>(PortDirection::INOUT, name, description );
+    out.second.setDefaultValue( BT::toStr(default_value) );
+    return out;
+}
+//----------
 
 typedef std::unordered_map<std::string, PortInfo> PortsList;
 

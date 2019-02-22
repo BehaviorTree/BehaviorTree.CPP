@@ -549,6 +549,20 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                 }
             }
         }
+        // use default value if available for empty ports. Only inputs
+        for (const auto& port_it: manifest.ports)
+        {
+            const std::string& port_name =  port_it.first;
+            const PortInfo& port_info = port_it.second;
+
+            auto direction = port_info.direction();
+            if( direction != PortDirection::INPUT &&
+                config.input_ports.count(port_name) == 0 &&
+                port_info.defaultValue().empty() == false)
+            {
+                config.input_ports.insert( { port_name, port_info.defaultValue() } );
+            }
+        }
         child_node = factory.instantiateTreeNode(instance_name, ID, config);
     }
     else if( tree_roots.count(ID) != 0) {
@@ -648,7 +662,7 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory)
         {
             continue;
         }
-        XMLElement* element = doc.NewElement(toStr(model.type));
+        XMLElement* element = doc.NewElement( toStr(model.type).c_str() );
         element->SetAttribute("ID", model.registration_ID.c_str());
 
         for (auto& port : model.ports)
