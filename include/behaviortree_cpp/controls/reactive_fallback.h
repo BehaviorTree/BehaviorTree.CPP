@@ -28,8 +28,8 @@ namespace BT
  *
  * If all the children fail, than this node returns FAILURE.
  *
- * IMPORTANT: to work properly, this node should not have more than a single
- *            asynchronous child.
+ * IMPORTANT: to work properly, this node should not have more than
+ *            a single asynchronous child.
  *
  */
 class ReactiveFallback : public ControlNode
@@ -38,8 +38,6 @@ class ReactiveFallback : public ControlNode
 
     ReactiveFallback(const std::string& name):
       ControlNode(name, {}){}
-
-    ~ReactiveFallback() = default;
 
   private:
 

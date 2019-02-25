@@ -38,8 +38,6 @@ class ReactiveSequence : public ControlNode
     ReactiveSequence(const std::string& name):
         ControlNode(name, {}) {}
 
-    ~ReactiveSequence() = default;
-
   private:
 
     virtual BT::NodeStatus tick() override;
