@@ -19,10 +19,11 @@ namespace BT
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
     registerNodeType<FallbackNode>("Fallback");
-    registerNodeType<FallbackStarNode>("FallbackStar");
     registerNodeType<SequenceNode>("Sequence");
     registerNodeType<SequenceStarNode>("SequenceStar");
-    registerNodeType<ParallelNode>("ParallelNode");
+    registerNodeType<ParallelNode>("Parallel");
+    registerNodeType<ParallelAllNode>("ParallelAll");
+    registerNodeType<ParallelFirstNode>("ParallelFirst");
 
     registerNodeType<InverterNode>("Inverter");
     registerNodeType<RetryNode>("RetryUntilSuccesful");

@@ -16,35 +16,15 @@
 namespace BT
 {
 
-constexpr const char* SequenceStarNode::RESET_PARAM;
-
-SequenceStarNode::SequenceStarNode(const std::string& name, bool reset_on_failure)
+SequenceStarNode::SequenceStarNode(const std::string& name)
     : ControlNode::ControlNode(name, {} )
   , current_child_idx_(0)
-  , reset_on_failure_(reset_on_failure)
-  , read_parameter_from_ports_(false)
 {
     setRegistrationID("SequenceStar");
 }
 
-SequenceStarNode::SequenceStarNode(const std::string& name, const NodeConfiguration& config)
-  : ControlNode::ControlNode(name, config)
-  , current_child_idx_(0)
-  , reset_on_failure_(true)
-  , read_parameter_from_ports_(true)
-{
-}
-
 NodeStatus SequenceStarNode::tick()
 {
-    if(read_parameter_from_ports_)
-    {
-        if( !getInput(RESET_PARAM, reset_on_failure_) )
-        {
-            throw RuntimeError("Missing parameter [", RESET_PARAM ,"] in SequenceStarNode");
-        }
-    }
-
     const size_t children_count = children_nodes_.size();
 
     setStatus(NodeStatus::RUNNING);
@@ -62,15 +42,8 @@ NodeStatus SequenceStarNode::tick()
             }
             case NodeStatus::FAILURE:
             {
-                if (reset_on_failure_)
-                {
-                    haltChildren(0);
-                    current_child_idx_ = 0;
-                }
-                else
-                {
-                    haltChildren(current_child_idx_);
-                }
+                // DO NOT reset on failure
+                haltChildren(current_child_idx_);
                 return child_status;
             }
             case NodeStatus::SUCCESS:
@@ -100,4 +73,5 @@ void SequenceStarNode::halt()
     current_child_idx_ = 0;
     ControlNode::halt();
 }
+
 }

@@ -28,37 +28,26 @@ namespace BT
  *   Loop is NOT restarted, the same running child will be ticked again.
  *
  * - If a child returns FAILURE, stop the loop and return FAILURE.
- *   Restart the loop only if (reset_on_failure == true)
+ *   Loop is NOT restarted, the same running child will be ticked again.
  *
  */
 
 class SequenceStarNode : public ControlNode
 {
   public:
-    SequenceStarNode(const std::string& name, bool reset_on_failure = true);
-
-    // Reset policy passed by parameter [reset_on_failure]
-    SequenceStarNode(const std::string& name, const NodeConfiguration& config);
+    SequenceStarNode(const std::string& name);
 
     virtual ~SequenceStarNode() override = default;
 
     virtual void halt() override;
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<bool>(RESET_PARAM, "If true, a failed child will reset "
-                                              "the index of the sequence to 0.") };
-    }
-
   private:
-    unsigned int current_child_idx_;
-    bool reset_on_failure_;
 
-    bool read_parameter_from_ports_;
-    static constexpr const char* RESET_PARAM = "reset_on_failure";
+    unsigned int current_child_idx_;
 
     virtual BT::NodeStatus tick() override;
 };
+
 }
 
 #endif   // SEQUENCE_NODE_WITH_MEMORY_H

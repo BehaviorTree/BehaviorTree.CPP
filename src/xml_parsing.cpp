@@ -299,8 +299,9 @@ void VerifyXML(const std::string& xml_text,
                                    "The node <Condition> must have the attribute [ID]");
             }
         }
-        else if (StrEqual(name, "Sequence") || StrEqual(name, "SequenceStar") ||
-                 StrEqual(name, "Fallback") || StrEqual(name, "FallbackStar"))
+        else if (StrEqual(name, "Sequence") ||
+                 StrEqual(name, "SequenceStar") ||
+                 StrEqual(name, "Fallback") )
         {
             if (children_count == 0)
             {

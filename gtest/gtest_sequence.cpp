@@ -36,7 +36,7 @@ struct SimpleSequenceTest : testing::Test
 
 struct ComplexSequenceTest : testing::Test
 {
-    BT::SequenceNode root;
+    BT::ParallelAllNode root;
     BT::AsyncActionTest action_1;
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
@@ -44,7 +44,7 @@ struct ComplexSequenceTest : testing::Test
     BT::SequenceNode seq_conditions;
 
     ComplexSequenceTest()
-      : root("root_sequence")
+      : root("root")
       , action_1("action_1")
       , condition_1("condition_1")
       , condition_2("condition_2")
@@ -223,8 +223,8 @@ TEST_F(SimpleSequenceTest, ConditionTrue)
 
 TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
 {
-    BT::NodeStatus state = root.executeTick();
     condition.setBoolean(false);
+    BT::NodeStatus state = root.executeTick();
 
     state = root.executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, state);

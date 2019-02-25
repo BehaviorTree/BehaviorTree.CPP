@@ -20,8 +20,15 @@ namespace BT
 
 SequenceNode::SequenceNode(const std::string& name)
     : ControlNode::ControlNode(name, {} )
+  , current_child_idx_(0)
 {
     setRegistrationID("Sequence");
+}
+
+void SequenceNode::halt()
+{
+    current_child_idx_ = 0;
+    ControlNode::halt();
 }
 
 NodeStatus SequenceNode::tick()
@@ -30,18 +37,10 @@ NodeStatus SequenceNode::tick()
 
     setStatus(NodeStatus::RUNNING);
 
-    for (unsigned int index = 0; index < children_count; index++)
+    while (current_child_idx_ < children_count)
     {
-        TreeNode* child_node = children_nodes_[index];
-
-        NodeStatus child_status = child_node->status();
-
-        // special case just for Actions
-        auto action_child = dynamic_cast<ActionNodeBase*>(child_node);
-        if ( !action_child || child_status == NodeStatus::IDLE || child_status == NodeStatus::RUNNING)
-        {
-            child_status = child_node->executeTick();
-        }
+        TreeNode* current_child_node = children_nodes_[current_child_idx_];
+        const NodeStatus child_status = current_child_node->executeTick();
 
         switch (child_status)
         {
@@ -51,12 +50,14 @@ NodeStatus SequenceNode::tick()
             }
             case NodeStatus::FAILURE:
             {
+                // Reset on failure
                 haltChildren(0);
+                current_child_idx_ = 0;
                 return child_status;
             }
             case NodeStatus::SUCCESS:
             {
-                // continue;
+                current_child_idx_++;
             }
             break;
 
@@ -65,9 +66,15 @@ NodeStatus SequenceNode::tick()
                 throw LogicError("This is not supposed to happen");
             }
         }   // end switch
-    }       // end for loop
+    }       // end while loop
 
-    haltChildren(0);
+    // The entire while loop completed. This means that all the children returned SUCCESS.
+    if (current_child_idx_ == children_count)
+    {
+        haltChildren(0);
+        current_child_idx_ = 0;
+    }
     return NodeStatus::SUCCESS;
 }
+
 }

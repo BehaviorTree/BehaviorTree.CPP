@@ -5,11 +5,6 @@ in other frameworks.
 
 Its purpose is to try different strategies, until we find one that "works".
 
-Currently the framework provides two kinds of nodes:
-
-- FallbackNode
-- FallbackStarNode
-
 They share the following rules:
 
 - Before ticking the first child, the node status becomes __RUNNING__.

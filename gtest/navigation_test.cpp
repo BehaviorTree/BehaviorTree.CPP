@@ -5,12 +5,13 @@
 using namespace BT;
 
 // clang-format off
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 
 <root main_tree_to_execute="BehaviorTree">
     <BehaviorTree ID="BehaviorTree">
-        <FallbackStar name="root">
-            <Sequence name="navigation_subtree">
+        <Fallback name="root">
+
+            <ParallelAll name="navigation_subtree">
                 <Inverter>
                     <Condition ID="IsStuck"/>
                 </Inverter>
@@ -18,12 +19,14 @@ const std::string xml_text = R"(
                     <Action ID="ComputePathToPose"/>
                     <Action ID="FollowPath"/>
                 </SequenceStar>
-            </Sequence>
+            </ParallelAll>
+
             <SequenceStar name="stuck_recovery">
                 <Condition ID="IsStuck"/>
                 <Action ID="BackUpAndSpin"/>
             </SequenceStar>
-        </FallbackStar>
+
+        </Fallback>
     </BehaviorTree>
 </root>
  )";

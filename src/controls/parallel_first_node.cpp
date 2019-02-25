@@ -1,5 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+/* Copyright (C) 2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,68 +10,49 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/controls/fallback_node.h"
-#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp/controls/parallel_first_node.h"
+
 namespace BT
 {
 
-FallbackNode::FallbackNode(const std::string& name)
-    : ControlNode::ControlNode(name, {} )
-    ,current_child_idx_(0)
+NodeStatus ParallelFirstNode::tick()
 {
-    setRegistrationID("Fallback");
-}
+    size_t failure_count = 0;
+    size_t running_count = 0;
 
-NodeStatus FallbackNode::tick()
-{
-    const size_t children_count = children_nodes_.size();
-
-    setStatus(NodeStatus::RUNNING);
-
-    while (current_child_idx_ < children_count)
+    for (size_t index=0; index < childrenCount(); index++)
     {
-        TreeNode* current_child_node = children_nodes_[current_child_idx_];
+        TreeNode* current_child_node = children_nodes_[index];
         const NodeStatus child_status = current_child_node->executeTick();
 
         switch (child_status)
         {
             case NodeStatus::RUNNING:
             {
-                return child_status;
-            }
+                running_count++;
+            }break;
+
+            case NodeStatus::FAILURE:
+            {
+                // Reset on failure
+                failure_count++;
+            }break;
+
             case NodeStatus::SUCCESS:
             {
                 haltChildren(0);
-                current_child_idx_ = 0;
-                return child_status;
+                return NodeStatus::SUCCESS;
             }
-            case NodeStatus::FAILURE:
-            {
-                current_child_idx_++;
-            }
-            break;
 
             case NodeStatus::IDLE:
             {
                 throw LogicError("This is not supposed to happen");
             }
         }   // end switch
-    }       // end while loop
+    } //end for
 
-    // The entire while loop completed. This means that all the children returned FAILURE.
-    if (current_child_idx_ == children_count)
-    {
-        haltChildren(0);
-        current_child_idx_ = 0;
-    }
-
-    return NodeStatus::FAILURE;
-}
-
-void FallbackNode::halt()
-{
-    current_child_idx_ = 0;
-    ControlNode::halt();
+    return NodeStatus::RUNNING;
 }
 
 }
+

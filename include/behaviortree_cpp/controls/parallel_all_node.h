@@ -1,5 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+/* Copyright (C) 2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,41 +10,27 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef SEQUENCENODE_H
-#define SEQUENCENODE_H
+#ifndef PARALLEL_ALL_NODE_H
+#define PARALLEL_ALL_NODE_H
 
 #include "behaviortree_cpp/control_node.h"
 
 namespace BT
 {
-/**
- * @brief The SequenceNode is used to tick children in an ordered sequence.
- * If any child returns RUNNING, previous children will NOT be ticked again.
- *
- * - If all the children return SUCCESS, this node returns SUCCESS.
- *
- * - If a child returns RUNNING, this node returns RUNNING.
- *   Loop is NOT restarted, the same running child will be ticked again.
- *
- * - If a child returns FAILURE, stop the loop and return FAILURE.
- *   Restart the loop only if (reset_on_failure == true)
- *
- */
-class SequenceNode : public ControlNode
+
+class ParallelAllNode : public ControlNode
 {
   public:
-    SequenceNode(const std::string& name);
 
-    virtual ~SequenceNode() override = default;
+    ParallelAllNode(const std::string& name):
+        ControlNode(name, {}) {}
 
-    virtual void halt() override;
+    ~ParallelAllNode() = default;
 
   private:
-    unsigned int current_child_idx_;
 
     virtual BT::NodeStatus tick() override;
 };
 
 }
-
-#endif // SEQUENCENODE_H
+#endif   // PARALLEL_ALL_NODE_H
