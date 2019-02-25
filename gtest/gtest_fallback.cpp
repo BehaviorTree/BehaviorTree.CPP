@@ -16,6 +16,7 @@
 #include "behaviortree_cpp/behavior_tree.h"
 
 using BT::NodeStatus;
+using std::chrono::milliseconds;
 
 struct SimpleFallbackTest : testing::Test
 {
@@ -23,7 +24,10 @@ struct SimpleFallbackTest : testing::Test
     BT::ConditionTestNode condition;
     BT::AsyncActionTest action;
 
-    SimpleFallbackTest() : root("root_fallback"), action("action"), condition("condition")
+    SimpleFallbackTest() :
+      root("root_fallback")
+      , condition("condition")
+      , action("action", milliseconds(100) )
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -45,7 +49,7 @@ struct ParallelOneTest : testing::Test
       : root("root_first")
       , condition_1("condition_1")
       , condition_2("condition_2")
-      , action_1("action_1")
+      , action_1("action_1", milliseconds(100) )
     {
         root.addChild(&condition_1);
         root.addChild(&condition_2);
@@ -63,7 +67,10 @@ struct SimpleFallbackWithMemoryTest : testing::Test
     BT::AsyncActionTest action;
     BT::ConditionTestNode condition;
 
-    SimpleFallbackWithMemoryTest() : root("root_sequence"), action("action"), condition("condition")
+    SimpleFallbackWithMemoryTest() :
+      root("root_sequence")
+      , action("action", milliseconds(100) )
+      , condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -89,8 +96,8 @@ struct ComplexFallbackWithMemoryTest : testing::Test
 
     ComplexFallbackWithMemoryTest()
       : root("root_fallback")
-      , action_1("action_1")
-      , action_2("action_2")
+      , action_1("action_1", milliseconds(100) )
+      , action_2("action_2", milliseconds(100) )
       , condition_1("condition_1")
       , condition_2("condition_2")
       , fal_conditions("fallback_conditions")
@@ -298,7 +305,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
 {
     action_1.setBoolean(false);
-    action_1.setBoolean(true);
+    action_2.setBoolean(true);
     condition_1.setBoolean(false);
     condition_2.setBoolean(false);
 

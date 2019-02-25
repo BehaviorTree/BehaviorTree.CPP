@@ -79,7 +79,7 @@ NodeStatus RetryNode::tick()
 
         default:
         {
-            throw LogicError("This is not supposed to happen");
+            throw LogicError("A child node must never return IDLE");
         }
     }
 

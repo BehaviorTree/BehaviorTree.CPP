@@ -46,7 +46,7 @@ NodeStatus ParallelNode::tick()
 
     success_childred_num_ = 0;
     failure_childred_num_ = 0;
-    // Vector size initialization. children_count_ could change at runtime if you edit the tree
+
     const size_t children_count = children_nodes_.size();
 
     // Routing the tree according to the sequence node's logic:
@@ -59,7 +59,7 @@ NodeStatus ParallelNode::tick()
         switch (child_status)
         {
             case NodeStatus::SUCCESS:
-                child_node->setStatus(NodeStatus::IDLE);
+            {
                 // the child goes in idle if it has returned success.
                 if (++success_childred_num_ == threshold_)
                 {
@@ -68,10 +68,11 @@ NodeStatus ParallelNode::tick()
                     haltChildren(0);   // halts all running children. The execution is done.
                     return child_status;
                 }
-                break;
+            } break;
+
             case NodeStatus::FAILURE:
-                child_node->setStatus(NodeStatus::IDLE);
-                // the child goes in idle if it has returned failure.
+            {
+                // the child goes in idle if it has returned failure.              
                 if (++failure_childred_num_ > children_count - threshold_)
                 {
                     success_childred_num_ = 0;
@@ -79,12 +80,17 @@ NodeStatus ParallelNode::tick()
                     haltChildren(0);   // halts all running children. The execution is hopeless.
                     return child_status;
                 }
-                break;
+            } break;
+
             case NodeStatus::RUNNING:
+            {
                 setStatus(child_status);
-                break;
+            }  break;
+
             default:
-                break;
+            {
+                throw LogicError("A child node must never return IDLE");
+            }
         }
     }
     return NodeStatus::RUNNING;

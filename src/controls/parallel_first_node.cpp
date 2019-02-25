@@ -46,7 +46,7 @@ NodeStatus ParallelFirstNode::tick()
 
             case NodeStatus::IDLE:
             {
-                throw LogicError("This is not supposed to happen");
+                throw LogicError("A child node must never return IDLE");
             }
         }   // end switch
     } //end for

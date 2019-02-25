@@ -14,11 +14,11 @@
 #include "action_test_node.h"
 #include <string>
 
-BT::AsyncActionTest::AsyncActionTest(const std::string& name) :
+BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadline_ms) :
     AsyncActionNode(name, {})
 {
     boolean_value_ = true;
-    time_ = 3;
+    time_ = deadline_ms;
     stop_loop_ = false;
     tick_count_ = 0;
 }
@@ -30,12 +30,14 @@ BT::AsyncActionTest::~AsyncActionTest()
 
 BT::NodeStatus BT::AsyncActionTest::tick()
 {
+    using std::chrono::high_resolution_clock;
     tick_count_++;
     stop_loop_ = false;
-    int i = 0;
-    while (!stop_loop_ && i++ < time_*10)
+    auto initial_time = high_resolution_clock::now();
+
+    while (!stop_loop_ && high_resolution_clock::now() < initial_time + time_)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     if (!stop_loop_)
@@ -53,7 +55,7 @@ void BT::AsyncActionTest::halt()
     stop_loop_ = true;
 }
 
-void BT::AsyncActionTest::setTime(int time)
+void BT::AsyncActionTest::setTime(BT::Duration time)
 {
     time_ = time;
 }

@@ -16,6 +16,7 @@
 #include "behaviortree_cpp/behavior_tree.h"
 
 using BT::NodeStatus;
+using std::chrono::milliseconds;
 
 struct SimpleParallelTest : testing::Test
 {
@@ -28,9 +29,9 @@ struct SimpleParallelTest : testing::Test
 
     SimpleParallelTest()
       : root("root_parallel", 4)
-      , action_1("action_1")
+      , action_1("action_1", milliseconds(100) )
       , condition_1("condition_1")
-      , action_2("action_2")
+      , action_2("action_2", milliseconds(100))
       , condition_2("condition_2")
     {
         root.addChild(&condition_1);
@@ -63,11 +64,11 @@ struct ComplexParallelTest : testing::Test
       : root("root", 2)
       , parallel_1("par1", 3)
       , parallel_2("par2", 1)
-      , action_1("action_1")
+      , action_1("action_1", milliseconds(100) )
       , condition_1("condition_1")
-      , action_2("action_2")
+      , action_2("action_2", milliseconds(100) )
       , condition_2("condition_2")
-      , action_3("action_3")
+      , action_3("action_3", milliseconds(100) )
       , condition_3("condition_3")
     {
         root.addChild(&parallel_1);
@@ -95,21 +96,41 @@ TEST_F(SimpleParallelTest, ConditionsTrue)
 {
     BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
+
+    std::this_thread::sleep_for( milliseconds(150) );
+    state = root.executeTick();
+
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+
 }
 
 TEST_F(SimpleParallelTest, Threshold_3)
 {
     root.setThresholdM(3);
-    action_2.setTime(200);
-    root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    BT::NodeStatus state = root.executeTick();
+    action_1.setTime( milliseconds(100) );
+    action_2.setTime( milliseconds(500) ); // this takes a lot of time
 
+    BT::NodeStatus state = root.executeTick();
+    // first tick, zero wait
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+
+    std::this_thread::sleep_for( milliseconds(150) );
+    state = root.executeTick();
+    // second tick: action1 should be completed, but not action2
+    // nevertheless it is sufficient because threshold is 3
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
@@ -119,7 +140,7 @@ TEST_F(SimpleParallelTest, Threshold_3)
 
 TEST_F(SimpleParallelTest, Threshold_1)
 {
-    root.setThresholdM(1);
+    root.setThresholdM(2);
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
@@ -161,12 +182,10 @@ TEST_F(ComplexParallelTest, Condition3False)
 
 TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
 {
-    action_2.setTime(10);
-    action_3.setTime(10);
 
     condition_3.setBoolean(false);
     BT::NodeStatus state = root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(milliseconds(500));
 
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
@@ -184,7 +203,7 @@ TEST_F(ComplexParallelTest, Condition3FalseAction1Done)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     state = root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    std::this_thread::sleep_for(milliseconds(1500));
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::IDLE, parallel_2.status());
