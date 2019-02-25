@@ -1,5 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+/* Copyright (C) 2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,67 +10,54 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/controls/sequence_star_node.h"
+#include "behaviortree_cpp/controls/reactive_fallback.h"
 
 namespace BT
 {
 
-SequenceStarNode::SequenceStarNode(const std::string& name)
-    : ControlNode::ControlNode(name, {} )
-  , current_child_idx_(0)
+NodeStatus ReactiveFallback::tick()
 {
-    setRegistrationID("SequenceStar");
-}
+    size_t failure_count = 0;
+    size_t running_count = 0;
 
-NodeStatus SequenceStarNode::tick()
-{
-    const size_t children_count = children_nodes_.size();
-
-    setStatus(NodeStatus::RUNNING);
-
-    while (current_child_idx_ < children_count)
+    for (size_t index = 0; index < childrenCount(); index++)
     {
-        TreeNode* current_child_node = children_nodes_[current_child_idx_];
+        TreeNode* current_child_node = children_nodes_[index];
         const NodeStatus child_status = current_child_node->executeTick();
 
         switch (child_status)
         {
             case NodeStatus::RUNNING:
             {
-                return child_status;
-            }
+                running_count++;
+            }break;
+
             case NodeStatus::FAILURE:
             {
-                // DO NOT reset on failure
-                haltChildren(current_child_idx_);
-                return child_status;
-            }
+                failure_count++;
+            }break;
+
             case NodeStatus::SUCCESS:
             {
-                current_child_idx_++;
+                haltChildren(0);
+                return NodeStatus::SUCCESS;
             }
-            break;
 
             case NodeStatus::IDLE:
             {
                 throw LogicError("A child node must never return IDLE");
             }
         }   // end switch
-    }       // end while loop
+    } //end for
 
-    // The entire while loop completed. This means that all the children returned SUCCESS.
-    if (current_child_idx_ == children_count)
+    if( failure_count == childrenCount() )
     {
         haltChildren(0);
-        current_child_idx_ = 0;
+        return NodeStatus::FAILURE;
     }
-    return NodeStatus::SUCCESS;
-}
 
-void SequenceStarNode::halt()
-{
-    current_child_idx_ = 0;
-    ControlNode::halt();
+    return NodeStatus::RUNNING;
 }
 
 }
+

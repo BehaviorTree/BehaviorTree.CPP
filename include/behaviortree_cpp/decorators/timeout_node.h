@@ -27,6 +27,11 @@ class TimeoutNode : public DecoratorNode
 
     TimeoutNode(const std::string& name, const NodeConfiguration& config);
 
+    ~TimeoutNode() override
+    {
+        timer_.cancelAll();
+    }
+
     static PortsList providedPorts()
     {
         return { InputPort<unsigned>("msec", "After a certain amount of time, "
@@ -34,11 +39,7 @@ class TimeoutNode : public DecoratorNode
     }
 
   private:
-    static TimerQueue& timer()
-    {
-        static TimerQueue timer_queue;
-        return timer_queue;
-    }
+    TimerQueue timer_ ;
 
     virtual BT::NodeStatus tick() override;
 
@@ -48,6 +49,7 @@ class TimeoutNode : public DecoratorNode
     unsigned msec_;
     bool read_parameter_from_ports_;
     bool timeout_started_;
+    std::mutex timeout_mutex_;
 };
 }
 

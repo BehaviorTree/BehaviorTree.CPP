@@ -14,6 +14,7 @@
 #ifndef PARALLEL_NODE_H
 #define PARALLEL_NODE_H
 
+#include <set>
 #include "behaviortree_cpp/control_node.h"
 
 namespace BT
@@ -41,13 +42,14 @@ class ParallelNode : public ControlNode
 
   private:
     unsigned int threshold_;
-    unsigned int success_childred_num_;
-    unsigned int failure_childred_num_;
+
+    std::set<int> skip_list_;
 
     bool read_parameter_from_ports_;
     static constexpr const char* THRESHOLD_KEY = "threshold";
 
     virtual BT::NodeStatus tick() override;
 };
+
 }
 #endif   // PARALLEL_NODE_H

@@ -38,6 +38,13 @@ enum class NodeStatus
     FAILURE
 };
 
+enum class PortDirection{
+    INPUT,
+    OUTPUT,
+    INOUT
+};
+
+
 typedef nonstd::string_view StringView;
 
 /**
@@ -90,6 +97,10 @@ NodeStatus convertFromString<NodeStatus>(StringView str);
 template <>  // Names with all capital letters
 NodeType convertFromString<NodeType>(StringView str);
 
+template <>
+PortDirection convertFromString<PortDirection>(StringView str);
+
+
 typedef std::function<Any(StringView)> StringConverter;
 
 typedef std::unordered_map<const std::type_info*, StringConverter> StringConvertersMap;
@@ -110,20 +121,32 @@ StringConverter GetAnyFromStringFunctor<void>()
 
 //------------------------------------------------------------------
 
+template <typename T>
+std::string toStr(T value)
+{
+    return std::to_string(value);
+}
+
+template<> std::string toStr<BT::NodeStatus>(BT::NodeStatus status);
+
 /**
  * @brief toStr converts NodeStatus to string. Optionally colored.
  */
-const char* toStr(const BT::NodeStatus& status, bool colored = false);
+std::string toStr(BT::NodeStatus status, bool colored);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
 
 /**
  * @brief toStr converts NodeType to string.
  */
-const char* toStr(const BT::NodeType& type);
+template<> std::string toStr<BT::NodeType>(BT::NodeType type);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
+
+template<> std::string toStr<BT::PortDirection>(BT::PortDirection direction);
+
+std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
 
 // Small utility, unless you want to use <boost/algorithm/string.hpp>
 std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
@@ -173,8 +196,6 @@ template <typename T> using Optional = nonstd::expected<T, std::string>;
  * */
 using Result = Optional<void>;
 
-enum class PortDirection{INPUT, OUTPUT, INOUT };
-
 class PortInfo
 {
 
@@ -207,7 +228,11 @@ public:
 
     void setDescription(StringView description);
 
+    void setDefaultValue(StringView default_value_as_string);
+
     const std::string& description() const;
+
+    const std::string& defaultValue() const;
 
 private:
 
@@ -215,6 +240,7 @@ private:
     const std::type_info* _info;
     StringConverter _converter;
     std::string description_;
+    std::string default_value_;
 };
 
 template <typename T = void>
@@ -239,9 +265,9 @@ std::pair<std::string,PortInfo> CreatePort(PortDirection direction,
     return out;
 }
 
-
+//----------
 template <typename T = void> inline
-std::pair<std::string,PortInfo> InputPort(StringView name, StringView description = {})
+    std::pair<std::string,PortInfo> InputPort(StringView name, StringView description = {})
 {
     return CreatePort<T>(PortDirection::INPUT, name, description );
 }
@@ -253,11 +279,35 @@ std::pair<std::string,PortInfo> OutputPort(StringView name, StringView descripti
 }
 
 template <typename T = void> inline
-std::pair<std::string,PortInfo> BidirectionalPort(StringView name, StringView description = {})
+    std::pair<std::string,PortInfo> BidirectionalPort(StringView name, StringView description = {})
 {
     return CreatePort<T>(PortDirection::INOUT, name, description );
 }
+//----------
+template <typename T = void> inline
+    std::pair<std::string,PortInfo> InputPort(StringView name, const T& default_value, StringView description)
+{
+    auto out = CreatePort<T>(PortDirection::INPUT, name, description );
+    out.second.setDefaultValue( BT::toStr(default_value) );
+    return out;
+}
 
+template <typename T = void> inline
+    std::pair<std::string,PortInfo> OutputPort(StringView name, const T& default_value, StringView description)
+{
+    auto out = CreatePort<T>(PortDirection::OUTPUT, name, description );
+    out.second.setDefaultValue( BT::toStr(default_value) );
+    return out;
+}
+
+template <typename T = void> inline
+    std::pair<std::string,PortInfo> BidirectionalPort(StringView name, const T& default_value, StringView description)
+{
+    auto out = CreatePort<T>(PortDirection::INOUT, name, description );
+    out.second.setDefaultValue( BT::toStr(default_value) );
+    return out;
+}
+//----------
 
 typedef std::unordered_map<std::string, PortInfo> PortsList;
 

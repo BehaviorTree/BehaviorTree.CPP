@@ -21,13 +21,11 @@ namespace BT
 /**
  * @brief The FallbackNode is used to try different strategies,
  * until one succeeds.
- * If any child returns RUNNING, previous children will be ticked again.
+ * If any child returns RUNNING, previous children will NOT be ticked again.
  *
  * - If all the children return FAILURE, this node returns FAILURE.
  *
  * - If a child returns RUNNING, this node returns RUNNING.
- *   The loop is restarted, but already completed children are not halted.
- *   This generally implies that ConditionNode are ticked again, but ActionNodes aren't.
  *
  * - If a child returns SUCCESS, stop the loop and return SUCCESS.
  *
@@ -39,9 +37,14 @@ class FallbackNode : public ControlNode
 
     virtual ~FallbackNode() override = default;
 
+    virtual void halt() override;
+
   private:
+    unsigned int current_child_idx_;
+
     virtual BT::NodeStatus tick() override;
 };
+
 }
 
 #endif

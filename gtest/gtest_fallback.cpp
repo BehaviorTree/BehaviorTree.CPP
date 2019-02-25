@@ -16,14 +16,18 @@
 #include "behaviortree_cpp/behavior_tree.h"
 
 using BT::NodeStatus;
+using std::chrono::milliseconds;
 
 struct SimpleFallbackTest : testing::Test
 {
     BT::FallbackNode root;
-    BT::AsyncActionTest action;
     BT::ConditionTestNode condition;
+    BT::AsyncActionTest action;
 
-    SimpleFallbackTest() : root("root_fallback"), action("action"), condition("condition")
+    SimpleFallbackTest() :
+      root("root_fallback")
+      , condition("condition")
+      , action("action", milliseconds(100) )
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -34,30 +38,24 @@ struct SimpleFallbackTest : testing::Test
     }
 };
 
-struct ComplexFallbackTest : testing::Test
+struct ParallelOneTest : testing::Test
 {
-    BT::FallbackNode root;
-    BT::AsyncActionTest action_1;
+    BT::ReactiveFallback root;
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
+    BT::AsyncActionTest action_1;
 
-    BT::FallbackNode fal_conditions;
-
-    ComplexFallbackTest()
-      : root("root_fallback")
-      , action_1("action_1")
+    ParallelOneTest()
+      : root("root_first")
       , condition_1("condition_1")
       , condition_2("condition_2")
-      , fal_conditions("fallback_conditions")
+      , action_1("action_1", milliseconds(100) )
     {
-        root.addChild(&fal_conditions);
-        {
-            fal_conditions.addChild(&condition_1);
-            fal_conditions.addChild(&condition_2);
-        }
+        root.addChild(&condition_1);
+        root.addChild(&condition_2);
         root.addChild(&action_1);
     }
-    ~ComplexFallbackTest()
+    ~ParallelOneTest()
     {
         haltAllActions(&root);
     }
@@ -65,11 +63,14 @@ struct ComplexFallbackTest : testing::Test
 
 struct SimpleFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackStarNode root;
+    BT::FallbackNode root;
     BT::AsyncActionTest action;
     BT::ConditionTestNode condition;
 
-    SimpleFallbackWithMemoryTest() : root("root_sequence"), action("action"), condition("condition")
+    SimpleFallbackWithMemoryTest() :
+      root("root_sequence")
+      , action("action", milliseconds(100) )
+      , condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -82,7 +83,7 @@ struct SimpleFallbackWithMemoryTest : testing::Test
 
 struct ComplexFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackStarNode root;
+    BT::FallbackNode root;
 
     BT::AsyncActionTest action_1;
     BT::AsyncActionTest action_2;
@@ -90,13 +91,13 @@ struct ComplexFallbackWithMemoryTest : testing::Test
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
 
-    BT::FallbackStarNode fal_conditions;
-    BT::FallbackStarNode fal_actions;
+    BT::FallbackNode fal_conditions;
+    BT::FallbackNode fal_actions;
 
     ComplexFallbackWithMemoryTest()
       : root("root_fallback")
-      , action_1("action_1")
-      , action_2("action_2")
+      , action_1("action_1", milliseconds(100) )
+      , action_2("action_2", milliseconds(100) )
       , condition_1("condition_1")
       , condition_2("condition_2")
       , fal_conditions("fallback_conditions")
@@ -123,7 +124,6 @@ struct ComplexFallbackWithMemoryTest : testing::Test
 
 TEST_F(SimpleFallbackTest, ConditionTrue)
 {
-    std::cout << "Ticking the root node !" << std::endl << std::endl;
     // Ticking the root node
     condition.setBoolean(true);
     BT::NodeStatus state = root.executeTick();
@@ -133,21 +133,26 @@ TEST_F(SimpleFallbackTest, ConditionTrue)
     ASSERT_EQ(NodeStatus::IDLE, action.status());
 }
 
-TEST_F(SimpleFallbackTest, ConditionToFalse)
+TEST_F(SimpleFallbackTest, ConditionChangeWhileRunning)
 {
+    BT::NodeStatus state = BT::NodeStatus::IDLE;
+
     condition.setBoolean(false);
-
-    BT::NodeStatus state = root.executeTick();
-    condition.setBoolean(true);
-
     state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, condition.status());
-    ASSERT_EQ(NodeStatus::IDLE, action.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action.status());
+
+    condition.setBoolean(true);
+    state = root.executeTick();
+
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action.status());
 }
 
-TEST_F(ComplexFallbackTest, Condition1ToTrue)
+TEST_F(ParallelOneTest, Condition1ToTrue)
 {
     condition_1.setBoolean(false);
     condition_2.setBoolean(false);
@@ -155,9 +160,8 @@ TEST_F(ComplexFallbackTest, Condition1ToTrue)
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
     condition_1.setBoolean(true);
@@ -165,13 +169,12 @@ TEST_F(ComplexFallbackTest, Condition1ToTrue)
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
 }
 
-TEST_F(ComplexFallbackTest, Condition2ToTrue)
+TEST_F(ParallelOneTest, Condition2ToTrue)
 {
     condition_1.setBoolean(false);
     condition_2.setBoolean(false);
@@ -179,9 +182,8 @@ TEST_F(ComplexFallbackTest, Condition2ToTrue)
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
     condition_2.setBoolean(true);
@@ -189,7 +191,6 @@ TEST_F(ComplexFallbackTest, Condition2ToTrue)
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
@@ -199,7 +200,6 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 {
     condition.setBoolean(false);
     BT::NodeStatus state = root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::FAILURE, condition.status());
@@ -304,6 +304,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
 {
     action_1.setBoolean(false);
+    action_2.setBoolean(true);
     condition_1.setBoolean(false);
     condition_2.setBoolean(false);
 

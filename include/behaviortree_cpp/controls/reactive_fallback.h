@@ -1,5 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+/* Copyright (C) 2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,38 +10,39 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef selector_node_WITH_MEMORY_H
-#define selector_node_WITH_MEMORY_H
+#ifndef REACTIVE_FALLBACK_NODE_H
+#define REACTIVE_FALLBACK_NODE_H
 
 #include "behaviortree_cpp/control_node.h"
 
 namespace BT
 {
-/**
- * @brief The FallbackStarNode is used to try different strategies,
- * until one succeed.
- * If any child returns RUNNING, previous children will NOT be ticked again.
- *
- * - If all the children return FAILURE, this node returns FAILURE.
- *
- * - If a child returns RUNNING, this node returns RUNNING.
- *   Loop is NOT restarted, the same running child will be ticked again.
- *
- * - If a child returns SUCCESS, stop the loop and return SUCCESS.
- */
 
-class FallbackStarNode : public ControlNode
+/**
+ * @brief The ReactiveFallback is similar to a ParallelNode.
+ * All the children are ticked from first to last:
+ *
+ * - If a child returns RUNNING, continue to the next sibling.
+ * - If a child returns FAILURE, continue to the next sibling.
+ * - If a child returns SUCCESS, stop and return SUCCESS.
+ *
+ * If all the children fail, than this node returns FAILURE.
+ *
+ * IMPORTANT: to work properly, this node should not have more than
+ *            a single asynchronous child.
+ *
+ */
+class ReactiveFallback : public ControlNode
 {
   public:
-    FallbackStarNode(const std::string& name);
 
-    virtual void halt() override;
+    ReactiveFallback(const std::string& name):
+      ControlNode(name, {}){}
 
   private:
-    unsigned int current_child_idx_;
 
     virtual BT::NodeStatus tick() override;
 };
-}
 
-#endif   // selector_node_WITH_MEMORY_H
+}
+#endif   // REACTIVE_FALLBACK_NODE_H

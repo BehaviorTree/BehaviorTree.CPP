@@ -31,17 +31,19 @@ static const char* xml_text_sequence = R"(
  </root>
  )";
 
-static const char* xml_text_sequence_star = R"(
+static const char* xml_text_reactive = R"(
 
  <root main_tree_to_execute = "MainTree" >
 
      <BehaviorTree ID="MainTree">
-        <SequenceStar name="root">
+        <ReactiveSequence name="root">
             <BatteryOK/>
-            <SaySomething   message="mission started..." />
-            <MoveBase       goal="1;2;3"/>
-            <SaySomething   message="mission completed!" />
-        </SequenceStar>
+            <Sequence>
+                <SaySomething   message="mission started..." />
+                <MoveBase       goal="1;2;3"/>
+                <SaySomething   message="mission completed!" />
+            </Sequence>
+        </ReactiveSequence>
      </BehaviorTree>
 
  </root>
@@ -71,7 +73,7 @@ int main()
     //  1) When Sequence is used, BatteryOK is executed at __each__ tick()
     //  2) When SequenceStar is used, those ConditionNodes are executed only __once__.
 
-    for (auto& xml_text : {xml_text_sequence, xml_text_sequence_star})
+    for (auto& xml_text : {xml_text_sequence, xml_text_reactive})
     {
         std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
 

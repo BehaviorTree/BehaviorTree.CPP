@@ -46,7 +46,7 @@ NodeStatus InverterNode::tick()
 
         default:
         {
-            // TODO throw?
+            throw LogicError("A child node must never return IDLE");
         }
     }
     return status();

@@ -74,12 +74,12 @@ NodeStatus RetryNode::tick()
 
         case NodeStatus::RUNNING:
         {
-            return (NodeStatus::RUNNING);
+            return NodeStatus::RUNNING;
         }
 
         default:
         {
-            // TODO throw?
+            throw LogicError("A child node must never return IDLE");
         }
     }
 

@@ -15,30 +15,24 @@
 #include "behaviortree_cpp/action_node.h"
 namespace BT
 {
+
 FallbackNode::FallbackNode(const std::string& name)
     : ControlNode::ControlNode(name, {} )
+    ,current_child_idx_(0)
 {
     setRegistrationID("Fallback");
 }
 
 NodeStatus FallbackNode::tick()
 {
-    // gets the number of children. The number could change if, at runtime, one edits the tree.
     const size_t children_count = children_nodes_.size();
 
     setStatus(NodeStatus::RUNNING);
 
-    for (size_t index = 0; index < children_count; index++)
+    while (current_child_idx_ < children_count)
     {
-        TreeNode* child_node = children_nodes_[index];
-        NodeStatus child_status = child_node->status();
-
-        // special case just for Actions
-        auto action_child = dynamic_cast<ActionNodeBase*>(child_node);
-        if ( !action_child || child_status == NodeStatus::IDLE || child_status == NodeStatus::RUNNING)
-        {
-            child_status = child_node->executeTick();
-        }
+        TreeNode* current_child_node = children_nodes_[current_child_idx_];
+        const NodeStatus child_status = current_child_node->executeTick();
 
         switch (child_status)
         {
@@ -49,22 +43,36 @@ NodeStatus FallbackNode::tick()
             case NodeStatus::SUCCESS:
             {
                 haltChildren(0);
+                current_child_idx_ = 0;
                 return child_status;
             }
             case NodeStatus::FAILURE:
             {
-                // continue;
+                current_child_idx_++;
             }
             break;
 
             case NodeStatus::IDLE:
             {
-                throw LogicError("This is not supposed to happen");
+                throw LogicError("A child node must never return IDLE");
             }
         }   // end switch
-    }       // end for loop
+    }       // end while loop
 
-    haltChildren(0);
+    // The entire while loop completed. This means that all the children returned FAILURE.
+    if (current_child_idx_ == children_count)
+    {
+        haltChildren(0);
+        current_child_idx_ = 0;
+    }
+
     return NodeStatus::FAILURE;
 }
+
+void FallbackNode::halt()
+{
+    current_child_idx_ = 0;
+    ControlNode::halt();
+}
+
 }

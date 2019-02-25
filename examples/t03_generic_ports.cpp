@@ -103,12 +103,12 @@ static const char* xml_text = R"(
 
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
-        <SequenceStar name="root">
+        <Sequence name="root">
             <CalculateGoal   goal="{GoalPosition}" />
             <PrintTarget     target="{GoalPosition}" />
             <SetBlackboard   output_key="OtherGoal" value="-1;3" />
             <PrintTarget     target="{OtherGoal}" />
-        </SequenceStar>
+        </Sequence>
      </BehaviorTree>
  </root>
  )";

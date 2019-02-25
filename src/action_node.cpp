@@ -93,10 +93,8 @@ void AsyncActionNode::asyncThreadLoop()
 
         // check keep_thread_alive_ again because the tick_engine_ could be
         // notified from the method stopAndJoinThread
-        if (keep_thread_alive_ && status() == NodeStatus::IDLE)
+        if (keep_thread_alive_)
         {
-            // this will unlock the parent thread
-            setStatus(NodeStatus::RUNNING);
             // this will execute the blocking code.
             try {
                 setStatus(tick());
@@ -118,16 +116,15 @@ NodeStatus AsyncActionNode::executeTick()
     // The other thread is in charge for changing the status
     if (status() == NodeStatus::IDLE)
     {
+        setStatus( NodeStatus::RUNNING );
         notifyStart();
     }
 
-    // block as long as the state is NodeStatus::IDLE
-    const NodeStatus stat = waitValidStatus();
     if( exptr_ )
     {
         std::rethrow_exception(exptr_);
     }
-    return stat;
+    return status();
 }
 
 void AsyncActionNode::stopAndJoinThread()

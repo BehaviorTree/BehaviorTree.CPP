@@ -16,13 +16,15 @@
 #include "behaviortree_cpp/behavior_tree.h"
 
 using BT::NodeStatus;
+using std::chrono::milliseconds;
 
 struct DeadlineTest : testing::Test
 {
     BT::TimeoutNode root;
     BT::AsyncActionTest action;
 
-    DeadlineTest() : root("deadline", 300), action("action")
+    DeadlineTest() : root("deadline", 300)
+      , action("action", milliseconds(500) )
     {
         root.setChild(&action);
     }
@@ -62,18 +64,37 @@ struct RetryTest : testing::Test
     }
 };
 
+struct TimeoutAndRetry : testing::Test
+{
+    BT::TimeoutNode timeout_root;
+    BT::RetryNode retry;
+    BT::SyncActionTest action;
+
+    TimeoutAndRetry() :
+      timeout_root("deadline", 9)
+      , retry("retry", 1000)
+      , action("action")
+    {
+        timeout_root.setChild(&retry);
+        retry.setChild(&action);
+    }
+    ~TimeoutAndRetry()
+    {
+        haltAllActions(&timeout_root);
+    }
+};
+
 /****************TESTS START HERE***************************/
 
 TEST_F(DeadlineTest, DeadlineTriggeredTest)
 {
-    action.setTime(4);
-
     BT::NodeStatus state = root.executeTick();
-    // deadline in 300 ms
+    // deadline in 300 ms, action requires 500 ms
+
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(450));
+    std::this_thread::sleep_for(std::chrono::milliseconds(400));
     state = root.executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, state);
     ASSERT_EQ(NodeStatus::IDLE, action.status());
@@ -81,7 +102,7 @@ TEST_F(DeadlineTest, DeadlineTriggeredTest)
 
 TEST_F(DeadlineTest, DeadlineNotTriggeredTest)
 {
-    action.setTime(2);
+    action.setTime( milliseconds(200) );
     // deadline in 300 ms
 
     BT::NodeStatus state = root.executeTick();
@@ -168,5 +189,18 @@ TEST_F(RepeatTest, RepeatTestA)
     root.executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, root.status());
     ASSERT_EQ(3, action.tickCount() );
+}
 
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/57
+TEST_F(TimeoutAndRetry, Issue57)
+{
+    action.setBoolean( false );
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    while( std::chrono::high_resolution_clock::now() < t1 + std::chrono::seconds(2) )
+    {
+        ASSERT_NE( timeout_root.executeTick(), BT::NodeStatus::IDLE );
+        std::this_thread::sleep_for( std::chrono::microseconds(50) );
+    }
 }
