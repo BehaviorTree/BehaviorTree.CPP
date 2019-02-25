@@ -54,9 +54,10 @@ NodeStatus TimeoutNode::tick()
 
         if (msec_ > 0)
         {
-            timer_id_ = timer().add(std::chrono::milliseconds(msec_),
+            timer_id_ = timer_.add(std::chrono::milliseconds(msec_),
                                     [this](bool aborted)
             {
+                std::unique_lock<std::mutex> lk( timeout_mutex_ );
                 if (!aborted && child()->status() == NodeStatus::RUNNING)
                 {
                     child_halted_ = true;
@@ -66,6 +67,8 @@ NodeStatus TimeoutNode::tick()
             });
         }
     }
+
+    std::unique_lock<std::mutex> lk( timeout_mutex_ );
 
     if (child_halted_)
     {
@@ -77,8 +80,10 @@ NodeStatus TimeoutNode::tick()
         auto child_status = child()->executeTick();
         if (child_status != NodeStatus::RUNNING)
         {
-            timer().cancel(timer_id_);
             timeout_started_ = false;
+            timeout_mutex_.unlock();
+            timer_.cancel(timer_id_);
+            timeout_mutex_.lock();
         }
         return child_status;
     }
