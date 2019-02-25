@@ -28,12 +28,6 @@ static const char* xml_text = R"(
         <Sequence name="main_sequence">
             <SetBlackboard output_key="move_goal" value="1;2;3" />
             <SubTree ID="MoveRobot" target="move_goal" output="move_result" />
-            <!-- elternatively use the verbose version...
-            <SubTree ID="MoveRobot">
-                <remap internal="target" external="move_goal"/>
-                <remap internal="output" external="move_result"/>
-            </SubTree>
-            -->
             <SaySomething message="{move_result}"/>
         </Sequence>
 
@@ -56,12 +50,6 @@ static const char* xml_text = R"(
 
 // clang-format on
 
-/** using the <remap> tag we where able to connect the ports as follows:
- *
- *   MoveRobot->target  is connected to MainTree->move_goal
- *   MoveRobot->output  is connected to MainTree->move_result
- *
- */
 
 using namespace BT;
 using namespace DummyNodes;

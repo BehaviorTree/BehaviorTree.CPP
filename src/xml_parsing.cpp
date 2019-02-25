@@ -334,7 +334,7 @@ void VerifyXML(const std::string& xml_text,
             if (!found)
             {
                ThrowError(node->GetLineNum(),
-                                   std::string("Node not recognized: ") + name);
+                          std::string("Node not recognized: ") + name);
             }
         }
         //recursion

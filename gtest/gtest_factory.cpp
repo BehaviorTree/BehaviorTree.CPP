@@ -165,6 +165,7 @@ const std::string xml_text_issue = R"(
 
 
 // clang-format off
+
 static const char* xml_ports_subtree = R"(
 
 <root main_tree_to_execute = "MainTree" >
@@ -181,34 +182,9 @@ static const char* xml_ports_subtree = R"(
     <Sequence>
       <SetBlackboard output_key="talk_hello" value="hello" />
       <SetBlackboard output_key="talk_bye"   value="bye bye" />
-      <SubTree ID="TalkToMe">
-            <remap internal="hello_msg" external="talk_hello"  />
-            <remap internal="bye_msg"   external="talk_bye"    />
-            <remap internal="output"    external="talk_out" />
-      </SubTree>
-      <SaySomething message="{talk_out}" />
-    </Sequence>
-  </BehaviorTree>
-
-</root> )";
-
-static const char* xml_ports_subtre_compact = R"(
-
-<root main_tree_to_execute = "MainTree" >
-
-  <BehaviorTree ID="TalkToMe">
-    <Sequence>
-      <SaySomething message="{hello_msg}" />
-      <SaySomething message="{bye_msg}" />
-      <SetBlackboard output_key="output" value="done!" />
-    </Sequence>
-  </BehaviorTree>
-
-  <BehaviorTree ID="MainTree">
-    <Sequence>
-      <SetBlackboard output_key="talk_hello" value="hello" />
-      <SetBlackboard output_key="talk_bye"   value="bye bye" />
-      <SubTree ID="TalkToMe" hello_msg="{talk_hello}" bye_msg="{talk_bye}" output="{talk_out}" />
+      <SubTree ID="TalkToMe" hello_msg="talk_hello"
+                             bye_msg="talk_bye"
+                             output="talk_out" />
       <SaySomething message="{talk_out}" />
     </Sequence>
   </BehaviorTree>
