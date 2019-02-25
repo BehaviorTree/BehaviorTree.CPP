@@ -44,47 +44,69 @@ NodeStatus ParallelNode::tick()
         }
     }
 
-    success_childred_num_ = 0;
-    failure_childred_num_ = 0;
+    size_t success_childred_num = 0;
+    size_t failure_childred_num = 0;
 
     const size_t children_count = children_nodes_.size();
+
+    if( children_count < threshold_)
+    {
+        throw LogicError("Number of children is less than threshold. Can never suceed.");
+    }
 
     // Routing the tree according to the sequence node's logic:
     for (unsigned int i = 0; i < children_count; i++)
     {
         TreeNode* child_node = children_nodes_[i];
 
-        NodeStatus child_status = child_node->executeTick();
+        bool in_skip_list = (skip_list_.count(i) != 0);
+
+        NodeStatus child_status;
+        if( in_skip_list )
+        {
+            child_status = child_node->status();
+        }
+        else {
+            child_status = child_node->executeTick();
+        }
 
         switch (child_status)
         {
             case NodeStatus::SUCCESS:
             {
-                // the child goes in idle if it has returned success.
-                if (++success_childred_num_ == threshold_)
+                if( !in_skip_list )
                 {
-                    success_childred_num_ = 0;
-                    failure_childred_num_ = 0;
-                    haltChildren(0);   // halts all running children. The execution is done.
-                    return child_status;
+                    skip_list_.insert(i);
+                }
+                success_childred_num++;
+
+                if (success_childred_num == threshold_)
+                {
+                    skip_list_.clear();
+                    haltChildren(0);
+                    return NodeStatus::SUCCESS;
                 }
             } break;
 
             case NodeStatus::FAILURE:
             {
-                // the child goes in idle if it has returned failure.              
-                if (++failure_childred_num_ > children_count - threshold_)
+                if( !in_skip_list )
                 {
-                    success_childred_num_ = 0;
-                    failure_childred_num_ = 0;
-                    haltChildren(0);   // halts all running children. The execution is hopeless.
-                    return child_status;
+                    skip_list_.insert(i);
+                }
+                failure_childred_num++;
+
+                if (failure_childred_num > children_count - threshold_)
+                {
+                    skip_list_.clear();
+                    haltChildren(0);
+                    return NodeStatus::FAILURE;
                 }
             } break;
 
             case NodeStatus::RUNNING:
             {
-                setStatus(child_status);
+                // do nothing
             }  break;
 
             default:
@@ -93,13 +115,13 @@ NodeStatus ParallelNode::tick()
             }
         }
     }
+
     return NodeStatus::RUNNING;
 }
 
 void ParallelNode::halt()
 {
-    success_childred_num_ = 0;
-    failure_childred_num_ = 0;
+    skip_list_.clear();
     ControlNode::halt();
 }
 

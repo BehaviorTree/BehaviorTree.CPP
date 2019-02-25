@@ -200,7 +200,6 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 {
     condition.setBoolean(false);
     BT::NodeStatus state = root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::FAILURE, condition.status());
