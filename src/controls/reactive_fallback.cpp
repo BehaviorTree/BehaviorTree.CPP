@@ -10,17 +10,17 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/controls/parallel_first_node.h"
+#include "behaviortree_cpp/controls/reactive_fallback.h"
 
 namespace BT
 {
 
-NodeStatus ParallelFirstNode::tick()
+NodeStatus ReactiveFallback::tick()
 {
     size_t failure_count = 0;
     size_t running_count = 0;
 
-    for (size_t index=0; index < childrenCount(); index++)
+    for (size_t index = 0; index < childrenCount(); index++)
     {
         TreeNode* current_child_node = children_nodes_[index];
         const NodeStatus child_status = current_child_node->executeTick();
@@ -34,7 +34,6 @@ NodeStatus ParallelFirstNode::tick()
 
             case NodeStatus::FAILURE:
             {
-                // Reset on failure
                 failure_count++;
             }break;
 
@@ -50,6 +49,12 @@ NodeStatus ParallelFirstNode::tick()
             }
         }   // end switch
     } //end for
+
+    if( failure_count == childrenCount() )
+    {
+        haltChildren(0);
+        return NodeStatus::FAILURE;
+    }
 
     return NodeStatus::RUNNING;
 }

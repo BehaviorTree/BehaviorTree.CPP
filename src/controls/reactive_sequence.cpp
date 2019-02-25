@@ -10,27 +10,51 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef PARALLEL_FIRST_NODE_H
-#define PARALLEL_FIRST_NODE_H
-
-#include "behaviortree_cpp/control_node.h"
+#include "behaviortree_cpp/controls/reactive_sequence.h"
 
 namespace BT
 {
 
-class ParallelFirstNode : public ControlNode
+NodeStatus ReactiveSequence::tick()
 {
-  public:
+    size_t success_count = 0;
+    size_t running_count = 0;
 
-    ParallelFirstNode(const std::string& name):
-      ControlNode(name, {}){}
+    for (size_t index = 0; index < childrenCount(); index++)
+    {
+        TreeNode* current_child_node = children_nodes_[index];
+        const NodeStatus child_status = current_child_node->executeTick();
 
-    ~ParallelFirstNode() = default;
+        switch (child_status)
+        {
+            case NodeStatus::RUNNING:
+            {
+                running_count++;
+            }break;
+            case NodeStatus::FAILURE:
+            {
+                haltChildren(0);
+                return NodeStatus::FAILURE;
+            }
+            case NodeStatus::SUCCESS:
+            {
+                success_count++;
+            }break;
 
-  private:
+            case NodeStatus::IDLE:
+            {
+                throw LogicError("A child node must never return IDLE");
+            }
+        }   // end switch
+    } //end for
 
-    virtual BT::NodeStatus tick() override;
-};
+    if( success_count == childrenCount())
+    {
+        haltChildren(0);
+        return NodeStatus::SUCCESS;
+    }
+    return NodeStatus::RUNNING;
+}
+
 
 }
-#endif   // PARALLEL_FIRST_NODE_H

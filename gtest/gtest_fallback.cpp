@@ -40,7 +40,7 @@ struct SimpleFallbackTest : testing::Test
 
 struct ParallelOneTest : testing::Test
 {
-    BT::ParallelFirstNode root;
+    BT::ReactiveFallback root;
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
     BT::AsyncActionTest action_1;

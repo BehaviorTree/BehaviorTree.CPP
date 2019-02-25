@@ -10,22 +10,36 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef PARALLEL_ALL_NODE_H
-#define PARALLEL_ALL_NODE_H
+#ifndef REACTIVE_FALLBACK_NODE_H
+#define REACTIVE_FALLBACK_NODE_H
 
 #include "behaviortree_cpp/control_node.h"
 
 namespace BT
 {
 
-class ParallelAllNode : public ControlNode
+/**
+ * @brief The ReactiveFallback is similar to a ParallelNode.
+ * All the children are ticked from first to last:
+ *
+ * - If a child returns RUNNING, continue to the next sibling.
+ * - If a child returns FAILURE, continue to the next sibling.
+ * - If a child returns SUCCESS, stop and return SUCCESS.
+ *
+ * If all the children fail, than this node returns FAILURE.
+ *
+ * IMPORTANT: to work properly, this node should not have more than a single
+ *            asynchronous child.
+ *
+ */
+class ReactiveFallback : public ControlNode
 {
   public:
 
-    ParallelAllNode(const std::string& name):
-        ControlNode(name, {}) {}
+    ReactiveFallback(const std::string& name):
+      ControlNode(name, {}){}
 
-    ~ParallelAllNode() = default;
+    ~ReactiveFallback() = default;
 
   private:
 
@@ -33,4 +47,4 @@ class ParallelAllNode : public ControlNode
 };
 
 }
-#endif   // PARALLEL_ALL_NODE_H
+#endif   // REACTIVE_FALLBACK_NODE_H

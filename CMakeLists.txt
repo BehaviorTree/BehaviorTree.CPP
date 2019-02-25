@@ -121,8 +121,8 @@ list(APPEND BT_SOURCE
 
     src/controls/fallback_node.cpp
     src/controls/parallel_node.cpp
-    src/controls/parallel_first_node.cpp
-    src/controls/parallel_all_node.cpp
+    src/controls/reactive_sequence.cpp
+    src/controls/reactive_fallback.cpp
     src/controls/sequence_node.cpp
     src/controls/sequence_star_node.cpp
 

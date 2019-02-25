@@ -15,8 +15,8 @@
 #define BEHAVIOR_TREE_H
 
 #include "behaviortree_cpp/controls/parallel_node.h"
-#include "behaviortree_cpp/controls/parallel_first_node.h"
-#include "behaviortree_cpp/controls/parallel_all_node.h"
+#include "behaviortree_cpp/controls/reactive_sequence.h"
+#include "behaviortree_cpp/controls/reactive_fallback.h"
 #include "behaviortree_cpp/controls/fallback_node.h"
 #include "behaviortree_cpp/controls/sequence_node.h"
 #include "behaviortree_cpp/controls/sequence_star_node.h"

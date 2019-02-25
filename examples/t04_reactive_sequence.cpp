@@ -36,14 +36,14 @@ static const char* xml_text_reactive = R"(
  <root main_tree_to_execute = "MainTree" >
 
      <BehaviorTree ID="MainTree">
-        <ParallelAll name="root">
+        <ReactiveSequence name="root">
             <BatteryOK/>
             <Sequence>
                 <SaySomething   message="mission started..." />
                 <MoveBase       goal="1;2;3"/>
                 <SaySomething   message="mission completed!" />
             </Sequence>
-        </ParallelAll>
+        </ReactiveSequence>
      </BehaviorTree>
 
  </root>

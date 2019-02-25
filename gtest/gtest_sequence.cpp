@@ -40,7 +40,7 @@ struct SimpleSequenceTest : testing::Test
 
 struct ComplexSequenceTest : testing::Test
 {
-    BT::ParallelAllNode root;
+    BT::ReactiveSequence root;
     BT::AsyncActionTest action_1;
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;

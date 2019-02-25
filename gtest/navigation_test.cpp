@@ -11,7 +11,7 @@ static const char* xml_text = R"(
     <BehaviorTree ID="BehaviorTree">
         <Fallback name="root">
 
-            <ParallelAll name="navigation_subtree">
+            <ReactiveSequence name="navigation_subtree">
                 <Inverter>
                     <Condition ID="IsStuck"/>
                 </Inverter>
@@ -19,7 +19,7 @@ static const char* xml_text = R"(
                     <Action ID="ComputePathToPose"/>
                     <Action ID="FollowPath"/>
                 </SequenceStar>
-            </ParallelAll>
+            </ReactiveSequence>
 
             <SequenceStar name="stuck_recovery">
                 <Condition ID="IsStuck"/>

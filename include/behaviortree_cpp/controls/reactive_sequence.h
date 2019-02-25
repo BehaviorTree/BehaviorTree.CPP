@@ -10,52 +10,40 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/controls/parallel_all_node.h"
+#ifndef REACTIVE_SEQUENCE_NODE_H
+#define REACTIVE_SEQUENCE_NODE_H
+
+#include "behaviortree_cpp/control_node.h"
 
 namespace BT
 {
-
-NodeStatus ParallelAllNode::tick()
+/**
+ * @brief The ReactiveSequence is similar to a ParallelNode.
+ * All the children are ticked from first to last:
+ *
+ * - If a child returns RUNNING, tick the next sibling.
+ * - If a child returns SUCCESS, tick the next sibling.
+ * - If a child returns FAILURE, stop and return FAILURE.
+ *
+ * If all the children return SUCCESS, this node returns SUCCESS.
+ *
+ * IMPORTANT: to work properly, this node should not have more than a single
+ *            asynchronous child.
+ *
+ */
+class ReactiveSequence : public ControlNode
 {
-    size_t success_count = 0;
-    size_t running_count = 0;
+  public:
 
-    for (size_t index=0; index < childrenCount(); index++)
-    {
-        TreeNode* current_child_node = children_nodes_[index];
-        const NodeStatus child_status = current_child_node->executeTick();
+    ReactiveSequence(const std::string& name):
+        ControlNode(name, {}) {}
 
-        switch (child_status)
-        {
-            case NodeStatus::RUNNING:
-            {
-                running_count++;
-            }break;
-            case NodeStatus::FAILURE:
-            {
-                // Reset on failure
-                haltChildren(0);
-                return NodeStatus::FAILURE;
-            }
-            case NodeStatus::SUCCESS:
-            {
-                success_count++;
-            }break;
+    ~ReactiveSequence() = default;
 
-            case NodeStatus::IDLE:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
-        }   // end switch
-    } //end for
+  private:
 
-    if( success_count == childrenCount())
-    {
-        haltChildren(0);
-        return NodeStatus::SUCCESS;
-    }
-    return NodeStatus::RUNNING;
-}
-
+    virtual BT::NodeStatus tick() override;
+};
 
 }
+#endif  // REACTIVE_SEQUENCE_NODE_H

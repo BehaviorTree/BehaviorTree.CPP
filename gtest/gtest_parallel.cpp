@@ -149,6 +149,7 @@ TEST_F(SimpleParallelTest, Threshold_1)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
+
 TEST_F(ComplexParallelTest, ConditionsTrue)
 {
     BT::NodeStatus state = root.executeTick();
