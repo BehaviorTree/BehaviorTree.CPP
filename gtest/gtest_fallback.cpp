@@ -298,6 +298,7 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
 {
     action_1.setBoolean(false);
+    action_1.setBoolean(true);
     condition_1.setBoolean(false);
     condition_2.setBoolean(false);
 

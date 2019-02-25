@@ -17,8 +17,8 @@ target_link_libraries(t02_basic_ports ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )
 add_executable(t03_generic_ports        t03_generic_ports.cpp )
 target_link_libraries(t03_generic_ports ${BEHAVIOR_TREE_LIBRARY}  movebase_node dummy_nodes  )
 
-add_executable(t04_sequence_star         t04_sequence_star.cpp )
-target_link_libraries(t04_sequence_star  ${BEHAVIOR_TREE_LIBRARY} movebase_node dummy_nodes  )
+add_executable(t04_reactive_sequence         t04_reactive_sequence.cpp )
+target_link_libraries(t04_reactive_sequence  ${BEHAVIOR_TREE_LIBRARY} movebase_node dummy_nodes  )
 
 add_executable(t05_crossdoor         t05_crossdoor.cpp )
 target_link_libraries(t05_crossdoor   ${BEHAVIOR_TREE_LIBRARY} crossdoor_nodes )

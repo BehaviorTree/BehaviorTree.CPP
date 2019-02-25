@@ -46,7 +46,7 @@ NodeStatus InverterNode::tick()
 
         default:
         {
-            // TODO throw?
+            throw LogicError("This is not supposed to happen");
         }
     }
     return status();

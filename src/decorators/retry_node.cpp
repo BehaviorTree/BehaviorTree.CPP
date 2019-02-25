@@ -74,12 +74,12 @@ NodeStatus RetryNode::tick()
 
         case NodeStatus::RUNNING:
         {
-            return (NodeStatus::RUNNING);
+            return NodeStatus::RUNNING;
         }
 
         default:
         {
-            // TODO throw?
+            throw LogicError("This is not supposed to happen");
         }
     }
 
