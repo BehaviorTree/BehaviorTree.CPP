@@ -49,7 +49,7 @@ sufficient (and necessary) to describe it, without knowing any additional
 detail about the actual implementation.
 
 
-# 2. Blackboard, NodeParameters an DataPorts
+## Blackboard, NodeParameters an DataPorts
 
 In version `2.x` we had the intuition that passing one or more arguments
 to a `TreeNode` would make the node more generic and reusable.
@@ -221,4 +221,72 @@ The main differences are:
   message.
   
 - Remapping to a shared entry ("GoalPose") is done at run-time in the XML.
+
+## SubTrees, remapping and isolated Blackboards
+
+WIP
+
+## ControlNodes renamed/refactored
+
+The [principle of least astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)
+applies to user interface and software design. A typical formulation of the principle, from 1984, is: 
+
+>"If a necessary feature has a high astonishment factor, it may be necessary 
+to redesign the feature.
+
+To me the two main building blocks of BehaviorTree.CPp, the `SequenceNode` 
+and the `FallbackNode` have a very high astonishment factor.
+
+The original authored design to build __reactive__ Behavior Trees (see for reference
+this [publication](0https://arxiv.org/abs/1709.00084).
+
+But reactive ControlNodes are useful but hard to reason about sometimes.
+But their name seems to suggest that they are the "default" Sequence and Fallback.
+
+I don't think they should be the default. For instance, most of the time users
+of version 2.x should probably use `SequenceStar`, not `Sequence`.
+
+I renamed ControlNodes as follow to reflect this reality; previous users might be
+upset about it but the new major version was the opportunity to do things "right".
+
+
+| Old Name (v2)  |  New name (v3) | Is reactive?  |
+|---|---|:---:|
+| Sequence | ReactiveSequence  | YES  |
+| SequenceStar (reset_on_failure=true)  |  Sequence |  NO |
+| SequenceStar (reset_on_failure=false) |  SequenceStar |  NO |
+| Fallback | ReactiveFallback  | YES  |
+| FallbackStar  |  Fallback |  NO |
+| Parallel |  Parallel |  Yes(v2) / No(v3) |
+
+By __"reactive"__ we mean that:
+
+- Children (usually `ConditionNodes`) that returned 
+  a valid value such as SUCCESS or FAILURE, might be ticked again if another 
+  child returns RUNNING.
+  
+- A different result in that Condition might abort/halt the RUNNING asynchronous child.
+
+
+A reactive `ParallelNode` was very confusing. In most cases, you want to use
+`ReactiveSequence` instead.
+
+In version `2.x` it was unclear what would happen if a "reactive" node has
+more than a single asynchronous child. __The new recommendation is: they shouldn't__.
+
+This is a very opinionated decision; on the other hand, it doesn't limit 
+your ability to create arbitrarily complex Behavior Trees, but it helps
+ keeping the cognitive overhead a little lower.
+
+
+
+
+
+
+ 
+
+
+
+
+
 
