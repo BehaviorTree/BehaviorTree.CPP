@@ -127,6 +127,8 @@ std::string toStr(T value)
     return std::to_string(value);
 }
 
+std::string toStr(std::string value);
+
 template<> std::string toStr<BT::NodeStatus>(BT::NodeStatus status);
 
 /**
