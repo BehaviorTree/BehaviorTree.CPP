@@ -1,30 +1,28 @@
 # Migration Guide from V2 to V3
 
-The main goal of this project id to create a Behavior Tree implementation
-that uses the principle of Model Driven Development to separate the role 
-of the __Component Developer__ from the __Behavior Designed__ and __System Integrator__.
+The main goal of this project is to create a Behavior Tree implementation
+that uses the principles of Model Driven Development to separate the role 
+of the __Component Developer__ from the __Behavior Designer__ and 
+__System Integrator__.
 
 In practice, this means that:
 
 - Custom Actions (or, in general, custom TreeNodes) must be reusable building
 blocks. Implement them once, reuse them many times.
 
-- To build a BehaviorTree out of TreeNodes, the Behavior Designer must not need to read 
-nor modify the source code of the a given TreeNode.
+- To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
+not need to read nor modify the source code of the a given TreeNode.
 
-There is a __major design flaw__ that undermines this goal: the way
-the BlackBoard was used in version `2.x` to implement dataflow between nodes.
-
-In general, DataFlow should not be the main concern of a library like this,
-that focuses on Coordination, but it is apparent to anyone that had implemented 
-a sufficiently large coordination component that if would be impossible 
-to ignore it completely.
+There is a __major design flaw__ that undermines this goal in version  `2.x`: 
+the way the BlackBoard was used to implement DataFlow between nodes.
 
 As described in [issue #18](https://github.com/BehaviorTree/BehaviorTree.CPP/issues/18)
 there are several potential problems with the Blackboard approach:
 
 - To know which entries of the BB are read/written, you should read the source code.
+
 - As a consequence, external tools such as __Groot__ can not know which BB entries are accessed.
+
 - If there is a name clashing (multiple nodes use the same key for different purposes),
  the only way to fit it is modifying the source code. 
 
@@ -39,14 +37,14 @@ This was the main reason to develop version `3.x` of __Behaviortree.CPP__, but w
 also took the opportunity to do some additional refactoring to make the code
 more understandable.
 
-In this document we will use the following terms often:
+In this document we will use the following terms quite often:
 
 - __Composition__: it refers to "composing" TreeNodes into Trees. In general
  we want a TreeNode implementation to be composition-agnostic.
  
 - __Model/Modelling__: it is a description of a Tree or TreeNode that is 
 sufficient (and necessary) to describe it, without knowing any additional 
-detail about the actual implementation.
+detail about the actual C++ implementation.
 
 
 ## Blackboard, NodeParameters an DataPorts
@@ -68,8 +66,8 @@ GoToBedroom2()
 // ....
 ```
 
-On the other hand, we had the Blackboard, that was nothing more than a
-shared __key/value__ table, i.e. a glorified bunch of glabal variables.
+To pass NodeParameters we used the Blackboard, that is nothing more than a
+shared __key/value__ table, i.e. a glorified bunch of global variables.
 
 The key is a `string`, whilst the value is 
 stored in a type-safe container similar to `std::any` or `std::variant`.
@@ -98,6 +96,7 @@ Let's take a look to an example at the old code:
 ```
 
 ```C++
+using namespace BT;
 //Old code (V2)
 NodeStatus CalculateGoal(TreeNode& self)
 {
@@ -107,30 +106,30 @@ NodeStatus CalculateGoal(TreeNode& self)
     return NodeStatus::SUCCESS;
 }
 
-class MoveBase : public BT::AsyncActionNode
+class MoveBase : public AsyncActionNode
 {
   public:
 
-    MoveBase(const std::string& name, const BT::NodeParameters& params)
+    MoveBase(const std::string& name, const NodeParameters& params)
       : AsyncActionNode(name, params) {}
 
-    static const BT::NodeParameters& requiredNodeParameters()
+    static const NodeParameters& requiredNodeParameters()
     {
-        static BT::NodeParameters params = {{"goal", "0;0;0"}};
+        static NodeParameters params = {{"goal", "0;0;0"}};
         return params;
     }
 
-    BT::NodeStatus tick()
+    NodeStatus tick()
     {
         Pose2D goal;
         if (getParam<Pose2D>("goal", goal))
         {
             printf("[ MoveBase: DONE ]\n");
-            return BT::NodeStatus::SUCCESS;
+            return NodeStatus::SUCCESS;
         }
         else{
             printf("MoveBase: Failed for some reason\n");
-            return BT::NodeStatus::FAILURE;
+            return NodeStatus::FAILURE;
         }
     }
     /// etc.
@@ -142,7 +141,7 @@ to change the key "GoalPose" in `CalculateGoalPose`we must inspect the code
 and modify it.
 
 In other words, `NodeParameter` is already a reasonably good implementation
-of an `InputPort`, but we need to intoruce a consistent `OutputPort` too.
+of an `InputPort`, but we need to introduce a consistent `OutputPort` too.
 
 This is the new code:
 
@@ -158,50 +157,51 @@ This is the new code:
 ```
 
 ```C++
+using namespace BT;
 //New code (V3)
-class CalculateGoalPose : public BT::SyncActionNode
+class CalculateGoalPose : public SyncActionNode
 {
 public:
 
-    MoveBase(const std::string& name, const BT::NodeConfiguration& cfg)
+    MoveBase(const std::string& name, const NodeConfiguration& cfg)
       : SyncActionNode(name, cfg) {}
 
-    static BT::PortsList providedPorts()
+    static PortsList providedPorts()
     {
-        return { BT::OutputPort<Pose2D>("target") };
+        return { OutputPort<Pose2D>("target") };
     }
 
     BT::NodeStatus tick()
     {
         const Pose2D myTarget = { 1, 2, 3.14 };
         setOutput("target", myTarget);
-        return BT::NodeStatus::SUCCESS;
+        return NodeStatus::SUCCESS;
     }
 };
 
-class MoveBase : public BT::AsyncActionNode
+class MoveBase : public AsyncActionNode
 {
 public:
 
-    MoveBase(const std::string& name, const BT::NodeConfiguration& config)
+    MoveBase(const std::string& name, const NodeConfiguration& config)
       : AsyncActionNode(name, config) {}
 
-    static BT::PortsList providedPorts()
+    static PortsList providedPorts()
     {
-        return { BT::InputPort<Pose2D>("goal", "Port description", "0;0;0") };
+        return { InputPort<Pose2D>("goal", "Port description", "0;0;0") };
     }
 
-    BT::NodeStatus tick()
+    NodeStatus tick()
     {
         Pose2D goal;
         if (auto res = getInput<Pose2D>("goal", goal))
         {
             printf("[ MoveBase: DONE ]\n");
-            return BT::NodeStatus::SUCCESS;
+            return NodeStatus::SUCCESS;
         }
         else{
             printf("MoveBase: Failed. Error code: %s\n", res.error());
-            return BT::NodeStatus::FAILURE;
+            return NodeStatus::FAILURE;
         }
     }
     /// etc.
@@ -211,7 +211,7 @@ public:
 The main differences are:
 
 - `requiredNodeParameters()` was replaced by `providedPorts()`, that
- it is used to declare both Inputs and Output ports alike.
+ is used to declare both Inputs and Output ports alike.
    
 - `setOutput<>()` has been introduced. The method `blackboard()`can not be 
    accessed anymore.
@@ -221,10 +221,33 @@ The main differences are:
   message.
   
 - Remapping to a shared entry ("GoalPose") is done at run-time in the XML.
+  You will never need to modify the C++ source code.
 
 ## SubTrees, remapping and isolated Blackboards
 
-WIP
+Thanks to ports we solved the problem of __reusability of single treeNodes__.
+
+But we still need to address the problem of __reusability of entire Trees/SubTrees__.
+
+According to the rule of __hierarchical composition__,
+from the point of view of a parent Node if should not matter if the 
+child is a LeafNode, a DecoratorNode a ControlNode or an entire Tree.
+
+As mentioned earlier, the Blackboard used to be a large key/value table.
+
+Unfortunately, this might be challenging when we reuse multiple SubTree, once again
+because of name clashing.
+
+The solution in version `3.x` is to have a separated and isolated Blackboard
+for each Tree/Subtree. If we want to connect the "internal" ports of a SubTree
+with the other ports of the BB of the parent, we must explicitly do a 
+remapping in the XML definition. No C++ code need to be modified.
+
+From the point of view of the XML, remapped ports of a SubTree looks exactly
+like the ports of a single node.
+
+For more details, refer to the example __t06_subtree_port_remapping.cpp_.
+
 
 ## ControlNodes renamed/refactored
 
@@ -234,24 +257,35 @@ applies to user interface and software design. A typical formulation of the prin
 >"If a necessary feature has a high astonishment factor, it may be necessary 
 to redesign the feature.
 
-To me the two main building blocks of BehaviorTree.CPp, the `SequenceNode` 
-and the `FallbackNode` have a very high astonishment factor.
+In my opinion, the two main building blocks of BehaviorTree.CPP, the `SequenceNode` 
+and the `FallbackNode` have a very high astonishment factor, because they are
+__"reactive"__.
 
-The original authored design to build __reactive__ Behavior Trees (see for reference
-this [publication](0https://arxiv.org/abs/1709.00084).
+By "reactive" we mean that:
 
-But reactive ControlNodes are useful but hard to reason about sometimes.
-But their name seems to suggest that they are the "default" Sequence and Fallback.
+- Children (usually `ConditionNodes`) that returned 
+  a valid value, such as SUCCESS or FAILURE, might be ticked again if another 
+  child returns RUNNING.
+  
+- A different result in that Condition might abort/halt the RUNNING asynchronous child.
 
-I don't think they should be the default. For instance, most of the time users
-of version 2.x should probably use `SequenceStar`, not `Sequence`.
 
-I renamed ControlNodes as follow to reflect this reality; previous users might be
-upset about it but the new major version was the opportunity to do things "right".
+The main concern of the original author of this library was to build reactive
+Behavior Trees (see for reference this [publication](0https://arxiv.org/abs/1709.00084).
+
+I share this goal, but I prefer to have more explicit names, because reactive 
+ControlNodes are useful but hard to reason about sometimes.
+
+I don't think reactive Controlnodes should be the mindlessly by default. 
+
+For instance, most of the time users I talked with should have used `SequenceStar`
+instead of `Sequence` in many cases.
+
+I renamed the ControlNodes to reflect this reality:
 
 
 | Old Name (v2)  |  New name (v3) | Is reactive?  |
-|---|---|:---:|
+|:--- |:--- |:---:|
 | Sequence | ReactiveSequence  | YES  |
 | SequenceStar (reset_on_failure=true)  |  Sequence |  NO |
 | SequenceStar (reset_on_failure=false) |  SequenceStar |  NO |
@@ -259,24 +293,20 @@ upset about it but the new major version was the opportunity to do things "right
 | FallbackStar  |  Fallback |  NO |
 | Parallel |  Parallel |  Yes(v2) / No(v3) |
 
-By __"reactive"__ we mean that:
 
-- Children (usually `ConditionNodes`) that returned 
-  a valid value such as SUCCESS or FAILURE, might be ticked again if another 
-  child returns RUNNING.
-  
-- A different result in that Condition might abort/halt the RUNNING asynchronous child.
-
-
-A reactive `ParallelNode` was very confusing. In most cases, you want to use
-`ReactiveSequence` instead.
+A reactive `ParallelNode` was very confusing and error prone; in most cases, 
+what you really want is you want to use a `ReactiveSequence` instead.
 
 In version `2.x` it was unclear what would happen if a "reactive" node has
-more than a single asynchronous child. __The new recommendation is: they shouldn't__.
+more than a single asynchronous child. 
 
-This is a very opinionated decision; on the other hand, it doesn't limit 
-your ability to create arbitrarily complex Behavior Trees, but it helps
- keeping the cognitive overhead a little lower.
+The new recommendation is: 
+
+>__Reactive nodes shouldn't have more than a single asynchronous child__.
+
+This is a very opinionated decision and for this reason it is documented but 
+not enforced by the implementation.
+
 
 
 
