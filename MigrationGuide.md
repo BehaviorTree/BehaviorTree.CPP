@@ -49,12 +49,12 @@ sufficient (and necessary) to describe it, without knowing any additional
 detail about the actual implementation.
 
 
-# 2. Blackboard NodeParameters an DataPorts
+# 2. Blackboard, NodeParameters an DataPorts
 
 In version `2.x` we had the intuition that passing one or more arguments
 to a `TreeNode` would make the node more generic and reusable.
 
-This is similar to the arguments of a funtion in any programming language.
+This is similar to the arguments of a function in any programming language.
 
 ```C++
 // with arguments
@@ -69,18 +69,20 @@ GoToBedroom2()
 ```
 
 On the other hand, we had the Blackboard, that was nothing more than a
-shared __key/value__ table; the key is a `string`, whilst the value is a
-stored in a type-safe container similar to `std::any` or `std:.variant`.
+shared __key/value__ table, i.e. a glorified bunch of glabal variables.
 
-The problem is that writing/reading in an entry of the BB is done implicitly
+The key is a `string`, whilst the value is 
+stored in a type-safe container similar to `std::any` or `std::variant`.
+
+The problem is that writing/reading in an entry of the BB is done __implicitly__
 in the source code and it is usually hard-coded. This makes the TreeNode
-not fully reusable.
+not reusable.
 
 To fix this, we still use the Blackboard under the hood, but it can not be 
-accessed directly. Entires are read/written using respeticely `InputPorts`
+accessed directly anymore. Entries are read/written using respectively `InputPorts`
 and `OutputPorts`.
 
-This ports __must be modelled__ to allow remapping at run-time.
+These ports __must be modelled__ to allow remapping at run-time.
 
 Let's take a look to an example at the old code:
 
@@ -88,7 +90,7 @@ Let's take a look to an example at the old code:
 <root>
      <BehaviorTree>
         <SequenceStar>
-            <CalculateGoalPose/>
+            <CalculateGoal/>
             <MoveBase  goal="${GoalPose}" />
         </SequenceStar>
      </BehaviorTree>
@@ -97,7 +99,7 @@ Let's take a look to an example at the old code:
 
 ```C++
 //Old code (V2)
-NodeStatus CalculateGoalPose(TreeNode& self)
+NodeStatus CalculateGoal(TreeNode& self)
 {
     const Pose2D mygoal = { 1, 2, 3.14};
     // "GoalPose" is hardcoded... we don't like that
@@ -135,12 +137,12 @@ class MoveBase : public BT::AsyncActionNode
 };
 ```
 
-We may noticed that the `NodeParameter` can be remapped in the XML, but
+We may notice that the `NodeParameter` can be remapped in the XML, but
 to change the key "GoalPose" in `CalculateGoalPose`we must inspect the code
 and modify it.
 
 In other words, `NodeParameter` is already a reasonably good implementation
-of an `InputPort`, but we need a consisten equivalent version for `Outputport`.
+of an `InputPort`, but we need to intoruce a consistent `OutputPort` too.
 
 This is the new code:
 
@@ -148,8 +150,8 @@ This is the new code:
 <root>
      <BehaviorTree>
         <SequenceStar>
-            <CalculateGoalPose target="{GoalPose}" />
-            <MoveBase          goal  ="{GoalPose}" />
+            <CalculateGoal target="{GoalPose}" />
+            <MoveBase        goal="{GoalPose}" />
         </SequenceStar>
      </BehaviorTree>
  </root>
@@ -208,10 +210,11 @@ public:
 
 The main differences are:
 
-- `requiredNodeParameters()` is now `providedPorts()` and it is used to
-   declare both Inputs and Output ports alike.
+- `requiredNodeParameters()` was replaced by `providedPorts()`, that
+ it is used to declare both Inputs and Output ports alike.
    
-- `setOutput<>()` has been introduced and must be declared in `providedPorts()`.
+- `setOutput<>()` has been introduced. The method `blackboard()`can not be 
+   accessed anymore.
 
 - `getParam<>()` is now called `getInput<>()` to be more consistent with
   `setOutput<>()`. Furthermore, if an error occurs, we can get the error 
