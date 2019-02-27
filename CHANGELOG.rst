@@ -2,6 +2,11 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'ver_3'. Too many changes to count...
+* Contributors: Davide Facont, Davide Faconti, ImgBotApp, Victor Lopez
+
 2.5.1 (2019-01-14)
 ------------------
 * fix installation directory
