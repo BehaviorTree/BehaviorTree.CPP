@@ -35,8 +35,8 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.0.4">
+      <link rel="shortcut icon" href="../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-ponylang-0.2.5">
     
     
       
@@ -44,27 +44,22 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/application.451f80e5.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.dfc6cb0c.css">
       
-        <link rel="stylesheet" href="../assets/stylesheets/application-palette.22915126.css">
-      
-      
-        
-        
-        <meta name="theme-color" content="#546e7a">
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
       
     
     
-      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+      <script src="../assets/javascripts/modernizr.6586f7cd.js"></script>
     
     
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
       
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,400i,700|Roboto+Mono">
         <style>body,input{font-family:"Ubuntu","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     
-    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
     
     
   </head>
@@ -78,7 +73,7 @@
         
         
           <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
-    viewBox="0 0 416 448" id="__github">
+    viewBox="0 0 416 448" id="github">
   <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
         8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
         18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
@@ -111,7 +106,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
+          <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
           
             <img src="../images/BT.png" width="24" height="24">
           
@@ -177,7 +172,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -242,6 +237,19 @@
   
 
       
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../MigrationGuide/" title="Migration" class="md-tabs__link">
+          Migration
+        </a>
+      
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -255,11 +263,11 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href=".." title="BehaviorTree.CPP" class="md-nav__button md-logo">
+    <span class="md-nav__button md-logo">
       
         <img src="../images/BT.png" width="48" height="48">
       
-    </a>
+    </span>
     BehaviorTree.CPP
   </label>
   
@@ -274,7 +282,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -349,56 +357,70 @@
     
   
   
+  
+  
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
-        <li class="md-nav__item">
-  <a href="#types-of-nodes" title="Types of nodes" class="md-nav__link">
+        
+          <li class="md-nav__item">
+    <a href="#types-of-nodes" title="Types of nodes" class="md-nav__link">
     Types of nodes
   </a>
   
 </li>
+        
       
-        <li class="md-nav__item">
-  <a href="#examples" title="Examples" class="md-nav__link">
+        
+          <li class="md-nav__item">
+    <a href="#examples" title="Examples" class="md-nav__link">
     Examples
   </a>
   
     <nav class="md-nav">
       <ul class="md-nav__list">
         
-          <li class="md-nav__item">
-  <a href="#first-controlnode-sequence" title="First ControlNode: Sequence" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#first-controlnode-sequence" title="First ControlNode: Sequence" class="md-nav__link">
     First ControlNode: Sequence
   </a>
   
 </li>
+          
         
-          <li class="md-nav__item">
-  <a href="#decorators" title="Decorators" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#decorators" title="Decorators" class="md-nav__link">
     Decorators
   </a>
   
 </li>
+          
         
-          <li class="md-nav__item">
-  <a href="#second-controlnode-fallback" title="Second ControlNode: Fallback" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#second-controlnode-fallback" title="Second ControlNode: Fallback" class="md-nav__link">
     Second ControlNode: Fallback
   </a>
   
 </li>
+          
         
-          <li class="md-nav__item">
-  <a href="#fetch-me-a-beer-revisited" title=""Fetch me a beer" revisited" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#fetch-me-a-beer-revisited" title=""Fetch me a beer" revisited" class="md-nav__link">
     "Fetch me a beer" revisited
   </a>
   
 </li>
+          
         
       </ul>
     </nav>
   
 </li>
+        
       
       
       
@@ -489,7 +511,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_A_create_trees/" title="Tutorial 1: Create a Tree" class="md-nav__link">
+    <a href="../tutorial_01_first_tree/" title="Tutorial 1: Create a Tree" class="md-nav__link">
       Tutorial 1: Create a Tree
     </a>
   </li>
@@ -501,8 +523,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-nav__link">
-      Tutorial 2: NodeParameters
+    <a href="../tutorial_02_basic_ports/" title="Tutorial 2: Basic Ports" class="md-nav__link">
+      Tutorial 2: Basic Ports
     </a>
   </li>
 
@@ -513,8 +535,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-nav__link">
-      Tutorial 3: Blackboards
+    <a href="../tutorial_03_generic_ports/" title="Tutorial 3: Generic ports" class="md-nav__link">
+      Tutorial 3: Generic ports
     </a>
   </li>
 
@@ -525,8 +547,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_D_subtrees/" title="Tutorial 4: Subtrees" class="md-nav__link">
-      Tutorial 4: Subtrees
+    <a href="../tutorial_04_sequence_star/" title="Tutorial 4: Sequences" class="md-nav__link">
+      Tutorial 4: Sequences
     </a>
   </li>
 
@@ -537,8 +559,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-nav__link">
-      Tutorial 5: Plugins
+    <a href="../tutorial_05_subtrees/" title="Tutorial 5: Subtrees and Loggers" class="md-nav__link">
+      Tutorial 5: Subtrees and Loggers
     </a>
   </li>
 
@@ -549,8 +571,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_F_loggers/" title="Tutorial 6: Loggers" class="md-nav__link">
-      Tutorial 6: Loggers
+    <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-nav__link">
+      Tutorial 6: Ports remapping
     </a>
   </li>
 
@@ -561,7 +583,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
+    <a href="../tutorial_07_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
       Tutorial 7: Wrap legacy code
     </a>
   </li>
@@ -573,8 +595,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_H_coroutines/" title="Tutorial 8: Actions and Coroutines" class="md-nav__link">
-      Tutorial 8: Actions and Coroutines
+    <a href="../tutorial_08_additional_args/" title="Tutorial 8: Class parameters" class="md-nav__link">
+      Tutorial 8: Class parameters
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_09_coroutines/" title="Tutorial 9: Coroutines" class="md-nav__link">
+      Tutorial 9: Coroutines
     </a>
   </li>
 
@@ -587,6 +621,42 @@
   <li class="md-nav__item">
     <a href="../xml_format/" title="The XML format" class="md-nav__link">
       The XML format
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      Migration
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Migration
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../MigrationGuide/" title="Migrate from version 2" class="md-nav__link">
+      Migrate from version 2
     </a>
   </li>
 
@@ -613,56 +683,70 @@
     
   
   
+  
+  
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
-        <li class="md-nav__item">
-  <a href="#types-of-nodes" title="Types of nodes" class="md-nav__link">
+        
+          <li class="md-nav__item">
+    <a href="#types-of-nodes" title="Types of nodes" class="md-nav__link">
     Types of nodes
   </a>
   
 </li>
+        
       
-        <li class="md-nav__item">
-  <a href="#examples" title="Examples" class="md-nav__link">
+        
+          <li class="md-nav__item">
+    <a href="#examples" title="Examples" class="md-nav__link">
     Examples
   </a>
   
     <nav class="md-nav">
       <ul class="md-nav__list">
         
-          <li class="md-nav__item">
-  <a href="#first-controlnode-sequence" title="First ControlNode: Sequence" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#first-controlnode-sequence" title="First ControlNode: Sequence" class="md-nav__link">
     First ControlNode: Sequence
   </a>
   
 </li>
+          
         
-          <li class="md-nav__item">
-  <a href="#decorators" title="Decorators" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#decorators" title="Decorators" class="md-nav__link">
     Decorators
   </a>
   
 </li>
+          
         
-          <li class="md-nav__item">
-  <a href="#second-controlnode-fallback" title="Second ControlNode: Fallback" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#second-controlnode-fallback" title="Second ControlNode: Fallback" class="md-nav__link">
     Second ControlNode: Fallback
   </a>
   
 </li>
+          
         
-          <li class="md-nav__item">
-  <a href="#fetch-me-a-beer-revisited" title=""Fetch me a beer" revisited" class="md-nav__link">
+          
+            <li class="md-nav__item">
+    <a href="#fetch-me-a-beer-revisited" title=""Fetch me a beer" revisited" class="md-nav__link">
     "Fetch me a beer" revisited
   </a>
   
 </li>
+          
         
       </ul>
     </nav>
   
 </li>
+        
       
       
       
@@ -703,32 +787,30 @@ through the branches until it reaches one or multiple leaves.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The word <strong>tick</strong> will be often used as a <em>verb</em> (to tick / to be ticked) and it means</p>
-<p>"To invoke the callback <code>tick()</code> called of a <code>TreeNode</code>".</p>
+<p>"To invoke the callback <code>tick()</code> of a <code>TreeNode</code>".</p>
 </div>
-<p>Then a <code>TreeNode</code> is ticked, it returns a <code>NodeStatus</code> that can be either:</p>
+<p>When a <code>TreeNode</code> is ticked, it returns a <code>NodeStatus</code> that can be either:</p>
 <ul>
 <li><strong>SUCCESS</strong></li>
 <li><strong>FAILURE</strong></li>
 <li><strong>RUNNING</strong></li>
-<li><strong>IDLE</strong></li>
 </ul>
-<p>The first two, as their names suggest, inform their parent that their operation
+<p>The first two, as their names suggests, inform their parent that their operation
  was a success or a failure.</p>
-<p>RUNNING is returned by asynchronous nodes when their execution is not completed
-and they needs more time to return a valid result.</p>
-<p>This C++ library provides also the status <strong>IDLE</strong>; it means that the node is ready to
-start.</p>
+<p>RUNNING is returned by <strong>asynchronous</strong> nodes when their execution is not 
+completed and they needs more time to return a valid result.</p>
+<p><strong>Asynchronous nodes can be halted</strong>.</p>
 <p>The result of a node is propagated back to its parent, that will decide
-which child should be ticked next or will return a result to its own parent.</p>
+which child should be ticked next or may return a result to its own parent.</p>
 <h2 id="types-of-nodes">Types of nodes</h2>
 <p><strong>ControlNodes</strong> are nodes which can have 1 to N children. Once a tick
 is received, this tick may be propagated to one or more of the children.</p>
 <p><strong>DecoratorNodes</strong> is similar to the ControlNode, but it can have only a single child. </p>
-<p><strong>ActionNodes</strong> are leaves and do not have children. The user should implement
-their own ActionNodes to perform the actual task.</p>
+<p><strong>ActionNodes</strong> are leaves and do not have any children. The user should 
+implement their own ActionNodes to perform the actual task.</p>
 <p><strong>ConditionNodes</strong> are equivalent to ActionNodes, but
-they are always atomic, i.e. they must not return RUNNING. They should not 
-alter the state of the system.</p>
+they are always atomic and synchronous, i.e. they must not return RUNNING. 
+They should not alter the state of the system.</p>
 <p><img alt="UML hierarchy" src="../images/TypeHierarchy.png" /></p>
 <h2 id="examples">Examples</h2>
 <p>To better understand how a BehaviorTrees work, let's focus on some practical
@@ -738,9 +820,8 @@ when an action returns RUNNING.</p>
 <h3 id="first-controlnode-sequence">First ControlNode: Sequence</h3>
 <p>Let's illustrate how a BT works using the most basic and frequently used 
 ControlNode: the <a href="../SequenceNode/">SequenceNode</a>.</p>
-<p>The children of a ControlNode are always <strong>ordered</strong>; it is up to the ControlNode
-to consider this order or not.</p>
-<p>In the graphical representation, the order of execution is <strong>from left to right</strong>.</p>
+<p>The children of a ControlNode are always <strong>ordered</strong>; in the graphical 
+representation, the order of execution is <strong>from left to right</strong>.</p>
 <p><img alt="Simple Sequence: fridge" src="../images/SequenceBasic.png" /></p>
 <p>In short:</p>
 <ul>
@@ -754,10 +835,14 @@ to consider this order or not.</p>
 fridge would remain open, since the last action <strong>CloseFridge</strong> is skipped.</p>
 </div>
 <h3 id="decorators">Decorators</h3>
-<p>The goal of a <a href="../DecoratorNode/">DecoratorNode</a> is either to transform the result it received 
-from the child, to terminate the child, 
-or repeat ticking of the child, depending on the type of Decorator.</p>
-<p>You can create your own Decorators.</p>
+<p>Depending on the type of <a href="../DecoratorNode/">DecoratorNode</a>, the goal of
+this node could be either:</p>
+<ul>
+<li>to transform the result it received from the child</li>
+<li>to halt the execution of the child, </li>
+<li>to repeat ticking the child, depending on the type of Decorator.</li>
+</ul>
+<p>You can extend your grammar creating your own Decorators.</p>
 <p><img alt="Simple Decorator: Enter Room" src="../images/DecoratorEnterRoom.png" /></p>
 <p>The node <strong>Inverter</strong> is a Decorator that inverts 
 the result returned by its child; Inverter followed by the node called
@@ -786,10 +871,11 @@ is interrupted.</p>
 <p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
 are nodes that can express, as the name suggests, fallback strategies, 
 ie. what to do next if a child returns FAILURE.</p>
-<p>In short, it ticks the children in order and:</p>
+<p>It ticks the children in order and:</p>
 <ul>
 <li>If a child returns FAILURE, tick the next one.</li>
-<li>If a child returns SUCCESS, then no more children are ticked and the Fallback returns SUCCESS.</li>
+<li>If a child returns SUCCESS, then no more children are ticked and the 
+   Fallback returns SUCCESS.</li>
 <li>If all the children return FAILURE, then the Fallback returns FAILURE too.</li>
 </ul>
 <p>In the next example, you can see how Sequence and Fallbacks can be combined:</p>
@@ -805,7 +891,8 @@ ie. what to do next if a child returns FAILURE.</p>
 <p>We can now improve the "Fetch Me a Beer" example, which left the door open 
 if the beer was not inside the fridge.</p>
 <p>We use the color "green" to represent nodes which return
-SUCCESS and "red" for those which return FAILURE. Black nodes are never executed. </p>
+SUCCESS and "red" for those which return FAILURE. Black nodes haven't
+been executed. </p>
 <p><img alt="FetchBeer failure" src="../images/FetchBeerFails.png" /></p>
 <p>Let's create an alternative tree that closes the door even when <strong>GrabBeer</strong> 
 returns FAILURE.</p>
@@ -813,8 +900,8 @@ returns FAILURE.</p>
 <p>Both these trees will close the door of the fridge, eventually, but:</p>
 <ul>
 <li>
-<p>the tree on the <strong>left</strong> side will always return SUCCESS if we managed to
- open and close the fridge.</p>
+<p>the tree on the <strong>left</strong> side will always return SUCCESS, no matter if
+we have actually grabbed the beer.</p>
 </li>
 <li>
 <p>the tree on the <strong>right</strong> side will return SUCCESS if the beer was there, 
@@ -898,7 +985,7 @@ FAILURE otherwise.</p>
       
     </div>
     
-      <script src="../assets/javascripts/application.583bbe55.js"></script>
+    <script src="../assets/javascripts/application.6f02ae1b.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       

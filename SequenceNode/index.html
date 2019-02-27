@@ -35,8 +35,8 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.0.4">
+      <link rel="shortcut icon" href="../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-ponylang-0.2.5">
     
     
       
@@ -44,27 +44,22 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/application.451f80e5.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.dfc6cb0c.css">
       
-        <link rel="stylesheet" href="../assets/stylesheets/application-palette.22915126.css">
-      
-      
-        
-        
-        <meta name="theme-color" content="#546e7a">
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
       
     
     
-      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+      <script src="../assets/javascripts/modernizr.6586f7cd.js"></script>
     
     
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
       
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,400i,700|Roboto+Mono">
         <style>body,input{font-family:"Ubuntu","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     
-    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
     
     
   </head>
@@ -78,7 +73,7 @@
         
         
           <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
-    viewBox="0 0 416 448" id="__github">
+    viewBox="0 0 416 448" id="github">
   <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
         8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
         18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
@@ -111,7 +106,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
+          <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
           
             <img src="../images/BT.png" width="24" height="24">
           
@@ -177,7 +172,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -242,6 +237,19 @@
   
 
       
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../MigrationGuide/" title="Migration" class="md-tabs__link">
+          Migration
+        </a>
+      
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -255,11 +263,11 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href=".." title="BehaviorTree.CPP" class="md-nav__button md-logo">
+    <span class="md-nav__button md-logo">
       
         <img src="../images/BT.png" width="48" height="48">
       
-    </a>
+    </span>
     BehaviorTree.CPP
   </label>
   
@@ -274,7 +282,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -361,22 +369,37 @@
     
   
   
+  
+  
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
-        <li class="md-nav__item">
-  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
-    SequenceNode
+        
+          <li class="md-nav__item">
+    <a href="#sequence" title="Sequence" class="md-nav__link">
+    Sequence
   </a>
   
 </li>
+        
       
-        <li class="md-nav__item">
-  <a href="#sequencestarnode" title="SequenceStarNode" class="md-nav__link">
-    SequenceStarNode
+        
+          <li class="md-nav__item">
+    <a href="#reactivesequence" title="ReactiveSequence" class="md-nav__link">
+    ReactiveSequence
   </a>
   
 </li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#sequencestar" title="SequenceStar" class="md-nav__link">
+    SequenceStar
+  </a>
+  
+</li>
+        
       
       
       
@@ -455,7 +478,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_A_create_trees/" title="Tutorial 1: Create a Tree" class="md-nav__link">
+    <a href="../tutorial_01_first_tree/" title="Tutorial 1: Create a Tree" class="md-nav__link">
       Tutorial 1: Create a Tree
     </a>
   </li>
@@ -467,8 +490,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-nav__link">
-      Tutorial 2: NodeParameters
+    <a href="../tutorial_02_basic_ports/" title="Tutorial 2: Basic Ports" class="md-nav__link">
+      Tutorial 2: Basic Ports
     </a>
   </li>
 
@@ -479,8 +502,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-nav__link">
-      Tutorial 3: Blackboards
+    <a href="../tutorial_03_generic_ports/" title="Tutorial 3: Generic ports" class="md-nav__link">
+      Tutorial 3: Generic ports
     </a>
   </li>
 
@@ -491,8 +514,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_D_subtrees/" title="Tutorial 4: Subtrees" class="md-nav__link">
-      Tutorial 4: Subtrees
+    <a href="../tutorial_04_sequence_star/" title="Tutorial 4: Sequences" class="md-nav__link">
+      Tutorial 4: Sequences
     </a>
   </li>
 
@@ -503,8 +526,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-nav__link">
-      Tutorial 5: Plugins
+    <a href="../tutorial_05_subtrees/" title="Tutorial 5: Subtrees and Loggers" class="md-nav__link">
+      Tutorial 5: Subtrees and Loggers
     </a>
   </li>
 
@@ -515,8 +538,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_F_loggers/" title="Tutorial 6: Loggers" class="md-nav__link">
-      Tutorial 6: Loggers
+    <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-nav__link">
+      Tutorial 6: Ports remapping
     </a>
   </li>
 
@@ -527,7 +550,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
+    <a href="../tutorial_07_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
       Tutorial 7: Wrap legacy code
     </a>
   </li>
@@ -539,8 +562,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_H_coroutines/" title="Tutorial 8: Actions and Coroutines" class="md-nav__link">
-      Tutorial 8: Actions and Coroutines
+    <a href="../tutorial_08_additional_args/" title="Tutorial 8: Class parameters" class="md-nav__link">
+      Tutorial 8: Class parameters
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_09_coroutines/" title="Tutorial 9: Coroutines" class="md-nav__link">
+      Tutorial 9: Coroutines
     </a>
   </li>
 
@@ -553,6 +588,42 @@
   <li class="md-nav__item">
     <a href="../xml_format/" title="The XML format" class="md-nav__link">
       The XML format
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      Migration
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Migration
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../MigrationGuide/" title="Migrate from version 2" class="md-nav__link">
+      Migrate from version 2
     </a>
   </li>
 
@@ -579,22 +650,37 @@
     
   
   
+  
+  
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
-        <li class="md-nav__item">
-  <a href="#sequencenode" title="SequenceNode" class="md-nav__link">
-    SequenceNode
+        
+          <li class="md-nav__item">
+    <a href="#sequence" title="Sequence" class="md-nav__link">
+    Sequence
   </a>
   
 </li>
+        
       
-        <li class="md-nav__item">
-  <a href="#sequencestarnode" title="SequenceStarNode" class="md-nav__link">
-    SequenceStarNode
+        
+          <li class="md-nav__item">
+    <a href="#reactivesequence" title="ReactiveSequence" class="md-nav__link">
+    ReactiveSequence
   </a>
   
 </li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#sequencestar" title="SequenceStar" class="md-nav__link">
+    SequenceStar
+  </a>
+  
+</li>
+        
       
       
       
@@ -618,10 +704,11 @@
                 <h1 id="sequences">Sequences</h1>
 <p>A <strong>Sequence</strong> ticks all it's children as long as 
 they return SUCCESS. If any child returns FAILURE, the sequence is aborted.</p>
-<p>Currently the framework provides two kinds of nodes:</p>
+<p>Currently the framework provides three kinds of nodes:</p>
 <ul>
-<li>SequenceNode</li>
-<li>SequenceStarNode</li>
+<li>Sequence</li>
+<li>SequenceStar</li>
+<li>ReactiveSequence</li>
 </ul>
 <p>They share the following rules:</p>
 <ul>
@@ -636,28 +723,82 @@ they return SUCCESS. If any child returns FAILURE, the sequence is aborted.</p>
  the sequence returns <strong>SUCCESS</strong>.</p>
 </li>
 </ul>
-<h2 id="sequencenode">SequenceNode</h2>
+<p>To understand how the tree ControlNodes differ, refer to the following table:</p>
+<table>
+<thead>
+<tr>
+<th>Type of ControlNode</th>
+<th align="center">Child returns FAILURE</th>
+<th align="center">Child returns RUNNING</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sequence</td>
+<td align="center">Restart</td>
+<td align="center">Tick again</td>
+</tr>
+<tr>
+<td>ReactiveSequence</td>
+<td align="center">Restart</td>
+<td align="center">Restart</td>
+</tr>
+<tr>
+<td>SequenceStar</td>
+<td align="center">Tick again</td>
+<td align="center">Tick again</td>
+</tr>
+</tbody>
+</table>
 <ul>
 <li>
-<p>If a child returns FAILURE, the sequence returns FAILURE.
-  The index is reset and all the children are halted. </p>
+<p>"<strong>Restart</strong>" means that the entire sequence is restarted from the first 
+  child of the list.</p>
 </li>
 <li>
-<p>If a child returns RUNNING:</p>
-<ul>
-<li>the sequence returns RUNNING.</li>
-<li>the loop is restarted and  all the previous children are ticked again <strong>unless
-   they are ActionNodes</strong>. </li>
-</ul>
+<p>"<strong>Tick again</strong>" means that the next time the sequence is ticked, the 
+  same child is ticked again. Previous sibling, which returned SUCCESS already,
+  are not ticked again.</p>
 </li>
 </ul>
-<p><strong>Example</strong>:</p>
-<p>This tree represents the behavior of a sniper in a computer game.
-If any of these conditions/actions fails, the entire sequence is executed
-again from the beginning.</p>
-<p>A running actions will be interrupted if <strong>isEnemyVisible</strong> becomes
-false (i.e. it returns FAILURE).</p>
+<h2 id="sequence">Sequence</h2>
+<p>This tree represents the behavior of a sniper in a computer game.</p>
 <p><img alt="SequenceNode" src="../images/SequenceNode.png" /></p>
+<details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="n">status</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+    <span class="c1">// _index is a private member</span>
+
+    <span class="k">while</span><span class="p">(</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">child_status</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
+
+        <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="n">_index</span><span class="o">++</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// keep same index</span>
+            <span class="k">return</span> <span class="n">RUNNING</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="n">HaltAllChildren</span><span class="p">();</span>
+            <span class="n">_index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">FAILURE</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// all the children returned success. Return SUCCESS too.</span>
+    <span class="n">HaltAllChildren</span><span class="p">();</span>
+    <span class="n">_index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
+</pre></div>
+</details><h2 id="reactivesequence">ReactiveSequence</h2>
+<p>This node is particularly useful to continuously check Conditions; but 
+the user should also be careful when using asynchronous children, to be
+sure that thy are not ticked more often that expected.</p>
+<p>Let's take a look to another example:</p>
+<p><img alt="ReactiveSequence" src="../images/ReactiveSequence.png" /></p>
+<p><code>ApproachEnemy</code> is an <strong>asynchronous</strong> action that m return RUNNING until
+it is, eventually, completed.</p>
+<p>The condition <code>isEnemyVisible</code> will be called many times and, 
+if it becomes false (i,e, "FAILURE"), <code>ApproachEnemy</code> is halted. </p>
 <details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="n">status</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
 
     <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span><span class="p">;</span> <span class="n">index</span><span class="o">++</span><span class="p">)</span>
@@ -665,13 +806,9 @@ false (i.e. it returns FAILURE).</p>
         <span class="n">child_status</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
 
         <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// Suspend execution and return RUNNING.</span>
-            <span class="c1">// At the next tick, index will be the same.</span>
             <span class="k">return</span> <span class="n">RUNNING</span><span class="p">;</span>
         <span class="p">}</span>
         <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// Suspend execution and return FAILURE.</span>
-            <span class="c1">// index is reset and children are halted.</span>
             <span class="n">HaltAllChildren</span><span class="p">();</span>
             <span class="k">return</span> <span class="n">FAILURE</span><span class="p">;</span>
         <span class="p">}</span>
@@ -680,63 +817,37 @@ false (i.e. it returns FAILURE).</p>
     <span class="n">HaltAllChildren</span><span class="p">();</span>
     <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
 </pre></div>
-
-</details>
-<h2 id="sequencestarnode">SequenceStarNode</h2>
-<p>Use this ControlNode when you don't want to tick a child more than once.</p>
-<p>You can customize its behavior using the <a href="../NodeParameters/">NodeParameter</a> "reset_on_failure".</p>
-<ul>
-<li>
-<p>If a child returns FAILURE, the sequence returns FAILURE. </p>
-<ul>
-<li>[reset_on_failure = "true"]: (default) the loop is restarted.</li>
-<li>[reset_on_failure = "false"]: the same failed child is executed again.</li>
-</ul>
-</li>
-<li>
-<p>If a child returns RUNNING, the sequence returns RUNNING.
-  The same child will be ticked again.</p>
-</li>
-</ul>
+</details><h2 id="sequencestar">SequenceStar</h2>
+<p>Use this ControlNode when you don't want to tick again children that 
+return SUCCESS already</p>
 <p><strong>Example</strong>:</p>
 <p>This is a patrolling agent/robot that must visit locations A, B and C <strong>only once</strong>.
 If the action <strong>GoTo(B)</strong> fails, <strong>GoTo(A)</strong> will not be ticked again.</p>
 <p>On the other hand, <strong>isBatteryOK</strong> must be checked at every tick, 
-for this reason its parent must be a SequenceNode.</p>
+for this reason its parent must be a <code>ReactiveSequence</code>.</p>
 <p><img alt="SequenceStar" src="../images/SequenceStar.png" /></p>
-<details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="c1">// index is initialized to 0 in the constructor</span>
-    <span class="n">status</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+<details class="example"><summary>See the pseudocode</summary><div class="codehilite"><pre><span></span>    <span class="n">status</span> <span class="o">=</span> <span class="n">RUNNING</span><span class="p">;</span>
+    <span class="c1">// _index is a private member</span>
 
-    <span class="k">while</span><span class="p">(</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span> <span class="p">)</span>
+    <span class="k">while</span><span class="p">(</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">number_of_children</span><span class="p">)</span>
     <span class="p">{</span>
         <span class="n">child_status</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">tick</span><span class="p">();</span>
 
-        <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// Suspend execution and return RUNNING.</span>
-            <span class="c1">// At the next tick, index will be the same.</span>
-            <span class="k">return</span> <span class="n">RUNNING</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
+            <span class="n">_index</span><span class="o">++</span><span class="p">;</span>
         <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">SUCCESS</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// continue the while loop</span>
-            <span class="n">index</span><span class="o">++</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// Suspend execution and return FAILURE.</span>
-            <span class="c1">// At the next tick, index will be the same.</span>
-            <span class="k">if</span><span class="p">(</span> <span class="n">reset_on_failure</span> <span class="p">)</span>
-            <span class="p">{</span>
-                <span class="n">HaltAllChildren</span><span class="p">();</span>
-                <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-            <span class="p">}</span>
-            <span class="k">return</span> <span class="n">FAILURE</span><span class="p">;</span>
+        <span class="k">else</span> <span class="k">if</span><span class="p">(</span> <span class="n">child_status</span> <span class="o">==</span> <span class="n">RUNNING</span> <span class="o">||</span> 
+                 <span class="n">child_status</span> <span class="o">==</span> <span class="n">FAILURE</span> <span class="p">)</span> 
+        <span class="p">{</span>
+            <span class="c1">// keep same index</span>
+            <span class="k">return</span> <span class="n">child_status</span><span class="p">;</span>
         <span class="p">}</span>
     <span class="p">}</span>
     <span class="c1">// all the children returned success. Return SUCCESS too.</span>
-    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="n">HaltAllChildren</span><span class="p">();</span>
+    <span class="n">_index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
 </pre></div>
-
 </details>
                 
                   
@@ -813,7 +924,7 @@ for this reason its parent must be a SequenceNode.</p>
       
     </div>
     
-      <script src="../assets/javascripts/application.583bbe55.js"></script>
+    <script src="../assets/javascripts/application.6f02ae1b.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       

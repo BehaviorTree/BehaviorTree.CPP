@@ -35,36 +35,31 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.0.4">
+      <link rel="shortcut icon" href="../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-ponylang-0.2.5">
     
     
       
-        <title>Tutorial 4: Subtrees - BehaviorTree.CPP</title>
+        <title>Tutorial 5: Subtrees and Loggers - BehaviorTree.CPP</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/application.451f80e5.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.dfc6cb0c.css">
       
-        <link rel="stylesheet" href="../assets/stylesheets/application-palette.22915126.css">
-      
-      
-        
-        
-        <meta name="theme-color" content="#546e7a">
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
       
     
     
-      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+      <script src="../assets/javascripts/modernizr.6586f7cd.js"></script>
     
     
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
       
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,400i,700|Roboto+Mono">
         <style>body,input{font-family:"Ubuntu","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     
-    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
     
     
   </head>
@@ -78,7 +73,7 @@
         
         
           <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
-    viewBox="0 0 416 448" id="__github">
+    viewBox="0 0 416 448" id="github">
   <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
         8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
         18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
@@ -102,7 +97,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="../#example-subtrees-in-xml" tabindex="1" class="md-skip">
+      <a href="../#composition-of-behaviors-with-subtree" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -111,7 +106,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
+          <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
           
             <img src="../images/BT.png" width="24" height="24">
           
@@ -128,7 +123,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                Tutorial 4: Subtrees
+                Tutorial 5: Subtrees and Loggers
               </span>
             
           
@@ -177,7 +172,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -242,6 +237,19 @@
   
 
       
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../MigrationGuide/" title="Migration" class="md-tabs__link">
+          Migration
+        </a>
+      
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -255,11 +263,11 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href=".." title="BehaviorTree.CPP" class="md-nav__button md-logo">
+    <span class="md-nav__button md-logo">
       
         <img src="../images/BT.png" width="48" height="48">
       
-    </a>
+    </span>
     BehaviorTree.CPP
   </label>
   
@@ -274,7 +282,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -410,7 +418,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_A_create_trees/" title="Tutorial 1: Create a Tree" class="md-nav__link">
+    <a href="../tutorial_01_first_tree/" title="Tutorial 1: Create a Tree" class="md-nav__link">
       Tutorial 1: Create a Tree
     </a>
   </li>
@@ -422,8 +430,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-nav__link">
-      Tutorial 2: NodeParameters
+    <a href="../tutorial_02_basic_ports/" title="Tutorial 2: Basic Ports" class="md-nav__link">
+      Tutorial 2: Basic Ports
     </a>
   </li>
 
@@ -434,8 +442,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-nav__link">
-      Tutorial 3: Blackboards
+    <a href="../tutorial_03_generic_ports/" title="Tutorial 3: Generic ports" class="md-nav__link">
+      Tutorial 3: Generic ports
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_04_sequence_star/" title="Tutorial 4: Sequences" class="md-nav__link">
+      Tutorial 4: Sequences
     </a>
   </li>
 
@@ -451,37 +471,12 @@
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
     
+      
     
-      <label class="md-nav__link md-nav__link--active" for="__toc">
-        Tutorial 4: Subtrees
-      </label>
     
-    <a href="./" title="Tutorial 4: Subtrees" class="md-nav__link md-nav__link--active">
-      Tutorial 4: Subtrees
+    <a href="./" title="Tutorial 5: Subtrees and Loggers" class="md-nav__link md-nav__link--active">
+      Tutorial 5: Subtrees and Loggers
     </a>
-    
-      
-<nav class="md-nav md-nav--secondary">
-  
-  
-  
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#example-subtrees-in-xml" title="Example: subtrees in XML" class="md-nav__link">
-    Example: subtrees in XML
-  </a>
-  
-</li>
-      
-      
-      
-      
-      
-    </ul>
-  
-</nav>
     
   </li>
 
@@ -492,8 +487,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-nav__link">
-      Tutorial 5: Plugins
+    <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-nav__link">
+      Tutorial 6: Ports remapping
     </a>
   </li>
 
@@ -504,19 +499,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_F_loggers/" title="Tutorial 6: Loggers" class="md-nav__link">
-      Tutorial 6: Loggers
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
+    <a href="../tutorial_07_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
       Tutorial 7: Wrap legacy code
     </a>
   </li>
@@ -528,8 +511,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_H_coroutines/" title="Tutorial 8: Actions and Coroutines" class="md-nav__link">
-      Tutorial 8: Actions and Coroutines
+    <a href="../tutorial_08_additional_args/" title="Tutorial 8: Class parameters" class="md-nav__link">
+      Tutorial 8: Class parameters
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_09_coroutines/" title="Tutorial 9: Coroutines" class="md-nav__link">
+      Tutorial 9: Coroutines
     </a>
   </li>
 
@@ -542,6 +537,42 @@
   <li class="md-nav__item">
     <a href="../xml_format/" title="The XML format" class="md-nav__link">
       The XML format
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      Migration
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Migration
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../MigrationGuide/" title="Migrate from version 2" class="md-nav__link">
+      Migrate from version 2
     </a>
   </li>
 
@@ -565,22 +596,10 @@
 <nav class="md-nav md-nav--secondary">
   
   
+    
   
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#example-subtrees-in-xml" title="Example: subtrees in XML" class="md-nav__link">
-    Example: subtrees in XML
-  </a>
   
-</li>
-      
-      
-      
-      
-      
-    </ul>
+  
   
 </nav>
                   </div>
@@ -592,30 +611,23 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorial_D_subtrees.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorial_05_subtrees.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>Tutorial 4: Subtrees</h1>
-                
-                <p>One of the main advantages of Behavior Trees is that they are <strong>intrinsically
-hierarchical</strong>.</p>
-<p>You might have noticed that it is always possible to raise the level of
-abstraction looking one node up in the hierarchy of the tree.</p>
-<p>In the <a href="../BT_basics/">Introduction</a> we presented this tree:</p>
-<p><img alt="FallbackNodes" src="../images/FallbackBasic.png" />  </p>
-<p>The Sequence called "Unlock" can be seen as an entire subtree; from the point
-of view of its parent, that subtree can have an arbitrary
-level of complexity.</p>
-<p><strong>BehaviorTree.CPP</strong> provides a way to create reusable and composable Subtrees
-that can be included as nodes of a larger and more complex tree.</p>
-<h2 id="example-subtrees-in-xml">Example: subtrees in XML</h2>
-<p>To define and insert a Subtree you <strong>don't need to modify your
- c++ code</strong>, nor your existing TreeNodes implementations.</p>
-<p>Multiple BehaviorTrees can be created and composed in the XML itself.</p>
-<div class="codehilite"><pre><span></span><span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
-    <span class="c">&lt;!---------------------------------------&gt;</span>
-    <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;DoorClosed&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;door_closed_sequence&quot;</span><span class="nt">&gt;</span>
+                <h1 id="composition-of-behaviors-with-subtree">Composition of Behaviors with Subtree</h1>
+<p>We can build large scale behavior composing togheter smaller and reusable
+behaviors into larger ones.</p>
+<p>In other words, we want to create <strong>hierarchical</strong> behavior trees. </p>
+<p>This can be achieved easily defining multiple trees in the XML including one
+into the other.</p>
+<h1 id="crossdoor-behavior">CrossDoor behavior</h1>
+<p>This example is inspired by a popular 
+<a href="http://www.gamasutra.com/blogs/ChrisSimpson/20140717/221339/Behavior_trees_for_AI_How_they_work.php">article about behavior trees</a>.</p>
+<p>It is also the first practical example that uses <code>Decorators</code> and <code>Fallback</code>.</p>
+<div class="codehilite"><pre><span></span><span class="hll"><span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
+</span>
+<span class="hll">    <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;DoorClosed&quot;</span><span class="nt">&gt;</span>
+</span>        <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;door_closed_sequence&quot;</span><span class="nt">&gt;</span>
             <span class="nt">&lt;Inverter&gt;</span>
                 <span class="nt">&lt;IsDoorOpen/&gt;</span>
             <span class="nt">&lt;/Inverter&gt;</span>
@@ -625,23 +637,80 @@ that can be included as nodes of a larger and more complex tree.</p>
             <span class="nt">&lt;PassThroughDoor/&gt;</span>
         <span class="nt">&lt;/Sequence&gt;</span>
     <span class="nt">&lt;/BehaviorTree&gt;</span>
-    <span class="c">&lt;!---------------------------------------&gt;</span>
-    <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;Fallback</span> <span class="na">name=</span><span class="s">&quot;root_Fallback&quot;</span><span class="nt">&gt;</span>
+
+<span class="hll">    <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
+</span>        <span class="nt">&lt;Fallback</span> <span class="na">name=</span><span class="s">&quot;root_Fallback&quot;</span><span class="nt">&gt;</span>
             <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;door_open_sequence&quot;</span><span class="nt">&gt;</span>
                 <span class="nt">&lt;IsDoorOpen/&gt;</span>
                 <span class="nt">&lt;PassThroughDoor/&gt;</span>
             <span class="nt">&lt;/Sequence&gt;</span>
-<span class="hll">            <span class="nt">&lt;SubTree</span> <span class="na">ID=</span><span class="s">&quot;DoorClosed&quot;</span><span class="nt">/&gt;</span>
-</span>            <span class="nt">&lt;PassThroughWindow/&gt;</span>
+            <span class="nt">&lt;SubTree</span> <span class="na">ID=</span><span class="s">&quot;DoorClosed&quot;</span><span class="nt">/&gt;</span>
+            <span class="nt">&lt;PassThroughWindow/&gt;</span>
         <span class="nt">&lt;/Fallback&gt;</span>
     <span class="nt">&lt;/BehaviorTree&gt;</span>
-    <span class="c">&lt;!---------------------------------------&gt;</span> 
+
 <span class="nt">&lt;/root&gt;</span>
 </pre></div>
 
-<p>The corresponding graphical representation is:</p>
-<p><img alt="CrossDoorSubtree" src="../images/CrossDoorSubtree.png" /> </p>
+<p>It may be noticed that we incapsulated a quite complex branch of the tree,
+the one to execute when the door is closed, into a separate tree called
+<code>DoorClosed</code>.</p>
+<p>The desired behavior is:</p>
+<ul>
+<li>If the door is open, <code>PassThroughDoor</code>.</li>
+<li>If the door is closed, try up to 4 times to <code>OpenDoor</code> and, then, <code>PassThroughDoor</code>.</li>
+<li>If it was not possible to open the closed door, <code>PassThroughWindow</code>.</li>
+</ul>
+<h2 id="loggers">Loggers</h2>
+<p>On the C++ side we don't need to do anything to build reusable subtree.</p>
+<p>Therefore we take this opportunity to introduce another neat feature of
+<em>BehaviorTree.CPP</em> : <strong>Loggers</strong>.</p>
+<p>A Logger is a mechanism to display, record and/or publish any state change in the tree.</p>
+<div class="codehilite"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
+    <span class="n">BehaviorTreeFactory</span> <span class="n">factory</span><span class="p">;</span>
+
+    <span class="c1">// register all the actions into the factory</span>
+    <span class="c1">// We don&#39;t show how these actions are implemented, since most of the </span>
+    <span class="c1">// times they just print a message on screen and return SUCCESS.</span>
+    <span class="c1">// See the code on Github for more details.</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleCondition</span><span class="p">(</span><span class="s">&quot;IsDoorOpen&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">IsDoorOpen</span><span class="p">));</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;PassThroughDoor&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">PassThroughDoor</span><span class="p">));</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;PassThroughWindow&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">PassThroughWindow</span><span class="p">));</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;OpenDoor&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">OpenDoor</span><span class="p">));</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;CloseDoor&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">CloseDoor</span><span class="p">));</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleCondition</span><span class="p">(</span><span class="s">&quot;IsDoorLocked&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">IsDoorLocked</span><span class="p">));</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;UnlockDoor&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">UnlockDoor</span><span class="p">));</span>
+
+    <span class="c1">// Load from text or file...</span>
+    <span class="k">auto</span> <span class="n">tree</span> <span class="o">=</span> <span class="n">factory</span><span class="p">.</span><span class="n">createTreeFromText</span><span class="p">(</span><span class="n">xml_text</span><span class="p">);</span>
+
+    <span class="c1">// This logger prints state changes on console</span>
+    <span class="n">StdCoutLogger</span> <span class="n">logger_cout</span><span class="p">(</span><span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="p">);</span>
+
+    <span class="c1">// This logger saves state changes on file</span>
+    <span class="n">FileLogger</span> <span class="n">logger_file</span><span class="p">(</span><span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="p">,</span> <span class="s">&quot;bt_trace.fbl&quot;</span><span class="p">);</span>
+
+    <span class="c1">// This logger stores the execution time of each node</span>
+    <span class="n">MinitraceLogger</span> <span class="n">logger_minitrace</span><span class="p">(</span><span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="p">,</span> <span class="s">&quot;bt_trace.json&quot;</span><span class="p">);</span>
+
+    <span class="n">printTreeRecursively</span><span class="p">(</span><span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="p">);</span>
+
+    <span class="c1">//while (1)</span>
+    <span class="p">{</span>
+        <span class="n">NodeStatus</span> <span class="n">status</span> <span class="o">=</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">RUNNING</span><span class="p">;</span>
+        <span class="c1">// Keep on ticking until you get either a SUCCESS or FAILURE state</span>
+        <span class="k">while</span><span class="p">(</span> <span class="n">status</span> <span class="o">==</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">RUNNING</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="o">-&gt;</span><span class="n">executeTick</span><span class="p">();</span>
+            <span class="n">CrossDoor</span><span class="o">::</span><span class="n">SleepMS</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>   <span class="c1">// optional sleep to avoid &quot;busy loops&quot;</span>
+        <span class="p">}</span>
+        <span class="n">CrossDoor</span><span class="o">::</span><span class="n">SleepMS</span><span class="p">(</span><span class="mi">2000</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
                 
                   
                 
@@ -662,7 +731,7 @@ that can be included as nodes of a larger and more complex tree.</p>
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../tutorial_04_sequence_star/" title="Tutorial 4: Sequences" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -671,19 +740,19 @@ that can be included as nodes of a larger and more complex tree.</p>
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Tutorial 3: Blackboards
+                Tutorial 4: Sequences
               </span>
             </div>
           </a>
         
         
-          <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Tutorial 5: Plugins
+                Tutorial 6: Ports remapping
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
@@ -717,7 +786,7 @@ that can be included as nodes of a larger and more complex tree.</p>
       
     </div>
     
-      <script src="../assets/javascripts/application.583bbe55.js"></script>
+    <script src="../assets/javascripts/application.6f02ae1b.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       

@@ -35,36 +35,31 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.0.4">
+      <link rel="shortcut icon" href="../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-ponylang-0.2.5">
     
     
       
-        <title>Tutorial 8: Actions and Coroutines - BehaviorTree.CPP</title>
+        <title>Tutorial 7: Wrap legacy code - BehaviorTree.CPP</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/application.451f80e5.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.dfc6cb0c.css">
       
-        <link rel="stylesheet" href="../assets/stylesheets/application-palette.22915126.css">
-      
-      
-        
-        
-        <meta name="theme-color" content="#546e7a">
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
       
     
     
-      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+      <script src="../assets/javascripts/modernizr.6586f7cd.js"></script>
     
     
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
       
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,400i,700|Roboto+Mono">
         <style>body,input{font-family:"Ubuntu","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     
-    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
     
     
   </head>
@@ -78,7 +73,7 @@
         
         
           <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
-    viewBox="0 0 416 448" id="__github">
+    viewBox="0 0 416 448" id="github">
   <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
         8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
         18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
@@ -102,7 +97,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="../#async-actions-using-coroutines" tabindex="1" class="md-skip">
+      <a href="../#wraping-legacy-code" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -111,7 +106,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
+          <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
           
             <img src="../images/BT.png" width="24" height="24">
           
@@ -128,7 +123,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                Tutorial 8: Actions and Coroutines
+                Tutorial 7: Wrap legacy code
               </span>
             
           
@@ -177,7 +172,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -242,6 +237,19 @@
   
 
       
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../MigrationGuide/" title="Migration" class="md-tabs__link">
+          Migration
+        </a>
+      
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -255,11 +263,11 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href=".." title="BehaviorTree.CPP" class="md-nav__button md-logo">
+    <span class="md-nav__button md-logo">
       
         <img src="../images/BT.png" width="48" height="48">
       
-    </a>
+    </span>
     BehaviorTree.CPP
   </label>
   
@@ -274,7 +282,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -410,7 +418,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_A_create_trees/" title="Tutorial 1: Create a Tree" class="md-nav__link">
+    <a href="../tutorial_01_first_tree/" title="Tutorial 1: Create a Tree" class="md-nav__link">
       Tutorial 1: Create a Tree
     </a>
   </li>
@@ -422,8 +430,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-nav__link">
-      Tutorial 2: NodeParameters
+    <a href="../tutorial_02_basic_ports/" title="Tutorial 2: Basic Ports" class="md-nav__link">
+      Tutorial 2: Basic Ports
     </a>
   </li>
 
@@ -434,8 +442,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-nav__link">
-      Tutorial 3: Blackboards
+    <a href="../tutorial_03_generic_ports/" title="Tutorial 3: Generic ports" class="md-nav__link">
+      Tutorial 3: Generic ports
     </a>
   </li>
 
@@ -446,8 +454,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_D_subtrees/" title="Tutorial 4: Subtrees" class="md-nav__link">
-      Tutorial 4: Subtrees
+    <a href="../tutorial_04_sequence_star/" title="Tutorial 4: Sequences" class="md-nav__link">
+      Tutorial 4: Sequences
     </a>
   </li>
 
@@ -458,8 +466,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-nav__link">
-      Tutorial 5: Plugins
+    <a href="../tutorial_05_subtrees/" title="Tutorial 5: Subtrees and Loggers" class="md-nav__link">
+      Tutorial 5: Subtrees and Loggers
     </a>
   </li>
 
@@ -470,20 +478,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_F_loggers/" title="Tutorial 6: Loggers" class="md-nav__link">
-      Tutorial 6: Loggers
-    </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
-      Tutorial 7: Wrap legacy code
+    <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-nav__link">
+      Tutorial 6: Ports remapping
     </a>
   </li>
 
@@ -502,10 +498,67 @@
       
     
     
-    <a href="./" title="Tutorial 8: Actions and Coroutines" class="md-nav__link md-nav__link--active">
-      Tutorial 8: Actions and Coroutines
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Tutorial 7: Wrap legacy code
+      </label>
+    
+    <a href="./" title="Tutorial 7: Wrap legacy code" class="md-nav__link md-nav__link--active">
+      Tutorial 7: Wrap legacy code
     </a>
     
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        
+          <li class="md-nav__item">
+    <a href="#c-code" title="C++ code" class="md-nav__link">
+    C++ code
+  </a>
+  
+</li>
+        
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_08_additional_args/" title="Tutorial 8: Class parameters" class="md-nav__link">
+      Tutorial 8: Class parameters
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_09_coroutines/" title="Tutorial 9: Coroutines" class="md-nav__link">
+      Tutorial 9: Coroutines
+    </a>
   </li>
 
         
@@ -517,6 +570,42 @@
   <li class="md-nav__item">
     <a href="../xml_format/" title="The XML format" class="md-nav__link">
       The XML format
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      Migration
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Migration
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../MigrationGuide/" title="Migrate from version 2" class="md-nav__link">
+      Migrate from version 2
     </a>
   </li>
 
@@ -543,6 +632,26 @@
     
   
   
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        
+          <li class="md-nav__item">
+    <a href="#c-code" title="C++ code" class="md-nav__link">
+    C++ code
+  </a>
+  
+</li>
+        
+      
+      
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -553,112 +662,98 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorial_H_coroutines.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorial_07_legacy.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="async-actions-using-coroutines">Async Actions using Coroutines</h1>
-<p>BehaviorTree.CPP provides two easy-to-use abstractions to create an 
-asynchronous Action, i.e those actions which:</p>
-<ul>
-<li>Take a long time to be concluded.</li>
-<li>May return "RUNNING".</li>
-<li>Can be <strong>halted</strong>.</li>
-</ul>
-<p>The first class is <strong>AsyncActionNode</strong>, that execute the tick() method in a
-separate thread.</p>
-<p>In this tutorial we present <strong>CoroActionNode</strong>, a different class that uses
-coroutines to achieve a similar results.</p>
-<p>Coroutines do not spawn a new thread and are much more efficient.</p>
-<p>The user should explicitly call a <strong>yield</strong> method where he wants to execution
-of the Action to be suspended.</p>
-<p>In this tutorial we will see how it works with a very simple example that 
-you can use as template of your own implementation.</p>
-<div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">MyAsyncAction</span><span class="o">:</span> <span class="k">public</span> <span class="n">CoroActionNode</span>
+                <h1 id="wraping-legacy-code">Wraping legacy code</h1>
+<p>In this tutorial we will see how to deal with legacy code that was not meant to be used
+with BehaviorTree.CPP.</p>
+<p>Your class might look like this one:</p>
+<div class="codehilite"><pre><span></span><span class="c1">// This is my custom type.</span>
+<span class="k">struct</span> <span class="n">Point3D</span> <span class="p">{</span> <span class="kt">double</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">;</span> <span class="p">};</span>
+
+<span class="c1">// We want to create an ActionNode to calls method MyLegacyMoveTo::go</span>
+<span class="k">class</span> <span class="nc">MyLegacyMoveTo</span>
 <span class="p">{</span>
-  <span class="k">public</span><span class="o">:</span>
-    <span class="n">MyAsyncAction</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">)</span><span class="o">:</span>
-      <span class="n">CoroActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">NodeParameters</span><span class="p">())</span>
-    <span class="p">{}</span>
-
-    <span class="c1">// This is the ideal skeleton/template of an async action:</span>
-    <span class="c1">//  - A request to a remote service provider.</span>
-    <span class="c1">//  - A loop where we check if the reply has been received.</span>
-    <span class="c1">//    Call setStatusRunningAndYield() to &quot;pause&quot;.</span>
-    <span class="c1">//  - Code to execute after the reply.</span>
-    <span class="c1">//  - a simple way to handle halt().</span>
-
-    <span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span> <span class="k">override</span>
+<span class="k">public</span><span class="o">:</span>
+    <span class="kt">bool</span> <span class="n">go</span><span class="p">(</span><span class="n">Point3D</span> <span class="n">goal</span><span class="p">)</span>
     <span class="p">{</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Started. Send Request to server.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-
-        <span class="kt">int</span> <span class="n">cycle</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="kt">bool</span> <span class="n">reply_received</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-
-        <span class="k">while</span><span class="p">(</span> <span class="o">!</span><span class="n">reply_received</span> <span class="p">)</span>
-        <span class="p">{</span>
-            <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Waiting reply.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-            <span class="n">reply_received</span> <span class="o">=</span> <span class="o">++</span><span class="n">cycle</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">;</span>
-
-            <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">reply_received</span> <span class="p">)</span>
-            <span class="p">{</span>
-                <span class="c1">// set status to RUNNING and &quot;pause/sleep&quot;</span>
-                <span class="c1">// If halt() is called, we will not resume execution</span>
-                <span class="n">setStatusRunningAndYield</span><span class="p">();</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-
-        <span class="c1">// this part of the code is never reached if halt() is invoked.</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Done.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-        <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="kt">void</span> <span class="n">halt</span><span class="p">()</span> <span class="k">override</span>
-    <span class="p">{</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span><span class="s">&quot;: Halted. Do your cleanup here.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-
-        <span class="c1">// Do not forget to call this at the end.</span>
-        <span class="n">CoroActionNode</span><span class="o">::</span><span class="n">halt</span><span class="p">();</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Going to: %f %f %f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">goal</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">goal</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">goal</span><span class="p">.</span><span class="n">z</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="c1">// true means success in my legacy code</span>
     <span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
 
-<p>To keep the rest of the example simple, we use create a trivial tree
-with two actions executed in sequence, using the programmatic approach. </p>
-<div class="codehilite"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<h2 id="c-code">C++ code</h2>
+<p>As usuall, we need to implement the template specialization of <code>convertFromString</code>.</p>
+<div class="codehilite"><pre><span></span><span class="k">namespace</span> <span class="n">BT</span>
 <span class="p">{</span>
-    <span class="c1">// Simple tree: a sequence of two asycnhronous actions</span>
-    <span class="n">BT</span><span class="o">::</span><span class="n">SequenceNode</span> <span class="n">sequence_root</span><span class="p">(</span><span class="s">&quot;sequence&quot;</span><span class="p">);</span>
-    <span class="n">MyAsyncAction</span> <span class="n">action_A</span><span class="p">(</span><span class="s">&quot;actionA&quot;</span><span class="p">);</span>
-    <span class="n">MyAsyncAction</span> <span class="n">action_B</span><span class="p">(</span><span class="s">&quot;actionB&quot;</span><span class="p">);</span>
-
-    <span class="c1">// Add children to the sequence.</span>
-    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">action_A</span><span class="p">);</span>
-    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">action_B</span><span class="p">);</span>
-
-    <span class="n">NodeStatus</span> <span class="n">status</span> <span class="o">=</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">IDLE</span><span class="p">;</span>
-
-    <span class="k">while</span><span class="p">(</span> <span class="n">status</span> <span class="o">!=</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span> <span class="o">&amp;&amp;</span> <span class="n">status</span> <span class="o">!=</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">FAILURE</span><span class="p">)</span>
+    <span class="k">template</span> <span class="o">&lt;&gt;</span> <span class="n">Point3D</span> <span class="n">convertFromString</span><span class="p">(</span><span class="n">StringView</span> <span class="n">key</span><span class="p">)</span>
     <span class="p">{</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="n">sequence_root</span><span class="p">.</span><span class="n">executeTick</span><span class="p">();</span>
-
-        <span class="c1">// It is often a good idea to add a sleep here to avoid busy loops</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">);</span>
+        <span class="c1">// three real numbers separated by semicolons</span>
+        <span class="k">auto</span> <span class="n">parts</span> <span class="o">=</span> <span class="n">BT</span><span class="o">::</span><span class="n">splitString</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="sc">&#39;;&#39;</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">parts</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">throw</span> <span class="n">RuntimeError</span><span class="p">(</span><span class="s">&quot;invalid input)&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span><span class="p">{</span>
+            <span class="n">Point3D</span> <span class="n">output</span><span class="p">;</span>
+            <span class="n">output</span><span class="p">.</span><span class="n">x</span>  <span class="o">=</span> <span class="n">convertFromString</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+            <span class="n">output</span><span class="p">.</span><span class="n">y</span>  <span class="o">=</span> <span class="n">convertFromString</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+            <span class="n">output</span><span class="p">.</span><span class="n">z</span>  <span class="o">=</span> <span class="n">convertFromString</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+            <span class="k">return</span> <span class="n">output</span><span class="p">;</span>
+        <span class="p">}</span>
     <span class="p">}</span>
+<span class="p">}</span> <span class="c1">// end anmespace BT</span>
+</pre></div>
+
+<p>To wrap the method <code>MyLegacyMoveTo::go</code>, we may use a <strong>lambda or std::bind</strong> 
+to create a funtion pointer and <code>SimpleActionNode</code>.</p>
+<div class="codehilite"><pre><span></span><span class="k">static</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">xml_text</span> <span class="o">=</span> <span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+
+<span class="s"> &lt;root&gt;</span>
+<span class="s">     &lt;BehaviorTree&gt;</span>
+<span class="s">        &lt;MoveTo  goal=&quot;-1;3;0.5&quot; /&gt;</span>
+<span class="s">     &lt;/BehaviorTree&gt;</span>
+<span class="s"> &lt;/root&gt;</span>
+<span class="s"> </span><span class="dl">)</span><span class="s">&quot;</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
+
+    <span class="n">MyLegacyMoveTo</span> <span class="n">move_to</span><span class="p">;</span>
+
+    <span class="c1">// Here we use a lambda that captures the reference of move_to</span>
+    <span class="k">auto</span> <span class="n">MoveToWrapperWithLambda</span> <span class="o">=</span> <span class="p">[</span><span class="o">&amp;</span><span class="n">move_to</span><span class="p">](</span><span class="n">TreeNode</span><span class="o">&amp;</span> <span class="n">parent_node</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NodeStatus</span>
+    <span class="p">{</span>
+        <span class="n">Point3D</span> <span class="n">goal</span><span class="p">;</span>
+        <span class="c1">// thanks to paren_node, you can access easily the inpyt and output ports.</span>
+        <span class="n">parent_node</span><span class="p">.</span><span class="n">getInput</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">,</span> <span class="n">goal</span><span class="p">);</span>
+
+        <span class="kt">bool</span> <span class="n">res</span> <span class="o">=</span> <span class="n">move_to</span><span class="p">.</span><span class="n">go</span><span class="p">(</span> <span class="n">goal</span> <span class="p">);</span>
+        <span class="c1">// convert bool to NodeStatus</span>
+        <span class="k">return</span> <span class="n">res</span> <span class="o">?</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="nl">SUCCESS</span> <span class="p">:</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">FAILURE</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="n">BehaviorTreeFactory</span> <span class="n">factory</span><span class="p">;</span>
+
+    <span class="c1">// Register the lambda with BehaviorTreeFactory::registerSimpleAction</span>
+
+    <span class="n">PortsList</span> <span class="n">ports</span> <span class="o">=</span> <span class="p">{</span> <span class="n">BT</span><span class="o">::</span><span class="n">InputPort</span><span class="o">&lt;</span><span class="n">Point3D</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">)</span> <span class="p">};</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;MoveTo&quot;</span><span class="p">,</span> <span class="n">MoveToWrapperWithLambda</span><span class="p">,</span> <span class="n">ports</span> <span class="p">);</span>
+
+    <span class="k">auto</span> <span class="n">tree</span> <span class="o">=</span> <span class="n">factory</span><span class="p">.</span><span class="n">createTreeFromText</span><span class="p">(</span><span class="n">xml_text</span><span class="p">);</span>
+
+    <span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="o">-&gt;</span><span class="n">executeTick</span><span class="p">();</span>
+
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 
 <span class="cm">/* Expected output:</span>
 
-<span class="cm">actionA: Started. Send Request to server.</span>
-<span class="cm">actionA: Waiting reply.</span>
-<span class="cm">actionA: Waiting reply.</span>
-<span class="cm">actionA: Waiting reply.</span>
-<span class="cm">actionA: Done.</span>
-<span class="cm">actionB: Started. Send Request to server.</span>
-<span class="cm">actionB: Waiting reply.</span>
-<span class="cm">actionB: Waiting reply.</span>
-<span class="cm">actionB: Waiting reply.</span>
-<span class="cm">actionB: Done.</span>
+<span class="cm">Going to: -1.000000 3.000000 0.500000</span>
+
 <span class="cm">*/</span>
 </pre></div>
                 
@@ -681,7 +776,7 @@ with two actions executed in sequence, using the programmatic approach. </p>
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -690,19 +785,19 @@ with two actions executed in sequence, using the programmatic approach. </p>
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Tutorial 7: Wrap legacy code
+                Tutorial 6: Ports remapping
               </span>
             </div>
           </a>
         
         
-          <a href="../xml_format/" title="The XML format" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../tutorial_08_additional_args/" title="Tutorial 8: Class parameters" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                The XML format
+                Tutorial 8: Class parameters
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
@@ -736,7 +831,7 @@ with two actions executed in sequence, using the programmatic approach. </p>
       
     </div>
     
-      <script src="../assets/javascripts/application.583bbe55.js"></script>
+    <script src="../assets/javascripts/application.6f02ae1b.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       

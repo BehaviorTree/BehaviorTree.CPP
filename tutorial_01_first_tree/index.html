@@ -35,8 +35,8 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-3.0.4">
+      <link rel="shortcut icon" href="../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-ponylang-0.2.5">
     
     
       
@@ -44,27 +44,22 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/application.451f80e5.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.dfc6cb0c.css">
       
-        <link rel="stylesheet" href="../assets/stylesheets/application-palette.22915126.css">
-      
-      
-        
-        
-        <meta name="theme-color" content="#546e7a">
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
       
     
     
-      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+      <script src="../assets/javascripts/modernizr.6586f7cd.js"></script>
     
     
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
       
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,400i,700|Roboto+Mono">
         <style>body,input{font-family:"Ubuntu","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     
-    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
     
     
   </head>
@@ -78,7 +73,7 @@
         
         
           <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
-    viewBox="0 0 416 448" id="__github">
+    viewBox="0 0 416 448" id="github">
   <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
         8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
         18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
@@ -111,7 +106,7 @@
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
+          <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
           
             <img src="../images/BT.png" width="24" height="24">
           
@@ -177,7 +172,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -242,6 +237,19 @@
   
 
       
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../MigrationGuide/" title="Migration" class="md-tabs__link">
+          Migration
+        </a>
+      
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -255,11 +263,11 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href=".." title="BehaviorTree.CPP" class="md-nav__button md-logo">
+    <span class="md-nav__button md-logo">
       
         <img src="../images/BT.png" width="48" height="48">
       
-    </a>
+    </span>
     BehaviorTree.CPP
   </label>
   
@@ -274,7 +282,7 @@
     
       <div class="md-source__icon">
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <use xlink:href="#__github" width="24" height="24"></use>
+          <use xlink:href="#github" width="24" height="24"></use>
         </svg>
       </div>
     
@@ -433,29 +441,28 @@
     
   
   
+  
+  
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
-        <li class="md-nav__item">
-  <a href="#how-to-create-your-own-actionnodes" title="How to create your own ActionNodes" class="md-nav__link">
+        
+          <li class="md-nav__item">
+    <a href="#how-to-create-your-own-actionnodes" title="How to create your own ActionNodes" class="md-nav__link">
     How to create your own ActionNodes
   </a>
   
 </li>
+        
       
-        <li class="md-nav__item">
-  <a href="#a-static-tree" title="A static Tree" class="md-nav__link">
-    A static Tree
+        
+          <li class="md-nav__item">
+    <a href="#create-a-tree-dynamically-with-an-xml" title="Create a tree dynamically with an XML" class="md-nav__link">
+    Create a tree dynamically with an XML
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#a-dynamically-created-tree" title="A dynamically created Tree" class="md-nav__link">
-    A dynamically created Tree
-  </a>
-  
-</li>
+        
       
       
       
@@ -474,8 +481,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-nav__link">
-      Tutorial 2: NodeParameters
+    <a href="../tutorial_02_basic_ports/" title="Tutorial 2: Basic Ports" class="md-nav__link">
+      Tutorial 2: Basic Ports
     </a>
   </li>
 
@@ -486,8 +493,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_C_blackboard/" title="Tutorial 3: Blackboards" class="md-nav__link">
-      Tutorial 3: Blackboards
+    <a href="../tutorial_03_generic_ports/" title="Tutorial 3: Generic ports" class="md-nav__link">
+      Tutorial 3: Generic ports
     </a>
   </li>
 
@@ -498,8 +505,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_D_subtrees/" title="Tutorial 4: Subtrees" class="md-nav__link">
-      Tutorial 4: Subtrees
+    <a href="../tutorial_04_sequence_star/" title="Tutorial 4: Sequences" class="md-nav__link">
+      Tutorial 4: Sequences
     </a>
   </li>
 
@@ -510,8 +517,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_E_plugins/" title="Tutorial 5: Plugins" class="md-nav__link">
-      Tutorial 5: Plugins
+    <a href="../tutorial_05_subtrees/" title="Tutorial 5: Subtrees and Loggers" class="md-nav__link">
+      Tutorial 5: Subtrees and Loggers
     </a>
   </li>
 
@@ -522,8 +529,8 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_F_loggers/" title="Tutorial 6: Loggers" class="md-nav__link">
-      Tutorial 6: Loggers
+    <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-nav__link">
+      Tutorial 6: Ports remapping
     </a>
   </li>
 
@@ -534,7 +541,7 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_G_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
+    <a href="../tutorial_07_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
       Tutorial 7: Wrap legacy code
     </a>
   </li>
@@ -546,8 +553,20 @@
 
 
   <li class="md-nav__item">
-    <a href="../tutorial_H_coroutines/" title="Tutorial 8: Actions and Coroutines" class="md-nav__link">
-      Tutorial 8: Actions and Coroutines
+    <a href="../tutorial_08_additional_args/" title="Tutorial 8: Class parameters" class="md-nav__link">
+      Tutorial 8: Class parameters
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_09_coroutines/" title="Tutorial 9: Coroutines" class="md-nav__link">
+      Tutorial 9: Coroutines
     </a>
   </li>
 
@@ -560,6 +579,42 @@
   <li class="md-nav__item">
     <a href="../xml_format/" title="The XML format" class="md-nav__link">
       The XML format
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+    
+    <label class="md-nav__link" for="nav-4">
+      Migration
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Migration
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../MigrationGuide/" title="Migrate from version 2" class="md-nav__link">
+      Migrate from version 2
     </a>
   </li>
 
@@ -586,29 +641,28 @@
     
   
   
+  
+  
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
       
-        <li class="md-nav__item">
-  <a href="#how-to-create-your-own-actionnodes" title="How to create your own ActionNodes" class="md-nav__link">
+        
+          <li class="md-nav__item">
+    <a href="#how-to-create-your-own-actionnodes" title="How to create your own ActionNodes" class="md-nav__link">
     How to create your own ActionNodes
   </a>
   
 </li>
+        
       
-        <li class="md-nav__item">
-  <a href="#a-static-tree" title="A static Tree" class="md-nav__link">
-    A static Tree
+        
+          <li class="md-nav__item">
+    <a href="#create-a-tree-dynamically-with-an-xml" title="Create a tree dynamically with an XML" class="md-nav__link">
+    Create a tree dynamically with an XML
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#a-dynamically-created-tree" title="A dynamically created Tree" class="md-nav__link">
-    A dynamically created Tree
-  </a>
-  
-</li>
+        
       
       
       
@@ -626,28 +680,31 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorial_A_create_trees.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorial_01_first_tree.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <h1 id="how-to-create-a-behaviortree">How to create a BehaviorTree</h1>
-<p>You have mainly two ways to create Behavior Trees.</p>
-<ul>
-<li><strong>Statically</strong>, at compilation time.</li>
-<li><strong>Dynamically</strong>, at run-time, i.e. parsing a file.</li>
-</ul>
-<p>You are <strong>strongly encourage to use the latter approach</strong>, but we will describe
-the former for the sake of completeness.</p>
+<p>Behavior Trees, similar to State Machines, are nothing more than a mechanism
+to invoke <strong>callbacks</strong> at the right time under the right conditions.</p>
+<p>Further, we will use the words <strong>"callback"</strong> and <strong>"tick"</strong> interchangeably.</p>
+<p>What happens inside these callbacks is up to you.</p>
+<p>In this tutorial series, most of the time Actions will just print some 
+information on console,
+but keep in mind that real "production" code would probably do something
+more complicated.</p>
 <h2 id="how-to-create-your-own-actionnodes">How to create your own ActionNodes</h2>
-<p>You can find the source code here: <strong>sample_nodes/dummy_nodes.h</strong>.</p>
 <p>The default (and recommended) way to create a TreeNode is by inheritance.</p>
-<div class="codehilite"><pre><span></span><span class="c1">// Example of custom SyncActionNode (synchronous Action)</span>
-<span class="k">class</span> <span class="nc">ApproachObject</span><span class="o">:</span> <span class="k">public</span> <span class="n">BT</span><span class="o">::</span><span class="n">SyncActionNode</span>
+<div class="codehilite"><pre><span></span><span class="c1">// Example of custom SyncActionNode (synchronous action)</span>
+<span class="c1">// without ports.</span>
+<span class="k">class</span> <span class="nc">ApproachObject</span> <span class="o">:</span> <span class="k">public</span> <span class="n">BT</span><span class="o">::</span><span class="n">SyncActionNode</span>
 <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
-    <span class="n">ApproachObject</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">)</span><span class="o">:</span>
-        <span class="n">BT</span><span class="o">::</span><span class="n">SyncActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="k">public</span><span class="o">:</span>
+    <span class="n">ApproachObject</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">)</span> <span class="o">:</span>
+        <span class="n">BT</span><span class="o">::</span><span class="n">SyncActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="p">{</span>
+    <span class="p">}</span>
 
-    <span class="c1">// You must override this virtual function</span>
+    <span class="c1">// You must override the virtual function tick()</span>
     <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span> <span class="k">override</span>
     <span class="p">{</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;ApproachObject: &quot;</span> <span class="o">&lt;&lt;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
@@ -659,20 +716,16 @@ the former for the sake of completeness.</p>
 <p>As you can see:</p>
 <ul>
 <li>
-<p>Any instance of a TreeNode has a name. This identifier is meant to be user-readable and it 
- doesn't need to be unique.</p>
+<p>Any instance of a TreeNode has a <code>name</code>. This identifier is meant to be 
+  human-readable and it <strong>doesn't</strong> need to be unique.</p>
 </li>
 <li>
 <p>The method <strong>tick()</strong> is the place where the actual Action takes place.
-It must return a NodeStatus, i.e. RUNNING, SUCCESS or FAILURE. </p>
-</li>
-<li>
-<p>The method <strong>halt()</strong> is used to stop an <strong>asynchronous Action</strong>. ApproachObject
-doesn't need it.</p>
+  It must always return a NodeStatus, i.e. RUNNING, SUCCESS or FAILURE. </p>
 </li>
 </ul>
 <p>Alternatively, we can use <strong>dependecy injection</strong> to create a TreeNode given 
-a function pointer. </p>
+a function pointer (i.e. "functor"). </p>
 <p>The only requirement of the functor is to have either one of these signatures:</p>
 <div class="codehilite"><pre><span></span>    <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">myFunction</span><span class="p">()</span>
     <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">myFunction</span><span class="p">(</span><span class="n">BT</span><span class="o">::</span><span class="n">TreeNode</span><span class="o">&amp;</span> <span class="n">self</span><span class="p">)</span> 
@@ -681,11 +734,14 @@ a function pointer. </p>
 <p>For example:</p>
 <div class="codehilite"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
 
-<span class="n">NodeStatus</span> <span class="nf">SayHello</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Robot says Hello&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+<span class="c1">// Simple function that return a NodeStatus</span>
+<span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">CheckBattery</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;[ Battery: OK ]&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
 <span class="p">}</span>
 
+<span class="c1">// We want to wrap into an ActionNode the methods open() and close()</span>
 <span class="k">class</span> <span class="nc">GripperInterface</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
@@ -704,63 +760,18 @@ a function pointer. </p>
     <span class="p">}</span>
 
 <span class="k">private</span><span class="o">:</span>
-    <span class="kt">bool</span> <span class="n">_open</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">_open</span><span class="p">;</span> <span class="c1">// shrared information</span>
 <span class="p">};</span>
 </pre></div>
 
 <p>We can build a <code>SimpleActionNode</code> from any of these functors:</p>
 <ul>
-<li>SayHello()</li>
+<li>CheckBattery()</li>
 <li>GripperInterface::open()</li>
 <li>GripperInterface::close()</li>
 </ul>
-<h2 id="a-static-tree">A static Tree</h2>
-<p>Let's create instances of our TreeNodes and compose them into a tree.</p>
-<ul>
-<li><code>BT::SequenceNode</code> is a built-in ControlNode provided by the library.</li>
-<li><code>BT::SimpleActionNode</code> is a synchronous ActionNode created passing a functor.</li>
-<li><code>DummyNodes::ApproachObject</code> is our user-defined ActionNode.</li>
-</ul>
-<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
-    <span class="k">using</span> <span class="k">namespace</span> <span class="n">DummyNodes</span><span class="p">;</span>
-
-    <span class="n">GripperInterface</span> <span class="n">gi</span><span class="p">;</span>
-
-    <span class="n">SequenceNode</span> <span class="n">sequence_root</span><span class="p">(</span><span class="s">&quot;sequence&quot;</span><span class="p">);</span>
-    <span class="n">SimpleActionNode</span> <span class="n">say_hello</span><span class="p">(</span><span class="s">&quot;action_hello&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">SayHello</span><span class="p">)</span> <span class="p">);</span>
-    <span class="n">SimpleActionNode</span> <span class="n">open_gripper</span><span class="p">(</span><span class="s">&quot;open_gripper&quot;</span><span class="p">,</span>   
-                                  <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">GripperInterface</span><span class="o">::</span><span class="n">open</span><span class="p">,</span>  <span class="o">&amp;</span><span class="n">gi</span><span class="p">)</span> <span class="p">);</span>
-    <span class="n">SimpleActionNode</span> <span class="n">close_gripper</span><span class="p">(</span><span class="s">&quot;close_gripper&quot;</span><span class="p">,</span> 
-                                   <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">GripperInterface</span><span class="o">::</span><span class="n">close</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gi</span><span class="p">)</span> <span class="p">);</span>
-    <span class="n">ApproachObject</span> <span class="n">approach_object</span><span class="p">(</span><span class="s">&quot;approach_object&quot;</span><span class="p">);</span>
-
-    <span class="c1">// Add children to the sequence. </span>
-    <span class="c1">// They will be executed in the same order they are added.</span>
-    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">say_hello</span><span class="p">);</span>
-    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">open_gripper</span><span class="p">);</span>
-    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">approach_object</span><span class="p">);</span>
-    <span class="n">sequence_root</span><span class="p">.</span><span class="n">addChild</span><span class="p">(</span><span class="o">&amp;</span><span class="n">close_gripper</span><span class="p">);</span>
-
-    <span class="n">sequence_root</span><span class="p">.</span><span class="n">executeTick</span><span class="p">();</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="cm">/* Expected output:</span>
-
-<span class="cm">    Robot says: &quot;Hello!!!&quot;</span>
-<span class="cm">    GripperInterface::open</span>
-<span class="cm">    ApproachObject: approach_object</span>
-<span class="cm">    GripperInterface::close</span>
-<span class="cm">*/</span>
-</pre></div>
-
-<h2 id="a-dynamically-created-tree">A dynamically created Tree</h2>
-<p>Give the following XML stored in the file <strong>my_tree.xml</strong></p>
-<p>Note that the following syntax is also valid:</p>
+<h2 id="create-a-tree-dynamically-with-an-xml">Create a tree dynamically with an XML</h2>
+<p>Let's consider the followinf XML file named <strong>my_tree.xml</strong>:</p>
 <div class="codehilite"><pre><span></span> <span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span> <span class="nt">&gt;</span>
      <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
         <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;root_sequence&quot;</span><span class="nt">&gt;</span>
@@ -781,41 +792,56 @@ a function pointer. </p>
  and then load the XML from file or text.</p>
 <p>The identifier used in the XML must coincide with those used to register
 the TreeNodes.</p>
-<p>The attribute "name" represents the name of the instance and it is optional.</p>
-<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/xml_parsing.h&quot;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&quot;Blackboard/blackboard_local.h&quot;</span><span class="cp"></span>
+<p>The attribute "name" represents the name of the instance; it is optional.</p>
+<div class="codehilite"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;behaviortree_cpp/bt_factory.h&quot;</span><span class="cp"></span>
+
+<span class="c1">// file that contains the custom nodes definitions</span>
 <span class="cp">#include</span> <span class="cpf">&quot;dummy_nodes.h&quot;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
-    <span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
-    <span class="k">using</span> <span class="k">namespace</span> <span class="n">DummyNodes</span><span class="p">;</span>
-
-    <span class="n">GripperInterface</span> <span class="n">gi</span><span class="p">;</span>    
+    <span class="c1">// We use the BehaviorTreeFactory to register our custom nodes</span>
     <span class="n">BehaviorTreeFactory</span> <span class="n">factory</span><span class="p">;</span>
 
-    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;SayHello&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">SayHello</span><span class="p">)</span> <span class="p">);</span>
-    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;OpenGripper&quot;</span><span class="p">,</span> 
-                                 <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">GripperInterface</span><span class="o">::</span><span class="n">open</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gi</span><span class="p">));</span>
-    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;CloseGripper&quot;</span><span class="p">,</span> 
-                                  <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">GripperInterface</span><span class="o">::</span><span class="n">close</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gi</span><span class="p">));</span>
+    <span class="c1">// Note: the name used to register should be the same used in the XML.</span>
+    <span class="k">using</span> <span class="k">namespace</span> <span class="n">DummyNodes</span><span class="p">;</span>
 
+    <span class="c1">// The recommended way to create a Node is through inheritance.</span>
     <span class="n">factory</span><span class="p">.</span><span class="n">registerNodeType</span><span class="o">&lt;</span><span class="n">ApproachObject</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;ApproachObject&quot;</span><span class="p">);</span>
 
-    <span class="c1">// IMPORTANT: when the object &quot;tree&quot; goes out of scope,</span>
-    <span class="c1">// all the TreeNodes instances are destroyed</span>
-    <span class="k">auto</span> <span class="n">tree</span> <span class="o">=</span> <span class="n">buildTreeFromFile</span><span class="p">(</span><span class="n">factory</span><span class="p">,</span> <span class="s">&quot;./my_tree.xml&quot;</span><span class="p">);</span>
+    <span class="c1">// Registering a SimpleActionNode using a function pointer.</span>
+    <span class="c1">// you may also use C++11 lambdas instead of std::bind</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleCondition</span><span class="p">(</span><span class="s">&quot;CheckBattery&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">CheckBattery</span><span class="p">));</span>
 
+    <span class="c1">//You can also create SimpleActionNodes using methods of a class</span>
+    <span class="n">GripperInterface</span> <span class="n">gripper</span><span class="p">;</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;OpenGripper&quot;</span><span class="p">,</span> 
+                                 <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">GripperInterface</span><span class="o">::</span><span class="n">open</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gripper</span><span class="p">));</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerSimpleAction</span><span class="p">(</span><span class="s">&quot;CloseGripper&quot;</span><span class="p">,</span> 
+                                 <span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">GripperInterface</span><span class="o">::</span><span class="n">close</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">gripper</span><span class="p">));</span>
+
+    <span class="c1">// Trees are created at deployment-time (i.e. at run-time, but only </span>
+    <span class="c1">// once at the beginning). </span>
+
+    <span class="c1">// IMPORTANT: when the object &quot;tree&quot; goes out of scope, all the </span>
+    <span class="c1">// TreeNodes are destroyed</span>
+    <span class="k">auto</span> <span class="n">tree</span> <span class="o">=</span> <span class="n">factory</span><span class="p">.</span><span class="n">createTreeFromFile</span><span class="p">(</span><span class="s">&quot;./my_tree.xml&quot;</span><span class="p">);</span>
+
+    <span class="c1">// To &quot;execute&quot; a Tree you need to &quot;tick&quot; it.</span>
+    <span class="c1">// The tick is propagated to the children based on the logic of the tree.</span>
+    <span class="c1">// In this case, the entire sequence is executed, because all the children</span>
+    <span class="c1">// of the Sequence return SUCCESS.</span>
     <span class="n">tree</span><span class="p">.</span><span class="n">root_node</span><span class="o">-&gt;</span><span class="n">executeTick</span><span class="p">();</span>
+
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 
 <span class="cm">/* Expected output:</span>
-
-<span class="cm">    Robot says: &quot;Hello!!!&quot;</span>
-<span class="cm">    GripperInterface::open</span>
-<span class="cm">    ApproachObject: approach_object</span>
-<span class="cm">    GripperInterface::close</span>
+<span class="cm">*</span>
+<span class="cm">       [ Battery: OK ]</span>
+<span class="cm">       GripperInterface::open</span>
+<span class="cm">       ApproachObject: approach_object</span>
+<span class="cm">       GripperInterface::close</span>
 <span class="cm">*/</span>
 </pre></div>
                 
@@ -853,13 +879,13 @@ the TreeNodes.</p>
           </a>
         
         
-          <a href="../tutorial_B_node_parameters/" title="Tutorial 2: NodeParameters" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../tutorial_02_basic_ports/" title="Tutorial 2: Basic Ports" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Tutorial 2: NodeParameters
+                Tutorial 2: Basic Ports
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">
@@ -893,7 +919,7 @@ the TreeNodes.</p>
       
     </div>
     
-      <script src="../assets/javascripts/application.583bbe55.js"></script>
+    <script src="../assets/javascripts/application.6f02ae1b.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       

@@ -1,0 +1,1086 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="Introduction to Behavior Trees">
+      
+      
+      
+        <meta name="author" content="Davide Faconti">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-ponylang-0.2.5">
+    
+    
+      
+        <title>Migrate from version 2 - BehaviorTree.CPP</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.dfc6cb0c.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.6586f7cd.js"></script>
+    
+    
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+      
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Ubuntu","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue-grey" data-md-color-accent="green">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
+    viewBox="0 0 416 448" id="github">
+  <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
+        8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
+        18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
+        19-18.125 8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19
+        18.125-8.5 18.125 8.5 10.75 19 3.125 20.5zM360
+        304q0-30-17.25-51t-46.75-21q-10.25 0-48.75 5.25-17.75 2.75-39.25
+        2.75t-39.25-2.75q-38-5.25-48.75-5.25-29.5 0-46.75 21t-17.25 51q0 22 8
+        38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0
+        37.25-1.75t35-7.375 30.5-15 20.25-25.75 8-38.375zM416 260q0 51.75-15.25
+        82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5-41.75
+        1.125q-19.5 0-35.5-0.75t-36.875-3.125-38.125-7.5-34.25-12.875-30.25-20.25-21.5-28.75q-15.5-30.75-15.5-82.75
+        0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25
+        30.875q36.75-8.75 77.25-8.75 37 0 70 8 26.25-20.5
+        46.75-30.25t47.25-9.75q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34
+        99.5z" />
+</svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="../#migration-guide-from-v2-to-v3" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+          <a href=".." title="BehaviorTree.CPP" class="md-header-nav__button md-logo">
+          
+            <img src="../images/BT.png" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            
+              <span class="md-header-nav__topic">
+                BehaviorTree.CPP
+              </span>
+              <span class="md-header-nav__topic">
+                Migrate from version 2
+              </span>
+            
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+            <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+            
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+
+  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      BehaviorTree.CPP
+    </div>
+  </a>
+
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+        
+
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  <li class="md-tabs__item">
+    
+      <a href=".." title="Home" class="md-tabs__link">
+        Home
+      </a>
+    
+  </li>
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../BT_basics/" title="Learn the basics" class="md-tabs__link">
+          Learn the basics
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../getting_started/" title="Tutorials" class="md-tabs__link">
+          Tutorials
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="./" title="Migration" class="md-tabs__link md-tabs__link--active">
+          Migration
+        </a>
+      
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <span class="md-nav__button md-logo">
+      
+        <img src="../images/BT.png" width="48" height="48">
+      
+    </span>
+    BehaviorTree.CPP
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+
+  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      BehaviorTree.CPP
+    </div>
+  </a>
+
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+    
+    <label class="md-nav__link" for="nav-2">
+      Learn the basics
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        Learn the basics
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../BT_basics/" title="Introduction" class="md-nav__link">
+      Introduction
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../SequenceNode/" title="Sequence Nodes" class="md-nav__link">
+      Sequence Nodes
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../FallbackNode/" title="Fallback Nodes" class="md-nav__link">
+      Fallback Nodes
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../DecoratorNode/" title="Decorators Nodes" class="md-nav__link">
+      Decorators Nodes
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+    
+    <label class="md-nav__link" for="nav-3">
+      Tutorials
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        Tutorials
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../getting_started/" title="Getting started" class="md-nav__link">
+      Getting started
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_01_first_tree/" title="Tutorial 1: Create a Tree" class="md-nav__link">
+      Tutorial 1: Create a Tree
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_02_basic_ports/" title="Tutorial 2: Basic Ports" class="md-nav__link">
+      Tutorial 2: Basic Ports
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_03_generic_ports/" title="Tutorial 3: Generic ports" class="md-nav__link">
+      Tutorial 3: Generic ports
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_04_sequence_star/" title="Tutorial 4: Sequences" class="md-nav__link">
+      Tutorial 4: Sequences
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_05_subtrees/" title="Tutorial 5: Subtrees and Loggers" class="md-nav__link">
+      Tutorial 5: Subtrees and Loggers
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_06_subtree_ports/" title="Tutorial 6: Ports remapping" class="md-nav__link">
+      Tutorial 6: Ports remapping
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_07_legacy/" title="Tutorial 7: Wrap legacy code" class="md-nav__link">
+      Tutorial 7: Wrap legacy code
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_08_additional_args/" title="Tutorial 8: Class parameters" class="md-nav__link">
+      Tutorial 8: Class parameters
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tutorial_09_coroutines/" title="Tutorial 9: Coroutines" class="md-nav__link">
+      Tutorial 9: Coroutines
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../xml_format/" title="The XML format" class="md-nav__link">
+      The XML format
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
+    
+    <label class="md-nav__link" for="nav-4">
+      Migration
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Migration
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Migrate from version 2
+      </label>
+    
+    <a href="./" title="Migrate from version 2" class="md-nav__link md-nav__link--active">
+      Migrate from version 2
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        
+          <li class="md-nav__item">
+    <a href="#blackboard-nodeparameters-an-dataports" title="Blackboard, NodeParameters an DataPorts" class="md-nav__link">
+    Blackboard, NodeParameters an DataPorts
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#subtrees-remapping-and-isolated-blackboards" title="SubTrees, remapping and isolated Blackboards" class="md-nav__link">
+    SubTrees, remapping and isolated Blackboards
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#controlnodes-renamedrefactored" title="ControlNodes renamed/refactored" class="md-nav__link">
+    ControlNodes renamed/refactored
+  </a>
+  
+</li>
+        
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        
+          <li class="md-nav__item">
+    <a href="#blackboard-nodeparameters-an-dataports" title="Blackboard, NodeParameters an DataPorts" class="md-nav__link">
+    Blackboard, NodeParameters an DataPorts
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#subtrees-remapping-and-isolated-blackboards" title="SubTrees, remapping and isolated Blackboards" class="md-nav__link">
+    SubTrees, remapping and isolated Blackboards
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#controlnodes-renamedrefactored" title="ControlNodes renamed/refactored" class="md-nav__link">
+    ControlNodes renamed/refactored
+  </a>
+  
+</li>
+        
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/MigrationGuide.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <h1 id="migration-guide-from-v2-to-v3">Migration Guide from V2 to V3</h1>
+<p>The main goal of this project is to create a Behavior Tree implementation
+that uses the principles of Model Driven Development to separate the role 
+of the <strong>Component Developer</strong> from the <strong>Behavior Designer</strong> and 
+<strong>System Integrator</strong>.</p>
+<p>In practice, this means that:</p>
+<ul>
+<li>
+<p>Custom Actions (or, in general, custom TreeNodes) must be reusable building
+blocks. Implement them once, reuse them many times.</p>
+</li>
+<li>
+<p>To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
+not need to read nor modify the source code of the a given TreeNode.</p>
+</li>
+</ul>
+<p>There is a <strong>major design flaw</strong> that undermines this goal in version  <code>2.x</code>: 
+the way the BlackBoard was used to implement DataFlow between nodes.</p>
+<p>As described in <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/issues/18">issue #18</a>
+there are several potential problems with the Blackboard approach:</p>
+<ul>
+<li>
+<p>To know which entries of the BB are read/written, you should read the source code.</p>
+</li>
+<li>
+<p>As a consequence, external tools such as <strong>Groot</strong> can not know which BB entries are accessed.</p>
+</li>
+<li>
+<p>If there is a name clashing (multiple nodes use the same key for different purposes),
+ the only way to fit it is modifying the source code. </p>
+</li>
+</ul>
+<p>SMACH solved this problem using <a href="http://wiki.ros.org/smach/Tutorials/User%20Data">input and output ports</a>
+and remapping to connect them.</p>
+<p>In the ROS community, we potentially have the same problem with topics,
+but tools such as <strong>rosinfo</strong> provides introspection at run-time and name
+clashing is avoided using remapping.</p>
+<p>This was the main reason to develop version <code>3.x</code> of <strong>Behaviortree.CPP</strong>, but we
+also took the opportunity to do some additional refactoring to make the code
+more understandable.</p>
+<p>In this document we will use the following terms quite often:</p>
+<ul>
+<li>
+<p><strong>Composition</strong>: it refers to "composing" TreeNodes into Trees. In general
+ we want a TreeNode implementation to be composition-agnostic.</p>
+</li>
+<li>
+<p><strong>Model/Modelling</strong>: it is a description of a Tree or TreeNode that is 
+sufficient (and necessary) to describe it, without knowing any additional 
+detail about the actual C++ implementation.</p>
+</li>
+</ul>
+<h2 id="blackboard-nodeparameters-an-dataports">Blackboard, NodeParameters an DataPorts</h2>
+<p>In version <code>2.x</code> we had the intuition that passing one or more arguments
+to a <code>TreeNode</code> would make the node more generic and reusable.</p>
+<p>This is similar to the arguments of a function in any programming language.</p>
+<div class="codehilite"><pre><span></span><span class="c1">// with arguments</span>
+<span class="n">GoTo</span><span class="p">(</span><span class="s">&quot;kitchen&quot;</span><span class="p">)</span>
+
+<span class="c1">//Without arguments</span>
+<span class="n">GoToKitchen</span><span class="p">()</span>
+<span class="n">GoToLivingRoom</span><span class="p">()</span>
+<span class="n">GoToBedRoom1</span><span class="p">()</span>
+<span class="n">GoToBedroom2</span><span class="p">()</span>
+<span class="c1">// ....</span>
+</pre></div>
+
+<p>To pass NodeParameters we used the Blackboard, that is nothing more than a
+shared <strong>key/value</strong> table, i.e. a glorified bunch of global variables.</p>
+<p>The key is a <code>string</code>, whilst the value is 
+stored in a type-safe container similar to <code>std::any</code> or <code>std::variant</code>.</p>
+<p>The problem is that writing/reading in an entry of the BB is done <strong>implicitly</strong>
+in the source code and it is usually hard-coded. This makes the TreeNode
+not reusable.</p>
+<p>To fix this, we still use the Blackboard under the hood, but it can not be 
+accessed directly anymore. Entries are read/written using respectively <code>InputPorts</code>
+and <code>OutputPorts</code>.</p>
+<p>These ports <strong>must be modelled</strong> to allow remapping at run-time.</p>
+<p>Let's take a look to an example at the old code:</p>
+<div class="codehilite"><pre><span></span><span class="nt">&lt;root&gt;</span>
+     <span class="nt">&lt;BehaviorTree&gt;</span>
+        <span class="nt">&lt;SequenceStar&gt;</span>
+            <span class="nt">&lt;CalculateGoal/&gt;</span>
+            <span class="nt">&lt;MoveBase</span>  <span class="na">goal=</span><span class="s">&quot;${GoalPose}&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;/SequenceStar&gt;</span>
+     <span class="nt">&lt;/BehaviorTree&gt;</span>
+ <span class="nt">&lt;/root&gt;</span>
+</pre></div>
+
+<div class="codehilite"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
+<span class="c1">//Old code (V2)</span>
+<span class="n">NodeStatus</span> <span class="nf">CalculateGoal</span><span class="p">(</span><span class="n">TreeNode</span><span class="o">&amp;</span> <span class="n">self</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">const</span> <span class="n">Pose2D</span> <span class="n">mygoal</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">};</span>
+    <span class="c1">// &quot;GoalPose&quot; is hardcoded... we don&#39;t like that</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">blackboard</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;GoalPose&quot;</span><span class="p">,</span> <span class="n">mygoal</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">MoveBase</span> <span class="o">:</span> <span class="k">public</span> <span class="n">AsyncActionNode</span>
+<span class="p">{</span>
+  <span class="k">public</span><span class="o">:</span>
+
+    <span class="n">MoveBase</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">params</span><span class="p">)</span>
+      <span class="o">:</span> <span class="n">AsyncActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">static</span> <span class="k">const</span> <span class="n">NodeParameters</span><span class="o">&amp;</span> <span class="n">requiredNodeParameters</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">static</span> <span class="n">NodeParameters</span> <span class="n">params</span> <span class="o">=</span> <span class="p">{{</span><span class="s">&quot;goal&quot;</span><span class="p">,</span> <span class="s">&quot;0;0;0&quot;</span><span class="p">}};</span>
+        <span class="k">return</span> <span class="n">params</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">Pose2D</span> <span class="n">goal</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">getParam</span><span class="o">&lt;</span><span class="n">Pose2D</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">,</span> <span class="n">goal</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&quot;[ MoveBase: DONE ]</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span><span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&quot;MoveBase: Failed for some reason</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">FAILURE</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">/// etc.</span>
+<span class="p">};</span>
+</pre></div>
+
+<p>We may notice that the <code>NodeParameter</code> can be remapped in the XML, but
+to change the key "GoalPose" in <code>CalculateGoalPose</code>we must inspect the code
+and modify it.</p>
+<p>In other words, <code>NodeParameter</code> is already a reasonably good implementation
+of an <code>InputPort</code>, but we need to introduce a consistent <code>OutputPort</code> too.</p>
+<p>This is the new code:</p>
+<div class="codehilite"><pre><span></span><span class="nt">&lt;root&gt;</span>
+     <span class="nt">&lt;BehaviorTree&gt;</span>
+        <span class="nt">&lt;SequenceStar&gt;</span>
+            <span class="nt">&lt;CalculateGoal</span> <span class="na">target=</span><span class="s">&quot;{GoalPose}&quot;</span> <span class="nt">/&gt;</span>
+            <span class="nt">&lt;MoveBase</span>        <span class="na">goal=</span><span class="s">&quot;{GoalPose}&quot;</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;/SequenceStar&gt;</span>
+     <span class="nt">&lt;/BehaviorTree&gt;</span>
+ <span class="nt">&lt;/root&gt;</span>
+</pre></div>
+
+<div class="codehilite"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">BT</span><span class="p">;</span>
+<span class="c1">//New code (V3)</span>
+<span class="k">class</span> <span class="nc">CalculateGoalPose</span> <span class="o">:</span> <span class="k">public</span> <span class="n">SyncActionNode</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+
+    <span class="n">MoveBase</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">NodeConfiguration</span><span class="o">&amp;</span> <span class="n">cfg</span><span class="p">)</span>
+      <span class="o">:</span> <span class="n">SyncActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">static</span> <span class="n">PortsList</span> <span class="n">providedPorts</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span> <span class="n">OutputPort</span><span class="o">&lt;</span><span class="n">Pose2D</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;target&quot;</span><span class="p">)</span> <span class="p">};</span>
+    <span class="p">}</span>
+
+    <span class="n">BT</span><span class="o">::</span><span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">const</span> <span class="n">Pose2D</span> <span class="n">myTarget</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">3.14</span> <span class="p">};</span>
+        <span class="n">setOutput</span><span class="p">(</span><span class="s">&quot;target&quot;</span><span class="p">,</span> <span class="n">myTarget</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">MoveBase</span> <span class="o">:</span> <span class="k">public</span> <span class="n">AsyncActionNode</span>
+<span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+
+    <span class="n">MoveBase</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">NodeConfiguration</span><span class="o">&amp;</span> <span class="n">config</span><span class="p">)</span>
+      <span class="o">:</span> <span class="n">AsyncActionNode</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span> <span class="p">{}</span>
+
+    <span class="k">static</span> <span class="n">PortsList</span> <span class="n">providedPorts</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span> <span class="n">InputPort</span><span class="o">&lt;</span><span class="n">Pose2D</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">,</span> <span class="s">&quot;Port description&quot;</span><span class="p">,</span> <span class="s">&quot;0;0;0&quot;</span><span class="p">)</span> <span class="p">};</span>
+    <span class="p">}</span>
+
+    <span class="n">NodeStatus</span> <span class="n">tick</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">Pose2D</span> <span class="n">goal</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">res</span> <span class="o">=</span> <span class="n">getInput</span><span class="o">&lt;</span><span class="n">Pose2D</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;goal&quot;</span><span class="p">,</span> <span class="n">goal</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&quot;[ MoveBase: DONE ]</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+            <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">SUCCESS</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span><span class="p">{</span>
+            <span class="n">printf</span><span class="p">(</span><span class="s">&quot;MoveBase: Failed. Error code: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">res</span><span class="p">.</span><span class="n">error</span><span class="p">());</span>
+            <span class="k">return</span> <span class="n">NodeStatus</span><span class="o">::</span><span class="n">FAILURE</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">/// etc.</span>
+<span class="p">};</span>
+</pre></div>
+
+<p>The main differences are:</p>
+<ul>
+<li>
+<p><code>requiredNodeParameters()</code> was replaced by <code>providedPorts()</code>, that
+ is used to declare both Inputs and Output ports alike.</p>
+</li>
+<li>
+<p><code>setOutput&lt;&gt;()</code> has been introduced. The method <code>blackboard()</code>can not be 
+   accessed anymore.</p>
+</li>
+<li>
+<p><code>getParam&lt;&gt;()</code> is now called <code>getInput&lt;&gt;()</code> to be more consistent with
+  <code>setOutput&lt;&gt;()</code>. Furthermore, if an error occurs, we can get the error 
+  message.</p>
+</li>
+<li>
+<p>Remapping to a shared entry ("GoalPose") is done at run-time in the XML.
+  You will never need to modify the C++ source code.</p>
+</li>
+</ul>
+<h2 id="subtrees-remapping-and-isolated-blackboards">SubTrees, remapping and isolated Blackboards</h2>
+<p>Thanks to ports we solved the problem of <strong>reusability of single treeNodes</strong>.</p>
+<p>But we still need to address the problem of <strong>reusability of entire Trees/SubTrees</strong>.</p>
+<p>According to the rule of <strong>hierarchical composition</strong>,
+from the point of view of a parent Node if should not matter if the 
+child is a LeafNode, a DecoratorNode a ControlNode or an entire Tree.</p>
+<p>As mentioned earlier, the Blackboard used to be a large key/value table.</p>
+<p>Unfortunately, this might be challenging when we reuse multiple SubTree, once again
+because of name clashing.</p>
+<p>The solution in version <code>3.x</code> is to have a separated and isolated Blackboard
+for each Tree/Subtree. If we want to connect the "internal" ports of a SubTree
+with the other ports of the BB of the parent, we must explicitly do a 
+remapping in the XML definition. No C++ code need to be modified.</p>
+<p>From the point of view of the XML, remapped ports of a SubTree looks exactly
+like the ports of a single node.</p>
+<p>For more details, refer to the example __t06_subtree_port_remapping.cpp_.</p>
+<h2 id="controlnodes-renamedrefactored">ControlNodes renamed/refactored</h2>
+<p>The <a href="https://en.wikipedia.org/wiki/Principle_of_least_astonishment">principle of least astonishment</a>
+applies to user interface and software design. A typical formulation of the principle, from 1984, is: </p>
+<blockquote>
+<p>"If a necessary feature has a high astonishment factor, it may be necessary 
+to redesign the feature.</p>
+</blockquote>
+<p>In my opinion, the two main building blocks of BehaviorTree.CPP, the <code>SequenceNode</code> 
+and the <code>FallbackNode</code> have a very high astonishment factor, because they are
+<strong>"reactive"</strong>.</p>
+<p>By "reactive" we mean that:</p>
+<ul>
+<li>
+<p>Children (usually <code>ConditionNodes</code>) that returned 
+  a valid value, such as SUCCESS or FAILURE, might be ticked again if another 
+  child returns RUNNING.</p>
+</li>
+<li>
+<p>A different result in that Condition might abort/halt the RUNNING asynchronous child.</p>
+</li>
+</ul>
+<p>The main concern of the original author of this library was to build reactive
+Behavior Trees (see for reference this <a href="0https://arxiv.org/abs/1709.00084">publication</a>.</p>
+<p>I share this goal, but I prefer to have more explicit names, because reactive 
+ControlNodes are useful but hard to reason about sometimes.</p>
+<p>I don't think reactive Controlnodes should be the mindlessly by default. </p>
+<p>For instance, most of the time users I talked with should have used <code>SequenceStar</code>
+instead of <code>Sequence</code> in many cases.</p>
+<p>I renamed the ControlNodes to reflect this reality:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Old Name (v2)</th>
+<th align="left">New name (v3)</th>
+<th align="center">Is reactive?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Sequence</td>
+<td align="left">ReactiveSequence</td>
+<td align="center">YES</td>
+</tr>
+<tr>
+<td align="left">SequenceStar (reset_on_failure=true)</td>
+<td align="left">Sequence</td>
+<td align="center">NO</td>
+</tr>
+<tr>
+<td align="left">SequenceStar (reset_on_failure=false)</td>
+<td align="left">SequenceStar</td>
+<td align="center">NO</td>
+</tr>
+<tr>
+<td align="left">Fallback</td>
+<td align="left">ReactiveFallback</td>
+<td align="center">YES</td>
+</tr>
+<tr>
+<td align="left">FallbackStar</td>
+<td align="left">Fallback</td>
+<td align="center">NO</td>
+</tr>
+<tr>
+<td align="left">Parallel</td>
+<td align="left">Parallel</td>
+<td align="center">Yes(v2) / No(v3)</td>
+</tr>
+</tbody>
+</table>
+<p>A reactive <code>ParallelNode</code> was very confusing and error prone; in most cases, 
+what you really want is you want to use a <code>ReactiveSequence</code> instead.</p>
+<p>In version <code>2.x</code> it was unclear what would happen if a "reactive" node has
+more than a single asynchronous child. </p>
+<p>The new recommendation is: </p>
+<blockquote>
+<p><strong>Reactive nodes shouldn't have more than a single asynchronous child</strong>.</p>
+</blockquote>
+<p>This is a very opinionated decision and for this reason it is documented but 
+not enforced by the implementation.</p>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../xml_format/" title="The XML format" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                The XML format
+              </span>
+            </div>
+          </a>
+        
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2018 Davide Faconti, Eurecat
+          </div>
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+    <script src="../assets/javascripts/application.6f02ae1b.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
+      
+    
+    
+      
+    
+  </body>
+</html>
