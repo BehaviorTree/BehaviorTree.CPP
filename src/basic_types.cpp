@@ -22,6 +22,11 @@ std::string toStr<NodeStatus>(NodeStatus status)
     return "";
 }
 
+std::string toStr(std::string value)
+{
+  return value;
+}
+
 std::string toStr(NodeStatus status, bool colored)
 {
     if (!colored)
