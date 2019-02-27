@@ -2,7 +2,7 @@ site_name: BehaviorTree.CPP
 site_description: Introduction to Behavior Trees
 site_author: Davide Faconti
 
-copyright: 'Copyright &copy; 2018 Davide Faconti, Eurecat'
+copyright: 'Copyright &copy; 2018-2019 Davide Faconti, Eurecat'
 
 theme:
   name: 'material'
@@ -11,8 +11,8 @@ theme:
   feature:
     tabs: true
   palette:
-    primary: blue grey
-    accent: green
+    primary: indigo  
+    accent: Deep Purple
   font:
     text: Ubuntu
     code: Roboto Mono
@@ -33,12 +33,14 @@ pages:
     
     - Learn the basics:
        - Introduction:      BT_basics.md
+       - Getting started:   getting_started.md
        - Sequence Nodes:    SequenceNode.md
        - Fallback Nodes:    FallbackNode.md
        - Decorators Nodes:  DecoratorNode.md
+       - The XML format:  xml_format.md
        
     - Tutorials: 
-       - Getting started:                     getting_started.md
+
        - "Tutorial 1: Create a Tree":         tutorial_01_first_tree.md
        - "Tutorial 2: Basic Ports":           tutorial_02_basic_ports.md
        - "Tutorial 3: Generic ports":         tutorial_03_generic_ports.md
@@ -48,7 +50,6 @@ pages:
        - "Tutorial 7: Wrap legacy code":      tutorial_07_legacy.md
        - "Tutorial 8: Class parameters":      tutorial_08_additional_args.md
        - "Tutorial 9: Coroutines":            tutorial_09_coroutines.md
-       - "The XML format":                    xml_format.md
        
-    - Migration:  
-        - Migrate from version 2:  MigrationGuide.md
+    - Migration Guide:
+       - Migrate from Version 2.X:  MigrationGuide.md        
