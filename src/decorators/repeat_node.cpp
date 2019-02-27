@@ -46,38 +46,39 @@ NodeStatus RepeatNode::tick()
     }
 
     setStatus(NodeStatus::RUNNING);
-    NodeStatus child_state = child_node_->executeTick();
 
-    switch (child_state)
+    while (try_index_ < num_cycles_)
     {
-        case NodeStatus::SUCCESS:
+        NodeStatus child_state = child_node_->executeTick();
+
+        switch (child_state)
         {
-            try_index_++;
-            if (try_index_ >= num_cycles_)
+            case NodeStatus::SUCCESS:
+            {
+                try_index_++;
+            }
+            break;
+
+            case NodeStatus::FAILURE:
             {
                 try_index_ = 0;
-                return (NodeStatus::SUCCESS);
+                return (NodeStatus::FAILURE);
+            }
+
+            case NodeStatus::RUNNING:
+            {
+                return NodeStatus::RUNNING;
+            }
+
+            default:
+            {
+                throw LogicError("A child node must never return IDLE");
             }
         }
-        break;
-
-        case NodeStatus::FAILURE:
-        {
-            try_index_ = 0;
-            return (NodeStatus::FAILURE);
-        }
-
-        case NodeStatus::RUNNING:
-        {
-            return (NodeStatus::RUNNING);
-        }
-
-        default:
-        {
-            throw LogicError("A child node must never return IDLE");
-        }
     }
-    return status();
+
+    try_index_ = 0;
+    return (NodeStatus::SUCCESS);
 }
 
 void RepeatNode::halt()
