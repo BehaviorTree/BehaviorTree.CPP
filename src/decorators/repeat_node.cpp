@@ -78,7 +78,7 @@ NodeStatus RepeatNode::tick()
     }
 
     try_index_ = 0;
-    return (NodeStatus::SUCCESS);
+    return NodeStatus::SUCCESS;
 }
 
 void RepeatNode::halt()

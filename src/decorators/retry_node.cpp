@@ -83,7 +83,7 @@ NodeStatus RetryNode::tick()
     }
 
     try_index_ = 0;
-    return (NodeStatus::FAILURE);
+    return NodeStatus::FAILURE;
 }
 
 }

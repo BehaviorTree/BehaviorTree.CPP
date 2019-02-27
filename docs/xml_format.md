@@ -23,7 +23,7 @@ You may notice that:
 
 - The tag `<BehaviorTree>` should have the attribute `[ID]`.
 
-- The tag `<root>` should contain the attribute `[main_tree_to_execute]`,refering the ID of the main tree. 
+- The tag `<root>` should contain the attribute `[main_tree_to_execute]`.
 
 - The attribute `[main_tree_to_execute]` is mandatory if the file contains multiple `<BehaviorTree>`, 
   optional otherwise.
@@ -40,6 +40,31 @@ You may notice that:
      - `ControlNodes` contain __1 to N children__.
      - `DecoratorNodes` and Subtrees contain __only 1 child__.
      - `ActionNodes` and `ConditionNodes` have __no child__. 
+
+## Ports Remapping and pointers to Blackboards entries
+
+As explained in the [second tutorial](tutorial_02_basic_ports.md)
+input/output ports can be remapped using the name of an entry in the
+Blackboard, in other words, the __key__ of a __key/value__ pair of the BB.
+
+An BB key is represented using this syntax: `{key_name}`.
+
+In the following example:
+
+- the first child of the Sequence prints "Hello",
+- the second child reads and wrints the value contained in the entry of 
+  the blackboard called "my_message"; 
+
+``` XML
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <SaySomething message="Hello"/>
+            <SaySomething message="{my_message}"/>
+        </Sequence>
+     </BehaviorTree>
+ </root>
+```
      
 
 ## Compact vs Explicit representation

@@ -5,7 +5,7 @@ your favourite distributed middleware, such as __ROS__ or __SmartSoft__.
 
 You can statically link it into your application (for example a game).
 
-There are some main concepts which you need to understand first.
+These are the main concepts which you need to understand first.
 
 ## Nodes vs Trees
 
@@ -15,8 +15,8 @@ this library helps you to compose them easily into trees.
 Think about the LeafNodes as the building blocks which you need to compose
 a complex system.
 
-By definition, your custom Nodes are (or should be) highly reusable.
-But, at the beginning  some wrapping interfaces might be needed to
+By definition, your custom Nodes are (or should be) highly __reusable__.
+But, at the beginning, some wrapping interfaces might be needed to
 adapt your legacy code.
 
 
@@ -30,7 +30,7 @@ print messages on console or sleep for a certain amount of time to simulate
 a long calculation.
 
 In production code, especially in Model Driven Development and Component 
-Based Software Engineering, an Action/Condition would probably communiate
+Based Software Engineering, an Action/Condition would probably communicate
 to other _components_ or _services_ of the system.
 
 ## Inheritance vs dependency injection.
@@ -55,9 +55,12 @@ and [third](tutorial_03_generic_ports.md) tutorials.
 For the time being, it is important to know that:
 
 - A __Blackboard__ is a _key/value_ storage shared by all the Nodes of a Tree.
+
 - __Ports__ are a mechanism that Nodes can use to exchange information between
   each other.
+  
 - Ports are _"connected"_ using the same _key_ of the blackboard.
+
 - The number, name and kind of ports of a Node must be known at _compilation-time_ (C++); 
   connections between ports are done at _deployment-time_ (XML).  
 
