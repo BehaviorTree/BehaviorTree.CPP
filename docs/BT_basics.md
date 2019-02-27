@@ -26,26 +26,25 @@ through the branches until it reaches one or multiple leaves.
 !!! Note
     The word __tick__ will be often used as a *verb* (to tick / to be ticked) and it means
     
-    "To invoke the callback `tick()` called of a `TreeNode`".
+    "To invoke the callback `tick()` of a `TreeNode`".
 
-Then a `TreeNode` is ticked, it returns a `NodeStatus` that can be either:
+When a `TreeNode` is ticked, it returns a `NodeStatus` that can be either:
 
 - __SUCCESS__
 - __FAILURE__
 - __RUNNING__
-- __IDLE__
 
-The first two, as their names suggest, inform their parent that their operation
+
+The first two, as their names suggests, inform their parent that their operation
  was a success or a failure.
 
-RUNNING is returned by asynchronous nodes when their execution is not completed
-and they needs more time to return a valid result.
+RUNNING is returned by __asynchronous__ nodes when their execution is not 
+completed and they needs more time to return a valid result.
 
-This C++ library provides also the status __IDLE__; it means that the node is ready to
-start.
+__Asynchronous nodes can be halted__.
 
 The result of a node is propagated back to its parent, that will decide
-which child should be ticked next or will return a result to its own parent.
+which child should be ticked next or may return a result to its own parent.
 
 ## Types of nodes
 
@@ -54,12 +53,12 @@ is received, this tick may be propagated to one or more of the children.
 
 __DecoratorNodes__ is similar to the ControlNode, but it can have only a single child. 
 
-__ActionNodes__ are leaves and do not have children. The user should implement
-their own ActionNodes to perform the actual task.
+__ActionNodes__ are leaves and do not have any children. The user should 
+implement their own ActionNodes to perform the actual task.
 
 __ConditionNodes__ are equivalent to ActionNodes, but
-they are always atomic, i.e. they must not return RUNNING. They should not 
-alter the state of the system.
+they are always atomic and synchronous, i.e. they must not return RUNNING. 
+They should not alter the state of the system.
 
 ![UML hierarchy](images/TypeHierarchy.png)
 
@@ -78,10 +77,8 @@ We will assume that each Action is executed atomically and synchronously.
 Let's illustrate how a BT works using the most basic and frequently used 
 ControlNode: the [SequenceNode](SequenceNode.md).
 
-The children of a ControlNode are always __ordered__; it is up to the ControlNode
-to consider this order or not.
-
-In the graphical representation, the order of execution is __from left to right__.
+The children of a ControlNode are always __ordered__; in the graphical 
+representation, the order of execution is __from left to right__.
 
 ![Simple Sequence: fridge](images/SequenceBasic.png)
 
@@ -99,11 +96,14 @@ In short:
 
 ### Decorators
 
-The goal of a [DecoratorNode](DecoratorNode.md) is either to transform the result it received 
-from the child, to terminate the child, 
-or repeat ticking of the child, depending on the type of Decorator.
+Depending on the type of [DecoratorNode](DecoratorNode.md), the goal of
+this node could be either:
 
-You can create your own Decorators.
+- to transform the result it received from the child
+- to halt the execution of the child, 
+- to repeat ticking the child, depending on the type of Decorator.
+
+You can extend your grammar creating your own Decorators.
 
 ![Simple Decorator: Enter Room](images/DecoratorEnterRoom.png)
 
@@ -137,10 +137,11 @@ But...
 are nodes that can express, as the name suggests, fallback strategies, 
 ie. what to do next if a child returns FAILURE.
 
-In short, it ticks the children in order and:
+It ticks the children in order and:
 
 - If a child returns FAILURE, tick the next one.
-- If a child returns SUCCESS, then no more children are ticked and the Fallback returns SUCCESS.
+- If a child returns SUCCESS, then no more children are ticked and the 
+   Fallback returns SUCCESS.
 - If all the children return FAILURE, then the Fallback returns FAILURE too.
 
 In the next example, you can see how Sequence and Fallbacks can be combined:
@@ -164,7 +165,8 @@ We can now improve the "Fetch Me a Beer" example, which left the door open
 if the beer was not inside the fridge.
 
 We use the color "green" to represent nodes which return
-SUCCESS and "red" for those which return FAILURE. Black nodes are never executed. 
+SUCCESS and "red" for those which return FAILURE. Black nodes haven't
+been executed. 
 
 ![FetchBeer failure](images/FetchBeerFails.png)
 
@@ -176,8 +178,8 @@ returns FAILURE.
 
 Both these trees will close the door of the fridge, eventually, but:
 
-- the tree on the __left__ side will always return SUCCESS if we managed to
- open and close the fridge.
+- the tree on the __left__ side will always return SUCCESS, no matter if
+we have actually grabbed the beer.
  
 - the tree on the __right__ side will return SUCCESS if the beer was there, 
 FAILURE otherwise.
