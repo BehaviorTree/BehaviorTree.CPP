@@ -30,11 +30,13 @@ markdown_extensions:
 
 pages:
     - Home: index.md
+    
     - Learn the basics:
        - Introduction:      BT_basics.md
        - Sequence Nodes:    SequenceNode.md
        - Fallback Nodes:    FallbackNode.md
        - Decorators Nodes:  DecoratorNode.md
+       
     - Tutorials: 
        - Getting started:                     getting_started.md
        - "Tutorial 1: Create a Tree":         tutorial_01_first_tree.md
@@ -47,4 +49,6 @@ pages:
        - "Tutorial 8: Class parameters":      tutorial_08_additional_args.md
        - "Tutorial 9: Coroutines":            tutorial_09_coroutines.md
        - "The XML format":                    xml_format.md
-
+       
+    - Migration:  
+        - Migrate from version 2:  MigrationGuide.md
