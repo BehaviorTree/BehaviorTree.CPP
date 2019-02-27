@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -17,27 +17,40 @@
 
 namespace BT
 {
+/**
+ * This node excute its child only if the value of a given input port
+ * is equal to the expected one.
+ * If this precondition is met, this node will return the same status of the
+ * child, otherwise it will return the value specified in "return_on_mismatch".
+ *
+ * Example:
+ *
+ * <BlackboardCheckInt value_A="{the_answer}"
+ *                     value_B="42"
+ *                     return_on_mismatch="FAILURE" />
+ */
 template <typename T>
 class BlackboardPreconditionNode : public DecoratorNode
 {
   public:
-    BlackboardPreconditionNode(const std::string& name, const NodeParameters& params)
-      : DecoratorNode(name, params)
+    BlackboardPreconditionNode(const std::string& name, const NodeConfiguration& config)
+      : DecoratorNode(name, config)
     {
         if( std::is_same<T,int>::value)
-            setRegistrationName("BlackboardCheckInt");
+            setRegistrationID("BlackboardCheckInt");
         else if( std::is_same<T,double>::value)
-            setRegistrationName("BlackboardCheckDouble");
+            setRegistrationID("BlackboardCheckDouble");
         else if( std::is_same<T,std::string>::value)
-            setRegistrationName("BlackboardCheckString");
+            setRegistrationID("BlackboardCheckString");
     }
 
     virtual ~BlackboardPreconditionNode() override = default;
 
-    static const NodeParameters& requiredNodeParameters()
+    static PortsList providedPorts()
     {
-        static NodeParameters params = {{"key", ""}, {"expected", "*"}};
-        return params;
+        return {InputPort("value_A"),
+                InputPort("value_B"),
+                InputPort<NodeStatus>("return_on_mismatch") };
     }
 
   private:
@@ -49,41 +62,27 @@ class BlackboardPreconditionNode : public DecoratorNode
 template<typename T> inline
 NodeStatus BlackboardPreconditionNode<T>::tick()
 {
-    std::string key;
-    T expected_value;
-    T current_value;
+    T value_A;
+    T value_B;
+    NodeStatus default_return_status = NodeStatus::FAILURE;
 
-    getParam("key", key);
     setStatus(NodeStatus::RUNNING);
 
-    // check if the key is present in the blackboard
-    if ( !blackboard() ||  !(blackboard()->contains(key)) )
-    {
-        return NodeStatus::FAILURE;
-    }
-
-    if( initializationParameters().at("expected") == "*" )
+    if( getInput("value_A", value_A) &&
+        getInput("value_B", value_B) &&
+        value_B == value_A )
     {
         return child_node_->executeTick();
     }
 
-    bool same = ( getParam("expected", expected_value) &&
-                  blackboard()->get(key, current_value) &&
-                  current_value == expected_value ) ;
-    if(same)
+    if( child()->status() == NodeStatus::RUNNING )
     {
-        return child_node_->executeTick();
+        haltChild();
     }
-    else{
-        if( child()->status() == NodeStatus::RUNNING)
-        {
-            haltChild();
-        }
-        return NodeStatus::FAILURE;
-    }
-
+    getInput("return_on_mismatch", default_return_status);
+    return default_return_status;
 }
 
-}
+} // end namespace
 
 #endif

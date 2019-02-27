@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -19,7 +19,7 @@
 namespace BT
 {
 /**
- * @brief The SequenceStarNode is used to execute a sequence of children.
+ * @brief The SequenceStarNode is used to tick children in an ordered sequence.
  * If any child returns RUNNING, previous children are not ticked again.
  *
  * - If all the children return SUCCESS, this node returns SUCCESS.
@@ -27,38 +27,27 @@ namespace BT
  * - If a child returns RUNNING, this node returns RUNNING.
  *   Loop is NOT restarted, the same running child will be ticked again.
  *
- * - If a child returns FAILURE, stop the loop and returns FAILURE.
- *   Restart the loop only if (reset_on_failure == true)
+ * - If a child returns FAILURE, stop the loop and return FAILURE.
+ *   Loop is NOT restarted, the same running child will be ticked again.
  *
  */
 
 class SequenceStarNode : public ControlNode
 {
   public:
-    SequenceStarNode(const std::string& name, bool reset_on_failure = true);
-
-    // Reset policy passed by parameter [reset_on_failure]
-    SequenceStarNode(const std::string& name, const NodeParameters& params);
+    SequenceStarNode(const std::string& name);
 
     virtual ~SequenceStarNode() override = default;
 
     virtual void halt() override;
 
-    static const NodeParameters& requiredNodeParameters()
-    {
-        static NodeParameters params = {{RESET_PARAM, "true"}};
-        return params;
-    }
-
   private:
-    unsigned int current_child_idx_;
-    bool reset_on_failure_;
 
-    bool read_parameter_from_blackboard_;
-    static constexpr const char* RESET_PARAM = "reset_on_failure";
+    unsigned int current_child_idx_;
 
     virtual BT::NodeStatus tick() override;
 };
+
 }
 
 #endif   // SEQUENCE_NODE_WITH_MEMORY_H

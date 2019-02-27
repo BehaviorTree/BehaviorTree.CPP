@@ -5,6 +5,7 @@
 
 namespace BT
 {
+
 class DecoratorSubtreeNode : public DecoratorNode
 {
   public:
@@ -19,7 +20,6 @@ class DecoratorSubtreeNode : public DecoratorNode
     {
         return NodeType::SUBTREE;
     }
-
 };
 
 

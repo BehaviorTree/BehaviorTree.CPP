@@ -32,14 +32,14 @@ class SyncActionTest : public SyncActionNode
 class AsyncActionTest : public AsyncActionNode
 {
   public:
-    AsyncActionTest(const std::string& name);
+    AsyncActionTest(const std::string& name, BT::Duration deadline_ms);
 
     ~AsyncActionTest();
 
     // The method that is going to be executed by the thread
     BT::NodeStatus tick() override;
 
-    void setTime(int time);
+    void setTime(BT::Duration time);
 
     // The method used to interrupt the execution of the node
     virtual void halt() override;
@@ -57,9 +57,10 @@ class AsyncActionTest : public AsyncActionNode
     }
 
   private:
-    int time_;
-    bool boolean_value_;
-    int tick_count_;
+    // using atomic because these variables might be accessed from different threads
+    BT::Duration time_;
+    std::atomic_bool boolean_value_;
+    std::atomic<int> tick_count_;
     std::atomic_bool stop_loop_;
 };
 }

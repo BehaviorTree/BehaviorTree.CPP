@@ -3,10 +3,13 @@
 #include "condition_test_node.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
+#include "../sample_nodes/dummy_nodes.h"
+
+using namespace BT;
 
 // clang-format off
 
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -39,18 +42,11 @@ const std::string xml_text = R"(
         <Action ID="CloseDoor" />
         <Action ID="OpenDoor" />
         <Action ID="PassThroughWindow" />
-        <Decorator ID="Invert" />
-        <Decorator ID="RetryUntilSuccesful">
-            <Parameter label="num_attempts" type="Int" />
-        </Decorator>
-        <Decorator ID="Repeat">
-            <Parameter label="num_cycles" type="Int" />
-        </Decorator>
     </TreeNodesModel>
 </root>
         )";
 
-const std::string xml_text_subtree = R"(
+static const char* xml_text_subtree = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -73,27 +69,22 @@ const std::string xml_text_subtree = R"(
     </Fallback>
   </BehaviorTree>
 
-</root>
-        )";
+</root>  )";
+
 // clang-format on
 
 TEST(BehaviorTreeFactory, VerifyLargeTree)
 {
-    BT::BehaviorTreeFactory factory;
+    BehaviorTreeFactory factory;
     CrossDoor::RegisterNodes(factory);
 
-    BT::XMLParser parser(factory);
-    parser.loadFromText(xml_text);
+    Tree tree = factory.createTreeFromText(xml_text);
 
-    std::vector<BT::TreeNode::Ptr> nodes;
+    printTreeRecursively(tree.root_node);
 
-    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes, Blackboard::Ptr());
+    ASSERT_EQ(tree.root_node->name(), "root_selector");
 
-    BT::printTreeRecursively(root_node.get());
-
-    ASSERT_EQ(root_node->name(), "root_selector");
-
-    auto fallback = dynamic_cast<const BT::FallbackNode*>(root_node.get());
+    auto fallback = dynamic_cast<const FallbackNode*>(tree.root_node);
     ASSERT_TRUE(fallback != nullptr);
 
     ASSERT_EQ(fallback->children().size(), 3);
@@ -101,14 +92,14 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_EQ(fallback->child(1)->name(), "door_closed_sequence");
     ASSERT_EQ(fallback->child(2)->name(), "PassThroughWindow");
 
-    auto sequence_open = dynamic_cast<const BT::SequenceNode*>(fallback->child(0));
+    auto sequence_open = dynamic_cast<const SequenceNode*>(fallback->child(0));
     ASSERT_TRUE(sequence_open != nullptr);
 
     ASSERT_EQ(sequence_open->children().size(), 2);
     ASSERT_EQ(sequence_open->child(0)->name(), "IsDoorOpen");
     ASSERT_EQ(sequence_open->child(1)->name(), "PassThroughDoor");
 
-    auto sequence_closed = dynamic_cast<const BT::SequenceNode*>(fallback->child(1));
+    auto sequence_closed = dynamic_cast<const SequenceNode*>(fallback->child(1));
     ASSERT_TRUE(sequence_closed != nullptr);
 
     ASSERT_EQ(sequence_closed->children().size(), 4);
@@ -117,7 +108,7 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
     ASSERT_EQ(sequence_closed->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence_closed->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::InverterNode*>(sequence_closed->child(0));
+    auto decorator = dynamic_cast<const InverterNode*>(sequence_closed->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorOpen");
@@ -125,29 +116,25 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
 TEST(BehaviorTreeFactory, Subtree)
 {
-    BT::BehaviorTreeFactory factory;
+    BehaviorTreeFactory factory;
     CrossDoor::RegisterNodes(factory);
 
-    BT::XMLParser parser(factory);
-    parser.loadFromText(xml_text_subtree);
+    Tree tree = factory.createTreeFromText(xml_text_subtree);
 
-    std::vector<BT::TreeNode::Ptr> nodes;
+    printTreeRecursively(tree.root_node);
 
-    BT::TreeNode::Ptr root_node = parser.instantiateTree(nodes, Blackboard::Ptr());
-    BT::printTreeRecursively(root_node.get());
+    ASSERT_EQ(tree.root_node->name(), "root_selector");
 
-    ASSERT_EQ(root_node->name(), "root_selector");
-
-    auto root_selector = dynamic_cast<const BT::FallbackNode*>(root_node.get());
+    auto root_selector = dynamic_cast<const FallbackNode*>(tree.root_node);
     ASSERT_TRUE(root_selector != nullptr);
     ASSERT_EQ(root_selector->children().size(), 2);
     ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
     ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
 
-    auto subtree = dynamic_cast<const BT::DecoratorSubtreeNode*>(root_selector->child(0));
+    auto subtree = dynamic_cast<const DecoratorSubtreeNode*>(root_selector->child(0));
     ASSERT_TRUE(subtree != nullptr);
 
-    auto sequence = dynamic_cast<const BT::SequenceNode*>(subtree->child());
+    auto sequence = dynamic_cast<const SequenceNode*>(subtree->child());
     ASSERT_TRUE(sequence != nullptr);
 
     ASSERT_EQ(sequence->children().size(), 4);
@@ -156,7 +143,7 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_EQ(sequence->child(2)->name(), "PassThroughDoor");
     ASSERT_EQ(sequence->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const BT::InverterNode*>(sequence->child(0));
+    auto decorator = dynamic_cast<const InverterNode*>(sequence->child(0));
     ASSERT_TRUE(decorator != nullptr);
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorLocked");
@@ -170,8 +157,90 @@ const std::string xml_text_issue = R"(
     </BehaviorTree>
 </root> )";
 
-    BT::BehaviorTreeFactory factory;
-    BT::XMLParser parser(factory);
+    BehaviorTreeFactory factory;
+    XMLParser parser(factory);
 
-    EXPECT_THROW( parser.loadFromText(xml_text_issue), std::runtime_error );
+    EXPECT_THROW( parser.loadFromText(xml_text_issue), RuntimeError );
 }
+
+
+// clang-format off
+
+static const char* xml_ports_subtree = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+  <BehaviorTree ID="TalkToMe">
+    <Sequence>
+      <SaySomething message="{hello_msg}" />
+      <SaySomething message="{bye_msg}" />
+      <SetBlackboard output_key="output" value="done!" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SetBlackboard output_key="talk_hello" value="hello" />
+      <SetBlackboard output_key="talk_bye"   value="bye bye" />
+      <SubTree ID="TalkToMe" hello_msg="talk_hello"
+                             bye_msg="talk_bye"
+                             output="talk_out" />
+      <SaySomething message="{talk_out}" />
+    </Sequence>
+  </BehaviorTree>
+
+</root> )";
+
+// clang-format on
+
+TEST(BehaviorTreeFactory, SubTreeWithRemapping)
+{
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+
+    Tree tree = factory.createTreeFromText(xml_ports_subtree);
+
+    auto main_bb = tree.blackboard_stack.at(0);
+    auto talk_bb = tree.blackboard_stack.at(1);
+
+    std::cout << "\n --------------------------------- \n" << std::endl;
+    main_bb->debugMessage();
+    std::cout << "\n ----- \n" << std::endl;
+    talk_bb->debugMessage();
+    std::cout << "\n --------------------------------- \n" << std::endl;
+
+    ASSERT_EQ( main_bb->portInfo("talk_hello")->type(), &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_bye")->type(),   &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_out")->type(),   &typeid(std::string) );
+
+    ASSERT_EQ( talk_bb->portInfo("bye_msg")->type(),   &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portInfo("hello_msg")->type(), &typeid(std::string) );
+
+    // Should not throw
+    tree.root_node->executeTick();
+
+    std::cout << "\n --------------------------------- \n" << std::endl;
+    main_bb->debugMessage();
+    std::cout << "\n ----- \n" << std::endl;
+    talk_bb->debugMessage();
+    std::cout << "\n --------------------------------- \n" << std::endl;
+
+    ASSERT_EQ( main_bb->portInfo("talk_hello")->type(), &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_bye")->type(),   &typeid(std::string) );
+    ASSERT_EQ( main_bb->portInfo("talk_out")->type(),   &typeid(std::string) );
+
+    ASSERT_EQ( talk_bb->portInfo("bye_msg")->type(),   &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portInfo("hello_msg")->type(), &typeid(std::string) );
+    ASSERT_EQ( talk_bb->portInfo("output")->type(),    &typeid(std::string) );
+
+
+    ASSERT_EQ( main_bb->get<std::string>("talk_hello"), "hello");
+    ASSERT_EQ( main_bb->get<std::string>("talk_bye"), "bye bye");
+    ASSERT_EQ( main_bb->get<std::string>("talk_out"), "done!");
+
+    // these ports should not be present in the subtree TalkToMe
+    ASSERT_FALSE( talk_bb->getAny("talk_hello") );
+    ASSERT_FALSE( talk_bb->getAny("talk_bye") );
+    ASSERT_FALSE( talk_bb->getAny("talk_out") );
+}
+

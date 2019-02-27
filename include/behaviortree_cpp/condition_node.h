@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -21,12 +21,16 @@ namespace BT
 class ConditionNode : public LeafNode
 {
   public:
-    ConditionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    ConditionNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~ConditionNode() override = default;
 
-    // The method used to interrupt the execution of the node
-    virtual void halt() override;
+    //Do nothing
+    virtual void halt() override final
+    {
+        // just in case, but it should not be needed
+        setStatus(NodeStatus::IDLE);
+    }
 
     virtual NodeType type() const override final
     {
@@ -50,16 +54,11 @@ class SimpleConditionNode : public ConditionNode
   public:
     typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
 
-    // Constructor: you must provide the function to call when tick() is invoked
+    // You must provide the function to call when tick() is invoked
     SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
-                        const NodeParameters& params = NodeParameters());
+                        const NodeConfiguration& config);
 
     ~SimpleConditionNode() override = default;
-
-    virtual void halt() override
-    {
-        // not supported
-    }
 
   protected:
     virtual NodeStatus tick() override;

@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -17,35 +17,45 @@
 
 namespace BT
 {
+/**
+ * @brief The SetBlackboard is action used to store a string
+ * into an entry of the Blackboard specified in "output_key".
+ *
+ * Example usage:
+ *
+ *  <SetBlackboard value="42" output_key="the_answer" />
+ *
+ * Will store the string "42" in the entry with key "the_answer".
+ */
 class SetBlackboard : public SyncActionNode
 {
   public:
-    SetBlackboard(const std::string& name, const NodeParameters& params)
-      : SyncActionNode(name, params)
+    SetBlackboard(const std::string& name, const NodeConfiguration& config)
+      : SyncActionNode(name, config)
     {
+        setRegistrationID("SetBlackboard");
     }
 
-    static const NodeParameters& requiredNodeParameters()
+    static PortsList providedPorts()
     {
-        static NodeParameters params = {{"key", ""}, {"value", ""}};
-        return params;
+        return { InputPort("value", "Value represented as a string. convertFromString must be implemented."),
+                 BidirectionalPort("output_key", "Name of the blackboard entry where the value should be written") };
     }
 
   private:
     virtual BT::NodeStatus tick() override
     {
-        std::string key;
-        if (!blackboard() || !getParam("key", key) || key.empty())
+        std::string key, value;
+        if ( !getInput("output_key", key) )
         {
-            return NodeStatus::FAILURE;
+            throw RuntimeError("missing port [output_key]");
         }
-        else
+        if ( !getInput("value", value) )
         {
-            std::string value;
-            getParam("value", value);
-            blackboard()->set(key, value);
-            return NodeStatus::SUCCESS;
+            throw RuntimeError("missing port [value]");
         }
+        setOutput("output_key", value);
+        return NodeStatus::SUCCESS;
     }
 };
 }

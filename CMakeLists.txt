@@ -10,12 +10,12 @@ endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 
 option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
+option(BUILD_TOOLS "Build commandline tools" ON)
 
 #############################################################
 # Find packages
@@ -74,6 +74,12 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
   list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES})
   set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
+  find_package(backward_ros QUIET)
+  if (backward_ros_FOUND)
+      message(STATUS "backward_ros found, using it.")
+      list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES} ${backward_ros_LIBRARIES})
+  endif()
+
 else()
     find_package(GTest)
 
@@ -86,6 +92,9 @@ else()
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 endif()
+if(NOT MSVC)
+    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES "dw")
+endif()
 
 #############################################################
 # LIBRARY
@@ -93,30 +102,29 @@ endif()
 list(APPEND BT_SOURCE
     src/action_node.cpp
     src/basic_types.cpp
+    src/behavior_tree.cpp
+    src/blackboard.cpp
+    src/bt_factory.cpp
     src/decorator_node.cpp
     src/condition_node.cpp
     src/control_node.cpp
-    src/exceptions.cpp
-    src/leaf_node.cpp
-    src/tick_engine.cpp
-    src/tree_node.cpp
-    src/bt_factory.cpp
-    src/behavior_tree.cpp
-    src/xml_parsing.cpp
     src/shared_library.cpp
     src/shared_library_UNIX.cpp
+    src/tree_node.cpp
+    src/xml_parsing.cpp
 
     src/decorators/inverter_node.cpp
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
-    src/decorators/timeout_node.cpp
     src/decorators/subtree_node.cpp
+    src/decorators/timeout_node.cpp
 
+    src/controls/fallback_node.cpp
     src/controls/parallel_node.cpp
+    src/controls/reactive_sequence.cpp
+    src/controls/reactive_fallback.cpp
     src/controls/sequence_node.cpp
     src/controls/sequence_star_node.cpp
-    src/controls/fallback_node.cpp
-    src/controls/fallback_star_node.cpp
 
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger.cpp
@@ -125,8 +133,12 @@ list(APPEND BT_SOURCE
     3rdparty/tinyXML2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp
     )
+if (NOT backward_ros_FOUND)
+    list(APPEND BT_SOURCE
+        3rdparty/backward-cpp/backward.cpp)
+endif()
 
-
+######################################################
 
 add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
@@ -142,7 +154,7 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
 if(MSVC)
   target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
 else()
-  target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE -Wall -Wextra -Werror=return-type)
+  target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE -Wall -Wextra -Werror=return-type -g)
 endif()
 
 ######################################################
@@ -167,6 +179,7 @@ set(BT_TESTS
   gtest/gtest_factory.cpp
   gtest/gtest_decorator.cpp
   gtest/gtest_blackboard.cpp
+  gtest/gtest_coroutines.cpp
   gtest/navigation_test.cpp
 )
 
@@ -176,7 +189,7 @@ if(ament_cmake_FOUND AND BUILD_TESTING)
 
     ament_add_gtest_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                        crossdoor_nodes
+                                                        crossdoor_nodes dummy_nodes
                                                         ${ament_LIBRARIES})
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
     include_directories($<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>)
@@ -185,7 +198,7 @@ elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
     catkin_add_gtest(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                        crossdoor_nodes
+                                                        crossdoor_nodes dummy_nodes
                                                         ${catkin_LIBRARIES})
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
 
@@ -195,7 +208,7 @@ elseif(GTEST_FOUND AND BUILD_UNIT_TESTS)
 
     add_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${PROJECT_NAME}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                crossdoor_nodes
+                                                crossdoor_nodes dummy_nodes
                                                 ${GTEST_LIBRARIES}
                                                 ${GTEST_MAIN_LIBRARIES})
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include ${GTEST_INCLUDE_DIRS})
@@ -243,9 +256,11 @@ install(EXPORT ${PROJECT_CONFIG}
 
 ######################################################
 # EXAMPLES and TOOLS
+if(BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
 
 if( BUILD_EXAMPLES )
-    add_subdirectory(tools)
     add_subdirectory(sample_nodes)
     add_subdirectory(examples)
 endif()

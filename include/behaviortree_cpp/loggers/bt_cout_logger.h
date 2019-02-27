@@ -21,8 +21,8 @@ class StdCoutLogger : public StatusChangeLogger
     static std::atomic<bool> ref_count;
 
   public:
-    StdCoutLogger(TreeNode* root_node);
-    ~StdCoutLogger();
+    StdCoutLogger(const BT::Tree& tree);
+    ~StdCoutLogger() override;
 
     virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
                           NodeStatus status) override;

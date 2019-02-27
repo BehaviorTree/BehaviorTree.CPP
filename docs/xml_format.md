@@ -1,17 +1,17 @@
 
 ## Basics of the XML schema
 
-In the [first tutorial](tutorial_A_create_trees.md) this simple tree
+In the [first tutorial](tutorial_01_first_tree.md) this simple tree
 was presented.
 
 ``` XML
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-           <SaySomething   name="action_hello" message="Hello"/>
-           <OpenGripper    name="open_gripper"/>
-           <ApproachObject name="approach_object"/>
-           <CloseGripper   name="close_gripper"/>
+            <SaySomething   name="action_hello" message="Hello"/>
+            <OpenGripper    name="open_gripper"/>
+            <ApproachObject name="approach_object"/>
+            <CloseGripper   name="close_gripper"/>
         </Sequence>
      </BehaviorTree>
  </root>
@@ -19,12 +19,11 @@ was presented.
 
 You may notice that:
 
-- The first tag of the tree is `<root>`. It should contain 1 or more tags `<BehaviorTree>`.
+- The first tag of the tree is `<root>`. It should contain __1 or more__ tags `<BehaviorTree>`.
 
 - The tag `<BehaviorTree>` should have the attribute `[ID]`.
 
-
-- The tag `<root>` should contain the attribute `[main_tree_to_execute]`,refering the ID of the main tree. 
+- The tag `<root>` should contain the attribute `[main_tree_to_execute]`.
 
 - The attribute `[main_tree_to_execute]` is mandatory if the file contains multiple `<BehaviorTree>`, 
   optional otherwise.
@@ -33,14 +32,39 @@ You may notice that:
 
      - The name of the tag is the __ID__ used to register the TreeNode in the factory.
      - The attribute `[name]` refers to the name of the instance and is __optional__.
-     - Nodeparameters are passed as attribute as well. In the previous example, the action 
-     `SaySomething` requires the NodeParameter `message`.
+     - Ports are configured using attributes. In the previous example, the action 
+     `SaySomething` requires the input port `message`.
 
 - In terms of number of children:
 
      - `ControlNodes` contain __1 to N children__.
      - `DecoratorNodes` and Subtrees contain __only 1 child__.
      - `ActionNodes` and `ConditionNodes` have __no child__. 
+
+## Ports Remapping and pointers to Blackboards entries
+
+As explained in the [second tutorial](tutorial_02_basic_ports.md)
+input/output ports can be remapped using the name of an entry in the
+Blackboard, in other words, the __key__ of a __key/value__ pair of the BB.
+
+An BB key is represented using this syntax: `{key_name}`.
+
+In the following example:
+
+- the first child of the Sequence prints "Hello",
+- the second child reads and wrints the value contained in the entry of 
+  the blackboard called "my_message"; 
+
+``` XML
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <SaySomething message="Hello"/>
+            <SaySomething message="{my_message}"/>
+        </Sequence>
+     </BehaviorTree>
+ </root>
+```
      
 
 ## Compact vs Explicit representation
@@ -73,7 +97,8 @@ too little information about the model of the TreeNode. Tools like __Groot__ req
 the _explicit_ syntax or additional information.
 This information can be added using the tag `<TreeNodeModel>`.
 
-To make the compact version of our tree compatible with Groot, the XML must be modified as follows:
+To make the compact version of our tree compatible with Groot, the XML 
+must be modified as follows:
 
 
 ``` XML
@@ -89,7 +114,9 @@ To make the compact version of our tree compatible with Groot, the XML must be m
 	
 	<!-- the BT executor don't require this, but Groot does --> 	
     <TreeNodeModel>
-        <Action ID="SaySomething"   message="default message"/>
+        <Action ID="SaySomething">
+            <input_port name="message" type="std::string" />
+        </Action>
         <Action ID="OpenGripper"/>
         <Action ID="ApproachObject"/>
         <Action ID="CloseGripper"/>      
@@ -103,7 +130,7 @@ To make the compact version of our tree compatible with Groot, the XML must be m
 
 ## Subtrees
 
-As we saw in [this tutorial](tutorial_D_subtrees.md), it is possible to include
+As we saw in [this tutorial](tutorial_06_subtree_ports.md), it is possible to include
 a Subtree inside another tree to avoid "copy and pasting" the same tree in
 multiple location and to reduce complexity.
 

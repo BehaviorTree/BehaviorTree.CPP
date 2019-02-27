@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2017 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -14,10 +14,11 @@
 #include "action_test_node.h"
 #include <string>
 
-BT::AsyncActionTest::AsyncActionTest(const std::string& name) : ActionNode(name)
+BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadline_ms) :
+    AsyncActionNode(name, {})
 {
     boolean_value_ = true;
-    time_ = 3;
+    time_ = deadline_ms;
     stop_loop_ = false;
     tick_count_ = 0;
 }
@@ -29,12 +30,14 @@ BT::AsyncActionTest::~AsyncActionTest()
 
 BT::NodeStatus BT::AsyncActionTest::tick()
 {
+    using std::chrono::high_resolution_clock;
     tick_count_++;
     stop_loop_ = false;
-    int i = 0;
-    while (!stop_loop_ && i++ < time_)
+    auto initial_time = high_resolution_clock::now();
+
+    while (!stop_loop_ && high_resolution_clock::now() < initial_time + time_)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     if (!stop_loop_)
@@ -50,10 +53,9 @@ BT::NodeStatus BT::AsyncActionTest::tick()
 void BT::AsyncActionTest::halt()
 {
     stop_loop_ = true;
-    setStatus(NodeStatus::IDLE);
 }
 
-void BT::AsyncActionTest::setTime(int time)
+void BT::AsyncActionTest::setTime(BT::Duration time)
 {
     time_ = time;
 }
@@ -65,7 +67,8 @@ void BT::AsyncActionTest::setBoolean(bool boolean_value)
 
 //----------------------------------------------
 
-BT::SyncActionTest::SyncActionTest(const std::string& name) : SyncActionNode(name)
+BT::SyncActionTest::SyncActionTest(const std::string& name) :
+    SyncActionNode(name, {})
 {
     tick_count_ = 0;
     boolean_value_ = true;

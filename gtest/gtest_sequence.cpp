@@ -16,6 +16,7 @@
 #include "behaviortree_cpp/behavior_tree.h"
 
 using BT::NodeStatus;
+using std::chrono::milliseconds;
 
 struct SimpleSequenceTest : testing::Test
 {
@@ -23,7 +24,10 @@ struct SimpleSequenceTest : testing::Test
     BT::AsyncActionTest action;
     BT::ConditionTestNode condition;
 
-    SimpleSequenceTest() : root("root_sequence"), action("action"), condition("condition")
+    SimpleSequenceTest() :
+      root("root_sequence")
+      , action("action", milliseconds(100))
+      , condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -36,7 +40,7 @@ struct SimpleSequenceTest : testing::Test
 
 struct ComplexSequenceTest : testing::Test
 {
-    BT::SequenceNode root;
+    BT::ReactiveSequence root;
     BT::AsyncActionTest action_1;
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
@@ -44,8 +48,8 @@ struct ComplexSequenceTest : testing::Test
     BT::SequenceNode seq_conditions;
 
     ComplexSequenceTest()
-      : root("root_sequence")
-      , action_1("action_1")
+      : root("root")
+      , action_1("action_1", milliseconds(100))
       , condition_1("condition_1")
       , condition_2("condition_2")
       , seq_conditions("sequence_conditions")
@@ -74,9 +78,9 @@ struct SequenceTripleActionTest : testing::Test
     SequenceTripleActionTest()
       : root("root_sequence")
       , condition("condition")
-      , action_1("action_1")
+      , action_1("action_1", milliseconds(100))
       , action_2("action_2")
-      , action_3("action_3")
+      , action_3("action_3", milliseconds(100))
     {
         root.addChild(&condition);
         root.addChild(&action_1);
@@ -102,8 +106,8 @@ struct ComplexSequence2ActionsTest : testing::Test
 
     ComplexSequence2ActionsTest()
       : root("root_sequence")
-      , action_1("action_1")
-      , action_2("action_2")
+      , action_1("action_1", milliseconds(100))
+      , action_2("action_2", milliseconds(100))
       , seq_1("sequence_1")
       , seq_2("sequence_2")
       , condition_1("condition_1")
@@ -132,7 +136,10 @@ struct SimpleSequenceWithMemoryTest : testing::Test
     BT::AsyncActionTest action;
     BT::ConditionTestNode condition;
 
-    SimpleSequenceWithMemoryTest() : root("root_sequence"), action("action"), condition("condition")
+    SimpleSequenceWithMemoryTest() :
+      root("root_sequence")
+      , action("action", milliseconds(100))
+      , condition("condition")
     {
         root.addChild(&condition);
         root.addChild(&action);
@@ -158,8 +165,8 @@ struct ComplexSequenceWithMemoryTest : testing::Test
 
     ComplexSequenceWithMemoryTest()
       : root("root_sequence")
-      , action_1("action_1")
-      , action_2("action_2")
+      , action_1("action_1", milliseconds(100))
+      , action_2("action_2", milliseconds(100))
       , condition_1("condition_1")
       , condition_2("condition_2")
       , seq_conditions("sequence_conditions")
@@ -193,9 +200,9 @@ struct SimpleParallelTest : testing::Test
 
     SimpleParallelTest()
       : root("root_parallel", 4)
-      , action_1("action_1")
+      , action_1("action_1", milliseconds(100))
       , condition_1("condition_1")
-      , action_2("action_2")
+      , action_2("action_2", milliseconds(100))
       , condition_2("condition_2")
     {
         root.addChild(&condition_1);
@@ -223,8 +230,8 @@ TEST_F(SimpleSequenceTest, ConditionTrue)
 
 TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
 {
-    BT::NodeStatus state = root.executeTick();
     condition.setBoolean(false);
+    BT::NodeStatus state = root.executeTick();
 
     state = root.executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, state);
@@ -249,8 +256,8 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     using namespace std::chrono;
     const auto timeout = system_clock::now() + milliseconds(650);
 
-    action_1.setTime(3);
-    action_3.setTime(3);
+    action_1.setTime( milliseconds(300) );
+    action_3.setTime( milliseconds(300) );
     // the sequence is supposed to finish in (300 ms * 2) = 600 ms
 
     // first tick
@@ -261,17 +268,17 @@ TEST_F(SequenceTripleActionTest, TripleAction)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
 
-    // continue until succesfull
+    // continue until succesful
     while (state != NodeStatus::SUCCESS && system_clock::now() < timeout)
     {
-        std::this_thread::sleep_for(milliseconds(20));
+        std::this_thread::sleep_for(milliseconds(10));
         state = root.executeTick();
     }
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 
-    // Condition is called many times
-    ASSERT_NE(condition.tickCount(), 30);
+    // Condition is called only once
+    ASSERT_EQ(condition.tickCount(), 1);
     // all the actions are called only once
     ASSERT_EQ(action_1.tickCount(), 1);
     ASSERT_EQ(action_2.tickCount(), 1);
@@ -297,7 +304,7 @@ TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(milliseconds(300));
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -344,7 +351,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)
 TEST_F(SimpleSequenceWithMemoryTest, ConditionTrue)
 {
     BT::NodeStatus state = root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for( milliseconds(50) );
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::SUCCESS, condition.status());
@@ -430,7 +437,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Action1DoneSeq)
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    std::this_thread::sleep_for(milliseconds(150));
     root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
@@ -440,7 +447,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Action1DoneSeq)
     ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    std::this_thread::sleep_for(milliseconds(150));
     root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, root.status());

@@ -3,11 +3,11 @@
 A __Sequence__ ticks all it's children as long as 
 they return SUCCESS. If any child returns FAILURE, the sequence is aborted.
 
-Currently the framework provides two kinds of nodes:
+Currently the framework provides three kinds of nodes:
 
-- SequenceNode
-- SequenceStarNode
-
+- Sequence
+- SequenceStar
+- ReactiveSequence
 
 They share the following rules:
 
@@ -17,30 +17,72 @@ They share the following rules:
 
 - If the __last__ child returns __SUCCESS__ too, all the children are halted and
  the sequence returns __SUCCESS__.
+
+To understand how the tree ControlNodes differ, refer to the following table:
+
  
- 
+| Type of ControlNode | Child returns FAILURE  |  Child returns RUNNING |
+|---|:---:|:---:|
+| Sequence | Restart  | Tick again  |
+| ReactiveSequence  | Restart  |  Restart |
+| SequenceStar | Tick again  | Tick again  |
 
-## SequenceNode
+- "__Restart__" means that the entire sequence is restarted from the first 
+  child of the list.
 
-- If a child returns FAILURE, the sequence returns FAILURE.
-  The index is reset and all the children are halted. 
+- "__Tick again__" means that the next time the sequence is ticked, the 
+  same child is ticked again. Previous sibling, which returned SUCCESS already,
+  are not ticked again.
 
-- If a child returns RUNNING:
-
-     - the sequence returns RUNNING.
-     - the loop is restarted and  all the previous children are ticked again __unless
-       they are ActionNodes__. 
-  
-__Example__:
+## Sequence
 
 This tree represents the behavior of a sniper in a computer game.
-If any of these conditions/actions fails, the entire sequence is executed
-again from the beginning.
-
-A running actions will be interrupted if __isEnemyVisible__ becomes
-false (i.e. it returns FAILURE).
 
 ![SequenceNode](images/SequenceNode.png)
+
+??? example "See the pseudocode"
+	``` c++
+		status = RUNNING;
+        // _index is a private member
+
+		while( index < number_of_children)
+		{
+			child_status = child[index]->tick();
+			
+            if( child_status == SUCCESS ) {
+                _index++;
+			}
+			else if( child_status == RUNNING ) {
+                // keep same index
+				return RUNNING;
+			}
+			else if( child_status == FAILURE ) {
+				HaltAllChildren();
+                _index = 0;
+				return FAILURE;
+			}
+		}
+		// all the children returned success. Return SUCCESS too.
+		HaltAllChildren();
+        _index = 0;
+		return SUCCESS;
+	```
+
+## ReactiveSequence
+
+This node is particularly useful to continuously check Conditions; but 
+the user should also be careful when using asynchronous children, to be
+sure that thy are not ticked more often that expected.
+
+Let's take a look to another example:
+
+![ReactiveSequence](images/ReactiveSequence.png)
+
+`ApproachEnemy` is an __asynchronous__ action that m return RUNNING until
+it is, eventually, completed.
+
+The condition `isEnemyVisible` will be called many times and, 
+if it becomes false (i,e, "FAILURE"), `ApproachEnemy` is halted. 
 
 ??? example "See the pseudocode"
 	``` c++
@@ -51,13 +93,9 @@ false (i.e. it returns FAILURE).
 			child_status = child[index]->tick();
 			
 			if( child_status == RUNNING ) {
-				// Suspend execution and return RUNNING.
-				// At the next tick, index will be the same.
 				return RUNNING;
 			}
 			else if( child_status == FAILURE ) {
-				// Suspend execution and return FAILURE.
-				// index is reset and children are halted.
 				HaltAllChildren();
 				return FAILURE;
 			}
@@ -67,20 +105,10 @@ false (i.e. it returns FAILURE).
 		return SUCCESS;
 	```
 
+## SequenceStar
 
-## SequenceStarNode
-
-Use this ControlNode when you don't want to tick a child more than once.
-
-You can customize its behavior using the [NodeParameter](NodeParameters.md) "reset_on_failure".
-
-- If a child returns FAILURE, the sequence returns FAILURE. 
-
-     - [reset_on_failure = "true"]: (default) the loop is restarted.
-     - [reset_on_failure = "false"]: the same failed child is executed again.
-  
-- If a child returns RUNNING, the sequence returns RUNNING.
-  The same child will be ticked again.
+Use this ControlNode when you don't want to tick again children that 
+return SUCCESS already
 
 __Example__:
 
@@ -88,42 +116,32 @@ This is a patrolling agent/robot that must visit locations A, B and C __only onc
 If the action __GoTo(B)__ fails, __GoTo(A)__ will not be ticked again.
 
 On the other hand, __isBatteryOK__ must be checked at every tick, 
-for this reason its parent must be a SequenceNode.
+for this reason its parent must be a `ReactiveSequence`.
 
 ![SequenceStar](images/SequenceStar.png)
 
 ??? example "See the pseudocode"
 	``` c++
-		// index is initialized to 0 in the constructor
 		status = RUNNING;
+        // _index is a private member
 
-		while( index < number_of_children )
+		while( index < number_of_children)
 		{
 			child_status = child[index]->tick();
 			
-			if( child_status == RUNNING ) {
-				// Suspend execution and return RUNNING.
-				// At the next tick, index will be the same.
-				return RUNNING;
+            if( child_status == SUCCESS ) {
+                _index++;
 			}
-			else if( child_status == SUCCESS ) {
-				// continue the while loop
-				index++;
-			}
-			else if( child_status == FAILURE ) {
-				// Suspend execution and return FAILURE.
-				// At the next tick, index will be the same.
-				if( reset_on_failure )
-				{
-					HaltAllChildren();
-					index = 0;
-				}
-				return FAILURE;
+			else if( child_status == RUNNING || 
+                     child_status == FAILURE ) 
+            {
+				// keep same index
+				return child_status;
 			}
 		}
 		// all the children returned success. Return SUCCESS too.
-		index = 0;
 		HaltAllChildren();
+        _index = 0;
 		return SUCCESS;
 	```
 

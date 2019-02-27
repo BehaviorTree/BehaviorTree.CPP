@@ -20,16 +20,16 @@ namespace BT
 // to AUTOMATICALLY convert a NodeParameter into a Pose2D
 // In other words, implement it if you want to be able to do:
 //
-//   TreeNode::getParam<Pose2D>(key, ...)
+//   TreeNode::getInput<Pose2D>(key, ...)
 //
-template <>
-Pose2D convertFromString(const StringView& key)
+template <> inline
+Pose2D convertFromString(StringView key)
 {
     // three real numbers separated by semicolons
     auto parts = BT::splitString(key, ';');
     if (parts.size() != 3)
     {
-        throw std::runtime_error("invalid input)");
+        throw BT::RuntimeError("invalid input)");
     }
     else
     {
@@ -40,29 +40,24 @@ Pose2D convertFromString(const StringView& key)
         return output;
     }
 }
-}
+} // end namespace BT
 
 // This is an asynchronous operation that will run in a separate thread.
-// It requires the NodeParameter "goal". If the key is not provided, the default
-// value "0;0;0" is used instead.
+// It requires the input port "goal".
 
 class MoveBaseAction : public BT::AsyncActionNode
 {
   public:
-    // If your TreeNode requires a NodeParameter, you must define a constructor
-    // with this signature.
-    MoveBaseAction(const std::string& name, const BT::NodeParameters& params)
-      : AsyncActionNode(name, params)
+    // Any TreeNode with ports must have a constructor with this signature
+    MoveBaseAction(const std::string& name, const BT::NodeConfiguration& config)
+      : AsyncActionNode(name, config)
     {
     }
 
     // It is mandatory to define this static method.
-    // If you don't, BehaviorTreeFactory::registerNodeType will not compile.
-    //
-    static const BT::NodeParameters& requiredNodeParameters()
+    static BT::PortsList providedPorts()
     {
-        static BT::NodeParameters params = {{"goal", "0;0;0"}};
-        return params;
+        return{ BT::InputPort<Pose2D>("goal") };
     }
 
     BT::NodeStatus tick() override;

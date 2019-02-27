@@ -2,9 +2,9 @@
 
 
 BT::DecoratorSubtreeNode::DecoratorSubtreeNode(const std::string &name) :
-  DecoratorNode(name, NodeParameters())
+    DecoratorNode(name, {} )
 {
-    setRegistrationName("SubTree");
+    setRegistrationID("SubTree");
 }
 
 BT::NodeStatus BT::DecoratorSubtreeNode::tick()

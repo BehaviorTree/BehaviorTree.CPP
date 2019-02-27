@@ -29,12 +29,12 @@ int main(int argc, char* argv[])
 
     const int bt_header_size = flatbuffers::ReadScalar<uint32_t>(&buffer[0]);
 
-    auto behavior_tree = BT_Serialization::GetBehaviorTree(&buffer[4]);
+    auto behavior_tree = Serialization::GetBehaviorTree(&buffer[4]);
 
     std::unordered_map<uint16_t, std::string> names_by_uid;
-    std::unordered_map<uint16_t, const BT_Serialization::TreeNode*> node_by_uid;
+    std::unordered_map<uint16_t, const Serialization::TreeNode*> node_by_uid;
 
-    for (const BT_Serialization::TreeNode* node : *(behavior_tree->nodes()))
+    for (const Serialization::TreeNode* node : *(behavior_tree->nodes()))
     {
         names_by_uid.insert({node->uid(), std::string(node->instance_name()->c_str())});
         node_by_uid.insert({node->uid(), node});
@@ -68,22 +68,22 @@ int main(int argc, char* argv[])
     constexpr const char* whitespaces = "                         ";
     constexpr const size_t ws_count = 25;
 
-    auto printStatus = [](BT_Serialization::Status status) {
+    auto printStatus = [](Serialization::NodeStatus status) {
         switch (status)
         {
-            case BT_Serialization::Status::SUCCESS:
+            case Serialization::NodeStatus::SUCCESS:
                 return ("\x1b[32m"
                         "SUCCESS"
                         "\x1b[0m");   // RED
-            case BT_Serialization::Status::FAILURE:
+            case Serialization::NodeStatus::FAILURE:
                 return ("\x1b[31m"
                         "FAILURE"
                         "\x1b[0m");   // GREEN
-            case BT_Serialization::Status::RUNNING:
+            case Serialization::NodeStatus::RUNNING:
                 return ("\x1b[33m"
                         "RUNNING"
                         "\x1b[0m");   // YELLOW
-            case BT_Serialization::Status::IDLE:
+            case Serialization::NodeStatus::IDLE:
                 return ("\x1b[36m"
                         "IDLE   "
                         "\x1b[0m");   // CYAN
@@ -100,8 +100,8 @@ int main(int argc, char* argv[])
 
         printf("[%d.%06d]: %s%s %s -> %s\n", t_sec, t_usec, name.c_str(),
                &whitespaces[std::min(ws_count, name.size())],
-               printStatus(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index + 10])),
-               printStatus(flatbuffers::ReadScalar<BT_Serialization::Status>(&buffer[index + 11])));
+               printStatus(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index + 10])),
+               printStatus(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index + 11])));
     }
 
     return 0;

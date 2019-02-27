@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -15,11 +15,11 @@
 #define BEHAVIOR_TREE_H
 
 #include "behaviortree_cpp/controls/parallel_node.h"
+#include "behaviortree_cpp/controls/reactive_sequence.h"
+#include "behaviortree_cpp/controls/reactive_fallback.h"
 #include "behaviortree_cpp/controls/fallback_node.h"
 #include "behaviortree_cpp/controls/sequence_node.h"
-
 #include "behaviortree_cpp/controls/sequence_star_node.h"
-#include "behaviortree_cpp/controls/fallback_star_node.h"
 
 #include "behaviortree_cpp/action_node.h"
 #include "behaviortree_cpp/condition_node.h"
@@ -40,24 +40,28 @@
 
 namespace BT
 {
+
+//Call the visitor for each node of the tree, given a root.
 void applyRecursiveVisitor(const TreeNode* root_node,
                            const std::function<void(const TreeNode*)>& visitor);
 
+//Call the visitor for each node of the tree, given a root.
 void applyRecursiveVisitor(TreeNode* root_node, const std::function<void(TreeNode*)>& visitor);
 
 /**
- * Debug function to print on a stream
+ * Debug function to print on screen the hierarchy of the tree.
  */
 void printTreeRecursively(const TreeNode* root_node);
 
-void assignBlackboardToEntireTree(TreeNode* root_node, const Blackboard::Ptr& bb);
-
+/// Invoke AsyncActionNode::stopAndJoinThread() to the entire tree,
+/// when needed.
 void haltAllActions(TreeNode* root_node);
+
 
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
 /**
- * @brief buildSerializedStatusSnapshot can be used to create a serialize buffer that can be stored
+ * @brief buildSerializedStatusSnapshot can be used to create a buffer that can be stored
  * (or sent to a client application) to know the status of all the nodes of a tree.
  * It is not "human readable".
  *

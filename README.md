@@ -1,13 +1,13 @@
 ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
-![Version](https://img.shields.io/badge/version-v2.5-green.svg)
-[![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
+![Version](https://img.shields.io/badge/version-v3.0-green.svg)
+[![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=main)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
 
 Question? [![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BehaviorTree-ROS/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
 
 # About BehaviorTree.CPP
 
 This  __C++__ library provides a framework to create BehaviorTrees.
-It was designed to be flexible, easy to use and fast.
+It was designed to be flexible, easy to use, reactive and fast.
 
 Even if our main use-case is __robotics__, you can use this library to build
 __AI for games__, or to replace Finite State Machines in you application.
@@ -15,15 +15,45 @@ __AI for games__, or to replace Finite State Machines in you application.
 __BehaviorTree.CPP__ has many interesting features, when compared to other implementations:
 
 - It makes asynchronous Actions, i.e. non-blocking, a first-class citizen.
-- It allows the creation of trees at run-time, using a textual representation (XML).
+
+- You can build reactive behaviors that execute multiple Actions concurrently.
+
+- It allows the creation of Trees at run-time, using a textual representation (XML);
+the fact that is written in C++ __does not__ imply that Trees are hard-coded.
+
 - You can link staticaly you custom TreeNodes or convert them into plugins 
 which are loaded at run-time.
+
 - It includes a __logging/profiling__ infrastructure that allows the user 
 to visualize, record, replay and analyze state transitions.
+
+- It provides a type-safe and flexible mechanism to do dataflow between
+  Nodes of the Tree.
 
 # Documentation
 
 https://behaviortree.github.io/BehaviorTree.CPP/
+
+# About version 3.X
+
+The main goal of this project is to create a Behavior Tree implementation
+that uses the principles of Model Driven Development to separate the role 
+of the __Component Developer__ from the __Behavior Designer__.
+
+In practice, this means that:
+
+- Custom TreeNodes must be reusable building blocks. 
+ You should be able to implement them once and reuse them in many contextes.
+
+- To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
+not need to read nor modify the source code of the a given TreeNode.
+
+Version 3 of this library introduce some dramatic changes in the API, but 
+it was necessary to reach this goal.
+
+if you used version 2.X in the past, you can find 
+[here](https://behaviortree.github.io/BehaviorTree.CPP/MigrationGuide).
+the Migration Guide.
 
 # GUI Editor
 
@@ -43,10 +73,9 @@ the graphic user interface are used to design and monitor a Behavior Tree.
 
 # How to compile
 
-The only (optional, but recommended) dependency of BehaviorTree.CPP is ZeroMQ.
-On Ubuntu it can be easily installed with
+On Ubuntu, you must install the following dependencies:
 
-     sudo apt-get install libzmq3-dev
+     sudo apt-get install libzmq3-dev libdw-dev
      
 Any other dependency is already included in the __3rdparty__ folder.
 
@@ -56,7 +85,8 @@ You can easily install the package with the command
 
       sudo apt-get install ros-$ROS_DISTRO-behaviortree-cpp
       
-If you want to compile it with catkin, just include this package in your catkin warkspace as usual.
+If you want to compile it with catkin, you __must__ include this package 
+to your catkin workspace.
 
 # Acknowledgement
 
@@ -72,13 +102,16 @@ Union’s Horizon 2020 Research and Innovation Programme.
 
 - Introductory article: [Behavior trees for AI: How they work](http://www.gamasutra.com/blogs/ChrisSimpson/20140717/221339/Behavior_trees_for_AI_How_they_work.php)
 
-- **How Behavior Trees Modularize Hybrid Control Systems and Generalize Sequential Behavior Compositions, the Subsumption Architecture,
-and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
+- **How Behavior Trees Modularize Hybrid Control Systems and Generalize 
+Sequential Behavior Compositions, the Subsumption Architecture,
+and Decision Trees.** 
+Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
 
-- **Behavior Trees in Robotics and AI**, published by CRC Press Taylor & Francis, available for purchase
+- **Behavior Trees in Robotics and AI**, 
+published by CRC Press Taylor & Francis, available for purchase
 (ebook and hardcover) on the CRC Press Store or Amazon.
 
- The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
+The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
 
 
 # License
@@ -86,7 +119,7 @@ and Decision Trees.** Michele Colledanchise and Petter Ogren. IEEE Transaction o
 The MIT License (MIT)
 
 Copyright (c) 2014-2018 Michele Colledanchise
-Copyright (c) 2018 Davide Faconti
+Copyright (c) 2018-2019 Davide Faconti
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

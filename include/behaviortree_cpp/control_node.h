@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -22,20 +22,17 @@ namespace BT
 class ControlNode : public TreeNode
 {
   protected:
-    // Children vector
     std::vector<TreeNode*> children_nodes_;
 
   public:
-    // Constructor
-    ControlNode(const std::string& name, const NodeParameters& parameters);
+    ControlNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~ControlNode() override = default;
 
-    // The method used to fill the child vector
+    /// The method used to add nodes to the children vector
     void addChild(TreeNode* child);
 
-    // The method used to know the number of children
-    unsigned int childrenCount() const;
+    unsigned childrenCount() const;
 
     const std::vector<TreeNode*>& children() const;
 
@@ -44,10 +41,10 @@ class ControlNode : public TreeNode
         return children().at(index);
     }
 
-    // The method used to interrupt the execution of the node
     virtual void halt() override;
 
-    void haltChildren(int i);
+    /// call halt() for all the children in the range [i, childrenCount() )
+    void haltChildren(unsigned i);
 
     virtual NodeType type() const override final
     {

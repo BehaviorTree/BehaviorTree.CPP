@@ -1,4 +1,5 @@
 /* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -14,19 +15,16 @@
 
 namespace BT
 {
-DecoratorNode::DecoratorNode(const std::string& name, const NodeParameters& parameters)
-  : TreeNode::TreeNode(name, parameters), child_node_(nullptr)
+DecoratorNode::DecoratorNode(const std::string& name, const NodeConfiguration& config)
+  : TreeNode::TreeNode(name, config), child_node_(nullptr)
 {
-    // TODO(...) In case it is desired to set to idle remove the ReturnStatus
-    // type in order to set the member variable
-    // ReturnStatus const NodeStatus child_status = NodeStatus::IDLE;  // commented out as unused
 }
 
 void DecoratorNode::setChild(TreeNode* child)
 {
     if (child_node_)
     {
-        throw BehaviorTreeException("Decorator '" + name() + "' has already a child assigned");
+        throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
     }
 
     child_node_ = child;
@@ -58,8 +56,8 @@ void DecoratorNode::haltChild()
 }
 
 SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,
-                                         const NodeParameters &params)
-  : DecoratorNode(name, params), tick_functor_(std::move(tick_functor))
+                                         const NodeConfiguration& config)
+  : DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
 {
 }
 
@@ -71,7 +69,7 @@ NodeStatus SimpleDecoratorNode::tick()
 NodeStatus DecoratorNode::executeTick()
 {
     NodeStatus status = TreeNode::executeTick();
-    NodeStatus child_status =child()->status();
+    NodeStatus child_status = child()->status();
     if( child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE )
     {
         child()->setStatus(NodeStatus::IDLE);

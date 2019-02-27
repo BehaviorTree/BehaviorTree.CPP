@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -15,26 +15,28 @@
 #define BEHAVIORTREECORE_ACTIONNODE_H
 
 #include <atomic>
+#include <thread>
 #include "leaf_node.h"
 
 namespace BT
 {
-/** IMPORTANT: to avoid unexpected behaviors when Sequence (not SequenceStar) is used
- * an Action that returned SUCCESS or FAILURE will not be ticked again unless
- * setStatus(IDLE) is called first (reset the Action).
+
+// IMPORTANT: Actions which returned SUCCESS or FAILURE will not be ticked
+// again unless setStatus(IDLE) is called first.
+// Keep this in mind when writing your custom Control and Decorator nodes.
+
+
+/**
+ * @brief The ActionNodeBase is the base class to use to create any kind of action.
+ * A particular derived class is free to override executeTick() as needed.
  *
- * Usually the parent node takes care of this for you.
  */
-
-
 class ActionNodeBase : public LeafNode
 {
   public:
 
-    ActionNodeBase(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    ActionNodeBase(const std::string& name, const NodeConfiguration& config);
     ~ActionNodeBase() override = default;
-
-    virtual NodeStatus executeTick() override;
 
     virtual NodeType type() const override final
     {
@@ -43,30 +45,32 @@ class ActionNodeBase : public LeafNode
 };
 
 /**
- * @brief The SyncActionNode is an helper derived class that
- * explicitly forbids the status RUNNING and doesn't require
- * an implementation of halt()
+ * @brief The SyncActionNode is an ActionNode that
+ * explicitly prevents the status RUNNING and doesn't require
+ * an implementation of halt().
  */
 class SyncActionNode : public ActionNodeBase
 {
   public:
 
-    SyncActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    SyncActionNode(const std::string& name, const NodeConfiguration& config);
     ~SyncActionNode() override = default;
 
+    /// throws if the derived class return RUNNING.
     virtual NodeStatus executeTick() override;
 
-    virtual void halt() override final // don't need to override this
+    /// You don't need to override this
+    virtual void halt() override final
     {
         setStatus(NodeStatus::IDLE);
     }
 };
 
 /**
- * @brief The SimpleActionNode provides an easy to use ActionNode.
+ * @brief The SimpleActionNode provides an easy to use SyncActionNode.
  * The user should simply provide a callback with this signature
  *
- *    BT::NodeStatus functionName(void)
+ *    BT::NodeStatus functionName(TreeNode&)
  *
  * This avoids the hassle of inheriting from a ActionNode.
  *
@@ -74,44 +78,35 @@ class SyncActionNode : public ActionNodeBase
  * SimpleActionNode is executed synchronously and does not support halting.
  * NodeParameters aren't supported.
  */
-class SimpleActionNode : public ActionNodeBase
+class SimpleActionNode : public SyncActionNode
 {
   public:
     typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
 
-    // Constructor: you must provide the function to call when tick() is invoked
+    // You must provide the function to call when tick() is invoked
     SimpleActionNode(const std::string& name, TickFunctor tick_functor,
-                     const NodeParameters &params = NodeParameters());
+                     const NodeConfiguration& config);
 
     ~SimpleActionNode() override = default;
 
-    virtual void halt() override
-    {
-        // not supported
-    }
-
   protected:
-    virtual NodeStatus tick() override;
+    virtual NodeStatus tick() override final;
 
     TickFunctor tick_functor_;
 };
 
 /**
- * @brief The AsyncActionNode a different thread where the action will be
+ * @brief The AsyncActionNode uses a different thread where the action will be
  * executed.
  *
- * The user must implement the method asyncTick() instead of tick() and
- * the method halt() as usual.
- *
- * Remember, though, that the method asyncTick() must update the state to either
- * RUNNING, SUCCESS or FAILURE, otherwise the execution of the Behavior Tree is blocked!
+ * The user must implement the methods tick() and halt().
  *
  */
 class AsyncActionNode : public ActionNodeBase
 {
   public:
 
-    AsyncActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+    AsyncActionNode(const std::string& name, const NodeConfiguration& config);
     virtual ~AsyncActionNode() override;
 
     // This method triggers the TickEngine. Do NOT remove the "final" keyword.
@@ -119,58 +114,50 @@ class AsyncActionNode : public ActionNodeBase
 
     void stopAndJoinThread();
 
-  protected:
+  private:
 
-    // The method that is going to be executed by the thread
-    void waitForTick();
+    // The method that will be executed by the thread
+    void asyncThreadLoop();
 
-    // The thread that will execute the node
+    void waitStart();
+
+    void notifyStart();
+
+    std::atomic<bool> keep_thread_alive_;
+
+    bool start_action_;
+
+    std::mutex start_mutex_;
+
+    std::condition_variable start_signal_;
+
+    std::exception_ptr exptr_;
+
     std::thread thread_;
-
-    // Node semaphore to simulate the tick
-    // (and to synchronize fathers and children)
-    TickEngine tick_engine_;
-
-    std::atomic<bool> loop_;
 };
-
-// Why is the name "ActionNode" deprecated?
-//
-// ActionNode was renamed "AsyncActionNode" because it's implementation, i.e. one thread
-// per action, is too wastefull in terms of resources.
-// The name ActionNode seems to imply that it is the default Node to use for Actions.
-// But, in my opinion, the user should think twice if using it and carefully consider the cost of abstraction.
-// For this reason, AsyncActionNode is a much better name.
-
-
-// The right class to use for synchronous Actions is SyncActionBase
-[[deprecated]]
-typedef AsyncActionNode ActionNode;
 
 /**
  * @brief The CoroActionNode class is an ideal candidate for asynchronous actions
- * which need to communicate with a service provider using an asynch request/reply interface
- * (being a notable example ActionLib in ROS, MoveIt clients or move_base clients).
+ * which need to communicate with an external service using an asynch request/reply interface
+ * (being notable examples ActionLib in ROS, MoveIt clients or move_base clients).
  *
- * It is up to the user to decide when to suspend execution of the behaviorTree invoking
- * the method setStatusRunningAndYield().
+ * It is up to the user to decide when to suspend execution of the Action and resume
+ * the parent node, invoking the method setStatusRunningAndYield().
  */
 class CoroActionNode : public ActionNodeBase
 {
   public:
-    // Constructor
-    CoroActionNode(const std::string& name, const NodeParameters& parameters = NodeParameters());
+
+    CoroActionNode(const std::string& name, const NodeConfiguration& config);
     virtual ~CoroActionNode() override;
 
-    /** When you want to return RUNNING and temporary "pause"
-    *   the Action, use this method.
-    * */
+    /// Use this method to return RUNNING and temporary "pause" the Action.
     void setStatusRunningAndYield();
 
     // This method triggers the TickEngine. Do NOT remove the "final" keyword.
     virtual NodeStatus executeTick() override final;
 
-    /** You may want to override this method. But still, call remember to call this
+    /** You may want to override this method. But still, remember to call this
     * implementation too.
     *
     * Example:

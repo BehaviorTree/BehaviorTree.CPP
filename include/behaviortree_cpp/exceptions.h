@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -16,13 +16,21 @@
 
 #include <string>
 #include <stdexcept>
+#include "utils/strcat.hpp"
 
 namespace BT
 {
 class BehaviorTreeException : public std::exception
 {
   public:
-    BehaviorTreeException(const std::string& Message);
+
+    BehaviorTreeException(nonstd::string_view message):  message_(message.to_string())
+    {}
+
+    template <typename... SV>
+    BehaviorTreeException(const SV&... args): message_(StrCat (args...))
+    { }
+
 
     const char* what() const noexcept
     {
@@ -32,6 +40,35 @@ class BehaviorTreeException : public std::exception
   private:
     std::string message_;
 };
+
+// This errors are usually related to problems that "probably" require code refactoring
+// to be fixed.
+class LogicError: public BehaviorTreeException
+{
+  public:
+    LogicError(nonstd::string_view message):  BehaviorTreeException(message)
+    {}
+
+    template <typename... SV>
+    LogicError(const SV&... args): BehaviorTreeException(args...)
+    { }
+
+};
+
+// This errors are usually related to problems that are relted to data or conditions
+// that happen only at run-time
+class RuntimeError: public BehaviorTreeException
+{
+  public:
+    RuntimeError(nonstd::string_view message):  BehaviorTreeException(message)
+    {}
+
+    template <typename... SV>
+    RuntimeError(const SV&... args): BehaviorTreeException(args...)
+    { }
+};
+
+
 }
 
 #endif

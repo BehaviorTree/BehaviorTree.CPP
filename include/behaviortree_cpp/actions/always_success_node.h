@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -17,11 +17,16 @@
 
 namespace BT
 {
-class AlwaysSuccess : public SyncActionNode
+/**
+ * Simple actions that always returns SUCCESS.
+ */
+class AlwaysSuccessNode : public SyncActionNode
 {
   public:
-    AlwaysSuccess(const std::string& name) : SyncActionNode(name, NodeParameters())
+    AlwaysSuccessNode(const std::string& name) :
+        SyncActionNode(name, {} )
     {
+        setRegistrationID("AlwaysSuccess");
     }
 
   private:

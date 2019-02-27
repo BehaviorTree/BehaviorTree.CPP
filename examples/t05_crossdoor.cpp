@@ -1,17 +1,28 @@
 #include "crossdoor_nodes.h"
-#include "behaviortree_cpp/xml_parsing.h"
+
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 #include "behaviortree_cpp/loggers/bt_file_logger.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+
+#include "behaviortree_cpp/bt_factory.h"
 
 #ifdef ZMQ_FOUND
 #include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
 #endif
 
+/** This is a more complex example that uses Fallback,
+ * Decorators and Subtrees
+ *
+ * For the sake of simplicity, we aren't focusing on ports remapping to the time being.
+ *
+ * Furthermore, we introduce Loggers, which are a mechanism to
+ * trace the state transitions in the tree for debugging purposes.
+ */
+
+
 // clang-format off
 
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 <root main_tree_to_execute = "MainTree">
 	<!--------------------------------------->
     <BehaviorTree ID="DoorClosed">
@@ -48,23 +59,18 @@ int main()
 {
     BT::BehaviorTreeFactory factory;
 
-    // The state of the door is read/written using these keys of the blackboard.
-    auto blackboard = Blackboard::create<BlackboardLocal>();
-    blackboard->set("door_open", false);
-    blackboard->set("door_locked", true);
-
     // register all the actions into the factory
     CrossDoor::RegisterNodes(factory);
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
-    auto tree = buildTreeFromText(factory, xml_text, blackboard);
+    auto tree = factory.createTreeFromText(xml_text);
 
     // Create some loggers
-    StdCoutLogger logger_cout(tree.root_node);
-    MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
-    FileLogger logger_file(tree.root_node, "bt_trace.fbl");
+    StdCoutLogger logger_cout(tree);
+    MinitraceLogger logger_minitrace(tree, "bt_trace.json");
+    FileLogger logger_file(tree, "bt_trace.fbl");
 #ifdef ZMQ_FOUND
-    PublisherZMQ publisher_zmq(tree.root_node);
+    PublisherZMQ publisher_zmq(tree);
 #endif
 
     printTreeRecursively(tree.root_node);

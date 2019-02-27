@@ -11,7 +11,7 @@ class MinitraceLogger : public StatusChangeLogger
     static std::atomic<bool> ref_count;
 
   public:
-    MinitraceLogger(TreeNode* root_node, const char* filename_json);
+    MinitraceLogger(const BT::Tree& tree, const char* filename_json);
 
     virtual ~MinitraceLogger() override;
 

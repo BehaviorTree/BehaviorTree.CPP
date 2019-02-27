@@ -21,9 +21,9 @@ struct PublisherZMQ::Pimpl
 };
 
 
-PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
-  : StatusChangeLogger(root_node)
-  , root_node_(root_node)
+PublisherZMQ::PublisherZMQ(const BT::Tree& tree, int max_msg_per_second)
+  : StatusChangeLogger(tree.root_node)
+  , tree_(tree)
   , min_time_between_msgs_(std::chrono::microseconds(1000 * 1000) / max_msg_per_second)
   , send_pending_(false)
   , zmq_(new Pimpl())
@@ -35,11 +35,11 @@ PublisherZMQ::PublisherZMQ(TreeNode* root_node, int max_msg_per_second)
     }
     else
     {
-        throw std::logic_error("Only one instance of PublisherZMQ shall be created");
+        throw LogicError("Only one instance of PublisherZMQ shall be created");
     }
 
     flatbuffers::FlatBufferBuilder builder(1024);
-    CreateFlatbuffersBehaviorTree(builder, root_node);
+    CreateFlatbuffersBehaviorTree(builder, tree);
 
     tree_buffer_.resize(builder.GetSize());
     memcpy(tree_buffer_.data(), builder.GetBufferPointer(), builder.GetSize());
@@ -93,7 +93,7 @@ PublisherZMQ::~PublisherZMQ()
 void PublisherZMQ::createStatusBuffer()
 {
     status_buffer_.clear();
-    applyRecursiveVisitor(root_node_, [this](TreeNode* node) {
+    applyRecursiveVisitor(tree_.root_node, [this](TreeNode* node) {
         size_t index = status_buffer_.size();
         status_buffer_.resize(index + 3);
         flatbuffers::WriteScalar<uint16_t>(&status_buffer_[index], node->UID());

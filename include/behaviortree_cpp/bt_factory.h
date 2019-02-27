@@ -1,5 +1,5 @@
 /* Copyright (C) 2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -16,91 +16,130 @@
 
 #include <functional>
 #include <memory>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <cstring>
 #include <algorithm>
+#include <set>
+
 
 #include "behaviortree_cpp/behavior_tree.h"
 
 namespace BT
 {
+
 /// The term "Builder" refers to the Builder Pattern (https://en.wikipedia.org/wiki/Builder_pattern)
-typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeParameters&)>
-    NodeBuilder;
+typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeConfiguration&)>
+NodeBuilder;
 
-/// This information is used mostly by the XMLParser.
-struct TreeNodeManifest
-{
-    NodeType type;
-    std::string registration_ID;
-    NodeParameters required_parameters;
-};
-
-const char PLUGIN_SYMBOL[] = "BT_RegisterNodesFromPlugin";
+constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 #define BT_REGISTER_NODES(factory)                                                                 \
     extern "C" void __attribute__((visibility("default")))                                         \
-        BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+    BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
 
+/**
+ * @brief Struct used to store a tree.
+ * If this object goes out of scope, the tree is destroyed.
+ *
+ * To tick the tree, simply call:
+ *
+ *    NodeStatus status = my_tree.root_node->executeTick();
+ */
+struct Tree
+{
+    TreeNode* root_node;
+    std::vector<TreeNode::Ptr> nodes;
+    std::vector<Blackboard::Ptr> blackboard_stack;
+    std::unordered_map<std::string, TreeNodeManifest> manifests;
+
+    Tree() : root_node(nullptr) { }
+    ~Tree();
+
+    Blackboard::Ptr rootBlackboard();
+};
+
+/**
+ * @brief The BehaviorTreeFactory is used to create instances of a
+ * TreeNode at run-time.
+ *
+ * Some node types are "builtin", whilst other are used defined and need
+ * to be registered using a unique ID.
+ */
 class BehaviorTreeFactory
 {
-  public:
+public:
     BehaviorTreeFactory();
 
+    /// Remove a registered ID.
     bool unregisterBuilder(const std::string& ID);
 
-    /** More generic way to register your own builder.
-     *  Most of the time you should use registerSimple???? or registerNodeType<> instead.
-     */
-    void registerBuilder(const TreeNodeManifest& manifest, NodeBuilder builder);
+    /// The most generic way to register your own builder.
+    void registerBuilder(const TreeNodeManifest& manifest, const NodeBuilder& builder);
 
-    /// Register a SimpleActionNode
+    /**
+    * @brief registerSimpleAction help you register nodes of type SimpleActionNode.
+    *
+    * @param ID            registration ID
+    * @param tick_functor  the callback to be invoked in the tick() method.
+    * @param ports         if your SimpleNode requires ports, provide the list here.
+    *
+    * */
     void registerSimpleAction(const std::string& ID,
-                              const SimpleActionNode::TickFunctor& tick_functor);
-
-    /// Register a SimpleConditionNode
+                              const SimpleActionNode::TickFunctor& tick_functor,
+                              PortsList ports = {});
+    /**
+    * @brief registerSimpleCondition help you register nodes of type SimpleConditionNode.
+    *
+    * @param ID            registration ID
+    * @param tick_functor  the callback to be invoked in the tick() method.
+    * @param ports         if your SimpleNode requires ports, provide the list here.
+    *
+    * */
     void registerSimpleCondition(const std::string& ID,
-                                 const SimpleConditionNode::TickFunctor& tick_functor);
-
-    /// Register a SimpleDecoratorNode
+                                 const SimpleConditionNode::TickFunctor& tick_functor,
+                                 PortsList ports = {});
+    /**
+    * @brief registerSimpleDecorator help you register nodes of type SimpleDecoratorNode.
+    *
+    * @param ID            registration ID
+    * @param tick_functor  the callback to be invoked in the tick() method.
+    * @param ports         if your SimpleNode requires ports, provide the list here.
+    *
+    * */
     void registerSimpleDecorator(const std::string& ID,
-                                 const SimpleDecoratorNode::TickFunctor& tick_functor);
+                                 const SimpleDecoratorNode::TickFunctor& tick_functor,
+                                 PortsList ports = {});
 
     /**
      * @brief registerFromPlugin load a shared library and execute the function BT_REGISTER_NODES (see macro).
      *
-     * This method may throw.
-     *
      * @param file_path path of the file
      */
-    void registerFromPlugin(const std::string file_path);
+    void registerFromPlugin(const std::string &file_path);
 
     /**
-     * @brief instantiateTreeNode creates a TreeNode
+     * @brief instantiateTreeNode creates an instance of a previously registered TreeNode.
      *
-     * @param ID       unique ID used to register the node type
      * @param name     name of this particular instance
-     * @param params   parameters (usually read from the XML definition)
+     * @param ID       ID used when it was registered
+     * @param config   configuration that is passed to the constructor of the TreeNode.
      * @return         new node.
      */
-    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& ID, const std::string& name,
-                                                  const NodeParameters& params,
-                                                  const Blackboard::Ptr& blackboard) const;
+    std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& name, const std::string &ID,
+                                                  const NodeConfiguration& config) const;
 
     /** registerNodeType is the method to use to register your custom TreeNode.
      *
      *  It accepts only classed derived from either ActionNodeBase, DecoratorNode,
      *  ControlNode or ConditionNode.
-     *
-     *  REMINDER: If you want your derived class to
      */
     template <typename T>
     void registerNodeType(const std::string& ID)
     {
         static_assert(std::is_base_of<ActionNodeBase, T>::value ||
-                          std::is_base_of<ControlNode, T>::value ||
-                          std::is_base_of<DecoratorNode, T>::value ||
-                          std::is_base_of<ConditionNode, T>::value,
+                      std::is_base_of<ControlNode, T>::value ||
+                      std::is_base_of<DecoratorNode, T>::value ||
+                      std::is_base_of<ConditionNode, T>::value,
                       "[registerBuilder]: accepts only classed derived from either ActionNodeBase, "
                       "DecoratorNode, ControlNode or ConditionNode");
 
@@ -110,20 +149,20 @@ class BehaviorTreeFactory
 
         constexpr bool default_constructable = std::is_constructible<T, const std::string&>::value;
         constexpr bool param_constructable =
-            std::is_constructible<T, const std::string&, const NodeParameters&>::value;
-        constexpr bool has_static_required_parameters =
-            has_static_method_requiredParams<T>::value;
+                std::is_constructible<T, const std::string&, const NodeConfiguration&>::value;
+        constexpr bool has_static_ports_list =
+                has_static_method_providedPorts<T>::value;
 
         static_assert(default_constructable || param_constructable,
                       "[registerBuilder]: the registered class must have at least one of these two "
                       "constructors: "
                       "  (const std::string&, const NodeParameters&) or (const std::string&).");
 
-        static_assert(!(param_constructable && !has_static_required_parameters),
+        static_assert(!(param_constructable && !has_static_ports_list),
                       "[registerBuilder]: you MUST implement the static method: "
-                      "  const NodeParameters& requiredNodeParameters();\n");
+                      "  PortsList providedPorts();\n");
 
-        static_assert(!(has_static_required_parameters && !param_constructable),
+        static_assert(!(has_static_ports_list && !param_constructable),
                       "[registerBuilder]: since you have a static method requiredNodeParameters(), "
                       "you MUST add a constructor sign signature (const std::string&, const "
                       "NodeParameters&)\n");
@@ -132,16 +171,29 @@ class BehaviorTreeFactory
     }
 
     /// All the builders. Made available mostly for debug purposes.
-    const std::map<std::string, NodeBuilder>& builders() const;
+    const std::unordered_map<std::string, NodeBuilder>& builders() const;
 
     /// Manifests of all the registered TreeNodes.
-    const std::vector<TreeNodeManifest>& manifests() const;
+    const std::unordered_map<std::string, TreeNodeManifest>& manifests() const;
 
-    const  std::set<std::string>& builtinNodes() const;
+    /// List of builtin IDs.
+    const std::set<std::string>& builtinNodes() const;
 
-  private:
-    std::map<std::string, NodeBuilder> builders_;
-    std::vector<TreeNodeManifest> manifests_;
+    Tree createTreeFromText(const std::string& text,
+                            Blackboard::Ptr blackboard = Blackboard::create());
+
+    Tree createTreeFromFile(const std::string& file_path,
+                            Blackboard::Ptr blackboard = Blackboard::create());
+
+    template <typename T> static
+    TreeNodeManifest buildManifest(const std::string& ID)
+    {
+        return { getType<T>(), ID, getProvidedPorts<T>() };
+    }
+
+private:
+    std::unordered_map<std::string, NodeBuilder> builders_;
+    std::unordered_map<std::string, TreeNodeManifest> manifests_;
     std::set<std::string> builtin_IDs_;
 
     // template specialization = SFINAE + black magic
@@ -151,73 +203,56 @@ class BehaviorTreeFactory
     using has_default_constructor = typename std::is_constructible<T, const std::string&>;
 
     template <typename T>
-    using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeParameters&>;
-
-    template <typename T, typename = void>
-    struct has_static_method_requiredParams: std::false_type {};
-
-    template <typename T>
-    struct has_static_method_requiredParams<T,
-            typename std::enable_if<std::is_same<decltype(T::requiredNodeParameters()), const NodeParameters&>::value>::type>
-        : std::true_type {};
+    using has_params_constructor  = typename std::is_constructible<T, const std::string&, const NodeConfiguration&>;
 
     template <typename T>
     void registerNodeTypeImpl(const std::string& ID)
     {
-        NodeBuilder builder = getBuilderImpl<T>();
-        TreeNodeManifest manifest = { getType<T>(), ID,
-                                      getRequiredParamsImpl<T>() };
-        registerBuilder(manifest, builder);
+        NodeBuilder builder = getBuilder<T>();
+        registerBuilder( buildManifest<T>(ID), builder);
     }
 
-    template <typename T>
-    NodeBuilder getBuilderImpl(typename std::enable_if< !has_params_constructor<T>::value >::type* = nullptr)
+    template <typename T> static
+    NodeBuilder getBuilder(typename std::enable_if<has_default_constructor<T>::value &&
+                                                   has_params_constructor<T>::value >::type* = nullptr)
     {
-        return [](const std::string& name, const NodeParameters&)
+        return [](const std::string& name, const NodeConfiguration& config)
+        {
+            //TODO FIXME
+
+            // Special case. Use default constructor if parameters are empty
+            if( config.input_ports.empty() &&
+                config.output_ports.empty() &&
+                has_default_constructor<T>::value)
+            {
+                return std::unique_ptr<TreeNode>(new T(name));
+            }
+            return std::unique_ptr<TreeNode>(new T(name, config));
+        };
+    }
+
+    template <typename T> static
+    NodeBuilder getBuilder(typename std::enable_if<!has_default_constructor<T>::value &&
+                                                   has_params_constructor<T>::value >::type* = nullptr)
+    {
+        return [](const std::string& name, const NodeConfiguration& params)
+        {
+            return std::unique_ptr<TreeNode>(new T(name, params));
+        };
+    }
+
+    template <typename T> static
+    NodeBuilder getBuilder(typename std::enable_if<has_default_constructor<T>::value &&
+                                                   !has_params_constructor<T>::value >::type* = nullptr)
+    {
+        return [](const std::string& name, const NodeConfiguration&)
         {
             return std::unique_ptr<TreeNode>(new T(name));
         };
     }
-
-    template <typename T>
-    NodeBuilder getBuilderImpl(typename std::enable_if<has_default_constructor<T>::value && has_params_constructor<T>::value >::type* = nullptr)
-    {
-        return [this](const std::string& name, const NodeParameters& params)
-        {
-            // Special case. Use default constructor if parameters are empty
-            if( params.empty() && has_default_constructor<T>::value && getRequiredParamsImpl<T>().size()>0)
-            {
-                return std::unique_ptr<TreeNode>(new T(name));
-            }
-            return std::unique_ptr<TreeNode>(new T(name, params));
-        };
-    }
-
-    template <typename T>
-    NodeBuilder getBuilderImpl(typename std::enable_if<!has_default_constructor<T>::value && has_params_constructor<T>::value >::type* = nullptr)
-    {
-        return [](const std::string& name, const NodeParameters& params)
-        {
-            return std::unique_ptr<TreeNode>(new T(name, params));
-        };
-    }
-
-    template <typename T>
-    NodeParameters getRequiredParamsImpl(typename std::enable_if< has_static_method_requiredParams<T>::value >::type* = nullptr)
-    {
-        return T::requiredNodeParameters();
-    }
-
-    template <typename T>
-    NodeParameters getRequiredParamsImpl(typename std::enable_if< !has_static_method_requiredParams<T>::value >::type* = nullptr)
-    {
-        return NodeParameters();
-    }
     // clang-format on
-
-    void sortTreeNodeManifests();
-
 };
 
 }   // end namespace
+
 #endif   // BT_FACTORY_H

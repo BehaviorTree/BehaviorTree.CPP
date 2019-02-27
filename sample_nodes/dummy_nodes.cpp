@@ -9,21 +9,10 @@ BT_REGISTER_NODES(factory)
 
 namespace DummyNodes
 {
-BT::NodeStatus SayHello()
-{
-    std::cout << "Robot says: \"Hello!!!\"" << std::endl;
-    return BT::NodeStatus::SUCCESS;
-}
 
 BT::NodeStatus CheckBattery()
 {
     std::cout << "[ Battery: OK ]" << std::endl;
-    return BT::NodeStatus::SUCCESS;
-}
-
-BT::NodeStatus CheckTemperature()
-{
-    std::cout << "[ Temperature: OK ]" << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -49,13 +38,26 @@ BT::NodeStatus ApproachObject::tick()
 
 BT::NodeStatus SaySomething::tick()
 {
-    std::string msg;
-    if (getParam("message", msg) == false)
+    auto msg = getInput<std::string>("message");
+    if (!msg)
     {
-        // if getParam failed, use the default value
-        msg = requiredNodeParameters().at("message");
+        throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
     }
-    std::cout << "Robot says: " << msg << std::endl;
+
+    std::cout << "Robot says: " << msg.value() << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
+
+BT::NodeStatus SaySomethingSimple(BT::TreeNode &self)
+{
+    auto msg = self.getInput<std::string>("message");
+    if (!msg)
+    {
+        throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
+    }
+
+    std::cout << "Robot says: " << msg.value() << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
 }

@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -18,27 +18,20 @@ namespace BT
 constexpr const char* RetryNode::NUM_ATTEMPTS;
 
 RetryNode::RetryNode(const std::string& name, unsigned int NTries)
-  : DecoratorNode(name, {{NUM_ATTEMPTS, std::to_string(NTries)}}),
+    : DecoratorNode(name, {} ),
     max_attempts_(NTries),
     try_index_(0),
-    read_parameter_from_blackboard_(false)
+    read_parameter_from_ports_(false)
 {
-    setRegistrationName("RetryUntilSuccesful");
+    setRegistrationID("RetryUntilSuccesful");
 }
 
-RetryNode::RetryNode(const std::string& name, const NodeParameters& params)
-  : DecoratorNode(name, params),
+RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config)
+  : DecoratorNode(name, config),
+    max_attempts_(0),
     try_index_(0),
-    read_parameter_from_blackboard_(false)
+    read_parameter_from_ports_(true)
 {
-    read_parameter_from_blackboard_ = isBlackboardPattern( params.at(NUM_ATTEMPTS) );
-    if(!read_parameter_from_blackboard_)
-    {
-        if( !getParam(NUM_ATTEMPTS, max_attempts_) )
-        {
-            throw std::runtime_error("Missing parameter [num_attempts] in RetryNode");
-        }
-    }
 }
 
 void RetryNode::halt()
@@ -49,48 +42,48 @@ void RetryNode::halt()
 
 NodeStatus RetryNode::tick()
 {
-    if( read_parameter_from_blackboard_ )
+    if( read_parameter_from_ports_ )
     {
-        if( !getParam(NUM_ATTEMPTS, max_attempts_) )
+        if( !getInput(NUM_ATTEMPTS, max_attempts_) )
         {
-            throw std::runtime_error("Missing parameter [num_attempts] in RetryNode");
+            throw RuntimeError("Missing parameter [", NUM_ATTEMPTS,"] in RetryNode");
         }
     }
 
     setStatus(NodeStatus::RUNNING);
-    NodeStatus child_state = child_node_->executeTick();
 
-    switch (child_state)
+    while (try_index_ < max_attempts_)
     {
-        case NodeStatus::SUCCESS:
-        {
-            try_index_ = 0;
-            return (NodeStatus::SUCCESS);
-        }
+        NodeStatus child_state = child_node_->executeTick();
 
-        case NodeStatus::FAILURE:
+        switch (child_state)
         {
-            try_index_++;
-            if (try_index_ >= max_attempts_)
+            case NodeStatus::SUCCESS:
             {
                 try_index_ = 0;
-                return (NodeStatus::FAILURE);
+                return (NodeStatus::SUCCESS);
             }
-        }
-        break;
 
-        case NodeStatus::RUNNING:
-        {
-            return (NodeStatus::RUNNING);
-        }
+            case NodeStatus::FAILURE:
+            {
+                try_index_++;
+            }
+            break;
 
-        default:
-        {
-            // TODO throw?
+            case NodeStatus::RUNNING:
+            {
+                return NodeStatus::RUNNING;
+            }
+
+            default:
+            {
+                throw LogicError("A child node must never return IDLE");
+            }
         }
     }
 
-    return status();
+    try_index_ = 0;
+    return NodeStatus::FAILURE;
 }
 
 }

@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,71 +10,83 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "behaviortree_cpp/decorators/timeout_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 namespace BT
 {
+
 TimeoutNode::TimeoutNode(const std::string& name, unsigned milliseconds)
-  : DecoratorNode(name, {}), child_halted_(false), msec_(milliseconds),
-    read_parameter_from_blackboard_(false)
+  : DecoratorNode(name, {} ),
+  child_halted_(false),
+  timer_id_(0),
+  msec_(milliseconds),
+  read_parameter_from_ports_(false),
+  timeout_started_(false)
 {
-    setRegistrationName("Timeout");
+    setRegistrationID("Timeout");
 }
 
-TimeoutNode::TimeoutNode(const std::string& name, const BT::NodeParameters& params)
-  : DecoratorNode(name, params), child_halted_(false), msec_(0)
+TimeoutNode::TimeoutNode(const std::string& name, const NodeConfiguration& config)
+  : DecoratorNode(name, config),
+    child_halted_(false),
+    timer_id_(0),
+    msec_(0),
+    read_parameter_from_ports_(true),
+    timeout_started_(false)
 {
-    read_parameter_from_blackboard_ = isBlackboardPattern( params.at("msec") );
-    if(!read_parameter_from_blackboard_)
-    {
-        if( !getParam("msec", msec_) )
-        {
-            throw std::runtime_error("Missing parameter [msec] in TimeoutNode");
-        }
-    }
 }
 
 NodeStatus TimeoutNode::tick()
 {
-    if( read_parameter_from_blackboard_ )
+    if( read_parameter_from_ports_ )
     {
-        if( !getParam("msec", msec_) )
+        if( !getInput("msec", msec_) )
         {
-            throw std::runtime_error("Missing parameter [msec] in TimeoutNode");
+            throw RuntimeError("Missing parameter [msec] in TimeoutNode");
         }
     }
 
-    if (status() == NodeStatus::IDLE)
+    if ( !timeout_started_ )
     {
+        timeout_started_ = true;
         setStatus(NodeStatus::RUNNING);
         child_halted_ = false;
 
         if (msec_ > 0)
         {
-            timer_id_ = timer().add(std::chrono::milliseconds(msec_), [this](bool aborted) {
+            timer_id_ = timer_.add(std::chrono::milliseconds(msec_),
+                                    [this](bool aborted)
+            {
+                std::unique_lock<std::mutex> lk( timeout_mutex_ );
                 if (!aborted && child()->status() == NodeStatus::RUNNING)
                 {
-                    child()->halt();
                     child_halted_ = true;
+                    child()->halt();
+                    child()->setStatus(NodeStatus::IDLE);
                 }
             });
         }
     }
 
+    std::unique_lock<std::mutex> lk( timeout_mutex_ );
+
     if (child_halted_)
     {
-        setStatus(NodeStatus::FAILURE);
+        timeout_started_ = false;
+        return NodeStatus::FAILURE;
     }
     else
     {
         auto child_status = child()->executeTick();
         if (child_status != NodeStatus::RUNNING)
         {
-            timer().cancel(timer_id_);
+            timeout_started_ = false;
+            timeout_mutex_.unlock();
+            timer_.cancel(timer_id_);
+            timeout_mutex_.lock();
         }
-        setStatus(child_status);
+        return child_status;
     }
-
-    return status();
 }
 
 }

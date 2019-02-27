@@ -7,25 +7,39 @@
 
 namespace BT
 {
+/**
+ * @brief The TimeoutNode will halt() a running child if
+ * the latter has been RUNNING for more than a give time.
+ * The timeout is in millisecons and it is passed using the port "msec".
+ *
+ * If timeout is reached it returns FAILURE.
+ *
+ * Example:
+ *
+ * <Timeout msec="5000">
+ *    <KeepYourBreath/>
+ * </Timeout>
+ */
 class TimeoutNode : public DecoratorNode
 {
   public:
     TimeoutNode(const std::string& name, unsigned milliseconds);
 
-    TimeoutNode(const std::string& name, const NodeParameters& params);
+    TimeoutNode(const std::string& name, const NodeConfiguration& config);
 
-    static const NodeParameters& requiredNodeParameters()
+    ~TimeoutNode() override
     {
-        static NodeParameters params = {{"msec", "0"}};
-        return params;
+        timer_.cancelAll();
+    }
+
+    static PortsList providedPorts()
+    {
+        return { InputPort<unsigned>("msec", "After a certain amount of time, "
+                                             "halt() the child if it is still running.") };
     }
 
   private:
-    static TimerQueue& timer()
-    {
-        static TimerQueue timer_queue;
-        return timer_queue;
-    }
+    TimerQueue timer_ ;
 
     virtual BT::NodeStatus tick() override;
 
@@ -33,7 +47,9 @@ class TimeoutNode : public DecoratorNode
     uint64_t timer_id_;
 
     unsigned msec_;
-    bool read_parameter_from_blackboard_;
+    bool read_parameter_from_ports_;
+    bool timeout_started_;
+    std::mutex timeout_mutex_;
 };
 }
 

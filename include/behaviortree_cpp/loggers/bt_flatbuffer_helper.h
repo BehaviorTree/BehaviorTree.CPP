@@ -6,48 +6,63 @@
 
 namespace BT
 {
-inline BT_Serialization::Type convertToFlatbuffers(NodeType type)
+inline Serialization::NodeType convertToFlatbuffers(BT::NodeType type)
 {
     switch (type)
     {
         case BT::NodeType::ACTION:
-            return BT_Serialization::Type::ACTION;
+            return Serialization::NodeType::ACTION;
         case BT::NodeType::DECORATOR:
-            return BT_Serialization::Type::DECORATOR;
+            return Serialization::NodeType::DECORATOR;
         case BT::NodeType::CONTROL:
-            return BT_Serialization::Type::CONTROL;
+            return Serialization::NodeType::CONTROL;
         case BT::NodeType::CONDITION:
-            return BT_Serialization::Type::CONDITION;
+            return Serialization::NodeType::CONDITION;
         case BT::NodeType::SUBTREE:
-            return BT_Serialization::Type::SUBTREE;
+            return Serialization::NodeType::SUBTREE;
         case BT::NodeType::UNDEFINED:
-            return BT_Serialization::Type::UNDEFINED;
+            return Serialization::NodeType::UNDEFINED;
     }
-    return BT_Serialization::Type::UNDEFINED;
+    return Serialization::NodeType::UNDEFINED;
 }
 
-inline BT_Serialization::Status convertToFlatbuffers(NodeStatus type)
+inline Serialization::NodeStatus convertToFlatbuffers(BT::NodeStatus type)
 {
     switch (type)
     {
         case BT::NodeStatus::IDLE:
-            return BT_Serialization::Status::IDLE;
+            return Serialization::NodeStatus::IDLE;
         case BT::NodeStatus::SUCCESS:
-            return BT_Serialization::Status::SUCCESS;
+            return Serialization::NodeStatus::SUCCESS;
         case BT::NodeStatus::RUNNING:
-            return BT_Serialization::Status::RUNNING;
+            return Serialization::NodeStatus::RUNNING;
         case BT::NodeStatus::FAILURE:
-            return BT_Serialization::Status::FAILURE;
+            return Serialization::NodeStatus::FAILURE;
     }
-    return BT_Serialization::Status::IDLE;
+    return Serialization::NodeStatus::IDLE;
+}
+
+inline Serialization::PortDirection convertToFlatbuffers(BT::PortDirection direction)
+{
+    switch (direction)
+    {
+        case BT::PortDirection::INPUT :
+            return Serialization::PortDirection::INPUT;
+        case BT::PortDirection::OUTPUT:
+            return Serialization::PortDirection::OUTPUT;
+        case BT::PortDirection::INOUT:
+            return Serialization::PortDirection::INOUT;
+    }
+    return Serialization::PortDirection::INOUT;
 }
 
 inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builder,
-                                          BT::TreeNode* root_node)
+                                          const BT::Tree& tree)
 {
-    std::vector<flatbuffers::Offset<BT_Serialization::TreeNode>> fb_nodes;
+    std::vector<flatbuffers::Offset<Serialization::TreeNode>> fb_nodes;
 
-    applyRecursiveVisitor(root_node, [&](BT::TreeNode* node) {
+    applyRecursiveVisitor(tree.root_node, [&](BT::TreeNode* node)
+    {
         std::vector<uint16_t> children_uid;
         if (auto control = dynamic_cast<BT::ControlNode*>(node))
         {
@@ -63,25 +78,63 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
             children_uid.push_back(child->UID());
         }
 
-        std::vector<flatbuffers::Offset<BT_Serialization::KeyValue>> params;
-        const NodeParameters& init_params = node->initializationParameters();
-        for (const auto& it : init_params)
+        std::vector<flatbuffers::Offset<Serialization::PortConfig>> ports;
+        for (const auto& it : node->config().input_ports)
         {
-            params.push_back(BT_Serialization::CreateKeyValueDirect(builder, it.first.c_str(),
-                                                                    it.second.c_str()));
+            ports.push_back(Serialization::CreatePortConfigDirect(
+                                builder, it.first.c_str(), it.second.c_str()));
+        }
+        for (const auto& it : node->config().output_ports)
+        {
+            ports.push_back(Serialization::CreatePortConfigDirect(
+                                builder, it.first.c_str(), it.second.c_str()));
         }
 
-        auto tn = BT_Serialization::CreateTreeNode(
-            builder, node->UID(), builder.CreateVector(children_uid),
-            convertToFlatbuffers(node->type()), convertToFlatbuffers(node->status()),
-            builder.CreateString(node->name().c_str()),
-            builder.CreateString(node->registrationName().c_str()), builder.CreateVector(params));
+        auto tn = Serialization::CreateTreeNode(
+                    builder,
+                    node->UID(),
+                    builder.CreateVector(children_uid),
+                    convertToFlatbuffers(node->status()),
+                    builder.CreateString(node->name().c_str()),
+                    builder.CreateString(node->registrationName().c_str()),
+                    builder.CreateVector(ports));
 
         fb_nodes.push_back(tn);
     });
 
-    auto behavior_tree = BT_Serialization::CreateBehaviorTree(builder, root_node->UID(),
-                                                              builder.CreateVector(fb_nodes));
+    std::vector<flatbuffers::Offset<Serialization::NodeModel>> node_models;
+
+    for (const auto& node_it: tree.manifests)
+    {
+        const auto& manifest = node_it.second;
+        std::vector<flatbuffers::Offset<Serialization::PortModel>> port_models;
+
+        for (const auto& port_it: manifest.ports)
+        {
+            const auto& port_name = port_it.first;
+            const auto& port = port_it.second;
+            auto port_model = Serialization::CreatePortModel(
+                        builder,
+                        builder.CreateString( port_name.c_str() ),
+                        convertToFlatbuffers( port.direction() ),
+                        builder.CreateString( demangle(port.type()).c_str() ),
+                        builder.CreateString( port.description().c_str() )
+                        );
+            port_models.push_back(port_model);
+        }
+
+        auto node_model = Serialization::CreateNodeModel(
+                    builder,
+                    builder.CreateString(manifest.registration_ID.c_str()),
+                    convertToFlatbuffers(manifest.type),
+                    builder.CreateVector(port_models)  );
+
+        node_models.push_back(node_model);
+    }
+
+    auto behavior_tree = Serialization::CreateBehaviorTree(builder, tree.root_node->UID(),
+                                                           builder.CreateVector(fb_nodes),
+                                                           builder.CreateVector(node_models));
 
     builder.Finish(behavior_tree);
 }
@@ -89,8 +142,10 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
 /** Serialize manually the informations about state transition
  * No flatbuffer serialization here
  */
-inline SerializedTransition SerializeTransition(uint16_t UID, Duration timestamp,
-                                                   NodeStatus prev_status, NodeStatus status)
+inline SerializedTransition SerializeTransition(uint16_t UID,
+                                                Duration timestamp,
+                                                NodeStatus prev_status,
+                                                NodeStatus status)
 {
     using namespace std::chrono;
     SerializedTransition buffer;

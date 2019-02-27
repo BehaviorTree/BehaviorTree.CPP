@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -15,31 +15,19 @@
 
 namespace BT
 {
-ControlNode::ControlNode(const std::string& name, const NodeParameters& parameters)
-  : TreeNode::TreeNode(name, parameters)
+ControlNode::ControlNode(const std::string& name, const NodeConfiguration& config)
+  : TreeNode::TreeNode(name, config)
 {
-    // TODO(...) In case it is desired to set to idle remove the ReturnStatus
-    // type in order to set the member variable
-    // ReturnStatus const NodeStatus child_status = NodeStatus::IDLE;  // commented out as unused
 }
 
 void ControlNode::addChild(TreeNode* child)
 {
-    //    Checking if the child is not already present
-    //    for (auto node : children_nodes_)
-    //    {
-    //        if (node == child)
-    //        {
-    //            throw BehaviorTreeException("'" + child->name() + "' is already a '" + name() + "' child.");
-    //        }
-    //    }
-
     children_nodes_.push_back(child);
 }
 
-unsigned int ControlNode::childrenCount() const
+unsigned ControlNode::childrenCount() const
 {
-    return children_nodes_.size();
+    return unsigned(children_nodes_.size());
 }
 
 void ControlNode::halt()
@@ -53,9 +41,9 @@ const std::vector<TreeNode*>& ControlNode::children() const
     return children_nodes_;
 }
 
-void ControlNode::haltChildren(int i)
+void ControlNode::haltChildren(unsigned i)
 {
-    for (unsigned int j = i; j < children_nodes_.size(); j++)
+    for (size_t j = i; j < children_nodes_.size(); j++)
     {
         auto child = children_nodes_[j];
         if (child->status() == NodeStatus::RUNNING)
@@ -65,4 +53,5 @@ void ControlNode::haltChildren(int i)
         child->setStatus(NodeStatus::IDLE);
     }
 }
-}
+
+} // end namespace

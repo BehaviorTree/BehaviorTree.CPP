@@ -1,16 +1,17 @@
 #include "behaviortree_cpp/xml_parsing.h"
-#include "behaviortree_cpp/blackboard/blackboard_local.h"
+#include "behaviortree_cpp/blackboard.h"
 #include <gtest/gtest.h>
 
 using namespace BT;
 
 // clang-format off
-const std::string xml_text = R"(
+static const char* xml_text = R"(
 
 <root main_tree_to_execute="BehaviorTree">
     <BehaviorTree ID="BehaviorTree">
-        <FallbackStar name="root">
-            <Sequence name="navigation_subtree">
+        <Fallback name="root">
+
+            <ReactiveSequence name="navigation_subtree">
                 <Inverter>
                     <Condition ID="IsStuck"/>
                 </Inverter>
@@ -18,12 +19,14 @@ const std::string xml_text = R"(
                     <Action ID="ComputePathToPose"/>
                     <Action ID="FollowPath"/>
                 </SequenceStar>
-            </Sequence>
+            </ReactiveSequence>
+
             <SequenceStar name="stuck_recovery">
                 <Condition ID="IsStuck"/>
                 <Action ID="BackUpAndSpin"/>
             </SequenceStar>
-        </FallbackStar>
+
+        </Fallback>
     </BehaviorTree>
 </root>
  )";
@@ -77,7 +80,7 @@ class TestNode
 class IsStuck: public ConditionNode, public TestNode
 {
   public:
-    IsStuck(const std::string& name): ConditionNode(name), TestNode(name) {}
+    IsStuck(const std::string& name): ConditionNode(name, {}), TestNode(name) {}
 
     NodeStatus tick() override
     {
@@ -88,7 +91,7 @@ class IsStuck: public ConditionNode, public TestNode
 class BackUpAndSpin: public SyncActionNode, public TestNode
 {
   public:
-    BackUpAndSpin(const std::string& name): SyncActionNode(name), TestNode(name){}
+    BackUpAndSpin(const std::string& name): SyncActionNode(name, {}), TestNode(name){}
 
     NodeStatus tick() override
     {
@@ -99,7 +102,7 @@ class BackUpAndSpin: public SyncActionNode, public TestNode
 class ComputePathToPose: public SyncActionNode, public TestNode
 {
   public:
-    ComputePathToPose(const std::string& name): SyncActionNode(name), TestNode(name){}
+    ComputePathToPose(const std::string& name): SyncActionNode(name, {}), TestNode(name){}
 
     NodeStatus tick() override
     {
@@ -110,7 +113,7 @@ class ComputePathToPose: public SyncActionNode, public TestNode
 class FollowPath: public CoroActionNode, public TestNode
 {
   public:
-    FollowPath(const std::string& name): CoroActionNode(name), TestNode(name), _halted(false){}
+    FollowPath(const std::string& name): CoroActionNode(name, {}), TestNode(name), _halted(false){}
 
     NodeStatus tick() override
     {
@@ -122,7 +125,6 @@ class FollowPath: public CoroActionNode, public TestNode
         while( Now() < initial_time + Milliseconds(600) )
         {
             setStatusRunningAndYield();
-
         }
         return tickImpl();
     }
@@ -160,7 +162,7 @@ TEST(Navigationtest, MoveBaseRecovery)
     factory.registerNodeType<ComputePathToPose>("ComputePathToPose");
     factory.registerNodeType<FollowPath>("FollowPath");
 
-    auto tree = buildTreeFromText(factory, xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
     // Need to retrieve the node pointers with dynamic cast
     // In a normal application you would NEVER want to do such a thing.

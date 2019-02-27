@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -17,12 +17,16 @@
 
 namespace BT
 {
-class ForceSuccessDecorator : public DecoratorNode
+/**
+ * @brief The ForceSuccessNode returns always SUCCESS or RUNNING.
+ */
+class ForceSuccessNode : public DecoratorNode
 {
   public:
-    ForceSuccessDecorator(const std::string& name) : DecoratorNode(name, NodeParameters())
+    ForceSuccessNode(const std::string& name) :
+        DecoratorNode(name, {} )
     {
-        setRegistrationName("ForceSuccess");
+        setRegistrationID("ForceSuccess");
     }
 
   private:
@@ -31,7 +35,7 @@ class ForceSuccessDecorator : public DecoratorNode
 
 //------------ implementation ----------------------------
 
-inline NodeStatus ForceSuccessDecorator::tick()
+inline NodeStatus ForceSuccessNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
 

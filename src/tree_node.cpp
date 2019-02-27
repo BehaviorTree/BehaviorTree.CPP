@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -22,19 +22,16 @@ static uint16_t getUID()
     return uid++;
 }
 
-TreeNode::TreeNode(const std::string& name, const NodeParameters& parameters)
-  : not_initialized_(true),
-    name_(name),
+TreeNode::TreeNode(std::string name, NodeConfiguration config)
+  : name_(std::move(name)),
     status_(NodeStatus::IDLE),
     uid_(getUID()),
-    parameters_(parameters)
-
+    config_(std::move(config))
 {
 }
 
 NodeStatus TreeNode::executeTick()
 {
-    initializeOnce();
     const NodeStatus status = tick();
     setStatus(status);
     return status;
@@ -56,36 +53,20 @@ void TreeNode::setStatus(NodeStatus new_status)
     }
 }
 
-void TreeNode::setBlackboard(const Blackboard::Ptr& bb)
-{
-    bb_ = bb;
-}
-
-const Blackboard::Ptr& TreeNode::blackboard() const
-{
-    if( not_initialized_ )
-    {
-        throw std::logic_error("You can NOT access the blackboard in the constructor."
-                               " If you need to access the blackboard before the very first tick(), "
-                               " you should override the virtual method TreeNode::onInit()");
-    }
-    return bb_;
-}
-
 NodeStatus TreeNode::status() const
 {
-    std::lock_guard<std::mutex> LockGuard(state_mutex_);
+    std::lock_guard<std::mutex> lock(state_mutex_);
     return status_;
 }
 
 NodeStatus TreeNode::waitValidStatus()
 {
-    std::unique_lock<std::mutex> lk(state_mutex_);
+    std::unique_lock<std::mutex> lock(state_mutex_);
 
-    state_condition_variable_.wait(lk, [&]() {
-        return (status_ == NodeStatus::RUNNING || status_ == NodeStatus::SUCCESS ||
-                status_ == NodeStatus::FAILURE);
-    });
+    while( isHalted() )
+    {
+        state_condition_variable_.wait(lock);
+    }
     return status_;
 }
 
@@ -96,7 +77,7 @@ const std::string& TreeNode::name() const
 
 bool TreeNode::isHalted() const
 {
-    return status() == NodeStatus::IDLE;
+    return status_ == NodeStatus::IDLE;
 }
 
 TreeNode::StatusChangeSubscriber
@@ -110,33 +91,57 @@ uint16_t TreeNode::UID() const
     return uid_;
 }
 
-void TreeNode::setRegistrationName(const std::string& registration_name)
-{
-    registration_name_ = registration_name;
-}
-
-void TreeNode::initializeOnce()
-{
-    if( not_initialized_ )
-    {
-        not_initialized_ = false;
-        onInit();
-    }
-}
-
-bool TreeNode::isBlackboardPattern(StringView str)
-{
-    return str.size() >= 4 && str[0] == '$' && str[1] == '{' && str.back() == '}';
-}
-
 const std::string& TreeNode::registrationName() const
 {
-    return registration_name_;
+    return registration_ID_;
 }
 
-const NodeParameters& TreeNode::initializationParameters() const
+const NodeConfiguration &TreeNode::config() const
 {
-    return parameters_;
+    return config_;
+}
+
+bool TreeNode::isBlackboardPointer(StringView str)
+{
+    const auto size = str.size();
+    if( size >= 3 && str.back() == '}')
+    {
+        if( str[0] == '{') {
+            return true;
+        }
+        if( size >= 4 && str[0] == '$' && str[1] == '{') {
+            return true;
+        }
+    }
+    return false;
+}
+
+StringView TreeNode::stripBlackboardPointer(StringView str)
+{
+    const auto size = str.size();
+    if( size >= 3 && str.back() == '}')
+    {
+        if( str[0] == '{') {
+            return str.substr(1, size-2);
+        }
+        if( str[0] == '$' && str[1] == '{') {
+            return str.substr(2, size-3);
+        }
+    }
+    return {};
+}
+
+Optional<StringView> TreeNode::getRemappedKey(StringView port_name, StringView remapping_value)
+{
+    if( remapping_value == "=" )
+    {
+        return {port_name};
+    }
+    if( isBlackboardPointer( remapping_value ) )
+    {
+        return {stripBlackboardPointer(remapping_value)};
+    }
+    return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
 }   // end namespace

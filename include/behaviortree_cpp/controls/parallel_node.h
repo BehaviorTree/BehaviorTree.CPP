@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -14,22 +14,23 @@
 #ifndef PARALLEL_NODE_H
 #define PARALLEL_NODE_H
 
+#include <set>
 #include "behaviortree_cpp/control_node.h"
 
 namespace BT
 {
+
 class ParallelNode : public ControlNode
 {
   public:
 
-    ParallelNode(const std::string& name, int threshold);
+    ParallelNode(const std::string& name, unsigned threshold);
 
-    ParallelNode(const std::string& name, const NodeParameters& params);
+    ParallelNode(const std::string& name, const NodeConfiguration& config);
 
-    static const NodeParameters& requiredNodeParameters()
+    static PortsList providedPorts()
     {
-        static NodeParameters params = {{THRESHOLD_KEY, "1"}};
-        return params;
+        return { InputPort<unsigned>(THRESHOLD_KEY) };
     }
 
     ~ParallelNode() = default;
@@ -41,13 +42,14 @@ class ParallelNode : public ControlNode
 
   private:
     unsigned int threshold_;
-    unsigned int success_childred_num_;
-    unsigned int failure_childred_num_;
 
-    bool read_parameter_from_blackboard_;
+    std::set<int> skip_list_;
+
+    bool read_parameter_from_ports_;
     static constexpr const char* THRESHOLD_KEY = "threshold";
 
     virtual BT::NodeStatus tick() override;
 };
+
 }
 #endif   // PARALLEL_NODE_H

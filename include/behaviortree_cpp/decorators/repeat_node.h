@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -18,27 +18,41 @@
 
 namespace BT
 {
+/**
+ * @brief The RepeatNode is used to execute a child several times, as long
+ * as it succeed.
+ *
+ * To succeed, the child must return SUCCESS N times (port "num_cycles").
+ *
+ * If the child returns FAILURE, the loop is stopped and this node
+ * returns FAILURE.
+ *
+ * Example:
+ *
+ * <Repeat num_cycles="3">
+ *   <ClapYourHandsOnce/>
+ * </Repeat>
+ */
 class RepeatNode : public DecoratorNode
 {
   public:
-    // Constructor
+
     RepeatNode(const std::string& name, unsigned int NTries);
 
-    RepeatNode(const std::string& name, const NodeParameters& params);
+    RepeatNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~RepeatNode() override = default;
 
-    static const NodeParameters& requiredNodeParameters()
+    static PortsList providedPorts()
     {
-        static NodeParameters params = {{NUM_CYCLES, "1"}};
-        return params;
+        return { InputPort<unsigned>(NUM_CYCLES, "Repeat a succesful child up to N times") };
     }
 
   private:
     unsigned num_cycles_;
     unsigned try_index_;
 
-    bool read_parameter_from_blackboard_;
+    bool read_parameter_from_ports_;
     static constexpr const char* NUM_CYCLES = "num_cycles";
 
     virtual NodeStatus tick() override;

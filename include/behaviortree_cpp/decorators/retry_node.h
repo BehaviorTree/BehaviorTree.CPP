@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018 Davide Faconti -  All Rights Reserved
+ * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -18,20 +18,34 @@
 
 namespace BT
 {
+/**
+ * @brief The RetryNode is used to execute a child several times if it fails.
+ *
+ * If the child returns SUCCESS, the loop is stopped and this node
+ * returns SUCCESS.
+ *
+ * If the child returns FAILURE, this node will try again up to N times
+ * (N is read from port "num_attempts").
+ *
+ * Example:
+ *
+ * <RetryUntilSuccesful num_attempts="3">
+ *     <OpenDoor/>
+ * </RetryUntilSuccesful>
+ */
 class RetryNode : public DecoratorNode
 {
   public:
-    // Constructor
+    
     RetryNode(const std::string& name, unsigned int NTries);
 
-    RetryNode(const std::string& name, const NodeParameters& params);
+    RetryNode(const std::string& name, const NodeConfiguration& config);
 
     virtual ~RetryNode() override = default;
 
-    static const NodeParameters& requiredNodeParameters()
+    static PortsList providedPorts()
     {
-        static NodeParameters params = {{NUM_ATTEMPTS, "1"}};
-        return params;
+        return { InputPort<unsigned>(NUM_ATTEMPTS, "Execute again a failing child up to N times") };
     }
 
     virtual void halt() override;
@@ -40,7 +54,7 @@ class RetryNode : public DecoratorNode
     unsigned int max_attempts_;
     unsigned int try_index_;
 
-    bool read_parameter_from_blackboard_;
+    bool read_parameter_from_ports_;
     static constexpr const char* NUM_ATTEMPTS = "num_attempts";
 
     virtual BT::NodeStatus tick() override;
