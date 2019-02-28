@@ -38,14 +38,17 @@ static const char* xml_text = R"(
     </BehaviorTree>
     <!--------------------------------------->
     <BehaviorTree ID="MainTree">
-        <Fallback name="root_Fallback">
-            <Sequence name="door_open_sequence">
-                <IsDoorOpen/>
-                <PassThroughDoor/>
-            </Sequence>
-            <SubTree ID="DoorClosed"/>
-            <PassThroughWindow/>
-        </Fallback>
+        <Sequence>
+            <Fallback name="root_Fallback">
+                <Sequence name="door_open_sequence">
+                    <IsDoorOpen/>
+                    <PassThroughDoor/>
+                </Sequence>
+                <SubTree ID="DoorClosed"/>
+                <PassThroughWindow/>
+            </Fallback>
+            <CloseDoor/>
+        </Sequence>
     </BehaviorTree>
     <!---------------------------------------> 
 </root>
@@ -55,7 +58,7 @@ static const char* xml_text = R"(
 
 using namespace BT;
 
-int main()
+int main(int argc, char** argv)
 {
     BT::BehaviorTreeFactory factory;
 
@@ -75,7 +78,9 @@ int main()
 
     printTreeRecursively(tree.root_node);
 
-    //while (1)
+    const bool LOOP = ( argc == 2 && strcmp( argv[1], "loop") == 0);
+
+    do
     {
         NodeStatus status = NodeStatus::RUNNING;
         // Keep on ticking until you get either a SUCCESS or FAILURE state
@@ -84,7 +89,9 @@ int main()
             status = tree.root_node->executeTick();
             CrossDoor::SleepMS(1);   // optional sleep to avoid "busy loops"
         }
-        CrossDoor::SleepMS(2000);
+        CrossDoor::SleepMS(1000);
     }
+    while(LOOP);
+
     return 0;
 }
