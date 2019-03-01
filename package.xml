@@ -1,12 +1,11 @@
 <package>
-  <name>behaviortree_cpp</name>
+  <name>behaviortree_cpp_v3</name>
   <version>3.0.0</version>
   <description>
-  This package provides a behavior trees core.
+  This package provides the Behavior Trees core library.
   </description>
 
-  <maintainer email="michele.colledanchise@gmail.com">Michele Colledanchise</maintainer>
-  <maintainer email="davide.faconti@eurecat.org">Davide Faconti</maintainer>
+  <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
 
   <license>MIT</license>
 

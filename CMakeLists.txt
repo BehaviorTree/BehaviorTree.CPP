@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12) # version on Ubuntu Trusty
-project(behaviortree_cpp)
+project(behaviortree_cpp_v3)
 
 if(NOT CMAKE_VERSION VERSION_LESS 3.1)
     set(CMAKE_CXX_STANDARD 11)
