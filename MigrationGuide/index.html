@@ -699,15 +699,15 @@ of the <strong>Component Developer</strong> from the <strong>Behavior Designer</
 <p>In practice, this means that:</p>
 <ul>
 <li>
-<p>Custom Actions (or, in general, custom TreeNodes) must be reusable building
+<p>Custom Actions (or, in general, custom TreeNodes) must be <strong>reusable</strong> building
 blocks. Implement them once, reuse them many times.</p>
 </li>
 <li>
-<p>To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
-not need to read nor modify the source code of the a given TreeNode.</p>
+<p>To build a Behavior Tree out of TreeNodes, the Behavior Designer <strong>must 
+not need to read nor modify the source code</strong> of the a given TreeNode.</p>
 </li>
 </ul>
-<p>There is a <strong>major design flaw</strong> that undermines this goal in version  <code>2.x</code>: 
+<p>There was a major design flaw that undermined these goals in version  <code>2.x</code>: 
 the way the BlackBoard was used to implement DataFlow between nodes.</p>
 <p>As described in <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/issues/18">issue #18</a>
 there are several potential problems with the Blackboard approach:</p>
@@ -762,14 +762,15 @@ to a <code>TreeNode</code> would make the node more generic and reusable.</p>
 shared <strong>key/value</strong> table, i.e. a glorified bunch of global variables.</p>
 <p>The key is a <code>string</code>, whilst the value is 
 stored in a type-safe container similar to <code>std::any</code> or <code>std::variant</code>.</p>
-<p>The problem is that writing/reading in an entry of the BB is done <strong>implicitly</strong>
-in the source code and it is usually hard-coded. This makes the TreeNode
+<p>The problem is that writing/reading in an entry of the BB was done <strong>implicitly</strong>
+in the source code and it was usually hard-coded. This made the TreeNode
 not reusable.</p>
 <p>To fix this, we still use the Blackboard under the hood, but it can not be 
-accessed directly anymore. Entries are read/written using respectively <code>InputPorts</code>
-and <code>OutputPorts</code>.</p>
-<p>These ports <strong>must be modelled</strong> to allow remapping at run-time.</p>
-<p>Let's take a look to an example at the old code:</p>
+accessed directly anymore. </p>
+<p>In version <code>3.x</code>Blackboard entries can be read/written using respectively 
+<code>InputPorts</code> and <code>OutputPorts</code>.</p>
+<p>These ports <strong>must be defined explicitly</strong> to allow remapping at run-time.</p>
+<p>Let's take a look to an example writte using the <strong>old</strong> code:</p>
 <div class="codehilite"><pre><span></span><span class="nt">&lt;root&gt;</span>
      <span class="nt">&lt;BehaviorTree&gt;</span>
         <span class="nt">&lt;SequenceStar&gt;</span>
@@ -825,7 +826,7 @@ to change the key "GoalPose" in <code>CalculateGoalPose</code>we must inspect th
 and modify it.</p>
 <p>In other words, <code>NodeParameter</code> is already a reasonably good implementation
 of an <code>InputPort</code>, but we need to introduce a consistent <code>OutputPort</code> too.</p>
-<p>This is the new code:</p>
+<p>This is the <strong>new</strong> code:</p>
 <div class="codehilite"><pre><span></span><span class="nt">&lt;root&gt;</span>
      <span class="nt">&lt;BehaviorTree&gt;</span>
         <span class="nt">&lt;SequenceStar&gt;</span>
@@ -922,7 +923,7 @@ with the other ports of the BB of the parent, we must explicitly do a
 remapping in the XML definition. No C++ code need to be modified.</p>
 <p>From the point of view of the XML, remapped ports of a SubTree looks exactly
 like the ports of a single node.</p>
-<p>For more details, refer to the example __t06_subtree_port_remapping.cpp_.</p>
+<p>For more details, refer to the example <strong>t06_subtree_port_remapping.cpp</strong>.</p>
 <h2 id="controlnodes-renamedrefactored">ControlNodes renamed/refactored</h2>
 <p>The <a href="https://en.wikipedia.org/wiki/Principle_of_least_astonishment">principle of least astonishment</a>
 applies to user interface and software design. A typical formulation of the principle, from 1984, is: </p>
@@ -945,13 +946,13 @@ and the <code>FallbackNode</code> have a very high astonishment factor, because 
 </li>
 </ul>
 <p>The main concern of the original author of this library was to build reactive
-Behavior Trees (see for reference this <a href="0https://arxiv.org/abs/1709.00084">publication</a>.</p>
+Behavior Trees (see for reference this <a href="0https://arxiv.org/abs/1709.00084">publication</a>).</p>
 <p>I share this goal, but I prefer to have more explicit names, because reactive 
 ControlNodes are useful but hard to reason about sometimes.</p>
-<p>I don't think reactive Controlnodes should be the mindlessly by default. </p>
+<p>I don't think reactive ControlNodes should be used mindlessly by default. </p>
 <p>For instance, most of the time users I talked with should have used <code>SequenceStar</code>
 instead of <code>Sequence</code> in many cases.</p>
-<p>I renamed the ControlNodes to reflect this reality:</p>
+<p>I renamed the ControlNodes as follows to reflect this reality:</p>
 <table>
 <thead>
 <tr>
@@ -999,7 +1000,7 @@ what you really want is you want to use a <code>ReactiveSequence</code> instead.
 more than a single asynchronous child. </p>
 <p>The new recommendation is: </p>
 <blockquote>
-<p><strong>Reactive nodes shouldn't have more than a single asynchronous child</strong>.</p>
+<p><strong>Reactive nodes should NOT have more than a single asynchronous child</strong>.</p>
 </blockquote>
 <p>This is a very opinionated decision and for this reason it is documented but 
 not enforced by the implementation.</p>
