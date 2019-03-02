@@ -1,12 +1,7 @@
-# Sequences and Async Actions
+# Sequences and AsyncActionNode
 
 The next example shows the difference between a `SequenceNode` and a 
-`SequenceStarNode`.
-
-Additionally, we introduce the __Loggers__ which are mechanism to print,
-store and publish state transitions in the tree.
-
-## Asynchronous Actions
+`ReactiveSequence`.
 
 An Asynchornous Action has it's own thread. This allows the user to 
 use blocking functions but to return the flow of execution 
@@ -82,7 +77,7 @@ The user must also implement `convertFromString<Pose2D>(StringView)`,
 as shown in the previous tutorial.
 
 
-## Sequence VS SequenceStar
+## Sequence VS ReactiveSequence
 
 The following example should use a simple `SequenceNode`.
 
@@ -139,35 +134,32 @@ Expected output:
     [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
 
     --- 2nd executeTick() ---
-    [ Battery: OK ]
     [ MoveBase: FINISHED ]
 
     --- 3rd executeTick() ---
-    [ Battery: OK ]
     Robot says: "mission completed!"
 ```
-
 
 You may noticed that when `executeTick()` was called, `MoveBase` returned
 __RUNNING__ the 1st and 2nd time, and eventually __SUCCESS__ the 3rd time.
 
-On the other hand, the `ConditionNode` called `BatteryOK` was executed three times.
+`BatteryOK` is executed only once. 
+
+If we use `ReactiveSequence` instead, when the child `MoveBase` returns RUNNING,
+the sequence is restarted and the condition `BatteryOK` is executed __again__.
+
 If, at any point, `BatteryOK` returned __FAILURE__, the `MoveBase` actions
 would be _interrupted_ (_halted_, to be specific).
-
-
-If we use `SequenceStarNode` instead, any succesful children (in particular
-`BatteryOK`) will be executed only _once_.
 
 ```XML hl_lines="3"
  <root>
      <BehaviorTree>
-        <SequenceStar>
+        <ReactiveSequence>
             <BatteryOK/>
             <SaySomething   message="mission started..." />
             <MoveBase       goal="1;2;3"/>
             <SaySomething   message="mission completed!" />
-        </SequenceStar>
+        </ReactiveSequence>
      </BehaviorTree>
  </root>
 ```
@@ -182,9 +174,11 @@ Expected output:
     [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
 
     --- 2nd executeTick() ---
+    [ Battery: OK ]
     [ MoveBase: FINISHED ]
 
     --- 3rd executeTick() ---
+    [ Battery: OK ]
     Robot says: "mission completed!"
 ```
 
