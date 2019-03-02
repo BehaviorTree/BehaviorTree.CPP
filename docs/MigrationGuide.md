@@ -7,13 +7,13 @@ __System Integrator__.
 
 In practice, this means that:
 
-- Custom Actions (or, in general, custom TreeNodes) must be reusable building
+- Custom Actions (or, in general, custom TreeNodes) must be __reusable__ building
 blocks. Implement them once, reuse them many times.
 
-- To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
-not need to read nor modify the source code of the a given TreeNode.
+- To build a Behavior Tree out of TreeNodes, the Behavior Designer __must 
+not need to read nor modify the source code__ of the a given TreeNode.
 
-There is a __major design flaw__ that undermines this goal in version  `2.x`: 
+There was a major design flaw that undermined these goals in version  `2.x`: 
 the way the BlackBoard was used to implement DataFlow between nodes.
 
 As described in [issue #18](https://github.com/BehaviorTree/BehaviorTree.CPP/issues/18)
@@ -72,17 +72,19 @@ shared __key/value__ table, i.e. a glorified bunch of global variables.
 The key is a `string`, whilst the value is 
 stored in a type-safe container similar to `std::any` or `std::variant`.
 
-The problem is that writing/reading in an entry of the BB is done __implicitly__
-in the source code and it is usually hard-coded. This makes the TreeNode
+The problem is that writing/reading in an entry of the BB was done __implicitly__
+in the source code and it was usually hard-coded. This made the TreeNode
 not reusable.
 
 To fix this, we still use the Blackboard under the hood, but it can not be 
-accessed directly anymore. Entries are read/written using respectively `InputPorts`
-and `OutputPorts`.
+accessed directly anymore. 
 
-These ports __must be modelled__ to allow remapping at run-time.
+In version `3.x`Blackboard entries can be read/written using respectively 
+`InputPorts` and `OutputPorts`.
 
-Let's take a look to an example at the old code:
+These ports __must be defined explicitly__ to allow remapping at run-time.
+
+Let's take a look to an example writte using the __old__ code:
 
 ```XML
 <root>
@@ -143,7 +145,7 @@ and modify it.
 In other words, `NodeParameter` is already a reasonably good implementation
 of an `InputPort`, but we need to introduce a consistent `OutputPort` too.
 
-This is the new code:
+This is the __new__ code:
 
 ```XML
 <root>
@@ -246,7 +248,7 @@ remapping in the XML definition. No C++ code need to be modified.
 From the point of view of the XML, remapped ports of a SubTree looks exactly
 like the ports of a single node.
 
-For more details, refer to the example __t06_subtree_port_remapping.cpp_.
+For more details, refer to the example __t06_subtree_port_remapping.cpp__.
 
 
 ## ControlNodes renamed/refactored
@@ -271,17 +273,17 @@ By "reactive" we mean that:
 
 
 The main concern of the original author of this library was to build reactive
-Behavior Trees (see for reference this [publication](0https://arxiv.org/abs/1709.00084).
+Behavior Trees (see for reference this [publication](0https://arxiv.org/abs/1709.00084)).
 
 I share this goal, but I prefer to have more explicit names, because reactive 
 ControlNodes are useful but hard to reason about sometimes.
 
-I don't think reactive Controlnodes should be the mindlessly by default. 
+I don't think reactive ControlNodes should be used mindlessly by default. 
 
 For instance, most of the time users I talked with should have used `SequenceStar`
 instead of `Sequence` in many cases.
 
-I renamed the ControlNodes to reflect this reality:
+I renamed the ControlNodes as follows to reflect this reality:
 
 
 | Old Name (v2)  |  New name (v3) | Is reactive?  |
@@ -302,7 +304,7 @@ more than a single asynchronous child.
 
 The new recommendation is: 
 
->__Reactive nodes shouldn't have more than a single asynchronous child__.
+>__Reactive nodes should NOT have more than a single asynchronous child__.
 
 This is a very opinionated decision and for this reason it is documented but 
 not enforced by the implementation.
