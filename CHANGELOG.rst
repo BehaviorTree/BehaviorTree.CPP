@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2019-03-04)
+------------------
 * make flatbuffers visible to other project (such as Groot)
 * docs fix
 * Contributors: Davide Faconti
