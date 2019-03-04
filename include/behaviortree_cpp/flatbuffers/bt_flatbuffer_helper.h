@@ -1,11 +1,14 @@
 #ifndef BT_FLATBUFFER_HELPER_H
 #define BT_FLATBUFFER_HELPER_H
 
-#include "abstract_logger.h"
+#include "behaviortree_cpp/bt_factory.h"
 #include "BT_logger_generated.h"
 
 namespace BT
 {
+
+typedef std::array<uint8_t, 12> SerializedTransition;
+
 inline Serialization::NodeType convertToFlatbuffers(BT::NodeType type)
 {
     switch (type)

@@ -4,7 +4,7 @@
 #ifndef FLATBUFFERS_GENERATED_BTLOGGER_SERIALIZATION_H_
 #define FLATBUFFERS_GENERATED_BTLOGGER_SERIALIZATION_H_
 
-#include "flatbuffers/flatbuffers.h"
+#include "behaviortree_cpp/flatbuffers/flatbuffers.h"
 
 namespace Serialization {
 

@@ -1,5 +1,5 @@
 #include "behaviortree_cpp/loggers/bt_file_logger.h"
-#include "behaviortree_cpp/loggers/bt_flatbuffer_helper.h"
+#include "behaviortree_cpp/flatbuffers/bt_flatbuffer_helper.h"
 
 namespace BT
 {
