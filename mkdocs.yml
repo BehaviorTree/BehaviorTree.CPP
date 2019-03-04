@@ -28,7 +28,7 @@ markdown_extensions:
       guess_lang: true
 
 
-pages:
+nav:
     - Home: index.md
     
     - Learn the basics:
