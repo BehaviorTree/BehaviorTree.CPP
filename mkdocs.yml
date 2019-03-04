@@ -32,15 +32,16 @@ pages:
     - Home: index.md
     
     - Learn the basics:
-       - Introduction:      BT_basics.md
-       - Getting started:   getting_started.md
-       - Sequence Nodes:    SequenceNode.md
-       - Fallback Nodes:    FallbackNode.md
-       - Decorators Nodes:  DecoratorNode.md
-       - The XML format:  xml_format.md
+       - Introduction to BT: BT_basics.md
+       - Getting started:    getting_started.md
+       - Sequence Nodes:     SequenceNode.md
+       - Fallback Nodes:     FallbackNode.md
+       - Decorators Nodes:   DecoratorNode.md
+       - The XML format:     xml_format.md
        
     - Tutorials: 
 
+       - "Summary":                           tutorials_summary.md
        - "Tutorial 1: Create a Tree":         tutorial_01_first_tree.md
        - "Tutorial 2: Basic Ports":           tutorial_02_basic_ports.md
        - "Tutorial 3: Generic ports":         tutorial_03_generic_ports.md
