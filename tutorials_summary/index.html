@@ -40,7 +40,7 @@
     
     
       
-        <title>Summary of the tutorials - BehaviorTree.CPP</title>
+        <title>Summary - BehaviorTree.CPP</title>
       
     
     
@@ -123,7 +123,7 @@
                 BehaviorTree.CPP
               </span>
               <span class="md-header-nav__topic">
-                Summary of the tutorials
+                Summary
               </span>
             
           
@@ -195,14 +195,16 @@
       
         
 
-<nav class="md-tabs" data-md-component="tabs">
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
       
         
   <li class="md-tabs__item">
     
-      <a href=".." title="Home" class="md-tabs__link md-tabs__link--active">
+      <a href=".." title="Home" class="md-tabs__link">
         Home
       </a>
     
@@ -227,7 +229,7 @@
   
     <li class="md-tabs__item">
       
-        <a href="../tutorials_summary.md" title="Tutorials" class="md-tabs__link">
+        <a href="./" title="Tutorials" class="md-tabs__link md-tabs__link--active">
           Tutorials
         </a>
       
@@ -405,10 +407,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
     
     <label class="md-nav__link" for="nav-3">
       Tutorials
@@ -424,11 +428,125 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="../tutorials_summary.md" title="Summary" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Summary
+      </label>
+    
+    <a href="./" title="Summary" class="md-nav__link md-nav__link--active">
       Summary
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        
+          <li class="md-nav__item">
+    <a href="#t1-create-your-first-behavior-tree" title="T.1: Create your first Behavior Tree" class="md-nav__link">
+    T.1: Create your first Behavior Tree
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t2-parametrize-a-node-with-ports" title="T.2: Parametrize a Node with Ports" class="md-nav__link">
+    T.2: Parametrize a Node with Ports
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t3-generic-and-type-safe-ports" title="T.3: Generic and type-safe Ports" class="md-nav__link">
+    T.3: Generic and type-safe Ports
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t4-difference-between-sequence-and-reactivesequence" title="T.4: Difference between Sequence and ReactiveSequence" class="md-nav__link">
+    T.4: Difference between Sequence and ReactiveSequence
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t5-how-to-reuse-entire-subtrees" title="T.5: How to reuse entire SubTrees" class="md-nav__link">
+    T.5: How to reuse entire SubTrees
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t6-remapping-of-ports-between-subtrees-and-their-parents" title="T.6: Remapping of Ports between SubTrees and their parents" class="md-nav__link">
+    T.6: Remapping of Ports between SubTrees and their parents
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t7-how-to-wrap-legacy-code-in-a-non-intrusive-way" title="T.7: How to wrap legacy code in a non intrusive way" class="md-nav__link">
+    T.7: How to wrap legacy code in a non intrusive way
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t8-passing-arguments-to-nodes-without-ports" title="T.8: Passing arguments to Nodes without Ports" class="md-nav__link">
+    T.8: Passing arguments to Nodes without Ports
+  </a>
+  
+</li>
+        
+      
+        
+          <li class="md-nav__item">
+    <a href="#t9-asynchronous-actions-with-coroutines" title="T.9: Asynchronous actions with Coroutines" class="md-nav__link">
+    T.9: Asynchronous actions with Coroutines
+  </a>
+  
+</li>
+        
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -605,8 +723,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-1-create-your-first-behavior-tree" title="Tutorial 1: Create your first Behavior Tree" class="md-nav__link">
-    Tutorial 1: Create your first Behavior Tree
+    <a href="#t1-create-your-first-behavior-tree" title="T.1: Create your first Behavior Tree" class="md-nav__link">
+    T.1: Create your first Behavior Tree
   </a>
   
 </li>
@@ -614,8 +732,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-2-parametrize-a-node-with-ports" title="Tutorial 2: Parametrize a Node with Ports" class="md-nav__link">
-    Tutorial 2: Parametrize a Node with Ports
+    <a href="#t2-parametrize-a-node-with-ports" title="T.2: Parametrize a Node with Ports" class="md-nav__link">
+    T.2: Parametrize a Node with Ports
   </a>
   
 </li>
@@ -623,8 +741,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-3-generic-and-type-safe-ports" title="Tutorial 3: Generic and type-safe Ports" class="md-nav__link">
-    Tutorial 3: Generic and type-safe Ports
+    <a href="#t3-generic-and-type-safe-ports" title="T.3: Generic and type-safe Ports" class="md-nav__link">
+    T.3: Generic and type-safe Ports
   </a>
   
 </li>
@@ -632,8 +750,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-4-difference-between-sequence-and-reactivesequence" title="Tutorial 4: Difference between Sequence and ReactiveSequence" class="md-nav__link">
-    Tutorial 4: Difference between Sequence and ReactiveSequence
+    <a href="#t4-difference-between-sequence-and-reactivesequence" title="T.4: Difference between Sequence and ReactiveSequence" class="md-nav__link">
+    T.4: Difference between Sequence and ReactiveSequence
   </a>
   
 </li>
@@ -641,8 +759,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-5-how-to-reuse-entire-subtrees" title="Tutorial 5: How to reuse entire SubTrees" class="md-nav__link">
-    Tutorial 5: How to reuse entire SubTrees
+    <a href="#t5-how-to-reuse-entire-subtrees" title="T.5: How to reuse entire SubTrees" class="md-nav__link">
+    T.5: How to reuse entire SubTrees
   </a>
   
 </li>
@@ -650,8 +768,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-6-remapping-of-ports-between-subtrees-and-their-parents" title="Tutorial 6: Remapping of Ports between SubTrees and their parents" class="md-nav__link">
-    Tutorial 6: Remapping of Ports between SubTrees and their parents
+    <a href="#t6-remapping-of-ports-between-subtrees-and-their-parents" title="T.6: Remapping of Ports between SubTrees and their parents" class="md-nav__link">
+    T.6: Remapping of Ports between SubTrees and their parents
   </a>
   
 </li>
@@ -659,8 +777,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-7-how-to-wrap-legacy-code-in-a-non-intrusive-way" title="Tutorial 7: How to wrap legacy code in a non intrusive way" class="md-nav__link">
-    Tutorial 7: How to wrap legacy code in a non intrusive way
+    <a href="#t7-how-to-wrap-legacy-code-in-a-non-intrusive-way" title="T.7: How to wrap legacy code in a non intrusive way" class="md-nav__link">
+    T.7: How to wrap legacy code in a non intrusive way
   </a>
   
 </li>
@@ -668,8 +786,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-8-parametrization-without-ports" title="Tutorial 8: Parametrization without Ports" class="md-nav__link">
-    Tutorial 8: Parametrization without Ports
+    <a href="#t8-passing-arguments-to-nodes-without-ports" title="T.8: Passing arguments to Nodes without Ports" class="md-nav__link">
+    T.8: Passing arguments to Nodes without Ports
   </a>
   
 </li>
@@ -677,8 +795,8 @@
       
         
           <li class="md-nav__item">
-    <a href="#tutorial-9-asynchronous-actions-with-coroutines" title="Tutorial 9: Asynchronous actions with Coroutines" class="md-nav__link">
-    Tutorial 9: Asynchronous actions with Coroutines
+    <a href="#t9-asynchronous-actions-with-coroutines" title="T.9: Asynchronous actions with Coroutines" class="md-nav__link">
+    T.9: Asynchronous actions with Coroutines
   </a>
   
 </li>
@@ -700,41 +818,41 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutotials_summary.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/BehaviorTree/BehaviorTree.CPP/edit/master/docs/tutorials_summary.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
                 <h1 id="summary-of-the-tutorials">Summary of the tutorials</h1>
-<h2 id="tutorial-1-create-your-first-behavior-tree">Tutorial 1: Create your first Behavior Tree</h2>
+<h3 id="t1-create-your-first-behavior-tree">T.1: Create your first Behavior Tree</h3>
 <p>This tutorial demonstrates how to create custom <code>ActionNodes</code> in <strong>C++</strong> and 
 how to compose them into Trees using the <strong>XML</strong> language.</p>
-<h2 id="tutorial-2-parametrize-a-node-with-ports">Tutorial 2: Parametrize a Node with Ports</h2>
+<h3 id="t2-parametrize-a-node-with-ports">T.2: Parametrize a Node with Ports</h3>
 <p>TreeNodes can have both Inputs and Outputs Ports.
 This tutorial demonstrates how to use ports to create parametrized Nodes.</p>
-<h2 id="tutorial-3-generic-and-type-safe-ports">Tutorial 3: Generic and type-safe Ports</h2>
+<h3 id="t3-generic-and-type-safe-ports">T.3: Generic and type-safe Ports</h3>
 <p>This tutorial is an extension of the previous one.</p>
 <p>It shows how to create and use ports with generic and user-defined
 types.</p>
-<h2 id="tutorial-4-difference-between-sequence-and-reactivesequence">Tutorial 4: Difference between Sequence and ReactiveSequence</h2>
+<h3 id="t4-difference-between-sequence-and-reactivesequence">T.4: Difference between Sequence and ReactiveSequence</h3>
 <p>Reactive ControlNodes can be a very powerful tool to create sophisticated
 behaviors.</p>
 <p>This example shows the difference between a standard Sequence and a Reactive one.</p>
-<h2 id="tutorial-5-how-to-reuse-entire-subtrees">Tutorial 5: How to reuse entire SubTrees</h2>
+<h3 id="t5-how-to-reuse-entire-subtrees">T.5: How to reuse entire SubTrees</h3>
 <p>Reusability and Composability can be done at the level of a single Node,
 but also with entire Trees, which can become SubTrees of a "parent" Tree.</p>
 <p>In this tutorial we will also introduce the builtin Loggers.</p>
-<h2 id="tutorial-6-remapping-of-ports-between-subtrees-and-their-parents">Tutorial 6: Remapping of Ports between SubTrees and their parents</h2>
+<h3 id="t6-remapping-of-ports-between-subtrees-and-their-parents">T.6: Remapping of Ports between SubTrees and their parents</h3>
 <p>Any Tree/SubTree in the system has its own isolated BlackBoard.</p>
 <p>In this tutorial we extend the concept or Ports to SubTrees, using 
 port remapping.</p>
-<h2 id="tutorial-7-how-to-wrap-legacy-code-in-a-non-intrusive-way">Tutorial 7: How to wrap legacy code in a non intrusive way</h2>
+<h3 id="t7-how-to-wrap-legacy-code-in-a-non-intrusive-way">T.7: How to wrap legacy code in a non intrusive way</h3>
 <p>This tutorial shows one of the many possible ways to wrap an existing code
 into the <code>BehavioTree.CPP</code> infrastructure.</p>
-<h2 id="tutorial-8-parametrization-without-ports">Tutorial 8: Parametrization without Ports</h2>
+<h3 id="t8-passing-arguments-to-nodes-without-ports">T.8: Passing arguments to Nodes without Ports</h3>
 <p>If your custom Node has a lot of ports, it is probably a sign that you didn't 
 understand the problem that Ports are supposed to solve ;)</p>
 <p>In this tutorial, we show how to pass arguments to a custom Node class without 
 polluting your interfaces with pointless Input Ports.</p>
-<h2 id="tutorial-9-asynchronous-actions-with-coroutines">Tutorial 9: Asynchronous actions with Coroutines</h2>
+<h3 id="t9-asynchronous-actions-with-coroutines">T.9: Asynchronous actions with Coroutines</h3>
 <p>Coroutines are a powerful tool to create asynchronous code.</p>
 <p>In this tutorial, we outline the typical design pattern to use when you 
 implement an asynchronous Action using <code>CoroActionNode</code>.</p>
@@ -754,6 +872,41 @@ implement an asynchronous Action using <code>CoroActionNode</code>.</p>
       
         
 <footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../xml_format/" title="The XML format" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                The XML format
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../tutorial_01_first_tree/" title="Tutorial 1: Create a Tree" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Tutorial 1: Create a Tree
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
