@@ -12,27 +12,30 @@ It was designed to be flexible, easy to use, reactive and fast.
 Even if our main use-case is __robotics__, you can use this library to build
 __AI for games__, or to replace Finite State Machines in you application.
 
-__BehaviorTree.CPP__ has many interesting features, when compared to other implementations:
+There are few features that make __BehaviorTree.CPP__ unique, when compared to other implementations:
 
-- It makes asynchronous Actions, i.e. non-blocking, a first-class citizen.
+- It makes __asynchronous Actions__, i.e. non-blocking, a first-class citizen.
 
-- You can build reactive behaviors that execute multiple Actions concurrently.
+- You can build __reactive__ behaviors that execute multiple Actions concurrently.
 
-- It allows the creation of Trees at run-time, using a textual representation (XML);
-the fact that is written in C++ __does not__ imply that Trees are hard-coded.
+- Even if it is written in __C++__, Trees are defined using a Domain Specific Scripting 
+  __scripting language__ (based on XML), and can be loaded at run-time; in other words, 
+  even if it written in C++, Trees are _not_ hard-coded.
 
-- You can link staticaly you custom TreeNodes or convert them into plugins 
-which are loaded at run-time.
+- You can link staticaly you custom TreeNodes or convert them into __plugins __
+which can be loaded at run-time.
+
+- It provides a type-safe and flexible mechanism to do __Dataflow__ between
+  Nodes of the Tree.
 
 - It includes a __logging/profiling__ infrastructure that allows the user 
 to visualize, record, replay and analyze state transitions.
 
-- It provides a type-safe and flexible mechanism to do dataflow between
-  Nodes of the Tree.
+- Last but not least: it is well [documented](https://www.behaviortree.dev/)!
 
 # Documentation
 
-https://behaviortree.github.io/BehaviorTree.CPP/
+https://www.behaviortree.dev/
 
 # About version 3.X
 
@@ -43,23 +46,23 @@ of the __Component Developer__ from the __Behavior Designer__.
 In practice, this means that:
 
 - Custom TreeNodes must be reusable building blocks. 
- You should be able to implement them once and reuse them in many contextes.
+ You should be able to implement them once and reuse them to build many behaviors.
 
 - To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
 not need to read nor modify the source code of the a given TreeNode.
 
-Version 3 of this library introduce some dramatic changes in the API, but 
+Version __3.x__ of this library introduces some dramatic changes in the API, but 
 it was necessary to reach this goal.
 
-if you used version 2.X in the past, you can find 
-[here](https://behaviortree.github.io/BehaviorTree.CPP/MigrationGuide).
-the Migration Guide.
+If you used version 2.X in the past, you can 
+[find here the Migration Guide](https://behaviortree.github.io/BehaviorTree.CPP/MigrationGuide).
+
 
 # GUI Editor
 
 Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
 
-If you are looking for a more fancy graphical user interface, check 
+If you are looking for a more fancy graphical user interface (and I know your do) check 
 [Groot](https://github.com/BehaviorTree/Groot) out.
 
 ![Groot screenshot](groot-screenshot.png)
