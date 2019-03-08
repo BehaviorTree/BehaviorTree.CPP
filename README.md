@@ -1,6 +1,11 @@
 ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
 ![Version](https://img.shields.io/badge/version-v3.0-green.svg)
-[![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=main)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
+
+
+Travis (Linux): [![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=main)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
+
+AppVeyor (Windows): [![Build status](https://ci.appveyor.com/api/projects/status/8lawroklgnrkg38f?svg=true)](https://ci.appveyor.com/project/facontidavide59577/behaviortree-cpp)
+
 
 Question? [![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BehaviorTree-ROS/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
 
