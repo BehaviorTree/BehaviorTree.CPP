@@ -14,7 +14,7 @@ remapping is done entirely in the XML definition.
 
 ## Example
 
-Le't consider this Beahavior Tree.
+Let's consider this Beahavior Tree.
 
 ```XML hl_lines="8 9"
 <root main_tree_to_execute = "MainTree">
@@ -49,7 +49,7 @@ Le't consider this Beahavior Tree.
 
 You may notice that:
 
-- We have a `MainTree` that include a suntree called `MoveRobot`.
+- We have a `MainTree` that includes a subtree called `MoveRobot`.
 - We want to "connect" (i.e. "remap") ports inside the `MoveRobot` subtree
 with other ports in the `MainTree`.
 - This is done using the XMl tag __<remap>__, where the words __internal/external__
@@ -64,7 +64,7 @@ respective blackboard, not the relationship in terms of Behavior Trees.
 ![ports remapping](images/t06_remapping.png)
 
 In terms of C++, we don't need to do much. For debugging purpose, we may show some
-information about the current state of a blackaboard with the method `debugMessage()`.
+information about the current state of a blackboard with the method `debugMessage()`.
 
 ```C++
 int main()

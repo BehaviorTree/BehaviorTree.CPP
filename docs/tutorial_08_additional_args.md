@@ -11,9 +11,9 @@ constructor with the following signature
 In same cases, it is desirable to pass to the constructor of our class 
 additional arguments, parameters, pointers, references, etc.
 
-We will just use with the word _"parameter"_ for the rest of the tutorial.
+We will just use the word _"parameter"_ for the rest of the tutorial.
 
-Even if, theoretically, this parameters can be passed using Input Ports, 
+Even if, theoretically, these parameters can be passed using Input Ports, 
 that would be the wrong way to do it if:
 
 - The parameters are know at _deployment-time_.
@@ -24,7 +24,7 @@ If all these conditions are met, using ports is just cumbersome and highly disco
 
 ## The C++ example
 
-Next, we can see two alternatice ways to pass parameters to a class: 
+Next, we can see two alternative ways to pass parameters to a class: 
 either as arguments of the constructor of the class or in an `init()` method.
 
 ```C++

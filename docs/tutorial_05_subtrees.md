@@ -1,6 +1,6 @@
 # Composition of Behaviors with Subtree
 
-We can build large scale behavior composing togheter smaller and reusable
+We can build large scale behavior composing together smaller and reusable
 behaviors into larger ones.
 
 In other words, we want to create __hierarchical__ behavior trees. 
@@ -57,7 +57,7 @@ The desired behavior is:
 
 ## Loggers
 
-On the C++ side we don't need to do anything to build reusable subtree.
+On the C++ side we don't need to do anything to build reusable subtrees.
 
 Therefore we take this opportunity to introduce another neat feature of
 _BehaviorTree.CPP_ : __Loggers__.
