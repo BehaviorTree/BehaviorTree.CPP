@@ -140,9 +140,9 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     if (it == builders_.end())
     {
         std::cerr << ID << " not included in this list:" << std::endl;
-        for (const auto& it: builders_)
+        for (const auto& builder_it: builders_)
         {
-            std::cerr << it.first << std::endl;
+            std::cerr << builder_it.first << std::endl;
         }
         throw RuntimeError("BehaviorTreeFactory: ID [", ID, "] not registered");
     }
