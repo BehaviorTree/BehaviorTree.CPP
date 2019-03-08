@@ -34,6 +34,13 @@ NodeBuilder;
 
 constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 
+#ifndef BT_PLUGIN_EXPORT
+
+#define BT_REGISTER_NODES(factory)                                                                 \
+        static void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+
+#else
+
 #ifdef __linux__
 
 #define BT_REGISTER_NODES(factory)                                                                 \
@@ -42,14 +49,10 @@ constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 
 #elif _WIN32
 
-	#ifdef WIN_EXPORT
-
-	#define BT_REGISTER_NODES(factory)                                                                 \
+#define BT_REGISTER_NODES(factory)                                                                 \
 		__declspec(dllexport) void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
-	#else
-	#define BT_REGISTER_NODES(factory)                                                                 \
-		static void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
-		#endif
+#endif
+
 #endif
 
 
