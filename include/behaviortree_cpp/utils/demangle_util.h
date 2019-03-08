@@ -64,47 +64,6 @@ inline void demangle_free( char const * name ) noexcept
     std::free( const_cast< char* >( name ) );
 }
 
-//inline std::string demangle( char const * name )
-//{
-//    scoped_demangled_name demangled_name( name );
-//    char const * const p = demangled_name.get();
-//    if( p )
-//    {
-//        return p;
-//    }
-//    else
-//    {
-//        return name;
-//    }
-//}
-
-inline std::string demangle(const std::type_info* info)
-{
-    if( !info )
-    {
-        return "void";
-    }
-    if( info == &typeid (std::string) )
-    {
-        return "std::string";
-    }
-    scoped_demangled_name demangled_name( info->name() );
-    char const * const p = demangled_name.get();
-    if( p )
-    {
-        return p;
-    }
-    else
-    {
-        return info->name();
-    }
-}
-
-inline std::string demangle(const std::type_info& info)
-{
-    return demangle(&info);
-}
-
 #else
 
 inline char const * demangle_alloc( char const * name ) noexcept
@@ -122,6 +81,33 @@ inline std::string demangle( char const * name )
 }
 
 #endif
+
+inline std::string demangle(const std::type_info* info)
+{
+    if (!info)
+    {
+        return "void";
+    }
+    if (info == &typeid(std::string))
+    {
+        return "std::string";
+    }
+    scoped_demangled_name demangled_name(info->name());
+    char const* const p = demangled_name.get();
+    if (p)
+    {
+        return p;
+    }
+    else
+    {
+        return info->name();
+    }
+}
+
+inline std::string demangle(const std::type_info& info)
+{
+    return demangle(&info);
+}
 
 } // namespace BT
 

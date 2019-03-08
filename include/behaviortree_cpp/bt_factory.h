@@ -33,9 +33,28 @@ typedef std::function<std::unique_ptr<TreeNode>(const std::string&, const NodeCo
 NodeBuilder;
 
 constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
+
+#ifndef BT_PLUGIN_EXPORT
+
+#define BT_REGISTER_NODES(factory)                                                                 \
+        static void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+
+#else
+
+#ifdef __linux__
+
 #define BT_REGISTER_NODES(factory)                                                                 \
     extern "C" void __attribute__((visibility("default")))                                         \
-    BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+        BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+
+#elif _WIN32
+
+#define BT_REGISTER_NODES(factory)                                                                 \
+		__declspec(dllexport) void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+#endif
+
+#endif
+
 
 /**
  * @brief Struct used to store a tree.

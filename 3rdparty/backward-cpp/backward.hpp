@@ -680,6 +680,7 @@ protected:
 };
 
 
+#ifndef BACKWARD_SYSTEM_UNKNOWN
 #if BACKWARD_HAS_UNWIND == 1
 
 namespace details {
@@ -780,7 +781,7 @@ private:
 };
 
 
-#else // BACKWARD_HAS_UNWIND == 0
+#else //  BACKWARD_HAS_UNWIND == 0
 
 template <>
 class StackTraceImpl<system_tag::current_tag>: public StackTraceImplHolder {
@@ -816,6 +817,7 @@ public:
 };
 
 #endif // BACKWARD_HAS_UNWIND
+#endif //BACKWARD_SYSTEM_UNKNOWN
 
 class StackTrace:
 	public StackTraceImpl<system_tag::current_tag> {};

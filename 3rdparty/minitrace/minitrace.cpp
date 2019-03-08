@@ -84,7 +84,7 @@ inline int64_t mtr_time_usec(){
 	}
 	__int64 time;
 	QueryPerformanceCounter((LARGE_INTEGER*)&time);
-  int64_t now = 1.0e6 * ((double) (time - _starttime) / (double) _frequency);
+    int64_t now = static_cast<int64_t>( 1.0e6 * ((double)(time - _starttime) / (double)_frequency));
   if( now <= prev) now = prev + 1;
   prev = now;
   return now;
@@ -225,7 +225,6 @@ void mtr_flush() {
 #ifndef MTR_ENABLED
 	return;
 #endif
-	int i = 0;
 	char linebuf[1024];
 	char arg_buf[256];
 	char id_buf[256];
@@ -236,7 +235,7 @@ void mtr_flush() {
 	int old_tracing = is_tracing;
 	is_tracing = 0;	// Stop logging even if using interlocked increments instead of the mutex. Can cause data loss.
 
-	for (i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		raw_event_t *raw = &buffer[i];
 		int len;
 		switch (raw->arg_type) {
@@ -277,13 +276,14 @@ void mtr_flush() {
 		// On Windows, we often end up with backslashes in category.
 		{
 			char temp[256];
-			int len = (int)strlen(cat);
-			int i;
-			if (len > 255) len = 255;
-			for (i = 0; i < len; i++) {
-				temp[i] = cat[i] == '\\' ? '/' : cat[i];
+			int cat_len = (int)strlen(cat);
+            if (cat_len > 255)
+                cat_len = 255;
+            for (int a = 0; a < cat_len; a++)
+            {
+				temp[a] = cat[a] == '\\' ? '/' : cat[a];
 			}
-			temp[len] = 0;
+            temp[cat_len] = 0;
 			cat = temp;
 		}
 #endif
@@ -329,7 +329,7 @@ void internal_mtr_raw_event(const char *category, const char *name, char ph, voi
     int64_t x;
     memcpy(&x, id, sizeof(int64_t));
     ev->ts = x;
-    ev->a_double = (ts - x);
+    ev->a_double = static_cast<double>(ts - x);
   } else {
     ev->ts = ts;
   }

@@ -1,0 +1,25 @@
+clone_depth: 5
+
+environment:
+  matrix:
+#   - GENERATOR : "MinGW Makefiles"
+#      PLATFORM: x86
+    - GENERATOR : "Visual Studio 15 2017 Win64"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      PLATFORM: x64
+
+      
+configuration:
+  - Release
+
+install:
+  - set PATH=C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
+
+
+before_build:
+  - mkdir build
+  - cd build
+  - cmake "-G%GENERATOR%" ..
+
+build_script:
+- cmake --build .
