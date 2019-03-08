@@ -87,7 +87,7 @@ public:
 	}
 
 private:
-    bool _open; // shrared information
+    bool _open; // shared information
 };
 
 ``` 
@@ -100,7 +100,7 @@ We can build a `SimpleActionNode` from any of these functors:
 
 ## Create a tree dynamically with an XML
 
-Let's consider the followinf XML file named __my_tree.xml__:
+Let's consider the following XML file named __my_tree.xml__:
 
 
 ``` XML
