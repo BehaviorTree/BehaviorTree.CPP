@@ -144,4 +144,21 @@ Optional<StringView> TreeNode::getRemappedKey(StringView port_name, StringView r
     return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
+void TreeNode::modifyPortsRemapping(const PortsRemapping &new_remapping)
+{
+    for (const auto& new_it: new_remapping)
+    {
+        auto it = config_.input_ports.find( new_it.first );
+        if( it != config_.input_ports.end() )
+        {
+            it->second = new_it.second;
+        }
+        it = config_.output_ports.find( new_it.first );
+        if( it != config_.output_ports.end() )
+        {
+            it->second = new_it.second;
+        }
+    }
+}
+
 }   // end namespace

@@ -59,7 +59,7 @@ class TreeNode
      * @brief TreeNode main constructor.
      *
      * @param name     name of the instance, not the type.
-     * @param config   information about input/outpu ports. See NodeConfiguration
+     * @param config   information about input/output ports. See NodeConfiguration
      *
      * Note: If your custom node has ports, the derived class must implement:
      *
@@ -160,6 +160,8 @@ class TreeNode
         registration_ID_.assign(ID.data(), ID.size());
     }
 
+    void modifyPortsRemapping(const PortsRemapping& new_remapping);
+
   private:
     const std::string name_;
 
@@ -173,7 +175,7 @@ class TreeNode
 
     const uint16_t uid_;
 
-    const NodeConfiguration config_;
+    NodeConfiguration config_;
 
     std::string registration_ID_;
 };
