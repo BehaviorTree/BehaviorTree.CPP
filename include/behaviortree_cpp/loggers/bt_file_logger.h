@@ -27,7 +27,7 @@ class FileLogger : public StatusChangeLogger
 
     std::vector<SerializedTransition> buffer_;
 
-    bool buffer_max_size_;
+    size_t buffer_max_size_;
 };
 
 }   // end namespace
