@@ -52,7 +52,7 @@ An BB key is represented using this syntax: `{key_name}`.
 In the following example:
 
 - the first child of the Sequence prints "Hello",
-- the second child reads and wrints the value contained in the entry of 
+- the second child reads and writes the value contained in the entry of 
   the blackboard called "my_message"; 
 
 ``` XML
