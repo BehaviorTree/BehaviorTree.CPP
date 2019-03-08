@@ -17,14 +17,14 @@ They share the following rules:
 - If a child returns __SUCCESS__, it stops and returns __SUCCESS__.
   All the children are halted. 
 
-The two version of fallback differ in the way they react when a child returns
+The two versions of Fallback differ in the way they react when a child returns
 RUNNING:
 
-- Plain old Fallback will return RUNNING and, the next time it is ticked,
- it will tick the same child.
+- FallbackStar will return RUNNING and the next time it is ticked,
+ it will tick the same child where it left off before.
  
 - Plain old Fallback will return RUNNING and the index of the next child to
- execute is reset.
+ execute is reset after each execution.
 
 ## Fallback
 

@@ -1,21 +1,21 @@
 # Async Actions using Coroutines
 
 BehaviorTree.CPP provides two easy-to-use abstractions to create an 
-asynchronous Action, i.e those actions which:
+asynchronous Action, i.e. those actions which:
 
 - Take a long time to be concluded.
 - May return "RUNNING".
 - Can be __halted__.
 
-The first class is __AsyncActionNode__, that execute the tick() method in a
+The first class is a __AsyncActionNode__ that executes the tick() method in a
 _separate thread_.
 
-In this tutorial, we introduce __CoroActionNode__, a different action that uses
+In this tutorial, we introduce the __CoroActionNode__, a different action that uses
 [coroutines](https://www.geeksforgeeks.org/coroutines-in-c-cpp/) 
 to achieve similar results.
 
 The main reason is that Coroutines do not spawn a new thread and are much more efficient.
-Furthermore, you don't need to worry about thread-safety in your code..
+Furthermore, you don't need to worry about thread-safety in your code...
 
 In Coroutines, the user should explicitly call a __yield__ method when 
 he/she wants the execution of the Action to be suspended.
@@ -25,7 +25,7 @@ he/she wants the execution of the Action to be suspended.
 
 ## The C++ source example
 
-The next example can be used as a "template" of your own implementation.
+The next example can be used as a "template" for your own implementation.
 
 
 ``` c++
@@ -113,7 +113,7 @@ class MyAsyncAction: public CoroActionNode
 
 ```
 
-As you may notice, the action "pretends" to wait for a request message;
+As you may have noticed, the action "pretends" to wait for a request message;
 the latter will arrive after _100 milliseconds_.
 
 To spice things up, we create a Sequence with two actions, but the entire 

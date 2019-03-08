@@ -27,13 +27,13 @@ of the Tree.
 
 An "entry" of the Blackboard is a __key/value pair__.
 
-Inputs ports can read an entry in the Blackboard, whilst an Output port
+Input ports can read an entry in the Blackboard, whilst an Output port
 can write into an entry.
 
 Let's suppose that we want to create an ActionNode called `SaySomething`, 
 that should print a given string on `std::cout`.
 
-Such string will be passed using an input port called `message`.
+Such a string will be passed using an input port called `message`.
 
 Consider these alternative XML syntaxes:
 
@@ -48,7 +48,7 @@ The attribute `message` in the __first node__ means:
 
 The message is read from the XML file, therefore it can not change at run-time.
 
-The syntax of the __second node__, instead, means: 
+The syntax of the __second node__ instead means: 
     
     "Read the current value in the entry of the blackboard called 'greetings' ".
 
@@ -124,7 +124,7 @@ check the validity of the returned value and to decide what to do:
 An input port pointing to the entry of the blackboard will be valid only
 if another node have already wrritten "something" inside that same entry.
 
-`ThinkWhatToSay` is an example of Node that uses a __output port__ to writes a 
+`ThinkWhatToSay` is an example of Node that uses an __output port__ to write a 
 string into an entry.
 
 ```C++
@@ -151,7 +151,7 @@ class ThinkWhatToSay : public SyncActionNode
 };
 ```
 
-Alternatively, most of the times for debugging purposes, it is possible to write a
+Alternatively, most of the time for debugging purposes, it is possible to write a
 static value into an entry using the built-in Actions called `SetBlackboard`.
 
 ```XML

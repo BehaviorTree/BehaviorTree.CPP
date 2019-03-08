@@ -8,7 +8,7 @@ The __leaves__ of the tree are the actual commands, i.e. the place where
 our coordinating component interacts with the rest of the system.
 
 For instance, in a service-oriented architecture, the leaves would contain
-the "client" code that communicate with the "server" that performs the
+the "client" code that communicates with the "server" that performs the
 operation.
 
 In the following example, we can see two Actions executed in a sequence,
@@ -19,7 +19,7 @@ In the following example, we can see two Actions executed in a sequence,
 The other nodes of the tree, those which are __not leaves__, control the 
 "flow of execution".
 
-To better understand how this control flow takes place , imagine a signal 
+To better understand how this control flow takes place, imagine a signal 
 called "__tick__"; it is executed at the __root__ of the tree and it propagates 
 through the branches until it reaches one or multiple leaves.
 
@@ -51,10 +51,10 @@ which child should be ticked next or may return a result to its own parent.
 __ControlNodes__ are nodes which can have 1 to N children. Once a tick
 is received, this tick may be propagated to one or more of the children.
 
-__DecoratorNodes__ is similar to the ControlNode, but it can have only a single child. 
+__DecoratorNodes__ are similar to the ControlNode, but can only have a single child. 
 
 __ActionNodes__ are leaves and do not have any children. The user should 
-implement their own ActionNodes to perform the actual task.
+implement their own ActionNodes to perform the actual tasks.
 
 __ConditionNodes__ are equivalent to ActionNodes, but
 they are always atomic and synchronous, i.e. they must not return RUNNING. 
@@ -65,7 +65,7 @@ They should not alter the state of the system.
 
 ## Examples
 
-To better understand how a BehaviorTrees work, let's focus on some practical
+To better understand how BehaviorTrees work, let's focus on some practical
 examples. For the sake of simplicity we will not take into account what happens
 when an action returns RUNNING.
 
@@ -108,7 +108,7 @@ You can extend your grammar creating your own Decorators.
 ![Simple Decorator: Enter Room](images/DecoratorEnterRoom.png)
 
 The node __Inverter__ is a Decorator that inverts 
-the result returned by its child; Inverter followed by the node called
+the result returned by its child; An Inverter followed by the node called
 __DoorOpen__ is therefore equivalent to 
 
     "Is the door closed?".
@@ -133,9 +133,9 @@ But...
 
 ### Second ControlNode: Fallback
 
-[FallbackNodes](FallbackNode.md), known also as __"Selector"__,
+[FallbackNodes](FallbackNode.md), known also as __"Selectors"__,
 are nodes that can express, as the name suggests, fallback strategies, 
-ie. what to do next if a child returns FAILURE.
+i.e. what to do next if a child returns FAILURE.
 
 It ticks the children in order and:
 
@@ -144,7 +144,7 @@ It ticks the children in order and:
    Fallback returns SUCCESS.
 - If all the children return FAILURE, then the Fallback returns FAILURE too.
 
-In the next example, you can see how Sequence and Fallbacks can be combined:
+In the next example, you can see how Sequences and Fallbacks can be combined:
     
 ![FallbackNodes](images/FallbackBasic.png)  
 

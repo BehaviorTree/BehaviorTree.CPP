@@ -18,7 +18,7 @@ They share the following rules:
 - If the __last__ child returns __SUCCESS__ too, all the children are halted and
  the sequence returns __SUCCESS__.
 
-To understand how the tree ControlNodes differ, refer to the following table:
+To understand how the three ControlNodes differ, refer to the following table:
 
  
 | Type of ControlNode | Child returns FAILURE  |  Child returns RUNNING |
@@ -74,11 +74,11 @@ This node is particularly useful to continuously check Conditions; but
 the user should also be careful when using asynchronous children, to be
 sure that thy are not ticked more often that expected.
 
-Let's take a look to another example:
+Let's take a look at another example:
 
 ![ReactiveSequence](images/ReactiveSequence.png)
 
-`ApproachEnemy` is an __asynchronous__ action that m return RUNNING until
+`ApproachEnemy` is an __asynchronous__ action that returns RUNNING until
 it is, eventually, completed.
 
 The condition `isEnemyVisible` will be called many times and, 
@@ -107,8 +107,8 @@ if it becomes false (i,e, "FAILURE"), `ApproachEnemy` is halted.
 
 ## SequenceStar
 
-Use this ControlNode when you don't want to tick again children that 
-return SUCCESS already
+Use this ControlNode when you don't want to tick children again that 
+already returned SUCCESS.
 
 __Example__:
 

@@ -140,15 +140,15 @@ Expected output:
     Robot says: "mission completed!"
 ```
 
-You may noticed that when `executeTick()` was called, `MoveBase` returned
+You may have noticed that when `executeTick()` was called, `MoveBase` returned
 __RUNNING__ the 1st and 2nd time, and eventually __SUCCESS__ the 3rd time.
 
 `BatteryOK` is executed only once. 
 
-If we use `ReactiveSequence` instead, when the child `MoveBase` returns RUNNING,
+If we use a `ReactiveSequence` instead, when the child `MoveBase` returns RUNNING,
 the sequence is restarted and the condition `BatteryOK` is executed __again__.
 
-If, at any point, `BatteryOK` returned __FAILURE__, the `MoveBase` actions
+If, at any point, `BatteryOK` returned __FAILURE__, the `MoveBase` action
 would be _interrupted_ (_halted_, to be specific).
 
 ```XML hl_lines="3"

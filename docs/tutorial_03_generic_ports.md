@@ -4,7 +4,7 @@ In the previous tutorials we introduced input and output ports, where the
 type of the port itself was a `std::string`.
 
 This is the easiest port type to deal with, because any parameter passed
-from the XML definition will be (obviosly) a string.
+from the XML definition will be (obviously) a string.
 
 Next, we will describe how to use any generic C++ type in your code.
 
@@ -13,7 +13,7 @@ Next, we will describe how to use any generic C++ type in your code.
 __BehaviorTree.CPP__ supports automatic conversion of strings into common
 types, such as `int`, `long`, `double`, `bool`, `NodeStatus`, etc.
 
-But user defined types can be supported easily. For instance:
+But user defined types can be supported easily as well. For instance:
 
 ```C++
 // We want to be able to use this custom type
@@ -69,7 +69,7 @@ About the previous code:
 ## Example
 
 Similarly to the previous tutorial, we can create two custom Actions,
-one will writes into a port and the other will reads from a port.
+one will write into a port and the other will read from a port.
 
 
 ```C++
@@ -123,7 +123,7 @@ public:
 };
 ```   
 
-We can now connect input/output ports as usual, pointing at the same 
+We can now connect input/output ports as usual, pointing to the same 
 entry of the Blackboard.
 
 The tree in the next example is a Sequence of 4 actions
