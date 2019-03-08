@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+include_directories( ../sample_nodes )
+
 
 # The plugin libdummy_nodes.so can be linked statically or
 # loaded dynamically at run-time.

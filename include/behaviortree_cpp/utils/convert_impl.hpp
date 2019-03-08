@@ -143,7 +143,7 @@ inline void checkUpperLimitFloat(const From& from)
 template <typename From, typename To>
 inline void checkLowerLimitFloat(const From& from)
 {
-    if (from < -std::numeric_limits<To>::max())
+    if ( from < -std::numeric_limits<To>::max())
     {
         throw std::runtime_error("Value too small.");
     }
@@ -279,8 +279,6 @@ inline EnableIf<floating_to_unsigned_conversion<SRC, DST>> convertNumber(const S
     {
         throw std::runtime_error("Value is negative and can't be converted to signed");
     }
-
-    checkLowerLimitFloat<SRC, DST>(from);
 
     if (from != static_cast<SRC>(static_cast<DST>(from)))
     {

@@ -23,7 +23,7 @@ class SimpleString
         {
             _data.ptr = new char[_size + 1];
         }
-        strncpy(data(), input_data, _size);
+        std::memcpy(data(), input_data, _size);
         data()[_size] = '\0';
     }
 

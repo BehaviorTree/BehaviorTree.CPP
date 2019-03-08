@@ -134,7 +134,7 @@ inline void destroy(routine_t id)
 	ordinator.indexes.push_back(id);
 }
 
-inline void __stdcall entry(LPVOID lpParameter)
+inline void __stdcall entry(LPVOID )
 {
 	routine_t id = ordinator.current;
 	Routine *routine = ordinator.routines[id-1];

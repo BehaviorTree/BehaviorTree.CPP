@@ -220,14 +220,14 @@ public:
 private:
 	const char *category_;
 	const char *name_;
-  int64_t start_time_;
+    int64_t start_time_;
 };
 
 // Only outputs a block if execution time exceeded the limit.
 // TODO: This will effectively call mtr_time_usec twice at the end, which is bad.
 class MTRScopedTraceLimit {
 public:
-	MTRScopedTraceLimit(const char *category, const char *name, double limit_s)
+    MTRScopedTraceLimit(const char* category, const char* name, int64_t limit_s)
 		: category_(category), name_(name), limit_(limit_s) {
     start_time_ = mtr_time_usec();
 	}
@@ -241,8 +241,8 @@ public:
 private:
 	const char *category_;
 	const char *name_;
-	double start_time_;
-	double limit_;
+    int64_t start_time_;
+    int64_t limit_;
 };
 
 class MTRScopedTraceArg {

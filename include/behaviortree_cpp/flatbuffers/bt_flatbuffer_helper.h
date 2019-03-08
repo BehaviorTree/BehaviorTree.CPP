@@ -152,9 +152,9 @@ inline SerializedTransition SerializeTransition(uint16_t UID,
 {
     using namespace std::chrono;
     SerializedTransition buffer;
-    auto usec = duration_cast<microseconds>(timestamp).count();
-    uint32_t t_sec = usec / 1000000;
-    uint32_t t_usec = usec % 1000000;
+    int64_t usec = duration_cast<microseconds>(timestamp).count();
+    int64_t t_sec = usec / 1000000;
+    int64_t t_usec = usec % 1000000;
 
     flatbuffers::WriteScalar(&buffer[0], t_sec);
     flatbuffers::WriteScalar(&buffer[4], t_usec);

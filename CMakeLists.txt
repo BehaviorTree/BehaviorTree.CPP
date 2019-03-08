@@ -84,12 +84,12 @@ else()
     find_package(GTest)
 
     if(NOT GTEST_FOUND)
-      message(WARNING " GTest not found!")
+      message(WARNING " GTest missing!")
     endif(NOT GTEST_FOUND)
 
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+ #   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+ #   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+ #   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 endif()
 if(NOT MSVC)
@@ -109,7 +109,6 @@ list(APPEND BT_SOURCE
     src/condition_node.cpp
     src/control_node.cpp
     src/shared_library.cpp
-    src/shared_library_UNIX.cpp
     src/tree_node.cpp
     src/xml_parsing.cpp
 
@@ -139,8 +138,18 @@ if (NOT backward_ros_FOUND)
 endif()
 
 ######################################################
+if (UNIX)
+	list(APPEND BT_SOURCE src/shared_library_UNIX.cpp )
+	add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
+endif()
 
-add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
+if (WIN32)
+	list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
+	add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
+endif()
+
+
+
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES})
 
