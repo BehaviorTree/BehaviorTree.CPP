@@ -132,14 +132,7 @@ list(APPEND BT_SOURCE
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_minitrace_logger.cpp
-
-    3rdparty/tinyXML2/tinyxml2.cpp
-    3rdparty/minitrace/minitrace.cpp
     )
-if (NOT backward_ros_FOUND)
-    list(APPEND BT_SOURCE
-        3rdparty/backward-cpp/backward.cpp)
-endif()
 
 ######################################################
 if (UNIX)
@@ -152,10 +145,21 @@ if (WIN32)
 	add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
 endif()
 
+set( SRC_3rd_PARTY
+    3rdparty/tinyXML2/tinyxml2.cpp
+    3rdparty/minitrace/minitrace.cpp
+    )
+if (NOT backward_ros_FOUND)
+    list(APPEND SRC_3rd_PARTY
+        3rdparty/backward-cpp/backward.cpp)
+endif()
 
+add_library(${BEHAVIOR_TREE_LIBRARY}_extra STATIC ${SRC_3rd_PARTY} )
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES})
+
+target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE ${BEHAVIOR_TREE_LIBRARY}_extra )
 
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
