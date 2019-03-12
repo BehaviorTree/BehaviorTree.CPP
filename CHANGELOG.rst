@@ -2,6 +2,33 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* moving to C++14... deal with it
+* updated tinyXML2. Should fix several issues too
+* add "d" to debug library on Windows
+* fixed compilation error on Windows x64 (issue #63)
+* Improved MSVC compilation
+  Added _CRT_SECURE_NO_WARNINGS flag for msvc compilation
+* adding TreeNode::modifyPortsRemapping that might be useful in the future
+* Merge pull request #64 from luminize/patch-1
+  docs/xml_format.md
+* Merge pull request #65 from luminize/patch-2
+  docs/tutorial_01_first_tree.md: fix typo
+* docs/tutorial_01_first_tree.md: fix typo
+* fix compilation in Windows/Release
+* remove a warning in Windows
+* Update README.md
+* Merge branch 'windows_compilation'
+* fix issue #63 : compile on windows
+* Update .travis.yml
+* Create .appveyor.yml
+* fix compilation on windows
+* fix potential issue
+* bug fix
+* Update README.md
+* Contributors: Bas de Bruijn,  Davide Faconti, Jimmy Delas, hlzl
+
 3.0.2 (2019-03-04)
 ------------------
 * make flatbuffers visible to other project (such as Groot)
