@@ -735,11 +735,11 @@ through <strong>ports</strong>, that is simple to use but also flexible and type
 <p>A "blackboard" is a simple <strong>key/value storage</strong> shared by all the nodes
 of the Tree.</p>
 <p>An "entry" of the Blackboard is a <strong>key/value pair</strong>.</p>
-<p>Inputs ports can read an entry in the Blackboard, whilst an Output port
+<p>Input ports can read an entry in the Blackboard, whilst an Output port
 can write into an entry.</p>
 <p>Let's suppose that we want to create an ActionNode called <code>SaySomething</code>, 
 that should print a given string on <code>std::cout</code>.</p>
-<p>Such string will be passed using an input port called <code>message</code>.</p>
+<p>Such a string will be passed using an input port called <code>message</code>.</p>
 <p>Consider these alternative XML syntaxes:</p>
 <div class="codehilite"><pre><span></span>    <span class="nt">&lt;SaySomething</span> <span class="na">name=</span><span class="s">&quot;first&quot;</span>    <span class="na">message=</span><span class="s">&quot;hello world&quot;</span> <span class="nt">/&gt;</span>
     <span class="nt">&lt;SaySomething</span> <span class="na">name=</span><span class="s">&quot;second&quot;</span>   <span class="na">message=</span><span class="s">&quot;{greetings}&quot;</span> <span class="nt">/&gt;</span>
@@ -751,7 +751,7 @@ that should print a given string on <code>std::cout</code>.</p>
 
 
 <p>The message is read from the XML file, therefore it can not change at run-time.</p>
-<p>The syntax of the <strong>second node</strong>, instead, means: </p>
+<p>The syntax of the <strong>second node</strong> instead means: </p>
 <div class="codehilite"><pre><span></span>&quot;Read the current value in the entry of the blackboard called &#39;greetings&#39; &quot;.
 </pre></div>
 
@@ -819,7 +819,7 @@ check the validity of the returned value and to decide what to do:</p>
 <h2 id="output-ports">Output ports</h2>
 <p>An input port pointing to the entry of the blackboard will be valid only
 if another node have already wrritten "something" inside that same entry.</p>
-<p><code>ThinkWhatToSay</code> is an example of Node that uses a <strong>output port</strong> to writes a 
+<p><code>ThinkWhatToSay</code> is an example of Node that uses an <strong>output port</strong> to write a 
 string into an entry.</p>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">ThinkWhatToSay</span> <span class="o">:</span> <span class="k">public</span> <span class="n">SyncActionNode</span>
 <span class="p">{</span>
@@ -844,7 +844,7 @@ string into an entry.</p>
 <span class="p">};</span>
 </pre></div>
 
-<p>Alternatively, most of the times for debugging purposes, it is possible to write a
+<p>Alternatively, most of the time for debugging purposes, it is possible to write a
 static value into an entry using the built-in Actions called <code>SetBlackboard</code>.</p>
 <div class="codehilite"><pre><span></span> <span class="nt">&lt;SetBlackboard</span>   <span class="na">output_key=</span><span class="s">&quot;the_answer&quot;</span> <span class="na">value=</span><span class="s">&quot;The answer is 42&quot;</span> <span class="nt">/&gt;</span>
 </pre></div>

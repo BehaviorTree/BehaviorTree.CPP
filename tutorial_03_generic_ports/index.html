@@ -699,12 +699,12 @@
 <p>In the previous tutorials we introduced input and output ports, where the
 type of the port itself was a <code>std::string</code>.</p>
 <p>This is the easiest port type to deal with, because any parameter passed
-from the XML definition will be (obviosly) a string.</p>
+from the XML definition will be (obviously) a string.</p>
 <p>Next, we will describe how to use any generic C++ type in your code.</p>
 <h2 id="parsing-a-string">Parsing a string</h2>
 <p><strong>BehaviorTree.CPP</strong> supports automatic conversion of strings into common
 types, such as <code>int</code>, <code>long</code>, <code>double</code>, <code>bool</code>, <code>NodeStatus</code>, etc.</p>
-<p>But user defined types can be supported easily. For instance:</p>
+<p>But user defined types can be supported easily as well. For instance:</p>
 <div class="codehilite"><pre><span></span><span class="c1">// We want to be able to use this custom type</span>
 <span class="k">struct</span> <span class="n">Position2D</span> 
 <span class="p">{</span> 
@@ -753,7 +753,7 @@ with a <em>semicolon</em>.</p>
 </ul>
 <h2 id="example">Example</h2>
 <p>Similarly to the previous tutorial, we can create two custom Actions,
-one will writes into a port and the other will reads from a port.</p>
+one will write into a port and the other will read from a port.</p>
 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">CalculateGoal</span><span class="o">:</span> <span class="k">public</span> <span class="n">SyncActionNode</span>
 <span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
@@ -803,7 +803,7 @@ one will writes into a port and the other will reads from a port.</p>
 <span class="p">};</span>
 </pre></div>
 
-<p>We can now connect input/output ports as usual, pointing at the same 
+<p>We can now connect input/output ports as usual, pointing to the same 
 entry of the Blackboard.</p>
 <p>The tree in the next example is a Sequence of 4 actions</p>
 <ul>

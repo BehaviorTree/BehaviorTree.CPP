@@ -687,7 +687,7 @@ of its subtrees.</p>
 <p>Once again, you <strong>won't</strong> need to modify your C++ implementation since this 
 remapping is done entirely in the XML definition.</p>
 <h2 id="example">Example</h2>
-<p>Le't consider this Beahavior Tree.</p>
+<p>Let's consider this Beahavior Tree.</p>
 <div class="codehilite"><pre><span></span><span class="nt">&lt;root</span> <span class="na">main_tree_to_execute =</span> <span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
 
     <span class="nt">&lt;BehaviorTree</span> <span class="na">ID=</span><span class="s">&quot;MainTree&quot;</span><span class="nt">&gt;</span>
@@ -720,7 +720,7 @@ remapping is done entirely in the XML definition.</p>
 
 <p>You may notice that:</p>
 <ul>
-<li>We have a <code>MainTree</code> that include a suntree called <code>MoveRobot</code>.</li>
+<li>We have a <code>MainTree</code> that includes a subtree called <code>MoveRobot</code>.</li>
 <li>We want to "connect" (i.e. "remap") ports inside the <code>MoveRobot</code> subtree
 with other ports in the <code>MainTree</code>.</li>
 <li>This is done using the XMl tag <strong><remap></strong>, where the words <strong>internal/external</strong>
@@ -731,7 +731,7 @@ with other ports in the <code>MainTree</code>.</li>
 respective blackboard, not the relationship in terms of Behavior Trees.</p>
 <p><img alt="ports remapping" src="../images/t06_remapping.png" /></p>
 <p>In terms of C++, we don't need to do much. For debugging purpose, we may show some
-information about the current state of a blackaboard with the method <code>debugMessage()</code>.</p>
+information about the current state of a blackboard with the method <code>debugMessage()</code>.</p>
 <div class="codehilite"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="n">BT</span><span class="o">::</span><span class="n">BehaviorTreeFactory</span> <span class="n">factory</span><span class="p">;</span>

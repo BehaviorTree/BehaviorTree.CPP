@@ -679,25 +679,25 @@
                 
                 <h1 id="async-actions-using-coroutines">Async Actions using Coroutines</h1>
 <p>BehaviorTree.CPP provides two easy-to-use abstractions to create an 
-asynchronous Action, i.e those actions which:</p>
+asynchronous Action, i.e. those actions which:</p>
 <ul>
 <li>Take a long time to be concluded.</li>
 <li>May return "RUNNING".</li>
 <li>Can be <strong>halted</strong>.</li>
 </ul>
-<p>The first class is <strong>AsyncActionNode</strong>, that execute the tick() method in a
+<p>The first class is a <strong>AsyncActionNode</strong> that executes the tick() method in a
 <em>separate thread</em>.</p>
-<p>In this tutorial, we introduce <strong>CoroActionNode</strong>, a different action that uses
+<p>In this tutorial, we introduce the <strong>CoroActionNode</strong>, a different action that uses
 <a href="https://www.geeksforgeeks.org/coroutines-in-c-cpp/">coroutines</a> 
 to achieve similar results.</p>
 <p>The main reason is that Coroutines do not spawn a new thread and are much more efficient.
-Furthermore, you don't need to worry about thread-safety in your code..</p>
+Furthermore, you don't need to worry about thread-safety in your code...</p>
 <p>In Coroutines, the user should explicitly call a <strong>yield</strong> method when 
 he/she wants the execution of the Action to be suspended.</p>
 <p><code>CoroActionNode</code> wraps this <code>yield</code> function into a convenient method 
 <code>setStatusRunningAndYield()</code>. </p>
 <h2 id="the-c-source-example">The C++ source example</h2>
-<p>The next example can be used as a "template" of your own implementation.</p>
+<p>The next example can be used as a "template" for your own implementation.</p>
 <div class="codehilite"><pre><span></span><span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span> <span class="n">Milliseconds</span><span class="p">;</span>
 
 <span class="k">class</span> <span class="nc">MyAsyncAction</span><span class="o">:</span> <span class="k">public</span> <span class="n">CoroActionNode</span>
@@ -780,7 +780,7 @@ he/she wants the execution of the Action to be suspended.</p>
 <span class="p">};</span>
 </pre></div>
 
-<p>As you may notice, the action "pretends" to wait for a request message;
+<p>As you may have noticed, the action "pretends" to wait for a request message;
 the latter will arrive after <em>100 milliseconds</em>.</p>
 <p>To spice things up, we create a Sequence with two actions, but the entire 
 sequence will be halted by a timeout after <em>150 millisecond</em>.</p>

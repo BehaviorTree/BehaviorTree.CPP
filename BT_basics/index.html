@@ -786,14 +786,14 @@ will call them further, "<strong>Actions</strong>".</p>
 <p>The <strong>leaves</strong> of the tree are the actual commands, i.e. the place where
 our coordinating component interacts with the rest of the system.</p>
 <p>For instance, in a service-oriented architecture, the leaves would contain
-the "client" code that communicate with the "server" that performs the
+the "client" code that communicates with the "server" that performs the
 operation.</p>
 <p>In the following example, we can see two Actions executed in a sequence,
 <code>DetectObject</code> and <code>GraspObject</code>.</p>
 <p><img alt="Leaf To Component Communication" src="../images/LeafToComponentCommunication.png" /></p>
 <p>The other nodes of the tree, those which are <strong>not leaves</strong>, control the 
 "flow of execution".</p>
-<p>To better understand how this control flow takes place , imagine a signal 
+<p>To better understand how this control flow takes place, imagine a signal 
 called "<strong>tick</strong>"; it is executed at the <strong>root</strong> of the tree and it propagates 
 through the branches until it reaches one or multiple leaves.</p>
 <div class="admonition note">
@@ -817,15 +817,15 @@ which child should be ticked next or may return a result to its own parent.</p>
 <h2 id="types-of-nodes">Types of nodes</h2>
 <p><strong>ControlNodes</strong> are nodes which can have 1 to N children. Once a tick
 is received, this tick may be propagated to one or more of the children.</p>
-<p><strong>DecoratorNodes</strong> is similar to the ControlNode, but it can have only a single child. </p>
+<p><strong>DecoratorNodes</strong> are similar to the ControlNode, but can only have a single child. </p>
 <p><strong>ActionNodes</strong> are leaves and do not have any children. The user should 
-implement their own ActionNodes to perform the actual task.</p>
+implement their own ActionNodes to perform the actual tasks.</p>
 <p><strong>ConditionNodes</strong> are equivalent to ActionNodes, but
 they are always atomic and synchronous, i.e. they must not return RUNNING. 
 They should not alter the state of the system.</p>
 <p><img alt="UML hierarchy" src="../images/TypeHierarchy.png" /></p>
 <h2 id="examples">Examples</h2>
-<p>To better understand how a BehaviorTrees work, let's focus on some practical
+<p>To better understand how BehaviorTrees work, let's focus on some practical
 examples. For the sake of simplicity we will not take into account what happens
 when an action returns RUNNING.</p>
 <p>We will assume that each Action is executed atomically and synchronously.</p>
@@ -857,7 +857,7 @@ this node could be either:</p>
 <p>You can extend your grammar creating your own Decorators.</p>
 <p><img alt="Simple Decorator: Enter Room" src="../images/DecoratorEnterRoom.png" /></p>
 <p>The node <strong>Inverter</strong> is a Decorator that inverts 
-the result returned by its child; Inverter followed by the node called
+the result returned by its child; An Inverter followed by the node called
 <strong>DoorOpen</strong> is therefore equivalent to </p>
 <div class="codehilite"><pre><span></span>&quot;Is the door closed?&quot;.
 </pre></div>
@@ -880,9 +880,9 @@ is interrupted.</p>
 <p>We will see later how we can improve this tree. </p>
 </div>
 <h3 id="second-controlnode-fallback">Second ControlNode: Fallback</h3>
-<p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selector"</strong>,
+<p><a href="../FallbackNode/">FallbackNodes</a>, known also as <strong>"Selectors"</strong>,
 are nodes that can express, as the name suggests, fallback strategies, 
-ie. what to do next if a child returns FAILURE.</p>
+i.e. what to do next if a child returns FAILURE.</p>
 <p>It ticks the children in order and:</p>
 <ul>
 <li>If a child returns FAILURE, tick the next one.</li>
@@ -890,7 +890,7 @@ ie. what to do next if a child returns FAILURE.</p>
    Fallback returns SUCCESS.</li>
 <li>If all the children return FAILURE, then the Fallback returns FAILURE too.</li>
 </ul>
-<p>In the next example, you can see how Sequence and Fallbacks can be combined:</p>
+<p>In the next example, you can see how Sequences and Fallbacks can be combined:</p>
 <p><img alt="FallbackNodes" src="../images/FallbackBasic.png" />  </p>
 <blockquote>
 <p>Is the door open?</p>

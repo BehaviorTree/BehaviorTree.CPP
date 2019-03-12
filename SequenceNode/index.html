@@ -735,7 +735,7 @@ they return SUCCESS. If any child returns FAILURE, the sequence is aborted.</p>
  the sequence returns <strong>SUCCESS</strong>.</p>
 </li>
 </ul>
-<p>To understand how the tree ControlNodes differ, refer to the following table:</p>
+<p>To understand how the three ControlNodes differ, refer to the following table:</p>
 <table>
 <thead>
 <tr>
@@ -805,9 +805,9 @@ they return SUCCESS. If any child returns FAILURE, the sequence is aborted.</p>
 <p>This node is particularly useful to continuously check Conditions; but 
 the user should also be careful when using asynchronous children, to be
 sure that thy are not ticked more often that expected.</p>
-<p>Let's take a look to another example:</p>
+<p>Let's take a look at another example:</p>
 <p><img alt="ReactiveSequence" src="../images/ReactiveSequence.png" /></p>
-<p><code>ApproachEnemy</code> is an <strong>asynchronous</strong> action that m return RUNNING until
+<p><code>ApproachEnemy</code> is an <strong>asynchronous</strong> action that returns RUNNING until
 it is, eventually, completed.</p>
 <p>The condition <code>isEnemyVisible</code> will be called many times and, 
 if it becomes false (i,e, "FAILURE"), <code>ApproachEnemy</code> is halted. </p>
@@ -830,8 +830,8 @@ if it becomes false (i,e, "FAILURE"), <code>ApproachEnemy</code> is halted. </p>
     <span class="k">return</span> <span class="n">SUCCESS</span><span class="p">;</span>
 </pre></div>
 </details><h2 id="sequencestar">SequenceStar</h2>
-<p>Use this ControlNode when you don't want to tick again children that 
-return SUCCESS already</p>
+<p>Use this ControlNode when you don't want to tick children again that 
+already returned SUCCESS.</p>
 <p><strong>Example</strong>:</p>
 <p>This is a patrolling agent/robot that must visit locations A, B and C <strong>only once</strong>.
 If the action <strong>GoTo(B)</strong> fails, <strong>GoTo(A)</strong> will not be ticked again.</p>

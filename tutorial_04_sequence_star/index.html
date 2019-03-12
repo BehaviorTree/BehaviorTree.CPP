@@ -804,12 +804,12 @@ as shown in the previous tutorial.</p>
     Robot says: &quot;mission completed!&quot;
 </pre></div>
 
-<p>You may noticed that when <code>executeTick()</code> was called, <code>MoveBase</code> returned
+<p>You may have noticed that when <code>executeTick()</code> was called, <code>MoveBase</code> returned
 <strong>RUNNING</strong> the 1st and 2nd time, and eventually <strong>SUCCESS</strong> the 3rd time.</p>
 <p><code>BatteryOK</code> is executed only once. </p>
-<p>If we use <code>ReactiveSequence</code> instead, when the child <code>MoveBase</code> returns RUNNING,
+<p>If we use a <code>ReactiveSequence</code> instead, when the child <code>MoveBase</code> returns RUNNING,
 the sequence is restarted and the condition <code>BatteryOK</code> is executed <strong>again</strong>.</p>
-<p>If, at any point, <code>BatteryOK</code> returned <strong>FAILURE</strong>, the <code>MoveBase</code> actions
+<p>If, at any point, <code>BatteryOK</code> returned <strong>FAILURE</strong>, the <code>MoveBase</code> action
 would be <em>interrupted</em> (<em>halted</em>, to be specific).</p>
 <div class="codehilite"><pre><span></span> <span class="nt">&lt;root&gt;</span>
      <span class="nt">&lt;BehaviorTree&gt;</span>

@@ -716,16 +716,16 @@ in other frameworks.</p>
   All the children are halted. </p>
 </li>
 </ul>
-<p>The two version of fallback differ in the way they react when a child returns
+<p>The two versions of Fallback differ in the way they react when a child returns
 RUNNING:</p>
 <ul>
 <li>
-<p>Plain old Fallback will return RUNNING and, the next time it is ticked,
- it will tick the same child.</p>
+<p>FallbackStar will return RUNNING and the next time it is ticked,
+ it will tick the same child where it left off before.</p>
 </li>
 <li>
 <p>Plain old Fallback will return RUNNING and the index of the next child to
- execute is reset.</p>
+ execute is reset after each execution.</p>
 </li>
 </ul>
 <h2 id="fallback_1">Fallback</h2>
