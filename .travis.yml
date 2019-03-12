@@ -2,7 +2,7 @@
 # For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
 
 sudo: required
-dist: trusty
+dist: xenial
 language: cpp
 
 os:
