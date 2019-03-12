@@ -13,6 +13,9 @@ if(MSVC)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+set(CMAKE_DEBUG_POSTFIX d)
 
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
@@ -39,9 +42,6 @@ endif()
 
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
 
-if(MSVC)
-    set(CMAKE_DEBUG_POSTFIX d)
-endif()
 
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
