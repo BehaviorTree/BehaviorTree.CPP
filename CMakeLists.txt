@@ -135,16 +135,6 @@ list(APPEND BT_SOURCE
     )
 
 ######################################################
-if (UNIX)
-	list(APPEND BT_SOURCE src/shared_library_UNIX.cpp )
-	add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
-endif()
-
-if (WIN32)
-	list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
-	add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
-endif()
-
 set( SRC_3rd_PARTY
     3rdparty/tinyXML2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp
@@ -154,12 +144,20 @@ if (NOT backward_ros_FOUND)
         3rdparty/backward-cpp/backward.cpp)
 endif()
 
-add_library(${BEHAVIOR_TREE_LIBRARY}_extra STATIC ${SRC_3rd_PARTY} )
+######################################################
+if (UNIX)
+	list(APPEND BT_SOURCE src/shared_library_UNIX.cpp )
+	add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} ${SRC_3rd_PARTY})
+endif()
+
+if (WIN32)
+	list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
+	add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} ${SRC_3rd_PARTY} )
+endif()
+
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES})
-
-target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE ${BEHAVIOR_TREE_LIBRARY}_extra )
 
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

@@ -112,7 +112,7 @@ inline routine_t create(std::function<void()> f)
     if (ordinator.indexes.empty())
     {
         ordinator.routines.push_back(routine);
-        return ordinator.routines.size();
+        return (routine_t)ordinator.routines.size();
     }
     else
     {
