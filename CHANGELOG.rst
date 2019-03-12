@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.3 (2019-03-12)
+------------------
 * moving to C++14... deal with it
 * updated tinyXML2. Should fix several issues too
 * add "d" to debug library on Windows
