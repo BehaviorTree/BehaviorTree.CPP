@@ -40,9 +40,9 @@ matrix:
       - bare_linux:
         env: ROS_DISTRO="none"
       - ros_indigo:
-        env: ROS_DISTRO="indigo"
-      - ros_kinetic:
         env: ROS_DISTRO="kinetic"
+      - ros_kinetic:
+        env: ROS_DISTRO="lunar"
       - ros_melodic:
         env: ROS_DISTRO="melodic"
      # - <<: *conan-linux
