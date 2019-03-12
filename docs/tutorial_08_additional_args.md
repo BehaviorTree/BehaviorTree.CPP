@@ -115,17 +115,12 @@ int main()
     NodeBuilder builder_A = 
        [](const std::string& name, const NodeConfiguration& config)
     {
-        auto ptr = new Action_A(name, config, 42, 3.14, "hello world")
-        return std::unique_ptr<Action_A>( ptr );
+        return std::make_unique<Action_A>( name, config, 42, 3.14, "hello world" );
     };
 
-    // You may create manifest_A by hand, but in this case we can use a 
-    // convenient helper function called BehaviorTreeFactory::buildManifest
-    auto manifest_A = BehaviorTreeFactory::buildManifest<Action_A>("Action_A");
-
-    // BehaviorTreeFactory::registerBuilder is the more general way to 
+    // BehaviorTreeFactory::registerBuilder is a more general way to
     // register a custom node. 
-    factory.registerBuilder( manifest_A, builder_A);
+    factory.registerBuilder<Action_A>( "Action_A", builder_A);
 
     // The regitration of  Action_B is done as usual, but remember 
     // that we still need to call Action_B::init()

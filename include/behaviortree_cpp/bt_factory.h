@@ -95,6 +95,13 @@ public:
     /// The most generic way to register your own builder.
     void registerBuilder(const TreeNodeManifest& manifest, const NodeBuilder& builder);
 
+    template <typename T>
+    void registerBuilder(const std::string& ID, const NodeBuilder& builder )
+    {
+        auto manifest = BehaviorTreeFactory::buildManifest<T>(ID);
+        registerBuilder(manifest, builder);
+    }
+
     /**
     * @brief registerSimpleAction help you register nodes of type SimpleActionNode.
     *
@@ -244,9 +251,9 @@ private:
                 config.output_ports.empty() &&
                 has_default_constructor<T>::value)
             {
-                return std::unique_ptr<TreeNode>(new T(name));
+                return std::make_unique<T>(name);
             }
-            return std::unique_ptr<TreeNode>(new T(name, config));
+            return std::make_unique<T>(name, config);
         };
     }
 

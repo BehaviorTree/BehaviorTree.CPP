@@ -577,7 +577,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         child_node = factory.instantiateTreeNode(instance_name, ID, config);
     }
     else if( tree_roots.count(ID) != 0) {
-        child_node = std::unique_ptr<TreeNode>( new DecoratorSubtreeNode(instance_name) );
+        child_node = std::make_unique<DecoratorSubtreeNode>( instance_name );
     }
     else{
         throw RuntimeError( ID, " is not a registered node, nor a Subtree");
