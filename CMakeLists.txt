@@ -13,9 +13,9 @@ if(MSVC)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_DEBUG_POSTFIX d)
+
+add_subdirectory( 3rdparty/tinyXML2 )
 
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
@@ -29,7 +29,7 @@ option(BUILD_TOOLS "Build commandline tools" ON)
 find_package(Threads REQUIRED)
 find_package(ZMQ)
 
-list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS} tinyxml2_v7)
 
 if( ZMQ_FOUND )
     message(STATUS "ZeroMQ found.")
@@ -136,13 +136,11 @@ list(APPEND BT_SOURCE
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_minitrace_logger.cpp
+    3rdparty/minitrace/minitrace.cpp
     )
 
 ######################################################
-set( SRC_3rd_PARTY
-    3rdparty/tinyXML2/tinyxml2.cpp
-    3rdparty/minitrace/minitrace.cpp
-    )
+
 if (NOT backward_ros_FOUND)
     list(APPEND SRC_3rd_PARTY
         3rdparty/backward-cpp/backward.cpp)
@@ -151,12 +149,12 @@ endif()
 ######################################################
 if (UNIX)
 	list(APPEND BT_SOURCE src/shared_library_UNIX.cpp )
-	add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} ${SRC_3rd_PARTY})
+        add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
 endif()
 
 if (WIN32)
 	list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
-	add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} ${SRC_3rd_PARTY} )
+        add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
 endif()
 
 
