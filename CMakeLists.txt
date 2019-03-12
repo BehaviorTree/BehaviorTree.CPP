@@ -39,6 +39,10 @@ endif()
 
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
 
+if(MSVC)
+    set(CMAKE_DEBUG_POSTFIX d)
+endif()
+
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
 if(POLICY CMP0057)
