@@ -12,12 +12,16 @@
   <author>Michele Colledanchise</author>
   <author>Davide Faconti</author>
 
-  <build_depend>roslib</build_depend>
-  <run_depend>roslib</run_depend>
 
   <build_depend>libzmq3-dev</build_depend>
   <run_depend>libzmq3-dev</run_depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <export>
+     <build_type>ament_cmake</build_type>
+  </export>
 
 </package>
