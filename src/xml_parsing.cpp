@@ -612,14 +612,13 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
         if( node->type() == NodeType::SUBTREE )
         {
-            auto parent_bb = output_tree.blackboard_stack.back();
-            auto new_bb = Blackboard::create(parent_bb);
+            auto new_bb = Blackboard::create(blackboard);
 
             for (auto remap_el = element->FirstChildElement("remap"); remap_el != nullptr;
                  remap_el = remap_el->NextSiblingElement("remap"))
             {
                 new_bb->addSubtreeRemapping( remap_el->Attribute("internal"),
-                                            remap_el->Attribute("external") );
+                                             remap_el->Attribute("external") );
             }
 
             for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())

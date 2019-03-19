@@ -184,54 +184,9 @@ export(TARGETS ${PROJECT_NAME}
        FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_CONFIG}.cmake")
 
 ######################################################
-# TESTS
+# Test
 
-set(BT_TESTS
-  gtest/src/action_test_node.cpp
-  gtest/src/condition_test_node.cpp
-  gtest/gtest_tree.cpp
-  gtest/gtest_sequence.cpp
-  gtest/gtest_parallel.cpp
-  gtest/gtest_fallback.cpp
-  gtest/gtest_factory.cpp
-  gtest/gtest_decorator.cpp
-  gtest/gtest_blackboard.cpp
-  gtest/gtest_coroutines.cpp
-  gtest/navigation_test.cpp
-)
-
-if(ament_cmake_FOUND AND BUILD_TESTING)
-
-    find_package(ament_cmake_gtest REQUIRED)
-
-    ament_add_gtest_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
-    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                        crossdoor_nodes dummy_nodes
-                                                        ${ament_LIBRARIES})
-    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
-    include_directories($<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>)
-
-elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
-
-    catkin_add_gtest(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
-    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                        crossdoor_nodes dummy_nodes
-                                                        ${catkin_LIBRARIES})
-    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
-
-elseif(GTEST_FOUND AND BUILD_UNIT_TESTS)
-
-    enable_testing()
-
-    add_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
-    target_link_libraries(${PROJECT_NAME}_test ${BEHAVIOR_TREE_LIBRARY}
-                                                crossdoor_nodes dummy_nodes
-                                                ${GTEST_LIBRARIES}
-                                                ${GTEST_MAIN_LIBRARIES})
-    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include ${GTEST_INCLUDE_DIRS})
-
-    add_test(BehaviorTreeCoreTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BEHAVIOR_TREE_LIBRARY}_test)
-endif()
+add_subdirectory(gtest)
 
 ######################################################
 # INSTALL
