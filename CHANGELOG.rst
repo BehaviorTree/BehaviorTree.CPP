@@ -2,6 +2,12 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue #72 with sibling subtrees
+* Update .travis.yml
+* Contributors: Davide Faconti
+
 3.0.3 (2019-03-12)
 ------------------
 * moving to C++14... deal with it
