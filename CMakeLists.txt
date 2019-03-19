@@ -186,7 +186,7 @@ export(TARGETS ${PROJECT_NAME}
 ######################################################
 # Test
 
-add_subdirectory(gtest)
+add_subdirectory(tests)
 
 ######################################################
 # INSTALL
