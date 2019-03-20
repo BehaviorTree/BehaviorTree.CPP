@@ -2,7 +2,7 @@
 ![Version](https://img.shields.io/badge/version-v3.0-green.svg)
 
 
-Travis (Linux): [![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=main)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
+Travis (Linux): [![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
 
 AppVeyor (Windows): [![Build status](https://ci.appveyor.com/api/projects/status/8lawroklgnrkg38f?svg=true)](https://ci.appveyor.com/project/facontidavide59577/behaviortree-cpp)
 
