@@ -2,8 +2,15 @@
 
 #include <memory>
 
-// https://en.cppreference.com/w/cpp/feature_test
-#if not __has_cpp_attribute(__cpp_lib_make_unique)
+#if defined(_MSC_VER) && __cplusplus == 201103L
+#  define MAKE_UNIQUE_DEFINED 1
+#endif
+
+#ifdef __cpp_lib_make_unique
+#  define MAKE_UNIQUE_DEFINED 1
+#endif
+
+#ifndef MAKE_UNIQUE_DEFINED
 
 //The compiler doesn't provide it, so implement it ourselves.
 
