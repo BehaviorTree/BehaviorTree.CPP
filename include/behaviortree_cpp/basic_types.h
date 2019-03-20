@@ -9,10 +9,12 @@
 #include <typeinfo>
 #include <functional>
 #include <chrono>
+#include <memory>
 #include "behaviortree_cpp/utils/string_view.hpp"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/utils/expected.hpp"
+#include "behaviortree_cpp/utils/make_unique.hpp"
 
 namespace BT
 {
@@ -335,9 +337,6 @@ PortsList getProvidedPorts(enable_if_not< has_static_method_providedPorts<T> > =
 
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
 typedef std::chrono::high_resolution_clock::duration Duration;
-
-
-
 
 } // end namespace
 
