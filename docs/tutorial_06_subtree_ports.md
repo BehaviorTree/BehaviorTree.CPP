@@ -23,10 +23,7 @@ Let's consider this Beahavior Tree.
 
         <Sequence name="main_sequence">
             <SetBlackboard output_key="move_goal" value="1;2;3" />
-            <SubTree ID="MoveRobot">
-                <remap internal="target" external="move_goal"/>
-                <remap internal="output" external="move_result"/>
-            </SubTree>
+            <SubTree ID="MoveRobot" target="move_goal" output="move_result" />
             <SaySomething message="{move_result}"/>
         </Sequence>
 
