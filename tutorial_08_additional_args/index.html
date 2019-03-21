@@ -779,17 +779,12 @@ either as arguments of the constructor of the class or in an <code>init()</code>
     <span class="n">NodeBuilder</span> <span class="n">builder_A</span> <span class="o">=</span> 
        <span class="p">[](</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="k">const</span> <span class="n">NodeConfiguration</span><span class="o">&amp;</span> <span class="n">config</span><span class="p">)</span>
     <span class="p">{</span>
-        <span class="k">auto</span> <span class="n">ptr</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Action_A</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">,</span> <span class="s">&quot;hello world&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Action_A</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">ptr</span> <span class="p">);</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Action_A</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">name</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">,</span> <span class="s">&quot;hello world&quot;</span> <span class="p">);</span>
     <span class="p">};</span>
 
-    <span class="c1">// You may create manifest_A by hand, but in this case we can use a </span>
-    <span class="c1">// convenient helper function called BehaviorTreeFactory::buildManifest</span>
-    <span class="k">auto</span> <span class="n">manifest_A</span> <span class="o">=</span> <span class="n">BehaviorTreeFactory</span><span class="o">::</span><span class="n">buildManifest</span><span class="o">&lt;</span><span class="n">Action_A</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;Action_A&quot;</span><span class="p">);</span>
-
-    <span class="c1">// BehaviorTreeFactory::registerBuilder is the more general way to </span>
+    <span class="c1">// BehaviorTreeFactory::registerBuilder is a more general way to</span>
     <span class="c1">// register a custom node. </span>
-    <span class="n">factory</span><span class="p">.</span><span class="n">registerBuilder</span><span class="p">(</span> <span class="n">manifest_A</span><span class="p">,</span> <span class="n">builder_A</span><span class="p">);</span>
+    <span class="n">factory</span><span class="p">.</span><span class="n">registerBuilder</span><span class="o">&lt;</span><span class="n">Action_A</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;Action_A&quot;</span><span class="p">,</span> <span class="n">builder_A</span><span class="p">);</span>
 
     <span class="c1">// The regitration of  Action_B is done as usual, but remember </span>
     <span class="c1">// that we still need to call Action_B::init()</span>

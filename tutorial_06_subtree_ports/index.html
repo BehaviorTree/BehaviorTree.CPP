@@ -692,11 +692,8 @@ remapping is done entirely in the XML definition.</p>
 
         <span class="nt">&lt;Sequence</span> <span class="na">name=</span><span class="s">&quot;main_sequence&quot;</span><span class="nt">&gt;</span>
             <span class="nt">&lt;SetBlackboard</span> <span class="na">output_key=</span><span class="s">&quot;move_goal&quot;</span> <span class="na">value=</span><span class="s">&quot;1;2;3&quot;</span> <span class="nt">/&gt;</span>
-            <span class="nt">&lt;SubTree</span> <span class="na">ID=</span><span class="s">&quot;MoveRobot&quot;</span><span class="nt">&gt;</span>
-<span class="hll">                <span class="nt">&lt;remap</span> <span class="na">internal=</span><span class="s">&quot;target&quot;</span> <span class="na">external=</span><span class="s">&quot;move_goal&quot;</span><span class="nt">/&gt;</span>
-</span><span class="hll">                <span class="nt">&lt;remap</span> <span class="na">internal=</span><span class="s">&quot;output&quot;</span> <span class="na">external=</span><span class="s">&quot;move_result&quot;</span><span class="nt">/&gt;</span>
-</span>            <span class="nt">&lt;/SubTree&gt;</span>
-            <span class="nt">&lt;SaySomething</span> <span class="na">message=</span><span class="s">&quot;{move_result}&quot;</span><span class="nt">/&gt;</span>
+<span class="hll">            <span class="nt">&lt;SubTree</span> <span class="na">ID=</span><span class="s">&quot;MoveRobot&quot;</span> <span class="na">target=</span><span class="s">&quot;move_goal&quot;</span> <span class="na">output=</span><span class="s">&quot;move_result&quot;</span> <span class="nt">/&gt;</span>
+</span>            <span class="nt">&lt;SaySomething</span> <span class="na">message=</span><span class="s">&quot;{move_result}&quot;</span><span class="nt">/&gt;</span>
         <span class="nt">&lt;/Sequence&gt;</span>
 
     <span class="nt">&lt;/BehaviorTree&gt;</span>
