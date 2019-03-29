@@ -113,7 +113,7 @@ static const int TIXML2_PATCH_VERSION = 1;
 // so there needs to be a limit in place.
 static const int TINYXML2_MAX_ELEMENT_DEPTH = 100;
 
-namespace tinyxml2
+namespace BT_TinyXML2
 {
 class XMLDocument;
 class XMLElement;
