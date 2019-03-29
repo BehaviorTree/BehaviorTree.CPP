@@ -57,7 +57,7 @@ complex.
 
 The usual approach to manage complexity, heterogeneity and scalability is to 
 use the concept of 
-[Component Base Software Engineering](https://en.wikipedia.org/wiki/Component-based_software_engineering).
+[Component Based Software Engineering](https://en.wikipedia.org/wiki/Component-based_software_engineering).
 
 Any existing middleware for robotics took this approach either informally or formally,
 being [ROS](http://www.ros.org), [YARP](http://www.yarp.it) and 

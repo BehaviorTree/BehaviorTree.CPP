@@ -16,17 +16,14 @@ remapping is done entirely in the XML definition.
 
 Let's consider this Beahavior Tree.
 
-```XML hl_lines="8 9"
+```XML hl_lines="7"
 <root main_tree_to_execute = "MainTree">
 
     <BehaviorTree ID="MainTree">
 
         <Sequence name="main_sequence">
             <SetBlackboard output_key="move_goal" value="1;2;3" />
-            <SubTree ID="MoveRobot">
-                <remap internal="target" external="move_goal"/>
-                <remap internal="output" external="move_result"/>
-            </SubTree>
+            <SubTree ID="MoveRobot" target="move_goal" output="move_result" />
             <SaySomething message="{move_result}"/>
         </Sequence>
 

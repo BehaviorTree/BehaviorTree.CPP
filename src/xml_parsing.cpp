@@ -324,10 +324,12 @@ void VerifyXML(const std::string& xml_text,
             for (auto child = node->FirstChildElement(); child != nullptr;
                  child = child->NextSiblingElement())
             {
-                if( StrEqual(child->Name(), "remap") == false)
+                if( StrEqual(child->Name(), "remap") )
                 {
-                   ThrowError(node->GetLineNum(),
-                                       "<SubTree> accept only childs of type <remap>");
+                   ThrowError(node->GetLineNum(), "<remap> was deprecated");
+                }
+                else{
+                    ThrowError(node->GetLineNum(), "<SubTree> should not have any child");
                 }
             }
 
@@ -613,13 +615,6 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
         if( node->type() == NodeType::SUBTREE )
         {
             auto new_bb = Blackboard::create(blackboard);
-
-            for (auto remap_el = element->FirstChildElement("remap"); remap_el != nullptr;
-                 remap_el = remap_el->NextSiblingElement("remap"))
-            {
-                new_bb->addSubtreeRemapping( remap_el->Attribute("internal"),
-                                             remap_el->Attribute("external") );
-            }
 
             for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
             {
