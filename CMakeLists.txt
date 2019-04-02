@@ -168,6 +168,10 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<INSTALL_INTERFACE:3rdparty>
     ${BUILD_TOOL_INCLUDE_DIRS})
 
+if( ZMQ_FOUND )
+    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC ZMQ_FOUND)
+endif()
+
 if(MSVC)
   target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
 else()
