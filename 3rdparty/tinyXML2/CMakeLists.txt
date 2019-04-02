@@ -47,7 +47,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # to distinguish between debug and release lib
 set(CMAKE_DEBUG_POSTFIX "d")
 
-add_library(tinyxml2_v7 tinyxml2.cpp tinyxml2.h)
+add_library(tinyxml2_v7 tinyxml2.cpp bt_tinyxml2.h)
 
 set_target_properties(tinyxml2_v7 PROPERTIES
         COMPILE_DEFINITIONS "TINYXML2_EXPORT"
@@ -82,7 +82,7 @@ install(TARGETS tinyxml2_v7
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(FILES tinyxml2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES bt_tinyxml2.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 configure_file(tinyxml2.pc.in tinyxml2.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tinyxml2.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

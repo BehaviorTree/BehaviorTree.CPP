@@ -50,7 +50,7 @@ distribution.
         g++ -Wall -DTINYXML2_DEBUG tinyxml2.cpp xmltest.cpp -o gccxmltest.exe
 
     Formatting, Artistic Style:
-        AStyle.exe --style=1tbs --indent-switches --break-closing-brackets --indent-preprocessor tinyxml2.cpp tinyxml2.h
+        AStyle.exe --style=1tbs --indent-switches --break-closing-brackets --indent-preprocessor tinyxml2.cpp bt_tinyxml2.h
 */
 
 #if defined( _DEBUG ) || defined (__DEBUG__)

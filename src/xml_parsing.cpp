@@ -23,7 +23,7 @@
 #endif
 
 #include "behaviortree_cpp/xml_parsing.h"
-#include "tinyXML2/tinyxml2.h"
+#include "tinyXML2/bt_tinyxml2.h"
 #include "filesystem/path.h"
 
 #ifdef USING_ROS
