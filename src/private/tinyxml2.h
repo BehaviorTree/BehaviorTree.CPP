@@ -21,8 +21,8 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-#ifndef TINYXML2_INCLUDED
-#define TINYXML2_INCLUDED
+#ifndef BT_TINYXML2_INCLUDED
+#define BT_TINYXML2_INCLUDED
 
 #if defined(ANDROID_NDK) || defined(__BORLANDC__) || defined(__QNXNTO__)
 #   include <ctype.h>
@@ -73,7 +73,7 @@ distribution.
 #       define TINYXML2_LIB
 #   endif
 #elif __GNUC__ >= 4
-#   define TINYXML2_LIB __attribute__((visibility("default")))
+#   define TINYXML2_LIB __attribute__((visibility("hidden")))
 #else
 #   define TINYXML2_LIB
 #endif
@@ -2306,4 +2306,4 @@ private:
 #   pragma warning(pop)
 #endif
 
-#endif // TINYXML2_INCLUDED
+#endif // BT_TINYXML2_INCLUDED
