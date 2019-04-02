@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.7 (2019-04-02)
+------------------
 * this should fix issue with tinyXML2 once and for all (maybe...)
 * improvement #79
 * doc fix
