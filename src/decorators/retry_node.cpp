@@ -17,7 +17,7 @@ namespace BT
 {
 constexpr const char* RetryNode::NUM_ATTEMPTS;
 
-RetryNode::RetryNode(const std::string& name, unsigned int NTries)
+RetryNode::RetryNode(const std::string& name, int NTries)
     : DecoratorNode(name, {} ),
     max_attempts_(NTries),
     try_index_(0),

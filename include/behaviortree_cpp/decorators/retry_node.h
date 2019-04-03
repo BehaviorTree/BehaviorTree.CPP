@@ -37,7 +37,7 @@ class RetryNode : public DecoratorNode
 {
   public:
     
-    RetryNode(const std::string& name, unsigned int NTries);
+    RetryNode(const std::string& name, int NTries);
 
     RetryNode(const std::string& name, const NodeConfiguration& config);
 
@@ -45,14 +45,16 @@ class RetryNode : public DecoratorNode
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>(NUM_ATTEMPTS, "Execute again a failing child up to N times") };
+        return { InputPort<int>(NUM_ATTEMPTS,
+                               "Execute again a failing child up to N times. "
+                               "Use -1 to create an infinite loop.") };
     }
 
     virtual void halt() override;
 
   private:
-    unsigned int max_attempts_;
-    unsigned int try_index_;
+    int max_attempts_;
+    int try_index_;
 
     bool read_parameter_from_ports_;
     static constexpr const char* NUM_ATTEMPTS = "num_attempts";

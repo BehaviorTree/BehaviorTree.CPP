@@ -17,7 +17,7 @@ namespace BT
 {
 constexpr const char* RepeatNode::NUM_CYCLES;
 
-RepeatNode::RepeatNode(const std::string& name, unsigned int NTries)
+RepeatNode::RepeatNode(const std::string& name, int NTries)
     : DecoratorNode(name, {} ),
     num_cycles_(NTries),
     try_index_(0),
@@ -47,7 +47,7 @@ NodeStatus RepeatNode::tick()
 
     setStatus(NodeStatus::RUNNING);
 
-    while (try_index_ < num_cycles_)
+    while (try_index_ < num_cycles_ || num_cycles_== -1 )
     {
         NodeStatus child_state = child_node_->executeTick();
 

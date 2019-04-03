@@ -37,7 +37,7 @@ class RepeatNode : public DecoratorNode
 {
   public:
 
-    RepeatNode(const std::string& name, unsigned int NTries);
+    RepeatNode(const std::string& name, int NTries);
 
     RepeatNode(const std::string& name, const NodeConfiguration& config);
 
@@ -45,12 +45,14 @@ class RepeatNode : public DecoratorNode
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>(NUM_CYCLES, "Repeat a succesful child up to N times") };
+        return { InputPort<int>(NUM_CYCLES,
+                                "Repeat a succesful child up to N times. "
+                               "Use -1 to create an infinite loop.") };
     }
 
   private:
-    unsigned num_cycles_;
-    unsigned try_index_;
+    int num_cycles_;
+    int try_index_;
 
     bool read_parameter_from_ports_;
     static constexpr const char* NUM_CYCLES = "num_cycles";
