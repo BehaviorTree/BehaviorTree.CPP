@@ -29,8 +29,9 @@ NodeStatus ReactiveFallback::tick()
         {
             case NodeStatus::RUNNING:
             {
-                running_count++;
-            }break;
+                haltChildren(0);
+                return NodeStatus::RUNNING;
+            }
 
             case NodeStatus::FAILURE:
             {
