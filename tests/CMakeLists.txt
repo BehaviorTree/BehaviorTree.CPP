@@ -6,16 +6,19 @@ include_directories(include)
 set(BT_TESTS
   src/action_test_node.cpp
   src/condition_test_node.cpp
-  gtest_tree.cpp
-  gtest_sequence.cpp
-  gtest_parallel.cpp
-  gtest_fallback.cpp
-  gtest_factory.cpp
-  gtest_decorator.cpp
-  gtest_blackboard.cpp
-  gtest_coroutines.cpp
-  navigation_test.cpp
-  gtest_subtree.cpp
+#  gtest_tree.cpp
+#  gtest_sequence.cpp
+#  gtest_parallel.cpp
+#  gtest_fallback.cpp
+#  gtest_factory.cpp
+#  gtest_decorator.cpp
+#  gtest_blackboard.cpp
+#  gtest_coroutines.cpp
+#  navigation_test.cpp
+#  gtest_subtree.cpp
+#gtest_reactive_sequence.cpp
+gtest_reactive_tree.cpp
+
 )
 
 if(ament_cmake_FOUND AND BUILD_TESTING)
