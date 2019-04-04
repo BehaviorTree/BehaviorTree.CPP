@@ -23,31 +23,53 @@ NodeStatus ReactiveSequence::tick()
     for (size_t index = 0; index < childrenCount(); index++)
     {
         TreeNode* current_child_node = children_nodes_[index];
-        const NodeStatus child_status = current_child_node->executeTick();
+        NodeStatus child_status = NodeStatus::IDLE;
+
+        if (current_child_node->type() != NodeType::ACTION_ASYNC)
+        {
+            child_status = current_child_node->executeTick();
+        }
+        else
+        {
+            if (current_child_node->status() != NodeStatus::RUNNING)
+            {
+                // if not running already, tick it
+                current_child_node->executeTick();
+                do
+                {
+                    child_status = current_child_node->status();
+                } while (child_status == NodeStatus::IDLE);
+            }
+            else
+            {
+                child_status = NodeStatus::RUNNING;
+            }
+        }
 
         switch (child_status)
         {
-            case NodeStatus::RUNNING:
-            {
-                running_count++;
-                haltChildren(index+1);
-                return NodeStatus::RUNNING;
-            }
+        case NodeStatus::RUNNING:
+        {
+            running_count++;
+            std::this_thread::sleep_for(milliseconds(3000));
+            haltChildren(index+1);
+            return NodeStatus::RUNNING;
+        }
 
-            case NodeStatus::FAILURE:
-            {
-                haltChildren(0);
-                return NodeStatus::FAILURE;
-            }
-            case NodeStatus::SUCCESS:
-            {
-                success_count++;
-            }break;
+        case NodeStatus::FAILURE:
+        {
+            haltChildren(index+1);
+            return NodeStatus::FAILURE;
+        }
+        case NodeStatus::SUCCESS:
+        {
+            success_count++;
+        }break;
 
-            case NodeStatus::IDLE:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
+        case NodeStatus::IDLE:
+        {
+            throw LogicError("A child node must never return IDLE");
+        }
         }   // end switch
     } //end for
 
