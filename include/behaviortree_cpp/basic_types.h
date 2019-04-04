@@ -26,7 +26,8 @@ enum class NodeType
     CONDITION,
     CONTROL,
     DECORATOR,
-    SUBTREE
+    SUBTREE,
+    ACTION_ASYNC
 };
 
 /// Enumerates the states every node can be in after execution during a particular

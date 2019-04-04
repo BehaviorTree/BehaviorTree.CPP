@@ -38,7 +38,7 @@ class ActionNodeBase : public LeafNode
     ActionNodeBase(const std::string& name, const NodeConfiguration& config);
     ~ActionNodeBase() override = default;
 
-    virtual NodeType type() const override final
+    virtual NodeType type() const override
     {
         return NodeType::ACTION;
     }
@@ -113,6 +113,11 @@ class AsyncActionNode : public ActionNodeBase
     virtual NodeStatus executeTick() override final;
 
     void stopAndJoinThread();
+
+    virtual NodeType type() const override final
+    {
+        return NodeType::ACTION_ASYNC;
+    }
 
   private:
 
