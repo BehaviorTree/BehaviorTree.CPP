@@ -22,31 +22,54 @@ NodeStatus ReactiveFallback::tick()
     for (size_t index = 0; index < childrenCount(); index++)
     {
         TreeNode* current_child_node = children_nodes_[index];
-        const NodeStatus child_status = current_child_node->executeTick();
+        NodeStatus child_status = NodeStatus::IDLE;
+
+        if (current_child_node->type() != NodeType::ACTION_ASYNC)
+        {
+            child_status = current_child_node->executeTick();
+        }
+        else
+        {
+            if (current_child_node->status() != NodeStatus::RUNNING)
+            {
+                // if not running already, tick it
+                current_child_node->executeTick();
+                do
+                {
+
+                    child_status = current_child_node->status();
+
+                } while (child_status == NodeStatus::IDLE);
+            }
+            else
+            {
+                child_status = NodeStatus::RUNNING;
+            }
+        }
 
         switch (child_status)
         {
-            case NodeStatus::RUNNING:
-            {
-                haltChildren(index+1);
-                return NodeStatus::RUNNING;
-            }
+        case NodeStatus::RUNNING:
+        {
+            haltChildren(index+1);
+            return NodeStatus::RUNNING;
+        }break;
 
-            case NodeStatus::FAILURE:
-            {
-                failure_count++;
-            }break;
+        case NodeStatus::FAILURE:
+        {
+            failure_count++;
+        }break;
 
-            case NodeStatus::SUCCESS:
-            {
-                haltChildren(0);
-                return NodeStatus::SUCCESS;
-            }
+        case NodeStatus::SUCCESS:
+        {
+            haltChildren(index+1);
+            return NodeStatus::SUCCESS;
+        }break;
 
-            case NodeStatus::IDLE:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
+        case NodeStatus::IDLE:
+        {
+            throw LogicError("A child node must never return IDLE");
+        }
         }   // end switch
     } //end for
 
