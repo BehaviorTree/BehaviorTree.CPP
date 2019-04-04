@@ -83,29 +83,30 @@ TEST_F(ComplexReactiveTree, ConditionsFalse)
 
     condition_1.setBoolean(true);
 
-//    state = root.executeTick();
+    state = root.executeTick();
 
 
-//    ASSERT_EQ(NodeStatus::RUNNING, state);
-//    ASSERT_EQ(NodeStatus::SUCCESS, fal_1.status());
-//    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-//    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-//    ASSERT_EQ(NodeStatus::RUNNING, fal_2.status());
-//    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
-//    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, fal_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, fal_2.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 
 
-//    std::this_thread::sleep_for(milliseconds(300));
+    std::this_thread::sleep_for(milliseconds(300));
+    condition_1.setBoolean(false);
 
-//    state = root.executeTick();
+    state = root.executeTick();
 
-//    ASSERT_EQ(NodeStatus::RUNNING, state);
-//    ASSERT_EQ(NodeStatus::SUCCESS, fal_1.status());
-//    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-//    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-//    ASSERT_EQ(NodeStatus::RUNNING, fal_2.status());
-//    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
-//    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::RUNNING, fal_1.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, fal_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
 //    std::this_thread::sleep_for(milliseconds(300));
 
