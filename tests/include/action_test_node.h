@@ -60,6 +60,7 @@ class AsyncActionTest : public AsyncActionNode
 
     void setStartTimePoint(std::chrono::high_resolution_clock::time_point now)
     {
+        // TODO add lock guard
        std::cout << this->name() << " Setting Start Time: " << now.time_since_epoch().count() << std::endl;
 
         start_time_ = now;
@@ -73,6 +74,8 @@ class AsyncActionTest : public AsyncActionNode
 
     void setStopTimePoint(std::chrono::high_resolution_clock::time_point now)
     {
+        // TODO add lock guard
+
         std::cout << this->name() << " Setting Stop Time: " << now.time_since_epoch().count()  << std::endl;
 
         stop_time_ = now;
