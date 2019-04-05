@@ -13,6 +13,12 @@
 
 #include "action_test_node.h"
 #include <string>
+#include <ctime>
+#include <chrono>
+#include <time.h>
+#include <ratio>
+#include <iomanip>
+using namespace std::chrono;
 
 BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadline_ms) :
     AsyncActionNode(name, {})
@@ -30,16 +36,25 @@ BT::AsyncActionTest::~AsyncActionTest()
 
 BT::NodeStatus BT::AsyncActionTest::tick()
 {
+    setStartTimePoint(high_resolution_clock::now());
     setStatus(NodeStatus::RUNNING);
     using std::chrono::high_resolution_clock;
     tick_count_++;
     stop_loop_ = false;
     auto initial_time = high_resolution_clock::now();
 
+
     while (!stop_loop_ && high_resolution_clock::now() < initial_time + time_)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+//        high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+//        std::cout << this->name() << " Running. Time: " << std::chrono::system_clock::to_time_t(t2)  << std::endl;
+
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+    setStopTimePoint(high_resolution_clock::now());
 
     if (!stop_loop_)
     {
@@ -50,6 +65,8 @@ BT::NodeStatus BT::AsyncActionTest::tick()
         return NodeStatus::IDLE;
     }
 }
+
+
 
 void BT::AsyncActionTest::halt()
 {

@@ -64,12 +64,13 @@ struct ComplexReactiveTree : testing::Test
 TEST_F(ComplexReactiveTree, ConditionsFalse)
 {
 
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+
     condition_1.setBoolean(false);
     condition_2.setBoolean(false);
 
     BT::NodeStatus state = root.executeTick();
-
-    state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::RUNNING, fal_1.status());
@@ -97,29 +98,19 @@ TEST_F(ComplexReactiveTree, ConditionsFalse)
 
     std::this_thread::sleep_for(milliseconds(300));
     condition_1.setBoolean(false);
-
+    std::cout << "Ticking..." << std::endl;
     state = root.executeTick();
+    std::cout << "...done" << std::endl;
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::RUNNING, fal_1.status());
-    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, fal_2.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
-//    std::this_thread::sleep_for(milliseconds(300));
 
-//    condition_1.setBoolean(false);
+    std::this_thread::sleep_for(milliseconds(300));
 
-//    state = root.executeTick();
+    std::cout << action_1.startTimePoint().time_since_epoch().count() << std::endl;
+    std::cout << action_2.stopTimePoint().time_since_epoch().count() << std::endl;
 
-//    ASSERT_EQ(NodeStatus::RUNNING, state);
-//    ASSERT_EQ(NodeStatus::RUNNING, fal_1.status());
-//    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
-//    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
-//    ASSERT_EQ(NodeStatus::IDLE, fal_2.status());
-//    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-//    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+    ASSERT_TRUE(action_1.startTimePoint().time_since_epoch().count() >
+                action_2.stopTimePoint().time_since_epoch().count()  );
+
 
 }

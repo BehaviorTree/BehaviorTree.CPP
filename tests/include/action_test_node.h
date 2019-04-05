@@ -58,12 +58,39 @@ class AsyncActionTest : public AsyncActionNode
         tick_count_ = 0;
     }
 
-  private:
+    void setStartTimePoint(std::chrono::high_resolution_clock::time_point now)
+    {
+       std::cout << this->name() << " Setting Start Time: " << now.time_since_epoch().count() << std::endl;
+
+        start_time_ = now;
+    }
+
+    std::chrono::high_resolution_clock::time_point startTimePoint() const
+    {
+        return start_time_;
+    }
+
+
+    void setStopTimePoint(std::chrono::high_resolution_clock::time_point now)
+    {
+        std::cout << this->name() << " Setting Stop Time: " << now.time_since_epoch().count()  << std::endl;
+
+        stop_time_ = now;
+    }
+
+    std::chrono::high_resolution_clock::time_point stopTimePoint() const
+    {
+        return stop_time_;
+    }
+
+
+private:
     // using atomic because these variables might be accessed from different threads
     BT::Duration time_;
     std::atomic_bool boolean_value_;
     std::atomic<int> tick_count_;
     std::atomic_bool stop_loop_;
+    std::chrono::high_resolution_clock::time_point start_time_, stop_time_;
 };
 }
 
