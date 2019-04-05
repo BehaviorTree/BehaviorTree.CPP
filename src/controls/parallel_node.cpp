@@ -106,8 +106,8 @@ NodeStatus ParallelNode::tick()
 
             case NodeStatus::RUNNING:
             {
-                // do nothing
-            }  break;
+                return NodeStatus::RUNNING;
+            } break;
 
             default:
             {
