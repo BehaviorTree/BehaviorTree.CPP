@@ -30,6 +30,7 @@ BT::AsyncActionTest::~AsyncActionTest()
 
 BT::NodeStatus BT::AsyncActionTest::tick()
 {
+    setStatus(NodeStatus::RUNNING);
     using std::chrono::high_resolution_clock;
     tick_count_++;
     stop_loop_ = false;

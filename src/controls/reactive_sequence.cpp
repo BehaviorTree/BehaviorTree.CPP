@@ -11,6 +11,9 @@
 */
 
 #include "behaviortree_cpp/controls/reactive_sequence.h"
+#include <thread> // *TODO* REMOVE AFTER DEBUG
+
+using std::chrono::milliseconds;
 
 namespace BT
 {
@@ -51,7 +54,6 @@ NodeStatus ReactiveSequence::tick()
         case NodeStatus::RUNNING:
         {
             running_count++;
-            std::this_thread::sleep_for(milliseconds(3000));
             haltChildren(index+1);
             return NodeStatus::RUNNING;
         }
