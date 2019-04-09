@@ -13,7 +13,7 @@
 
 #include "behaviortree_cpp/tree_node.h"
 #include <cstring>
-//#include <behaviortree_cpp/control_node.h>
+#include <behaviortree_cpp/control_node.h>
 
 namespace BT
 {
@@ -172,12 +172,12 @@ void TreeNode::set_child_index(unsigned int child_index)
     child_index_ = child_index;
 }
 
-void TreeNode::set_parent_prt(TreeNode *parent_ptr)
+void TreeNode::set_parent_prt(ControlNode *parent_ptr)
 {
     parent_prt_ = parent_ptr;
 }
 
-TreeNode *TreeNode::parent_prt() const
+ControlNode *TreeNode::parent_prt() const
 {
     return parent_prt_;
 }

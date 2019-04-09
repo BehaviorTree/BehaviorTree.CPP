@@ -50,7 +50,7 @@ NodeStatus ReactiveSequence::tick()
 //                    std::cout << name() << " is propagating halt to" << ((ControlNode*)parent_prt_)->name() << std::endl;
 
 
-                    ((ControlNode*)parent_prt_)->propagateHalt(child_index_);
+                    parent_prt_->propagateHalt(child_index_);
                 }
 
                 current_child_node->executeTick();

@@ -27,8 +27,13 @@
 #pragma warning(disable : 4127) 
 #endif
 
+
 namespace BT
 {
+
+class ControlNode;
+
+
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
 {
@@ -148,9 +153,9 @@ class TreeNode
     static StringView stripBlackboardPointer(StringView str);
 
     static Optional<StringView> getRemappedKey(StringView port_name, StringView remapping_value);
-    void set_parent_prt(TreeNode *parent_ptr);
+    void set_parent_prt(ControlNode *parent_ptr);
 
-    TreeNode* parent_prt() const;
+    ControlNode *parent_prt() const;
     unsigned int child_index() const;
     void set_child_index(unsigned int child_index);
 
@@ -169,7 +174,7 @@ protected:
     void modifyPortsRemapping(const PortsRemapping& new_remapping);
     unsigned int child_index_;
 
-    TreeNode* parent_prt_ = nullptr;
+    ControlNode* parent_prt_ = nullptr;
 
   private:
     const std::string name_;

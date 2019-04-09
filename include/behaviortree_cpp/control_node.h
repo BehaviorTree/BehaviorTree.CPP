@@ -19,6 +19,7 @@
 
 namespace BT
 {
+
 class ControlNode : public TreeNode
 {
   protected:
