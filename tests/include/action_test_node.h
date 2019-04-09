@@ -4,6 +4,7 @@
 #include <ctime>
 #include <chrono>
 #include "behaviortree_cpp/action_node.h"
+#include <mutex>
 
 namespace BT
 {
@@ -60,29 +61,33 @@ class AsyncActionTest : public AsyncActionNode
 
     void setStartTimePoint(std::chrono::high_resolution_clock::time_point now)
     {
-        // TODO add lock guard
-       std::cout << this->name() << " Setting Start Time: " << now.time_since_epoch().count() << std::endl;
+        std::lock_guard<std::mutex> lock(start_time_mutex_);
+//       std::cout << this->name() << " Setting Start Time: " << now.time_since_epoch().count() << std::endl;
 
         start_time_ = now;
     }
 
-    std::chrono::high_resolution_clock::time_point startTimePoint() const
+    std::chrono::high_resolution_clock::time_point startTimePoint()
     {
+        std::lock_guard<std::mutex> lock(start_time_mutex_);
+
         return start_time_;
     }
 
 
     void setStopTimePoint(std::chrono::high_resolution_clock::time_point now)
     {
-        // TODO add lock guard
+        std::lock_guard<std::mutex> lock(stop_time_mutex_);
 
-        std::cout << this->name() << " Setting Stop Time: " << now.time_since_epoch().count()  << std::endl;
+//        std::cout << this->name() << " Setting Stop Time: " << now.time_since_epoch().count()  << std::endl;
 
         stop_time_ = now;
     }
 
-    std::chrono::high_resolution_clock::time_point stopTimePoint() const
+    std::chrono::high_resolution_clock::time_point stopTimePoint()
     {
+        std::lock_guard<std::mutex> lock(stop_time_mutex_);
+
         return stop_time_;
     }
 
@@ -94,6 +99,9 @@ private:
     std::atomic<int> tick_count_;
     std::atomic_bool stop_loop_;
     std::chrono::high_resolution_clock::time_point start_time_, stop_time_;
+
+    std::mutex start_time_mutex_, stop_time_mutex_;
+
 };
 }
 

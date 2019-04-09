@@ -50,6 +50,7 @@ class ControlNode : public TreeNode
     {
         return NodeType::CONTROL;
     }
+    void propagateHalt(unsigned i);
 };
 }
 

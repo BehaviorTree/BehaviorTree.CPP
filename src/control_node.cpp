@@ -22,8 +22,13 @@ ControlNode::ControlNode(const std::string& name, const NodeConfiguration& confi
 
 void ControlNode::addChild(TreeNode* child)
 {
+    child->set_child_index(children_nodes_.size());
+    child->set_parent_prt(this);
     children_nodes_.push_back(child);
 }
+
+
+
 
 unsigned ControlNode::childrenCount() const
 {
@@ -53,5 +58,17 @@ void ControlNode::haltChildren(unsigned i)
         child->setStatus(NodeStatus::IDLE);
     }
 }
+
+void ControlNode::propagateHalt(unsigned i)
+{
+//    std::cout << name() << " received a request to propagate halt from index " << i + 1 << std::endl;
+
+    haltChildren(i + 1);
+    if (parent_prt_ != nullptr)
+    {
+        ((ControlNode*)parent_prt_)->propagateHalt(child_index_);
+    }
+}
+
 
 } // end namespace

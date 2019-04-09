@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+/* Copyright (C) 2015-2019 Michele Colledanchise -  All Rights Reserved
  * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -13,6 +13,7 @@
 
 #include "behaviortree_cpp/tree_node.h"
 #include <cstring>
+//#include <behaviortree_cpp/control_node.h>
 
 namespace BT
 {
@@ -159,6 +160,26 @@ void TreeNode::modifyPortsRemapping(const PortsRemapping &new_remapping)
             it->second = new_it.second;
         }
     }
+}
+
+unsigned int TreeNode::child_index() const
+{
+    return child_index_;
+}
+
+void TreeNode::set_child_index(unsigned int child_index)
+{
+    child_index_ = child_index;
+}
+
+void TreeNode::set_parent_prt(TreeNode *parent_ptr)
+{
+    parent_prt_ = parent_ptr;
+}
+
+TreeNode *TreeNode::parent_prt() const
+{
+    return parent_prt_;
 }
 
 }   // end namespace

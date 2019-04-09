@@ -34,9 +34,27 @@ NodeStatus ReactiveFallback::tick()
             if (current_child_node->status() != NodeStatus::RUNNING)
             {
                 // if not running already, tick it
+
+                if (parent_prt_ ==  nullptr)
+                {
+//                    std::cout << name() << " is root" << std::endl;
+
+                }
+                else
+                {
+
+//                    std::cout << name() << " is propagating halt to" << ((ControlNode*)parent_prt_)->name() << std::endl;
+
+
+                    ((ControlNode*)parent_prt_)->propagateHalt(child_index_);
+                }
+
+
+
                 current_child_node->executeTick();
                 do
                 {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
                     child_status = current_child_node->status();
 

@@ -36,7 +36,12 @@ BT::AsyncActionTest::~AsyncActionTest()
 
 BT::NodeStatus BT::AsyncActionTest::tick()
 {
-    setStartTimePoint(high_resolution_clock::now());
+
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+//    std::cout << name() << " STARTED at"  << t2.time_since_epoch().count()  << std::endl;
+
+    setStartTimePoint(t2);
     setStatus(NodeStatus::RUNNING);
     using std::chrono::high_resolution_clock;
     tick_count_++;
@@ -46,12 +51,10 @@ BT::NodeStatus BT::AsyncActionTest::tick()
 
     while (!stop_loop_ && high_resolution_clock::now() < initial_time + time_)
     {
-//        high_resolution_clock::time_point t2 = high_resolution_clock::now();
-
-//        std::cout << this->name() << " Running. Time: " << std::chrono::system_clock::to_time_t(t2)  << std::endl;
 
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
     }
 
     setStopTimePoint(high_resolution_clock::now());
@@ -70,7 +73,19 @@ BT::NodeStatus BT::AsyncActionTest::tick()
 
 void BT::AsyncActionTest::halt()
 {
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+//    std::cout << name() << " HALTED at "  << t2.time_since_epoch().count() << std::endl;
+
     stop_loop_ = true;
+ NodeStatus node_status;
+    do
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+       node_status = status();
+    } while (node_status == NodeStatus::RUNNING);
+
 }
 
 void BT::AsyncActionTest::setTime(BT::Duration time)
