@@ -51,11 +51,11 @@ BT::NodeStatus BT::AsyncActionTest::tick()
 
     while (!stop_loop_ && high_resolution_clock::now() < initial_time + time_)
     {
-
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::cout << name() << " running"  << std::endl;
 
     }
+//    std::cout << name() << " STARTED at"  << high_resolution_clock::now().time_since_epoch().count()  << std::endl;
 
     setStopTimePoint(high_resolution_clock::now());
 
