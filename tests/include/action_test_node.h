@@ -70,7 +70,7 @@ private:
     BT::Duration time_;
     std::atomic_bool boolean_value_;
     std::atomic<int> tick_count_;
-    std::atomic_bool stop_loop_;
+    std::atomic_bool stop_loop_, has_started_;
     std::chrono::high_resolution_clock::time_point start_time_, stop_time_;
 
     mutable std::mutex start_time_mutex_, stop_time_mutex_;
