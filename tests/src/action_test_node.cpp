@@ -98,6 +98,37 @@ void BT::AsyncActionTest::setBoolean(bool boolean_value)
     boolean_value_ = boolean_value;
 }
 
+
+void BT::AsyncActionTest::setStartTimePoint(std::chrono::high_resolution_clock::time_point now)
+{
+    std::lock_guard<std::mutex> lock(start_time_mutex_);
+
+    start_time_ = now;
+}
+
+std::chrono::high_resolution_clock::time_point BT::AsyncActionTest::startTimePoint() const
+{
+    std::lock_guard<std::mutex> lock(start_time_mutex_);
+
+    return start_time_;
+}
+
+
+void BT::AsyncActionTest::setStopTimePoint(std::chrono::high_resolution_clock::time_point now)
+{
+    std::lock_guard<std::mutex> lock(stop_time_mutex_);
+
+    stop_time_ = now;
+}
+
+std::chrono::high_resolution_clock::time_point BT::AsyncActionTest::stopTimePoint() const
+{
+    std::lock_guard<std::mutex> lock(stop_time_mutex_);
+
+    return stop_time_;
+}
+
+
 //----------------------------------------------
 
 BT::SyncActionTest::SyncActionTest(const std::string& name) :

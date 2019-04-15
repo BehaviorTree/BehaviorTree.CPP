@@ -64,29 +64,6 @@ struct ComplexReactiveTree : testing::Test
 TEST_F(ComplexReactiveTree, ConditionsFalse)
 {
 
-
-//    std::cout << fal_1.name() << " is the child of " << fal_1.parent_prt_->name() << std::endl;
-//    std::cout << fal_2.name() << " is the child of " << fal_2.parent_prt_->name() << std::endl;
-
-//    std::cout << action_1.name() << " is the child of " << action_1.parent_prt_->name() << std::endl;
-//    std::cout << action_2.name() << " is the child of " << action_2.parent_prt_->name() << std::endl;
-
-//    std::cout << condition_1.name() << " is the child of " << condition_1.parent_prt_->name() << std::endl;
-//    std::cout << condition_2.name() << " is the child of " << condition_2.parent_prt_->name() << std::endl;
-
-
-    if (root.parent_prt() ==  nullptr)
-    {
-        std::cout << root.name() << " is root" << std::endl;
-
-    }
-    else
-    {
-        std::cout << root.name() << " is the child of " << root.parent_prt()->name() << std::endl;
-    }
-
-
-
     auto t0 = std::chrono::high_resolution_clock::now();
 
 
@@ -105,9 +82,7 @@ TEST_F(ComplexReactiveTree, ConditionsFalse)
 
     std::this_thread::sleep_for(milliseconds(300));
 
-    std::cout << "condition 1 set to true" << std::endl;
-
-    condition_1.setBoolean(true);
+    condition_1.setBoolean(true);  // condition 1 set to true"
 
     state = root.executeTick();
 
@@ -122,21 +97,12 @@ TEST_F(ComplexReactiveTree, ConditionsFalse)
 
 
     std::this_thread::sleep_for(milliseconds(300));
-    condition_1.setBoolean(false);
+    condition_1.setBoolean(false);    // condition 1 set to false" 
 
-    std::cout << "condition 1 set to false" << std::endl;
-
-
-//    std::cout << "Ticking..." << std::endl;
     state = root.executeTick();
-//    std::cout << "...done" << std::endl;
-
 
 
     std::this_thread::sleep_for(milliseconds(300));
-
-//    std::cout << action_1.startTimePoint().time_since_epoch().count() << std::endl;
-//    std::cout << action_2.stopTimePoint().time_since_epoch().count() << std::endl;
 
     ASSERT_TRUE(action_1.startTimePoint().time_since_epoch().count() >
                 action_2.stopTimePoint().time_since_epoch().count()  );

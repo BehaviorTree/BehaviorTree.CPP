@@ -1,5 +1,5 @@
 /* Copyright (C) 2019 Davide Faconti, Eurecat -  All Rights Reserved
-*
+*  Copyright (C) 2019 Michele Colledanchise -  All Rights Reserved
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
 *   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -36,19 +36,11 @@ NodeStatus ReactiveSequence::tick()
         {
             if (current_child_node->status() != NodeStatus::RUNNING)
             {
-                // if not running already, tick it
-                //before ticking it, make sure to halt the other running child.
+                /* if not running already, tick it. I assume that ACTION_ASYNC returns running for (at least the first tick),
+                hence the halt of possibly other async actions should be sent before ticking current_child_node */
 
-                if (parent_prt_ ==  nullptr)
+                if (parent_prt_ !=  nullptr)
                 {
-//                    std::cout << name() << " is root" << std::endl;
-
-                }
-                else
-                {
-
-//                    std::cout << name() << " is propagating halt to" << ((ControlNode*)parent_prt_)->name() << std::endl;
-
 
                     parent_prt_->propagateHalt(child_index_);
                 }
