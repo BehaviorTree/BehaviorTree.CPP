@@ -11,8 +11,7 @@
 */
 
 #include "behaviortree_cpp/controls/reactive_fallback.h"
-#include <thread> // *TODO* REMOVE AFTER DEBUG
-
+#include <thread>
 namespace BT
 {
 

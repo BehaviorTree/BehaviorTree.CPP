@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2015-2019 Michele Colledanchise - All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -44,10 +43,6 @@ struct ReactiveSequenceTest : testing::Test
         haltAllActions(&root);
     }
 };
-
-
-
-
 
 struct ReactiveSequence2ActionsTest : testing::Test
 {
@@ -105,8 +100,6 @@ struct ComplexReactiveSequence2ActionsTest : testing::Test
         haltAllActions(&root);
     }
 };
-
-
 
 /****************TESTS START HERE***************************/
 
@@ -179,8 +172,6 @@ TEST_F(ReactiveSequence2ActionsTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
 }
-
-
 
 TEST_F(ComplexReactiveSequence2ActionsTest, ConditionsTrue)
 {

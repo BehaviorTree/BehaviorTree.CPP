@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2015-2019 Michele Colledanchise - All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -20,7 +19,6 @@
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;
-
 
 struct ReactiveFallbackTest : testing::Test
 {
@@ -44,7 +42,6 @@ struct ReactiveFallbackTest : testing::Test
         haltAllActions(&root);
     }
 };
-
 
 struct ReactiveFallback2ActionsTest : testing::Test
 {
@@ -102,8 +99,6 @@ struct ComplexReactiveFallback2ActionsTest : testing::Test
         haltAllActions(&root);
     }
 };
-
-
 
 /****************TESTS START HERE***************************/
 
@@ -178,8 +173,6 @@ TEST_F(ReactiveFallback2ActionsTest, Actions)
 
 }
 
-
-
 TEST_F(ComplexReactiveFallback2ActionsTest, ConditionsTrue)
 {
     BT::NodeStatus state = root.executeTick();
@@ -204,7 +197,6 @@ TEST_F(ComplexReactiveFallback2ActionsTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, seq_2.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-
 
     std::this_thread::sleep_for(milliseconds(300));
     state = root.executeTick();

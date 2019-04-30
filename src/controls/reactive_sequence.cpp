@@ -11,7 +11,7 @@
 */
 
 #include "behaviortree_cpp/controls/reactive_sequence.h"
-#include <thread> // *TODO* REMOVE AFTER DEBUG
+#include <thread>
 
 namespace BT
 {
