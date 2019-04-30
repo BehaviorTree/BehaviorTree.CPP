@@ -30,9 +30,7 @@
 
 namespace BT
 {
-
 class ControlNode;
-
 
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
@@ -192,8 +190,6 @@ protected:
     NodeConfiguration config_;
 
     std::string registration_ID_;
-
-
 };
 
 //-------------------------------------------------------

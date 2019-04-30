@@ -27,9 +27,6 @@ void ControlNode::addChild(TreeNode* child)
     children_nodes_.push_back(child);
 }
 
-
-
-
 unsigned ControlNode::childrenCount() const
 {
     return unsigned(children_nodes_.size());
@@ -61,14 +58,11 @@ void ControlNode::haltChildren(unsigned i)
 
 void ControlNode::propagateHalt(unsigned i)
 {
-//    std::cout << name() << " received a request to propagate halt from index " << i + 1 << std::endl;
-
     haltChildren(i + 1);
     if (parent_prt_ != nullptr)
     {
         ((ControlNode*)parent_prt_)->propagateHalt(child_index_);
     }
 }
-
 
 } // end namespace
