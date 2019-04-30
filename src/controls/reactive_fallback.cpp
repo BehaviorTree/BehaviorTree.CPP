@@ -38,15 +38,14 @@ NodeStatus ReactiveFallback::tick()
 
                 if (parent_prt_ !=  nullptr)
                 {
-
                     parent_prt_->propagateHalt(child_index_);
                 }
 
                 current_child_node->executeTick();
+
                 do
                 {
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
                     child_status = current_child_node->status();
 
                 } while (child_status == NodeStatus::IDLE);
@@ -68,11 +67,19 @@ NodeStatus ReactiveFallback::tick()
         case NodeStatus::FAILURE:
         {
             failure_count++;
+            if (current_child_node->type() == NodeType::ACTION_ASYNC)
+            {
+                current_child_node->setStatus(NodeStatus::IDLE);
+            }
         }break;
 
         case NodeStatus::SUCCESS:
         {
             haltChildren(index+1);
+            if (current_child_node->type() == NodeType::ACTION_ASYNC)
+            {
+                current_child_node->setStatus(NodeStatus::IDLE);
+            }
             return NodeStatus::SUCCESS;
         }break;
 
@@ -93,4 +100,3 @@ NodeStatus ReactiveFallback::tick()
 }
 
 }
-
