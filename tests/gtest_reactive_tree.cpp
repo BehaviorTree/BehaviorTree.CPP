@@ -61,9 +61,7 @@ struct ComplexReactiveTree : testing::Test
 
 TEST_F(ComplexReactiveTree, CorrectHaltTiming)
 {
-
     auto t0 = std::chrono::high_resolution_clock::now();
-
 
     condition_1.setBoolean(false);
     condition_2.setBoolean(false);
@@ -84,7 +82,6 @@ TEST_F(ComplexReactiveTree, CorrectHaltTiming)
 
     state = root.executeTick();
 
-
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::SUCCESS, fal_1.status());
     ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
@@ -93,17 +90,13 @@ TEST_F(ComplexReactiveTree, CorrectHaltTiming)
     ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 
-
     std::this_thread::sleep_for(milliseconds(300));
     condition_1.setBoolean(false);    // condition 1 set to false" 
 
     state = root.executeTick();
 
-
     std::this_thread::sleep_for(milliseconds(300));
 
     ASSERT_TRUE(action_1.startTimePoint().time_since_epoch().count() >
                 action_2.stopTimePoint().time_since_epoch().count()  );
-
-
 }
