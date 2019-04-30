@@ -22,14 +22,14 @@ using BT::NodeStatus;
 using std::chrono::milliseconds;
 
 
-struct ReactiveSequenceTest : testing::Test
+struct ReactiveFallbackTest : testing::Test
 {
-    BT::ReactiveSequence root;
+    BT::ReactiveFallback root;
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
     BT::AsyncActionTest action_1;
 
-    ReactiveSequenceTest()
+    ReactiveFallbackTest()
       : root("root_first")
       , condition_1("condition_1")
       , condition_2("condition_2")
@@ -39,53 +39,50 @@ struct ReactiveSequenceTest : testing::Test
         root.addChild(&condition_2);
         root.addChild(&action_1);
     }
-    ~ReactiveSequenceTest()
+    ~ReactiveFallbackTest()
     {
         haltAllActions(&root);
     }
 };
 
 
-
-
-
-struct ReactiveSequence2ActionsTest : testing::Test
+struct ReactiveFallback2ActionsTest : testing::Test
 {
-    BT::ReactiveSequence root;
+    BT::ReactiveFallback root;
     BT::AsyncActionTest action_1;
     BT::AsyncActionTest action_2;
 
-    ReactiveSequence2ActionsTest()
-      : root("root_sequence")
+    ReactiveFallback2ActionsTest()
+      : root("root_Fallback")
       , action_1("action_1", milliseconds(100))
       , action_2("action_2", milliseconds(100))
     {
         root.addChild(&action_1);
         root.addChild(&action_2);
     }
-    ~ReactiveSequence2ActionsTest()
+    ~ReactiveFallback2ActionsTest()
     {
         haltAllActions(&root);
     }
 };
 
-struct ComplexReactiveSequence2ActionsTest : testing::Test
+struct ComplexReactiveFallback2ActionsTest : testing::Test
 {
-    BT::ReactiveSequence root;
+    BT::ReactiveFallback root;
     BT::AsyncActionTest action_1;
     BT::AsyncActionTest action_2;
-    BT::ReactiveSequence seq_1;
-    BT::ReactiveSequence seq_2;
+    BT::ReactiveFallback seq_1;
+    BT::ReactiveFallback seq_2;
 
     BT::ConditionTestNode condition_1;
     BT::ConditionTestNode condition_2;
 
-    ComplexReactiveSequence2ActionsTest()
-      : root("root_sequence")
+    ComplexReactiveFallback2ActionsTest()
+      : root("root_Fallback")
       , action_1("action_1", milliseconds(100))
       , action_2("action_2", milliseconds(100))
-      , seq_1("sequence_1")
-      , seq_2("sequence_2")
+      , seq_1("Fallback_1")
+      , seq_2("Fallback_2")
       , condition_1("condition_1")
       , condition_2("condition_2")
     {
@@ -100,7 +97,7 @@ struct ComplexReactiveSequence2ActionsTest : testing::Test
             seq_2.addChild(&action_2);
         }
     }
-    ~ComplexReactiveSequence2ActionsTest()
+    ~ComplexReactiveFallback2ActionsTest()
     {
         haltAllActions(&root);
     }
@@ -110,52 +107,53 @@ struct ComplexReactiveSequence2ActionsTest : testing::Test
 
 /****************TESTS START HERE***************************/
 
-TEST_F(ReactiveSequenceTest, Condition1ToFalse)
+TEST_F(ReactiveFallbackTest, Condition1ToTrue)
 {
-    condition_1.setBoolean(true);
-    condition_2.setBoolean(true);
+    condition_1.setBoolean(false);
+    condition_2.setBoolean(false);
 
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    condition_1.setBoolean(false);
+    condition_1.setBoolean(true);
 
     state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::FAILURE, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
 }
 
-TEST_F(ReactiveSequenceTest, Condition2ToFalse)
+TEST_F(ReactiveFallbackTest, Condition2ToTrue)
 {
-    condition_1.setBoolean(true);
-    condition_2.setBoolean(true);
+    condition_1.setBoolean(false);
+    condition_2.setBoolean(false);
 
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    condition_2.setBoolean(false);
+    condition_2.setBoolean(true);
 
     state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::FAILURE, state);
-    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
-    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
 }
 
-TEST_F(ReactiveSequence2ActionsTest, ConditionsTrue)
+TEST_F(ReactiveFallback2ActionsTest, Actions)
 {
+
     root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, root.status());
@@ -168,9 +166,9 @@ TEST_F(ReactiveSequence2ActionsTest, ConditionsTrue)
 
     root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, root.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, root.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
     root.executeTick();
 
@@ -182,16 +180,16 @@ TEST_F(ReactiveSequence2ActionsTest, ConditionsTrue)
 
 
 
-TEST_F(ComplexReactiveSequence2ActionsTest, ConditionsTrue)
+TEST_F(ComplexReactiveFallback2ActionsTest, ConditionsTrue)
 {
     BT::NodeStatus state = root.executeTick();
 
     state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::RUNNING, seq_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_1.status());
     ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, seq_2.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
@@ -199,23 +197,26 @@ TEST_F(ComplexReactiveSequence2ActionsTest, ConditionsTrue)
     std::this_thread::sleep_for(milliseconds(300));
     state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
     ASSERT_EQ(NodeStatus::SUCCESS, seq_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, seq_2.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 
 
     std::this_thread::sleep_for(milliseconds(300));
     state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::RUNNING, seq_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_1.status());
     ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, seq_2.status());
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_2.status());;
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
+
+
+

@@ -1,6 +1,4 @@
-
-
-/* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+/* Copyright (C) 2015-2019 Michele Colledanchise - All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -61,7 +59,7 @@ struct ComplexReactiveTree : testing::Test
 /****************TESTS START HERE***************************/
 
 
-TEST_F(ComplexReactiveTree, ConditionsFalse)
+TEST_F(ComplexReactiveTree, CorrectHaltTiming)
 {
 
     auto t0 = std::chrono::high_resolution_clock::now();
