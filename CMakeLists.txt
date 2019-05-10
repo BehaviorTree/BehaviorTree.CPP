@@ -81,12 +81,6 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES})
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
-    find_package(backward_ros QUIET)
-    if (backward_ros_FOUND)
-        message(STATUS "backward_ros found, using it.")
-        list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES} ${backward_ros_LIBRARIES})
-    endif()
-
 else()
     find_package(GTest)
 
@@ -165,11 +159,6 @@ list(APPEND BT_SOURCE
     3rdparty/minitrace/minitrace.cpp
     )
 
-if (NOT backward_ros_FOUND)
-    list(APPEND SRC_3rd_PARTY
-        3rdparty/backward-cpp/backward.cpp)
-endif()
-
 ######################################################
 set(CMAKE_DEBUG_POSTFIX "d")
 
@@ -183,18 +172,15 @@ if (WIN32)
     add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
 endif()
 
-
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES})
 
 target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
-
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
-    $<INSTALL_INTERFACE:3rdparty>
     ${BUILD_TOOL_INCLUDE_DIRS})
 
 if( ZMQ_FOUND )
@@ -205,7 +191,7 @@ if(MSVC)
     target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
 else()
     target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        -Wall -Wextra -Werror=return-type -g)
+        -Wall -Wextra -Werror=return-type)
 endif()
 
 ######################################################

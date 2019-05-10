@@ -13,7 +13,6 @@
 
 #include "behaviortree_cpp/action_node.h"
 #include "coroutine/coroutine.h"
-#include "backward-cpp/backward.hpp"
 
 namespace BT
 {
