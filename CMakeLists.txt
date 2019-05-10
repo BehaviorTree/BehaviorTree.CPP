@@ -89,9 +89,7 @@ else()
     endif(NOT GTEST_FOUND)
 
 endif()
-if(NOT MSVC)
-    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES "dw")
-endif()
+
 
 #############################################################
 if(ament_cmake_FOUND)
