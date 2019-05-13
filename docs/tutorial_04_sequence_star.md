@@ -3,7 +3,7 @@
 The next example shows the difference between a `SequenceNode` and a 
 `ReactiveSequence`.
 
-An Asynchornous Action has it's own thread. This allows the user to 
+An Asynchronous Action has it's own thread. This allows the user to 
 use blocking functions but to return the flow of execution 
 to the tree.
 
