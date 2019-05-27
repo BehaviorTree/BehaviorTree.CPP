@@ -40,7 +40,10 @@ to visualize, record, replay and analyze state transitions.
 
 # Documentation
 
-https://www.behaviortree.dev/
+You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
+
+To find more details about the conceptual ideas that make this implementation different from others, you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
+
 
 # About version 3.X
 
