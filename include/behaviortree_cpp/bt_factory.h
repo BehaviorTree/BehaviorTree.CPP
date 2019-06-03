@@ -36,6 +36,17 @@ constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 
 #ifndef BT_PLUGIN_EXPORT
 
+/* Use this macro to automatically register one or more custom Nodes
+into a factory. For instance:
+
+BT_REGISTER_NODES(factory)
+{
+    factory.registerNodeType<MoveBaseAction>("MoveBase");
+}
+
+IMPORTANT: this must funtion MUST be declared in a cpp file, NOT a header file.
+See examples for more information about configuring CMake correctly
+*/
 #define BT_REGISTER_NODES(factory)                                                                 \
         static void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
 
