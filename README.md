@@ -101,13 +101,14 @@ to your catkin workspace.
 
 # Acknowledgement
 
-This library was developed at  **Eurecat** (main author, Davide Faconti) in a joint effort
+This library was developed at  **Eurecat - https://eurecat.org/en/** (main author, Davide Faconti) in a joint effort
 with the **Italian Institute of Technology** (Michele Colledanchise).
 
-It is one of the main components of [MOOD2Be](https://eurecat.org/es/portfolio-items/mood2be/),
+This software is one of the main components of [MOOD2Be](https://eurecat.org/en/portfolio-items/mood2be/),
 which is one of the six **Integrated Technical Projects (ITPs)** selected from the
-[RobMoSys first open call](https://robmosys.eu/itp/) and it received funding from the European
-Union’s Horizon 2020 Research and Innovation Programme.
+[RobMoSys first open call](https://robmosys.eu/itp/). Therefore, MOOD2Be has been supported by the European Horizon2020 project RobMoSys. This software is RobMoSys conformant. 
+
+![RobMoSys Conformant](./robmosys_conformant_logo.png)
 
 # Further readings
 
