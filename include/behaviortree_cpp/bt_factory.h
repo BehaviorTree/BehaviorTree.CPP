@@ -82,7 +82,26 @@ struct Tree
     std::vector<Blackboard::Ptr> blackboard_stack;
     std::unordered_map<std::string, TreeNodeManifest> manifests;
 
-    Tree() : root_node(nullptr) { }
+    Tree(): root_node(nullptr) {}
+
+    // non-copyable. Only movable
+    Tree(const Tree& ) = delete;
+    Tree& operator=(const Tree&) = delete;
+
+    Tree(Tree&& other)
+    {
+        (*this) = std::move(other);
+    }
+
+    Tree& operator=(Tree&& other)
+    {
+        root_node = std::move(other.root_node);
+        nodes = std::move(other.nodes);
+        blackboard_stack = std::move(other.blackboard_stack);
+        manifests = std::move(other.manifests);
+        return *this;
+    }
+
     ~Tree();
 
     Blackboard::Ptr rootBlackboard();
