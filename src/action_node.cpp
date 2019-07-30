@@ -131,7 +131,15 @@ NodeStatus AsyncActionNode::executeTick()
 void AsyncActionNode::stopAndJoinThread()
 {
     keep_thread_alive_.store(false);
-    notifyStart();
+    if( status() == NodeStatus::RUNNING )
+    {
+        halt();
+    }
+    else{
+        // loop in asyncThreadLoop() is blocked at waitStart(). Unblock it.
+        notifyStart();
+    }
+
     if (thread_.joinable())
     {
         thread_.join();
