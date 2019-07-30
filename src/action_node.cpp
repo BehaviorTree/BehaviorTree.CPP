@@ -52,11 +52,9 @@ NodeStatus SimpleActionNode::tick()
 //-------------------------------------------------------
 
 AsyncActionNode::AsyncActionNode(const std::string& name, const NodeConfiguration& config)
-  : ActionNodeBase(name, config),
-  keep_thread_alive_(true),
-  start_action_(false)
+  : ActionNodeBase(name, config)
 {
-    thread_ = std::thread(&AsyncActionNode::asyncThreadLoop, this);
+
 }
 
 AsyncActionNode::~AsyncActionNode()
@@ -115,6 +113,10 @@ NodeStatus AsyncActionNode::executeTick()
     // The other thread is in charge for changing the status
     if (status() == NodeStatus::IDLE)
     {
+        if( thread_.joinable() == false) {
+            keep_thread_alive_ = true;
+            thread_ = std::thread(&AsyncActionNode::asyncThreadLoop, this);
+        }
         setStatus( NodeStatus::RUNNING );
         notifyStart();
     }
