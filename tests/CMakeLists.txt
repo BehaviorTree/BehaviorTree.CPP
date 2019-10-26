@@ -13,10 +13,13 @@ set(BT_TESTS
   gtest_factory.cpp
   gtest_decorator.cpp
   gtest_blackboard.cpp
-  gtest_coroutines.cpp
   navigation_test.cpp
   gtest_subtree.cpp
 )
+
+if (NOT MINGW)
+    list(APPEND BT_TESTS  gtest_coroutines.cpp)
+endif()
 
 if(ament_cmake_FOUND AND BUILD_TESTING)
 

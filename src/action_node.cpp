@@ -12,10 +12,9 @@
 */
 
 #include "behaviortree_cpp/action_node.h"
-#include "coroutine/coroutine.h"
 
-namespace BT
-{
+using namespace BT;
+
 ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfiguration& config)
   : LeafNode::LeafNode(name, config)
 {
@@ -146,7 +145,26 @@ void AsyncActionNode::stopAndJoinThread()
     }
 }
 
+
+SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):
+  ActionNodeBase(name, config)
+{}
+
+NodeStatus SyncActionNode::executeTick()
+{
+  auto stat = ActionNodeBase::executeTick();
+  if( stat == NodeStatus::RUNNING)
+  {
+    throw LogicError("SyncActionNode MUST never return RUNNING");
+  }
+  return stat;
+}
+
+
 //-------------------------------------
+#ifndef BT_NO_COROUTINES
+#include "coroutine/coroutine.h"
+
 struct CoroActionNode::Pimpl
 {
     coroutine::routine_t coro;
@@ -212,21 +230,6 @@ void CoroActionNode::halt()
 {
     _p->pending_destroy = true;
 }
-
-SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):
-    ActionNodeBase(name, config)
-{}
-
-NodeStatus SyncActionNode::executeTick()
-{
-    auto stat = ActionNodeBase::executeTick();
-    if( stat == NodeStatus::RUNNING)
-    {
-        throw LogicError("SyncActionNode MUST never return RUNNING");
-    }
-    return stat;
-}
+#endif
 
 
-
-}

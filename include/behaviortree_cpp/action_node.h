@@ -136,6 +136,8 @@ class AsyncActionNode : public ActionNodeBase
     std::thread thread_;
 };
 
+#ifndef BT_NO_COROUTINES
+
 /**
  * @brief The CoroActionNode class is an ideal candidate for asynchronous actions
  * which need to communicate with an external service using an asynch request/reply interface
@@ -174,9 +176,8 @@ class CoroActionNode : public ActionNodeBase
 
     struct Pimpl; // The Pimpl idiom
     std::unique_ptr<Pimpl> _p;
-
 };
-
+#endif
 
 }   //end namespace
 

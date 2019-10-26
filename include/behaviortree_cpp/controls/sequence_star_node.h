@@ -43,7 +43,7 @@ class SequenceStarNode : public ControlNode
 
   private:
 
-    unsigned int current_child_idx_;
+    size_t current_child_idx_;
 
     virtual BT::NodeStatus tick() override;
 };
