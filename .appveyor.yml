@@ -15,11 +15,10 @@ configuration:
 install:
   - set PATH=C:\MinGW\bin;C:\MinGW\msys\1.0;%PATH%
 
-
 before_build:
   - mkdir build
   - cd build
-  - cmake "-G%GENERATOR%" ..
+  - cmake "-G%GENERATOR%" -DCMAKE_IGNORE_PATH="C:/Program Files/Git/usr/bin" ..
 
 build_script:
 - cmake --build .
