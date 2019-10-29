@@ -38,7 +38,7 @@
 using ::std::string;
 using ::std::wstring;
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <Windows.h>
 #else
 #if defined(__APPLE__) && defined(__MACH__)
@@ -60,7 +60,7 @@ enum class ResumeResult
     YIELD = 0
 };
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 
 struct Routine
 {
