@@ -130,7 +130,7 @@ The attribute "name" represents the name of the instance; it is optional.
 
 
 ``` c++
-#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 
 // file that contains the custom nodes definitions
 #include "dummy_nodes.h"

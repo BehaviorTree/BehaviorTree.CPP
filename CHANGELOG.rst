@@ -2,6 +2,48 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Error message corrected
+* fix windows and mingw compilation (?)
+* Merge pull request `#70 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/70>`_ from Masadow/patch-3
+  Added 32bits compilation configuration for msvc
+* make Tree non copyable
+* fix `#114 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/114>`_
+* Merge branch 'master' of https://github.com/BehaviorTree/BehaviorTree.CPP
+* critical bug fix affecting AsyncActionNode
+  When a Tree is copied, all the thread related to AsyncActionNode where
+  invoked.
+  As a consequence, they are never executed, despite the fact that the
+  value RUNNING is returned.
+* Fix issue `#109 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/109>`_
+* fix `#111 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/111>`_
+* Merge pull request `#108 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/108>`_ from daniel-serrano/add-RobMoSys-acknowledgement
+  Add robmosys acknowledgement
+* Add robomosys acknowledgement as requested
+* Add robomosys acknowledgement as requested
+* added more comments (issue `#102 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/102>`_)
+* Update README.md
+* Add files via upload
+* Merge pull request `#96 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/96>`_ from LoyVanBeek/patch-1
+  Fix typo
+* Update tutorial_04_sequence_star.md
+* fix compilation
+* removing backward_cpp
+  Motivation: backward_cpp is SUPER useful, but it is a library to use at
+  the application level. It makes no sense to add it at the library level.
+* Merge pull request `#95 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/95>`_ from LoyVanBeek/patch-1
+  Remove 0 in front of http://... URL to publication
+* Remove 0 in front of http://... URL to publication
+  Hopefully, this makes the link correctly click-able when rendered to HTML
+* fix issue `#84 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/84>`_ (Directories)
+* add infinite loop to Repeat and Retry (issue `#80 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/80>`_)
+* fix unit test
+* issue `#82 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/82>`_
+* fix issue `#82 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/82>`_
+* Added 32bits compilation configuration for msvc
+* Contributors: Daniel Serrano, Davide Facont, Davide Faconti, Jimmy Delas, Loy
+
 3.0.7 (2019-04-02)
 ------------------
 * this should fix issue with tinyXML2 once and for all (maybe...)

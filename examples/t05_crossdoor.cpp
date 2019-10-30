@@ -1,13 +1,13 @@
 #include "crossdoor_nodes.h"
 
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
-#include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
-#include "behaviortree_cpp/loggers/bt_file_logger.h"
+#include "behaviortree_cpp_v3/loggers/bt_cout_logger.h"
+#include "behaviortree_cpp_v3/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp_v3/loggers/bt_file_logger.h"
 
-#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 
 #ifdef ZMQ_FOUND
-#include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
+#include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 #endif
 
 /** This is a more complex example that uses Fallback,

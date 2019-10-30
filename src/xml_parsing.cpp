@@ -22,7 +22,7 @@
 #pragma warning(disable : 4996) // do not complain about sprintf
 #endif
 
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
 #include "private/tinyxml2.h"
 #include "filesystem/path.h"
 
@@ -30,8 +30,8 @@
 #include <ros/package.h>
 #endif
 
-#include "behaviortree_cpp/blackboard.h"
-#include "behaviortree_cpp/utils/demangle_util.h"
+#include "behaviortree_cpp_v3/blackboard.h"
+#include "behaviortree_cpp_v3/utils/demangle_util.h"
 
 namespace BT
 {

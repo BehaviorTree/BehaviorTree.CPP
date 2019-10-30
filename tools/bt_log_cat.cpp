@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
-#include "behaviortree_cpp/flatbuffers/BT_logger_generated.h"
+#include "behaviortree_cpp_v3/flatbuffers/BT_logger_generated.h"
 
 int main(int argc, char* argv[])
 {

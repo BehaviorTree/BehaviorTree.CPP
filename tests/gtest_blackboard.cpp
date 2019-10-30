@@ -13,10 +13,10 @@
 #include <gtest/gtest.h>
 #include "action_test_node.h"
 #include "condition_test_node.h"
-#include "behaviortree_cpp/behavior_tree.h"
-#include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/blackboard.h"
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp_v3/blackboard.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
 
 using namespace BT;
 
