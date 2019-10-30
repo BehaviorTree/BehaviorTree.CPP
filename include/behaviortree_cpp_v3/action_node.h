@@ -101,6 +101,10 @@ class SimpleActionNode : public SyncActionNode
  *
  * The user must implement the methods tick() and halt().
  *
+ * WARNING: this should probably be deprecated. It is too easy to use incorrectly
+ * and there is not a good way to halt it in a thread safe way.
+ *
+ * Use it at your own risk.
  */
 class AsyncActionNode : public ActionNodeBase
 {
@@ -135,6 +139,46 @@ class AsyncActionNode : public ActionNodeBase
 
     std::thread thread_;
 };
+
+/**
+ * @brief The ActionNode is the goto option for,
+ * but it is actually much easier to use correctly.
+ *
+ * It is particularly useful when your code contains a request-reply pattern,
+ * i.e. when the actions sends an asychronous request, then checks periodically
+ * if the reply has been received and, eventually, analyze the reply to determine
+ * if the result is SUCCESS or FAILURE.
+ *
+ * -) an IDLE action will call onStart()
+ *
+ * -) A RUNNING action will call onRunning()
+ *
+ * -) if halted, method onHalted()
+ */
+class StatefulActionNode : public ActionNodeBase
+{
+  public:
+      StatefulActionNode(const std::string& name, const NodeConfiguration& config):
+        ActionNodeBase(name,config)
+      {}
+
+      // do not override this method
+      NodeStatus tick() override final;
+      // do not override this method
+      void halt() override final;
+
+      /// method to be called at the beginning.
+      /// If it returns RUNNING, this becomes an asychronous node.
+      virtual NodeStatus onStart() = 0;
+
+      /// method invoked by a RUNNING action.
+      virtual NodeStatus onRunning() = 0;
+
+      /// when the method halt() is called by a parent node, this method
+      /// is invoked to do the cleanup of a RUNNING action.
+      virtual void onHalted() = 0;
+};
+
 
 #ifndef BT_NO_COROUTINES
 

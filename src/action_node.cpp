@@ -233,3 +233,39 @@ void CoroActionNode::halt()
 #endif
 
 
+
+NodeStatus StatefulActionNode::tick()
+{
+  const NodeStatus initial_status = status();
+
+  if( initial_status == NodeStatus::IDLE )
+  {
+    NodeStatus new_status = onStart();
+    if( new_status == NodeStatus::IDLE)
+    {
+      throw std::logic_error("AsyncActionNode2::onStart() must not return IDLE");
+    }
+    return new_status;
+  }
+  //------------------------------------------
+  if( initial_status == NodeStatus::RUNNING )
+  {
+    NodeStatus new_status = onRunning();
+    if( new_status == NodeStatus::IDLE)
+    {
+      throw std::logic_error("AsyncActionNode2::onRunning() must not return IDLE");
+    }
+    return new_status;
+  }
+  //------------------------------------------
+  return initial_status;
+}
+
+void StatefulActionNode::halt()
+{
+  if( status() == NodeStatus::RUNNING)
+  {
+    onHalted();
+  }
+  setStatus(NodeStatus::IDLE);
+}
