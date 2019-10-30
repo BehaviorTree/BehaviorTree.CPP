@@ -16,7 +16,7 @@ We will just use the word _"parameter"_ for the rest of the tutorial.
 Even if, theoretically, these parameters can be passed using Input Ports, 
 that would be the wrong way to do it if:
 
-- The parameters are know at _deployment-time_.
+- The parameters are known at _deployment-time_.
 - The parameters don't change at _run-time_.
 - The parameters don't need to be from the _XML_.
 
