@@ -107,7 +107,7 @@ if(ament_cmake_FOUND)
 elseif(catkin_FOUND)
     set( BEHAVIOR_TREE_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
     set( BEHAVIOR_TREE_INC_DESTINATION   ${CATKIN_GLOBAL_INCLUDE_DESTINATION} )
-    set( BEHAVIOR_TREE_BIN_DESTINATION   ${CATKIN_PACKAGE_BIN_DESTINATION} )
+    set( BEHAVIOR_TREE_BIN_DESTINATION   ${CATKIN_GLOBAL_BIN_DESTINATION} )
 else()
     set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
     set( BEHAVIOR_TREE_INC_DESTINATION   include )
@@ -162,7 +162,6 @@ list(APPEND BT_SOURCE
     )
 
 ######################################################
-set(CMAKE_DEBUG_POSTFIX "d")
 
 if (UNIX)
     list(APPEND BT_SOURCE src/shared_library_UNIX.cpp )
@@ -170,6 +169,7 @@ if (UNIX)
 endif()
 
 if (WIN32)
+    set(CMAKE_DEBUG_POSTFIX "d")
     list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
     add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
 endif()

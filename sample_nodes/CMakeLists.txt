@@ -6,17 +6,15 @@ include_directories( ../include )
 
 set(CMAKE_DEBUG_POSTFIX "")
 
-add_library(crossdoor_nodes STATIC crossdoor_nodes.cpp )
-target_link_libraries(crossdoor_nodes PRIVATE ${BEHAVIOR_TREE_LIBRARY})
-set_target_properties(crossdoor_nodes PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} )
 
-add_library(dummy_nodes     STATIC dummy_nodes.cpp )
-target_link_libraries(dummy_nodes PRIVATE ${BEHAVIOR_TREE_LIBRARY})
-set_target_properties(dummy_nodes PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} )
 
-add_library(movebase_node   STATIC movebase_node.cpp )
-target_link_libraries(movebase_node PRIVATE ${BEHAVIOR_TREE_LIBRARY})
-set_target_properties(movebase_node PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} )
+add_library(bt_sample_nodes STATIC
+    crossdoor_nodes.cpp
+    dummy_nodes.cpp
+    movebase_node.cpp )
+
+target_link_libraries(bt_sample_nodes PRIVATE ${BEHAVIOR_TREE_LIBRARY})
+set_target_properties(bt_sample_nodes PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} )
 
 # to create a plugin, compile them in this way instead
 

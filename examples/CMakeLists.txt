@@ -8,26 +8,26 @@ set(CMAKE_DEBUG_POSTFIX "")
 # loaded dynamically at run-time.
 add_executable(t01_first_tree_static  t01_build_your_first_tree.cpp )
 target_compile_definitions(t01_first_tree_static PRIVATE "MANUAL_STATIC_LINKING")
-target_link_libraries(t01_first_tree_static ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes )
+target_link_libraries(t01_first_tree_static ${BEHAVIOR_TREE_LIBRARY}   bt_sample_nodes )
 
 add_executable(t01_first_tree_dynamic  t01_build_your_first_tree.cpp )
 target_link_libraries(t01_first_tree_dynamic ${BEHAVIOR_TREE_LIBRARY}  )
 
 
 add_executable(t02_basic_ports  t02_basic_ports.cpp )
-target_link_libraries(t02_basic_ports ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )
+target_link_libraries(t02_basic_ports ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
 
 add_executable(t03_generic_ports        t03_generic_ports.cpp )
-target_link_libraries(t03_generic_ports ${BEHAVIOR_TREE_LIBRARY}  movebase_node dummy_nodes  )
+target_link_libraries(t03_generic_ports ${BEHAVIOR_TREE_LIBRARY}  bt_sample_nodes  )
 
 add_executable(t04_reactive_sequence         t04_reactive_sequence.cpp )
-target_link_libraries(t04_reactive_sequence  ${BEHAVIOR_TREE_LIBRARY} movebase_node dummy_nodes  )
+target_link_libraries(t04_reactive_sequence  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes  )
 
-add_executable(t05_crossdoor         t05_crossdoor.cpp )
-target_link_libraries(t05_crossdoor   ${BEHAVIOR_TREE_LIBRARY} crossdoor_nodes )
+add_executable(t05_cross_door         t05_crossdoor.cpp )
+target_link_libraries(t05_cross_door   ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
 
 add_executable(t06_subtree_port_remapping  t06_subtree_port_remapping.cpp )
-target_link_libraries(t06_subtree_port_remapping ${BEHAVIOR_TREE_LIBRARY}   dummy_nodes movebase_node )
+target_link_libraries(t06_subtree_port_remapping ${BEHAVIOR_TREE_LIBRARY}   bt_sample_nodes )
 
 add_executable(t07_wrap_legacy         t07_wrap_legacy.cpp )
 target_link_libraries(t07_wrap_legacy   ${BEHAVIOR_TREE_LIBRARY} )
@@ -41,4 +41,4 @@ if (NOT MINGW)
 endif()
 
 add_executable(t10_include_trees  t10_include_trees.cpp )
-target_link_libraries(t10_include_trees  ${BEHAVIOR_TREE_LIBRARY} dummy_nodes )
+target_link_libraries(t10_include_trees  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
