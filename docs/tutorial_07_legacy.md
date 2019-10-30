@@ -70,7 +70,7 @@ int main()
     auto MoveToWrapperWithLambda = [&move_to](TreeNode& parent_node) -> NodeStatus
     {
         Point3D goal;
-        // thanks to paren_node, you can access easily the inpyt and output ports.
+        // thanks to paren_node, you can access easily the input and output ports.
         parent_node.getInput("goal", goal);
 
         bool res = move_to.go( goal );
