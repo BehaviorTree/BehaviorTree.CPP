@@ -27,7 +27,7 @@ option(BUILD_TOOLS "Build commandline tools" ON)
 
 #############################################################
 # Find packages
-find_package(Threads REQUIRED)
+find_package(Threads)
 find_package(ZMQ)
 
 list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES
