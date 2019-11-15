@@ -27,7 +27,7 @@ There are few features that make __BehaviorTree.CPP__ unique, when compared to o
   __scripting language__ (based on XML), and can be loaded at run-time; in other words, 
   even if it written in C++, Trees are _not_ hard-coded.
 
-- You can link staticaly you custom TreeNodes or convert them into __plugins __
+- You can link staticaly you custom TreeNodes or convert them into __plugins__
 which can be loaded at run-time.
 
 - It provides a type-safe and flexible mechanism to do __Dataflow__ between
