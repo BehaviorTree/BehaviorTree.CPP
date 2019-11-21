@@ -121,7 +121,14 @@ unsigned convertFromString<unsigned>(StringView str)
 template <>
 double convertFromString<double>(StringView str)
 {
-    return std::stod(str.data());
+    // see issue #120
+    // http://quick-bench.com/DWaXRWnxtxvwIMvZy2DxVPEKJnE
+
+    const auto old_locale = std::setlocale(LC_NUMERIC,nullptr);
+    std::setlocale(LC_NUMERIC,"C");
+    double val = std::stod(str.data());
+    std::setlocale(LC_NUMERIC,old_locale);
+    return val;
 }
 
 template <>
