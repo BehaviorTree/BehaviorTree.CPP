@@ -23,11 +23,9 @@ There are few features that make __BehaviorTree.CPP__ unique, when compared to o
 
 - You can build __reactive__ behaviors that execute multiple Actions concurrently.
 
-- Even if it is written in __C++__, Trees are defined using a Domain Specific Scripting 
-  __scripting language__ (based on XML), and can be loaded at run-time; in other words, 
-  even if it written in C++, Trees are _not_ hard-coded.
+- Trees are defined using a Domain Specific Scripting __scripting language__ (based on XML), and can be loaded at run-time; in other words, even if written in C++, Trees are _not_ hard-coded.
 
-- You can link staticaly you custom TreeNodes or convert them into __plugins__
+- You can staticaly link your custom TreeNodes or convert them into __plugins__
 which can be loaded at run-time.
 
 - It provides a type-safe and flexible mechanism to do __Dataflow__ between
@@ -57,20 +55,20 @@ In practice, this means that:
  You should be able to implement them once and reuse them to build many behaviors.
 
 - To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
-not need to read nor modify the source code of the a given TreeNode.
+not need to read nor modify the source code of a given TreeNode.
 
 Version __3.x__ of this library introduces some dramatic changes in the API, but 
 it was necessary to reach this goal.
 
 If you used version 2.X in the past, you can 
-[find here the Migration Guide](https://behaviortree.github.io/BehaviorTree.CPP/MigrationGuide).
+[find the Migration Guide here](https://behaviortree.github.io/BehaviorTree.CPP/MigrationGuide).
 
 
 # GUI Editor
 
 Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
 
-If you are looking for a more fancy graphical user interface (and I know your do) check 
+If you are looking for a more fancy graphical user interface (and I know you do) check 
 [Groot](https://github.com/BehaviorTree/Groot) out.
 
 ![Groot screenshot](groot-screenshot.png)
