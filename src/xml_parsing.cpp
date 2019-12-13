@@ -520,7 +520,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             auto remapped_res = TreeNode::getRemappedKey(port_name, remapping_value);
             if( remapped_res )
             {
-                const auto& port_key = remapped_res.value().to_string();
+                const auto& port_key = nonstd::to_string(remapped_res.value());
 
                 auto prev_info = blackboard->portInfo( port_key );
                 if( !prev_info  )

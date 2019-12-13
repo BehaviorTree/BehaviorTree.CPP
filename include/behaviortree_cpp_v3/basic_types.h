@@ -256,10 +256,10 @@ std::pair<std::string,PortInfo> CreatePort(PortDirection direction,
 
     if( std::is_same<T, void>::value)
     {
-        out = {name.to_string(), PortInfo(direction) };
+        out = {nonstd::to_string(name), PortInfo(direction) };
     }
     else{
-        out =  {name.to_string(), PortInfo(direction, typeid(T),
+        out =  {nonstd::to_string(name), PortInfo(direction, typeid(T),
                                           GetAnyFromStringFunctor<T>() ) };
     }
     if( !description.empty() )
