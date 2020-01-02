@@ -24,7 +24,7 @@ class BehaviorTreeException : public std::exception
 {
   public:
 
-    BehaviorTreeException(nonstd::string_view message):  message_(message.to_string())
+    BehaviorTreeException(nonstd::string_view message):  message_(nonstd::to_string(message))
     {}
 
     template <typename... SV>

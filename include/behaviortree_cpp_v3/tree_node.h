@@ -208,7 +208,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
                                            "but BB is invalid");
         }
 
-        const Any* val = config_.blackboard->getAny(remapped_key.to_string());
+        const Any* val = config_.blackboard->getAny(nonstd::to_string(remapped_key));
         if (val && val->empty() == false)
         {
             if (std::is_same<T, std::string>::value == false && val->type() == typeid(std::string))
@@ -258,7 +258,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
     {
         remapped_key = stripBlackboardPointer(remapped_key);
     }
-    const auto& key_str = remapped_key.to_string();
+    const auto& key_str = nonstd::to_string(remapped_key);
 
     config_.blackboard->set(key_str, value);
 
