@@ -98,7 +98,6 @@ if he/she is fully rested.
 				// Suspend execution and return SUCCESS.
 				// At the next tick, index will be the same.
    			    HaltAllChildren();
-				index = 0;
 				return SUCCESS;
 			}
 		}

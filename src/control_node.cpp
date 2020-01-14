@@ -11,7 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/control_node.h"
+#include "behaviortree_cpp_v3/control_node.h"
 
 namespace BT
 {
@@ -25,9 +25,9 @@ void ControlNode::addChild(TreeNode* child)
     children_nodes_.push_back(child);
 }
 
-unsigned ControlNode::childrenCount() const
+size_t ControlNode::childrenCount() const
 {
-    return unsigned(children_nodes_.size());
+    return children_nodes_.size();
 }
 
 void ControlNode::halt()
@@ -41,7 +41,7 @@ const std::vector<TreeNode*>& ControlNode::children() const
     return children_nodes_;
 }
 
-void ControlNode::haltChildren(unsigned i)
+void ControlNode::haltChildren(size_t i)
 {
     for (size_t j = i; j < children_nodes_.size(); j++)
     {

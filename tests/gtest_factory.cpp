@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "action_test_node.h"
 #include "condition_test_node.h"
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
 #include "../sample_nodes/dummy_nodes.h"
 

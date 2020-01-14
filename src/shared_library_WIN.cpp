@@ -1,8 +1,8 @@
 #include <string>
 #include <mutex>
 #include <Windows.h>
-#include "behaviortree_cpp/utils/shared_library.h"
-#include "behaviortree_cpp/exceptions.h"
+#include "behaviortree_cpp_v3/utils/shared_library.h"
+#include "behaviortree_cpp_v3/exceptions.h"
 
 namespace BT
 {

@@ -1,5 +1,5 @@
 
-#include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp_v3/loggers/bt_minitrace_logger.h"
 #include "minitrace/minitrace.h"
 
 namespace BT
@@ -24,7 +24,7 @@ MinitraceLogger::~MinitraceLogger()
 {
     minitrace::mtr_flush();
     minitrace::mtr_shutdown();
-	ref_count = false;
+    ref_count = false;
 }
 
 void MinitraceLogger::callback(Duration /*timestamp*/,

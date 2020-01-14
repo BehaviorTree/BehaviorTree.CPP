@@ -11,12 +11,10 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/action_node.h"
-#include "coroutine/coroutine.h"
-#include "backward-cpp/backward.hpp"
+#include "behaviortree_cpp_v3/action_node.h"
 
-namespace BT
-{
+using namespace BT;
+
 ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfiguration& config)
   : LeafNode::LeafNode(name, config)
 {
@@ -53,11 +51,9 @@ NodeStatus SimpleActionNode::tick()
 //-------------------------------------------------------
 
 AsyncActionNode::AsyncActionNode(const std::string& name, const NodeConfiguration& config)
-  : ActionNodeBase(name, config),
-  keep_thread_alive_(true),
-  start_action_(false)
+  : ActionNodeBase(name, config)
 {
-    thread_ = std::thread(&AsyncActionNode::asyncThreadLoop, this);
+
 }
 
 AsyncActionNode::~AsyncActionNode()
@@ -116,6 +112,10 @@ NodeStatus AsyncActionNode::executeTick()
     // The other thread is in charge for changing the status
     if (status() == NodeStatus::IDLE)
     {
+        if( thread_.joinable() == false) {
+            keep_thread_alive_ = true;
+            thread_ = std::thread(&AsyncActionNode::asyncThreadLoop, this);
+        }
         setStatus( NodeStatus::RUNNING );
         notifyStart();
     }
@@ -130,14 +130,41 @@ NodeStatus AsyncActionNode::executeTick()
 void AsyncActionNode::stopAndJoinThread()
 {
     keep_thread_alive_.store(false);
-    notifyStart();
+    if( status() == NodeStatus::RUNNING )
+    {
+        halt();
+    }
+    else{
+        // loop in asyncThreadLoop() is blocked at waitStart(). Unblock it.
+        notifyStart();
+    }
+
     if (thread_.joinable())
     {
         thread_.join();
     }
 }
 
+
+SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):
+  ActionNodeBase(name, config)
+{}
+
+NodeStatus SyncActionNode::executeTick()
+{
+  auto stat = ActionNodeBase::executeTick();
+  if( stat == NodeStatus::RUNNING)
+  {
+    throw LogicError("SyncActionNode MUST never return RUNNING");
+  }
+  return stat;
+}
+
+
 //-------------------------------------
+#ifndef BT_NO_COROUTINES
+#include "coroutine/coroutine.h"
+
 struct CoroActionNode::Pimpl
 {
     coroutine::routine_t coro;
@@ -203,21 +230,42 @@ void CoroActionNode::halt()
 {
     _p->pending_destroy = true;
 }
+#endif
 
-SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):
-    ActionNodeBase(name, config)
-{}
 
-NodeStatus SyncActionNode::executeTick()
+
+NodeStatus StatefulActionNode::tick()
 {
-    auto stat = ActionNodeBase::executeTick();
-    if( stat == NodeStatus::RUNNING)
+  const NodeStatus initial_status = status();
+
+  if( initial_status == NodeStatus::IDLE )
+  {
+    NodeStatus new_status = onStart();
+    if( new_status == NodeStatus::IDLE)
     {
-        throw LogicError("SyncActionNode MUST never return RUNNING");
+      throw std::logic_error("AsyncActionNode2::onStart() must not return IDLE");
     }
-    return stat;
+    return new_status;
+  }
+  //------------------------------------------
+  if( initial_status == NodeStatus::RUNNING )
+  {
+    NodeStatus new_status = onRunning();
+    if( new_status == NodeStatus::IDLE)
+    {
+      throw std::logic_error("AsyncActionNode2::onRunning() must not return IDLE");
+    }
+    return new_status;
+  }
+  //------------------------------------------
+  return initial_status;
 }
 
-
-
+void StatefulActionNode::halt()
+{
+  if( status() == NodeStatus::RUNNING)
+  {
+    onHalted();
+  }
+  setStatus(NodeStatus::IDLE);
 }

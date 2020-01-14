@@ -1,6 +1,6 @@
 #include "Blackboard/blackboard_local.h"
-#include "behaviortree_cpp/behavior_tree.h"
-#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 
 using namespace BT;
 

@@ -1,6 +1,6 @@
 <package>
   <name>behaviortree_cpp_v3</name>
-  <version>3.0.7</version>
+  <version>3.1.1</version>
   <description>
   This package provides the Behavior Trees core library.
   </description>
@@ -17,9 +17,6 @@
 
   <build_depend>libzmq3-dev</build_depend>
   <run_depend>libzmq3-dev</run_depend>
-  
-  <build_depend>libdw-dev</build_depend>
-  <run_depend>libdw-dev</run_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 

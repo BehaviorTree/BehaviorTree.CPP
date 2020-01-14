@@ -1,5 +1,5 @@
-#include "behaviortree_cpp/xml_parsing.h"
-#include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
+#include "behaviortree_cpp_v3/blackboard.h"
 #include <gtest/gtest.h>
 
 using namespace BT;

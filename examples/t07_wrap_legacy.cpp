@@ -1,5 +1,5 @@
-#include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp_v3/loggers/bt_cout_logger.h"
 
 /** In this tutorial we will see how to wrap legacy code into a
  * BehaviorTree in a non-intrusive way, i.e. without modifying the
@@ -67,7 +67,7 @@ int main()
     auto MoveToWrapperWithLambda = [&move_to](TreeNode& parent_node) -> NodeStatus
     {
         Point3D goal;
-        // thanks to paren_node, you can access easily the inpyt and output ports.
+        // thanks to paren_node, you can access easily the input and output ports.
         parent_node.getInput("goal", goal);
 
         bool res = move_to.go( goal );

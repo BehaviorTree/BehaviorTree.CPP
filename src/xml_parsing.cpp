@@ -22,7 +22,7 @@
 #pragma warning(disable : 4996) // do not complain about sprintf
 #endif
 
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
 #include "private/tinyxml2.h"
 #include "filesystem/path.h"
 
@@ -30,8 +30,8 @@
 #include <ros/package.h>
 #endif
 
-#include "behaviortree_cpp/blackboard.h"
-#include "behaviortree_cpp/utils/demangle_util.h"
+#include "behaviortree_cpp_v3/blackboard.h"
+#include "behaviortree_cpp_v3/utils/demangle_util.h"
 
 namespace BT
 {
@@ -520,7 +520,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             auto remapped_res = TreeNode::getRemappedKey(port_name, remapping_value);
             if( remapped_res )
             {
-                const auto& port_key = remapped_res.value().to_string();
+                const auto& port_key = nonstd::to_string(remapped_res.value());
 
                 auto prev_info = blackboard->portInfo( port_key );
                 if( !prev_info  )

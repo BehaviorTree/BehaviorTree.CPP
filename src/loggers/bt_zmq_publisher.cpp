@@ -1,5 +1,5 @@
-#include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
-#include "behaviortree_cpp/flatbuffers/bt_flatbuffer_helper.h"
+#include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+#include "behaviortree_cpp_v3/flatbuffers/bt_flatbuffer_helper.h"
 #include <future>
 #include <zmq.hpp>
 
@@ -28,12 +28,8 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree, int max_msg_per_second)
   , send_pending_(false)
   , zmq_(new Pimpl())
 {
-    static bool first_instance = true;
-    if (first_instance)
-    {
-        first_instance = false;
-    }
-    else
+    bool expected = false;
+    if (!ref_count.compare_exchange_strong(expected, true))
     {
         throw LogicError("Only one instance of PublisherZMQ shall be created");
     }
@@ -86,7 +82,7 @@ PublisherZMQ::~PublisherZMQ()
     }
     flush();
     delete zmq_;
-	ref_count = false;
+    ref_count = false;
 }
 
 

@@ -273,7 +273,7 @@ By "reactive" we mean that:
 
 
 The main concern of the original author of this library was to build reactive
-Behavior Trees (see for reference this [publication](0https://arxiv.org/abs/1709.00084)).
+Behavior Trees (see for reference this [publication](https://arxiv.org/abs/1709.00084)).
 
 I share this goal, but I prefer to have more explicit names, because reactive 
 ControlNodes are useful but hard to reason about sometimes.

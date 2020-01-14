@@ -11,7 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/condition_node.h"
+#include "behaviortree_cpp_v3/condition_node.h"
 
 namespace BT
 {
