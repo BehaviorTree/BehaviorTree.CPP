@@ -42,3 +42,7 @@ endif()
 
 add_executable(t10_include_trees  t10_include_trees.cpp )
 target_link_libraries(t10_include_trees  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
+
+
+add_executable(t11_runtime_ports  t11_runtime_ports.cpp )
+target_link_libraries(t11_runtime_ports  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
