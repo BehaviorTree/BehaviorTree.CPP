@@ -1,8 +1,4 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
-
-#include "dummy_nodes.h"
-#include "movebase_node.h"
-
 using namespace BT;
 
 // clang-format off
@@ -56,28 +52,19 @@ class SayRuntimePort : public BT::SyncActionNode
 
 int main()
 {
-    using namespace DummyNodes;
-
     BehaviorTreeFactory factory;
 
-    //-------- register ports that might defined at runtime --------
-    {
-      // more verbose way
-      PortsList ports = {BT::OutputPort<std::string>("text")};
-      factory.registerBuilder(CreateManifest<ThinkRuntimePort>("ThinkRuntimePort", ports),
+    //-------- register ports that might be defined at runtime --------
+    // more verbose way
+    PortsList think_ports = {BT::OutputPort<std::string>("text")};
+    factory.registerBuilder(CreateManifest<ThinkRuntimePort>("ThinkRuntimePort", think_ports),
                               CreateBuilder<ThinkRuntimePort>());
-    }
-
-    {
-      // less verbose way
-      PortsList ports = {BT::InputPort<std::string>("message")};
-      factory.registerNodeType<SayRuntimePort>("SayRuntimePort", ports);
-    }
+    // less verbose way
+    PortsList say_ports = {BT::InputPort<std::string>("message")};
+    factory.registerNodeType<SayRuntimePort>("SayRuntimePort", say_ports);
 
     auto tree = factory.createTreeFromText(xml_text);
-
     tree.root_node->executeTick();
-
     return 0;
 }
 
