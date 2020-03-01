@@ -52,7 +52,7 @@ NodeStatus RetryNode::tick()
 
     setStatus(NodeStatus::RUNNING);
 
-    while (try_index_ < max_attempts_)
+    while (try_index_ < max_attempts_ || max_attempts_ == -1)
     {
         NodeStatus child_state = child_node_->executeTick();
 
