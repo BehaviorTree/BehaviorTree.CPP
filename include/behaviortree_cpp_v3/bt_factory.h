@@ -104,7 +104,7 @@ See examples for more information about configuring CMake correctly
 
 #else
 
-#ifdef __linux__
+#if defined(__linux__) || defined __APPLE__
 
 #define BT_REGISTER_NODES(factory)                                                                 \
     extern "C" void __attribute__((visibility("default")))                                         \
