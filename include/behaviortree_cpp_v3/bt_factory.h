@@ -226,6 +226,13 @@ public:
     void registerFromPlugin(const std::string &file_path);
 
     /**
+     * @brief registerFromROSPlugins finds all shared libraries that export ROS plugins for behaviortree_cpp, and calls registerFromPlugin for each library.
+     * @throws If not compiled with ROS support or if the library cannot load for any reason
+     *
+     */
+    void registerFromROSPlugins();
+
+    /**
      * @brief instantiateTreeNode creates an instance of a previously registered TreeNode.
      *
      * @param name     name of this particular instance
