@@ -49,6 +49,12 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
 
+    registerNodeType<SwitchNode<2>>("Switch2");
+    registerNodeType<SwitchNode<3>>("Switch3");
+    registerNodeType<SwitchNode<4>>("Switch4");
+    registerNodeType<SwitchNode<5>>("Switch5");
+    registerNodeType<SwitchNode<6>>("Switch6");
+
     for( const auto& it: builders_)
     {
         builtin_IDs_.insert( it.first );
