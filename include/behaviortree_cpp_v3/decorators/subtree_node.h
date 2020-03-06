@@ -6,12 +6,18 @@
 namespace BT
 {
 
-class DecoratorSubtreeNode : public DecoratorNode
+/**
+ * @brief The SubtreeNode is a way to wrap an entire Subtree,
+ * creating a separated BlackBoard.
+ * If you want to have data flow through ports, you need to explicitly
+ * remap the ports.
+ */
+class SubtreeNode : public DecoratorNode
 {
   public:
-    DecoratorSubtreeNode(const std::string& name);
+    SubtreeNode(const std::string& name);
 
-    virtual ~DecoratorSubtreeNode() override = default;
+    virtual ~SubtreeNode() override = default;
 
   private:
     virtual BT::NodeStatus tick() override;
@@ -20,6 +26,26 @@ class DecoratorSubtreeNode : public DecoratorNode
     {
         return NodeType::SUBTREE;
     }
+};
+
+/**
+ * @brief The TransparentSubtreeNode is a way to wrap an entire Subtree.
+ * It does NOT have a separated BlackBoard and does not need ports remapping.
+ */
+class SubtreeWrapperNode : public DecoratorNode
+{
+public:
+  SubtreeWrapperNode(const std::string& name);
+
+  virtual ~SubtreeWrapperNode() override = default;
+
+private:
+  virtual BT::NodeStatus tick() override;
+
+  virtual NodeType type() const override final
+  {
+    return NodeType::SUBTREE;
+  }
 };
 
 

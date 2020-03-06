@@ -42,7 +42,8 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<AlwaysFailureNode>("AlwaysFailure");
     registerNodeType<SetBlackboard>("SetBlackboard");
 
-    registerNodeType<DecoratorSubtreeNode>("SubTree");
+    registerNodeType<SubtreeNode>("SubTree");
+    registerNodeType<SubtreeWrapperNode>("SubTreeWrapper");
 
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
