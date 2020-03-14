@@ -20,7 +20,7 @@ void applyRecursiveVisitor(const TreeNode* node,
 {
     if (!node)
     {
-        throw LogicError("One of the children of a DecoratorNode or ControlNode is nulltr");
+        throw LogicError("One of the children of a DecoratorNode or ControlNode is nullptr");
     }
 
     visitor(node);
@@ -42,7 +42,7 @@ void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>&
 {
     if (!node)
     {
-        throw LogicError("One of the children of a DecoratorNode or ControlNode is nulltr");
+        throw LogicError("One of the children of a DecoratorNode or ControlNode is nullptr");
     }
 
     visitor(node);
