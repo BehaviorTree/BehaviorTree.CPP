@@ -20,6 +20,7 @@
 #include "behaviortree_cpp_v3/controls/fallback_node.h"
 #include "behaviortree_cpp_v3/controls/sequence_node.h"
 #include "behaviortree_cpp_v3/controls/sequence_star_node.h"
+#include "behaviortree_cpp_v3/controls/switch_node.h"
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/condition_node.h"
@@ -72,14 +73,15 @@ void buildSerializedStatusSnapshot(const TreeNode* root_node,
                                    SerializedTreeStatus& serialized_buffer);
 
 /// Simple way to extract the type of a TreeNode at COMPILE TIME.
-/// Useful to avoid the cost of without dynamic_cast or the virtual method TreeNode::type().
+/// Useful to avoid the cost of dynamic_cast or the virtual method TreeNode::type().
 template <typename T>
 inline NodeType getType()
 {
     // clang-format off
     if( std::is_base_of<ActionNodeBase, T>::value )        return NodeType::ACTION;
     if( std::is_base_of<ConditionNode, T>::value )         return NodeType::CONDITION;
-    if( std::is_base_of<DecoratorSubtreeNode, T>::value )  return NodeType::SUBTREE;
+    if( std::is_base_of<SubtreeNode, T>::value )           return NodeType::SUBTREE;
+    if( std::is_base_of<SubtreeWrapperNode, T>::value )    return NodeType::SUBTREE;
     if( std::is_base_of<DecoratorNode, T>::value )         return NodeType::DECORATOR;
     if( std::is_base_of<ControlNode, T>::value )           return NodeType::CONTROL;
     return NodeType::UNDEFINED;

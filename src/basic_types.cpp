@@ -1,6 +1,7 @@
 #include "behaviortree_cpp_v3/basic_types.h"
 #include <cstdlib>
 #include <cstring>
+#include <clocale>
 
 namespace BT
 {
@@ -124,10 +125,10 @@ double convertFromString<double>(StringView str)
     // see issue #120
     // http://quick-bench.com/DWaXRWnxtxvwIMvZy2DxVPEKJnE
 
-    const auto old_locale = std::setlocale(LC_NUMERIC,nullptr);
-    std::setlocale(LC_NUMERIC,"C");
+    const auto old_locale = setlocale(LC_NUMERIC,nullptr);
+    setlocale(LC_NUMERIC,"C");
     double val = std::stod(str.data());
-    std::setlocale(LC_NUMERIC,old_locale);
+    setlocale(LC_NUMERIC,old_locale);
     return val;
 }
 

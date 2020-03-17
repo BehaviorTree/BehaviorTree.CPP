@@ -466,7 +466,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         instance_name = ID;
     }
 
-    if (element_name == "SubTree")
+    if (element_name == "SubTree" || element_name == "SubTreeWrapper" )
     {
         instance_name = element->Attribute("ID");
     }
@@ -579,7 +579,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         child_node = factory.instantiateTreeNode(instance_name, ID, config);
     }
     else if( tree_roots.count(ID) != 0) {
-        child_node = std::make_unique<DecoratorSubtreeNode>( instance_name );
+        child_node = std::make_unique<SubtreeNode>( instance_name );
     }
     else{
         throw RuntimeError( ID, " is not a registered node, nor a Subtree");
@@ -614,15 +614,20 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
         if( node->type() == NodeType::SUBTREE )
         {
-            auto new_bb = Blackboard::create(blackboard);
-
-            for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
+            if( dynamic_cast<const SubtreeNode*>(node.get()) )
             {
-                new_bb->addSubtreeRemapping( attr->Name(), attr->Value() );
-            }
+                auto new_bb = Blackboard::create(blackboard);
 
-            output_tree.blackboard_stack.emplace_back(new_bb);
-            recursivelyCreateTree( node->name(), output_tree, new_bb, node );
+                for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
+                {
+                    new_bb->addSubtreeRemapping( attr->Name(), attr->Value() );
+                }
+                output_tree.blackboard_stack.emplace_back(new_bb);
+                recursivelyCreateTree( node->name(), output_tree, new_bb, node );
+            }
+            else{
+                recursivelyCreateTree( node->name(), output_tree, blackboard, node );
+            }
         }
         else
         {

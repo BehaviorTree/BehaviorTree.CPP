@@ -24,6 +24,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 option(BUILD_TOOLS "Build commandline tools" ON)
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 #############################################################
 # Find packages
@@ -38,7 +39,7 @@ if( ZMQ_FOUND )
     message(STATUS "ZeroMQ found.")
     add_definitions( -DZMQ_FOUND )
     list(APPEND BT_SOURCE src/loggers/bt_zmq_publisher.cpp)
-    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES zmq)
+    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${ZMQ_LIBRARIES})
 else()
     message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
 endif()
@@ -85,7 +86,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES})
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
-else()
+elseif(BUILD_UNIT_TESTS)
     find_package(GTest)
 
     if(NOT GTEST_FOUND)
@@ -152,8 +153,11 @@ list(APPEND BT_SOURCE
     src/controls/reactive_fallback.cpp
     src/controls/sequence_node.cpp
     src/controls/sequence_star_node.cpp
+
     src/controls/latched_sequence.cpp
     src/controls/latched_fallback.cpp
+
+    src/controls/switch_node.cpp
 
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger.cpp
@@ -167,13 +171,21 @@ list(APPEND BT_SOURCE
 
 if (UNIX)
     list(APPEND BT_SOURCE src/shared_library_UNIX.cpp )
-    add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
+    if (BUILD_SHARED_LIBS)
+        add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE})
+    else()
+        add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE})
+    endif()
 endif()
 
 if (WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
     list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
     add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
+endif()
+
+if( ZMQ_FOUND )
+    list(APPEND BUILD_TOOL_INCLUDE_DIRS ${ZMQ_INCLUDE_DIRS})
 endif()
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
@@ -200,7 +212,9 @@ endif()
 
 ######################################################
 # Test
-add_subdirectory(tests)
+if (BUILD_UNIT_TESTS)
+    add_subdirectory(tests)
+endif()
 
 ######################################################
 # INSTALL
@@ -209,8 +223,9 @@ set(PROJECT_CONFIG ${PROJECT_NAMESPACE}Config)
 
 INSTALL(TARGETS ${BEHAVIOR_TREE_LIBRARY}
     EXPORT ${PROJECT_CONFIG}
-    ARCHIVE DESTINATION ${BEHAVIOR_TREE_BIN_DESTINATION}
+    ARCHIVE DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
     LIBRARY DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${BEHAVIOR_TREE_BIN_DESTINATION}
     )
 
 INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
@@ -235,5 +250,3 @@ if( BUILD_EXAMPLES )
     add_subdirectory(sample_nodes)
     add_subdirectory(examples)
 endif()
-
-

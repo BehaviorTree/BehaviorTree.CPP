@@ -131,7 +131,7 @@ TEST(BehaviorTreeFactory, Subtree)
     ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
     ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
 
-    auto subtree = dynamic_cast<const DecoratorSubtreeNode*>(root_selector->child(0));
+    auto subtree = dynamic_cast<const SubtreeNode*>(root_selector->child(0));
     ASSERT_TRUE(subtree != nullptr);
 
     auto sequence = dynamic_cast<const SequenceNode*>(subtree->child());
