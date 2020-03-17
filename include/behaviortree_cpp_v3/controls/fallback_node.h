@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
+/* Copyright (C) 2015-2020 Michele Colledanchise -  All Rights Reserved
  * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -14,7 +14,17 @@
 #ifndef FALLBACKNODE_H
 #define FALLBACKNODE_H
 
-#include "behaviortree_cpp_v3/control_node.h"
+#if __cplusplus >= 201402L
+#define DEPRECATED(msg) [[ deprecated(msg) ]]
+#elif defined(__GNUC__)
+#define DEPRECATED(msg) __attribute__ ((deprecated(msg)))
+#elif defined(_MSC_VER)
+#define DEPRECATED(msg) __declspec(deprecated(msg))
+#else
+#define DEPRECATED(msg)
+#endif
+
+#include "behaviortree_cpp_v3/controls/latched_fallback.h"
 
 namespace BT
 {
@@ -30,21 +40,14 @@ namespace BT
  * - If a child returns SUCCESS, stop the loop and return SUCCESS.
  *
  */
-class FallbackNode : public ControlNode
+class FallbackNode : public LatchedFallback
 {
   public:
+    DEPRECATED("Please use ReactiveFallback or LatchedFallback to make clear"
+               " which kind of Fallback Node you mean to use")
     FallbackNode(const std::string& name);
-
-    virtual ~FallbackNode() override = default;
-
-    virtual void halt() override;
-
-  private:
-    size_t current_child_idx_;
-
-    virtual BT::NodeStatus tick() override;
 };
 
 }
 
-#endif
+#endif //FALLBACKNODE_H
