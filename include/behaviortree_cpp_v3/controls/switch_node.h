@@ -61,6 +61,9 @@ class SwitchNode : public ControlNode
 template<size_t NUM_CASES> inline
 NodeStatus SwitchNode<NUM_CASES>::tick()
 {
+    constexpr const char * case_port_names[9] = {
+      "case_1", "case_2", "case_3", "case_4", "case_5", "case_6", "case_7", "case_8", "case_9"};
+
     if( childrenCount() != NUM_CASES+1)
     {
         throw LogicError("Wrong number of children in SwitchNode; "
@@ -76,10 +79,18 @@ NodeStatus SwitchNode<NUM_CASES>::tick()
         // check each case until you find a match
         for (unsigned index = 0; index < NUM_CASES; ++index)
         {
-            char case_str[20];
-            sprintf(case_str, "case_%d", index+1);
+            bool found = false;
+            if( index < 9 )
+            {
+                found = (bool)getInput(case_port_names[index], value);
+            }
+            else{
+                char case_str[20];
+                sprintf(case_str, "case_%d", index+1);
+                found = (bool)getInput(case_str, value);
+            }
 
-            if (getInput(case_str, value) && variable == value)
+            if (found && variable == value)
             {
                 child_index = index;
                 break;
@@ -90,18 +101,19 @@ NodeStatus SwitchNode<NUM_CASES>::tick()
     // if another one was running earlier, halt it
     if( running_child_ != -1 && running_child_ != child_index)
     {
-        halt();
+        children_nodes_[running_child_]->halt();
     }
 
-    NodeStatus ret = children_nodes_[child_index]->executeTick();
+    auto& selected_child = children_nodes_[child_index];
+    NodeStatus ret = selected_child->executeTick();
     if( ret == NodeStatus::RUNNING )
     {
         running_child_ = child_index;
     }
     else{
+        selected_child->halt();
         running_child_ = -1;
     }
-
     return ret;
 }
 
