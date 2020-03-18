@@ -16,28 +16,17 @@
 BT::ConditionTestNode::ConditionTestNode(const std::string& name)
     : ConditionNode::ConditionNode(name, {})
 {
-    boolean_value_ = true;
+    expected_result_ = NodeStatus::SUCCESS;
     tick_count_ = 0;
 }
 
 BT::NodeStatus BT::ConditionTestNode::tick()
 {
     tick_count_++;
-
-    // Condition checking and state update
-    if (boolean_value_)
-    {
-        setStatus(NodeStatus::SUCCESS);
-        return NodeStatus::SUCCESS;
-    }
-    else
-    {
-        setStatus(NodeStatus::FAILURE);
-        return NodeStatus::FAILURE;
-    }
+    return expected_result_;
 }
 
-void BT::ConditionTestNode::setBoolean(bool boolean_value)
+void BT::ConditionTestNode::setExpectedResult(NodeStatus res)
 {
-    boolean_value_ = boolean_value;
+    expected_result_ = res;
 }

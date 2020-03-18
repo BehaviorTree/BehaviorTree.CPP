@@ -192,7 +192,7 @@ TEST_F(ComplexParallelTest, ConditionsTrue)
 
 TEST_F(ComplexParallelTest, ConditionRightFalse)
 {
-    condition_R.setBoolean(false);
+    condition_R.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = parallel_root.executeTick();
 
     // All the actions are running
@@ -228,7 +228,7 @@ TEST_F(ComplexParallelTest, ConditionRightFalse)
 
 TEST_F(ComplexParallelTest, ConditionRightFalseAction1Done)
 {
-    condition_R.setBoolean(false);
+    condition_R.setExpectedResult(NodeStatus::FAILURE);
 
     parallel_left.setThresholdM(4);
 

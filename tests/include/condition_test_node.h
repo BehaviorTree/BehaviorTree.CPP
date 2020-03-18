@@ -11,7 +11,7 @@ class ConditionTestNode : public ConditionNode
     
     ConditionTestNode(const std::string& name);
 
-    void setBoolean(bool boolean_value);
+    void setExpectedResult(NodeStatus res);
 
     // The method that is going to be executed by the thread
     virtual BT::NodeStatus tick() override;
@@ -22,7 +22,7 @@ class ConditionTestNode : public ConditionNode
     }
 
   private:
-    bool boolean_value_;
+    NodeStatus expected_result_;
     int tick_count_;
 };
 }

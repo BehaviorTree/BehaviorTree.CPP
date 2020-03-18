@@ -118,13 +118,13 @@ TEST_F(DeadlineTest, DeadlineNotTriggeredTest)
 
 TEST_F(RetryTest, RetryTestA)
 {
-    action.setBoolean(false);
+    action.setExpectedResult(NodeStatus::FAILURE);
 
     root.executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, root.status());
     ASSERT_EQ(3, action.tickCount() );
 
-    action.setBoolean(true);
+    action.setExpectedResult(NodeStatus::SUCCESS);
     action.resetTicks();
 
     root.executeTick();
@@ -134,7 +134,7 @@ TEST_F(RetryTest, RetryTestA)
 
 TEST_F(RepeatTest, RepeatTestA)
 {
-    action.setBoolean(false);
+    action.setExpectedResult(NodeStatus::FAILURE);
 
     root.executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, root.status());
@@ -142,7 +142,7 @@ TEST_F(RepeatTest, RepeatTestA)
 
     //-------------------
     action.resetTicks();
-    action.setBoolean(true);
+    action.setExpectedResult(NodeStatus::SUCCESS);
 
     root.executeTick();
     ASSERT_EQ(NodeStatus::SUCCESS, root.status());
@@ -152,7 +152,7 @@ TEST_F(RepeatTest, RepeatTestA)
 // https://github.com/BehaviorTree/BehaviorTree.CPP/issues/57
 TEST_F(TimeoutAndRetry, Issue57)
 {
-    action.setBoolean( false );
+    action.setExpectedResult(NodeStatus::FAILURE);
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
