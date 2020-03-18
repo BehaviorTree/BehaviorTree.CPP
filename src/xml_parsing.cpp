@@ -569,7 +569,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             const PortInfo& port_info = port_it.second;
 
             auto direction = port_info.direction();
-            if( direction != PortDirection::INPUT &&
+            if( direction != PortDirection::OUTPUT &&
                 config.input_ports.count(port_name) == 0 &&
                 port_info.defaultValue().empty() == false)
             {

@@ -297,14 +297,6 @@ template <typename T = void> inline
 }
 
 template <typename T = void> inline
-    std::pair<std::string,PortInfo> OutputPort(StringView name, const T& default_value, StringView description)
-{
-    auto out = CreatePort<T>(PortDirection::OUTPUT, name, description );
-    out.second.setDefaultValue( BT::toStr(default_value) );
-    return out;
-}
-
-template <typename T = void> inline
     std::pair<std::string,PortInfo> BidirectionalPort(StringView name, const T& default_value, StringView description)
 {
     auto out = CreatePort<T>(PortDirection::INOUT, name, description );
