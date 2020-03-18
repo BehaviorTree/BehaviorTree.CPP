@@ -43,7 +43,7 @@ NodeStatus SequenceStarNode::tick()
             case NodeStatus::FAILURE:
             {
                 // DO NOT reset current_child_idx_ on failure
-                for(int i=current_child_idx_; i < childrenCount(); i++)
+                for(size_t i=current_child_idx_; i < childrenCount(); i++)
                 {
                     haltChild(i);
                 }

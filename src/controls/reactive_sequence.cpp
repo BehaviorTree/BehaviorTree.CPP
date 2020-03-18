@@ -31,7 +31,7 @@ NodeStatus ReactiveSequence::tick()
             {
                 running_count++;
 
-                for(int i=index+1; i < childrenCount(); i++)
+                for(size_t i=index+1; i < childrenCount(); i++)
                 {
                     haltChild(i);
                 }
