@@ -174,8 +174,8 @@ class StatefulActionNode : public ActionNodeBase
       /// method invoked by a RUNNING action.
       virtual NodeStatus onRunning() = 0;
 
-      /// when the method halt() is called by a parent node, this method
-      /// is invoked to do the cleanup of a RUNNING action.
+      /// when the method halt() is called and the action is RUNNING, this method is invoked.
+      /// This is a convenient place todo a cleanup, if needed.
       virtual void onHalted() = 0;
 };
 
