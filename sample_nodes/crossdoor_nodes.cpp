@@ -26,8 +26,11 @@ NodeStatus CrossDoor::IsDoorLocked()
 
 NodeStatus CrossDoor::UnlockDoor()
 {
-    SleepMS(2000);
-    _door_locked = false;
+    if( _door_locked )
+    {
+        SleepMS(2000);
+        _door_locked = false;
+    }
     return NodeStatus::SUCCESS;
 }
 
@@ -47,10 +50,10 @@ NodeStatus CrossDoor::OpenDoor()
 {
     if (_door_locked)
     {
-        SleepMS(2000);
-        _door_open = true;
+        return NodeStatus::FAILURE;
     }
-
+    SleepMS(2000);
+    _door_open = true;
     return NodeStatus::SUCCESS;
 }
 
