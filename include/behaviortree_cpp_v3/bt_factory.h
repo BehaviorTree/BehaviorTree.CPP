@@ -154,6 +154,21 @@ struct Tree
         return *this;
     }
 
+    void haltTree()
+    {
+        // the halt should propagate to all the node if all the nodes
+        // are implemented correctly
+        root_node->halt();
+        root_node->setStatus(NodeStatus::IDLE);
+
+        //but, just in case.... this should be no-op
+        auto visitor = [](BT::TreeNode * node) {
+            node->halt();
+            node->setStatus(BT::NodeStatus::IDLE);
+        };
+        BT::applyRecursiveVisitor(root_node, visitor);
+    }
+
     ~Tree();
 
     Blackboard::Ptr rootBlackboard();

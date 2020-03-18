@@ -80,8 +80,6 @@ class TreeNode
 
     NodeStatus status() const;
 
-    void setStatus(NodeStatus new_status);
-
     /// Name of the instance, not the type
     const std::string& name() const;
 
@@ -153,6 +151,9 @@ class TreeNode
     virtual BT::NodeStatus tick() = 0;
 
     friend class BehaviorTreeFactory;
+    friend class DecoratorNode;
+    friend class ControlNode;
+    friend class Tree;
 
     // Only BehaviorTreeFactory should call this
     void setRegistrationID(StringView ID)
@@ -161,6 +162,8 @@ class TreeNode
     }
 
     void modifyPortsRemapping(const PortsRemapping& new_remapping);
+
+    void setStatus(NodeStatus new_status);
 
   private:
     const std::string name_;

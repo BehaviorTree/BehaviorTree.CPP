@@ -61,8 +61,7 @@ NodeStatus TimeoutNode::tick()
                 if (!aborted && child()->status() == NodeStatus::RUNNING)
                 {
                     child_halted_ = true;
-                    child()->halt();
-                    child()->setStatus(NodeStatus::IDLE);
+                    haltChild();
                 }
             });
         }

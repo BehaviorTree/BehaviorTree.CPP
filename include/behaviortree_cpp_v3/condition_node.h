@@ -28,7 +28,6 @@ class ConditionNode : public LeafNode
     //Do nothing
     virtual void halt() override final
     {
-        // just in case, but it should not be needed
         setStatus(NodeStatus::IDLE);
     }
 

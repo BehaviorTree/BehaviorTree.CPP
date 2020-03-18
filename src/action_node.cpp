@@ -169,7 +169,6 @@ struct CoroActionNode::Pimpl
 {
     coroutine::routine_t coro;
     std::atomic<bool> pending_destroy;
-
 };
 
 
