@@ -43,8 +43,10 @@ class ControlNode : public TreeNode
 
     virtual void halt() override;
 
-    /// call halt() for all the children in the range [i, childrenCount() )
-    void haltChildren(size_t i);
+
+    void haltChildren();
+
+    void haltChild(size_t i);
 
     virtual NodeType type() const override final
     {

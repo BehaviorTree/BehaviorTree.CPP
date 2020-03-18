@@ -42,7 +42,7 @@ NodeStatus FallbackNode::tick()
             }
             case NodeStatus::SUCCESS:
             {
-                haltChildren(0);
+                haltChildren();
                 current_child_idx_ = 0;
                 return child_status;
             }
@@ -62,7 +62,7 @@ NodeStatus FallbackNode::tick()
     // The entire while loop completed. This means that all the children returned FAILURE.
     if (current_child_idx_ == children_count)
     {
-        haltChildren(0);
+        haltChildren();
         current_child_idx_ = 0;
     }
 

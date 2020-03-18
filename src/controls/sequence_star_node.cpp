@@ -42,8 +42,12 @@ NodeStatus SequenceStarNode::tick()
             }
             case NodeStatus::FAILURE:
             {
-                // DO NOT reset on failure
-                haltChildren(current_child_idx_);
+                // DO NOT reset current_child_idx_ on failure
+                for(int i=current_child_idx_; i < childrenCount(); i++)
+                {
+                    haltChild(i);
+                }
+
                 return child_status;
             }
             case NodeStatus::SUCCESS:
@@ -62,7 +66,7 @@ NodeStatus SequenceStarNode::tick()
     // The entire while loop completed. This means that all the children returned SUCCESS.
     if (current_child_idx_ == children_count)
     {
-        haltChildren(0);
+        haltChildren();
         current_child_idx_ = 0;
     }
     return NodeStatus::SUCCESS;

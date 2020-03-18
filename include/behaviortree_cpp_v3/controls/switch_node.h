@@ -101,7 +101,7 @@ NodeStatus SwitchNode<NUM_CASES>::tick()
     // if another one was running earlier, halt it
     if( running_child_ != -1 && running_child_ != child_index)
     {
-        children_nodes_[running_child_]->halt();
+        haltChild(running_child_);
     }
 
     auto& selected_child = children_nodes_[child_index];
@@ -111,7 +111,7 @@ NodeStatus SwitchNode<NUM_CASES>::tick()
         running_child_ = child_index;
     }
     else{
-        selected_child->halt();
+        haltChildren();
         running_child_ = -1;
     }
     return ret;

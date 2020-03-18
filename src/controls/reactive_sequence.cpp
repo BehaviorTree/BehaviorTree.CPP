@@ -30,13 +30,17 @@ NodeStatus ReactiveSequence::tick()
             case NodeStatus::RUNNING:
             {
                 running_count++;
-                haltChildren(index+1);
+
+                for(int i=index+1; i < childrenCount(); i++)
+                {
+                    haltChild(i);
+                }
                 return NodeStatus::RUNNING;
             }
 
             case NodeStatus::FAILURE:
             {
-                haltChildren(0);
+                haltChildren();
                 return NodeStatus::FAILURE;
             }
             case NodeStatus::SUCCESS:
@@ -53,7 +57,7 @@ NodeStatus ReactiveSequence::tick()
 
     if( success_count == childrenCount())
     {
-        haltChildren(0);
+        haltChildren();
         return NodeStatus::SUCCESS;
     }
     return NodeStatus::RUNNING;
