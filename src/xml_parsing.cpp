@@ -471,7 +471,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         instance_name = element->Attribute("ID");
     }
 
-    PortsRemapping remapping_parameters;
+    PortsRemapping parameters_map;
 
     if (element_name != "SubTree") // in Subtree attributes have different meaning...
     {
@@ -480,7 +480,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             const std::string attribute_name = att->Name();
             if (attribute_name != "ID" && attribute_name != "name")
             {
-                remapping_parameters[attribute_name] = att->Value();
+                parameters_map[attribute_name] = att->Value();
             }
         }
     }
@@ -495,12 +495,12 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         const auto& manifest = factory.manifests().at(ID);
 
         //Check that name in remapping can be found in the manifest
-        for(const auto& remapping_it: remapping_parameters)
+        for(const auto& param_it: parameters_map)
         {
-            if( manifest.ports.count( remapping_it.first ) == 0 )
+            if( manifest.ports.count( param_it.first ) == 0 )
             {
                 throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
-                                   remapping_it.first, "\" in node [", ID," / ", instance_name,
+                                   param_it.first, "\" in node [", ID," / ", instance_name,
                                    "], but the manifest of this node does not contain a port with this name.");
             }
         }
@@ -511,16 +511,16 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             const std::string& port_name = port_it.first;
             const auto& port_info = port_it.second;
 
-            auto remap_it = remapping_parameters.find(port_name);
-            if( remap_it == remapping_parameters.end())
+            auto remap_it = parameters_map.find(port_name);
+            if( remap_it == parameters_map.end())
             {
                 continue;
             }
-            StringView remapping_value = remap_it->second;
-            auto remapped_res = TreeNode::getRemappedKey(port_name, remapping_value);
-            if( remapped_res )
+            StringView param_value = remap_it->second;
+            auto param_res = TreeNode::getRemappedKey(port_name, param_value);
+            if( param_res )
             {
-                const auto& port_key = nonstd::to_string(remapped_res.value());
+                const auto& port_key = nonstd::to_string(param_res.value());
 
                 auto prev_info = blackboard->portInfo( port_key );
                 if( !prev_info  )
@@ -545,20 +545,20 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         }
 
         // use manifest to initialize NodeConfiguration
-        for(const auto& remap_it: remapping_parameters)
+        for(const auto& param_it: parameters_map)
         {
-            const auto& port_name = remap_it.first;
+            const auto& port_name = param_it.first;
             auto port_it = manifest.ports.find( port_name );
             if( port_it != manifest.ports.end() )
             {
                 auto direction = port_it->second.direction();
                 if( direction != PortDirection::OUTPUT )
                 {
-                    config.input_ports.insert( remap_it );
+                    config.input_ports.insert( param_it );
                 }
                 if( direction != PortDirection::INPUT )
                 {
-                    config.output_ports.insert( remap_it );
+                    config.output_ports.insert( param_it );
                 }
             }
         }
