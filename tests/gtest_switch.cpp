@@ -52,11 +52,11 @@ TEST_F(SwitchTest, DefaultCase)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     std::this_thread::sleep_for(milliseconds(110));
+    state = root->executeTick();
 
-    // Switch Node does not halt action after success ?
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, action_3.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
 
@@ -71,8 +71,9 @@ TEST_F(SwitchTest, Case1)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     std::this_thread::sleep_for(milliseconds(110));
+    state = root->executeTick();
 
-    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
@@ -89,9 +90,10 @@ TEST_F(SwitchTest, Case2)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     std::this_thread::sleep_for(milliseconds(110));
+    state = root->executeTick();
 
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
@@ -107,10 +109,11 @@ TEST_F(SwitchTest, CaseNone)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     std::this_thread::sleep_for(milliseconds(110));
+    state = root->executeTick();
 
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, action_3.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
 
@@ -131,8 +134,8 @@ TEST_F(SwitchTest, CaseSwitchToDefault)
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    // Switch Node feels changes only when tick ? (no while loop inside, 
-    // not reactive)
+    // Switch Node does not feels changes. Only when tick. 
+    // (not reactive)
     std::this_thread::sleep_for(milliseconds(10));
     bb->set("variable", "");
     std::this_thread::sleep_for(milliseconds(10));
@@ -149,10 +152,11 @@ TEST_F(SwitchTest, CaseSwitchToDefault)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     std::this_thread::sleep_for(milliseconds(110));
+    state = root->executeTick();
 
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, action_3.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::SUCCESS, root->status());
 }
 
@@ -175,9 +179,10 @@ TEST_F(SwitchTest, CaseSwitchToAction2)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     std::this_thread::sleep_for(milliseconds(110));
+    state = root->executeTick();
 
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::SUCCESS, action_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::SUCCESS, root->status());
 }
@@ -192,19 +197,18 @@ TEST_F(SwitchTest, ActionFailure)
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    // Switch Node does not halt after failure ?
     std::this_thread::sleep_for(milliseconds(10));
     action_1.setStatus(NodeStatus::FAILURE);
     state = root->executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
-    ASSERT_EQ(NodeStatus::FAILURE, state);
+    ASSERT_EQ(NodeStatus::IDLE, state);
 
     state = root->executeTick();
     state = root->executeTick();
     ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
     ASSERT_EQ(NodeStatus::IDLE, action_3.status());
-    ASSERT_EQ(NodeStatus::FAILURE, state);
+    ASSERT_EQ(NodeStatus::IDLE, state);
 }
