@@ -149,11 +149,11 @@ class AsyncActionNode : public ActionNodeBase
  * if the reply has been received and, eventually, analyze the reply to determine
  * if the result is SUCCESS or FAILURE.
  *
- * -) an IDLE action will call onStart()
+ * -) an action that was in IDLE state will call onStart()
  *
  * -) A RUNNING action will call onRunning()
  *
- * -) if halted, method onHalted()
+ * -) if halted, method onHalted() is invoked
  */
 class StatefulActionNode : public ActionNodeBase
 {
