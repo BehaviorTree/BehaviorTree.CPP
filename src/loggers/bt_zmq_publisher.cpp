@@ -21,7 +21,10 @@ struct PublisherZMQ::Pimpl
 };
 
 
-PublisherZMQ::PublisherZMQ(const BT::Tree& tree, int max_msg_per_second)
+PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
+                           unsigned max_msg_per_second,
+                           unsigned publisher_port,
+                           unsigned server_port)
   : StatusChangeLogger(tree.root_node)
   , tree_(tree)
   , min_time_between_msgs_(std::chrono::microseconds(1000 * 1000) / max_msg_per_second)
@@ -33,6 +36,10 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree, int max_msg_per_second)
     {
         throw LogicError("Only one instance of PublisherZMQ shall be created");
     }
+    if( publisher_port == server_port)
+    {
+        throw LogicError("The TCP ports of the publisher and the server must be different");
+    }
 
     flatbuffers::FlatBufferBuilder builder(1024);
     CreateFlatbuffersBehaviorTree(builder, tree);
@@ -40,8 +47,12 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree, int max_msg_per_second)
     tree_buffer_.resize(builder.GetSize());
     memcpy(tree_buffer_.data(), builder.GetBufferPointer(), builder.GetSize());
 
-    zmq_->publisher.bind("tcp://*:1666");
-    zmq_->server.bind("tcp://*:1667");
+    char str[100];
+
+    sprintf(str, "tcp://*:%d", publisher_port);
+    zmq_->publisher.bind(str);
+    sprintf(str, "tcp://*:%d", server_port);
+    zmq_->server.bind(str);
 
     int timeout_ms = 100;
     zmq_->server.setsockopt(ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
