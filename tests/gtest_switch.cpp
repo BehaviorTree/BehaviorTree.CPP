@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "action_test_node.h"
-#include "condition_test_node.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/tree_node.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -11,9 +10,8 @@ using std::chrono::milliseconds;
 static const char* xml_text = R"(
 
 <root main_tree_to_execute = "MainTree" >
-
     <BehaviorTree ID="MainTree">
-        <Switch3 name="simple_switch" variable="{my_var}"  case_1="1" case_2="42 case_3="666" >
+        <Switch3 name="simple_switch" variable="{my_var}"  case_1="1" case_2="42" case_3="666" >
             <AsyncActionTest name="action_1"/>
             <AsyncActionTest name="action_42"/>
             <AsyncActionTest name="action_666"/>
@@ -22,6 +20,21 @@ static const char* xml_text = R"(
     </BehaviorTree>
 </root>
         )";
+
+struct SwitchTestFactory : testing::Test
+{
+    using Switch3 = BT::SwitchNode<3>;
+    using AsyncActionTest = BT::AsyncActionTest;
+
+    BT::BehaviorTreeFactory factory;
+    std::unique_ptr<BT::Tree> tree;
+
+    SwitchTestFactory() 
+    {
+        factory.registerNodeType<AsyncActionTest>("AsyncActionTest");
+        tree = std::make_unique<BT::Tree>(factory.createTreeFromText(xml_text));
+    }
+};
 
 struct SwitchTest : testing::Test
 {
@@ -215,14 +228,92 @@ TEST_F(SwitchTest, ActionFailure)
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
     action_1.setExpectedResult(NodeStatus::FAILURE);
-    // halt the running node
-    action_1.halt();
-    std::this_thread::sleep_for(milliseconds(20));
+    std::this_thread::sleep_for(milliseconds(110));
     state = root->executeTick();
 
     ASSERT_EQ(NodeStatus::FAILURE, state);
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_42.status());
     ASSERT_EQ(NodeStatus::IDLE, action_def.status());
+}
 
+TEST_F(SwitchTest, SwitchAfterActionSucceed)
+{
+    bb->set("my_var", "1");
+    BT::NodeStatus state = root->executeTick();
+    
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_42.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_def.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+
+    std::this_thread::sleep_for(milliseconds(110));
+    bb->set("my_var", "42");
+    state = root->executeTick();
+
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_42.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_def.status());
+}
+
+TEST_F(SwitchTestFactory, SwitchTreeTest)
+{
+    // Ticking Default Action
+    tree->root_node->executeTick();
+    for (auto& node : tree->nodes)
+    {
+        if(node->name() == "simple_switch" || node->name() == "action_default")
+            ASSERT_EQ(node->status(), NodeStatus::RUNNING);
+        else        
+            ASSERT_EQ(node->status(), NodeStatus::IDLE);
+    }
+    
+    // Switching to action_1
+    std::this_thread::sleep_for(milliseconds(10));
+    tree->blackboard_stack[0]->set("my_var", "1");
+    tree->root_node->executeTick();
+    for (auto& node : tree->nodes)
+    {
+        if(node->name() == "simple_switch" || node->name() == "action_1")
+            ASSERT_EQ(node->status(), NodeStatus::RUNNING);
+        else        
+            ASSERT_EQ(node->status(), NodeStatus::IDLE);
+    }
+
+    // Switching to action_666
+    std::this_thread::sleep_for(milliseconds(10));
+    tree->blackboard_stack[0]->set("my_var", "666");
+    tree->root_node->executeTick();
+    for (auto& node : tree->nodes)
+    {
+        if(node->name() == "simple_switch" || node->name() == "action_666")
+            ASSERT_EQ(node->status(), NodeStatus::RUNNING);
+        else        
+            ASSERT_EQ(node->status(), NodeStatus::IDLE);
+    }
+
+    // Switching to action_42
+    std::this_thread::sleep_for(milliseconds(10));
+    tree->blackboard_stack[0]->set("my_var", "42");
+    tree->root_node->executeTick();
+    for (auto& node : tree->nodes)
+    {
+        if(node->name() == "simple_switch" || node->name() == "action_42")
+            ASSERT_EQ(node->status(), NodeStatus::RUNNING);
+        else        
+            ASSERT_EQ(node->status(), NodeStatus::IDLE);
+    }
+
+    // Switch succeed
+    std::this_thread::sleep_for(milliseconds(110));
+    tree->blackboard_stack[0]->set("my_var", "42");
+    tree->root_node->executeTick();
+    for (auto& node : tree->nodes)
+    {
+        if(node->name() == "simple_switch")
+            ASSERT_EQ(node->status(), NodeStatus::SUCCESS);
+        else        
+            ASSERT_EQ(node->status(), NodeStatus::IDLE);
+    }
 }

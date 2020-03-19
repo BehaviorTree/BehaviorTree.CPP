@@ -40,7 +40,11 @@ BT::NodeStatus BT::AsyncActionTest::tick()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    stop_loop_ = false;
+    if(stop_loop_)
+    {
+        stop_loop_ = false;
+        return NodeStatus::IDLE;
+    }
     return expected_result_;
 }
 
