@@ -5,7 +5,7 @@
 #include "behaviortree_cpp_v3/loggers/bt_file_logger.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#ifdef ZMQ_INSTALLED
+#ifdef ZMQ_FOUND
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 #endif
 
