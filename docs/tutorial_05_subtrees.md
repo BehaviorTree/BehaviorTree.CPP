@@ -96,6 +96,11 @@ int main()
     // This logger stores the execution time of each node
     MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
 
+#ifdef ZMQ_INSTALLED
+    // This logger publish status changes using ZeroMQ. Used by Groot
+    PublisherZMQ publisher_zmq(tree);
+#endif
+
     printTreeRecursively(tree.root_node);
 
     //while (1)
