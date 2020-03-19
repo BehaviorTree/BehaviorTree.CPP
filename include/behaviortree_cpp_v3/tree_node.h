@@ -153,7 +153,7 @@ class TreeNode
     friend class BehaviorTreeFactory;
     friend class DecoratorNode;
     friend class ControlNode;
-    friend class Tree;
+    friend struct Tree;
 
     // Only BehaviorTreeFactory should call this
     void setRegistrationID(StringView ID)
