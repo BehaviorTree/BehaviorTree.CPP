@@ -321,12 +321,13 @@ void VerifyXML(const std::string& xml_text,
         }
         else if (StrEqual(name, "SubTree"))
         {
-            for (auto child = node->FirstChildElement(); child != nullptr;
-                 child = child->NextSiblingElement())
+            auto child = node->FirstChildElement();
+
+            if (child)
             {
-                if( StrEqual(child->Name(), "remap") )
+                if (StrEqual(child->Name(), "remap"))
                 {
-                   ThrowError(node->GetLineNum(), "<remap> was deprecated");
+                    ThrowError(node->GetLineNum(), "<remap> was deprecated");
                 }
                 else{
                     ThrowError(node->GetLineNum(), "<SubTree> should not have any child");
