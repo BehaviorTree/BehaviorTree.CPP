@@ -156,9 +156,11 @@ would be _interrupted_ (_halted_, to be specific).
      <BehaviorTree>
         <ReactiveSequence>
             <BatteryOK/>
-            <SaySomething   message="mission started..." />
-            <MoveBase       goal="1;2;3"/>
-            <SaySomething   message="mission completed!" />
+            <Sequence>
+                <SaySomething   message="mission started..." />
+                <MoveBase       goal="1;2;3"/>
+                <SaySomething   message="mission completed!" />
+            </Sequence>
         </ReactiveSequence>
      </BehaviorTree>
  </root>

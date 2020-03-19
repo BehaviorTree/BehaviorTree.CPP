@@ -156,8 +156,8 @@ struct Tree
 
     void haltTree()
     {
-        // the halt should propagate to all the node if all the nodes
-        // are implemented correctly
+        // the halt should propagate to all the node if the nodes
+        // have been implemented correctly
         root_node->halt();
         root_node->setStatus(NodeStatus::IDLE);
 
