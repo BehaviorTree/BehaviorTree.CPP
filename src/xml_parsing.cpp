@@ -20,6 +20,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996) // do not complain about sprintf
+#pragma warning(disable : 4702) // Unreachable code in "SubTree" handling.
 #endif
 
 #include "behaviortree_cpp_v3/xml_parsing.h"
@@ -328,7 +329,8 @@ void VerifyXML(const std::string& xml_text,
                 {
                    ThrowError(node->GetLineNum(), "<remap> was deprecated");
                 }
-                else{
+                else
+				{
                     ThrowError(node->GetLineNum(), "<SubTree> should not have any child");
                 }
             }
