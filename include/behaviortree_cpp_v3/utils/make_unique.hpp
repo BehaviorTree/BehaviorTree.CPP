@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#if defined(_MSC_VER) && __cplusplus == 201103L
+#if defined(_MSC_VER) && _MSC_VER >= 1900 // MSVC 2015 or newer.
 #  define MAKE_UNIQUE_DEFINED 1
 #endif
 
