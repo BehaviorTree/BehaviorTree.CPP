@@ -80,19 +80,41 @@ the graphic user interface are used to design and monitor a Behavior Tree.
 
 [![MOOD2Be](video_MOOD2Be.png)](https://vimeo.com/304651183)
 
-# How to compile
+# How to compile (plain old cmake
 
-On Ubuntu, you must install the following dependencies:
+On Ubuntu, you are encourage to install the following dependencies:
 
-     sudo apt-get install libzmq3-dev libdw-dev
+     sudo apt-get install libzmq3-dev libboost-dev
      
-Any other dependency is already included in the __3rdparty__ folder.
+Other dependency is already included in the __3rdparty__ folder.
 
-## Catkin and ROS users
+To compile and install the library, from the BehaviorTree.CPP folder, execute:
+
+     mkdir build; cd build
+     cmake ..
+     make
+     sudo make install
+
+Your typical **CMakeLists.txt** file will look like this:
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+
+project(hello_BT)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+find_package(BehaviorTreeV3)
+
+add_executable(${PROJECT_NAME} "hello_BT.cpp")
+target_link_libraries(${PROJECT_NAME} BT3::behaviortree_cpp_v3)
+```
+
+## ROS1 or ROS2 users (Catkin/Ament)
 
 You can easily install the package with the command
 
-      sudo apt-get install ros-$ROS_DISTRO-behaviortree-cpp
+      sudo apt-get install ros-$ROS_DISTRO-behaviortree-cpp-v3
       
 If you want to compile it with catkin, you __must__ include this package 
 to your catkin workspace.
