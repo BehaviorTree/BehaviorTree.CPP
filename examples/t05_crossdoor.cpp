@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     PublisherZMQ publisher_zmq(tree);
 #endif
 
-    printTreeRecursively(tree.root_node);
+    printTreeRecursively(tree.rootNode());
 
     const bool LOOP = ( argc == 2 && strcmp( argv[1], "loop") == 0);
 
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
         // Keep on ticking until you get either a SUCCESS or FAILURE state
         while( status == NodeStatus::RUNNING)
         {
-            status = tree.root_node->executeTick();
+            status = tree.tickRoot();
             CrossDoor::SleepMS(1);   // optional sleep to avoid "busy loops"
         }
         CrossDoor::SleepMS(1000);

@@ -116,7 +116,7 @@ int main()
 
     //---------------------------------------
     // keep executin tick until it returns etiher SUCCESS or FAILURE
-    while( tree.root_node->executeTick() == NodeStatus::RUNNING)
+    while( tree.tickRoot() == NodeStatus::RUNNING)
     {
         std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }

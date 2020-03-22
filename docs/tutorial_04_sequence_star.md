@@ -109,15 +109,15 @@ int main()
     NodeStatus status;
 
     std::cout << "\n--- 1st executeTick() ---" << std::endl;
-    status = tree.root_node->executeTick();
+    status = tree.tickRoot();
 
     SleepMS(150);
     std::cout << "\n--- 2nd executeTick() ---" << std::endl;
-    status = tree.root_node->executeTick();
+    status = tree.tickRoot();
 
     SleepMS(150);
     std::cout << "\n--- 3rd executeTick() ---" << std::endl;
-    status = tree.root_node->executeTick();
+    status = tree.tickRoot();
 
     std::cout << std::endl;
 

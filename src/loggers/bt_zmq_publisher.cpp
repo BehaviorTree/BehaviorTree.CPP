@@ -25,7 +25,7 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
                            unsigned max_msg_per_second,
                            unsigned publisher_port,
                            unsigned server_port)
-  : StatusChangeLogger(tree.root_node)
+  : StatusChangeLogger(tree.rootNode())
   , tree_(tree)
   , min_time_between_msgs_(std::chrono::microseconds(1000 * 1000) / max_msg_per_second)
   , send_pending_(false)
@@ -100,7 +100,7 @@ PublisherZMQ::~PublisherZMQ()
 void PublisherZMQ::createStatusBuffer()
 {
     status_buffer_.clear();
-    applyRecursiveVisitor(tree_.root_node, [this](TreeNode* node) {
+    applyRecursiveVisitor(tree_.rootNode(), [this](TreeNode* node) {
         size_t index = status_buffer_.size();
         status_buffer_.resize(index + 3);
         flatbuffers::WriteScalar<uint16_t>(&status_buffer_[index], node->UID());

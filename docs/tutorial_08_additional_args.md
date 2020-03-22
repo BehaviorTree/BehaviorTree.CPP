@@ -137,7 +137,7 @@ int main()
         }
     }
 
-    tree.root_node->executeTick();
+    tree.tickRoot();
 
     return 0;
 }

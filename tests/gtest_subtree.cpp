@@ -36,7 +36,7 @@ static const char* xml_text = R"(
         std::cout << "-----" << std::endl;
     }
 
-    auto ret = tree.root_node->executeTick();
+    auto ret = tree.tickRoot();
 
     ASSERT_EQ(ret, NodeStatus::SUCCESS );
     ASSERT_EQ(tree.blackboard_stack.size(), 3 );
@@ -93,7 +93,7 @@ TEST(SubTree, GoodRemapping)
   factory.registerNodeType<CopyPorts>("CopyPorts");
 
   Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.root_node->executeTick();
+  auto ret = tree.tickRoot();
   ASSERT_EQ(ret, NodeStatus::SUCCESS );
 }
 
@@ -120,7 +120,7 @@ TEST(SubTree, BadRemapping)
 </root> )";
 
   Tree tree_bad_in = factory.createTreeFromText(xml_text_bad_in);
-  EXPECT_ANY_THROW( tree_bad_in.root_node->executeTick() );
+  EXPECT_ANY_THROW( tree_bad_in.tickRoot() );
 
   static const char* xml_text_bad_out = R"(
 <root main_tree_to_execute = "MainTree" >
@@ -139,7 +139,7 @@ TEST(SubTree, BadRemapping)
 </root> )";
 
   Tree tree_bad_out = factory.createTreeFromText(xml_text_bad_out);
-  EXPECT_ANY_THROW( tree_bad_out.root_node->executeTick() );
+  EXPECT_ANY_THROW( tree_bad_out.tickRoot() );
 }
 
 TEST(SubTree, SubtreeWrapper)
@@ -165,6 +165,6 @@ TEST(SubTree, SubtreeWrapper)
 </root> )";
 
   Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.root_node->executeTick();
+  auto ret = tree.tickRoot();
   ASSERT_EQ(ret, NodeStatus::SUCCESS );
 }

@@ -46,7 +46,7 @@ TEST(PortTest, DefaultPorts)
 
     auto tree = factory.createTreeFromText(xml_txt);
 
-    NodeStatus status = tree.root_node->executeTick();
+    NodeStatus status = tree.tickRoot();
     ASSERT_EQ( status, NodeStatus::SUCCESS );
 
 }

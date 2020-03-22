@@ -150,7 +150,7 @@ TEST(BlackboardTest, SetOutputFromText)
     auto bb = Blackboard::create();
 
     auto tree = factory.createTreeFromText(xml_text, bb);
-    tree.root_node->executeTick();
+    tree.tickRoot();
 }
 
 TEST(BlackboardTest, WithFactory)
@@ -179,7 +179,7 @@ TEST(BlackboardTest, WithFactory)
     auto bb = Blackboard::create();
 
     auto tree = factory.createTreeFromText(xml_text, bb);
-    NodeStatus status = tree.root_node->executeTick();
+    NodeStatus status = tree.tickRoot();
 
     ASSERT_EQ( status, NodeStatus::SUCCESS );
     ASSERT_EQ( bb->get<int>("my_input_port"), 44 );
@@ -221,7 +221,7 @@ TEST(BlackboardTest, CheckPortType)
     </root>)";
 
     auto tree = factory.createTreeFromText(good_one);
-    ASSERT_NE( tree.root_node, nullptr );
+    ASSERT_NE( tree.rootNode(), nullptr );
     //-----------------------------
     std::string bad_one = R"(
     <root main_tree_to_execute = "MainTree" >

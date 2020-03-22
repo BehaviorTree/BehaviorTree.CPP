@@ -67,7 +67,7 @@ int main()
     // Keep on ticking until you get either a SUCCESS or FAILURE state
     while( status == NodeStatus::RUNNING)
     {
-        status = tree.root_node->executeTick();
+        status = tree.tickRoot();
         SleepMS(1);   // optional sleep to avoid "busy loops"
     }
 

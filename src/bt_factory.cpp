@@ -261,8 +261,8 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
 
 Tree::~Tree()
 {
-    if (root_node) {
-        haltAllActions(root_node);
+    if (rootNode()) {
+        haltAllActions(rootNode());
     }
 }
 

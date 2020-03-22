@@ -88,20 +88,20 @@ int main()
     auto tree = factory.createTreeFromText(xml_text);
 
     // This logger prints state changes on console
-    StdCoutLogger logger_cout(tree.root_node);
+    StdCoutLogger logger_cout(tree.rootNode());
 
     // This logger saves state changes on file
-    FileLogger logger_file(tree.root_node, "bt_trace.fbl");
+    FileLogger logger_file(tree.rootNode(), "bt_trace.fbl");
     
     // This logger stores the execution time of each node
-    MinitraceLogger logger_minitrace(tree.root_node, "bt_trace.json");
+    MinitraceLogger logger_minitrace(tree.rootNode(), "bt_trace.json");
 
 #ifdef ZMQ_FOUND
     // This logger publish status changes using ZeroMQ. Used by Groot
     PublisherZMQ publisher_zmq(tree);
 #endif
 
-    printTreeRecursively(tree.root_node);
+    printTreeRecursively(tree.rootNode());
 
     //while (1)
     {
@@ -109,7 +109,7 @@ int main()
         // Keep on ticking until you get either a SUCCESS or FAILURE state
         while( status == NodeStatus::RUNNING)
         {
-            status = tree.root_node->executeTick();
+            status = tree.tickRoot();
             CrossDoor::SleepMS(1);   // optional sleep to avoid "busy loops"
         }
         CrossDoor::SleepMS(2000);

@@ -125,16 +125,17 @@ See examples for more information about configuring CMake correctly
  *
  * To tick the tree, simply call:
  *
- *    NodeStatus status = my_tree.root_node->executeTick();
+ *    NodeStatus status = my_tree.tickRoot();
  */
-struct Tree
+class Tree
 {
-    TreeNode* root_node;
+public:
+
     std::vector<TreeNode::Ptr> nodes;
     std::vector<Blackboard::Ptr> blackboard_stack;
     std::unordered_map<std::string, TreeNodeManifest> manifests;
 
-    Tree(): root_node(nullptr) {}
+    Tree(){}
 
     // non-copyable. Only movable
     Tree(const Tree& ) = delete;
@@ -147,7 +148,6 @@ struct Tree
 
     Tree& operator=(Tree&& other)
     {
-        root_node = std::move(other.root_node);
         nodes = std::move(other.nodes);
         blackboard_stack = std::move(other.blackboard_stack);
         manifests = std::move(other.manifests);
@@ -158,20 +158,39 @@ struct Tree
     {
         // the halt should propagate to all the node if the nodes
         // have been implemented correctly
-        root_node->halt();
-        root_node->setStatus(NodeStatus::IDLE);
+        rootNode()->halt();
+        rootNode()->setStatus(NodeStatus::IDLE);
 
         //but, just in case.... this should be no-op
         auto visitor = [](BT::TreeNode * node) {
             node->halt();
             node->setStatus(BT::NodeStatus::IDLE);
         };
-        BT::applyRecursiveVisitor(root_node, visitor);
+        BT::applyRecursiveVisitor(rootNode(), visitor);
+    }
+
+    TreeNode* rootNode() const
+    {
+      return nodes.empty() ? nullptr : nodes.front().get();
+    }
+
+    NodeStatus tickRoot()
+    {
+      if(!rootNode())
+      {
+        throw RuntimeError("Empty Tree");
+      }
+      NodeStatus ret = rootNode()->executeTick();
+      if( ret == NodeStatus::SUCCESS || ret == NodeStatus::FAILURE){
+        rootNode()->setStatus(BT::NodeStatus::IDLE);
+      }
+      return ret;
     }
 
     ~Tree();
 
     Blackboard::Ptr rootBlackboard();
+
 };
 
 /**
