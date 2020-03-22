@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12) # version on Ubuntu Trusty
+cmake_minimum_required(VERSION 3.5.2) # version on Ubuntu Xenial
 project(behaviortree_cpp_v3)
 
 #---- Add the subdirectory cmake ----
@@ -6,12 +6,8 @@ set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 
 #---- Enable C++11 ----
-if(NOT CMAKE_VERSION VERSION_LESS 3.1)
-    set(CMAKE_CXX_STANDARD 14)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-endif()
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -21,11 +17,11 @@ endif()
 find_package(Boost COMPONENTS coroutine QUIET)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
-    if(Boost_VERSION VERSION_GREATER_EQUAL 105900)
+    if(NOT Boost_VERSION VERSION_LESS 105900)
         message(STATUS "Found boost::coroutine2.")
         add_definitions(-DBT_BOOST_COROUTINE2)
         set(BT_COROUTINES true)
-    elseif(Boost_VERSION_STRING VERSION_GREATER_EQUAL 105300)
+    elseif(NOT Boost_VERSION VERSION_LESS 105300)
         message(STATUS "Found boost::coroutine.")
         include_directories(${Boost_INCLUDE_DIRS})
         add_definitions(-DBT_BOOST_COROUTINE)
