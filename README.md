@@ -1,5 +1,5 @@
 ![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
-![Version](https://img.shields.io/badge/version-v3.0-green.svg)
+![Version](https://img.shields.io/badge/version-v3.3-green.svg)
 
 
 Travis (Linux): [![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
@@ -71,14 +71,14 @@ Editing a BehaviorTree is as simple as editing a XML file in your favourite text
 If you are looking for a more fancy graphical user interface (and I know you do) check 
 [Groot](https://github.com/BehaviorTree/Groot) out.
 
-![Groot screenshot](groot-screenshot.png)
+![Groot screenshot](docs/groot-screenshot.png)
 
 ## Watch Groot and BehaviorTree.CPP in action
 
 Click on the following image to see a short video of how the C++ library and
 the graphic user interface are used to design and monitor a Behavior Tree.
 
-[![MOOD2Be](video_MOOD2Be.png)](https://vimeo.com/304651183)
+[![MOOD2Be](docs/video_MOOD2Be.png)](https://vimeo.com/304651183)
 
 # How to compile (plain old cmake
 
@@ -128,7 +128,7 @@ This software is one of the main components of [MOOD2Be](https://eurecat.org/en/
 which is one of the six **Integrated Technical Projects (ITPs)** selected from the
 [RobMoSys first open call](https://robmosys.eu/itp/). Therefore, MOOD2Be has been supported by the European Horizon2020 project RobMoSys. This software is RobMoSys conformant. 
 
-![RobMoSys Conformant](./robmosys_conformant_logo.png)
+![RobMoSys Conformant](docs/robmosys_conformant_logo.png)
 
 # Further readings
 
