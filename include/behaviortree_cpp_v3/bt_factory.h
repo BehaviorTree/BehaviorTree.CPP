@@ -156,6 +156,10 @@ public:
 
     void haltTree()
     {
+        if(!rootNode())
+        {
+            return;
+        }
         // the halt should propagate to all the node if the nodes
         // have been implemented correctly
         rootNode()->halt();

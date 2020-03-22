@@ -34,7 +34,7 @@ struct SimpleFallbackTest : testing::Test
     }
     ~SimpleFallbackTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -57,7 +57,7 @@ struct ReactiveFallbackTest : testing::Test
     }
     ~ReactiveFallbackTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -77,7 +77,7 @@ struct SimpleFallbackWithMemoryTest : testing::Test
     }
     ~SimpleFallbackWithMemoryTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -116,7 +116,7 @@ struct ComplexFallbackWithMemoryTest : testing::Test
     }
     ~ComplexFallbackWithMemoryTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 

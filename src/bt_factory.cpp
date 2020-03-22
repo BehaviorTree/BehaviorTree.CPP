@@ -261,9 +261,7 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
 
 Tree::~Tree()
 {
-    if (rootNode()) {
-        haltAllActions(rootNode());
-    }
+    haltTree();
 }
 
 Blackboard::Ptr Tree::rootBlackboard()

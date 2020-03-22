@@ -34,7 +34,7 @@ struct SimpleSequenceTest : testing::Test
     }
     ~SimpleSequenceTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -63,7 +63,7 @@ struct ComplexSequenceTest : testing::Test
     }
     ~ComplexSequenceTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -89,7 +89,7 @@ struct SequenceTripleActionTest : testing::Test
     }
     ~SequenceTripleActionTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -126,7 +126,7 @@ struct ComplexSequence2ActionsTest : testing::Test
     }
     ~ComplexSequence2ActionsTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -146,7 +146,7 @@ struct SimpleSequenceWithMemoryTest : testing::Test
     }
     ~SimpleSequenceWithMemoryTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -185,7 +185,7 @@ struct ComplexSequenceWithMemoryTest : testing::Test
     }
     ~ComplexSequenceWithMemoryTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -212,7 +212,7 @@ struct SimpleParallelTest : testing::Test
     }
     ~SimpleParallelTest()
     {
-        haltAllActions(&root);
+
     }
 };
 

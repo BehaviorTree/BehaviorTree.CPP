@@ -50,102 +50,6 @@ NodeStatus SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-AsyncActionNode::AsyncActionNode(const std::string& name, const NodeConfiguration& config)
-  : ActionNodeBase(name, config)
-{
-
-}
-
-AsyncActionNode::~AsyncActionNode()
-{
-    if (thread_.joinable())
-    {
-        stopAndJoinThread();
-    }
-}
-
-void AsyncActionNode::waitStart()
-{
-    std::unique_lock<std::mutex> lock(start_mutex_);
-    while (!start_action_)
-    {
-        start_signal_.wait(lock);
-    }
-    start_action_ = false;
-}
-
-void AsyncActionNode::notifyStart()
-{
-    std::unique_lock<std::mutex> lock(start_mutex_);
-    start_action_ = true;
-    start_signal_.notify_all();
-}
-
-void AsyncActionNode::asyncThreadLoop()
-{
-    while (keep_thread_alive_.load())
-    {
-        waitStart();
-
-        // check keep_thread_alive_ again because the tick_engine_ could be
-        // notified from the method stopAndJoinThread
-        if (keep_thread_alive_)
-        {
-            // this will execute the blocking code.
-            try {
-                setStatus(tick());
-            }
-            catch (std::exception&)
-            {
-                std::cerr << "\nUncaught exception from the method tick() of an AsyncActionNode: ["
-                          << registrationName() << "/" << name() << "]\n" << std::endl;
-                exptr_ = std::current_exception();
-                keep_thread_alive_ = false;
-            }
-        }
-    }
-}
-
-NodeStatus AsyncActionNode::executeTick()
-{
-    //send signal to other thread.
-    // The other thread is in charge for changing the status
-    if (status() == NodeStatus::IDLE)
-    {
-        if( thread_.joinable() == false) {
-            keep_thread_alive_ = true;
-            thread_ = std::thread(&AsyncActionNode::asyncThreadLoop, this);
-        }
-        setStatus( NodeStatus::RUNNING );
-        notifyStart();
-    }
-
-    if( exptr_ )
-    {
-        std::rethrow_exception(exptr_);
-    }
-    return status();
-}
-
-void AsyncActionNode::stopAndJoinThread()
-{
-    keep_thread_alive_.store(false);
-    if( status() == NodeStatus::RUNNING )
-    {
-        halt();
-    }
-    else{
-        // loop in asyncThreadLoop() is blocked at waitStart(). Unblock it.
-        notifyStart();
-    }
-
-    if (thread_.joinable())
-    {
-        thread_.join();
-    }
-}
-
-
 SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):
   ActionNodeBase(name, config)
 {}
@@ -259,4 +163,45 @@ void StatefulActionNode::halt()
     onHalted();
   }
   setStatus(NodeStatus::IDLE);
+}
+
+NodeStatus BT::AsyncActionNode::executeTick()
+{
+    //send signal to other thread.
+    // The other thread is in charge for changing the status
+    if (status() == NodeStatus::IDLE)
+    {
+        setStatus( NodeStatus::RUNNING );
+        halt_requested_ = false;
+        thread_handle_ = std::async(std::launch::async, [this]() {
+
+            try {
+                setStatus(tick());
+            }
+            catch (std::exception&)
+            {
+                std::cerr << "\nUncaught exception from the method tick(): ["
+                          << registrationName() << "/" << name() << "]\n" << std::endl;
+                exptr_ = std::current_exception();
+                thread_handle_.wait();
+            }
+            return status();
+        });
+    }
+
+    if( exptr_ )
+    {
+        std::rethrow_exception(exptr_);
+    }
+    return status();
+}
+
+void AsyncActionNode::halt()
+{
+    halt_requested_.store(true);
+
+    if( thread_handle_.valid() ){
+        thread_handle_.wait();
+    }
+    thread_handle_ = {};
 }

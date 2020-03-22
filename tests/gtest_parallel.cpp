@@ -41,7 +41,7 @@ struct SimpleParallelTest : testing::Test
     }
     ~SimpleParallelTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -86,7 +86,6 @@ struct ComplexParallelTest : testing::Test
     }
     ~ComplexParallelTest()
     {
-        haltAllActions(&parallel_root);
     }
 };
 

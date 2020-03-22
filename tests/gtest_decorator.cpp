@@ -30,7 +30,7 @@ struct DeadlineTest : testing::Test
     }
     ~DeadlineTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -45,7 +45,7 @@ struct RepeatTest : testing::Test
     }
     ~RepeatTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -60,7 +60,7 @@ struct RetryTest : testing::Test
     }
     ~RetryTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -77,10 +77,6 @@ struct TimeoutAndRetry : testing::Test
     {
         timeout_root.setChild(&retry);
         retry.setChild(&action);
-    }
-    ~TimeoutAndRetry()
-    {
-        haltAllActions(&timeout_root);
     }
 };
 

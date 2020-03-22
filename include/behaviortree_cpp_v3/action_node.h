@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <thread>
+#include <future>
 #include "leaf_node.h"
 
 namespace BT
@@ -96,48 +97,44 @@ class SimpleActionNode : public SyncActionNode
 };
 
 /**
- * @brief The AsyncActionNode uses a different thread where the action will be
+ * @brief The AsyncActionNode uses a different thread, where the action will be
  * executed.
  *
- * The user must implement the methods tick() and halt().
+ * IMPORTANT: this action is quite hard to implement correctly. Please be sure that you know what you are doing.
  *
- * WARNING: this should probably be deprecated. It is too easy to use incorrectly
- * and there is not a good way to halt it in a thread safe way.
+ * - In your overriden tick() method, you must check periodically
+ *   the result of the method isHaltRequested() and stop your execution accordingly.
  *
- * Use it at your own risk.
+ * - in the overriden halt() method, you can do some cleanup, but do not forget to
+ *   invoke the base class method AsyncActionNode::halt();
+ *
+ * - remember, with few exceptions, a halted AsyncAction must return NodeStatus::IDLE.
+ *
+ * For a complete example, look at __AsyncActionTest__ in action_test_node.h in the folder test.
  */
 class AsyncActionNode : public ActionNodeBase
 {
   public:
 
-    AsyncActionNode(const std::string& name, const NodeConfiguration& config);
-    virtual ~AsyncActionNode() override;
+    AsyncActionNode(const std::string& name, const NodeConfiguration& config):ActionNodeBase(name, config)
+    {
+    }
 
-    // This method triggers the TickEngine. Do NOT remove the "final" keyword.
+    bool isHaltRequested() const
+    {
+        return halt_requested_.load();
+    }
+
+    // This method spawn a new thread. Do NOT remove the "final" keyword.
     virtual NodeStatus executeTick() override final;
 
-    void stopAndJoinThread();
+    virtual void halt() override;
 
   private:
 
-    // The method that will be executed by the thread
-    void asyncThreadLoop();
-
-    void waitStart();
-
-    void notifyStart();
-
-    std::atomic<bool> keep_thread_alive_;
-
-    bool start_action_;
-
-    std::mutex start_mutex_;
-
-    std::condition_variable start_signal_;
-
     std::exception_ptr exptr_;
-
-    std::thread thread_;
+    std::atomic_bool halt_requested_;
+    std::future<NodeStatus> thread_handle_;
 };
 
 /**

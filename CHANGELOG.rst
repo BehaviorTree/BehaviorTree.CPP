@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.2.0 (2020-03-22)
+------------------
 * root_node removed in favour of a method. tickRoot() added
 * Moving to c++14
 * fixed compilation on ROS2 and ubuntu 18.94

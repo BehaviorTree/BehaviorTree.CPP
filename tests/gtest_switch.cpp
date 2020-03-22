@@ -209,20 +209,18 @@ TEST_F(SwitchTest, ActionFailure)
     bb->set("my_var", "1");
     BT::NodeStatus state = root->executeTick();
     
+    action_1.setExpectedResult(NodeStatus::FAILURE);
+
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_42.status());
     ASSERT_EQ(NodeStatus::IDLE, action_def.status());
     ASSERT_EQ(NodeStatus::RUNNING, state);
 
-    action_1.setExpectedResult(NodeStatus::FAILURE);
-    // halt the running node
-    action_1.halt();
-    std::this_thread::sleep_for(milliseconds(20));
+    std::this_thread::sleep_for(milliseconds(110));
     state = root->executeTick();
 
     ASSERT_EQ(NodeStatus::FAILURE, state);
     ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::IDLE, action_42.status());
     ASSERT_EQ(NodeStatus::IDLE, action_def.status());
-
 }

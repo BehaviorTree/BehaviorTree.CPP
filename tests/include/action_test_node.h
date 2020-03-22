@@ -34,7 +34,10 @@ class AsyncActionTest : public AsyncActionNode
   public:
     AsyncActionTest(const std::string& name, BT::Duration deadline_ms = std::chrono::milliseconds(100) );
 
-    ~AsyncActionTest();
+    virtual ~AsyncActionTest()
+    {
+        halt();
+    }
 
     // The method that is going to be executed by the thread
     BT::NodeStatus tick() override;
@@ -61,7 +64,7 @@ class AsyncActionTest : public AsyncActionNode
     BT::Duration time_;
     std::atomic<NodeStatus> expected_result_;
     std::atomic<int> tick_count_;
-    bool stop_loop_;
+
 };
 }
 

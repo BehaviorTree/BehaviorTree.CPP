@@ -19,13 +19,7 @@ BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadl
 {
     expected_result_ = NodeStatus::SUCCESS;
     time_ = deadline_ms;
-    stop_loop_ = false;
     tick_count_ = 0;
-}
-
-BT::AsyncActionTest::~AsyncActionTest()
-{
-    halt();
 }
 
 BT::NodeStatus BT::AsyncActionTest::tick()
@@ -35,18 +29,24 @@ BT::NodeStatus BT::AsyncActionTest::tick()
 
     auto initial_time = high_resolution_clock::now();
 
-    while (!stop_loop_ && high_resolution_clock::now() < initial_time + time_)
+    // we simulate an asynchronous action that takes an amount of time equal to time_
+    while (!isHaltRequested() && high_resolution_clock::now() < initial_time + time_)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    stop_loop_ = false;
+    // check if we exited the while(9 loop because of the flag stop_loop_
+    if( isHaltRequested() ){
+        return NodeStatus::IDLE;
+    }
+
     return expected_result_;
 }
 
 void BT::AsyncActionTest::halt()
 {
-    stop_loop_ = true;
+    // do more cleanup here is necessary
+    AsyncActionNode::halt();
 }
 
 void BT::AsyncActionTest::setTime(BT::Duration time)

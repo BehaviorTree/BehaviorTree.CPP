@@ -43,7 +43,6 @@ struct BehaviorTreeTest : testing::Test
     }
     ~BehaviorTreeTest()
     {
-        haltAllActions(&root);
     }
 };
 

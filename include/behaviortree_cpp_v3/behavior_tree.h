@@ -54,11 +54,6 @@ void applyRecursiveVisitor(TreeNode* root_node, const std::function<void(TreeNod
  */
 void printTreeRecursively(const TreeNode* root_node);
 
-/// Invoke AsyncActionNode::stopAndJoinThread() to the entire tree,
-/// when needed.
-void haltAllActions(TreeNode* root_node);
-
-
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
 /**

@@ -107,15 +107,4 @@ void buildSerializedStatusSnapshot(TreeNode* root_node, SerializedTreeStatus& se
     applyRecursiveVisitor(root_node, visitor);
 }
 
-void haltAllActions(TreeNode* root_node)
-{
-    auto visitor = [](TreeNode* node) {
-        if (auto action = dynamic_cast<AsyncActionNode*>(node))
-        {
-            action->stopAndJoinThread();
-        }
-    };
-    applyRecursiveVisitor(root_node, visitor);
-}
-
 } // end namespace
