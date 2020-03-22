@@ -203,7 +203,7 @@ void CoroActionNode::setStatusRunningAndYield()
 
 NodeStatus CoroActionNode::executeTick()
 {
-    if( status() == NodeStatus::IDLE )
+    if( !(_p->coro) || !(*_p->coro) )
     {
         _p->coro.reset( new coroutine<void>::pull_type(_p->func) );
         return status();
@@ -219,7 +219,7 @@ NodeStatus CoroActionNode::executeTick()
 
 void CoroActionNode::halt()
 {
-    _p.reset();
+    _p->coro.reset();
 }
 #endif
 
