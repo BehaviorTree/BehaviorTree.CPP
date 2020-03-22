@@ -43,8 +43,10 @@ class ControlNode : public TreeNode
 
     virtual void halt() override;
 
-
     void haltChildren();
+
+    [[deprecated( "deprecated: please use explicitly haltChildren() or haltChild(i)")]]
+    void haltChildren(size_t first);
 
     void haltChild(size_t i);
 

@@ -59,4 +59,12 @@ void ControlNode::haltChildren()
     }
 }
 
+void ControlNode::haltChildren(size_t first)
+{
+    for (size_t i = first; i < children_nodes_.size(); i++)
+    {
+        haltChild(i);
+    }
+}
+
 } // end namespace
