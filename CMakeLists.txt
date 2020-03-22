@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12) # version on Ubuntu Trusty
 project(behaviortree_cpp_v3)
 
+#---- Add the subdirectory cmake ----
+set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
+
+#---- Enable C++11 ----
 if(NOT CMAKE_VERSION VERSION_LESS 3.1)
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,37 +17,36 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-find_package(Boost COMPONENTS coroutine2 QUIET)
-
+#---- Include boost to add coroutines ----
+find_package(Boost COMPONENTS coroutine QUIET)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
-    message(STATUS "Found boost::coroutine2.")
-    add_definitions(-DBT_BOOST_COROUTINE2)
-    set(BT_COROUTINES true)
-else()
-   find_package(Boost COMPONENTS coroutine QUIET)
-   if(Boost_FOUND)
-       message(STATUS "Found boost::coroutine.")
-       include_directories(${Boost_INCLUDE_DIRS})
-       add_definitions(-DBT_BOOST_COROUTINE)
-       set(BT_COROUTINES true)
-   else()
-       add_definitions(-DBT_NO_COROUTINES)
-   endif()
+    if(Boost_VERSION VERSION_GREATER_EQUAL 105900)
+        message(STATUS "Found boost::coroutine2.")
+        add_definitions(-DBT_BOOST_COROUTINE2)
+        set(BT_COROUTINES true)
+    elseif(Boost_VERSION_STRING VERSION_GREATER_EQUAL 105300)
+        message(STATUS "Found boost::coroutine.")
+        include_directories(${Boost_INCLUDE_DIRS})
+        add_definitions(-DBT_BOOST_COROUTINE)
+        set(BT_COROUTINES true)
+    endif()
+endif()
+
+if(NOT DEFINED BT_COROUTINES)
+    message(STATUS "Coroutines disabled. Install Boost to enable them (version 1.59+ recommended).")
+    add_definitions(-DBT_NO_COROUTINES)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
-
+#---- project configuration ----
 option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 option(BUILD_TOOLS "Build commandline tools" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
-#############################################################
-# Find packages
+#---- Find other packages ----
 find_package(Threads)
 find_package(ZMQ)
 
@@ -61,7 +65,6 @@ else()
 endif()
 
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
-
 
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
@@ -230,7 +233,7 @@ endif()
 
 ######################################################
 # INSTALL
-set(PROJECT_NAMESPACE BehaviorTree)
+set(PROJECT_NAMESPACE BehaviorTreeV3)
 set(PROJECT_CONFIG ${PROJECT_NAMESPACE}Config)
 
 INSTALL(TARGETS ${BEHAVIOR_TREE_LIBRARY}

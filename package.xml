@@ -1,4 +1,5 @@
-<package>
+<?xml version="1.0"?>
+<package format="3">
   <name>behaviortree_cpp_v3</name>
   <version>3.1.1</version>
   <description>
@@ -12,12 +13,16 @@
   <author>Michele Colledanchise</author>
   <author>Davide Faconti</author>
 
-  <build_depend>roslib</build_depend>
-  <run_depend>roslib</run_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <depend condition="$ROS_VERSION == 1">roslib</depend>
 
-  <build_depend>libzmq3-dev</build_depend>
-  <run_depend>libzmq3-dev</run_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <depend>libzmq3-dev</depend>
+
+  <export>
+      <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+  </export>
 
 </package>
