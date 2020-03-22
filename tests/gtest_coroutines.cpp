@@ -1,6 +1,7 @@
 #include "behaviortree_cpp_v3/decorators/timeout_node.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include <chrono>
+#include <future>
 #include <gtest/gtest.h>
 
 using namespace std::chrono;
@@ -146,6 +147,30 @@ TEST(CoroTest, sequence_child)
     EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(timeout) ) << "should timeout";
     EXPECT_FALSE( actionA.wasHalted() );
     EXPECT_TRUE( actionB.wasHalted() );
+}
 
+TEST(CoroTest, OtherThreadHalt)
+{
+    BT::NodeConfiguration node_config_;
+    node_config_.blackboard = BT::Blackboard::create();
+    BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
+
+    SimpleCoroAction actionA( milliseconds(200), false, "action_A", node_config_);
+    actionA.executeTick();
+
+    std::cout << "----- 1 ------ " << std::endl;
+    auto handle = std::async(std::launch::async, [&](){
+                                 actionA.halt();
+                             });
+    handle.wait();
+    std::cout << "----- 2 ------ " << std::endl;
+    EXPECT_TRUE( actionA.wasHalted() );
+
+    std::cout << "----- 3------ " << std::endl;
+    handle = std::async(std::launch::async, [&](){
+                                 actionA.executeTick();
+                             });
+    handle.wait();
+    std::cout << "----- 4 ------ " << std::endl;
 }
 

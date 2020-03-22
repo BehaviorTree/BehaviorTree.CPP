@@ -163,71 +163,63 @@ NodeStatus SyncActionNode::executeTick()
 
 //-------------------------------------
 #ifndef BT_NO_COROUTINES
-#include "coroutine/coroutine.h"
+
+#ifdef BT_BOOST_COROUTINE2
+#include <boost/coroutine2/all.hpp>
+using namespace boost::coroutines2;
+#endif
+
+#ifdef BT_BOOST_COROUTINE
+#include <boost/coroutine/all.hpp>
+using namespace boost::coroutines;
+#endif
 
 struct CoroActionNode::Pimpl
 {
-    coroutine::routine_t coro;
-    std::atomic<bool> pending_destroy;
+    std::unique_ptr<coroutine<void>::pull_type> coro;
+    std::function<void(coroutine<void>::push_type & yield)> func;
+    coroutine<void>::push_type * yield_ptr;
 };
-
 
 CoroActionNode::CoroActionNode(const std::string &name,
                                const NodeConfiguration& config):
-  ActionNodeBase (name, config),
-  _p(new  Pimpl)
+ ActionNodeBase (name, config), _p( new Pimpl)
 {
-    _p->coro = 0;
-    _p->pending_destroy = false;
+    _p->func = [this](coroutine<void>::push_type & yield) {
+        _p->yield_ptr = &yield;
+        setStatus(tick());
+    };
 }
 
 CoroActionNode::~CoroActionNode()
 {
-    if( _p->coro != 0 )
-    {
-        coroutine::destroy(_p->coro);
-    }
 }
 
 void CoroActionNode::setStatusRunningAndYield()
 {
     setStatus( NodeStatus::RUNNING );
-    coroutine::yield();
+    (*_p->yield_ptr)();
 }
 
 NodeStatus CoroActionNode::executeTick()
 {
-    if( _p->pending_destroy && _p->coro != 0 )
+    if( !(_p->coro) || !(*_p->coro) )
     {
-        coroutine::destroy(_p->coro);
-        _p->coro = 0;
-        _p->pending_destroy = false;
+        _p->coro.reset( new coroutine<void>::pull_type(_p->func) );
+        return status();
     }
 
-    if ( _p->coro == 0)
+    if( status() == NodeStatus::RUNNING && (bool)_p->coro )
     {
-        _p->coro = coroutine::create( [this]()
-        {
-            setStatus(tick());
-        } );
+        (*_p->coro)();
     }
 
-    if( _p->coro != 0 )
-    {
-        if( _p->pending_destroy ||
-            coroutine::resume(_p->coro) == coroutine::ResumeResult::FINISHED )
-        {
-            coroutine::destroy(_p->coro);
-            _p->coro = 0;
-            _p->pending_destroy = false;
-        }
-    }
     return status();
 }
 
 void CoroActionNode::halt()
 {
-    _p->pending_destroy = true;
+    _p->coro.reset();
 }
 #endif
 

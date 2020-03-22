@@ -12,9 +12,23 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-if( MINGW )
-    add_definitions(-DBT_NO_COROUTINES)
+find_package(Boost COMPONENTS coroutine2 QUIET)
+
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    message(STATUS "Found boost::coroutine2.")
+    add_definitions(-DBT_BOOST_COROUTINE2)
+else()
+   find_package(Boost COMPONENTS coroutine QUIET)
+   if(Boost_FOUND)
+       message(STATUS "Found boost::coroutine.")
+       include_directories(${Boost_INCLUDE_DIRS})
+       add_definitions(-DBT_BOOST_COROUTINE)
+   else()
+       add_definitions(-DBT_NO_COROUTINES)
+   endif()
 endif()
+
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -33,7 +47,8 @@ find_package(ZMQ)
 
 list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES
     ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_DL_LIBS} )
+    ${CMAKE_DL_LIBS}
+    ${Boost_LIBRARIES} )
 
 if( ZMQ_FOUND )
     message(STATUS "ZeroMQ found.")
