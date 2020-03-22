@@ -43,7 +43,7 @@ You can learn about the main concepts, the API and the tutorials here: https://w
 To find more details about the conceptual ideas that make this implementation different from others, you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
 
 
-# About version 3.X
+# About version 3.3 and above
 
 The main goal of this project is to create a Behavior Tree implementation
 that uses the principles of Model Driven Development to separate the role 
@@ -57,7 +57,7 @@ In practice, this means that:
 - To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
 not need to read nor modify the source code of a given TreeNode.
 
-Version __3.x__ of this library introduces some dramatic changes in the API, but 
+Version __3.3+__ of this library introduces some dramatic changes in the API, but 
 it was necessary to reach this goal.
 
 If you used version 2.X in the past, you can 
@@ -107,7 +107,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(BehaviorTreeV3)
 
 add_executable(${PROJECT_NAME} "hello_BT.cpp")
-target_link_libraries(${PROJECT_NAME} BT3::behaviortree_cpp_v3)
+target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp_v3)
 ```
 
 ## ROS1 or ROS2 users (Catkin/Ament)
