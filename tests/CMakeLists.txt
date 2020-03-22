@@ -19,7 +19,7 @@ set(BT_TESTS
   gtest_switch.cpp
 )
 
-if (NOT MINGW)
+if (BT_COROUTINES)
     list(APPEND BT_TESTS  gtest_coroutines.cpp)
 endif()
 

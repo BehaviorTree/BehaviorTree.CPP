@@ -35,7 +35,7 @@ target_link_libraries(t07_wrap_legacy   ${BEHAVIOR_TREE_LIBRARY} )
 add_executable(t08_additional_node_args   t08_additional_node_args.cpp )
 target_link_libraries(t08_additional_node_args   ${BEHAVIOR_TREE_LIBRARY} )
 
-if (NOT MINGW)
+if (BT_COROUTINES)
     add_executable(t09_async_actions_coroutines  t09_async_actions_coroutines.cpp )
     target_link_libraries(t09_async_actions_coroutines ${BEHAVIOR_TREE_LIBRARY} )
 endif()
