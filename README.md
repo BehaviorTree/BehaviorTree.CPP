@@ -11,7 +11,7 @@ Question? [![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://
 
 # About BehaviorTree.CPP
 
-This  __C++__ library provides a framework to create BehaviorTrees.
+This  __C++ 14__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use, reactive and fast.
 
 Even if our main use-case is __robotics__, you can use this library to build
@@ -129,7 +129,7 @@ The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
 The MIT License (MIT)
 
 Copyright (c) 2014-2018 Michele Colledanchise
-Copyright (c) 2018-2019 Davide Faconti
+Copyright (c) 2018-2020 Davide Faconti
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
