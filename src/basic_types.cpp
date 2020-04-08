@@ -208,7 +208,7 @@ NodeType convertFromString<NodeType>(StringView str)
     if( str == "Condition" ) return NodeType::CONDITION;
     if( str == "Control" )   return NodeType::CONTROL;
     if( str == "Decorator" ) return NodeType::DECORATOR;
-    if( str == "SubTree" || str == "Subtree" ) return NodeType::SUBTREE;
+    if( str == "SubTree" || str == "SubtreeWrapper" ) return NodeType::SUBTREE;
     return NodeType::UNDEFINED;
 }
 

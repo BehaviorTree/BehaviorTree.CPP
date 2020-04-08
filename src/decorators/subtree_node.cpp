@@ -20,7 +20,7 @@ BT::NodeStatus BT::SubtreeNode::tick()
 BT::SubtreeWrapperNode::SubtreeWrapperNode(const std::string &name) :
      DecoratorNode(name, {} )
 {
-  setRegistrationID("TransparentSubtree");
+  setRegistrationID("SubtreeWrapper");
 }
 
 BT::NodeStatus BT::SubtreeWrapperNode::tick()
