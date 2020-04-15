@@ -113,7 +113,7 @@ See examples for more information about configuring CMake correctly
 #elif _WIN32
 
 #define BT_REGISTER_NODES(factory)                                                                 \
-		__declspec(dllexport) void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+    extern "C" void __declspec(dllexport) BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
 #endif
 
 #endif
