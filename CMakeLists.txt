@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.2) # version on Ubuntu Xenial
+cmake_minimum_required(VERSION 3.5.1) # version on Ubuntu Xenial
 project(behaviortree_cpp_v3)
 
 #---- Add the subdirectory cmake ----
