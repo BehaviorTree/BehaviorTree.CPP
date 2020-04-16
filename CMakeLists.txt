@@ -105,8 +105,9 @@ elseif(BUILD_UNIT_TESTS)
     find_package(GTest)
 
     if(NOT GTEST_FOUND)
-        message(WARNING " GTest missing!")
-    endif(NOT GTEST_FOUND)
+        message(WARNING " GTest missing! You may want to follow these instructions:")
+        message(WARNING " https://gist.github.com/Cartexius/4c437c084d6e388288201aadf9c8cdd5")
+    endif()
 
 endif()
 
