@@ -142,29 +142,36 @@ TEST(SubTree, BadRemapping)
   EXPECT_ANY_THROW( tree_bad_out.tickRoot() );
 }
 
-TEST(SubTree, SubtreeWrapper)
+TEST(SubTree, SubtreePlus)
 {
-  BehaviorTreeFactory factory;
-  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
-  factory.registerNodeType<CopyPorts>("CopyPorts");
+    static const char* xml_text = R"(
 
-  static const char* xml_text = R"(
 <root main_tree_to_execute = "MainTree" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="hello" output_key="thoughts" />
-            <SubTreeWrapper ID="CopySubtree" />
-            <SaySomething  message="{greetings}" />
+            <SetBlackboard value="Hello" output_key="myParam" />
+
+            <SubTreePlus ID="mySubtree" param="{myParam}" />
+
+            <SubTreePlus ID="mySubtree" param="World" />
+
+            <SetBlackboard value="Auto remapped" output_key="param" />
+            <SubTreePlus ID="mySubtree" __autoremap="1"  />
         </Sequence>
     </BehaviorTree>
 
-    <BehaviorTree ID="CopySubtree">
-            <CopyPorts in="{thoughts}" out="{greetings}"/>
+    <BehaviorTree ID="mySubtree">
+            <SaySomething message="{param}" />
     </BehaviorTree>
 </root> )";
 
-  Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS );
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+
+    Tree tree = factory.createTreeFromText(xml_text);
+    auto ret = tree.tickRoot();
+    ASSERT_EQ(ret, NodeStatus::SUCCESS );
 }
+
+
