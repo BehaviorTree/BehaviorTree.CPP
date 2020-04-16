@@ -21,6 +21,7 @@
 #include "behaviortree_cpp_v3/controls/sequence_node.h"
 #include "behaviortree_cpp_v3/controls/sequence_star_node.h"
 #include "behaviortree_cpp_v3/controls/switch_node.h"
+#include "behaviortree_cpp_v3/controls/manual_node.h"
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/condition_node.h"
@@ -38,6 +39,7 @@
 #include "behaviortree_cpp_v3/decorators/force_failure_node.h"
 #include "behaviortree_cpp_v3/decorators/blackboard_precondition.h"
 #include "behaviortree_cpp_v3/decorators/timeout_node.h"
+
 
 namespace BT
 {

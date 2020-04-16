@@ -46,3 +46,8 @@ target_link_libraries(t10_include_trees  ${BEHAVIOR_TREE_LIBRARY} bt_sample_node
 
 add_executable(t11_runtime_ports  t11_runtime_ports.cpp )
 target_link_libraries(t11_runtime_ports  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
+
+if(CURSES_FOUND)
+    add_executable(t12_ncurses_manual_selector  t12_ncurses_manual_selector.cpp )
+    target_link_libraries(t12_ncurses_manual_selector  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
+endif()

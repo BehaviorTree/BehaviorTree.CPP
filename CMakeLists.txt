@@ -178,6 +178,16 @@ list(APPEND BT_SOURCE
     3rdparty/minitrace/minitrace.cpp
     )
 
+find_package(Curses QUIET)
+
+if(CURSES_FOUND)
+    list(APPEND BT_SOURCE
+        src/controls/manual_node.cpp
+        )
+endif()
+list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CURSES_LIBRARIES})
+
+
 ######################################################
 
 if (UNIX)
