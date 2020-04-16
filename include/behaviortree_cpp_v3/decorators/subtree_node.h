@@ -29,7 +29,7 @@ class SubtreeNode : public DecoratorNode
 };
 
 /**
- * @brief The TransparentSubtreeNode is a way to wrap an entire Subtree.
+ * @brief The SubtreeWrapperNode is a way to wrap an entire Subtree.
  * It does NOT have a separated BlackBoard and does not need ports remapping.
  */
 class SubtreeWrapperNode : public DecoratorNode
