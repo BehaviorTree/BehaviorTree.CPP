@@ -44,7 +44,7 @@ const PortInfo* Blackboard::portInfo(const std::string &key)
 
 void Blackboard::addSubtreeRemapping(StringView internal, StringView external)
 {
-    internal_to_external_.insert( {internal.to_string(), external.to_string()} );
+    internal_to_external_.insert( {static_cast<std::string>(internal), static_cast<std::string>(external)} );
 }
 
 void Blackboard::debugMessage() const

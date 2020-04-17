@@ -168,7 +168,7 @@ std::vector<std::string> getCatkinLibraryPaths()
             splitString(env_catkin_prefix_paths, os_pathsep);
         for (BT::StringView catkin_prefix_path : catkin_prefix_paths)
         {
-            filesystem::path path(catkin_prefix_path.to_string());
+            filesystem::path path(static_cast<std::string>(catkin_prefix_path));
             filesystem::path lib("lib");
             lib_paths.push_back((path / lib).str());
         }
