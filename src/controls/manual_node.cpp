@@ -19,9 +19,10 @@ namespace BT
 {
 
 
-ManualSelectorNode::ManualSelectorNode(const std::string& name)
-    : ControlNode::ControlNode(name, {} )
+ManualSelectorNode::ManualSelectorNode(const std::string& name, const NodeConfiguration& config)
+    : ControlNode::ControlNode(name, config )
   , running_child_idx_(-1)
+  , previously_executed_idx_(-1)
 {
     setRegistrationID("ManualSelector");
 }
@@ -45,22 +46,32 @@ NodeStatus ManualSelectorNode::tick()
         return selectStatus();
     }
 
-    setStatus(NodeStatus::RUNNING);
+    bool repeat_last = false;
+    getInput(REPEAT_LAST_SELECTION, repeat_last);
 
-    unsigned idx = selectChild();
+    int idx = 0;
 
-    if( idx == NUM_SUCCESS ){
-        return NodeStatus::SUCCESS;
+    if( repeat_last && previously_executed_idx_ >= 0)
+    {
+        idx = previously_executed_idx_;
     }
-    if( idx == NUM_FAILURE ){
-        return NodeStatus::FAILURE;
-    }
-    if( idx == NUM_RUNNING ){
-        return NodeStatus::RUNNING;
+    else{
+        setStatus(NodeStatus::RUNNING);
+        idx = selectChild();
+        previously_executed_idx_ = idx;
+
+        if( idx == NUM_SUCCESS ){
+            return NodeStatus::SUCCESS;
+        }
+        if( idx == NUM_FAILURE ){
+            return NodeStatus::FAILURE;
+        }
+        if( idx == NUM_RUNNING ){
+            return NodeStatus::RUNNING;
+        }
     }
 
     NodeStatus ret = children_nodes_[idx]->executeTick();
-
     if(ret == NodeStatus::RUNNING)
     {
         running_child_idx_ = idx;

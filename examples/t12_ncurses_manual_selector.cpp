@@ -3,17 +3,24 @@
 
 using namespace BT;
 
+/* Try also
+*      <ManualSelector repeat_last_selection="1">
+*  to see the difference.
+*/
+
 // clang-format off
 static const char* xml_text = R"(
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
-        <ManualSelector name="root">
-            <SaySomething name="Option1"    message="Option1" />
-            <SaySomething name="Option2"    message="Option2" />
-            <SaySomething name="Option3"    message="Option3" />
-            <SaySomething name="Option4"    message="Option4" />
-            <ManualSelector name="YouChoose" />
-        </ManualSelector>
+        <Repeat num_cycles="3">
+            <ManualSelector repeat_last_selection="0">
+                <SaySomething name="Option1"    message="Option1" />
+                <SaySomething name="Option2"    message="Option2" />
+                <SaySomething name="Option3"    message="Option3" />
+                <SaySomething name="Option4"    message="Option4" />
+                <ManualSelector name="YouChoose" />
+            </ManualSelector>
+        </Repeat>
      </BehaviorTree>
  </root>
  )";
