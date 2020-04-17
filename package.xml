@@ -20,6 +20,7 @@
   <depend condition="$ROS_VERSION == 2">rclcpp</depend>
 
   <depend>libzmq3-dev</depend>
+  <depend>libncurses-dev</depend>
 
   <export>
       <build_type condition="$ROS_VERSION == 1">catkin</build_type>

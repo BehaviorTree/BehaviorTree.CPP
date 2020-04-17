@@ -117,6 +117,7 @@ NodeStatus ManualSelectorNode::selectStatus() const
 uint8_t ManualSelectorNode::selectChild() const
 {
     const size_t children_count = children_nodes_.size();
+
     std::vector<std::string> list;
     list.reserve(children_count);
     for(const auto& child: children_nodes_)
@@ -165,7 +166,7 @@ uint8_t ManualSelectorNode::selectChild() const
         }
         else if( ch == KEY_UP )
         {
-            row = ( row == 0) ? : row-1;
+            row = ( row == 0) ? (children_count-1) : row-1;
         }
         else if( ch == KEY_ENTER || ch == 10 )
         {

@@ -185,8 +185,9 @@ if(CURSES_FOUND)
     list(APPEND BT_SOURCE
         src/controls/manual_node.cpp
         )
+    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CURSES_LIBRARIES})
+    add_definitions(-DNCURSES_FOUND)
 endif()
-list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CURSES_LIBRARIES})
 
 
 ######################################################
