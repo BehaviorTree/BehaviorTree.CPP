@@ -518,7 +518,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             auto param_res = TreeNode::getRemappedKey(port_name, param_value);
             if( param_res )
             {
-                const auto& port_key = nonstd::to_string(param_res.value());
+                const auto port_key = static_cast<std::string>(param_res.value());
 
                 auto prev_info = blackboard->portInfo( port_key );
                 if( !prev_info  )

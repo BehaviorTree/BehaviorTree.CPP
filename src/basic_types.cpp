@@ -104,7 +104,7 @@ std::string convertFromString<std::string>(StringView str)
 template <>
 const char* convertFromString<const char*>(StringView str)
 {
-    return nonstd::to_string(str).c_str();
+    return static_cast<std::string>(str).c_str();
 }
 
 template <>
@@ -198,7 +198,7 @@ NodeStatus convertFromString<NodeStatus>(StringView str)
     if( str == "RUNNING" ) return NodeStatus::RUNNING;
     if( str == "SUCCESS" ) return NodeStatus::SUCCESS;
     if( str == "FAILURE" ) return NodeStatus::FAILURE;
-    throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") + nonstd::to_string(str) );
+    throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") + static_cast<std::string>(str) );
 }
 
 template <>
@@ -289,12 +289,12 @@ Any PortInfo::parseString(const std::string &str) const
 
 void PortInfo::setDescription(StringView description)
 {
-    description_ = nonstd::to_string(description);
+    description_ = static_cast<std::string>(description);
 }
 
 void PortInfo::setDefaultValue(StringView default_value_as_string)
 {
-    default_value_ = nonstd::to_string(default_value_as_string);
+    default_value_ = static_cast<std::string>(default_value_as_string);
 }
 
 const std::string &PortInfo::description() const
