@@ -142,7 +142,7 @@ TEST(SubTree, BadRemapping)
   EXPECT_ANY_THROW( tree_bad_out.tickRoot() );
 }
 
-TEST(SubTree, SubtreePlus)
+TEST(SubTree, SubtreePlusA)
 {
     static const char* xml_text = R"(
 
@@ -151,11 +151,8 @@ TEST(SubTree, SubtreePlus)
     <BehaviorTree ID="MainTree">
         <Sequence>
             <SetBlackboard value="Hello" output_key="myParam" />
-
             <SubTreePlus ID="mySubtree" param="{myParam}" />
-
             <SubTreePlus ID="mySubtree" param="World" />
-
             <SetBlackboard value="Auto remapped" output_key="param" />
             <SubTreePlus ID="mySubtree" __autoremap="1"  />
         </Sequence>
@@ -172,6 +169,37 @@ TEST(SubTree, SubtreePlus)
     Tree tree = factory.createTreeFromText(xml_text);
     auto ret = tree.tickRoot();
     ASSERT_EQ(ret, NodeStatus::SUCCESS );
+}
+
+TEST(SubTree, SubtreePlusB)
+{
+  static const char* xml_text = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SetBlackboard value="Hello World" output_key="myParam" />
+            <SetBlackboard value="Auto remapped" output_key="param3" />
+            <SubTreePlus ID="mySubtree" __autoremap="1" param1="{myParam}" param2="Straight Talking" />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="mySubtree">
+        <Sequence>
+            <SaySomething message="{param1}" />
+            <SaySomething message="{param2}" />
+            <SaySomething message="{param3}" />
+        </Sequence>
+    </BehaviorTree>
+</root> )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+
+  Tree tree = factory.createTreeFromText(xml_text);
+  auto ret = tree.tickRoot();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS );
 }
 
 

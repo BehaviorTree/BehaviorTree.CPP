@@ -656,11 +656,11 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                     {
                         StringView port_name = TreeNode::stripBlackboardPointer(str);
                         new_bb->addSubtreeRemapping( attr->Name(), port_name);
-                        mapped_keys.insert(port_name.to_string());
+                        mapped_keys.insert(attr->Name());
                     }
                     else{
-                        new_bb->set(attr->Name(), std::string(attr->Value()) );
-                        mapped_keys.insert(attr->Value());
+                        new_bb->set(attr->Name(), static_cast<std::string>(str) );
+                        mapped_keys.insert(attr->Name());
                     }
                 }
                 recursivelyCreateTree( node->name(), output_tree, new_bb, node );
