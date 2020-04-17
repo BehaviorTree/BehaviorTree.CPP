@@ -29,15 +29,51 @@ class SubtreeNode : public DecoratorNode
 };
 
 /**
- * @brief The SubtreeWrapperNode is a way to wrap an entire Subtree.
- * It does NOT have a separated BlackBoard and does not need ports remapping.
+ * @brief The SubtreePlus is a new kind of subtree that gives you much more control over remapping:
+ *
+ * Consider this example:
+
+<root main_tree_to_execute = "MainTree" >
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+
+        <SetBlackboard value="Hello" output_key="myParam" />
+        <SubTreePlus ID="Talk" param="{myParam}" />
+
+        <SubTreePlus ID="Talk" param="World" />
+
+        <SetBlackboard value="Auto remapped" output_key="param" />
+        <SubTreePlus ID="Talk" __autoremap="1"  />
+
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Talk">
+        <SaySomething message="{param}" />
+    </BehaviorTree>
+</root>
+
+ * You may notice three different approaches to remapping:
+ *
+ * 1) Subtree: "{param}"  -> Parent: "{myParam}" -> Value: "Hello"
+ *    Classical remapping from one port to another, but you need to use the syntax
+ *    {myParam} to say that you are remapping the another port.
+ *
+ * 2) Subtree: "{param}" -> Value: "World"
+ *    syntax without {}, in this case param directly point to the string "World".
+ *
+ * 3) Subtree: "{param}" -> Parent: "{parent}"
+ *    Setting to true (or 1) the attribute "__autoremap", we are automatically remapping
+ *    each port. Usefull to avoid some boilerplate.
+
  */
-class SubtreeWrapperNode : public DecoratorNode
+class SubtreePlusNode : public DecoratorNode
 {
 public:
-  SubtreeWrapperNode(const std::string& name);
+  SubtreePlusNode(const std::string& name);
 
-  virtual ~SubtreeWrapperNode() override = default;
+  virtual ~SubtreePlusNode() override = default;
 
 private:
   virtual BT::NodeStatus tick() override;
@@ -47,6 +83,7 @@ private:
     return NodeType::SUBTREE;
   }
 };
+
 
 
 }

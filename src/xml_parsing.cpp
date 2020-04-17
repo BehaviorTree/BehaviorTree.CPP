@@ -462,14 +462,16 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         instance_name = ID;
     }
 
-    if (element_name == "SubTree" || element_name == "SubTreeWrapper" )
+    if (element_name == "SubTree" ||
+        element_name == "SubTreePlus" )
     {
         instance_name = element->Attribute("ID");
     }
 
     PortsRemapping parameters_map;
 
-    if (element_name != "SubTree") // in Subtree attributes have different meaning...
+    // in Subtree attributes have different meaning...
+    if (element_name != "SubTree" && element_name != "SubTreePlus")
     {
         for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
         {
@@ -612,18 +614,69 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
         {
             if( dynamic_cast<const SubtreeNode*>(node.get()) )
             {
+                // This is the former SubTree with manual remapping
                 auto new_bb = Blackboard::create(blackboard);
 
                 for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
                 {
+                    if( strcmp(attr->Name(), "ID") == 0 )
+                    {
+                        continue;
+                    }
                     new_bb->addSubtreeRemapping( attr->Name(), attr->Value() );
                 }
                 output_tree.blackboard_stack.emplace_back(new_bb);
                 recursivelyCreateTree( node->name(), output_tree, new_bb, node );
             }
-            else{
-                recursivelyCreateTree( node->name(), output_tree, blackboard, node );
-            }
+            else if( dynamic_cast<const SubtreePlusNode*>(node.get()) )
+            {
+                auto new_bb = Blackboard::create(blackboard);   
+                output_tree.blackboard_stack.emplace_back(new_bb);
+                std::set<StringView> mapped_keys;
+
+                bool do_autoremap = false;
+
+                for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
+                {
+                    if( strcmp(attr->Name(), "ID") == 0 )
+                    {
+                        continue;
+                    }
+                    if( strcmp(attr->Name(), "__autoremap") == 0 )
+                    {
+                        if( convertFromString<bool>(attr->Value()) )
+                        {
+                            do_autoremap = true;
+                        }
+                        continue;
+                    }
+
+                    StringView str =  attr->Value();
+                    if( TreeNode::isBlackboardPointer(str))
+                    {
+                        StringView port_name = TreeNode::stripBlackboardPointer(str);
+                        new_bb->addSubtreeRemapping( attr->Name(), port_name);
+                        mapped_keys.insert(attr->Name());
+                    }
+                    else{
+                        new_bb->set(attr->Name(), static_cast<std::string>(str) );
+                        mapped_keys.insert(attr->Name());
+                    }
+                }
+                recursivelyCreateTree( node->name(), output_tree, new_bb, node );
+
+                if( do_autoremap )
+                {
+                    auto keys = new_bb->getKeys();
+                    for( StringView key: keys)
+                    {
+                        if( mapped_keys.count(key) == 0)
+                        {
+                            new_bb->addSubtreeRemapping( key, key );
+                        }
+                    }
+                }
+             }
         }
         else
         {

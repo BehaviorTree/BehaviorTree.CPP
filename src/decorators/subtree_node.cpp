@@ -17,13 +17,14 @@ BT::NodeStatus BT::SubtreeNode::tick()
     return child_node_->executeTick();
 }
 
-BT::SubtreeWrapperNode::SubtreeWrapperNode(const std::string &name) :
+//--------------------------------
+BT::SubtreePlusNode::SubtreePlusNode(const std::string &name) :
      DecoratorNode(name, {} )
 {
-  setRegistrationID("SubtreeWrapper");
+  setRegistrationID("SubTreePlus");
 }
 
-BT::NodeStatus BT::SubtreeWrapperNode::tick()
+BT::NodeStatus BT::SubtreePlusNode::tick()
 {
     NodeStatus prev_status = status();
     if (prev_status == NodeStatus::IDLE)
