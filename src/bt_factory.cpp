@@ -55,6 +55,9 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<SwitchNode<5>>("Switch5");
     registerNodeType<SwitchNode<6>>("Switch6");
 
+#ifdef NCURSES_FOUND
+    registerNodeType<ManualSelectorNode>("ManualSelector");
+#endif
     for( const auto& it: builders_)
     {
         builtin_IDs_.insert( it.first );

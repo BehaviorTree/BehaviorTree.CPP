@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.2) # version on Ubuntu Xenial
+cmake_minimum_required(VERSION 3.5.1) # version on Ubuntu Xenial
 project(behaviortree_cpp_v3)
 
 #---- Add the subdirectory cmake ----
@@ -105,8 +105,9 @@ elseif(BUILD_UNIT_TESTS)
     find_package(GTest)
 
     if(NOT GTEST_FOUND)
-        message(WARNING " GTest missing!")
-    endif(NOT GTEST_FOUND)
+        message(WARNING " GTest missing! You may want to follow these instructions:")
+        message(WARNING " https://gist.github.com/Cartexius/4c437c084d6e388288201aadf9c8cdd5")
+    endif()
 
 endif()
 
@@ -177,6 +178,17 @@ list(APPEND BT_SOURCE
 
     3rdparty/minitrace/minitrace.cpp
     )
+
+find_package(Curses QUIET)
+
+if(CURSES_FOUND)
+    list(APPEND BT_SOURCE
+        src/controls/manual_node.cpp
+        )
+    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CURSES_LIBRARIES})
+    add_definitions(-DNCURSES_FOUND)
+endif()
+
 
 ######################################################
 
