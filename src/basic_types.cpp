@@ -114,6 +114,12 @@ int convertFromString<int>(StringView str)
 }
 
 template <>
+long convertFromString<long>(StringView str)
+{
+  return  std::stol(str.data());
+}
+
+template <>
 unsigned convertFromString<unsigned>(StringView str)
 {
     return unsigned(std::stoul(str.data()));
