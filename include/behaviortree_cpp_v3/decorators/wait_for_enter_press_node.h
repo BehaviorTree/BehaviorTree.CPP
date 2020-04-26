@@ -26,7 +26,7 @@ namespace BT
 class WaitForEnterPressNode : public DecoratorNode
 {
   public:
-    WaitForEnterPressNode(const std::string& name, unsigned seconds);
+    WaitForEnterPressNode(const std::string& name, int seconds);
 
     WaitForEnterPressNode(const std::string& name, const NodeConfiguration& config);
 
@@ -36,7 +36,7 @@ class WaitForEnterPressNode : public DecoratorNode
 
     static PortsList providedPorts()
     {
-        return {InputPort<unsigned>("wait_maxsecs", "Max timeout of waiting until enter is pressed "
+        return {InputPort<int>("wait_maxsecs", "Max timeout of waiting until enter is pressed "
                                                     "from user")};
     }
 
@@ -45,7 +45,7 @@ class WaitForEnterPressNode : public DecoratorNode
     void wait(void);
 
     std::condition_variable wait_cv_;
-    unsigned sec_;
+    int sec_;
     bool read_parameter_from_ports_;
     bool wait_started_;
     std::mutex wait_mutex_;

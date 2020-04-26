@@ -6,7 +6,7 @@
 
 namespace BT
 {
-WaitForEnterPressNode::WaitForEnterPressNode(const std::string& name, unsigned seconds)
+WaitForEnterPressNode::WaitForEnterPressNode(const std::string& name,int seconds)
   : DecoratorNode(name, {})
   , sec_(seconds)
   , read_parameter_from_ports_(false)
