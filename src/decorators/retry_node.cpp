@@ -55,7 +55,6 @@ NodeStatus RetryNode::tick()
     while (try_index_ < max_attempts_ || max_attempts_ == -1)
     {
         NodeStatus child_state = child_node_->executeTick();
-
         switch (child_state)
         {
             case NodeStatus::SUCCESS:
