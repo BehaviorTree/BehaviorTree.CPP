@@ -101,6 +101,19 @@ const NodeConfiguration &TreeNode::config() const
     return config_;
 }
 
+StringView TreeNode::getRawPortValue(const std::string& key) const
+{
+  auto remap_it = config_.input_ports.find(key);
+  if (remap_it == config_.input_ports.end())
+  {
+    throw std::logic_error(StrCat("getInput() failed because "
+      "NodeConfiguration::input_ports "
+      "does not contain the key: [",
+      key, "]"));
+  }
+  return remap_it->second;
+}
+
 bool TreeNode::isBlackboardPointer(StringView str)
 {
     const auto size = str.size();
