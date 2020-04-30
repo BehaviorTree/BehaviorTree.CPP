@@ -163,7 +163,6 @@ list(APPEND BT_SOURCE
     src/decorators/subtree_node.cpp
     src/decorators/timeout_node.cpp
     src/decorators/delay_node.cpp
-    src/decorators/wait_for_enter_press_node.cpp
 
     src/controls/fallback_node.cpp
     src/controls/parallel_node.cpp
