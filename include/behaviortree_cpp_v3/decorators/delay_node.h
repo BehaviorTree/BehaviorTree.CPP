@@ -30,6 +30,7 @@ class DelayNode : public DecoratorNode
 
     ~DelayNode() override
     {
+        halt();
         //timer_.cancelAll();
     }
 
@@ -38,18 +39,27 @@ class DelayNode : public DecoratorNode
         return {InputPort<unsigned>("delay_msec", "Tick the child after a few milliseconds")};
     }
 
+    void halt() override { 
+      
+     timer_.cancelAll();
+     DecoratorNode::halt();
+     
+      }
+
   private:
     TimerQueue timer_;
+     uint64_t timer_id_;
 
     virtual BT::NodeStatus tick() override;
 
-    void delay(void);
-
+    bool delay_aborted;
+    bool delay_complete;
     unsigned msec_;
     bool read_parameter_from_ports_;
     bool delay_started_;
-    std::timed_mutex delay_mutex;
+    std::mutex delay_mutex;
 };
+
 }   // namespace BT
 
 #endif   // DELAY_NODE_H

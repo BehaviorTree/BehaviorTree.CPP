@@ -10,19 +10,18 @@ DelayNode::DelayNode(const std::string& name, unsigned milliseconds)
   , msec_(milliseconds)
   , read_parameter_from_ports_(false)
   , delay_started_(false)
+  , delay_aborted(false)
 {
     setRegistrationID("Delay");
 }
 
 DelayNode::DelayNode(const std::string& name, const NodeConfiguration& config)
-  : DecoratorNode(name, config), msec_(0), read_parameter_from_ports_(true), delay_started_(false)
+  : DecoratorNode(name, config)
+  , msec_(0)
+  , read_parameter_from_ports_(true)
+  , delay_started_(false)
+  , delay_aborted(false)
 {
-}
-
-void DelayNode::delay(void)
-{
-    auto now = std::chrono::steady_clock::now();
-    delay_mutex.try_lock_until(now + std::chrono::milliseconds(msec_));
 }
 
 NodeStatus DelayNode::tick()
@@ -37,19 +36,45 @@ NodeStatus DelayNode::tick()
 
     if (!delay_started_)
     {
+        delay_complete = false;
         delay_started_ = true;
         setStatus(NodeStatus::RUNNING);
         if (msec_ > 0)
         {
-            std::lock_guard<std::timed_mutex> l(delay_mutex);
-            std::thread t(&DelayNode::delay, this);
-            t.join();
+            timer_id_ = timer_.add(std::chrono::milliseconds(msec_), [this](bool aborted) {
+                std::unique_lock<std::mutex> lk(delay_mutex);
+                if (!aborted)
+                {
+                    delay_complete = true;
+                }
+                else
+                {
+                    delay_aborted = true;
+                }
+            });
         }
     }
 
-    delay_started_ = false;
-    auto child_status = child()->executeTick();
-    return child_status;
+    std::unique_lock<std::mutex> lk(delay_mutex);
+
+    if (delay_aborted)
+    {
+        delay_aborted = false;
+        delay_started_ = false;
+        return NodeStatus::FAILURE;
+    }
+
+    else if (delay_complete)
+    {
+        delay_started_ = false;
+        delay_aborted = false;
+        auto child_status = child()->executeTick();
+        return child_status;
+    }
+    else
+    {
+        return NodeStatus::RUNNING;
+    }
 }
 
 }   // namespace BT
