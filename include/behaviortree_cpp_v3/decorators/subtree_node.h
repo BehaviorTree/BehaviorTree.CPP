@@ -29,6 +29,27 @@ class SubtreeNode : public DecoratorNode
 };
 
 /**
+ * @brief Subtree that doesn't need any remapping.
+ * Its blackboard is shared with the parent node
+ */
+class RemappedSubtreeNode : public DecoratorNode
+{
+public:
+  RemappedSubtreeNode(const std::string& name);
+
+  virtual ~RemappedSubtreeNode() override = default;
+
+private:
+  virtual BT::NodeStatus tick() override;
+
+  virtual NodeType type() const override final
+  {
+    return NodeType::SUBTREE;
+  }
+};
+
+
+/**
  * @brief The SubtreePlus is a new kind of subtree that gives you much more control over remapping:
  *
  * Consider this example:

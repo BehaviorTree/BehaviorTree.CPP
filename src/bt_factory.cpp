@@ -44,6 +44,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
     registerNodeType<SubtreeNode>("SubTree");
     registerNodeType<SubtreePlusNode>("SubTreePlus");
+    registerNodeType<RemappedSubtreeNode>("RemappedSubTree");
 
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");

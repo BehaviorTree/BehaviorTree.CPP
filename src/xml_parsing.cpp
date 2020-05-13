@@ -14,9 +14,9 @@
 #include <list>
 
 #if defined(__linux) || defined(__linux__)
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wattributes"
-#endif 
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wattributes"
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996) // do not complain about sprintf
@@ -352,7 +352,7 @@ void VerifyXML(const std::string& xml_text,
         }
         //recursion
         if (StrEqual(name, "SubTree") == false)
-        {           
+        {
             for (auto child = node->FirstChildElement(); child != nullptr;
                  child = child->NextSiblingElement())
             {
@@ -462,23 +462,22 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         instance_name = ID;
     }
 
+    PortsRemapping port_remap;
+
     if (element_name == "SubTree" ||
-        element_name == "SubTreePlus" )
+        element_name == "SubTreePlus" ||
+        element_name == "RemappedSubTree")
     {
         instance_name = element->Attribute("ID");
     }
-
-    PortsRemapping parameters_map;
-
-    // in Subtree attributes have different meaning...
-    if (element_name != "SubTree" && element_name != "SubTreePlus")
-    {
+    else{
+        // do this only if it NOT a Subtree
         for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
         {
             const std::string attribute_name = att->Name();
             if (attribute_name != "ID" && attribute_name != "name")
             {
-                parameters_map[attribute_name] = att->Value();
+                port_remap[attribute_name] = att->Value();
             }
         }
     }
@@ -493,12 +492,12 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         const auto& manifest = factory.manifests().at(ID);
 
         //Check that name in remapping can be found in the manifest
-        for(const auto& param_it: parameters_map)
+        for(const auto& remap_it: port_remap)
         {
-            if( manifest.ports.count( param_it.first ) == 0 )
+            if( manifest.ports.count( remap_it.first ) == 0 )
             {
                 throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
-                                   param_it.first, "\" in node [", ID," / ", instance_name,
+                                   remap_it.first, "\" in node [", ID," / ", instance_name,
                                    "], but the manifest of this node does not contain a port with this name.");
             }
         }
@@ -509,8 +508,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
             const std::string& port_name = port_it.first;
             const auto& port_info = port_it.second;
 
-            auto remap_it = parameters_map.find(port_name);
-            if( remap_it == parameters_map.end())
+            auto remap_it = port_remap.find(port_name);
+            if( remap_it == port_remap.end())
             {
                 continue;
             }
@@ -543,20 +542,20 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         }
 
         // use manifest to initialize NodeConfiguration
-        for(const auto& param_it: parameters_map)
+        for(const auto& remap_it: port_remap)
         {
-            const auto& port_name = param_it.first;
+            const auto& port_name = remap_it.first;
             auto port_it = manifest.ports.find( port_name );
             if( port_it != manifest.ports.end() )
             {
                 auto direction = port_it->second.direction();
                 if( direction != PortDirection::OUTPUT )
                 {
-                    config.input_ports.insert( param_it );
+                    config.input_ports.insert( remap_it );
                 }
                 if( direction != PortDirection::INPUT )
                 {
-                    config.output_ports.insert( param_it );
+                    config.output_ports.insert( remap_it );
                 }
             }
         }
@@ -612,7 +611,11 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
         if( node->type() == NodeType::SUBTREE )
         {
-            if( dynamic_cast<const SubtreeNode*>(node.get()) )
+            if( dynamic_cast<const RemappedSubtreeNode*>(node.get()) )
+            {
+                recursivelyCreateTree( node->name(), output_tree, blackboard, node );
+            }
+            else if( dynamic_cast<const SubtreeNode*>(node.get()) )
             {
                 // This is the former SubTree with manual remapping
                 auto new_bb = Blackboard::create(blackboard);
@@ -630,7 +633,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
             }
             else if( dynamic_cast<const SubtreePlusNode*>(node.get()) )
             {
-                auto new_bb = Blackboard::create(blackboard);   
+                auto new_bb = Blackboard::create(blackboard);
                 output_tree.blackboard_stack.emplace_back(new_bb);
                 std::set<StringView> mapped_keys;
 
