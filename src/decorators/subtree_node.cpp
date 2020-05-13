@@ -17,22 +17,6 @@ BT::NodeStatus BT::SubtreeNode::tick()
     return child_node_->executeTick();
 }
 
-//--------------------------------
-BT::RemappedSubtreeNode::RemappedSubtreeNode(const std::string &name) :
-  DecoratorNode(name, {} )
-{
-  setRegistrationID("RemappedSubtree");
-}
-
-BT::NodeStatus BT::RemappedSubtreeNode::tick()
-{
-  NodeStatus prev_status = status();
-  if (prev_status == NodeStatus::IDLE)
-  {
-    setStatus(NodeStatus::RUNNING);
-  }
-  return child_node_->executeTick();
-}
 
 //--------------------------------
 BT::SubtreePlusNode::SubtreePlusNode(const std::string &name) :

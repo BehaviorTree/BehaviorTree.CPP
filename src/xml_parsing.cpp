@@ -465,8 +465,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
     PortsRemapping port_remap;
 
     if (element_name == "SubTree" ||
-        element_name == "SubTreePlus" ||
-        element_name == "RemappedSubTree")
+        element_name == "SubTreePlus" )
     {
         instance_name = element->Attribute("ID");
     }
@@ -611,13 +610,25 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
         if( node->type() == NodeType::SUBTREE )
         {
-            if( dynamic_cast<const RemappedSubtreeNode*>(node.get()) )
+            if( dynamic_cast<const SubtreeNode*>(node.get()) )
             {
-                recursivelyCreateTree( node->name(), output_tree, blackboard, node );
-            }
-            else if( dynamic_cast<const SubtreeNode*>(node.get()) )
-            {
-                // This is the former SubTree with manual remapping
+                bool is_isolated = true;
+
+                for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
+                {
+                    if( strcmp(attr->Name(), "__shared_blackboard") == 0  &&
+                        convertFromString<bool>(attr->Value()) == true )
+                    {
+                        is_isolated = false;
+                    }
+                }
+
+                if( !is_isolated )
+                {
+                    recursivelyCreateTree( node->name(), output_tree, blackboard, node );
+                }
+                else{
+                // Creating an isolated
                 auto new_bb = Blackboard::create(blackboard);
 
                 for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
@@ -630,6 +641,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                 }
                 output_tree.blackboard_stack.emplace_back(new_bb);
                 recursivelyCreateTree( node->name(), output_tree, new_bb, node );
+                }
             }
             else if( dynamic_cast<const SubtreePlusNode*>(node.get()) )
             {
