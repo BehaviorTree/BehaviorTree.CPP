@@ -202,4 +202,35 @@ TEST(SubTree, SubtreePlusB)
   ASSERT_EQ(ret, NodeStatus::SUCCESS );
 }
 
+TEST(SubTree, SubtreePlusC)
+{
+    static const char* xml_text = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SetBlackboard value="Hello" output_key="param1" />
+            <SetBlackboard value="World" output_key="param2" />
+            <SubTree ID="mySubtree" __shared_blackboard="true"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="mySubtree">
+        <Sequence>
+            <SaySomething message="{param1}" />
+            <SaySomething message="{param2}" />
+        </Sequence>
+    </BehaviorTree>
+</root> )";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+
+    Tree tree = factory.createTreeFromText(xml_text);
+    auto ret = tree.tickRoot();
+    ASSERT_EQ(ret, NodeStatus::SUCCESS );
+}
+
+
 
