@@ -96,8 +96,8 @@ Changelog for package behaviortree_cpp
   On Windows not only MSVC compilator.
 * Contributors: 3wnbr1, Christopher Torres, Davide Faconti, HansRobo, ImgBotApp, Jesus, Kotaro Yoshimoto, Mateusz Sadowski, Peter Polidoro, Sean Yen, Sebastian Ahlman, Steffen Groot, Vadim Linevich, renan028
 
-Forthcoming
------------
+3.5.0 (2020-05-14)
+------------------
 * added IfThenElse and  WhileDoElse
 * issue `#190 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/190>`_
 * unit test added
