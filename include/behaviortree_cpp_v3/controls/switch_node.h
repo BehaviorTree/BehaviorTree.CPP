@@ -1,4 +1,4 @@
-/* Copyright (C) 2020-2020 Davide Faconti -  All Rights Reserved
+/* Copyright (C) 2020 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -18,7 +18,26 @@
 namespace BT
 {
 /**
- * @brief The SwitchNode
+ * @brief The SwitchNode is equivalent to a switch statement, where a certain
+ * branch (child) is executed according to the value of a blackboard entry.
+ *
+ * Note that the same behaviour can be achieved with multiple Sequences, Fallbacks and
+ * Conditions reading the blackboard, but switch is shorter and more readable.
+ *
+ * Example usage:
+ *
+
+<Switch3 variable="{var}"  case_1="1" case_2="42" case_3="666" >
+   <ActionA name="action_when_var_eq_1" />
+   <ActionB name="action_when_var_eq_42" />
+   <ActionC name="action_when_var_eq_666" />
+   <ActionD name="default_action" />
+ </Switch3>
+
+When the SwitchNode is executed (Switch3 is a node with 3 cases)
+the "variable" will be compared to the cases and execute the correct child
+or the default one (last).
+
  *
  */
 template <size_t NUM_CASES>
