@@ -96,6 +96,26 @@ Changelog for package behaviortree_cpp
   On Windows not only MSVC compilator.
 * Contributors: 3wnbr1, Christopher Torres, Davide Faconti, HansRobo, ImgBotApp, Jesus, Kotaro Yoshimoto, Mateusz Sadowski, Peter Polidoro, Sean Yen, Sebastian Ahlman, Steffen Groot, Vadim Linevich, renan028
 
+Forthcoming
+-----------
+* added IfThenElse and  WhileDoElse
+* issue `#190 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/190>`_
+* unit test added
+* reverting to a better solution
+* RemappedSubTree added
+* Fix issue `#188 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/188>`_
+* added function const std::string& key (issue `#183 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/183>`_)
+* Contributors: Davide Faconti, daf@blue-ocean-robotics.com
+
+* added IfThenElse and  WhileDoElse
+* issue `#190 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/190>`_
+* unit test added
+* reverting to a better solution
+* RemappedSubTree added
+* Fix issue `#188 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/188>`_
+* added function const std::string& key (issue `#183 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/183>`_)
+* Contributors: Davide Faconti, daf@blue-ocean-robotics.com
+
 3.1.1 (2019-11-10)
 ------------------
 * fix samples compilation (hopefully)
