@@ -43,7 +43,7 @@ You can learn about the main concepts, the API and the tutorials here: https://w
 To find more details about the conceptual ideas that make this implementation different from others, you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
 
 
-# About version 3.3 and above
+# Design principles
 
 The main goal of this project is to create a Behavior Tree implementation
 that uses the principles of Model Driven Development to separate the role 
@@ -55,14 +55,15 @@ In practice, this means that:
  You should be able to implement them once and reuse them to build many behaviors.
 
 - To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
-not need to read nor modify the source code of a given TreeNode.
+not need to read nor modify the C++ source code of a given TreeNode.
 
-Version __3.3+__ of this library introduces some dramatic changes in the API, but 
-it was necessary to reach this goal.
+- Complex Behaviours must be composable using Subtrees
 
-If you used version 2.X in the past, you can 
-[find the Migration Guide here](https://behaviortree.github.io/BehaviorTree.CPP/MigrationGuide).
+Many of the features and, sometimes, the apparent limitations of this library, might be a consequence 
+of this design principle. 
 
+For instance, having a scoped BlackBoard, visible only in a portion of the tree, is particularly important 
+to avoid "name pollution" and allow the creation of large scale trees.
 
 # GUI Editor
 
@@ -80,13 +81,13 @@ the graphic user interface are used to design and monitor a Behavior Tree.
 
 [![MOOD2Be](docs/video_MOOD2Be.png)](https://vimeo.com/304651183)
 
-# How to compile (plain old cmake
+# How to compile (plain old cmake)
 
 On Ubuntu, you are encourage to install the following dependencies:
 
      sudo apt-get install libzmq3-dev libboost-dev
      
-Other dependency is already included in the __3rdparty__ folder.
+Other dependencies are already included in the __3rdparty__ folder.
 
 To compile and install the library, from the BehaviorTree.CPP folder, execute:
 
@@ -95,7 +96,8 @@ To compile and install the library, from the BehaviorTree.CPP folder, execute:
      make
      sudo make install
 
-Your typical **CMakeLists.txt** file will look like this:
+If you want to use BT.CPp in your application a typical **CMakeLists.txt** file 
+will look like this:
 
 ```cmake
 cmake_minimum_required(VERSION 3.5)
@@ -144,7 +146,6 @@ published by CRC Press Taylor & Francis, available for purchase
 (ebook and hardcover) on the CRC Press Store or Amazon.
 
 The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
-
 
 # License
 
