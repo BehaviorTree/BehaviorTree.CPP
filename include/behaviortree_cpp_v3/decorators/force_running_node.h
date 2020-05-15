@@ -50,7 +50,6 @@ inline NodeStatus ForceRunningNode::tick()
         case NodeStatus::SUCCESS:
         case NodeStatus::RUNNING:
         {
-          std::cerr << "RUNNING" << std::endl;
             return NodeStatus::RUNNING;
         }
 
