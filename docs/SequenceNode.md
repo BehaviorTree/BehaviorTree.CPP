@@ -1,6 +1,6 @@
 # Sequences
 
-A __Sequence__ ticks all it's children as long as 
+A __Sequence__ ticks all its children as long as 
 they return SUCCESS. If any child returns FAILURE, the sequence is aborted.
 
 Currently the framework provides three kinds of nodes:
