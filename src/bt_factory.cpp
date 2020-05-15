@@ -39,6 +39,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
     registerNodeType<ForceSuccessNode>("ForceSuccess");
     registerNodeType<ForceFailureNode>("ForceFailure");
+    registerNodeType<ForceRunningNode>("ForceRunning");
 
     registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
     registerNodeType<AlwaysFailureNode>("AlwaysFailure");
