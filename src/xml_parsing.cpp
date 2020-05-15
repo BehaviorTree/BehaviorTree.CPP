@@ -527,7 +527,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
                 else{
                     // found. check consistency
                     if( prev_info->type() && port_info.type()  && // null type means that everything is valid
-                        prev_info->type()!= port_info.type())
+                        *prev_info->type() != *port_info.type())
                     {
                         blackboard->debugMessage();
 
