@@ -251,7 +251,7 @@ void VerifyXML(const std::string& xml_text,
         {
             const char* name = node->Name();
             if (StrEqual(name, "Action") || StrEqual(name, "Decorator") ||
-                    StrEqual(name, "SubTree") || StrEqual(name, "Condition"))
+                    StrEqual(name, "SubTree") || StrEqual(name, "Condition") || StrEqual(name, "Control"))
             {
                 const char* ID = node->Attribute("ID");
                 if (!ID)
@@ -307,6 +307,19 @@ void VerifyXML(const std::string& xml_text,
             {
                ThrowError(node->GetLineNum(),
                                    "The node <Condition> must have the attribute [ID]");
+            }
+        }
+        else if (StrEqual(name, "Control"))
+        {
+            if (children_count == 0)
+            {
+               ThrowError(node->GetLineNum(),
+                                   "The node <Control> must have at least 1 child");
+            }
+            if (!node->Attribute("ID"))
+            {
+               ThrowError(node->GetLineNum(),
+                                   "The node <Control> must have the attribute [ID]");
             }
         }
         else if (StrEqual(name, "Sequence") ||
@@ -443,7 +456,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
     std::string instance_name;
 
     // Actions and Decorators have their own ID
-    if (element_name == "Action" || element_name == "Decorator" || element_name == "Condition")
+    if (element_name == "Action" || element_name == "Decorator" ||
+        element_name == "Condition" || element_name == "Control")
     {
         ID = element->Attribute("ID");
     }
