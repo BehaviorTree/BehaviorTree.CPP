@@ -168,7 +168,7 @@ int main()
     // The tick is propagated to the children based on the logic of the tree.
     // In this case, the entire sequence is executed, because all the children
     // of the Sequence return SUCCESS.
-    tree.root_node->executeTick();
+    tree.tickRoot();
 
     return 0;
 }
