@@ -40,7 +40,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
     registerNodeType<ForceSuccessNode>("ForceSuccess");
     registerNodeType<ForceFailureNode>("ForceFailure");
-    
+
     registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
     registerNodeType<AlwaysFailureNode>("AlwaysFailure");
     registerNodeType<SetBlackboard>("SetBlackboard");
