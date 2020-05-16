@@ -34,13 +34,13 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
     registerNodeType<InverterNode>("Inverter");
     registerNodeType<RetryNode>("RetryUntilSuccesful");
+    registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
     registerNodeType<RepeatNode>("Repeat");
     registerNodeType<TimeoutNode>("Timeout");
 
     registerNodeType<ForceSuccessNode>("ForceSuccess");
     registerNodeType<ForceFailureNode>("ForceFailure");
-    registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
-
+    
     registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
     registerNodeType<AlwaysFailureNode>("AlwaysFailure");
     registerNodeType<SetBlackboard>("SetBlackboard");
