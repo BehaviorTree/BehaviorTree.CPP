@@ -39,7 +39,7 @@
 
 #include "behaviortree_cpp_v3/decorators/force_success_node.h"
 #include "behaviortree_cpp_v3/decorators/force_failure_node.h"
-#include "behaviortree_cpp_v3/decorators/force_running_node.h"
+#include "behaviortree_cpp_v3/decorators/keep_running_until_failure_node.h"
 #include "behaviortree_cpp_v3/decorators/blackboard_precondition.h"
 #include "behaviortree_cpp_v3/decorators/timeout_node.h"
 

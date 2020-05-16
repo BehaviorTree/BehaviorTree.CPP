@@ -11,23 +11,23 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATOR_ALWAYS_RUNNING_NODE_H
-#define DECORATOR_ALWAYS_RUNNING_NODE_H
+#ifndef DECORATOR_KEEP_RUNNING_UNTIL_FAILURE_H
+#define DECORATOR_KEEP_RUNNING_UNTIL_FAILURE_H
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 
 namespace BT
 {
 /**
- * @brief The ForceRunningNode returns always FAILURE or RUNNING.
+ * @brief The KeepRunningUntilFailureNode returns always FAILURE or RUNNING.
  */
-class ForceRunningNode : public DecoratorNode
+class KeepRunningUntilFailureNode : public DecoratorNode
 {
   public:
-    ForceRunningNode(const std::string& name) :
+    KeepRunningUntilFailureNode(const std::string& name) :
         DecoratorNode(name, {} )
     {
-        setRegistrationID("ForceRunning");
+        setRegistrationID("KeepRunningUntilFailure");
     }
 
   private:
@@ -36,7 +36,7 @@ class ForceRunningNode : public DecoratorNode
 
 //------------ implementation ----------------------------
 
-inline NodeStatus ForceRunningNode::tick()
+inline NodeStatus KeepRunningUntilFailureNode::tick()
 {
     setStatus(NodeStatus::RUNNING);
 
