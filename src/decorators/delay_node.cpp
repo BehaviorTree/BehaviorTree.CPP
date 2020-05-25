@@ -39,9 +39,11 @@ NodeStatus DelayNode::tick()
         delay_complete = false;
         delay_started_ = true;
         setStatus(NodeStatus::RUNNING);
-        if (msec_ > 0)
+        if (msec_ >= 0)
         {
-            timer_id_ = timer_.add(std::chrono::milliseconds(msec_), [this](bool aborted) {
+            timer_id_ = timer_.add(std::chrono::milliseconds(msec_), 
+                                        [this](bool aborted) 
+            {
                 std::unique_lock<std::mutex> lk(delay_mutex);
                 if (!aborted)
                 {
@@ -53,6 +55,11 @@ NodeStatus DelayNode::tick()
                 }
             });
         }
+        else
+        {
+            throw RuntimeError("Parameter [delay_msec] in DelayNode cannot be negative (Time once lost is lost forever)! ");            
+        }
+        
     }
 
     std::unique_lock<std::mutex> lk(delay_mutex);

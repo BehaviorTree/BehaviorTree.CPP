@@ -31,24 +31,21 @@ class DelayNode : public DecoratorNode
     ~DelayNode() override
     {
         halt();
-        //timer_.cancelAll();
     }
 
     static PortsList providedPorts()
     {
         return {InputPort<unsigned>("delay_msec", "Tick the child after a few milliseconds")};
     }
-
-    void halt() override { 
-      
-     timer_.cancelAll();
-     DecoratorNode::halt();
-     
-      }
+    void halt() override
+    {
+        timer_.cancelAll();
+        DecoratorNode::halt();
+    }
 
   private:
     TimerQueue timer_;
-     uint64_t timer_id_;
+    uint64_t timer_id_;
 
     virtual BT::NodeStatus tick() override;
 
