@@ -102,12 +102,6 @@ std::string convertFromString<std::string>(StringView str)
 
 
 template <>
-const char* convertFromString<const char*>(StringView str)
-{
-    return static_cast<std::string>(str).c_str();
-}
-
-template <>
 int convertFromString<int>(StringView str)
 {
     return  std::stoi(str.data());
