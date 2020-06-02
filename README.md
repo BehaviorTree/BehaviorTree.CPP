@@ -8,7 +8,9 @@
 ![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)
 [![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BehaviorTree-ROS/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
 
-# About BehaviorTree.CPP
+# BehaviorTree.CPP
+
+<p align="center"><img src="docs/images/ReadTheDocs.png"></p>
 
 This  __C++ 14__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use, reactive and fast.
