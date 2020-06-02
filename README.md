@@ -1,9 +1,11 @@
-![License MIT](https://img.shields.io/dub/l/vibe-d.svg)
-![Version](https://img.shields.io/badge/version-v3.5-green.svg)
+![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
+![Version](https://img.shields.io/badge/version-3.5-blue.svg)
 [![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 [![Build status](https://ci.appveyor.com/api/projects/status/8lawroklgnrkg38f?svg=true)](https://ci.appveyor.com/project/facontidavide59577/behaviortree-cpp)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f7489a1758ab47d49f62342f9649b62a)](https://www.codacy.com/manual/davide.faconti/BehaviorTree.CPP?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=BehaviorTree/BehaviorTree.CPP&amp;utm_campaign=Badge_Grade)
+![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)
 
 Question? [![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BehaviorTree-ROS/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
 
