@@ -16,7 +16,7 @@ This  __C++ 14__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use, reactive and fast.
 
 Even if our main use-case is __robotics__, you can use this library to build
-__AI for games__, or to replace Finite State Machines in you application.
+__AI for games__, or to replace Finite State Machines in your application.
 
 There are few features that make __BehaviorTree.CPP__ unique, when compared to other implementations:
 
@@ -26,7 +26,7 @@ There are few features that make __BehaviorTree.CPP__ unique, when compared to o
 
 - Trees are defined using a Domain Specific Scripting __scripting language__ (based on XML), and can be loaded at run-time; in other words, even if written in C++, Trees are _not_ hard-coded.
 
-- You can staticaly link your custom TreeNodes or convert them into __plugins__
+- You can statically link your custom TreeNodes or convert them into __plugins__
 which can be loaded at run-time.
 
 - It provides a type-safe and flexible mechanism to do __Dataflow__ between
