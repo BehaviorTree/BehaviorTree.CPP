@@ -5,17 +5,18 @@
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 [![Build status](https://ci.appveyor.com/api/projects/status/8lawroklgnrkg38f?svg=true)](https://ci.appveyor.com/project/facontidavide59577/behaviortree-cpp)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/f7489a1758ab47d49f62342f9649b62a)](https://www.codacy.com/manual/davide.faconti/BehaviorTree.CPP?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=BehaviorTree/BehaviorTree.CPP&amp;utm_campaign=Badge_Grade)
-![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)
+[![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)](https://lgtm.com/projects/g/BehaviorTree/BehaviorTree.CPP/context:cpp)
+[![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BehaviorTree-ROS/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
 
-Question? [![Join the chat at https://gitter.im/BehaviorTree-ROS/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/BehaviorTree-ROS/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
+# BehaviorTree.CPP
 
-# About BehaviorTree.CPP
+<p align="center"><img src="docs/images/ReadTheDocs.png"></p>
 
 This  __C++ 14__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use, reactive and fast.
 
 Even if our main use-case is __robotics__, you can use this library to build
-__AI for games__, or to replace Finite State Machines in you application.
+__AI for games__, or to replace Finite State Machines in your application.
 
 There are few features that make __BehaviorTree.CPP__ unique, when compared to other implementations:
 
@@ -25,7 +26,7 @@ There are few features that make __BehaviorTree.CPP__ unique, when compared to o
 
 - Trees are defined using a Domain Specific Scripting __scripting language__ (based on XML), and can be loaded at run-time; in other words, even if written in C++, Trees are _not_ hard-coded.
 
-- You can staticaly link your custom TreeNodes or convert them into __plugins__
+- You can statically link your custom TreeNodes or convert them into __plugins__
 which can be loaded at run-time.
 
 - It provides a type-safe and flexible mechanism to do __Dataflow__ between
