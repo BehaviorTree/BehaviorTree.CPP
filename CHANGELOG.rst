@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.5.1 (2020-06-11)
+------------------
 * trying to fix compilation in eloquent  Minor fix on line 19
 * Update README.md
 * more badges
