@@ -2,99 +2,23 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-3.2.0 (2020-03-22)
-------------------
-* root_node removed in favour of a method. tickRoot() added
-* Moving to c++14
-* fixed compilation on ROS2 and ubuntu 18.94
-* fix compilation and unit tests
-* Boost coroutine (`#164 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/164>`_)
-  Remove the faulty coroutine that created significant problems in favour of boost::coroutine2 (use older boost::coroutine as a fallback).
-* doc fix
-* Fix issue `#140 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/140>`_
-* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
-* (issue `#163 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/163>`_) fix ded code
-* Merge pull request `#162 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/162>`_ from unvestigate/master
-  Tree is declared as a struct, so it needs to be forward-declared as a…
-* Tree is declared as a struct, so it needs to be forward-declared as a struct too.
-* Merge pull request `#161 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/161>`_ from unvestigate/master
-  A couple of small changes needed to build on MSVC2015
-* The __cplusplus macro does not work properly prior to MSVC2017 15.7 Preview 3: https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
-* MSVC2015 seems to need an explicit operator== for comparing against literal strings.
-* [Breaking API change] make TreeNode::setStatus() protected
-  Users are not supposed to set the status of a node manually from the
-  outside. This might be a source of hard to debug errors as seen in
-  Navigation2 of ROS2.
-  If this change breaks your code, there is an high probability that your
-  code was already broken.
-* fix warning
-* comments
-* Update action_node.h
-* Fix bug in default port values
-* fix issue `#141 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/141>`_
-* fix unit tests
-* cosmetic: names changed
-* change API of haltChildren()
-* fix unittest switch should halt
-* halt the SwitchNode correctly
-* add unittest switch_node
-* Merge pull request `#155 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/155>`_ from BehaviorTree/imgbot
-  [ImgBot] Optimize images
-* Merge pull request `#156 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/156>`_ from HansRobo/patch-1
-  Fix error message
-* Modify documentation images.
-  SequenceNode:
-  AimTo -> AimAt
-  "Aim at a target" might sound more appropriate in this example than "aim to reach a goal".
-  SequenceStar:
-  Sequence -> ReactiveSequence
-  The text says "On the other hand, isBatteryOK must be checked at every tick,
-  for this reason its parent must be a ReactiveSequence."
-  Modify the image to match the text.
-* Fix bug `#149 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/149>`_
-* Merge pull request `#152 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/152>`_ from happykeyboard/add_unix_BUILD_SHARED
-  Added BUILD_SHARED_LIBS option to cmake. If set to "OFF", static libr…
-* Added BUILD_SHARED_LIBS option to cmake. If set to "OFF", static library will be generated
-  for a UNIX build
-  If BUILD_UNIT_TESTS is off, do not search for gtest library, and do not include tests subdirectory
-* experimental integration of Switch ControlNode
-* bug fix
-* Added SubTtreeWrapper
-* Merge pull request `#150 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/150>`_ from seanyen/patch-1
-  Install library to portable locations
-* Install library to portable locations
-* Merge pull request `#126 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/126>`_ from Jesus05/patch-1
-  (3dparty coroutine) ifdef MSV_VER to WIN32
-* Merge pull request `#135 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/135>`_ from 3wnbr1/master
-  Add macOS support
-* Merge pull request `#138 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/138>`_ from HansRobo/fix/remerge\_`#53 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/53>`_
-  Add `#53 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/53>`_ content
-* Merge pull request `#142 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/142>`_ from RavenX8/patch-1
-  Fixed VS2017/2019 compile error
-* Merge pull request `#145 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/145>`_ from renan028/fix_retry_node_negative_tries
-  fix RetryNode loop that should be an infinity loop if max_attempts\_ =…
-* Update t11_runtime_ports.cpp
-* make easier to create ports at run-time
-* fix RetryNode loop that should be an infinity loop if max_attempts\_ == -1
-  As documentation said:
-  "Use -1 to create an infinite loop."
-* Update basic_types.cpp
-  Added missing include for std::setlocale. This fixes the following error in Visual Studio:
-  https://ci.appveyor.com/project/facontidavide59577/behaviortree-cpp/build/job/d1ttd2w84nvnqo2e#L52
-* Merge pull request `#139 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/139>`_ from scgroot/master
-  Fixed compiling for c++17
-* Fixed compiling for c++17
-* Add `#53 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/53>`_ content
-* Merge pull request `#136 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/136>`_ from msadowski/msadowski-readme-fix
-  Fix some typos in readme
-* Fix some typos in readme
-* Add macOS support
-* fix issue `#120 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/120>`_
-* update flatbuffers and avoid ambiguities
+Forthcoming
+-----------
+* trying to fix compilation in eloquent  Minor fix on line 19
 * Update README.md
-* (3dparty coroutine) ifdef MSV_VER to WIN32
-  On Windows not only MSVC compilator.
-* Contributors: 3wnbr1, Christopher Torres, Davide Faconti, HansRobo, ImgBotApp, Jesus, Kotaro Yoshimoto, Mateusz Sadowski, Peter Polidoro, Sean Yen, Sebastian Ahlman, Steffen Groot, Vadim Linevich, renan028
+* more badges
+* readme updated
+* fix ros2 compilation?
+* move to github actions
+* replace dot by zero in boost version (`#197 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/197>`_)
+* Always use nonstd::string_view for binary compatibility (fix issue `#200 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/200>`_)
+* Adding ForceRunningNode Decorator (`#192 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/192>`_)
+* updated doc
+* Add XML parsing support for custom Control Nodes (`#194 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/194>`_)
+* Fix typo
+* [Windows] Compare `std::type_info` objects to check type. (`#181 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/181>`_)
+* Fix pseudocode for ReactiveFallback. (`#191 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/191>`_)
+* Contributors: Aayush Naik, Darío Hereñú, Davide Faconti, Francisco Martín Rico, G.Doisy, Sarathkrishnan Ramesh, Sean Yen, Ting Chang
 
 3.5.0 (2020-05-14)
 ------------------
