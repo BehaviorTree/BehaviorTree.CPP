@@ -88,13 +88,13 @@ int main()
     auto tree = factory.createTreeFromText(xml_text);
 
     // This logger prints state changes on console
-    StdCoutLogger logger_cout(tree.rootNode());
+    StdCoutLogger logger_cout(tree);
 
     // This logger saves state changes on file
-    FileLogger logger_file(tree.rootNode(), "bt_trace.fbl");
+    FileLogger logger_file(tree, "bt_trace.fbl");
     
     // This logger stores the execution time of each node
-    MinitraceLogger logger_minitrace(tree.rootNode(), "bt_trace.json");
+    MinitraceLogger logger_minitrace(tree, "bt_trace.json");
 
 #ifdef ZMQ_FOUND
     // This logger publish status changes using ZeroMQ. Used by Groot
