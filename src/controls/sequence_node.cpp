@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -51,7 +51,7 @@ NodeStatus SequenceNode::tick()
             case NodeStatus::FAILURE:
             {
                 // Reset on failure
-                haltChildren(0);
+                haltChildren();
                 current_child_idx_ = 0;
                 return child_status;
             }
@@ -71,7 +71,7 @@ NodeStatus SequenceNode::tick()
     // The entire while loop completed. This means that all the children returned SUCCESS.
     if (current_child_idx_ == children_count)
     {
-        haltChildren(0);
+        haltChildren();
         current_child_idx_ = 0;
     }
     return NodeStatus::SUCCESS;

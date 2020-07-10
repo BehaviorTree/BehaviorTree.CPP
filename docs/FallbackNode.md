@@ -81,13 +81,11 @@ if he/she is fully rested.
 		// index is initialized to 0 in the constructor
 		status = RUNNING;
 
-		while( index < number_of_children )
+		for (int index=0; index < number_of_children; index++)
 		{
 			child_status = child[index]->tick();
 			
 			if( child_status == RUNNING ) {
-				// Suspend execution and return RUNNING.
-				// At the next tick, index will be the same.
 				return RUNNING;
 			}
 			else if( child_status == FAILURE ) {

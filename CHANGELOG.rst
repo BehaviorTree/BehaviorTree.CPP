@@ -2,6 +2,44 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.5.1 (2020-06-11)
+------------------
+* trying to fix compilation in eloquent  Minor fix on line 19
+* Update README.md
+* more badges
+* readme updated
+* fix ros2 compilation?
+* move to github actions
+* replace dot by zero in boost version (`#197 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/197>`_)
+* Always use nonstd::string_view for binary compatibility (fix issue `#200 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/200>`_)
+* Adding ForceRunningNode Decorator (`#192 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/192>`_)
+* updated doc
+* Add XML parsing support for custom Control Nodes (`#194 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/194>`_)
+* Fix typo
+* [Windows] Compare `std::type_info` objects to check type. (`#181 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/181>`_)
+* Fix pseudocode for ReactiveFallback. (`#191 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/191>`_)
+* Contributors: Aayush Naik, Darío Hereñú, Davide Faconti, Francisco Martín Rico, G.Doisy, Sarathkrishnan Ramesh, Sean Yen, Ting Chang
+
+3.5.0 (2020-05-14)
+------------------
+* added IfThenElse and  WhileDoElse
+* issue `#190 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/190>`_
+* unit test added
+* reverting to a better solution
+* RemappedSubTree added
+* Fix issue `#188 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/188>`_
+* added function const std::string& key (issue `#183 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/183>`_)
+* Contributors: Davide Faconti, daf@blue-ocean-robotics.com
+
+* added IfThenElse and  WhileDoElse
+* issue `#190 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/190>`_
+* unit test added
+* reverting to a better solution
+* RemappedSubTree added
+* Fix issue `#188 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/188>`_
+* added function const std::string& key (issue `#183 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/183>`_)
+* Contributors: Davide Faconti, daf@blue-ocean-robotics.com
+
 3.1.1 (2019-11-10)
 ------------------
 * fix samples compilation (hopefully)

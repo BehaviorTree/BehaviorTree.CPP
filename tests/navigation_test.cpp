@@ -110,28 +110,36 @@ class ComputePathToPose: public SyncActionNode, public TestNode
     }
 };
 
-class FollowPath: public CoroActionNode, public TestNode
+class FollowPath: public ActionNodeBase, public TestNode
 {
+    std::chrono::high_resolution_clock::time_point _initial_time;
   public:
-    FollowPath(const std::string& name): CoroActionNode(name, {}), TestNode(name), _halted(false){}
+    FollowPath(const std::string& name): ActionNodeBase(name, {}), TestNode(name), _halted(false){}
 
     NodeStatus tick() override
     {
-        _halted = false;
-        std::cout << "FollowPath::started" << std::endl;
-        auto initial_time = Now();
+        if( status() == NodeStatus::IDLE )
+        {
+            setStatus(NodeStatus::RUNNING);
+            _halted = false;
+            std::cout << "FollowPath::started" << std::endl;
+            _initial_time = Now();
+        }
 
         // Yield for 1 second
-        while( Now() < initial_time + Milliseconds(600) )
+        while( Now() < _initial_time + Milliseconds(600) || _halted )
         {
-            setStatusRunningAndYield();
+            return NodeStatus::RUNNING;
+        }
+        if( _halted )
+        {
+            return NodeStatus::IDLE;
         }
         return tickImpl();
     }
     void halt() override {
         std::cout << "FollowPath::halt" << std::endl;
         _halted = true;
-        CoroActionNode::halt();
     }
 
     bool wasHalted() const { return _halted; }
@@ -203,7 +211,7 @@ TEST(Navigationtest, MoveBaseRecovery)
 
     while( status == NodeStatus::IDLE || status == NodeStatus::RUNNING )
     {
-        status = tree.root_node->executeTick();
+        status = tree.tickRoot();
         std::this_thread::sleep_for(Milliseconds(100));
     }
 
@@ -240,7 +248,7 @@ TEST(Navigationtest, MoveBaseRecovery)
             first_stuck_node->setExpectedResult(true);
             second_stuck_node->setExpectedResult(true);
         }
-        status = tree.root_node->executeTick();
+        status = tree.tickRoot();
         std::this_thread::sleep_for(Milliseconds(100));
     }
 
@@ -280,7 +288,7 @@ TEST(Navigationtest, MoveBaseRecovery)
 
     while( status == NodeStatus::IDLE || status == NodeStatus::RUNNING )
     {
-        status = tree.root_node->executeTick();
+        status = tree.tickRoot();
         std::this_thread::sleep_for(Milliseconds(100));
     }
 

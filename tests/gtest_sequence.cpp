@@ -34,7 +34,7 @@ struct SimpleSequenceTest : testing::Test
     }
     ~SimpleSequenceTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -63,7 +63,7 @@ struct ComplexSequenceTest : testing::Test
     }
     ~ComplexSequenceTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -89,7 +89,7 @@ struct SequenceTripleActionTest : testing::Test
     }
     ~SequenceTripleActionTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -126,7 +126,7 @@ struct ComplexSequence2ActionsTest : testing::Test
     }
     ~ComplexSequence2ActionsTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -146,7 +146,7 @@ struct SimpleSequenceWithMemoryTest : testing::Test
     }
     ~SimpleSequenceWithMemoryTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -185,7 +185,7 @@ struct ComplexSequenceWithMemoryTest : testing::Test
     }
     ~ComplexSequenceWithMemoryTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -212,7 +212,7 @@ struct SimpleParallelTest : testing::Test
     }
     ~SimpleParallelTest()
     {
-        haltAllActions(&root);
+
     }
 };
 
@@ -230,7 +230,7 @@ TEST_F(SimpleSequenceTest, ConditionTrue)
 
 TEST_F(SimpleSequenceTest, ConditionTurnToFalse)
 {
-    condition.setBoolean(false);
+    condition.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = root.executeTick();
 
     state = root.executeTick();
@@ -322,7 +322,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions1ToFalse)
 {
     BT::NodeStatus state = root.executeTick();
 
-    condition_1.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
 
     state = root.executeTick();
 
@@ -337,7 +337,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditions2ToFalse)
 {
     BT::NodeStatus state = root.executeTick();
 
-    condition_2.setBoolean(false);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
 
     state = root.executeTick();
 
@@ -366,7 +366,7 @@ TEST_F(SimpleSequenceWithMemoryTest, ConditionTurnToFalse)
     ASSERT_EQ(NodeStatus::SUCCESS, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    condition.setBoolean(false);
+    condition.setExpectedResult(NodeStatus::FAILURE);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -391,7 +391,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFase)
 {
     BT::NodeStatus state = root.executeTick();
 
-    condition_1.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
     state = root.executeTick();
     // change in condition_1 does not affect the state of the tree,
     // since the seq_conditions was executed already
@@ -408,7 +408,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions2ToFalse)
 {
     BT::NodeStatus state = root.executeTick();
 
-    condition_2.setBoolean(false);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
     state = root.executeTick();
     // change in condition_2 does not affect the state of the tree,
     // since the seq_conditions was executed already
@@ -425,7 +425,7 @@ TEST_F(ComplexSequenceWithMemoryTest, Action1DoneSeq)
 {
     root.executeTick();
 
-    condition_2.setBoolean(false);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
     root.executeTick();
 
     // change in condition_2 does not affect the state of the tree,

@@ -80,11 +80,11 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
     Tree tree = factory.createTreeFromText(xml_text);
 
-    printTreeRecursively(tree.root_node);
+    printTreeRecursively(tree.rootNode());
 
-    ASSERT_EQ(tree.root_node->name(), "root_selector");
+    ASSERT_EQ(tree.rootNode()->name(), "root_selector");
 
-    auto fallback = dynamic_cast<const FallbackNode*>(tree.root_node);
+    auto fallback = dynamic_cast<const FallbackNode*>(tree.rootNode());
     ASSERT_TRUE(fallback != nullptr);
 
     ASSERT_EQ(fallback->children().size(), 3);
@@ -121,17 +121,17 @@ TEST(BehaviorTreeFactory, Subtree)
 
     Tree tree = factory.createTreeFromText(xml_text_subtree);
 
-    printTreeRecursively(tree.root_node);
+    printTreeRecursively(tree.rootNode());
 
-    ASSERT_EQ(tree.root_node->name(), "root_selector");
+    ASSERT_EQ(tree.rootNode()->name(), "root_selector");
 
-    auto root_selector = dynamic_cast<const FallbackNode*>(tree.root_node);
+    auto root_selector = dynamic_cast<const FallbackNode*>(tree.rootNode());
     ASSERT_TRUE(root_selector != nullptr);
     ASSERT_EQ(root_selector->children().size(), 2);
     ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
     ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
 
-    auto subtree = dynamic_cast<const DecoratorSubtreeNode*>(root_selector->child(0));
+    auto subtree = dynamic_cast<const SubtreeNode*>(root_selector->child(0));
     ASSERT_TRUE(subtree != nullptr);
 
     auto sequence = dynamic_cast<const SequenceNode*>(subtree->child());
@@ -217,7 +217,7 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
     ASSERT_EQ( talk_bb->portInfo("hello_msg")->type(), &typeid(std::string) );
 
     // Should not throw
-    tree.root_node->executeTick();
+    tree.tickRoot();
 
     std::cout << "\n --------------------------------- \n" << std::endl;
     main_bb->debugMessage();

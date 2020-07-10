@@ -34,7 +34,7 @@ struct SimpleFallbackTest : testing::Test
     }
     ~SimpleFallbackTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -57,7 +57,7 @@ struct ReactiveFallbackTest : testing::Test
     }
     ~ReactiveFallbackTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -77,7 +77,7 @@ struct SimpleFallbackWithMemoryTest : testing::Test
     }
     ~SimpleFallbackWithMemoryTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -116,7 +116,7 @@ struct ComplexFallbackWithMemoryTest : testing::Test
     }
     ~ComplexFallbackWithMemoryTest()
     {
-        haltAllActions(&root);
+        
     }
 };
 
@@ -125,7 +125,7 @@ struct ComplexFallbackWithMemoryTest : testing::Test
 TEST_F(SimpleFallbackTest, ConditionTrue)
 {
     // Ticking the root node
-    condition.setBoolean(true);
+    condition.setExpectedResult(NodeStatus::SUCCESS);
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
@@ -137,14 +137,14 @@ TEST_F(SimpleFallbackTest, ConditionChangeWhileRunning)
 {
     BT::NodeStatus state = BT::NodeStatus::IDLE;
 
-    condition.setBoolean(false);
+    condition.setExpectedResult(NodeStatus::FAILURE);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::FAILURE, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    condition.setBoolean(true);
+    condition.setExpectedResult(NodeStatus::SUCCESS);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -154,8 +154,8 @@ TEST_F(SimpleFallbackTest, ConditionChangeWhileRunning)
 
 TEST_F(ReactiveFallbackTest, Condition1ToTrue)
 {
-    condition_1.setBoolean(false);
-    condition_2.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
 
     BT::NodeStatus state = root.executeTick();
 
@@ -164,7 +164,7 @@ TEST_F(ReactiveFallbackTest, Condition1ToTrue)
     ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    condition_1.setBoolean(true);
+    condition_1.setExpectedResult(NodeStatus::SUCCESS);
 
     state = root.executeTick();
 
@@ -176,8 +176,8 @@ TEST_F(ReactiveFallbackTest, Condition1ToTrue)
 
 TEST_F(ReactiveFallbackTest, Condition2ToTrue)
 {
-    condition_1.setBoolean(false);
-    condition_2.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
 
     BT::NodeStatus state = root.executeTick();
 
@@ -186,7 +186,7 @@ TEST_F(ReactiveFallbackTest, Condition2ToTrue)
     ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    condition_2.setBoolean(true);
+    condition_2.setExpectedResult(NodeStatus::SUCCESS);
 
     state = root.executeTick();
 
@@ -198,7 +198,7 @@ TEST_F(ReactiveFallbackTest, Condition2ToTrue)
 
 TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 {
-    condition.setBoolean(false);
+    condition.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -208,14 +208,14 @@ TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 
 TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
 {
-    condition.setBoolean(false);
+    condition.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
     ASSERT_EQ(NodeStatus::FAILURE, condition.status());
     ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    condition.setBoolean(true);
+    condition.setExpectedResult(NodeStatus::SUCCESS);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -238,7 +238,7 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsTrue)
 
 TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
 {
-    condition_1.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
@@ -252,8 +252,8 @@ TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
 
 TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
 {
-    condition_1.setBoolean(false);
-    condition_2.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -267,11 +267,11 @@ TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
 
 TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
 {
-    condition_1.setBoolean(false);
-    condition_2.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = root.executeTick();
 
-    condition_1.setBoolean(true);
+    condition_1.setExpectedResult(NodeStatus::SUCCESS);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -285,11 +285,11 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
 
 TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 {
-    condition_1.setBoolean(false);
-    condition_2.setBoolean(false);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = root.executeTick();
 
-    condition_2.setBoolean(true);
+    condition_2.setExpectedResult(NodeStatus::SUCCESS);
     state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::RUNNING, state);
@@ -303,10 +303,10 @@ TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 
 TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
 {
-    action_1.setBoolean(false);
-    action_2.setBoolean(true);
-    condition_1.setBoolean(false);
-    condition_2.setBoolean(false);
+    action_1.setExpectedResult(NodeStatus::FAILURE);
+    action_2.setExpectedResult(NodeStatus::SUCCESS);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
 
     BT::NodeStatus state = root.executeTick();
 

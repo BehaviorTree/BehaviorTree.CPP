@@ -1,6 +1,7 @@
 #include "behaviortree_cpp_v3/basic_types.h"
 #include <cstdlib>
 #include <cstring>
+#include <clocale>
 
 namespace BT
 {
@@ -101,15 +102,15 @@ std::string convertFromString<std::string>(StringView str)
 
 
 template <>
-const char* convertFromString<const char*>(StringView str)
-{
-    return nonstd::to_string(str).c_str();
-}
-
-template <>
 int convertFromString<int>(StringView str)
 {
     return  std::stoi(str.data());
+}
+
+template <>
+long convertFromString<long>(StringView str)
+{
+  return  std::stol(str.data());
 }
 
 template <>
@@ -124,10 +125,10 @@ double convertFromString<double>(StringView str)
     // see issue #120
     // http://quick-bench.com/DWaXRWnxtxvwIMvZy2DxVPEKJnE
 
-    const auto old_locale = std::setlocale(LC_NUMERIC,nullptr);
-    std::setlocale(LC_NUMERIC,"C");
+    const auto old_locale = setlocale(LC_NUMERIC,nullptr);
+    setlocale(LC_NUMERIC,"C");
     double val = std::stod(str.data());
-    std::setlocale(LC_NUMERIC,old_locale);
+    setlocale(LC_NUMERIC,old_locale);
     return val;
 }
 
@@ -197,7 +198,7 @@ NodeStatus convertFromString<NodeStatus>(StringView str)
     if( str == "RUNNING" ) return NodeStatus::RUNNING;
     if( str == "SUCCESS" ) return NodeStatus::SUCCESS;
     if( str == "FAILURE" ) return NodeStatus::FAILURE;
-    throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") + nonstd::to_string(str) );
+    throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") + static_cast<std::string>(str) );
 }
 
 template <>
@@ -207,7 +208,7 @@ NodeType convertFromString<NodeType>(StringView str)
     if( str == "Condition" ) return NodeType::CONDITION;
     if( str == "Control" )   return NodeType::CONTROL;
     if( str == "Decorator" ) return NodeType::DECORATOR;
-    if( str == "SubTree" || str == "Subtree" ) return NodeType::SUBTREE;
+    if( str == "SubTree" || str == "SubTreePlus" ) return NodeType::SUBTREE;
     return NodeType::UNDEFINED;
 }
 
@@ -288,12 +289,12 @@ Any PortInfo::parseString(const std::string &str) const
 
 void PortInfo::setDescription(StringView description)
 {
-    description_ = nonstd::to_string(description);
+    description_ = static_cast<std::string>(description);
 }
 
 void PortInfo::setDefaultValue(StringView default_value_as_string)
 {
-    default_value_ = nonstd::to_string(default_value_as_string);
+    default_value_ = static_cast<std::string>(default_value_as_string);
 }
 
 const std::string &PortInfo::description() const

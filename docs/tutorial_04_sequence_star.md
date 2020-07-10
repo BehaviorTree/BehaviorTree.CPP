@@ -109,15 +109,15 @@ int main()
     NodeStatus status;
 
     std::cout << "\n--- 1st executeTick() ---" << std::endl;
-    status = tree.root_node->executeTick();
+    status = tree.tickRoot();
 
     SleepMS(150);
     std::cout << "\n--- 2nd executeTick() ---" << std::endl;
-    status = tree.root_node->executeTick();
+    status = tree.tickRoot();
 
     SleepMS(150);
     std::cout << "\n--- 3rd executeTick() ---" << std::endl;
-    status = tree.root_node->executeTick();
+    status = tree.tickRoot();
 
     std::cout << std::endl;
 
@@ -156,9 +156,11 @@ would be _interrupted_ (_halted_, to be specific).
      <BehaviorTree>
         <ReactiveSequence>
             <BatteryOK/>
-            <SaySomething   message="mission started..." />
-            <MoveBase       goal="1;2;3"/>
-            <SaySomething   message="mission completed!" />
+            <Sequence>
+                <SaySomething   message="mission started..." />
+                <MoveBase       goal="1;2;3"/>
+                <SaySomething   message="mission completed!" />
+            </Sequence>
         </ReactiveSequence>
      </BehaviorTree>
  </root>

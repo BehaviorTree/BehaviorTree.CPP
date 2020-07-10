@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+/*  Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -14,6 +14,11 @@
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "behaviortree_cpp_v3/xml_parsing.h"
 
+#ifdef USING_ROS
+#include "filesystem/path.h"
+#include <ros/package.h>
+#endif
+
 namespace BT
 {
 BehaviorTreeFactory::BehaviorTreeFactory()
@@ -24,9 +29,12 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<ParallelNode>("Parallel");
     registerNodeType<ReactiveSequence>("ReactiveSequence");
     registerNodeType<ReactiveFallback>("ReactiveFallback");
+    registerNodeType<IfThenElseNode>("IfThenElse");
+    registerNodeType<WhileDoElseNode>("WhileDoElse");
 
     registerNodeType<InverterNode>("Inverter");
     registerNodeType<RetryNode>("RetryUntilSuccesful");
+    registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
     registerNodeType<RepeatNode>("Repeat");
     registerNodeType<TimeoutNode>("Timeout");
 
@@ -37,12 +45,22 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<AlwaysFailureNode>("AlwaysFailure");
     registerNodeType<SetBlackboard>("SetBlackboard");
 
-    registerNodeType<DecoratorSubtreeNode>("SubTree");
+    registerNodeType<SubtreeNode>("SubTree");
+    registerNodeType<SubtreePlusNode>("SubTreePlus");
 
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
 
+    registerNodeType<SwitchNode<2>>("Switch2");
+    registerNodeType<SwitchNode<3>>("Switch3");
+    registerNodeType<SwitchNode<4>>("Switch4");
+    registerNodeType<SwitchNode<5>>("Switch5");
+    registerNodeType<SwitchNode<6>>("Switch6");
+
+#ifdef NCURSES_FOUND
+    registerNodeType<ManualSelectorNode>("ManualSelector");
+#endif
     for( const auto& it: builders_)
     {
         builtin_IDs_.insert( it.first );
@@ -131,6 +149,66 @@ void BehaviorTreeFactory::registerFromPlugin(const std::string& file_path)
     }
 }
 
+#ifdef USING_ROS
+
+    #ifdef _WIN32
+const char os_pathsep(';');   // NOLINT
+#else
+const char os_pathsep(':');   // NOLINT
+#endif
+
+// This function is a copy from the one in class_loader_imp.hpp in ROS pluginlib
+// package, licensed under BSD.
+// https://github.com/ros/pluginlib
+std::vector<std::string> getCatkinLibraryPaths()
+{
+    std::vector<std::string> lib_paths;
+    const char* env = std::getenv("CMAKE_PREFIX_PATH");
+    if (env)
+    {
+        const std::string env_catkin_prefix_paths(env);
+        std::vector<BT::StringView> catkin_prefix_paths =
+            splitString(env_catkin_prefix_paths, os_pathsep);
+        for (BT::StringView catkin_prefix_path : catkin_prefix_paths)
+        {
+            filesystem::path path(static_cast<std::string>(catkin_prefix_path));
+            filesystem::path lib("lib");
+            lib_paths.push_back((path / lib).str());
+        }
+    }
+    return lib_paths;
+}
+
+void BehaviorTreeFactory::registerFromROSPlugins()
+{
+    std::vector<std::string> plugins;
+    ros::package::getPlugins("behaviortree_cpp", "bt_lib_plugin", plugins, true);
+    std::vector<std::string> catkin_lib_paths = getCatkinLibraryPaths();
+
+    for (const auto& plugin : plugins)
+    {
+        auto filename = filesystem::path(plugin + BT::SharedLibrary::suffix());
+        for (const auto& lib_path : catkin_lib_paths)
+        {
+            const auto full_path = filesystem::path(lib_path) / filename;
+            if (full_path.exists())
+            {
+                std::cout << "Registering ROS plugins from " << full_path.str() << std::endl;
+                registerFromPlugin(full_path.str());
+                break;
+            }
+        }
+    }
+}
+#else
+
+    void BehaviorTreeFactory::registerFromROSPlugins()
+    {
+        throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was compiled "
+                           "without ROS support. Recompile the BehaviorTree.CPP using catkin");
+    }
+#endif
+
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
         const std::string& name,
         const std::string& ID,
@@ -189,9 +267,7 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
 
 Tree::~Tree()
 {
-    if (root_node) {
-        haltAllActions(root_node);
-    }
+    haltTree();
 }
 
 Blackboard::Ptr Tree::rootBlackboard()

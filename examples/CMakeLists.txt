@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5.1)
 
 include_directories( ../sample_nodes )
 
@@ -35,10 +35,19 @@ target_link_libraries(t07_wrap_legacy   ${BEHAVIOR_TREE_LIBRARY} )
 add_executable(t08_additional_node_args   t08_additional_node_args.cpp )
 target_link_libraries(t08_additional_node_args   ${BEHAVIOR_TREE_LIBRARY} )
 
-if (NOT MINGW)
+if (BT_COROUTINES)
     add_executable(t09_async_actions_coroutines  t09_async_actions_coroutines.cpp )
     target_link_libraries(t09_async_actions_coroutines ${BEHAVIOR_TREE_LIBRARY} )
 endif()
 
 add_executable(t10_include_trees  t10_include_trees.cpp )
 target_link_libraries(t10_include_trees  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
+
+
+add_executable(t11_runtime_ports  t11_runtime_ports.cpp )
+target_link_libraries(t11_runtime_ports  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
+
+if(CURSES_FOUND)
+    add_executable(t12_ncurses_manual_selector  t12_ncurses_manual_selector.cpp )
+    target_link_libraries(t12_ncurses_manual_selector  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
+endif()

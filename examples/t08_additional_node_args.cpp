@@ -109,7 +109,7 @@ int main()
         }
     }
 
-    tree.root_node->executeTick();
+    tree.tickRoot();
 
     /* Expected output:
 

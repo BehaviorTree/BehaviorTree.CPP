@@ -43,7 +43,6 @@ struct BehaviorTreeTest : testing::Test
     }
     ~BehaviorTreeTest()
     {
-        haltAllActions(&root);
     }
 };
 
@@ -51,8 +50,8 @@ struct BehaviorTreeTest : testing::Test
 
 TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
 {
-    condition_1.setBoolean(false);
-    condition_2.setBoolean(true);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_2.setExpectedResult(NodeStatus::SUCCESS);
 
     BT::NodeStatus state = root.executeTick();
 
@@ -65,8 +64,8 @@ TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
 
 TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
 {
-    condition_2.setBoolean(false);
-    condition_1.setBoolean(true);
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
+    condition_1.setExpectedResult(NodeStatus::SUCCESS);
 
     BT::NodeStatus state = root.executeTick();
 

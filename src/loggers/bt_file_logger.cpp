@@ -4,7 +4,7 @@
 namespace BT
 {
 FileLogger::FileLogger(const BT::Tree& tree, const char* filename, uint16_t buffer_size)
-  : StatusChangeLogger(tree.root_node), buffer_max_size_(buffer_size)
+  : StatusChangeLogger(tree.rootNode()), buffer_max_size_(buffer_size)
 {
     if (buffer_max_size_ != 0)
     {

@@ -84,7 +84,7 @@ int main()
 
     auto tree = factory.createTreeFromText(xml_text);
 
-    tree.root_node->executeTick();
+    tree.tickRoot();
 
     return 0;
 }

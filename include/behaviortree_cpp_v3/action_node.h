@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <thread>
+#include <future>
 #include "leaf_node.h"
 
 namespace BT
@@ -96,48 +97,44 @@ class SimpleActionNode : public SyncActionNode
 };
 
 /**
- * @brief The AsyncActionNode uses a different thread where the action will be
+ * @brief The AsyncActionNode uses a different thread, where the action will be
  * executed.
  *
- * The user must implement the methods tick() and halt().
+ * IMPORTANT: this action is quite hard to implement correctly. Please be sure that you know what you are doing.
  *
- * WARNING: this should probably be deprecated. It is too easy to use incorrectly
- * and there is not a good way to halt it in a thread safe way.
+ * - In your overriden tick() method, you must check periodically
+ *   the result of the method isHaltRequested() and stop your execution accordingly.
  *
- * Use it at your own risk.
+ * - in the overriden halt() method, you can do some cleanup, but do not forget to
+ *   invoke the base class method AsyncActionNode::halt();
+ *
+ * - remember, with few exceptions, a halted AsyncAction must return NodeStatus::IDLE.
+ *
+ * For a complete example, look at __AsyncActionTest__ in action_test_node.h in the folder test.
  */
 class AsyncActionNode : public ActionNodeBase
 {
   public:
 
-    AsyncActionNode(const std::string& name, const NodeConfiguration& config);
-    virtual ~AsyncActionNode() override;
+    AsyncActionNode(const std::string& name, const NodeConfiguration& config):ActionNodeBase(name, config)
+    {
+    }
 
-    // This method triggers the TickEngine. Do NOT remove the "final" keyword.
+    bool isHaltRequested() const
+    {
+        return halt_requested_.load();
+    }
+
+    // This method spawn a new thread. Do NOT remove the "final" keyword.
     virtual NodeStatus executeTick() override final;
 
-    void stopAndJoinThread();
+    virtual void halt() override;
 
   private:
 
-    // The method that will be executed by the thread
-    void asyncThreadLoop();
-
-    void waitStart();
-
-    void notifyStart();
-
-    std::atomic<bool> keep_thread_alive_;
-
-    bool start_action_;
-
-    std::mutex start_mutex_;
-
-    std::condition_variable start_signal_;
-
     std::exception_ptr exptr_;
-
-    std::thread thread_;
+    std::atomic_bool halt_requested_;
+    std::future<NodeStatus> thread_handle_;
 };
 
 /**
@@ -149,11 +146,11 @@ class AsyncActionNode : public ActionNodeBase
  * if the reply has been received and, eventually, analyze the reply to determine
  * if the result is SUCCESS or FAILURE.
  *
- * -) an IDLE action will call onStart()
+ * -) an action that was in IDLE state will call onStart()
  *
  * -) A RUNNING action will call onRunning()
  *
- * -) if halted, method onHalted()
+ * -) if halted, method onHalted() is invoked
  */
 class StatefulActionNode : public ActionNodeBase
 {
@@ -174,8 +171,8 @@ class StatefulActionNode : public ActionNodeBase
       /// method invoked by a RUNNING action.
       virtual NodeStatus onRunning() = 0;
 
-      /// when the method halt() is called by a parent node, this method
-      /// is invoked to do the cleanup of a RUNNING action.
+      /// when the method halt() is called and the action is RUNNING, this method is invoked.
+      /// This is a convenient place todo a cleanup, if needed.
       virtual void onHalted() = 0;
 };
 

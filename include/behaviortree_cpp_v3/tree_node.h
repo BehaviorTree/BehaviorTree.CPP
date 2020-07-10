@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
-*  Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+*  Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -80,8 +80,6 @@ class TreeNode
 
     NodeStatus status() const;
 
-    void setStatus(NodeStatus new_status);
-
     /// Name of the instance, not the type
     const std::string& name() const;
 
@@ -140,6 +138,10 @@ class TreeNode
     template <typename T>
     Result setOutput(const std::string& key, const T& value);
 
+    // function provide mostrly for debugging purpose to see the raw value
+    // in the port (no remapping and no conversion to a type)
+    StringView getRawPortValue(const std::string &key) const;
+
     /// Check a string and return true if it matches either one of these
     /// two patterns:  {...} or ${...}
     static bool isBlackboardPointer(StringView str);
@@ -153,6 +155,9 @@ class TreeNode
     virtual BT::NodeStatus tick() = 0;
 
     friend class BehaviorTreeFactory;
+    friend class DecoratorNode;
+    friend class ControlNode;
+    friend class Tree;
 
     // Only BehaviorTreeFactory should call this
     void setRegistrationID(StringView ID)
@@ -161,6 +166,8 @@ class TreeNode
     }
 
     void modifyPortsRemapping(const PortsRemapping& new_remapping);
+
+    void setStatus(NodeStatus new_status);
 
   private:
     const std::string name_;
@@ -208,7 +215,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
                                            "but BB is invalid");
         }
 
-        const Any* val = config_.blackboard->getAny(nonstd::to_string(remapped_key));
+        const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
         if (val && val->empty() == false)
         {
             if (std::is_same<T, std::string>::value == false && val->type() == typeid(std::string))
@@ -258,9 +265,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
     {
         remapped_key = stripBlackboardPointer(remapped_key);
     }
-    const auto& key_str = nonstd::to_string(remapped_key);
-
-    config_.blackboard->set(key_str, value);
+    config_.blackboard->set(static_cast<std::string>(remapped_key), value);
 
     return {};
 }

@@ -2,8 +2,6 @@ clone_depth: 5
 
 environment:
   matrix:
-    - GENERATOR : "MinGW Makefiles"
-      PLATFORM: x86
     - GENERATOR : "Visual Studio 15 2017 Win64"
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       PLATFORM: x64

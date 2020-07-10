@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2019 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -43,8 +43,12 @@ class ControlNode : public TreeNode
 
     virtual void halt() override;
 
-    /// call halt() for all the children in the range [i, childrenCount() )
-    void haltChildren(size_t i);
+    void haltChildren();
+
+    [[deprecated( "deprecated: please use explicitly haltChildren() or haltChild(i)")]]
+    void haltChildren(size_t first);
+
+    void haltChild(size_t i);
 
     virtual NodeType type() const override final
     {

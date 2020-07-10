@@ -17,7 +17,7 @@ typedef std::array<uint8_t, 12> SerializedTransition;
 class StatusChangeLogger
 {
   public:
-    StatusChangeLogger(TreeNode* root_node);
+    StatusChangeLogger(TreeNode *root_node);
     virtual ~StatusChangeLogger() = default;
 
     virtual void callback(BT::Duration timestamp, const TreeNode& node, NodeStatus prev_status,
