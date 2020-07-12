@@ -45,9 +45,9 @@ This tree represents the behavior of a sniper in a computer game.
 		status = RUNNING;
         // _index is a private member
 
-		while( index < number_of_children)
+		while(_index < number_of_children)
 		{
-			child_status = child[index]->tick();
+			child_status = child[_index]->tick();
 			
             if( child_status == SUCCESS ) {
                 _index++;
