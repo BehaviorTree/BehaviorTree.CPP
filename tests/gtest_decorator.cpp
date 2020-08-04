@@ -20,7 +20,7 @@ using std::chrono::milliseconds;
 
 struct DeadlineTest : testing::Test
 {
-    BT::TimeoutNode root;
+    BT::TimeoutNode<> root;
     BT::AsyncActionTest action;
 
     DeadlineTest() : root("deadline", 300)
@@ -66,7 +66,7 @@ struct RetryTest : testing::Test
 
 struct TimeoutAndRetry : testing::Test
 {
-    BT::TimeoutNode timeout_root;
+    BT::TimeoutNode<> timeout_root;
     BT::RetryNode retry;
     BT::SyncActionTest action;
 
