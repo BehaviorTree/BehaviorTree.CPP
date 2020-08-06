@@ -24,13 +24,15 @@ class ParallelNode : public ControlNode
 {
   public:
 
-    ParallelNode(const std::string& name, unsigned threshold);
+    ParallelNode(const std::string& name, unsigned success_threshold,
+                 unsigned failure_threshold = 1);
 
     ParallelNode(const std::string& name, const NodeConfiguration& config);
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>(THRESHOLD_KEY) };
+        return { InputPort<unsigned>(THRESHOLD_SUCCESS), 
+                 InputPort<unsigned>(THRESHOLD_FAILURE) };
     }
 
     ~ParallelNode() = default;
@@ -38,15 +40,19 @@ class ParallelNode : public ControlNode
     virtual void halt() override;
 
     unsigned int thresholdM();
+    unsigned int thresholdFM();
     void setThresholdM(unsigned int threshold_M);
+    void setThresholdFM(unsigned int threshold_M);
 
   private:
-    unsigned int threshold_;
+    unsigned int success_threshold_;
+    unsigned int failure_threshold_;
 
     std::set<int> skip_list_;
 
     bool read_parameter_from_ports_;
-    static constexpr const char* THRESHOLD_KEY = "threshold";
+    static constexpr const char* THRESHOLD_SUCCESS = "success_threshold";
+    static constexpr const char* THRESHOLD_FAILURE = "failure_threshold";
 
     virtual BT::NodeStatus tick() override;
 };
