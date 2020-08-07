@@ -16,11 +16,14 @@
 namespace BT
 {
 
-constexpr const char* ParallelNode::THRESHOLD_KEY;
+constexpr const char* ParallelNode::THRESHOLD_FAILURE;
+constexpr const char* ParallelNode::THRESHOLD_SUCCESS;
 
-ParallelNode::ParallelNode(const std::string& name, unsigned threshold)
+ParallelNode::ParallelNode(const std::string& name, unsigned success_threshold,
+                           unsigned failure_threshold)
     : ControlNode::ControlNode(name, {} ),
-    threshold_(threshold),
+    success_threshold_(success_threshold),
+    failure_threshold_(failure_threshold),
     read_parameter_from_ports_(false)
 {
     setRegistrationID("Parallel");
@@ -29,7 +32,8 @@ ParallelNode::ParallelNode(const std::string& name, unsigned threshold)
 ParallelNode::ParallelNode(const std::string &name,
                                const NodeConfiguration& config)
     : ControlNode::ControlNode(name, config),
-      threshold_(0),
+      success_threshold_(1),
+      failure_threshold_(1),
       read_parameter_from_ports_(true)
 {
 }
@@ -38,9 +42,14 @@ NodeStatus ParallelNode::tick()
 {
     if(read_parameter_from_ports_)
     {
-        if( !getInput(THRESHOLD_KEY, threshold_) )
+        if( !getInput(THRESHOLD_SUCCESS, success_threshold_) )
         {
-            throw RuntimeError("Missing parameter [", THRESHOLD_KEY, "] in ParallelNode");
+            throw RuntimeError("Missing parameter [", THRESHOLD_SUCCESS, "] in ParallelNode");
+        }
+
+        if( !getInput(THRESHOLD_FAILURE, failure_threshold_) )
+        {
+            throw RuntimeError("Missing parameter [", THRESHOLD_FAILURE, "] in ParallelNode");
         }
     }
 
@@ -49,9 +58,14 @@ NodeStatus ParallelNode::tick()
 
     const size_t children_count = children_nodes_.size();
 
-    if( children_count < threshold_)
+    if( children_count < success_threshold_)
     {
-        throw LogicError("Number of children is less than threshold. Can never suceed.");
+        throw LogicError("Number of children is less than threshold. Can never succeed.");
+    }
+
+    if( children_count < failure_threshold_)
+    {
+        throw LogicError("Number of children is less than threshold. Can never fail.");
     }
 
     // Routing the tree according to the sequence node's logic:
@@ -80,7 +94,7 @@ NodeStatus ParallelNode::tick()
                 }
                 success_childred_num++;
 
-                if (success_childred_num == threshold_)
+                if (success_childred_num == success_threshold_)
                 {
                     skip_list_.clear();
                     haltChildren();
@@ -95,8 +109,11 @@ NodeStatus ParallelNode::tick()
                     skip_list_.insert(i);
                 }
                 failure_childred_num++;
-
-                if (failure_childred_num > children_count - threshold_)
+                
+                // It fails if it is not possible to succeed anymore or if 
+                // number of failures are equal to failure_threshold_
+                if ((failure_childred_num > children_count - success_threshold_)
+                    || (failure_childred_num == failure_threshold_))
                 {
                     skip_list_.clear();
                     haltChildren();
@@ -127,12 +144,22 @@ void ParallelNode::halt()
 
 unsigned int ParallelNode::thresholdM()
 {
-    return threshold_;
+    return success_threshold_;
+}
+
+unsigned int ParallelNode::thresholdFM()
+{
+    return failure_threshold_;
 }
 
 void ParallelNode::setThresholdM(unsigned int threshold_M)
 {
-    threshold_ = threshold_M;
+    success_threshold_ = threshold_M;
+}
+
+void ParallelNode::setThresholdFM(unsigned int threshold_M)
+{
+    failure_threshold_ = threshold_M;
 }
 
 }
