@@ -112,12 +112,19 @@ Let's consider the following XML file named __my_tree.xml__:
             <CloseGripper   name="close_gripper"/>
         </Sequence>
      </BehaviorTree>
+     
+     <!-- the BT executor don't require this, but Groot does -->
+    <TreeNodesModel>
+        <Action ID="SayHello"/>
+        <Action ID="OpenGripper"/>
+        <Action ID="ApproachObject"/>
+        <Action ID="CloseGripper"/>
+    </TreeNodesModel>
  </root>
 ```
 
 !!! Note
     You can find more details about the XML schema [here](xml_format.md).
-
 
 We must first register our custom TreeNodes into the `BehaviorTreeFactory`
  and then load the XML from file or text.
