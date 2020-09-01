@@ -34,13 +34,13 @@ class ApproachObject : public BT::SyncActionNode
         return BT::NodeStatus::SUCCESS;
     }
 };
-``` 
+```
 
 As you can see:
 
 - Any instance of a TreeNode has a `name`. This identifier is meant to be 
   human-readable and it __doesn't__ need to be unique.
- 
+
 - The method __tick()__ is the place where the actual Action takes place.
   It must always return a NodeStatus, i.e. RUNNING, SUCCESS or FAILURE. 
 
@@ -90,7 +90,7 @@ private:
     bool _open; // shared information
 };
 
-``` 
+```
 
 We can build a `SimpleActionNode` from any of these functors:
 
@@ -107,7 +107,6 @@ Let's consider the following XML file named __my_tree.xml__:
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <SayHello       name="action_hello"/>
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>
             <CloseGripper   name="close_gripper"/>
@@ -181,7 +180,7 @@ int main()
        GripperInterface::close
 */
 
-``` 
+```
 
 
 
