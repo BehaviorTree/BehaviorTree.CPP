@@ -116,7 +116,7 @@ TEST(CoroTest, do_action_timeout)
     BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
     SimpleCoroAction node( milliseconds(300), false, "Action", node_config_);
-    BT::TimeoutNode timeout("TimeoutAction", 200);
+    BT::TimeoutNode<> timeout("TimeoutAction", 200);
 
     timeout.setChild(&node);
 
@@ -137,7 +137,7 @@ TEST(CoroTest, sequence_child)
 
     SimpleCoroAction actionA( milliseconds(200), false, "action_A", node_config_);
     SimpleCoroAction actionB( milliseconds(200), false, "action_B", node_config_);
-    BT::TimeoutNode timeout("timeout", 300);
+    BT::TimeoutNode<> timeout("timeout", 300);
     BT::SequenceNode sequence("sequence");
 
     timeout.setChild(&sequence);
