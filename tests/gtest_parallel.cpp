@@ -145,7 +145,7 @@ TEST_F(SimpleParallelTest, Threshold_3)
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
 
-TEST_F(SimpleParallelTest, Threshold_1)
+TEST_F(SimpleParallelTest, Threshold_2)
 {
     root.setThresholdM(2);
     BT::NodeStatus state = root.executeTick();
@@ -189,8 +189,54 @@ TEST_F(ComplexParallelTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
 
+TEST_F(ComplexParallelTest, ConditionsLeftFalse)
+{
+    parallel_left.setThresholdFM(3);
+    parallel_left.setThresholdM(3);
+    condition_L1.setExpectedResult(NodeStatus::FAILURE);
+    condition_L2.setExpectedResult(NodeStatus::FAILURE);
+    BT::NodeStatus state = parallel_root.executeTick();
+
+    // It fails because Parallel Left it will never succeed (two already fail)
+    // even though threshold_failure == 3
+
+    ASSERT_EQ(NodeStatus::IDLE, parallel_left.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_L1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_L2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_L1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_L2.status());
+
+    ASSERT_EQ(NodeStatus::IDLE, parallel_right.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_R.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_R.status());
+
+    ASSERT_EQ(NodeStatus::FAILURE, state);
+}
+
 TEST_F(ComplexParallelTest, ConditionRightFalse)
 {
+    condition_R.setExpectedResult(NodeStatus::FAILURE);
+    BT::NodeStatus state = parallel_root.executeTick();
+
+    // It fails because threshold_failure is 1 for parallel right and 
+    // condition_R fails
+
+    ASSERT_EQ(NodeStatus::IDLE, parallel_left.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_L1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_L2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_L1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_L2.status());
+
+    ASSERT_EQ(NodeStatus::IDLE, parallel_right.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_R.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_R.status());
+
+    ASSERT_EQ(NodeStatus::FAILURE, state);
+}
+
+TEST_F(ComplexParallelTest, ConditionRightFalse_thresholdF_2)
+{
+    parallel_right.setThresholdFM(2);
     condition_R.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = parallel_root.executeTick();
 
@@ -229,6 +275,7 @@ TEST_F(ComplexParallelTest, ConditionRightFalseAction1Done)
 {
     condition_R.setExpectedResult(NodeStatus::FAILURE);
 
+    parallel_right.setThresholdFM(2);
     parallel_left.setThresholdM(4);
 
     BT::NodeStatus state = parallel_root.executeTick();
