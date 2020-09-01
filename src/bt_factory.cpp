@@ -36,7 +36,8 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<RetryNode>("RetryUntilSuccesful");
     registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
     registerNodeType<RepeatNode>("Repeat");
-    registerNodeType<TimeoutNode>("Timeout");
+    registerNodeType<TimeoutNode<>>("Timeout");
+    registerNodeType<DelayNode>("Delay");
 
     registerNodeType<ForceSuccessNode>("ForceSuccess");
     registerNodeType<ForceFailureNode>("ForceFailure");

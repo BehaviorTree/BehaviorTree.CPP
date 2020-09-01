@@ -24,7 +24,6 @@ static const char* xml_text = R"(
 
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <ApproachObject name="approach"/>
             <CheckBattery   name="battery_ok"/>
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>

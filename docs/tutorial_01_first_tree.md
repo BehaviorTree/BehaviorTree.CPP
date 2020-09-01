@@ -34,13 +34,13 @@ class ApproachObject : public BT::SyncActionNode
         return BT::NodeStatus::SUCCESS;
     }
 };
-```
+``` 
 
 As you can see:
 
 - Any instance of a TreeNode has a `name`. This identifier is meant to be 
   human-readable and it __doesn't__ need to be unique.
-
+ 
 - The method __tick()__ is the place where the actual Action takes place.
   It must always return a NodeStatus, i.e. RUNNING, SUCCESS or FAILURE. 
 
@@ -90,7 +90,7 @@ private:
     bool _open; // shared information
 };
 
-```
+``` 
 
 We can build a `SimpleActionNode` from any of these functors:
 
@@ -107,24 +107,18 @@ Let's consider the following XML file named __my_tree.xml__:
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
+            <CheckBattery   name="check_battery"/>
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>
             <CloseGripper   name="close_gripper"/>
         </Sequence>
      </BehaviorTree>
-     
-     <!-- the BT executor don't require this, but Groot does -->
-    <TreeNodesModel>
-        <Action ID="SayHello"/>
-        <Action ID="OpenGripper"/>
-        <Action ID="ApproachObject"/>
-        <Action ID="CloseGripper"/>
-    </TreeNodesModel>
  </root>
 ```
 
 !!! Note
     You can find more details about the XML schema [here](xml_format.md).
+
 
 We must first register our custom TreeNodes into the `BehaviorTreeFactory`
  and then load the XML from file or text.
@@ -134,11 +128,8 @@ the TreeNodes.
 
 The attribute "name" represents the name of the instance; it is optional.
 
-The C++ code:
-
 
 ``` c++
-// simple_bt.h
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 // file that contains the custom nodes definitions
@@ -190,69 +181,7 @@ int main()
        GripperInterface::close
 */
 
-```
+``` 
 
-Where `dummy_nodes.h`  collects all the TreeNodes defined in this tutorial:
 
-```c++
-// dummy_nodes.h
-#include <behaviortree_cpp_v3/action_node.h>
-#include <behaviortree_cpp_v3/bt_factory.h>
 
-using namespace BT;
-
-// Example of custom SyncActionNode (synchronous action)
-// without ports.
-namespace DummyNodes
-{
-// Example of custom SyncActionNode (synchronous action)
-// without ports.
-class ApproachObject : public BT::SyncActionNode
-{
-public:
-  ApproachObject(const std::string& name) : BT::SyncActionNode(name, {})
-  {
-  }
-
-  // You must override the virtual function tick()
-  BT::NodeStatus tick() override
-  {
-    std::cout << "ApproachObject: " << this->name() << std::endl;
-    return BT::NodeStatus::SUCCESS;
-  }
-};
-
-// Simple function that return a NodeStatus
-BT::NodeStatus CheckBattery()
-{
-  std::cout << "[ Battery: OK ]" << std::endl;
-  return BT::NodeStatus::SUCCESS;
-}
-
-// We want to wrap into an ActionNode the methods open() and close()
-class GripperInterface
-{
-public:
-  GripperInterface() : _open(true)
-  {
-  }
-
-  NodeStatus open()
-  {
-    _open = true;
-    std::cout << "GripperInterface::open" << std::endl;
-    return NodeStatus::SUCCESS;
-  }
-
-  NodeStatus close()
-  {
-    std::cout << "GripperInterface::close" << std::endl;
-    _open = false;
-    return NodeStatus::SUCCESS;
-  }
-
-private:
-  bool _open;  // shared information
-};
-}  // namespace DummyNodesa
-```

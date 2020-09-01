@@ -161,7 +161,7 @@ list(APPEND BT_SOURCE
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
     src/decorators/subtree_node.cpp
-    src/decorators/timeout_node.cpp
+    src/decorators/delay_node.cpp
 
     src/controls/if_then_else_node.cpp
     src/controls/fallback_node.cpp
@@ -229,7 +229,7 @@ if( ZMQ_FOUND )
 endif()
 
 if(MSVC)
-    target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
+    target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W3 /WX)
 else()
     target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         -Wall -Wextra -Werror=return-type)
