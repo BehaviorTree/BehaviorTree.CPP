@@ -134,8 +134,11 @@ the TreeNodes.
 
 The attribute "name" represents the name of the instance; it is optional.
 
+The C++ code:
+
 
 ``` c++
+// simple_bt.h
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 // file that contains the custom nodes definitions
@@ -188,6 +191,76 @@ int main()
 */
 
 ```
+
+Where `dummy_nodes.h`  collects all the TreeNodes defined in this tutorial:
+
+```c++
+// dummy_nodes.h
+#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp_v3/bt_factory.h>
+
+using namespace BT;
+
+// Example of custom SyncActionNode (synchronous action)
+// without ports.
+namespace DummyNodes
+{
+// Example of custom SyncActionNode (synchronous action)
+// without ports.
+class ApproachObject : public BT::SyncActionNode
+{
+public:
+  ApproachObject(const std::string& name) : BT::SyncActionNode(name, {})
+  {
+  }
+
+  // You must override the virtual function tick()
+  BT::NodeStatus tick() override
+  {
+    std::cout << "ApproachObject: " << this->name() << std::endl;
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+
+// Simple function that return a NodeStatus
+BT::NodeStatus CheckBattery()
+{
+  std::cout << "[ Battery: OK ]" << std::endl;
+  return BT::NodeStatus::SUCCESS;
+}
+
+// We want to wrap into an ActionNode the methods open() and close()
+class GripperInterface
+{
+public:
+  GripperInterface() : _open(true)
+  {
+  }
+
+  NodeStatus open()
+  {
+    _open = true;
+    std::cout << "GripperInterface::open" << std::endl;
+    return NodeStatus::SUCCESS;
+  }
+
+  NodeStatus close()
+  {
+    std::cout << "GripperInterface::close" << std::endl;
+    _open = false;
+    return NodeStatus::SUCCESS;
+  }
+
+private:
+  bool _open;  // shared information
+};
+}  // namespace DummyNodes
+
+```
+
+
+
+
 
 
 
