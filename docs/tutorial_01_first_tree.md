@@ -107,7 +107,7 @@ Let's consider the following XML file named __my_tree.xml__:
  <root main_tree_to_execute = "MainTree" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-            <SayHello       name="action_hello"/>
+            <CheckBattery   name="check_battery"/>
             <OpenGripper    name="open_gripper"/>
             <ApproachObject name="approach_object"/>
             <CloseGripper   name="close_gripper"/>
