@@ -62,7 +62,7 @@ class Semaphore
 //  - Handlers are ALWAYS executed in the Timer Queue worker thread.
 //  - Handlers execution order is NOT guaranteed
 //
-template <typename _Clock, typename _Duration>
+template <typename _Clock = std::chrono::steady_clock, typename _Duration = std::chrono::steady_clock::duration>
 class TimerQueue
 {
   public:

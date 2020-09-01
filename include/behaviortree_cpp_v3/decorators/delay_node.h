@@ -44,7 +44,7 @@ class DelayNode : public DecoratorNode
     }
 
   private:
-    TimerQueue timer_;
+    TimerQueue<> timer_;
     uint64_t timer_id_;
 
     virtual BT::NodeStatus tick() override;
