@@ -254,13 +254,5 @@ public:
 private:
   bool _open;  // shared information
 };
-}  // namespace DummyNodes
-
+}  // namespace DummyNodesa
 ```
-
-
-
-
-
-
-
