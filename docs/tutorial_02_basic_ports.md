@@ -222,7 +222,6 @@ In this example, a Sequence of 5 Actions is executed:
 The C++ code:
 
 ```C++
-// simple_bt.cpp
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 // file that contains the custom nodes definitions
@@ -264,111 +263,6 @@ this means that they "point" to the same entry of the blackboard.
 
 These ports can be connected to each other because their type is the same,
 i.e. `std::string`.
-
-The final `dummy_nodes.h`  collecting all the TreeNodes defined in this tutorial is here reported:
-
-```c++
-// dummy_nodes.h
-#include <behaviortree_cpp_v3/action_node.h>
-#include <behaviortree_cpp_v3/bt_factory.h>
-
-using namespace BT;
-
-// Example of custom SyncActionNode (synchronous action)
-// without ports.
-namespace DummyNodes
-{
-// SyncActionNode (synchronous action) with an input port.
-class SaySomething : public SyncActionNode
-{
-public:
-  // If your Node has ports, you must use this constructor signature
-  SaySomething(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config)
-  {
-  }
-
-  // It is mandatory to define this static method.
-  static PortsList providedPorts()
-  {
-    // This action has a single input port called "message"
-    // Any port must have a name. The type is optional.
-    return { InputPort<std::string>("message") };
-  }
-
-  // As usual, you must override the virtual function tick()
-  NodeStatus tick() override
-  {
-    class ThinkWhatToSay : public SyncActionNode
-    {
-    public:
-      ThinkWhatToSay(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config)
-      {
-      }
-
-      static PortsList providedPorts()
-      {
-        return { OutputPort<std::string>("text") };
-      }
-
-      // This Action writes a value into the port "text"
-      NodeStatus tick() override
-      {
-        // the output may change at each tick(). Here we keep it simple.
-        setOutput("text", "The answer is 42");
-        return NodeStatus::SUCCESS;
-      }
-    };
-    Optional<std::string> msg = getInput<std::string>("message");
-    // Check if optional is valid. If not, throw its error
-    if (!msg)
-    {
-      throw BT::RuntimeError("missing required input [message]: ", msg.error());
-    }
-
-    // use the method value() to extract the valid message.
-    std::cout << "Robot says: " << msg.value() << std::endl;
-    return NodeStatus::SUCCESS;
-  }
-};
-
-// Simple function that return a NodeStatus
-BT::NodeStatus SaySomethingSimple(BT::TreeNode& self)
-{
-  Optional<std::string> msg = self.getInput<std::string>("message");
-  // Check if optional is valid. If not, throw its error
-  if (!msg)
-  {
-    throw BT::RuntimeError("missing required input [message]: ", msg.error());
-  }
-
-  // use the method value() to extract the valid message.
-  std::cout << "Robot says: " << msg.value() << std::endl;
-  return NodeStatus::SUCCESS;
-}
-
-// SyncActionNode (synchronous action) with an output port.
-class ThinkWhatToSay : public SyncActionNode
-{
-public:
-  ThinkWhatToSay(const std::string& name, const NodeConfiguration& config) : SyncActionNode(name, config)
-  {
-  }
-
-  static PortsList providedPorts()
-  {
-    return { OutputPort<std::string>("text") };
-  }
-
-  // This Action writes a value into the port "text"
-  NodeStatus tick() override
-  {
-    // the output may change at each tick(). Here we keep it simple.
-    setOutput("text", "The answer is 42");
-    return NodeStatus::SUCCESS;
-  }
-};
-}  // namespace DummyNodes
-```
 
 
 
