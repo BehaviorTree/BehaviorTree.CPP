@@ -203,19 +203,6 @@ In this example, a Sequence of 5 Actions is executed:
            <SaySomething2    message="{the_answer}" />
        </Sequence>
     </BehaviorTree>
-
-    <!-- the BT executor don't require this, but Groot does -->
-    <TreeNodesModel>
-        <Action ID="SaySomething">
-            <input_port name="message" type="std::string" />
-        </Action>
-        <Action ID="SaySomething2">
-            <input_port name="message" type="std::string" />
-        </Action>
-        <Action ID="ThinkWhatToSay">
-            <output_port name="text" type="std::string" />
-        </Action>
-    </TreeNodesModel>
 </root>
 ```
 
@@ -225,7 +212,7 @@ The C++ code:
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 // file that contains the custom nodes definitions
-#include "./dummy_nodes.h"
+#include "dummy_nodes.h"
 
 int main()
 {
