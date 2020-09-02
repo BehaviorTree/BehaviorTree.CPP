@@ -65,12 +65,12 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
             zmq::message_t req;
             try
             {
-                bool received = zmq_->server.recv(&req);
+                bool received = zmq_->server.recv(&req, 0);
                 if (received)
                 {
                     zmq::message_t reply(tree_buffer_.size());
                     memcpy(reply.data(), tree_buffer_.data(), tree_buffer_.size());
-                    zmq_->server.send(reply);
+                    zmq_->server.send(reply, 0);
                 }
             }
             catch (zmq::error_t& err)
@@ -162,7 +162,7 @@ void PublisherZMQ::flush()
         createStatusBuffer();
     }
 
-    zmq_->publisher.send(message);
+    zmq_->publisher.send(message, 0);
     send_pending_ = false;
     // printf("%.3f zmq send\n", std::chrono::duration<double>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count());
 }

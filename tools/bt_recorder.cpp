@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
         zmq::message_t msg;
         try
         {
-            subscriber.recv(&update);
+            subscriber.recv(&update, 0);
         }
         catch (zmq::error_t& e)
         {
