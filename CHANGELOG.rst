@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.5.2 (2020-09-02)
+------------------
 * fix warning and follow coding standard
 * docs: Small changes to tutorial 02 (`#225 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/225>`_)
   Co-authored-by: Valerio Magnago <valerio.magnago@fraunhofer.it>
