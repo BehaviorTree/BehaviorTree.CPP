@@ -7,20 +7,20 @@ namespace BT
 {
 DelayNode::DelayNode(const std::string& name, unsigned milliseconds)
   : DecoratorNode(name, {})
+  , delay_started_(false)
+  , delay_aborted_(false)
   , msec_(milliseconds)
   , read_parameter_from_ports_(false)
-  , delay_started_(false)
-  , delay_aborted(false)
 {
     setRegistrationID("Delay");
 }
 
 DelayNode::DelayNode(const std::string& name, const NodeConfiguration& config)
   : DecoratorNode(name, config)
+  , delay_started_(false)
+  , delay_aborted_(false)
   , msec_(0)
   , read_parameter_from_ports_(true)
-  , delay_started_(false)
-  , delay_aborted(false)
 {
 }
 
@@ -36,45 +36,37 @@ NodeStatus DelayNode::tick()
 
     if (!delay_started_)
     {
-        delay_complete = false;
+        delay_complete_ = false;
         delay_started_ = true;
         setStatus(NodeStatus::RUNNING);
-        if (msec_ >= 0)
+
+        timer_id_ = timer_.add(std::chrono::milliseconds(msec_),
+                               [this](bool aborted)
         {
-            timer_id_ = timer_.add(std::chrono::milliseconds(msec_), 
-                                        [this](bool aborted) 
+            std::unique_lock<std::mutex> lk(delay_mutex_);
+            if (!aborted)
             {
-                std::unique_lock<std::mutex> lk(delay_mutex);
-                if (!aborted)
-                {
-                    delay_complete = true;
-                }
-                else
-                {
-                    delay_aborted = true;
-                }
-            });
-        }
-        else
-        {
-            throw RuntimeError("Parameter [delay_msec] in DelayNode cannot be negative (Time once lost is lost forever)! ");            
-        }
-        
+                delay_complete_ = true;
+            }
+            else
+            {
+                delay_aborted_ = true;
+            }
+        });
     }
 
-    std::unique_lock<std::mutex> lk(delay_mutex);
+    std::unique_lock<std::mutex> lk(delay_mutex_);
 
-    if (delay_aborted)
+    if (delay_aborted_)
     {
-        delay_aborted = false;
+        delay_aborted_ = false;
         delay_started_ = false;
         return NodeStatus::FAILURE;
     }
-
-    else if (delay_complete)
+    else if (delay_complete_)
     {
         delay_started_ = false;
-        delay_aborted = false;
+        delay_aborted_ = false;
         auto child_status = child()->executeTick();
         return child_status;
     }

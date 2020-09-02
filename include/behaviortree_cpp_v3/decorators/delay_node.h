@@ -49,12 +49,12 @@ class DelayNode : public DecoratorNode
 
     virtual BT::NodeStatus tick() override;
 
-    bool delay_aborted;
-    bool delay_complete;
+    bool delay_started_;
+    bool delay_complete_;
+    bool delay_aborted_;
     unsigned msec_;
     bool read_parameter_from_ports_;
-    bool delay_started_;
-    std::mutex delay_mutex;
+    std::mutex delay_mutex_;
 };
 
 }   // namespace BT
