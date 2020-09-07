@@ -49,7 +49,7 @@ nav:
        - "Tutorial 5: Subtrees and Loggers":  tutorial_05_subtrees.md
        - "Tutorial 6: Ports remapping":       tutorial_06_subtree_ports.md
        - "Tutorial 7: Wrap legacy code":      tutorial_07_legacy.md
-       - "Tutorial 8: Class parameters":      tutorial_08_additional_args.md
+       - "Tutorial 8: Additional arguments":  tutorial_08_additional_args.md
        - "Tutorial 9: Coroutines":            tutorial_09_coroutines.md
        
     - Migration Guide:
