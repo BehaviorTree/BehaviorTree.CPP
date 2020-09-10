@@ -15,7 +15,9 @@
 #include <string>
 
 BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadline_ms) :
-    AsyncActionNode(name, {})
+    AsyncActionNode(name, {}),
+  success_count_(0),
+  failure_count_(0)
 {
     expected_result_ = NodeStatus::SUCCESS;
     time_ = deadline_ms;
@@ -40,12 +42,19 @@ BT::NodeStatus BT::AsyncActionTest::tick()
         return NodeStatus::IDLE;
     }
 
+    if( expected_result_ == NodeStatus::SUCCESS){
+        success_count_++;
+    }
+    else if( expected_result_ == NodeStatus::FAILURE){
+        failure_count_++;
+    }
+
     return expected_result_;
 }
 
 void BT::AsyncActionTest::halt()
 {
-    // do more cleanup here is necessary
+    // do more cleanup here if necessary
     AsyncActionNode::halt();
 }
 

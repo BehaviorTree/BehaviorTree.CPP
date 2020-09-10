@@ -102,13 +102,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 elseif(BUILD_UNIT_TESTS)
-    find_package(GTest)
-
-    if(NOT GTEST_FOUND)
-        message(WARNING " GTest missing! You may want to follow these instructions:")
-        message(WARNING " https://gist.github.com/Cartexius/4c437c084d6e388288201aadf9c8cdd5")
-    endif()
-
+    find_package(GTest REQUIRED)
 endif()
 
 

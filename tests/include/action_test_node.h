@@ -49,13 +49,21 @@ class AsyncActionTest : public AsyncActionNode
 
     void setExpectedResult(NodeStatus res);
 
-    int tickCount() const
-    {
+    int tickCount() const {
         return tick_count_;
     }
 
-    void resetTicks()
-    {
+    int successCount() const {
+        return success_count_;
+    }
+
+    int failureCount() const {
+        return failure_count_;
+    }
+
+    void resetCounters() {
+        success_count_ = 0;
+        failure_count_ = 0;
         tick_count_ = 0;
     }
 
@@ -64,6 +72,8 @@ class AsyncActionTest : public AsyncActionNode
     BT::Duration time_;
     std::atomic<NodeStatus> expected_result_;
     std::atomic<int> tick_count_;
+    int success_count_;
+    int failure_count_;
 
 };
 }

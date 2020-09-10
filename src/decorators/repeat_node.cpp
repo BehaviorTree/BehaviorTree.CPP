@@ -56,12 +56,14 @@ NodeStatus RepeatNode::tick()
             case NodeStatus::SUCCESS:
             {
                 try_index_++;
+                haltChild();
             }
             break;
 
             case NodeStatus::FAILURE:
             {
                 try_index_ = 0;
+                haltChild();
                 return (NodeStatus::FAILURE);
             }
 

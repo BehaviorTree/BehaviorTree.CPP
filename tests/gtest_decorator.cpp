@@ -28,10 +28,7 @@ struct DeadlineTest : testing::Test
     {
         root.setChild(&action);
     }
-    ~DeadlineTest()
-    {
-        
-    }
+    ~DeadlineTest() = default;
 };
 
 struct RepeatTest : testing::Test
@@ -43,10 +40,19 @@ struct RepeatTest : testing::Test
     {
         root.setChild(&action);
     }
-    ~RepeatTest()
+    ~RepeatTest() = default;
+};
+
+struct RepeatTestAsync : testing::Test
+{
+    BT::RepeatNode root;
+    BT::AsyncActionTest action;
+
+    RepeatTestAsync() : root("repeat", 3), action("action", milliseconds(100))
     {
-        
+        root.setChild(&action);
     }
+    ~RepeatTestAsync() = default;
 };
 
 struct RetryTest : testing::Test
@@ -58,10 +64,7 @@ struct RetryTest : testing::Test
     {
         root.setChild(&action);
     }
-    ~RetryTest()
-    {
-        
-    }
+    ~RetryTest() = default;
 };
 
 struct TimeoutAndRetry : testing::Test
@@ -126,6 +129,38 @@ TEST_F(RetryTest, RetryTestA)
     root.executeTick();
     ASSERT_EQ(NodeStatus::SUCCESS, root.status());
     ASSERT_EQ(1, action.tickCount() );
+}
+
+
+TEST_F(RepeatTestAsync, RepeatTestAsync)
+{
+    action.setExpectedResult(NodeStatus::SUCCESS);
+
+    auto res = root.executeTick();
+
+    while(res == NodeStatus::RUNNING){
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        res =  root.executeTick();
+    }
+
+    ASSERT_EQ(NodeStatus::SUCCESS, root.status());
+    ASSERT_EQ(3, action.successCount() );
+    ASSERT_EQ(0, action.failureCount() );
+
+    //-------------------
+    action.setExpectedResult(NodeStatus::FAILURE);
+    action.resetCounters();
+
+    res = root.executeTick();
+    while(res == NodeStatus::RUNNING){
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        res =  root.executeTick();
+    }
+
+    ASSERT_EQ(NodeStatus::FAILURE, root.status());
+    ASSERT_EQ(0, action.successCount() );
+    ASSERT_EQ(1, action.failureCount() );
+
 }
 
 TEST_F(RepeatTest, RepeatTestA)
