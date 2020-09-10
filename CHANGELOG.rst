@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.5.3 (2020-09-10)
+------------------
 * fix issue `#228 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/228>`_ . Retry and Repeat node need to halt the child
 * better tutorial
 * Contributors: Davide Faconti
