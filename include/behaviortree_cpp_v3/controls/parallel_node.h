@@ -31,8 +31,8 @@ class ParallelNode : public ControlNode
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>(THRESHOLD_SUCCESS, "number of childen which need to succeed to trigger a SUCCESS )), 
-                 InputPort<unsigned>(THRESHOLD_FAILURE, 1, "number of childen which need to fail to trigger a FAILURE ) };
+        return { InputPort<unsigned>(THRESHOLD_SUCCESS, "number of childen which need to succeed to trigger a SUCCESS" ),
+                 InputPort<unsigned>(THRESHOLD_FAILURE, 1, "number of childen which need to fail to trigger a FAILURE" ) };
     }
 
     ~ParallelNode() = default;
