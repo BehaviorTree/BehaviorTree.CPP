@@ -23,7 +23,7 @@ RetryNode::RetryNode(const std::string& name, int NTries)
     try_index_(0),
     read_parameter_from_ports_(false)
 {
-    setRegistrationID("RetryUntilSuccesful");
+    setRegistrationID("RetryUntilSuccessful");
 }
 
 RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config)
