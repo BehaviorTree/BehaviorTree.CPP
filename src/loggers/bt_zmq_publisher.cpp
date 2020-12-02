@@ -1,7 +1,7 @@
 #include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 #include "behaviortree_cpp_v3/flatbuffers/bt_flatbuffer_helper.h"
 #include <future>
-#include <zmq.hpp>
+#include "zmq.hpp"
 
 namespace BT
 {
@@ -55,7 +55,7 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
     zmq_->server.bind(str);
 
     int timeout_ms = 100;
-    zmq_->server.setsockopt(ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
+    zmq_->server.set(zmq::sockopt::rcvtimeo, timeout_ms);
 
     active_server_ = true;
 
@@ -65,12 +65,12 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
             zmq::message_t req;
             try
             {
-                bool received = zmq_->server.recv(&req, 0);
+                zmq::recv_result_t received = zmq_->server.recv(req);
                 if (received)
                 {
                     zmq::message_t reply(tree_buffer_.size());
                     memcpy(reply.data(), tree_buffer_.data(), tree_buffer_.size());
-                    zmq_->server.send(reply, 0);
+                    zmq_->server.send(reply, zmq::send_flags::none);
                 }
             }
             catch (zmq::error_t& err)
@@ -148,14 +148,14 @@ void PublisherZMQ::flush()
         uint8_t* data_ptr = static_cast<uint8_t*>(message.data());
 
         // first 4 bytes are the side of the header
-        flatbuffers::WriteScalar<uint32_t>(data_ptr, status_buffer_.size());
+        flatbuffers::WriteScalar<uint32_t>(data_ptr, static_cast<uint32_t>(status_buffer_.size()));
         data_ptr += sizeof(uint32_t);
         // copy the header part
         memcpy(data_ptr, status_buffer_.data(), status_buffer_.size());
         data_ptr += status_buffer_.size();
 
         // first 4 bytes are the side of the transition buffer
-        flatbuffers::WriteScalar<uint32_t>(data_ptr, transition_buffer_.size());
+        flatbuffers::WriteScalar<uint32_t>(data_ptr, static_cast<uint32_t>(transition_buffer_.size()));
         data_ptr += sizeof(uint32_t);
 
         for (auto& transition : transition_buffer_)
@@ -168,7 +168,7 @@ void PublisherZMQ::flush()
     }
     try
     {
-        zmq_->publisher.send(message, 0);
+        zmq_->publisher.send(message, zmq::send_flags::none);
     }
     catch (zmq::error_t& err)
     {
@@ -178,7 +178,6 @@ void PublisherZMQ::flush()
         }
         std::cout << "[PublisherZMQ] just died. Exeption " << err.what() << std::endl;
     }
-    
     
     send_pending_ = false;
     // printf("%.3f zmq send\n", std::chrono::duration<double>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count());
