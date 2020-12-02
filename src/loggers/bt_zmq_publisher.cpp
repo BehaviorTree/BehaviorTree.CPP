@@ -75,6 +75,10 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
             }
             catch (zmq::error_t& err)
             {
+                if (err.num() == ETERM)
+                {
+                    std::cout << "[PublisherZMQ] Server quitting." << std::endl;
+                }
                 std::cout << "[PublisherZMQ] just died. Exeption " << err.what() << std::endl;
                 active_server_ = false;
             }
@@ -87,6 +91,7 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
 PublisherZMQ::~PublisherZMQ()
 {
     active_server_ = false;
+    zmq_->context.shutdown();
     if (thread_.joinable())
     {
         thread_.join();
@@ -161,8 +166,20 @@ void PublisherZMQ::flush()
         transition_buffer_.clear();
         createStatusBuffer();
     }
-
-    zmq_->publisher.send(message, 0);
+    try
+    {
+        zmq_->publisher.send(message, 0);
+    }
+    catch (zmq::error_t& err)
+    {
+        if (err.num() == ETERM)
+        {
+            std::cout << "[PublisherZMQ] Publisher quitting." << std::endl;
+        }
+        std::cout << "[PublisherZMQ] just died. Exeption " << err.what() << std::endl;
+    }
+    
+    
     send_pending_ = false;
     // printf("%.3f zmq send\n", std::chrono::duration<double>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count());
 }
