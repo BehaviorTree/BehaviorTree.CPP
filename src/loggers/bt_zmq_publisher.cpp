@@ -76,8 +76,9 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
             catch (zmq::error_t& err)
             {
                 if (err.num() == ETERM)
+                {
                     std::cout << "[PublisherZMQ] Server quitting." << std::endl;
-
+                }
                 std::cout << "[PublisherZMQ] just died. Exeption " << err.what() << std::endl;
                 active_server_ = false;
             }
@@ -90,9 +91,7 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
 PublisherZMQ::~PublisherZMQ()
 {
     active_server_ = false;
-
     zmq_->context.shutdown();
-
     if (thread_.joinable())
     {
         thread_.join();
@@ -174,8 +173,9 @@ void PublisherZMQ::flush()
     catch (zmq::error_t& err)
     {
         if (err.num() == ETERM)
+        {
             std::cout << "[PublisherZMQ] Publisher quitting." << std::endl;
-
+        }
         std::cout << "[PublisherZMQ] just died. Exeption " << err.what() << std::endl;
     }
     
