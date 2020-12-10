@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.5.4 (2020-12-10)
+------------------
 * Update bt_factory.cpp (`#245 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/245>`_)
 * Use the latest version of zmq.hpp
 * Improved switching BTs with active Groot monitoring (ZMQ logger destruction) (`#244 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/244>`_)
