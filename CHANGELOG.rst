@@ -2,6 +2,18 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update bt_factory.cpp (`#245 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/245>`_)
+* Use the latest version of zmq.hpp
+* Improved switching BTs with active Groot monitoring (ZMQ logger destruction) (`#244 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/244>`_)
+  * Skip 100ms (max) wait for detached thread
+  * add {} to single line if statements
+* Update retry_node.cpp
+* fix
+* fix issue `#230 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/230>`_
+* Contributors: Davide Faconti, Florian Gramß, amangiat88
+
 3.5.3 (2020-09-10)
 ------------------
 * fix issue `#228 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/228>`_ . Retry and Repeat node need to halt the child
