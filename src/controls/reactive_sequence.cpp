@@ -40,6 +40,7 @@ NodeStatus ReactiveSequence::tick()
 
             case NodeStatus::FAILURE:
             {
+                haltChildren();
                 index = 0;
                 running_count = 0;
                 return NodeStatus::RUNNING;
