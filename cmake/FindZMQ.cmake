@@ -13,6 +13,14 @@
 #  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
 
+if(ZeroMQ_FOUND)
+  set(ZMQ_FOUND ${ZeroMQ_FOUND})
+  set(ZMQ_INCLUDE_DIRS ${ZeroMQ_INCLUDE_DIR})
+  set(ZMQ_LIBRARIES ${ZeroMQ_LIBRARY})
+else()
+
+
+
 if (ZMQ_LIBRARIES AND ZMQ_INCLUDE_DIRS)
   # in cache already
   set(ZMQ_FOUND TRUE)
@@ -55,4 +63,4 @@ else (ZMQ_LIBRARIES AND ZMQ_INCLUDE_DIRS)
   mark_as_advanced(ZMQ_INCLUDE_DIRS ZMQ_LIBRARIES)
 
 endif (ZMQ_LIBRARIES AND ZMQ_INCLUDE_DIRS)
-
+endif(ZeroMQ_FOUND)
