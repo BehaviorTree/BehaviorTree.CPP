@@ -8,8 +8,8 @@ namespace BT
 {
 enum class TimestampType
 {
-    ABSOLUTE,
-    RELATIVE
+    absolute,
+    relative
 };
 
 typedef std::array<uint8_t, 12> SerializedTransition;
@@ -62,7 +62,7 @@ class StatusChangeLogger
 //--------------------------------------------
 
 inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node)
-  : enabled_(true), show_transition_to_idle_(true), type_(TimestampType::ABSOLUTE)
+  : enabled_(true), show_transition_to_idle_(true), type_(TimestampType::absolute)
 {
     first_timestamp_ = std::chrono::high_resolution_clock::now();
 
@@ -70,7 +70,7 @@ inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node)
                                     NodeStatus status) {
         if (enabled_ && (status != NodeStatus::IDLE || show_transition_to_idle_))
         {
-            if (type_ == TimestampType::ABSOLUTE)
+            if (type_ == TimestampType::absolute)
             {
                 this->callback(timestamp.time_since_epoch(), node, prev, status);
             }
