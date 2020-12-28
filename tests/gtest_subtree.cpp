@@ -77,14 +77,14 @@ TEST(SubTree, GoodRemapping)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="hello" output_key="thoughts" />
-            <SubTree ID="CopySubtree" in_arg="thoughts" out_arg="greetings"/>
-            <SaySomething  message="{greetings}" />
+            <SetBlackboard value="hello" output_key="base_bb_in" />
+            <SubTree ID="CopySubtree" child_bb_in="base_bb_in" child_bb_out="base_bb_out"/>
+            <SaySomething  message="{base_bb_out}" />
         </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="CopySubtree">
-            <CopyPorts in="{in_arg}" out="{out_arg}"/>
+            <CopyPorts in="{child_bb_in}" out="{child_bb_out}"/>
     </BehaviorTree>
 </root> )";
 
@@ -92,9 +92,12 @@ TEST(SubTree, GoodRemapping)
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
   factory.registerNodeType<CopyPorts>("CopyPorts");
 
-  Tree tree = factory.createTreeFromText(xml_text);
+  Blackboard::Ptr blackboard = Blackboard::create();
+  Tree tree = factory.createTreeFromText(xml_text, blackboard);
   auto ret = tree.tickRoot();
   ASSERT_EQ(ret, NodeStatus::SUCCESS );
+  auto out_key_value = blackboard->get<std::string>("base_bb_out");
+  ASSERT_EQ("hello", out_key_value);
 }
 
 TEST(SubTree, BadRemapping)
@@ -142,6 +145,42 @@ TEST(SubTree, BadRemapping)
   EXPECT_ANY_THROW( tree_bad_out.tickRoot() );
 }
 
+TEST(SubTree, SubtreeSharedBlackboard)
+{
+    static const char* xml_text = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SetBlackboard value="abc" output_key="shared_bb_in_1" />
+            <SetBlackboard value="def" output_key="shared_bb_in_2" />
+            <SubTree ID="mySubtree" __shared_blackboard="true"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="mySubtree">
+        <Sequence>
+            <CopyPorts in="{shared_bb_in_1}" out="{shared_bb_out_1}"/>
+            <CopyPorts in="{shared_bb_in_2}" out="{shared_bb_out_2}"/>
+        </Sequence>
+    </BehaviorTree>
+</root> )";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<CopyPorts>("CopyPorts");
+
+    Blackboard::Ptr blackboard = Blackboard::create();
+    Tree tree = factory.createTreeFromText(xml_text, blackboard);
+    auto ret = tree.tickRoot();
+    ASSERT_EQ(ret, NodeStatus::SUCCESS );
+
+    auto shared_bb_out_1_value = blackboard->get<std::string>("shared_bb_out_1");
+    auto shared_bb_out_2_value = blackboard->get<std::string>("shared_bb_out_2");
+    ASSERT_EQ("abc", shared_bb_out_1_value);
+    ASSERT_EQ("def", shared_bb_out_2_value);
+}
+
 TEST(SubTree, SubtreePlusA)
 {
     static const char* xml_text = R"(
@@ -150,59 +189,44 @@ TEST(SubTree, SubtreePlusA)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="Hello" output_key="myParam" />
-            <SubTreePlus ID="mySubtree" param="{myParam}" />
-            <SubTreePlus ID="mySubtree" param="World" />
-            <SetBlackboard value="Auto remapped" output_key="param" />
-            <SubTreePlus ID="mySubtree" __autoremap="1"  />
+            <SetBlackboard value="abc" output_key="abc_base_bb_in" />
+            <SubTreePlus ID="subtree_abc" abc_child_bb_in="{abc_base_bb_in}" abc_child_bb_out="{abc_base_bb_out}" />
+            <SubTreePlus ID="subtree_def" def_child_bb_in="def" def_child_bb_out="{def_base_bb_out}" />
+            <SetBlackboard value="ghi" output_key="ghi_base_bb_in" />
+            <SubTreePlus ID="subtree_ghi" __autoremap="1"  />
         </Sequence>
     </BehaviorTree>
 
-    <BehaviorTree ID="mySubtree">
-            <SaySomething message="{param}" />
+    <BehaviorTree ID="subtree_abc">
+        <CopyPorts in="{abc_child_bb_in}" out="{abc_child_bb_out}"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="subtree_def">
+        <CopyPorts in="{def_child_bb_in}" out="{def_child_bb_out}"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="subtree_ghi">
+        <CopyPorts in="{ghi_base_bb_in}" out="{ghi_base_bb_out}"/>
     </BehaviorTree>
 </root> )";
 
     BehaviorTreeFactory factory;
-    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+    factory.registerNodeType<CopyPorts>("CopyPorts");
 
-    Tree tree = factory.createTreeFromText(xml_text);
+    Blackboard::Ptr blackboard = Blackboard::create();
+    Tree tree = factory.createTreeFromText(xml_text, blackboard);
     auto ret = tree.tickRoot();
     ASSERT_EQ(ret, NodeStatus::SUCCESS );
+    
+    auto abc_base_bb_out_value = blackboard->get<std::string>("abc_base_bb_out");
+    auto def_base_bb_out_value = blackboard->get<std::string>("def_base_bb_out");
+    auto ghi_base_bb_out_value = blackboard->get<std::string>("ghi_base_bb_out");
+    ASSERT_EQ("abc", abc_base_bb_out_value);
+    ASSERT_EQ("def", def_base_bb_out_value);
+    ASSERT_EQ("ghi", ghi_base_bb_out_value);
 }
 
 TEST(SubTree, SubtreePlusB)
-{
-  static const char* xml_text = R"(
-
-<root main_tree_to_execute = "MainTree" >
-
-    <BehaviorTree ID="MainTree">
-        <Sequence>
-            <SetBlackboard value="Hello World" output_key="myParam" />
-            <SetBlackboard value="Auto remapped" output_key="param3" />
-            <SubTreePlus ID="mySubtree" __autoremap="1" param1="{myParam}" param2="Straight Talking" />
-        </Sequence>
-    </BehaviorTree>
-
-    <BehaviorTree ID="mySubtree">
-        <Sequence>
-            <SaySomething message="{param1}" />
-            <SaySomething message="{param2}" />
-            <SaySomething message="{param3}" />
-        </Sequence>
-    </BehaviorTree>
-</root> )";
-
-  BehaviorTreeFactory factory;
-  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
-
-  Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS );
-}
-
-TEST(SubTree, SubtreePlusC)
 {
     static const char* xml_text = R"(
 
@@ -210,26 +234,35 @@ TEST(SubTree, SubtreePlusC)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="Hello" output_key="param1" />
-            <SetBlackboard value="World" output_key="param2" />
-            <SubTree ID="mySubtree" __shared_blackboard="true"/>
+            <SetBlackboard value="abc" output_key="base_bb_in_1" />
+            <SetBlackboard value="ghi" output_key="auto_mapped_in_3" />
+            <SubTreePlus ID="mySubtree" __autoremap="1" child_bb_in_1="{base_bb_in_1}" child_bb_in_2="def" />
         </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="mySubtree">
         <Sequence>
-            <SaySomething message="{param1}" />
-            <SaySomething message="{param2}" />
+            <CopyPorts in="{child_bb_in_1}" out="{auto_mapped_out_1}"/>
+            <CopyPorts in="{child_bb_in_2}" out="{auto_mapped_out_2}"/>
+            <CopyPorts in="{auto_mapped_in_3}" out="{auto_mapped_out_3}"/>
         </Sequence>
     </BehaviorTree>
 </root> )";
 
     BehaviorTreeFactory factory;
-    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+    factory.registerNodeType<CopyPorts>("CopyPorts");
 
-    Tree tree = factory.createTreeFromText(xml_text);
+    Blackboard::Ptr blackboard = Blackboard::create();
+    Tree tree = factory.createTreeFromText(xml_text, blackboard);
     auto ret = tree.tickRoot();
-    ASSERT_EQ(ret, NodeStatus::SUCCESS );
+    ASSERT_EQ(ret, NodeStatus::SUCCESS);
+
+    auto abc_base_bb_out_value = blackboard->get<std::string>("auto_mapped_out_1");
+    auto def_base_bb_out_value = blackboard->get<std::string>("auto_mapped_out_2");
+    auto ghi_base_bb_out_value = blackboard->get<std::string>("auto_mapped_out_3");
+    ASSERT_EQ("abc", abc_base_bb_out_value);
+    ASSERT_EQ("def", def_base_bb_out_value);
+    ASSERT_EQ("ghi", ghi_base_bb_out_value);
 }
 
 
@@ -274,6 +307,7 @@ TEST(SubTree, SubtreePlusD)
     auto ret = tree.tickRoot();
     ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
 }
+
 
 
 
