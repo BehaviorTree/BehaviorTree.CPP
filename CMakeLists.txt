@@ -15,8 +15,8 @@ endif()
 
 #---- Include boost to add coroutines ----
 find_package(Boost COMPONENTS coroutine QUIET)
+
 if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
     string(REPLACE "." "0" Boost_VERSION_NODOT ${Boost_VERSION})
     if(NOT Boost_VERSION_NODOT VERSION_LESS 105900)
         message(STATUS "Found boost::coroutine2.")
@@ -24,11 +24,12 @@ if(Boost_FOUND)
         set(BT_COROUTINES true)
     elseif(NOT Boost_VERSION_NODOT VERSION_LESS 105300)
         message(STATUS "Found boost::coroutine.")
-        include_directories(${Boost_INCLUDE_DIRS})
         add_definitions(-DBT_BOOST_COROUTINE)
         set(BT_COROUTINES true)
     endif()
 endif()
+
+include_directories(${Boost_INCLUDE_DIRS})
 
 if(NOT DEFINED BT_COROUTINES)
     message(STATUS "Coroutines disabled. Install Boost to enable them (version 1.59+ recommended).")
@@ -47,16 +48,15 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 find_package(Threads)
 find_package(ZMQ)
 
-list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES
+list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES
     ${CMAKE_THREAD_LIBS_INIT}
     ${CMAKE_DL_LIBS}
-    ${Boost_LIBRARIES} )
+)
 
 if( ZMQ_FOUND )
     message(STATUS "ZeroMQ found.")
     add_definitions( -DZMQ_FOUND )
     list(APPEND BT_SOURCE src/loggers/bt_zmq_publisher.cpp)
-    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${ZMQ_LIBRARIES})
 else()
     message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
 endif()
@@ -98,7 +98,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
         CATKIN_DEPENDS roslib
         )
 
-    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${catkin_LIBRARIES})
+    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 elseif(BUILD_UNIT_TESTS)
@@ -181,7 +181,7 @@ if(CURSES_FOUND)
     list(APPEND BT_SOURCE
         src/controls/manual_node.cpp
         )
-    list(APPEND BEHAVIOR_TREE_EXTERNAL_LIBRARIES ${CURSES_LIBRARIES})
+    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${CURSES_LIBRARIES})
     add_definitions(-DNCURSES_FOUND)
 endif()
 
@@ -208,7 +208,17 @@ if( ZMQ_FOUND )
 endif()
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
-    ${BEHAVIOR_TREE_EXTERNAL_LIBRARIES})
+    ${BEHAVIOR_TREE_PUBLIC_LIBRARIES})
+
+target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+    ${Boost_LIBRARIES}
+    ${ZMQ_LIBRARIES})
+
+#get_target_property(my_libs ${BEHAVIOR_TREE_LIBRARY} INTERFACE_LINK_LIBRARIES)
+#list(REMOVE_ITEM _libs X)
+#message("my_libs: ${my_libs}")
+
+#set_target_properties(${BEHAVIOR_TREE_LIBRARY} PROPERTIES INTERFACE_LINK_LIBRARIES "")
 
 target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
