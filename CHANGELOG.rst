@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.5.5 (2021-01-27)
+------------------
 * fix issue `#251 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/251>`_
 * Contributors: Davide Faconti
 
