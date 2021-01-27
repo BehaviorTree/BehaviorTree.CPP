@@ -2,6 +2,11 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue `#251 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/251>`_
+* Contributors: Davide Faconti
+
 3.5.4 (2020-12-10)
 ------------------
 * Update bt_factory.cpp (`#245 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/245>`_)
