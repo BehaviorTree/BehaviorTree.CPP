@@ -27,9 +27,9 @@ if(Boost_FOUND)
         add_definitions(-DBT_BOOST_COROUTINE)
         set(BT_COROUTINES true)
     endif()
+    include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS})
 
 if(NOT DEFINED BT_COROUTINES)
     message(STATUS "Coroutines disabled. Install Boost to enable them (version 1.59+ recommended).")
