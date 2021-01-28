@@ -72,7 +72,7 @@ This tree represents the behavior of a sniper in a computer game.
 
 This node is particularly useful to continuously check Conditions; but 
 the user should also be careful when using asynchronous children, to be
-sure that thy are not ticked more often that expected.
+sure that they are not ticked more often that expected.
 
 Let's take a look at another example:
 
