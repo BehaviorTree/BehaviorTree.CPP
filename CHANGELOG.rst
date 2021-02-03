@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.5.6 (2021-02-03)
+------------------
 * fix issue `#227 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/227>`_
 * fix issue `#256 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/256>`_
 * Merge branch 'master' of https://github.com/BehaviorTree/BehaviorTree.CPP
