@@ -149,7 +149,7 @@ class Blackboard
 
             Any temp(value);
 
-            if( locked_type && locked_type != &typeid(T) && locked_type != &temp.type() )
+            if( locked_type && *locked_type != typeid(T) && *locked_type != temp.type() )
             {
                 bool mismatching = true;
                 if( std::is_constructible<StringView, T>::value )
