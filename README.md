@@ -43,6 +43,11 @@ You can learn about the main concepts, the API and the tutorials here: https://w
 
 To find more details about the conceptual ideas that make this implementation different from others, you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
 
+# Does your company use BehaviorTree.CPP?
+
+No company, institution or public/private funding is currently supporting the development of BehaviorTree.CPP and Groot.
+
+Consider becoming a **sponsor** to support bug fixing and development of new features. You can find contact details in [package.xml](package.xml).
 
 # Design principles
 
@@ -124,7 +129,7 @@ to your catkin workspace.
 
 # Acknowledgement
 
-This library was developed at  **Eurecat - https://eurecat.org/en/** (main author, Davide Faconti) in a joint effort
+This library was initially developed at  **Eurecat - https://eurecat.org/en/** (main author, Davide Faconti) in a joint effort
 with the **Italian Institute of Technology** (Michele Colledanchise).
 
 This software is one of the main components of [MOOD2Be](https://eurecat.org/en/portfolio-items/mood2be/),
@@ -153,7 +158,7 @@ The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
 The MIT License (MIT)
 
 Copyright (c) 2014-2018 Michele Colledanchise
-Copyright (c) 2018-2020 Davide Faconti
+Copyright (c) 2018-2021 Davide Faconti
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
