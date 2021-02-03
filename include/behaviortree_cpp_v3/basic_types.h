@@ -85,6 +85,12 @@ template <>
 long convertFromString<long>(StringView str);
 
 template <>
+unsigned long convertFromString<unsigned long>(StringView str);
+
+template <>
+float convertFromString<float>(StringView str);
+
+template <>
 double convertFromString<double>(StringView str);
 
 template <> // Integer numbers separated by the characted ";"

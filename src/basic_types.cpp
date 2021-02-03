@@ -120,6 +120,12 @@ unsigned convertFromString<unsigned>(StringView str)
 }
 
 template <>
+unsigned long convertFromString<unsigned long>(StringView str)
+{
+    return std::stoul(str.data());
+}
+
+template <>
 double convertFromString<double>(StringView str)
 {
     // see issue #120
@@ -128,6 +134,16 @@ double convertFromString<double>(StringView str)
     std::string old_locale = setlocale(LC_NUMERIC,nullptr);
     setlocale(LC_NUMERIC,"C");
     double val = std::stod(str.data());
+    setlocale(LC_NUMERIC, old_locale.c_str());
+    return val;
+}
+
+template <>
+float convertFromString<float>(StringView str)
+{
+    std::string old_locale = setlocale(LC_NUMERIC,nullptr);
+    setlocale(LC_NUMERIC,"C");
+    float val = std::stof(str.data());
     setlocale(LC_NUMERIC, old_locale.c_str());
     return val;
 }
