@@ -2,6 +2,15 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue `#227 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/227>`_
+* fix issue `#256 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/256>`_
+* Merge branch 'master' of https://github.com/BehaviorTree/BehaviorTree.CPP
+* fix issue `#250 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/250>`_
+* Fixed typos on SequenceNode.md (`#254 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/254>`_)
+* Contributors: Davide Faconti, LucasNolasco
+
 3.5.5 (2021-01-27)
 ------------------
 * fix issue `#251 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/251>`_
