@@ -30,7 +30,7 @@ class StatusChangeLogger
         enabled_ = enabled;
     }
 
-    void seTimestampType(TimestampType type)
+    void setTimestampType(TimestampType type)
     {
         type_ = type;
     }
