@@ -143,7 +143,7 @@ Let's say that we want to incapsulate few action into the behaviorTree "__GraspO
      <BehaviorTree ID="MainTree">
         <Sequence>
            <Action  ID="SaySomething"  message="Hello World"/>
-           <Subtree ID="GraspObject"/>
+           <SubTree ID="GraspObject"/>
         </Sequence>
      </BehaviorTree>
      
@@ -183,7 +183,7 @@ using the previous example, we may split the two behavior trees into two files:
      <BehaviorTree ID="MainTree">
         <Sequence>
            <Action  ID="SaySomething"  message="Hello World"/>
-           <Subtree ID="GraspObject"/>
+           <SubTree ID="GraspObject"/>
         </Sequence>
      </BehaviorTree>
   </root>
