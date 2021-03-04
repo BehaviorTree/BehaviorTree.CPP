@@ -57,7 +57,7 @@ void applyRecursiveVisitor(const TreeNode* root_node,
 void applyRecursiveVisitor(TreeNode* root_node, const std::function<void(TreeNode*)>& visitor);
 
 /**
- * Debug function to print on screen the hierarchy of the tree.
+ * Debug function to print on screen the hierarchy of the tree to std::cout.
  */
 void printTreeRecursively(const TreeNode* root_node);
 
