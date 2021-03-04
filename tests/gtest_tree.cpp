@@ -91,31 +91,31 @@ TEST_F(BehaviorTreeTest, PrintWithStream)
     std::string line;
 
     // first line is all dashes
-    ASSERT_TRUE(std::getline(stream, line, '\n'));
+    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
     ASSERT_STREQ("----------------", line.c_str());
 
     // each line is the name of the node, indented by depth * 3 spaces
-    ASSERT_TRUE(std::getline(stream, line, '\n'));
+    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
     ASSERT_STREQ(root.name().c_str(), line.c_str());
 
-    ASSERT_TRUE(std::getline(stream, line, '\n'));
+    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
     ASSERT_STREQ(("   " + fal_conditions.name()).c_str(), line.c_str());
 
-    ASSERT_TRUE(std::getline(stream, line, '\n'));
+    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
     ASSERT_STREQ(("      " + condition_1.name()).c_str(), line.c_str());
 
-    ASSERT_TRUE(std::getline(stream, line, '\n'));
+    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
     ASSERT_STREQ(("      " + condition_2.name()).c_str(), line.c_str());
 
-    ASSERT_TRUE(std::getline(stream, line, '\n'));
+    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
     ASSERT_STREQ(("   " + action_1.name()).c_str(), line.c_str());
 
     // last line is all dashes
-    ASSERT_TRUE(std::getline(stream, line, '\n'));
+    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
     ASSERT_STREQ("----------------", line.c_str());
 
     // no more lines
-    ASSERT_FALSE(std::getline(stream, line, '\n'));
+    ASSERT_TRUE(std::getline(stream, line, '\n').fail());
 }
 
 int main(int argc, char** argv)
