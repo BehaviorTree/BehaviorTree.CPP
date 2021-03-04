@@ -44,6 +44,7 @@
 #include "behaviortree_cpp_v3/decorators/timeout_node.h"
 #include "behaviortree_cpp_v3/decorators/delay_node.h"
 
+#include <ostream>
 
 namespace BT
 {
@@ -59,6 +60,11 @@ void applyRecursiveVisitor(TreeNode* root_node, const std::function<void(TreeNod
  * Debug function to print on screen the hierarchy of the tree.
  */
 void printTreeRecursively(const TreeNode* root_node);
+
+/**
+ * Debug function to print the hierarchy of the tree to a custom stream.
+ */
+void printTreeRecursively(const TreeNode* root_node, std::ostream& stream);
 
 typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
 
