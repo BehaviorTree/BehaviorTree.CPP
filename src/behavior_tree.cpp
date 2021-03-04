@@ -12,7 +12,6 @@
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include <cstring>
-#include <ostream>
 
 namespace BT
 {
@@ -59,11 +58,6 @@ void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>&
     {
         applyRecursiveVisitor(decorator->child(), visitor);
     }
-}
-
-void printTreeRecursively(const TreeNode* root_node)
-{
-    printTreeRecursively(root_node, std::cout);
 }
 
 void printTreeRecursively(const TreeNode* root_node, std::ostream& stream)

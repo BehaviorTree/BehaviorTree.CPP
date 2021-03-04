@@ -81,10 +81,10 @@ TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
 
 TEST_F(BehaviorTreeTest, PrintWithStream)
 {
-    // overload with no stream parameter should go to std::cout
+    // no stream parameter should go to default stream (std::cout)
     BT::printTreeRecursively(&root);
 
-    // verify value for overload with stream parameter
+    // verify value for with custom stream parameter
     std::stringstream stream;
     BT::printTreeRecursively(&root, stream);
     const auto string = stream.str();
