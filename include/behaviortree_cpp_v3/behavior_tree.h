@@ -44,7 +44,7 @@
 #include "behaviortree_cpp_v3/decorators/timeout_node.h"
 #include "behaviortree_cpp_v3/decorators/delay_node.h"
 
-#include <ostream>
+#include <iosfwd>
 
 namespace BT
 {

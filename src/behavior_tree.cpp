@@ -12,6 +12,7 @@
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include <cstring>
+#include <ostream>
 
 namespace BT
 {
