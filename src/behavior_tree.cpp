@@ -60,21 +60,21 @@ void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>&
     }
 }
 
-void printTreeRecursively(const TreeNode* root_node)
+void printTreeRecursively(const TreeNode* root_node, std::ostream& stream)
 {
     std::function<void(unsigned, const BT::TreeNode*)> recursivePrint;
 
-    recursivePrint = [&recursivePrint](unsigned indent, const BT::TreeNode* node) {
+    recursivePrint = [&recursivePrint, &stream](unsigned indent, const BT::TreeNode* node) {
         for (unsigned i = 0; i < indent; i++)
         {
-            std::cout << "   ";
+            stream << "   ";
         }
         if (!node)
         {
-            std::cout << "!nullptr!" << std::endl;
+            stream << "!nullptr!" << std::endl;
             return;
         }
-        std::cout << node->name() << std::endl;
+        stream << node->name() << std::endl;
         indent++;
 
         if (auto control = dynamic_cast<const BT::ControlNode*>(node))
@@ -90,9 +90,9 @@ void printTreeRecursively(const TreeNode* root_node)
         }
     };
 
-    std::cout << "----------------" << std::endl;
+    stream << "----------------" << std::endl;
     recursivePrint(0, root_node);
-    std::cout << "----------------" << std::endl;
+    stream << "----------------" << std::endl;
 }
 
 void buildSerializedStatusSnapshot(TreeNode* root_node, SerializedTreeStatus& serialized_buffer)
