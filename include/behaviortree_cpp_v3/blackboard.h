@@ -189,6 +189,13 @@ class Blackboard
 
     std::vector<StringView> getKeys() const;
 
+    void clear()
+    {
+        std::unique_lock<std::mutex> lock(mutex_);
+        storage_.clear();
+        internal_to_external_.clear();
+    }
+  
   private:
 
     struct Entry{
