@@ -37,6 +37,7 @@ NodeStatus DelayNode::tick()
     if (!delay_started_)
     {
         delay_complete_ = false;
+        delay_aborted_ = false;
         delay_started_ = true;
         setStatus(NodeStatus::RUNNING);
 

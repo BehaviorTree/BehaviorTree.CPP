@@ -39,6 +39,7 @@ class DelayNode : public DecoratorNode
     }
     void halt() override
     {
+        delay_started_ = false;
         timer_.cancelAll();
         DecoratorNode::halt();
     }
