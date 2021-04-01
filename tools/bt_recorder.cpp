@@ -2,8 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <signal.h>
-#include <zmq.hpp>
 #include <fstream>
+#include "cppzmq/zmq.hpp"
 #include "behaviortree_cpp_v3/flatbuffers/BT_logger_generated.h"
 
 // http://zguide.zeromq.org/cpp:interrupt
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     subscriber.connect("tcp://localhost:1666");
 
     //  Subscribe to everything
-    subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+    subscriber.set(zmq::sockopt::subscribe, "");
 
     printf("----------- Started -----------------\n");
 
