@@ -48,6 +48,81 @@ TEST(PortTest, DefaultPorts)
 
     NodeStatus status = tree.tickRoot();
     ASSERT_EQ( status, NodeStatus::SUCCESS );
+}
 
+struct MyType
+{
+  std::string value;
+};
+
+
+class NodeInPorts : public SyncActionNode
+{
+  public:
+  NodeInPorts(const std::string &name, const NodeConfiguration &config)
+      : SyncActionNode(name, config)
+  {}
+
+
+  NodeStatus tick()
+  {
+    int val_A = 0;
+    MyType val_B;
+    if( getInput("int_port", val_A) &&
+        getInput("any_port", val_B) )
+    {
+      return NodeStatus::SUCCESS;
+    }
+    return NodeStatus::FAILURE;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<int>("int_port"),
+             BT::InputPort<MyType>("any_port") };
+  }
+};
+
+class NodeOutPorts : public SyncActionNode
+{
+  public:
+  NodeOutPorts(const std::string &name, const NodeConfiguration &config)
+      : SyncActionNode(name, config)
+  {}
+
+
+  NodeStatus tick()
+  {
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::OutputPort<int>("int_port"),
+            BT::OutputPort<MyType>("any_port") };
+  }
+};
+
+TEST(PortTest, EmptyPort)
+{
+  std::string xml_txt = R"(
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <NodeInPorts  int_port="{ip}" any_port="{ap}" />
+                <NodeOutPorts int_port="{ip}" any_port="{ap}" />
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeOutPorts>("NodeOutPorts");
+  factory.registerNodeType<NodeInPorts>("NodeInPorts");
+
+  auto tree = factory.createTreeFromText(xml_txt);
+
+  NodeStatus status = tree.tickRoot();
+  // expect failure because port is not set yet
+  ASSERT_EQ( status, NodeStatus::FAILURE );
 }
 
