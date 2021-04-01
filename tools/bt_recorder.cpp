@@ -20,8 +20,8 @@ static void CatchSignals(void)
     action.sa_handler = s_signal_handler;
     action.sa_flags = 0;
     sigemptyset(&action.sa_mask);
-    sigaction(SIGINT, &action, NULL);
-    sigaction(SIGTERM, &action, NULL);
+    sigaction(SIGINT, &action, nullptr);
+    sigaction(SIGTERM, &action, nullptr);
 }
 
 int main(int argc, char* argv[])
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
         zmq::message_t msg;
         try
         {
-            subscriber.recv(&update, 0);
+            subscriber.recv(update, zmq::recv_flags::none);
         }
         catch (zmq::error_t& e)
         {

@@ -21,13 +21,13 @@ int main(int argc, char* argv[])
     }
 
     fseek(file, 0L, SEEK_END);
-    const size_t length = ftell(file);
+    const size_t length = static_cast<size_t>(ftell(file));
     fseek(file, 0L, SEEK_SET);
     std::vector<char> buffer(length);
     fread(buffer.data(), sizeof(char), length, file);
     fclose(file);
 
-    const int bt_header_size = flatbuffers::ReadScalar<uint32_t>(&buffer[0]);
+    const auto bt_header_size = flatbuffers::ReadScalar<uint32_t>(&buffer[0]);
 
     auto behavior_tree = Serialization::GetBehaviorTree(&buffer[4]);
 
