@@ -16,6 +16,12 @@ BT::NodeStatus CheckBattery()
     return BT::NodeStatus::SUCCESS;
 }
 
+BT::NodeStatus CheckTemperature()
+{
+    std::cout << "[ Temperature: OK ]" << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
 BT::NodeStatus GripperInterface::open()
 {
     _opened = true;
