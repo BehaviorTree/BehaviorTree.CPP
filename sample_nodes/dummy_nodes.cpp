@@ -22,6 +22,12 @@ BT::NodeStatus CheckTemperature()
     return BT::NodeStatus::SUCCESS;
 }
 
+BT::NodeStatus SayHello()
+{
+    std::cout << "Robot says: Hello World" << std::endl;
+    return BT::NodeStatus::SUCCESS;
+}
+
 BT::NodeStatus GripperInterface::open()
 {
     _opened = true;

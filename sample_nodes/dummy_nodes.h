@@ -10,6 +10,7 @@ namespace DummyNodes
 BT::NodeStatus CheckBattery();
 
 BT::NodeStatus CheckTemperature();
+BT::NodeStatus SayHello();
 
 class GripperInterface
 {
@@ -72,6 +73,7 @@ inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
 
     factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
     factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
+    factory.registerSimpleAction("SayHello", std::bind(SayHello));
     factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &grip_singleton));
     factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &grip_singleton));
     factory.registerNodeType<ApproachObject>("ApproachObject");
