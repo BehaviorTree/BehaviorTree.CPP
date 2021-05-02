@@ -56,7 +56,9 @@ void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>&
     }
     else if (auto decorator = dynamic_cast<BT::DecoratorNode*>(node))
     {
-        applyRecursiveVisitor(decorator->child(), visitor);
+        if( decorator->child() ){
+            applyRecursiveVisitor(decorator->child(), visitor);
+        }
     }
 }
 

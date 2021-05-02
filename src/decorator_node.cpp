@@ -48,6 +48,9 @@ TreeNode* DecoratorNode::child()
 
 void DecoratorNode::haltChild()
 {
+    if( !child_node_ ){
+        return;
+    }
     if (child_node_->status() == NodeStatus::RUNNING)
     {
         child_node_->halt();
