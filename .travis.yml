@@ -11,30 +11,6 @@ os:
 compiler:
   - gcc
 
-conan-linux: &conan-linux
-    os: linux
-    dist: xenial
-    language: python
-    python: "3.7"
-    services:
-      - docker
-    before_install:
-      - true
-    install:
-      - ./conan/travis/install.sh
-    script:
-      - ./conan/travis/build.sh
-
-conan-osx: &conan-osx
-    os: osx
-    language: generic
-    before_install:
-      - true
-    install:
-      - ./conan/travis/install.sh
-    script:
-      - ./conan/travis/build.sh
-
 matrix:
     include:
       - bare_linux:
@@ -62,5 +38,3 @@ before_script:
 script:
   - if [ "$ROS_DISTRO"  = "none" ]; then (cd build; cmake .. ; sudo cmake --build . --target install; ./bin/behaviortree_cpp_v3_test); fi
   - if [ "$ROS_DISTRO" != "none" ]; then (.ci_config/travis.sh); fi
-
-
