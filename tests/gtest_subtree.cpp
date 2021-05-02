@@ -233,4 +233,47 @@ TEST(SubTree, SubtreePlusC)
 }
 
 
+class ReadInConstructor : public BT::SyncActionNode
+{
+  public:
+    ReadInConstructor(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::SyncActionNode(name, config)
+    {
+        auto msg = getInput<std::string>("message");
+        if (!msg) {
+            throw BT::RuntimeError("missing required input [message]: ", msg.error());
+        }
+    }
+
+    BT::NodeStatus tick() override { return BT::NodeStatus::SUCCESS; }
+    static BT::PortsList providedPorts() { return {BT::InputPort<std::string>("message")}; }
+};
+
+TEST(SubTree, SubtreePlusD)
+{
+    BT::NodeConfiguration config;
+    config.blackboard = BT::Blackboard::create();
+    static const char* xml_text = R"(
+
+<root main_tree_to_execute = "MainTree" >
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SubTreePlus ID="mySubtree" __autoremap="1"/>
+        </Sequence>
+    </BehaviorTree>
+    <BehaviorTree ID="mySubtree">
+            <ReadInConstructor message="{message}" />
+    </BehaviorTree>
+</root> )";
+
+    BT::BehaviorTreeFactory factory;
+    factory.registerNodeType<ReadInConstructor>("ReadInConstructor");
+    config.blackboard->set("message", "hello");
+    BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
+    auto ret = tree.tickRoot();
+    ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
+}
+
+
 
