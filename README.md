@@ -44,7 +44,8 @@ To find more details about the conceptual ideas that make this implementation di
 
 # Does your company use BehaviorTree.CPP?
 
-No company, institution or public/private funding is currently supporting the development of BehaviorTree.CPP and Groot. As a consequence, my time to support this library is very small and my intention to support Groot is close to zero.
+No company, institution or public/private funding is currently supporting the development of BehaviorTree.CPP and Groot. As a consequence, my time to support **BehaviorTree.CPP** is very limited and I decided won't spend any time at all supporting **Groot**.
+Pull Requests are welcome and will be reviewed, even if with some delay.
 
 If your company use this software, consider becoming a **sponsor** to support bug fixing and development of new features. You can find contact details in [package.xml](package.xml).
 
