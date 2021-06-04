@@ -78,7 +78,6 @@ if he/she is fully rested.
 
 ??? example "See the pseudocode"
 	``` c++
-		// index is initialized to 0 in the constructor
 		status = RUNNING;
 
 		for (int index=0; index < number_of_children; index++)
@@ -86,21 +85,20 @@ if he/she is fully rested.
 			child_status = child[index]->tick();
 			
 			if( child_status == RUNNING ) {
+				// Suspend all subsequent siblings and return RUNNING.
+				HaltSubsequentSiblings();
 				return RUNNING;
 			}
-			else if( child_status == FAILURE ) {
-				// continue the while loop
-				index++;
-			}
-			else if( child_status == SUCCESS ) {
+			
+			// if child_status == FAILURE, continue to tick next sibling
+			
+			if( child_status == SUCCESS ) {
 				// Suspend execution and return SUCCESS.
-				// At the next tick, index will be the same.
-   			    HaltAllChildren();
+   				HaltAllChildren();
 				return SUCCESS;
 			}
 		}
 		// all the children returned FAILURE. Return FAILURE too.
-		index = 0;
 		HaltAllChildren();
 		return FAILURE;
 	```	
