@@ -13,7 +13,7 @@ __BehaviorTree.CPP__ has many interesting features, when compared to other imple
 
 - It makes asynchronous Actions, i.e. non-blocking, a first-class citizen.
 - It allows the creation of trees at run-time, using a textual representation (XML).
-- You can link staticaly you custom TreeNodes or convert them into plugins 
+- You can link staticaly your custom TreeNodes or convert them into plugins
 which are loaded at run-time.
 - It includes a __logging/profiling__ infrastructure that allows the user 
 to visualize, record, replay and analyze state transitions.
