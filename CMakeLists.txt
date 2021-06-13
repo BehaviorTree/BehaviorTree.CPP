@@ -11,9 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+else()
+    add_definitions(-Wpedantic)
 endif()
-
-add_definitions(-Wpedantic)
 
 #---- Include boost to add coroutines ----
 find_package(Boost COMPONENTS coroutine QUIET)
