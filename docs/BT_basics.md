@@ -39,7 +39,7 @@ The first two, as their names suggests, inform their parent that their operation
  was a success or a failure.
 
 RUNNING is returned by __asynchronous__ nodes when their execution is not 
-completed and they needs more time to return a valid result.
+completed and they need more time to return a valid result.
 
 __Asynchronous nodes can be halted__.
 
