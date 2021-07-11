@@ -7,7 +7,7 @@ using namespace BT;
 
 /** This tutorial will teach you:
  *
- *  - The difference between Sequence and SequenceStar
+ *  - The difference between Sequence and ReactiveSequence
  *
  *  - How to create an asynchronous ActionNode (an action that is execute in
  *    its own thread).
@@ -111,13 +111,10 @@ Robot says: "mission started..."
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
 
 --- 2nd executeTick() ---
-[ Battery: OK ]
 [ MoveBase: FINISHED ]
 
 --- 3rd executeTick() ---
-[ Battery: OK ]
 Robot says: "mission completed!"
-
 
 ------------ BUILDING A NEW TREE ------------
 
@@ -127,9 +124,11 @@ Robot says: "mission started..."
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
 
 --- 2nd executeTick() ---
+[ Battery: OK ]
 [ MoveBase: FINISHED ]
 
 --- 3rd executeTick() ---
+[ Battery: OK ]
 Robot says: "mission completed!"
 
 */
