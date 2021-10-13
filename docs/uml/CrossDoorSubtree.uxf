@@ -53,7 +53,7 @@
       <w>150</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>RetryUntilSuccesful
+    <panel_attributes>RetryUntilSuccesfful
 (num_attempts=4)</panel_attributes>
     <additional_attributes/>
   </element>
