@@ -29,9 +29,9 @@ static const char* xml_text = R"(
             <Inverter>
                 <Condition ID="IsDoorOpen"/>
             </Inverter>
-            <RetryUntilSuccesful num_attempts="4">
+            <RetryUntilSuccessful num_attempts="4">
                 <OpenDoor/>
-            </RetryUntilSuccesful>
+            </RetryUntilSuccessful>
             <PassThroughDoor/>
         </Sequence>
     </BehaviorTree>

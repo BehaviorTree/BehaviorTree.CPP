@@ -43,7 +43,7 @@ Robot Behaviors</panel_attributes>
       <w>150</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>RetryUntilSuccesful</panel_attributes>
+    <panel_attributes>RetryUntilSuccessful</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

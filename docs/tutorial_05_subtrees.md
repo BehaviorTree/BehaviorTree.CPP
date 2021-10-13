@@ -23,9 +23,9 @@ It is also the first practical example that uses `Decorators` and `Fallback`.
             <Inverter>
                 <IsDoorOpen/>
             </Inverter>
-            <RetryUntilSuccesful num_attempts="4">
+            <RetryUntilSuccessful num_attempts="4">
                 <OpenDoor/>
-            </RetryUntilSuccesful>
+            </RetryUntilSuccessful>
             <PassThroughDoor/>
         </Sequence>
     </BehaviorTree>
