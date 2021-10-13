@@ -29,9 +29,9 @@ namespace BT
  *
  * Example:
  *
- * <RetryUntilSuccesful num_attempts="3">
+ * <RetryUntilSuccessful num_attempts="3">
  *     <OpenDoor/>
- * </RetryUntilSuccesful>
+ * </RetryUntilSuccessful>
  */
 class RetryNode : public DecoratorNode
 {
@@ -61,6 +61,22 @@ class RetryNode : public DecoratorNode
 
     virtual BT::NodeStatus tick() override;
 };
+
+class
+[[deprecated("RetryUntilSuccesful was a typo and deprecated, use RetryUntilSuccessful instead.")]]
+RetryNodeTypo : RetryNode{
+  public:
+    RetryNodeTypo(const std::string& name, int NTries)
+      : RetryNode(name, NTries)
+    { };
+
+    RetryNodeTypo(const std::string& name, const NodeConfiguration& config)
+      : RetryNode(name, config)
+    { };
+
+    virtual ~RetryNodeTypo() override = default;
+};
+
 }
 
 #endif

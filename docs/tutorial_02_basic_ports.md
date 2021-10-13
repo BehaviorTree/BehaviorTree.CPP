@@ -245,7 +245,7 @@ int main()
 }
 ```
 
-We "connect" output ports to input ports using the same key (`the_aswer`);
+We "connect" output ports to input ports using the same key (`the_answer`);
 this means that they "point" to the same entry of the blackboard.
 
 These ports can be connected to each other because their type is the same,
