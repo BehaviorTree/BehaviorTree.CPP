@@ -13,7 +13,7 @@ jobs:
     - name: apt
       run: sudo apt-get update && sudo apt-get install -yq libzmq3-dev libdw-dev libgtest-dev cmake
     - name: Install gtest manually
-      run: cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib 
+      run: cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib 
     # build project
     - name: mkdir
       run: mkdir build
@@ -23,5 +23,5 @@ jobs:
       run: cmake --build build/ --target all
     # run tests
     - name: run test
-      run: build/test/behaviortree_cpp_v3_test
+      run: build/bin/behaviortree_cpp_v3_test
 
