@@ -32,6 +32,10 @@ namespace BT
  * <RetryUntilSuccessful num_attempts="3">
  *     <OpenDoor/>
  * </RetryUntilSuccessful>
+ *
+ * Note:
+ * RetryNodeTypo is only included to support the depricated typo
+ * "RetryUntilSuccesful" (note the single 's' in Succesful)
  */
 class RetryNode : public DecoratorNode
 {
@@ -64,7 +68,7 @@ class RetryNode : public DecoratorNode
 
 class
 [[deprecated("RetryUntilSuccesful was a typo and deprecated, use RetryUntilSuccessful instead.")]]
-RetryNodeTypo : RetryNode{
+RetryNodeTypo : public RetryNode{
   public:
     RetryNodeTypo(const std::string& name, int NTries)
       : RetryNode(name, NTries)
