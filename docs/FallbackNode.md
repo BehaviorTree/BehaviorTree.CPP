@@ -17,7 +17,7 @@ They share the following rules:
 - If a child returns __FAILURE__, the fallback ticks the next child.
 
 - If the __last__ child returns __FAILURE__ too, all the children are halted and
- the sequence returns __FAILURE__.
+ the fallback returns __FAILURE__.
  
 - If a child returns __SUCCESS__, it stops and returns __SUCCESS__.
   All the children are halted. 
