@@ -52,7 +52,7 @@ make possible to express more complex control flows. The user can extend the
 
 ## "Ok, but WHY do we need BehaviorTrees (or FSM)?"
 
-Many software systems, being robotics a notable example, are inherently
+Many software systems, robotics being a notable example, are inherently
 complex.
 
 The usual approach to manage complexity, heterogeneity and scalability is to 
