@@ -5,7 +5,6 @@
 
 namespace BT
 {
-std::atomic<bool> PublisherZMQ::ref_count(false);
 
 struct PublisherZMQ::Pimpl
 {
@@ -31,11 +30,6 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
   , send_pending_(false)
   , zmq_(new Pimpl())
 {
-    bool expected = false;
-    if (!ref_count.compare_exchange_strong(expected, true))
-    {
-        throw LogicError("Only one instance of PublisherZMQ shall be created");
-    }
     if( publisher_port == server_port)
     {
         throw LogicError("The TCP ports of the publisher and the server must be different");
@@ -98,7 +92,6 @@ PublisherZMQ::~PublisherZMQ()
     }
     flush();
     delete zmq_;
-    ref_count = false;
 }
 
 

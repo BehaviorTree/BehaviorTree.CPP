@@ -10,7 +10,6 @@ namespace BT
 {
 class PublisherZMQ : public StatusChangeLogger
 {
-    static std::atomic<bool> ref_count;
 
   public:
     PublisherZMQ(const BT::Tree& tree,

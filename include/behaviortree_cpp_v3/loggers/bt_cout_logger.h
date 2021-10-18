@@ -18,7 +18,6 @@ namespace BT
 
 class StdCoutLogger : public StatusChangeLogger
 {
-    static std::atomic<bool> ref_count;
 
   public:
     StdCoutLogger(const BT::Tree& tree);
