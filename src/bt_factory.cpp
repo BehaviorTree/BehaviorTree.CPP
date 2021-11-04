@@ -35,6 +35,9 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<InverterNode>("Inverter");
     registerNodeType<RetryNodeTypo>("RetryUntilSuccesful"); //typo but back compatibility
     registerNodeType<RetryNode>("RetryUntilSuccessful"); // correct one
+
+    registerNodeType<KeepTryingNode>("KeepTryingUntilSuccessful");
+    
     registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
     registerNodeType<RepeatNode>("Repeat");
     registerNodeType<TimeoutNode<>>("Timeout");

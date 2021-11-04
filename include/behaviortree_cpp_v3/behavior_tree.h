@@ -30,6 +30,7 @@
 
 #include "behaviortree_cpp_v3/decorators/inverter_node.h"
 #include "behaviortree_cpp_v3/decorators/retry_node.h"
+#include "behaviortree_cpp_v3/decorators/keep_trying_node.h"
 #include "behaviortree_cpp_v3/decorators/repeat_node.h"
 #include "behaviortree_cpp_v3/decorators/subtree_node.h"
 

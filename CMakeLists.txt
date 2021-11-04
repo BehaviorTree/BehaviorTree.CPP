@@ -156,6 +156,7 @@ list(APPEND BT_SOURCE
     src/decorators/inverter_node.cpp
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
+    src/decorators/keep_trying_node.cpp
     src/decorators/subtree_node.cpp
     src/decorators/delay_node.cpp
 
