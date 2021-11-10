@@ -19,6 +19,7 @@
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
   <depend condition="$ROS_VERSION == 2">rclcpp</depend>
 
+  <depend>boost</depend>
   <depend>libzmq3-dev</depend>
   <depend>libncurses-dev</depend>
   
