@@ -58,7 +58,7 @@ int main()
     // more verbose way
     PortsList think_ports = {BT::OutputPort<std::string>("text")};
     factory.registerBuilder(CreateManifest<ThinkRuntimePort>("ThinkRuntimePort", think_ports),
-                              CreateBuilder<ThinkRuntimePort>());
+                            CreateBuilder<ThinkRuntimePort>());
     // less verbose way
     PortsList say_ports = {BT::InputPort<std::string>("message")};
     factory.registerNodeType<SayRuntimePort>("SayRuntimePort", say_ports);
