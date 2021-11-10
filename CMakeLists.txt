@@ -241,8 +241,14 @@ else()
 endif()
 
 ######################################################
+# Samples
+if (BUILD_SAMPLES)
+    add_subdirectory(sample_nodes)
+endif()
+
+######################################################
 # Test
-if (BUILD_UNIT_TESTS)
+if (BUILD_UNIT_TESTS AND BUILD_SAMPLES)
     add_subdirectory(tests)
 endif()
 
@@ -276,7 +282,6 @@ if(BUILD_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if( BUILD_EXAMPLES )
-    add_subdirectory(sample_nodes)
+if(BUILD_EXAMPLES AND BUILD_SAMPLES)
     add_subdirectory(examples)
 endif()
