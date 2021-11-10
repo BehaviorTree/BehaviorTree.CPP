@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.6.0 (2021-11-10)
+------------------
 * Build samples independently of examples (`#315 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/315>`_)
 * Fix dependency in package.xml (`#313 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/313>`_)
 * Fix doc statement (`#309 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/309>`_)
