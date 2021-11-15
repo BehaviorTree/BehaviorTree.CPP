@@ -32,12 +32,6 @@ if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-
-if(NOT DEFINED BT_COROUTINES)
-    message(STATUS "Coroutines disabled. Install Boost to enable them (version 1.59+ recommended).")
-    add_definitions(-DBT_NO_COROUTINES)
-endif()
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #---- project configuration ----
@@ -45,6 +39,12 @@ option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 option(BUILD_TOOLS "Build commandline tools" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(DISABLE_COROUTINES "Disable coroutines" OFF)
+
+if(DISABLE_COROUTINES OR NOT DEFINED BT_COROUTINES)
+    message(STATUS "Coroutines disabled. Install Boost (version 1.59+ recommended) and ensure DISABLE_COROUTINES is not set to enable them.")
+    add_definitions(-DBT_NO_COROUTINES)
+endif()
 
 #---- Find other packages ----
 find_package(Threads)
