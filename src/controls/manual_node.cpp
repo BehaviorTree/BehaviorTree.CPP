@@ -155,7 +155,7 @@ uint8_t ManualSelectorNode::selectChild() const
     // now print all the menu items and highlight the first one
     for(size_t i=0; i<list.size(); i++ )
     {
-        mvwprintw( win, i+5, 0, "%2d. %s", i+1, list[i].c_str() );
+        mvwprintw( win, i+5, 0, "%2ld. %s", i+1, list[i].c_str() );
     }
 
     wrefresh( win ); // update the terminal screen
