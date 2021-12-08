@@ -148,3 +148,51 @@ TEST(BlackboardPreconditionTest, StringDoesNotEqual)
     const auto status = tree.tickRoot();
     ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
+
+TEST(BlackboardPreconditionTest, BoolEquals)
+{
+    BehaviorTreeFactory factory;
+
+    const std::string xml_text = R"(
+
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <SetBlackboard output_key="a" value="true" />
+                <SetBlackboard output_key="b" value="true" />
+                
+                <BlackboardCheckBool value_A="{a}" value_B="{b}" return_on_mismatch="SUCCESS">
+                    <AlwaysFailure />
+                </BlackboardCheckBool>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+    auto tree = factory.createTreeFromText(xml_text);
+    const auto status = tree.tickRoot();
+    ASSERT_EQ(status, NodeStatus::FAILURE);
+}
+
+TEST(BlackboardPreconditionTest, BoolDoesNotEqual)
+{
+    BehaviorTreeFactory factory;
+
+    const std::string xml_text = R"(
+
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <SetBlackboard output_key="a" value="true" />
+                <SetBlackboard output_key="b" value="false" />
+                
+                <BlackboardCheckBool value_A="{a}" value_B="{b}" return_on_mismatch="SUCCESS">
+                    <AlwaysFailure />
+                </BlackboardCheckBool>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+    auto tree = factory.createTreeFromText(xml_text);
+    const auto status = tree.tickRoot();
+    ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
