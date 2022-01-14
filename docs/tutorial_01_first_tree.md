@@ -102,6 +102,7 @@ We can build a `SimpleActionNode` from any of these functors:
 
 Let's consider the following XML file named __my_tree.xml__:
 
+![ReactiveFallback](images/Tutorial1.svg)
 
 ``` XML
  <root main_tree_to_execute = "MainTree" >

@@ -38,7 +38,7 @@ To understand how the three ControlNodes differ, refer to the following table:
 
 This tree represents the behavior of a sniper in a computer game.
 
-![SequenceNode](images/SequenceNode.png)
+![SequenceNode](images/SequenceNode.svg)
 
 ??? example "See the pseudocode"
 	``` c++
@@ -76,7 +76,7 @@ sure that they are not ticked more often that expected.
 
 Let's take a look at another example:
 
-![ReactiveSequence](images/ReactiveSequence.png)
+![ReactiveSequence](images/ReactiveSequence.svg)
 
 `ApproachEnemy` is an __asynchronous__ action that returns RUNNING until
 it is, eventually, completed.
@@ -118,7 +118,7 @@ If the action __GoTo(B)__ fails, __GoTo(A)__ will not be ticked again.
 On the other hand, __isBatteryOK__ must be checked at every tick, 
 for this reason its parent must be a `ReactiveSequence`.
 
-![SequenceStar](images/SequenceStar.png)
+![SequenceStar](images/SequenceStar.svg)
 
 ??? example "See the pseudocode"
 	``` c++
