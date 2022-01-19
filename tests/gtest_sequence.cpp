@@ -387,7 +387,7 @@ TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
-TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFase)
+TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFalse)
 {
     BT::NodeStatus state = root.executeTick();
 
