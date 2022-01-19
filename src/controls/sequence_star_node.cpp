@@ -74,7 +74,7 @@ NodeStatus SequenceStarNode::tick()
 
 void SequenceStarNode::halt()
 {
-    current_child_idx_ = 0;
+    // DO NOT reset current_child_idx_ on halt
     ControlNode::halt();
 }
 
