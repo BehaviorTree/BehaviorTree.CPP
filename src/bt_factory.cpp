@@ -53,6 +53,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
+    registerNodeType<BlackboardPreconditionNode<bool>>("BlackboardCheckBool");
 
     registerNodeType<SwitchNode<2>>("Switch2");
     registerNodeType<SwitchNode<3>>("Switch3");

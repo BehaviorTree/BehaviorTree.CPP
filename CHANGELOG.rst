@@ -2,6 +2,71 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.6.0 (2021-11-10)
+------------------
+* Build samples independently of examples (`#315 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/315>`_)
+* Fix dependency in package.xml (`#313 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/313>`_)
+* Fix doc statement (`#309 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/309>`_)
+  Fix sentence
+* Fix references to RetryUntilSuccesful (`#308 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/308>`_)
+  * Fix github action
+  * Fix references to RetryUntilSuccesful
+* added subclass RetryNodeTypo (`#295 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/295>`_)
+  Co-authored-by: Subaru Arai <SubaruArai@local>
+* Fix github action (`#302 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/302>`_)
+* Minor spelling correction (`#305 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/305>`_)
+  Corrected `the_aswer` to `the_answer`
+* Update FallbackNode.md (`#306 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/306>`_)
+  typo correction.
+* Add signal handler for Windows (`#307 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/307>`_)
+* fix
+* file renamed and documentation fixed
+* Update documentation for reactive sequence (`#286 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/286>`_)
+* Update FallbackNode.md (`#287 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/287>`_)
+  Fix the pseudocode in the documentation of 'Reactive Fallback' according to its source code.
+* Update fallback documentation to V3 (`#288 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/288>`_)
+  * Update FallbackNode.md description to V3
+  * Fix typo
+* Use pedantic for non MSVC builds (`#289 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/289>`_)
+* Merge branch 'master' of https://github.com/BehaviorTree/BehaviorTree.CPP
+* updated to latest flatbuffers
+* Update README.md
+* Fix issue `#273 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/273>`_
+* remove potential crash when an unfinished tree throws an exception
+* remove appveyor
+* Merge branch 'git_actions'
+* Fixes for compilation on windows. (`#248 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/248>`_)
+  * Fix for detecting ZeroMQ on windows
+  Naming convention is a bit different for ZeroMQ, specifically on Windows with vcpkg. While ZMQ and ZeroMQ are valid on linux, the ZMQ naming convention only works on linux.
+  * Compilation on windows not working with /WX
+  * Macro collision on Windows
+  On windows, the macros defined in the abstract logger collides with other in windows.h. Made them lowercase to avoid collision
+* Remove native support for Conan (`#280 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/280>`_)
+* add github workflow
+* Registered missing dummy nodes for examples (`#275 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/275>`_)
+  * Added CheckTemperature dummy node
+  * Added SayHello dummy node
+* add zmq.hpp in 3rdparty dirfectory
+* add test
+* fix some warnings
+* Fix bug on halt of delay node (`#272 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/272>`_)
+  - When DelayNode is halted and ticked again, it always returned FAILURE since the state of DelayNode was not properly reset.
+  - This commit fixes unexpected behavior of DelayNode when it is halted.
+  Co-authored-by: Jinwoo Choi <jinwoos.choi@samsung.com>
+* Clear all of blackboard's content (`#269 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/269>`_)
+* Added printTreeRecursively overload with ostream parameter (`#264 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/264>`_)
+  * Added overload to printTreeRecursively
+  * Changed include to iosfwd
+  * Added test to verify function writes to stream
+  * Added call to overload without stream parameter
+  * Fixed conversion error
+  * Removed overload in favor of default argument
+* Fix typo (`#260 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/260>`_)
+  Co-authored-by: Francesco Vigni <francesco.vigni@sttech.de>
+* Update README.md
+* abstract_logger.h: fixed a typo (`#257 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/257>`_)
+* Contributors: Adam Sasine, Affonso, Guilherme, Akash, Billy, Cong Liu, Daisuke Nishimatsu, Davide Faconti, Francesco Vigni, Heben, Jake Keller, Per-Arne Andersen, Ross Weir, Steve Macenski, SubaruArai, Taehyeon, Uilian Ries, Yadu, Yuwei Liang, matthews-jca, swarajpeppermint
+
 3.5.6 (2021-02-03)
 ------------------
 * fix issue `#227 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/227>`_
