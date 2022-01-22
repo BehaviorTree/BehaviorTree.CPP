@@ -13,6 +13,7 @@ set(BT_TESTS
   gtest_factory.cpp
   gtest_decorator.cpp
   gtest_blackboard.cpp
+  gtest_blackboard_precondition.cpp
   gtest_ports.cpp
   navigation_test.cpp
   gtest_subtree.cpp
