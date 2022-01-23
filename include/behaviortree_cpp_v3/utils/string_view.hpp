@@ -877,7 +877,7 @@ nssv_DISABLE_MSVC_WARNINGS( 4455 26481 26472 )
     {
       const basic_string_view v;
 
-      nssv_constexpr explicit not_in_view( basic_string_view v ) : v( v ) {}
+      nssv_constexpr explicit not_in_view( basic_string_view view ) : v( view ) {}
 
       nssv_constexpr bool operator()( CharT c ) const
       {
