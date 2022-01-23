@@ -204,11 +204,10 @@ In this example, a Sequence of 5 Actions is executed:
 <root main_tree_to_execute = "MainTree" >
     <BehaviorTree ID="MainTree">
        <Sequence name="root_sequence">
-           <SaySomething     message="start thinking..." />
+           <SaySomething     message="hello" />
+           <SaySomething2    message="this works too" />
            <ThinkWhatToSay   text="{the_answer}"/>
            <SaySomething     message="{the_answer}" />
-           <SaySomething2    message="this works too" />
-           <SaySomething2    message="{the_answer}" />
        </Sequence>
     </BehaviorTree>
 </root>
@@ -244,8 +243,7 @@ int main()
 
     /*  Expected output:
 
-        Robot says: start thinking...
-        Robot says: The answer is 42
+        Robot says: hello
         Robot says: this works too
         Robot says: The answer is 42
     */

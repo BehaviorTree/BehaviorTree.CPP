@@ -2,3 +2,4 @@
 /CMakeLists.txt.user
 build*
 site/*
+/.vscode/

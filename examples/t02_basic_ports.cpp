@@ -32,10 +32,9 @@ static const char* xml_text = R"(
 
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
-            <SaySomething     message="start thinking..." />
+            <SaySomething     message="hello" />
+            <SaySomething2    message="this works too" />
             <ThinkWhatToSay   text="{the_answer}"/>
-            <SaySomething     message="{the_answer}" />
-            <SaySomething2    message="SaySomething2 works too..." />
             <SaySomething2    message="{the_answer}" />
         </Sequence>
      </BehaviorTree>
@@ -91,7 +90,7 @@ int main()
 
     /* An INPUT can be either a string, for instance:
      *
-     *     <SaySomething message="start thinking..." />
+     *     <SaySomething message="hello" />
      *
      * or contain a "pointer" to a type erased entry in the Blackboard,
      * using this syntax: {name_of_entry}. Example:
@@ -105,16 +104,15 @@ int main()
 
     /*  Expected output:
      *
-        Robot says: start thinking...
-        Robot says: The answer is 42
-        Robot says: SaySomething2 works too...
+        Robot says: hello
+        Robot says: this works too
         Robot says: The answer is 42
     *
     * The way we "connect" output ports to input ports is to "point" to the same
     * Blackboard entry.
     *
     * This means that ThinkSomething will write into the entry with key "the_answer";
-    * SaySomething and SaySomething2 will read the message from the same entry.
+    * SaySomething and SaySomething will read the message from the same entry.
     *
     */
     return 0;
