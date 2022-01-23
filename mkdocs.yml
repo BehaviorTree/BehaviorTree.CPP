@@ -2,7 +2,7 @@ site_name: BehaviorTree.CPP
 site_description: Introduction to Behavior Trees
 site_author: Davide Faconti
 
-copyright: 'Copyright &copy; 2018-2019 Davide Faconti, Eurecat'
+copyright: 'Copyright &copy; 2018-2022 Davide Faconti, Eurecat'
 
 theme:
   name: 'material'
