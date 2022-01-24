@@ -48,6 +48,9 @@ if(ENABLE_COROUTINES)
     endif()
 else()
     message(STATUS "Boost coroutines disabled by CMake option.")
+endif()
+
+if(NOT DEFINED BT_COROUTINES)
     add_definitions(-DBT_NO_COROUTINES)
 endif()
 
