@@ -1,73 +1,81 @@
 # Introduction to BTs
 
 Unlike a Finite State Machine, a Behaviour Tree is a __tree of hierarchical nodes__ 
-that controls the flow of decision and the execution of "tasks" or, as we
-will call them further, "__Actions__".
+that controls the flow of execution of "tasks". 
 
-The __leaves__ of the tree are the actual commands, i.e. the place where
-our coordinating component interacts with the rest of the system.
+## Basic Concepts
 
-For instance, in a service-oriented architecture, the leaves would contain
-the "client" code that communicates with the "server" that performs the
-operation.
+- A signal called "__tick__" is sent to the root of the tree
+and propagates through the tree until it reaches a leaf node.
 
-In the following example, we can see two Actions executed in a sequence,
-`DetectObject` and `GraspObject`.
+- A TreeNode that receives a __tick__ signal executes it's callback.
+  This callback must return either
 
-![Leaf To Component Communication](images/LeafToComponentCommunication.png)
+    - SUCCESS,
+    - FAILURE or
+    - RUNNING, if the action is asynchronous and it needs more time
+      to complete.
 
-The other nodes of the tree, those which are __not leaves__, control the 
-"flow of execution".
+- If a TreeNode has one or more children, it is in charge for ticking
+  them, based on its state, external parameters or the resulkt of the
+  previous sibling.
 
-To better understand how this control flow takes place, imagine a signal 
-called "__tick__"; it is executed at the __root__ of the tree and it propagates 
-through the branches until it reaches one or multiple leaves.
+ - The __LeafNodes__, those TreeNodes which don't have any children,
+   are the actual commands, i.e. the place where the behavior tree
+   interacts with the rest of the system.
+   __Actions__ nodes are the most commond type of LeafNodes.
 
 !!! Note
     The word __tick__ will be often used as a *verb* (to tick / to be ticked) and it means
     
     "To invoke the callback `tick()` of a `TreeNode`".
 
-When a `TreeNode` is ticked, it returns a `NodeStatus` that can be either:
+In a service-oriented architecture, the leaves would contain
+the "client" code that communicates with the "server",
+that performs the actual operation.
 
-- __SUCCESS__
-- __FAILURE__
-- __RUNNING__
+## How tick works
 
+To mentally visualize how ticking the tree works, consider the example below.
 
-The first two, as their names suggests, inform their parent that their operation
- was a success or a failure.
+![basic sequence](images/bt_intro_01.gif)
 
-RUNNING is returned by __asynchronous__ nodes when their execution is not 
-completed and they need more time to return a valid result.
+A __Sequence__ is the simplest __ControlNode__: it execute 
+its children one after the other and, if they all Succeed,
+it returns SUCCESS (green) too.
 
-__Asynchronous nodes can be halted__.
+1. The first tick set the Sequence node to RUNNING (orange).
+2. Sequence tick the first child, "DetectObject", that eventually returns SUCCESS.
+3. As a result, the second child "GraspObject" is ticked and the entire Sequence switch from RUNNING to SUCCESS.
 
-The result of a node is propagated back to its parent, that will decide
-which child should be ticked next or may return a result to its own parent.
 
 ## Types of nodes
 
-__ControlNodes__ are nodes which can have 1 to N children. Once a tick
-is received, this tick may be propagated to one or more of the children.
-
-__DecoratorNodes__ are similar to the ControlNode, but can only have a single child. 
-
-__ActionNodes__ are leaves and do not have any children. The user should 
-implement their own ActionNodes to perform the actual tasks.
-
-__ConditionNodes__ are equivalent to ActionNodes, but
-they are always atomic and synchronous, i.e. they must not return RUNNING. 
-They should not alter the state of the system.
 
 ![UML hierarchy](images/TypeHierarchy.png)
 
+| Type of TreeNode  | Children Count     | Notes              |
+| -----------       | ------------------ | ------------------ |
+| ControlNode       | 1...N | Usually, ticks a child based on the result of its siblings or/and its own state.        |
+| DecoratorNode     | 1     | Among other things, it may alter the result of the children or tick it multiple times.
+| ConditionNode     | 0     | Should not alter the system. Shall not return RUNNING. |
+| ActionNode        | 0     | It can alter the system.         |
 
-## Examples
+
+In the context of __ActionNodes__, we may further distinguish between
+synschronous and asynchronous nodes.
+
+The former are executed atomically and block the tree until a SUCCESS or FAILURE is returned.
+
+Asynchronous actions, instead, may return RUNNING to communicate that
+the action is still being executed.
+
+We need to tick them again, until SUCCESS or FAILURE is eventually returned.
+
+# Examples
 
 To better understand how BehaviorTrees work, let's focus on some practical
-examples. For the sake of simplicity we will not take into account what happens
-when an action returns RUNNING.
+examples. For the sake of simplicity we will not take into account what happens when an action returns RUNNING.
 
 We will assume that each Action is executed atomically and synchronously.
 
@@ -80,7 +88,7 @@ ControlNode: the [SequenceNode](SequenceNode.md).
 The children of a ControlNode are always __ordered__; in the graphical 
 representation, the order of execution is __from left to right__.
 
-![Simple Sequence: fridge](images/SequenceBasic.png)
+![Simple Sequence: fridge](images/SequenceBasic.svg)
 
 
 In short:
@@ -99,17 +107,16 @@ In short:
 Depending on the type of [DecoratorNode](DecoratorNode.md), the goal of
 this node could be either:
 
-- to transform the result it received from the child
-- to halt the execution of the child, 
+- to transform the result it received from the child.
+- to halt the execution of the child.
 - to repeat ticking the child, depending on the type of Decorator.
 
-You can extend your grammar creating your own Decorators.
 
-![Simple Decorator: Enter Room](images/DecoratorEnterRoom.png)
+![Simple Decorator: Enter Room](images/DecoratorEnterRoom.svg)
 
 The node __Inverter__ is a Decorator that inverts 
 the result returned by its child; An Inverter followed by the node called
-__DoorOpen__ is therefore equivalent to 
+__isDoorOpen__ is therefore equivalent to 
 
     "Is the door closed?".
 
@@ -124,7 +131,7 @@ __Apparently__, the branch on the right side means:
 But...
     
 !!! warning "Have you spotted the bug?"
-    If __DoorOpen__ returns FAILURE, we have the desired behaviour.
+    If __isDoorOpen__ returns FAILURE, we have the desired behaviour.
     But if it returns SUCCESS, the left branch fails and the entire Sequence
     is interrupted.
     
@@ -146,7 +153,7 @@ It ticks the children in order and:
 
 In the next example, you can see how Sequences and Fallbacks can be combined:
     
-![FallbackNodes](images/FallbackBasic.png)  
+![FallbackNodes](images/FallbackBasic.svg)  
 
 
 > Is the door open?
@@ -168,13 +175,13 @@ We use the color "green" to represent nodes which return
 SUCCESS and "red" for those which return FAILURE. Black nodes haven't
 been executed. 
 
-![FetchBeer failure](images/FetchBeerFails.png)
+![FetchBeer failure](images/FetchBeerFails.svg)
 
 Let's create an alternative tree that closes the door even when __GrabBeer__ 
 returns FAILURE.
 
 
-![FetchBeer failure](images/FetchBeer.png)
+![FetchBeer failure](images/FetchBeer.svg)
 
 Both these trees will close the door of the fridge, eventually, but:
 
@@ -186,7 +193,7 @@ FAILURE otherwise.
 
 Everything works as expected if __GrabBeer__ returns SUCCESS.
 
-![FetchBeer success](images/FetchBeer2.png)
+![FetchBeer success](images/FetchBeer2.svg)
 
 
 

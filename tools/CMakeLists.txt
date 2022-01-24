@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 
 add_executable(bt3_log_cat         bt_log_cat.cpp )

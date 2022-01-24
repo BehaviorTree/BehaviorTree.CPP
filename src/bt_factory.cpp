@@ -33,7 +33,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<WhileDoElseNode>("WhileDoElse");
 
     registerNodeType<InverterNode>("Inverter");
-    registerNodeType<RetryNodeTypo>("RetryUntilSuccesful"); //typo but back compatibility
+    //registerNodeType<RetryNodeTypo>("RetryUntilSuccesful"); //typo but back compatibility
     registerNodeType<RetryNode>("RetryUntilSuccessful"); // correct one
     registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
     registerNodeType<RepeatNode>("Repeat");
@@ -53,6 +53,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
     registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
+    registerNodeType<BlackboardPreconditionNode<bool>>("BlackboardCheckBool");
 
     registerNodeType<SwitchNode<2>>("Switch2");
     registerNodeType<SwitchNode<3>>("Switch3");

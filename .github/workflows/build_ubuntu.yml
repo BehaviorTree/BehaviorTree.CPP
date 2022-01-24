@@ -13,7 +13,8 @@ jobs:
     - name: apt
       run: sudo apt-get update && sudo apt-get install -yq libzmq3-dev libdw-dev libgtest-dev cmake
     - name: Install gtest manually
-      run: cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib 
+      working-directory: /usr/src/gtest
+      run: sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib
     # build project
     - name: mkdir
       run: mkdir build

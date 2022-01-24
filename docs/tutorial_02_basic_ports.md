@@ -15,12 +15,20 @@ Similar to functions, we often want to:
 BehaviorTree.CPP provides a basic mechanism of __dataflow__
 through __ports__, that is simple to use but also flexible and type safe.
 
+In this tutorial we will create the following tree:
+
+![Tutorial2](images/Tutorial2.svg)
+
+You may notice already as the 2nd child of the Sequence will write on a row
+of a Key/Value table (the __Blackboard__) and the 4th node read
+from the same row.
+
 ## Inputs ports
 
 A valid Input can be either:
 
-- static strings which can be parsed by the Node, or
-- "pointers" to an entry of the Blackboard, identified by a __key__.
+- a static string which can be parsed by the Node, or
+- a "pointer" to an entry of the Blackboard, identified by a __key__.
 
 A "blackboard" is a simple __key/value storage__ shared by all the nodes
 of the Tree.
@@ -38,8 +46,8 @@ Such a string will be passed using an input port called `message`.
 Consider these alternative XML syntaxes:
 
 ```XML
-    <SaySomething name="first"    message="hello world" />
-    <SaySomething name="second"   message="{greetings}" />
+    <SaySomething message="hello world" />
+    <SaySomething message="{greetings}" />
 ```
 
 The attribute `message` in the __first node__ means: 
@@ -52,7 +60,7 @@ The syntax of the __second node__ instead means:
     
     "Read the current value in the entry of the blackboard called 'greetings' ".
 
-This value can (and probably will) change at run-time.
+The value of the entry can (and probably will) change at run-time.
 
 The ActionNode `SaySomething` can be implemented as follows:
 
@@ -196,11 +204,10 @@ In this example, a Sequence of 5 Actions is executed:
 <root main_tree_to_execute = "MainTree" >
     <BehaviorTree ID="MainTree">
        <Sequence name="root_sequence">
-           <SaySomething     message="start thinking..." />
+           <SaySomething     message="hello" />
+           <SaySomething2    message="this works too" />
            <ThinkWhatToSay   text="{the_answer}"/>
            <SaySomething     message="{the_answer}" />
-           <SaySomething2    message="SaySomething2 works too..." />
-           <SaySomething2    message="{the_answer}" />
        </Sequence>
     </BehaviorTree>
 </root>
@@ -236,9 +243,8 @@ int main()
 
     /*  Expected output:
 
-        Robot says: start thinking...
-        Robot says: The answer is 42
-        Robot says: SaySomething2 works too...
+        Robot says: hello
+        Robot says: this works too
         Robot says: The answer is 42
     */
     return 0;

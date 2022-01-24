@@ -19,6 +19,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #---- project configuration ----
 option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
+option(BUILD_SAMPLES    "Build sample nodes" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 option(BUILD_TOOLS "Build commandline tools" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -199,17 +200,18 @@ endif()
 
 if (UNIX)
     list(APPEND BT_SOURCE src/shared_library_UNIX.cpp )
-    if (BUILD_SHARED_LIBS)
-        add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE})
-    else()
-        add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE})
-    endif()
 endif()
 
 if (WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
     list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
-    add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
+endif()
+
+if (BUILD_SHARED_LIBS)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE})
+else()
+    add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE})
 endif()
 
 if( ZMQ_FOUND )

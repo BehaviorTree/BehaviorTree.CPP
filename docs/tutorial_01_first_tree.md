@@ -12,6 +12,11 @@ information on console,
 but keep in mind that real "production" code would probably do something
 more complicated.
 
+Further, we will create this simple tree:
+
+
+![Tutorial1](images/Tutorial1.svg)
+
 ## How to create your own ActionNodes
 
 The default (and recommended) way to create a TreeNode is by inheritance.

@@ -42,6 +42,8 @@ class BlackboardPreconditionNode : public DecoratorNode
             setRegistrationID("BlackboardCheckDouble");
         else if( std::is_same<T,std::string>::value)
             setRegistrationID("BlackboardCheckString");
+        else if( std::is_same<T,bool>::value)
+            setRegistrationID("BlackboardCheckBool");
     }
 
     virtual ~BlackboardPreconditionNode() override = default;
