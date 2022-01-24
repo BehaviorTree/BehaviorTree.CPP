@@ -15,29 +15,6 @@ else()
     add_definitions(-Wpedantic)
 endif()
 
-#---- Include boost to add coroutines ----
-find_package(Boost COMPONENTS coroutine QUIET)
-
-if(Boost_FOUND)
-    string(REPLACE "." "0" Boost_VERSION_NODOT ${Boost_VERSION})
-    if(NOT Boost_VERSION_NODOT VERSION_LESS 105900)
-        message(STATUS "Found boost::coroutine2.")
-        add_definitions(-DBT_BOOST_COROUTINE2)
-        set(BT_COROUTINES true)
-    elseif(NOT Boost_VERSION_NODOT VERSION_LESS 105300)
-        message(STATUS "Found boost::coroutine.")
-        add_definitions(-DBT_BOOST_COROUTINE)
-        set(BT_COROUTINES true)
-    endif()
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
-
-
-if(NOT DEFINED BT_COROUTINES)
-    message(STATUS "Coroutines disabled. Install Boost to enable them (version 1.59+ recommended).")
-    add_definitions(-DBT_NO_COROUTINES)
-endif()
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #---- project configuration ----
@@ -46,6 +23,33 @@ option(BUILD_SAMPLES    "Build sample nodes" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 option(BUILD_TOOLS "Build commandline tools" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(ENABLE_COROUTINES "Enable boost coroutines" ON)
+
+#---- Include boost to add coroutines ----
+if(ENABLE_COROUTINES)
+    find_package(Boost COMPONENTS coroutine QUIET)
+
+    if(Boost_FOUND)
+        string(REPLACE "." "0" Boost_VERSION_NODOT ${Boost_VERSION})
+        if(NOT Boost_VERSION_NODOT VERSION_LESS 105900)
+            message(STATUS "Found boost::coroutine2.")
+            add_definitions(-DBT_BOOST_COROUTINE2)
+            set(BT_COROUTINES true)
+        elseif(NOT Boost_VERSION_NODOT VERSION_LESS 105300)
+            message(STATUS "Found boost::coroutine.")
+            add_definitions(-DBT_BOOST_COROUTINE)
+            set(BT_COROUTINES true)
+        endif()
+        include_directories(${Boost_INCLUDE_DIRS})
+    endif()
+
+    if(NOT DEFINED BT_COROUTINES)
+        message(STATUS "Boost coroutines disabled. Install Boost (version 1.59+ recommended).")
+    endif()
+else()
+    message(STATUS "Boost coroutines disabled by CMake option.")
+    add_definitions(-DBT_NO_COROUTINES)
+endif()
 
 #---- Find other packages ----
 find_package(Threads)
