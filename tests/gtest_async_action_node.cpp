@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <future>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <thread>
 
@@ -27,7 +28,7 @@ struct MockedAsyncActionNode : public BT::AsyncActionNode
         return status();
     }
 
-    // Expose the setStatus call.
+    // Expose the setStatus method.
     using BT::AsyncActionNode::setStatus;
 };
 
@@ -131,10 +132,10 @@ TEST_F(MockedAsyncActionFixture, exception)
     }));
 
     ASSERT_ANY_THROW(sn.spinUntilDone());
+    testing::Mock::VerifyAndClearExpectations(&sn);
 
     // Now verify that the exception is cleared up (we succeed).
     sn.setStatus(BT::NodeStatus::IDLE);
-    testing::Mock::VerifyAndClearExpectations(&sn);
     const BT::NodeStatus state{BT::NodeStatus::SUCCESS};
     EXPECT_CALL(sn, tick()).WillOnce(testing::Return(state));
     ASSERT_EQ(sn.spinUntilDone(), state);
