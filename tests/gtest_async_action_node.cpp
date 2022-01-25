@@ -94,7 +94,7 @@ TEST_F(MockedAsyncActionFixture, halt)
 
     const BT::NodeStatus state = BT::NodeStatus::SUCCESS;
     EXPECT_CALL(sn, tick()).WillOnce(testing::Invoke([&]() {
-        // Sleep until we call "halt"
+        // Sleep until we send the release signal.
         std::unique_lock<std::mutex> l(m);
         while (!release)
             cv.wait(l);
