@@ -1,13 +1,12 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "behaviortree_cpp_v3/basic_types.h"
 
-#include <string>
-#include <array>
 #include <chrono>
-#include <thread>
 #include <condition_variable>
-#include <mutex>
 #include <future>
+#include <mutex>
+#include <string>
+#include <thread>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
