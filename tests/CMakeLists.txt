@@ -24,11 +24,17 @@ if (BT_COROUTINES)
     list(APPEND BT_TESTS  gtest_coroutines.cpp)
 endif()
 
+if(ament_cmake_FOUND OR catkin_FOUND)
+    # This test requires gmock. Since we don't have a uniform way to include
+    # gmock for non-users, it is turned of when build without ros.
+    list(APPEND BT_TESTS gtest_async_action_node.cpp)
+endif()
+
 if(ament_cmake_FOUND AND BUILD_TESTING)
 
-    find_package(ament_cmake_gtest REQUIRED)
+    find_package(ament_cmake_gmock REQUIRED)
 
-    ament_add_gtest_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
+    ament_add_gmock_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
                                                         bt_sample_nodes
                                                         ${ament_LIBRARIES})
@@ -37,7 +43,7 @@ if(ament_cmake_FOUND AND BUILD_TESTING)
 
 elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
-    catkin_add_gtest(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
+    catkin_add_gmock(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test ${BEHAVIOR_TREE_LIBRARY}
                                                         bt_sample_nodes
                                                         ${catkin_LIBRARIES})
