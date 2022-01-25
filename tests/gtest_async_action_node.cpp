@@ -19,13 +19,17 @@ struct MockedAsyncActionNode : public BT::AsyncActionNode
     MOCK_METHOD0(tick, BT::NodeStatus());
 
     // Tick while the node is running.
-    void spinUntilDone()
+    BT::NodeStatus spinUntilDone()
     {
         do
         {
             executeTick();
         } while (status() == BT::NodeStatus::RUNNING);
+        return status();
     }
+
+    // Expose the setStatus call.
+    using BT::AsyncActionNode::setStatus;
 };
 
 // The fixture taking care of the node-setup.
@@ -38,7 +42,7 @@ struct MockedAsyncActionFixture : public testing::Test
     }
 };
 
-// Parameters for the terminal node statii.
+// Parameters for the terminal node states.
 struct NodeStatusFixture : public testing::WithParamInterface<BT::NodeStatus>,
                            public MockedAsyncActionFixture
 {
@@ -59,40 +63,34 @@ TEST_P(NodeStatusFixture, normal_routine)
         return state;
     }));
 
-    // Initial status.
-    ASSERT_EQ(sn.status(), BT::NodeStatus::IDLE);
-
-    // Spin the node.
-    sn.spinUntilDone();
-
-    // Check the final status.
-    ASSERT_EQ(sn.status(), state);
+    // Spin the node and check the final status.
+    ASSERT_EQ(sn.spinUntilDone(), state);
 }
 
 TEST_F(MockedAsyncActionFixture, no_halt)
 {
-    // Test verifies that halt returns immediately, if the node is idle.
-    ASSERT_EQ(sn.status(), BT::NodeStatus::IDLE);
+    // Test verifies that halt returns immediately, if the node is idle. It
+    // further checks if the halt-flag is resetted correctly.
     sn.halt();
     ASSERT_TRUE(sn.isHaltRequested());
 
     // Below we further verify that the halt flag is cleaned up properly.
-    EXPECT_CALL(sn, tick()).WillOnce(testing::Return(BT::NodeStatus::SUCCESS));
+    const BT::NodeStatus state{BT::NodeStatus::SUCCESS};
+    EXPECT_CALL(sn, tick()).WillOnce(testing::Return(state));
 
-    // Spin the node.
-    sn.spinUntilDone();
-
+    // Spin the node and check.
+    ASSERT_EQ(sn.spinUntilDone(), state);
     ASSERT_FALSE(sn.isHaltRequested());
 }
 
 TEST_F(MockedAsyncActionFixture, halt)
 {
-    // Test verifies calling halt is blocking.
+    // Test verifies that calling halt() is blocking.
     bool release = false;
     std::mutex m;
     std::condition_variable cv;
 
-    const BT::NodeStatus state = BT::NodeStatus::SUCCESS;
+    const BT::NodeStatus state{BT::NodeStatus::SUCCESS};
     EXPECT_CALL(sn, tick()).WillOnce(testing::Invoke([&]() {
         // Sleep until we send the release signal.
         std::unique_lock<std::mutex> l(m);
@@ -124,14 +122,21 @@ TEST_F(MockedAsyncActionFixture, halt)
 
 TEST_F(MockedAsyncActionFixture, exception)
 {
-    // Verifies that we can recover from the exceptions in the tick method: 
-    // 1) catch the exception, 2) re-raise it in the caller thread, 3) recover.
+    // Verifies that we can recover from the exceptions in the tick method:
+    // 1) catch the exception, 2) re-raise it in the caller thread.
 
     // Setup the mock.
-    EXPECT_CALL(sn, tick()).WillRepeatedly(testing::Invoke([&]() {
+    EXPECT_CALL(sn, tick()).WillOnce(testing::Invoke([&]() {
         throw std::runtime_error("This is not good!");
         return BT::NodeStatus::SUCCESS;
     }));
 
     ASSERT_ANY_THROW(sn.spinUntilDone());
+
+    // Now verify that the exception is cleared up (we succeed).
+    sn.setStatus(BT::NodeStatus::IDLE);
+    testing::Mock::VerifyAndClearExpectations(&sn);
+    const BT::NodeStatus state{BT::NodeStatus::SUCCESS};
+    EXPECT_CALL(sn, tick()).WillOnce(testing::Return(state));
+    ASSERT_EQ(sn.spinUntilDone(), state);
 }
