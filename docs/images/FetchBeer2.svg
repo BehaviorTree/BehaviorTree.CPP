@@ -1,1 +1,675 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background-color:#fff" width="986" height="321" version="1.1" viewBox="-0.5 -0.5 986 321"><g><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 230 55.5 L 105.94 103.21" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 101.04 105.1 L 106.32 99.32 L 105.94 103.21 L 108.83 105.85 Z" pointer-events="all"/><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 230 55.5 L 358.53 103.28" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 363.45 105.11 L 355.67 105.95 L 358.53 103.28 L 358.11 99.39 Z" pointer-events="all"/><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 230 55.5 L 230 99.13" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 230 104.38 L 226.5 97.38 L 230 99.13 L 233.5 97.38 Z" pointer-events="all"/><rect width="120" height="40" x="170" y="15.5" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:36px;margin-left:171px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">Sequence</div></div></div></foreignObject><text x="230" y="41" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">Sequence</text></switch></g><rect width="120" height="40" x="10" y="105.5" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:126px;margin-left:11px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">OpenFridge</div></div></div></foreignObject><text x="70" y="131" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">OpenFridge</text></switch></g><rect width="120" height="40" x="170.01" y="185.5" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:206px;margin-left:171px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">GrabBeer</div></div></div></foreignObject><text x="230" y="211" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">GrabBeer</text></switch></g><rect width="120" height="40" x="334.5" y="105.5" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:126px;margin-left:336px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">CloseFridge</div></div></div></foreignObject><text x="395" y="131" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">CloseFridge</text></switch></g><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 230.01 145.5 L 230.01 179.13" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 230.01 184.38 L 226.51 177.38 L 230.01 179.13 L 233.51 177.38 Z" pointer-events="all"/><rect width="132.25" height="40" x="163.88" y="105.5" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:130px;height:1px;padding-top:126px;margin-left:165px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">ForceSuccess</div></div></div></foreignObject><text x="230" y="131" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">ForceSuccess</text></switch></g><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 750 50 L 625.94 97.71" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 621.04 99.6 L 626.32 93.82 L 625.94 97.71 L 628.83 100.35 Z" pointer-events="all"/><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 750 50 L 878.53 97.78" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 883.45 99.61 L 875.67 100.45 L 878.53 97.78 L 878.11 93.89 Z" pointer-events="all"/><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 750 50 L 750 93.63" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 750 98.88 L 746.5 91.88 L 750 93.63 L 753.5 91.88 Z" pointer-events="all"/><rect width="120" height="40" x="690" y="10" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:30px;margin-left:691px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">Sequence</div></div></div></foreignObject><text x="750" y="35" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">Sequence</text></switch></g><rect width="120" height="40" x="530" y="100" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:120px;margin-left:531px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">OpenFridge</div></div></div></foreignObject><text x="590" y="125" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">OpenFridge</text></switch></g><rect width="120" height="40" x="600" y="190" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:210px;margin-left:601px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">GrabBeer</div></div></div></foreignObject><text x="660" y="215" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">GrabBeer</text></switch></g><rect width="120" height="40" x="854.5" y="100" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:120px;margin-left:856px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">CloseFridge</div></div></div></foreignObject><text x="915" y="125" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">CloseFridge</text></switch></g><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 750.01 140 L 665.57 186.91" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 660.98 189.46 L 665.4 183 L 665.57 186.91 L 668.8 189.12 Z" pointer-events="all"/><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 750.01 140 L 830.62 186.8" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 835.16 189.44 L 827.35 188.95 L 830.62 186.8 L 830.86 182.9 Z" pointer-events="all"/><rect width="132.25" height="40" x="683.88" y="100" fill="#d5e8d4" stroke="#82b366" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:130px;height:1px;padding-top:120px;margin-left:685px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">Fallback</div></div></div></foreignObject><text x="750" y="125" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">Fallback</text></switch></g><path fill="none" stroke="#000" stroke-miterlimit="10" d="M 836.13 230 L 836.13 263.63" pointer-events="stroke"/><path fill="#000" stroke="#000" stroke-miterlimit="10" d="M 836.13 268.88 L 832.63 261.88 L 836.13 263.63 L 839.63 261.88 Z" pointer-events="all"/><rect width="132.25" height="40" x="770" y="190" fill="#FFF" stroke="#000" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:130px;height:1px;padding-top:210px;margin-left:771px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">ForceFailure</div></div></div></foreignObject><text x="836" y="215" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">ForceFailure</text></switch></g><rect width="120" height="40" x="776.13" y="270" fill="#FFF" stroke="#000" pointer-events="all"/><g transform="translate(-0.5 -0.5)"><switch><foreignObject style="overflow:visible;text-align:left" width="100%" height="100%" pointer-events="none" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"><div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:290px;margin-left:777px"><div style="box-sizing:border-box;font-size:0;text-align:center" data-drawio-colors="color: rgb(0, 0, 0);"><div style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">CloseFridge</div></div></div></foreignObject><text x="836" y="295" fill="#000" font-family="Helvetica" font-size="18" text-anchor="middle">CloseFridge</text></switch></g></g><switch><a target="_blank" transform="translate(0,-5)" xlink:href="https://www.diagrams.net/doc/faq/svg-export-text-problems"><text x="50%" y="100%" font-size="10" text-anchor="middle">Text is not SVG - cannot display</text></a></switch></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:xhtml="http://www.w3.org/1999/xhtml"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   style="background-color:#fff"
+   width="986"
+   height="321"
+   version="1.1"
+   viewBox="-0.5 -0.5 986 321"
+   id="svg146"
+   sodipodi:docname="FetchBeer2.svg"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+  <metadata
+     id="metadata152">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs150" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="774"
+     inkscape:window-height="480"
+     id="namedview148"
+     showgrid="false"
+     inkscape:zoom="0.35192698"
+     inkscape:cx="493"
+     inkscape:cy="160.5"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg146" />
+  <g
+     id="g138">
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 230 55.5 L 105.94 103.21"
+       pointer-events="stroke"
+       id="path2" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 101.04 105.1 L 106.32 99.32 L 105.94 103.21 L 108.83 105.85 Z"
+       pointer-events="all"
+       id="path4" />
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 230 55.5 L 358.53 103.28"
+       pointer-events="stroke"
+       id="path6" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 363.45 105.11 L 355.67 105.95 L 358.53 103.28 L 358.11 99.39 Z"
+       pointer-events="all"
+       id="path8" />
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 230 55.5 L 230 99.13"
+       pointer-events="stroke"
+       id="path10" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 230 104.38 L 226.5 97.38 L 230 99.13 L 233.5 97.38 Z"
+       pointer-events="all"
+       id="path12" />
+    <rect
+       width="120"
+       height="40"
+       x="170"
+       y="15.5"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect14" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g20">
+      <switch
+         id="switch18">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:36px;margin-left:171px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">Sequence</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="230"
+           y="41"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text16">Sequence</text>
+      </switch>
+    </g>
+    <rect
+       width="120"
+       height="40"
+       x="10"
+       y="105.5"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect22" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g28">
+      <switch
+         id="switch26">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:126px;margin-left:11px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">OpenFridge</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="70"
+           y="131"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text24">OpenFridge</text>
+      </switch>
+    </g>
+    <rect
+       width="120"
+       height="40"
+       x="170.01"
+       y="185.5"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect30" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g36">
+      <switch
+         id="switch34">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:206px;margin-left:171px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">GrabBeer</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="230"
+           y="211"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text32">GrabBeer</text>
+      </switch>
+    </g>
+    <rect
+       width="120"
+       height="40"
+       x="334.5"
+       y="105.5"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect38" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g44">
+      <switch
+         id="switch42">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:126px;margin-left:336px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">CloseFridge</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="395"
+           y="131"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text40">CloseFridge</text>
+      </switch>
+    </g>
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 230.01 145.5 L 230.01 179.13"
+       pointer-events="stroke"
+       id="path46" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 230.01 184.38 L 226.51 177.38 L 230.01 179.13 L 233.51 177.38 Z"
+       pointer-events="all"
+       id="path48" />
+    <rect
+       width="132.25"
+       height="40"
+       x="163.88"
+       y="105.5"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect50" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g56">
+      <switch
+         id="switch54">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:130px;height:1px;padding-top:126px;margin-left:165px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">ForceSuccess</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="230"
+           y="131"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text52">ForceSuccess</text>
+      </switch>
+    </g>
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 750 50 L 625.94 97.71"
+       pointer-events="stroke"
+       id="path58" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 621.04 99.6 L 626.32 93.82 L 625.94 97.71 L 628.83 100.35 Z"
+       pointer-events="all"
+       id="path60" />
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 750 50 L 878.53 97.78"
+       pointer-events="stroke"
+       id="path62" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 883.45 99.61 L 875.67 100.45 L 878.53 97.78 L 878.11 93.89 Z"
+       pointer-events="all"
+       id="path64" />
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 750 50 L 750 93.63"
+       pointer-events="stroke"
+       id="path66" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 750 98.88 L 746.5 91.88 L 750 93.63 L 753.5 91.88 Z"
+       pointer-events="all"
+       id="path68" />
+    <rect
+       width="120"
+       height="40"
+       x="690"
+       y="10"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect70" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g76">
+      <switch
+         id="switch74">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:30px;margin-left:691px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">Sequence</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="750"
+           y="35"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text72">Sequence</text>
+      </switch>
+    </g>
+    <rect
+       width="120"
+       height="40"
+       x="530"
+       y="100"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect78" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g84">
+      <switch
+         id="switch82">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:120px;margin-left:531px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">OpenFridge</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="590"
+           y="125"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text80">OpenFridge</text>
+      </switch>
+    </g>
+    <rect
+       width="120"
+       height="40"
+       x="600"
+       y="190"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect86" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g92">
+      <switch
+         id="switch90">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:210px;margin-left:601px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">GrabBeer</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="660"
+           y="215"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text88">GrabBeer</text>
+      </switch>
+    </g>
+    <rect
+       width="120"
+       height="40"
+       x="854.5"
+       y="100"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect94" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g100">
+      <switch
+         id="switch98">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:120px;margin-left:856px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">CloseFridge</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="915"
+           y="125"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text96">CloseFridge</text>
+      </switch>
+    </g>
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 750.01 140 L 665.57 186.91"
+       pointer-events="stroke"
+       id="path102" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 660.98 189.46 L 665.4 183 L 665.57 186.91 L 668.8 189.12 Z"
+       pointer-events="all"
+       id="path104" />
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 750.01 140 L 830.62 186.8"
+       pointer-events="stroke"
+       id="path106" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 835.16 189.44 L 827.35 188.95 L 830.62 186.8 L 830.86 182.9 Z"
+       pointer-events="all"
+       id="path108" />
+    <rect
+       width="132.25"
+       height="40"
+       x="683.88"
+       y="100"
+       fill="#d5e8d4"
+       stroke="#82b366"
+       pointer-events="all"
+       id="rect110" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g116">
+      <switch
+         id="switch114">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:130px;height:1px;padding-top:120px;margin-left:685px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">Fallback</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="750"
+           y="125"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text112">Fallback</text>
+      </switch>
+    </g>
+    <path
+       fill="none"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 836.13 230 L 836.13 263.63"
+       pointer-events="stroke"
+       id="path118" />
+    <path
+       fill="#000"
+       stroke="#000"
+       stroke-miterlimit="10"
+       d="M 836.13 268.88 L 832.63 261.88 L 836.13 263.63 L 839.63 261.88 Z"
+       pointer-events="all"
+       id="path120" />
+    <rect
+       width="132.25"
+       height="40"
+       x="770"
+       y="190"
+       fill="#FFF"
+       stroke="#000"
+       pointer-events="all"
+       id="rect122" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g128">
+      <switch
+         id="switch126">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:130px;height:1px;padding-top:210px;margin-left:771px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">ForceFailure</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="836"
+           y="215"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text124">ForceFailure</text>
+      </switch>
+    </g>
+    <rect
+       width="120"
+       height="40"
+       x="776.13"
+       y="270"
+       fill="#FFF"
+       stroke="#000"
+       pointer-events="all"
+       id="rect130" />
+    <g
+       transform="translate(-0.5 -0.5)"
+       id="g136">
+      <switch
+         id="switch134">
+        <foreignObject
+           style="overflow:visible;text-align:left"
+           width="100%"
+           height="100%"
+           pointer-events="none"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+          <xhtml:div
+             style="display:flex;align-items:unsafe center;justify-content:unsafe center;width:118px;height:1px;padding-top:290px;margin-left:777px">
+            <xhtml:div
+               style="box-sizing:border-box;font-size:0;text-align:center"
+               data-drawio-colors="color: rgb(0, 0, 0);">
+              <xhtml:div
+                 style="display:inline-block;font-size:18px;font-family:Helvetica;color:#000;line-height:1.2;pointer-events:all;white-space:normal;overflow-wrap:normal">CloseFridge</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="836"
+           y="295"
+           fill="#000"
+           font-family="Helvetica"
+           font-size="18"
+           text-anchor="middle"
+           id="text132">CloseFridge</text>
+      </switch>
+    </g>
+  </g>
+</svg>
