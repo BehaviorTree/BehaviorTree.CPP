@@ -17,7 +17,7 @@ and propagates through the tree until it reaches a leaf node.
       to complete.
 
 - If a TreeNode has one or more children, it is in charge for ticking
-  them, based on its state, external parameters or the resulkt of the
+  them, based on its state, external parameters or the result of the
   previous sibling.
 
  - The __LeafNodes__, those TreeNodes which don't have any children,
