@@ -120,13 +120,13 @@ __isDoorOpen__ is therefore equivalent to
 
     "Is the door closed?".
 
-The node __Retry__ will repeat ticking the child up to N times (3 in this case)
+The node __Retry__ will repeat ticking the child up to __num_attempts__ times (5 in this case)
 if the child returns FAILURE.
 
 __Apparently__, the branch on the right side means: 
 
     If the door is closed, then try to open it.
-    Try up to 3 times, otherwise give up and return FAILURE.
+    Try up to 5 times, otherwise give up and return FAILURE.
     
 But...
     
