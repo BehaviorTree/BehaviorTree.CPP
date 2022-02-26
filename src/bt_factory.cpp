@@ -60,6 +60,10 @@ BehaviorTreeFactory::BehaviorTreeFactory()
     registerNodeType<SwitchNode<4>>("Switch4");
     registerNodeType<SwitchNode<5>>("Switch5");
     registerNodeType<SwitchNode<6>>("Switch6");
+    registerNodeType<SwitchNode<7>>("Switch7");
+    registerNodeType<SwitchNode<8>>("Switch8");
+    registerNodeType<SwitchNode<9>>("Switch9");
+    registerNodeType<SwitchNode<10>>("Switch10");
 
 #ifdef NCURSES_FOUND
     registerNodeType<ManualSelectorNode>("ManualSelector");
