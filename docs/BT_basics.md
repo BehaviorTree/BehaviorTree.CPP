@@ -23,7 +23,7 @@ and propagates through the tree until it reaches a leaf node.
  - The __LeafNodes__, those TreeNodes which don't have any children,
    are the actual commands, i.e. the place where the behavior tree
    interacts with the rest of the system.
-   __Actions__ nodes are the most commond type of LeafNodes.
+   __Actions__ nodes are the most common type of LeafNodes.
 
 !!! Note
     The word __tick__ will be often used as a *verb* (to tick / to be ticked) and it means
@@ -63,7 +63,7 @@ it returns SUCCESS (green) too.
 
 
 In the context of __ActionNodes__, we may further distinguish between
-synschronous and asynchronous nodes.
+synchronous and asynchronous nodes.
 
 The former are executed atomically and block the tree until a SUCCESS or FAILURE is returned.
 
