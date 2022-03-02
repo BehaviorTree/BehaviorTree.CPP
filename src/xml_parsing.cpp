@@ -151,7 +151,8 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc)
                 std::cout << "WARNING: <include path=\"...\"> contains an absolute path.\n"
                           << "Attribute [ros_pkg] will be ignored."<< std::endl;
             }
-            else {
+            else 
+            {
 #ifdef USING_ROS
             ros_pkg_path = ros::package::getPath(ros_pkg_relative_path);
 #elif defined USING_ROS2
