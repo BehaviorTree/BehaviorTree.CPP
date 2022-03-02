@@ -83,8 +83,7 @@ find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
 
-    # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
-
+    add_definitions( -DUSING_ROS2 )
     message(STATUS "------------------------------------------")
     message(STATUS "BehaviourTree is being built using AMENT.")
     message(STATUS "------------------------------------------")
