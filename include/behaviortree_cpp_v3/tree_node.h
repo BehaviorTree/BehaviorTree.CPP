@@ -215,6 +215,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
                                            "but BB is invalid");
         }
 
+        std::unique_lock<std::mutex> entry_lock( config_.blackboard->entryMutex() );
         const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
         if (val && val->empty() == false)
         {

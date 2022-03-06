@@ -117,6 +117,7 @@ class Blackboard
     void set(const std::string& key, const T& value)
     {
         std::unique_lock<std::mutex> lock(mutex_);
+        std::unique_lock<std::mutex> lock_entry(entry_mutex_);
         auto it = storage_.find(key);
 
         if( auto parent = parent_bb_.lock())
@@ -130,10 +131,10 @@ class Blackboard
                     auto parent_info = parent->portInfo(remapped_key);
                     if( parent_info )
                     {
-                        storage_.insert( {key, Entry( *parent_info ) } );
+                        storage_.emplace( key, Entry( *parent_info ) );
                     }
                     else{
-                        storage_.insert( {key, Entry( PortInfo() ) } );
+                        storage_.emplace( key, Entry( PortInfo() ) );
                     }
                 }
                 parent->set( remapped_key, value );
@@ -195,10 +196,18 @@ class Blackboard
         storage_.clear();
         internal_to_external_.clear();
     }
+
+    // Lock this mutex before using get() and getAny() and unlock it while you have
+    // done using the value.
+    std::mutex& entryMutex()
+    {
+      return entry_mutex_;
+    }
   
   private:
 
     struct Entry{
+
         Any value;
         const PortInfo port_info;
 
@@ -213,6 +222,7 @@ class Blackboard
     };
 
     mutable std::mutex mutex_;
+    mutable std::mutex entry_mutex_;
     std::unordered_map<std::string, Entry> storage_;
     std::weak_ptr<Blackboard> parent_bb_;
     std::unordered_map<std::string,std::string> internal_to_external_;

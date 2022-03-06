@@ -18,7 +18,7 @@ void Blackboard::setPortInfo(std::string key, const PortInfo& info)
     auto it = storage_.find(key);
     if( it == storage_.end() )
     {
-        storage_.insert( { std::move(key), Entry(info) } );
+        storage_.emplace( key, Entry(info) );
     }
     else{
         auto old_type = it->second.port_info.type();

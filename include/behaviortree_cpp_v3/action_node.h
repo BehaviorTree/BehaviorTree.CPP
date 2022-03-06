@@ -17,6 +17,8 @@
 #include <atomic>
 #include <thread>
 #include <future>
+#include <mutex>
+
 #include "leaf_node.h"
 
 namespace BT
@@ -135,6 +137,7 @@ class AsyncActionNode : public ActionNodeBase
     std::exception_ptr exptr_;
     std::atomic_bool halt_requested_;
     std::future<NodeStatus> thread_handle_;
+    std::mutex m_;
 };
 
 /**
