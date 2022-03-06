@@ -387,7 +387,7 @@ TEST_F(ComplexSequenceWithMemoryTest, ConditionsTrue)
     ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
-TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFase)
+TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFalse)
 {
     BT::NodeStatus state = root.executeTick();
 
@@ -445,6 +445,92 @@ TEST_F(ComplexSequenceWithMemoryTest, Action1DoneSeq)
     ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
     ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
     ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+
+    std::this_thread::sleep_for(milliseconds(150));
+    root.executeTick();
+
+    ASSERT_EQ(NodeStatus::SUCCESS, root.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_actions.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+}
+
+TEST_F(ComplexSequenceWithMemoryTest, Action2FailureSeq)
+{
+    root.executeTick();
+    std::this_thread::sleep_for(milliseconds(150));
+    root.executeTick();
+
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+
+    action_2.setExpectedResult(NodeStatus::FAILURE);
+    std::this_thread::sleep_for(milliseconds(150));
+    root.executeTick();
+
+    // failure in action_2 does not affect the state of already
+    // executed nodes (seq_conditions and action_1)
+    ASSERT_EQ(NodeStatus::FAILURE, root.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_actions.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+
+    action_2.setExpectedResult(NodeStatus::SUCCESS);
+    root.executeTick();
+
+    ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+
+    std::this_thread::sleep_for(milliseconds(150));
+    root.executeTick();
+
+    ASSERT_EQ(NodeStatus::SUCCESS, root.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_actions.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+}
+
+TEST_F(ComplexSequenceWithMemoryTest, Action2HaltSeq)
+{
+    root.executeTick();
+    std::this_thread::sleep_for(milliseconds(150));
+    root.executeTick();
+
+    root.halt();
+
+    ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, seq_actions.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+
+    root.executeTick();
+
+    // tree retakes execution from action_2
+    ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, seq_actions.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
     ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 
     std::this_thread::sleep_for(milliseconds(150));
