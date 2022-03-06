@@ -30,6 +30,10 @@
 #include <ros/package.h>
 #endif
 
+#ifdef USING_ROS2
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#endif
+
 #include "behaviortree_cpp_v3/blackboard.h"
 #include "behaviortree_cpp_v3/utils/demangle_util.h"
 
@@ -137,23 +141,28 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc)
     {
 
         filesystem::path file_path( include_node->Attribute("path") );
+        const char* ros_pkg_relative_path = include_node->Attribute("ros_pkg");
+        std::string ros_pkg_path;
 
-        if( include_node->Attribute("ros_pkg") )
+        if( ros_pkg_relative_path )
         {
-#ifdef USING_ROS
             if( file_path.is_absolute() )
             {
-                std::cout << "WARNING: <include path=\"...\"> containes an absolute path.\n"
+                std::cout << "WARNING: <include path=\"...\"> contains an absolute path.\n"
                           << "Attribute [ros_pkg] will be ignored."<< std::endl;
             }
-            else {
-                auto ros_pkg_path = ros::package::getPath(  include_node->Attribute("ros_pkg") );
-                file_path = filesystem::path( ros_pkg_path ) / file_path;
-            }
+            else 
+            {
+#ifdef USING_ROS
+            ros_pkg_path = ros::package::getPath(ros_pkg_relative_path);
+#elif defined USING_ROS2
+            ros_pkg_path = ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
 #else
             throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was compiled "
                                "without ROS support. Recompile the BehaviorTree.CPP using catkin");
 #endif
+            file_path = filesystem::path( ros_pkg_path ) / file_path;
+            }
         }
 
         if( !file_path.is_absolute() )
