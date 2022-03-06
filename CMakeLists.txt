@@ -111,7 +111,14 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 elseif(BUILD_UNIT_TESTS)
-    find_package(GTest REQUIRED)
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
 endif()
 
 

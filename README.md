@@ -1,6 +1,6 @@
 ![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
-![Version](https://img.shields.io/badge/version-3.5-blue.svg)
-[![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
+![Version](https://img.shields.io/badge/version-3.6-blue.svg)
+[![CMake Build](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/build_vanilla.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/build_vanilla.yml)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 [![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)](https://lgtm.com/projects/g/BehaviorTree/BehaviorTree.CPP/context:cpp)
