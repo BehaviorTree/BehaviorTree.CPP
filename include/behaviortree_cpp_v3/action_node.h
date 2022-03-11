@@ -141,8 +141,8 @@ class AsyncActionNode : public ActionNodeBase
 };
 
 /**
- * @brief The ActionNode is the goto option for,
- * but it is actually much easier to use correctly.
+ * @brief The ActionNode is the prefered way to implement asynchronous Actions.
+ * It is actually easier to use correctly, when compared with AsyncAction
  *
  * It is particularly useful when your code contains a request-reply pattern,
  * i.e. when the actions sends an asychronous request, then checks periodically
