@@ -92,7 +92,7 @@ class Any
     template <typename T>
     explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value), _original_type( &typeid(T) )
     {
-       static_assert(!std::is_reference_v<T>, "Any can not contain references");
+        static_assert(!std::is_reference<T>::value, "Any can not contain references");
     }
 
     Any& operator = (const Any& other)
@@ -119,7 +119,7 @@ class Any
     template <typename T>
     T cast() const
     {
-        static_assert(!std::is_reference_v<T>, "Any::cast uses value semantic, can not cast to reference");
+        static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, can not cast to reference");
         
         if( _any.empty() )
         {
