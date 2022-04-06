@@ -138,7 +138,7 @@ NodeStatus StatefulActionNode::tick()
     NodeStatus new_status = onStart();
     if( new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("AsyncActionNode2::onStart() must not return IDLE");
+      throw std::logic_error("StatefulActionNode::onStart() must not return IDLE");
     }
     return new_status;
   }
@@ -148,7 +148,7 @@ NodeStatus StatefulActionNode::tick()
     NodeStatus new_status = onRunning();
     if( new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("AsyncActionNode2::onRunning() must not return IDLE");
+      throw std::logic_error("StatefulActionNode::onRunning() must not return IDLE");
     }
     return new_status;
   }
