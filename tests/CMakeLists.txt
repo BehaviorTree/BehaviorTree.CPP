@@ -58,6 +58,8 @@ elseif(BUILD_UNIT_TESTS)
                                                 bt_sample_nodes gtest gtest_main)
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include ${GTEST_INCLUDE_DIRS})
 
+    file(COPY trees DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
     add_test(BehaviorTreeCoreTest ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BEHAVIOR_TREE_LIBRARY}_test)
 
 endif()

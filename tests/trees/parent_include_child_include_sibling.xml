@@ -1,0 +1,10 @@
+<root main_tree_to_execute = "ParentIncludeChildIncludeSibling">
+  <include path="child/child_include_sibling.xml" />
+
+  <BehaviorTree ID="ParentIncludeChildIncludeSibling">
+    <Sequence>
+      <SubTree ID="ChildIncludeSibling" />
+      <AlwaysSuccess />
+    </Sequence>
+  </BehaviorTree>
+</root>

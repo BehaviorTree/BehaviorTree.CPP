@@ -244,3 +244,58 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
     ASSERT_FALSE( talk_bb->getAny("talk_out") );
 }
 
+#if !defined(USING_ROS) && !defined(USING_ROS2)
+TEST(BehaviorTreeFactory, CreateTreeFromFile)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile("trees/parent_no_include.xml");
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromSameDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile("trees/child/child_include_sibling.xml");
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile("trees/parent_include_child.xml");
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromSameDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile("trees/parent_include_child_include_sibling.xml");
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromChildDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile("trees/parent_include_child_include_child.xml");
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromParentDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile("trees/parent_include_child_include_parent.xml");
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+#endif
