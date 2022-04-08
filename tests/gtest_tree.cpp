@@ -14,6 +14,7 @@
 #include "action_test_node.h"
 #include "condition_test_node.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
+#include "environment.h"
 
 #include <sstream>
 #include <string>
@@ -118,8 +119,16 @@ TEST_F(BehaviorTreeTest, PrintWithStream)
     ASSERT_TRUE(std::getline(stream, line, '\n').fail());
 }
 
+// define extern variable from environment.h
+Environment* environment;
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
+
+    // gtest will take ownership of this pointer and free it for us
+    environment = new Environment(argc, argv);
+    testing::AddGlobalTestEnvironment(environment);
+    
     return RUN_ALL_TESTS();
 }
