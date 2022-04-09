@@ -105,7 +105,7 @@ class MyAsyncAction: public CoroActionNode
         CoroActionNode::halt();
     }
 
-    Timepoint Now()
+    TimePoint Now()
     { 
         return std::chrono::high_resolution_clock::now(); 
     };
