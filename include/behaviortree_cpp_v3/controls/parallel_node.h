@@ -41,12 +41,12 @@ class ParallelNode : public ControlNode
 
     unsigned int thresholdM();
     unsigned int thresholdFM();
-    void setThresholdM(unsigned int threshold_M);
-    void setThresholdFM(unsigned int threshold_M);
+    void setThresholdM(int threshold_M);
+    void setThresholdFM(int threshold_M);
 
   private:
-    unsigned int success_threshold_;
-    unsigned int failure_threshold_;
+    int success_threshold_;
+    int failure_threshold_;
 
     std::set<int> skip_list_;
 
