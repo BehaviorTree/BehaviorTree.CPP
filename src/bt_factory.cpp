@@ -10,9 +10,11 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <fstream>
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "behaviortree_cpp_v3/xml_parsing.h"
+#include "private/tinyxml2.h"
 
 #ifdef USING_ROS
 #include "filesystem/path.h"
@@ -23,6 +25,7 @@ namespace BT
 {
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
+    parser_ = std::make_shared<XMLParser>(*this);
     registerNodeType<FallbackNode>("Fallback");
     registerNodeType<SequenceNode>("Sequence");
     registerNodeType<SequenceStarNode>("SequenceStar");
@@ -212,6 +215,22 @@ void BehaviorTreeFactory::registerFromROSPlugins()
     }
 #endif
 
+
+void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::string &filename)
+{
+    parser_->loadFromFile(filename);
+}
+
+void BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string &xml_text)
+{
+    parser_->loadFromText(xml_text);
+}
+
+std::vector<std::string> BehaviorTreeFactory::registeredBehaviorTrees() const
+{
+    return parser_->registeredBehaviorTrees();
+}
+
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
         const std::string& name,
         const std::string& ID,
@@ -264,6 +283,13 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
     XMLParser parser(*this);
     parser.loadFromFile(file_path);
     auto tree = parser.instantiateTree(blackboard);
+    tree.manifests = this->manifests();
+    return tree;
+}
+
+Tree BehaviorTreeFactory::createdTree(const std::string &tree_name, Blackboard::Ptr blackboard)
+{
+    auto tree = parser_->instantiateTree(blackboard, tree_name);
     tree.manifests = this->manifests();
     return tree;
 }

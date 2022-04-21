@@ -21,11 +21,13 @@ class Parser
     Parser(const Parser& other) = delete;
     Parser& operator=(const Parser& other) = delete;
 
-    virtual void loadFromFile(const std::string& filename) = 0;
+    virtual void loadFromFile(const std::string& filename, bool add_includes = true) = 0;
 
-    virtual void loadFromText(const std::string& xml_text) = 0;
+    virtual void loadFromText(const std::string& xml_text, bool add_includes = true) = 0;
 
-    virtual Tree instantiateTree(const Blackboard::Ptr &root_blackboard) = 0;
+    virtual std::vector<std::string> registeredBehaviorTrees() const = 0;
+
+    virtual Tree instantiateTree(const Blackboard::Ptr &root_blackboard, std::string tree_name = {}) = 0;
 };
 
 }

@@ -52,3 +52,5 @@ if(CURSES_FOUND)
     target_link_libraries(t12_ncurses_manual_selector  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
 endif()
 
+add_executable(t13_load_multiple_BTs  t13_load_multiple_BTs.cpp )
+target_link_libraries(t13_load_multiple_BTs  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
