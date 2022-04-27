@@ -230,6 +230,7 @@ endif()
 if(ament_cmake_FOUND)
     find_package(ament_index_cpp REQUIRED)
     ament_target_dependencies(${BEHAVIOR_TREE_LIBRARY} PUBLIC ament_index_cpp)
+    ament_export_dependencies(ament_index_cpp)
 
     set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
     set( BEHAVIOR_TREE_INC_DESTINATION   include )
