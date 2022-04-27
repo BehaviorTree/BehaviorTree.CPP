@@ -116,8 +116,8 @@ class Blackboard
     template <typename T>
     void set(const std::string& key, const T& value)
     {
-        std::unique_lock<std::mutex> lock(mutex_);
         std::unique_lock<std::mutex> lock_entry(entry_mutex_);
+        std::unique_lock<std::mutex> lock(mutex_);
         auto it = storage_.find(key);
 
         if( auto parent = parent_bb_.lock())
