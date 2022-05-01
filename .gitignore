@@ -3,3 +3,5 @@
 build*
 site/*
 /.vscode/
+CATKIN_IGNORE
+.cache/**
