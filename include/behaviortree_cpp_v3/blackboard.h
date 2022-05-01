@@ -1,7 +1,9 @@
 #ifndef BLACKBOARD_H
 #define BLACKBOARD_H
 
+#include <exception>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <memory>
 #include <stdint.h>
@@ -154,7 +156,13 @@ class Blackboard
                 bool mismatching = true;
                 if( std::is_constructible<StringView, T>::value )
                 {
-                    Any any_from_string = port_info.parseString( value );
+                    Any any_from_string;
+                    try {
+                        any_from_string = port_info.parseString( value );
+                    } catch (std::runtime_error) {
+                        goto mismatch;
+                    }
+
                     if( any_from_string.empty() == false)
                     {
                         mismatching = false;
@@ -162,6 +170,7 @@ class Blackboard
                     }
                 }
 
+                mismatch:
                 if( mismatching )
                 {
                     debugMessage();
