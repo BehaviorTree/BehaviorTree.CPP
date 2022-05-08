@@ -727,8 +727,11 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
             }
         }
     };
-
-    auto root_element = tree_roots[tree_ID]->FirstChildElement();
+    if(tree_roots.find(tree_ID) == tree_roots.end()) {
+        throw std::runtime_error("Trying to construct SubTree with ID : " + 
+        tree_ID + " but subtree definition is not found. Please include subtree definition.");
+    }
+    auto root_element = tree_roots.at(tree_ID)->FirstChildElement();
 
     // start recursion
     recursiveStep(root_parent, root_element);
