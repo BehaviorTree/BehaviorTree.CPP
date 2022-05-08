@@ -167,7 +167,7 @@ class Blackboard
                 {
                     debugMessage();
 
-                    throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
+                    throw LogicError( "Blackboard::set() failed for key [" , key, "]: once declared, the type of a port shall not change. "
                                      "Declared type [", demangle( locked_type ),
                                      "] != current type [", demangle( typeid(T) ),"]" );
                 }
