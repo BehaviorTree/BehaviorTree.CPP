@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <clocale>
+#include <vector>
 
 namespace BT
 {
@@ -172,6 +173,19 @@ std::vector<double> convertFromString<std::vector<double>>(StringView str)
     {
         char* end;
         output.push_back( std::strtod( part.data(), &end ) );
+    }
+    return output;
+}
+
+template <>
+std::vector<std::string> convertFromString<std::vector<std::string>>(const StringView str)
+{
+    const auto parts = splitString(str, ';');
+    std::vector<std::string> output;
+    output.reserve( parts.size() );
+    for(const StringView& part: parts)
+    {
+        output.push_back( std::string( part.data(), part.size()));
     }
     return output;
 }
