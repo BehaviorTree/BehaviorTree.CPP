@@ -1,7 +1,7 @@
-# How to use multiple XML to store your subtrees
+# How to use multiple XML files to store your subtrees
 
 In the examples which we presented so far, we always create an entire Tree
-from a single XMl file.
+from a single XML file.
 
 If multiple Subtrees were used, they were all included into the same XML.
 
