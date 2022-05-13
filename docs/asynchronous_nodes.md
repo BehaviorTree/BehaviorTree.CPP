@@ -242,7 +242,7 @@ ActionLib provides exactly the kind of API that we need to implement correctly a
 1. A non-blocking function to start the Action.
 2. A way to monitor the current state of execution of the Action.
 3. A way to retrieve the result or the error messages.
-4. The avility to preempt / abort an action that is being executed.
+4. The ability to preempt / abort an action that is being executed.
 
 None of these operations are "blocking", therefore we don't need to spawn our own thread.
 
@@ -282,7 +282,7 @@ class ActionClientNode : public BT::StatefulActionNode
       {
         // retrieve the result
         auto result = getResult();
-        // check if this result should be considered "good"
+        // check if this result is "good"
         if( IsValidResult(result) ) {
           return NodeStatus::SUCCESS;
         } 
