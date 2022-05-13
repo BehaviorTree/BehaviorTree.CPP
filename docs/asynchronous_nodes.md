@@ -9,6 +9,11 @@ When designing reactive Behavior Trees, it is important to understand 2 main con
 
 If you Google those words, you will read many good articles about this topic.
 
+!!! info "Defintions"
+    **Concurrency** is when two or more tasks can start, run, and complete in overlapping time periods. It doesn't necessarily mean they'll ever both be running at the same instant. 
+
+    **Parallelism** is when tasks literally run at the same time in different  threads, e.g., on a multicore processor.
+
 BT.CPP executes all the nodes **Concurrently**, in other words:
 
 - The Tree execution engine itself is single-threaded.
@@ -51,43 +56,42 @@ class SleepNode : public BT::StatefulActionNode
 
     static BT::PortsList providedPorts()
     {
-        // amount of milliseconds that we want to sleep
-        return{ BT::InputPort<int>("msec") };
+      // amount of milliseconds that we want to sleep
+      return{ BT::InputPort<int>("msec") };
     }
 
     NodeStatus onStart() override
     {
-        int msec = 0;
-        getInput("msec", msec);
-        if( msec <= 0 )
-        {
-            // No need to go into the RUNNING state
-            return NodeStatus::SUCCESS;
-        }
-        else {
-            using namespace std::chrono;
-            // once the deadline is reached, we will return SUCCESS.
-            deadline_ = system_clock::now() + milliseconds(msec);
-            return NodeStatus::RUNNING;
-        }
+      int msec = 0;
+      getInput("msec", msec);
+
+      if( msec <= 0 ) {
+        // No need to go into the RUNNING state
+        return NodeStatus::SUCCESS;
+      }
+      else {
+        using namespace std::chrono;
+        // once the deadline is reached, we will return SUCCESS.
+        deadline_ = system_clock::now() + milliseconds(msec);
+        return NodeStatus::RUNNING;
+      }
     }
 
     /// method invoked by an action in the RUNNING state.
     NodeStatus onRunning() override
     {
-        if ( std::chrono::system_clock::now() >= deadline_ )
-        {
-            return NodeStatus::SUCCESS;
-        }
-        else {
-            return NodeStatus::RUNNING;
-        }
+      if ( std::chrono::system_clock::now() >= deadline_ ) {
+        return NodeStatus::SUCCESS;
+      }
+      else {
+        return NodeStatus::RUNNING;
+      }
     }
 
     void onHalted() override
     {
-        // nothing to do here...
-        std::cout << "SleepNode interrupted" << std::endl;
+      // nothing to do here...
+      std::cout << "SleepNode interrupted" << std::endl;
     }
 
   private:
@@ -118,23 +122,23 @@ class BadSleepNode : public BT::ActionNodeBase
 
     static BT::PortsList providedPorts()
     {
-        return{ BT::InputPort<int>("msec") };
+      return{ BT::InputPort<int>("msec") };
     }
 
     NodeStatus tick() override
     {  
-        int msec = 0;
-        getInput("msec", msec);
-        // This blocking function will FREEZE the entire tree :(
-        std::this_thread::sleep_for( std::chrono::milliseconds(msec) );
-        return NodeStatus::SUCCESS;
+      int msec = 0;
+      getInput("msec", msec);
+      // This blocking function will FREEZE the entire tree :(
+      std::this_thread::sleep_for( std::chrono::milliseconds(msec) );
+      return NodeStatus::SUCCESS;
      }
 
     void halt() override
     {
-        // No one can invoke this method, because I freezed the tree.
-        // Even if this method COULD be executed, there is no way I can
-        // interrupt std::this_thread::sleep_for()
+      // No one can invoke this method, because I freezed the tree.
+      // Even if this method COULD be executed, there is no way I can
+      // interrupt std::this_thread::sleep_for()
     }
 };
 ```
@@ -164,18 +168,18 @@ class BadSleepNode : public BT::AsyncActionNode
 
     static BT::PortsList providedPorts()
     {
-        return{ BT::InputPort<int>("msec") };
+      return{ BT::InputPort<int>("msec") };
     }
 
     NodeStatus tick() override
     {  
-        // This code runs in its own thread, therefore the Tree is still running.
-        // This seems good but the thread still can't be aborted
-        int msec = 0;
-        getInput("msec", msec);
-        std::this_thread::sleep_for( std::chrono::milliseconds(msec) );
-        return NodeStatus::SUCCESS;
-     }
+      // This code runs in its own thread, therefore the Tree is still running.
+      // This seems good but the thread still can't be aborted
+      int msec = 0;
+      getInput("msec", msec);
+      std::this_thread::sleep_for( std::chrono::milliseconds(msec) );
+      return NodeStatus::SUCCESS;
+    }
 
     // The halt() method can not kill the spawned thread :(
 
@@ -197,33 +201,110 @@ class ThreadedSleepNode : public BT::AsyncActionNode
 
     static BT::PortsList providedPorts()
     {
-        return{ BT::InputPort<int>("msec") };
+      return{ BT::InputPort<int>("msec") };
     }
 
     NodeStatus tick() override
     {  
-        // This code run in its own thread, therefore the Tree is still running.
-        int msec = 0;
-        getInput("msec", msec);
+      // This code run in its own thread, therefore the Tree is still running.
+      int msec = 0;
+      getInput("msec", msec);
 
-        using namespace std::chrono;
-        const auto deadline = system_clock::now() + milliseconds(msec);
+      using namespace std::chrono;
+      const auto deadline = system_clock::now() + milliseconds(msec);
 
-        // periodically check isHaltRequested() 
-        // and sleep for a small amount of time only (1 millisecond)
-        while( !isHaltRequested() && system_clock::now() < deadline )
-        {
-            std::this_thread::sleep_for( std::chrono::milliseconds(1) );
-        }
-        return NodeStatus::SUCCESS;
-     }
+      // periodically check isHaltRequested() 
+      // and sleep for a small amount of time only (1 millisecond)
+      while( !isHaltRequested() && system_clock::now() < deadline )
+      {
+        std::this_thread::sleep_for( std::chrono::milliseconds(1) );
+      }
+      return NodeStatus::SUCCESS;
+    }
 
     // The halt() method can not kill the spawned thread :()
     // void halt(); 
-    }
 };
 ```
 
 As you can see, this looks more complicated than the version we implemented
 first, using `BT::StatefulActionNode`.
 This pattern can still be useful in some case, but you must remember that introducing multi-threading make things more complicated and **should be avoided by default**. 
+
+## Advanced example: client / server communication
+
+Frequently, people using BT.CPP execute the actual task in a different process.
+
+A typical (and recommended) way to do this in ROS is using [ActionLib](http://wiki.ros.org/actionlib).
+
+ActionLib provides exactly the kind of API that we need to implement correctly an asynchronous behavior:
+
+1. A non-blocking function to start the Action.
+2. A way to monitor the current state of execution of the Action.
+3. A way to retrieve the result or the error messages.
+4. The ability to preempt / abort an action that is being executed.
+
+None of these operations are "blocking", therefore we don't need to spawn our own thread.
+
+More generally, let's assume that the developer has their own inter-processing communication, with a client/server relationship between the BT executor and the actual service provider.
+
+The corresponding **pseudo-code** implementation will look like this:
+
+```c++
+// This action talk to a remote server
+class ActionClientNode : public BT::StatefulActionNode
+{
+  public:
+    SleepNode(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::StatefulActionNode(name, config)
+    {}
+
+    NodeStatus onStart() override
+    {
+      // send a request to the server
+      bool accepted = sendStartRequestToServer();
+      // check if the request was rejected by the server
+      if( !accepted ) {
+        return NodeStatus::FAILURE;
+      }
+      else {
+        return NodeStatus::RUNNING;
+      }
+    }
+
+    /// method invoked by an action in the RUNNING state.
+    NodeStatus onRunning() override
+    {
+      // more psuedo-code
+      auto request_state = getCurrentStateFromServer();
+
+      if( request_state == DONE )
+      {
+        // retrieve the result
+        auto result = getResult();
+        // check if this result is "good"
+        if( IsValidResult(result) ) {
+          return NodeStatus::SUCCESS;
+        } 
+        else {
+          return NodeStatus::FAILURE;
+        }
+      }
+      else if( request_state == ABORTED ) {
+        // fail if the action was aborted by some other client
+        // or by the server itself
+        return NodeStatus::FAILURE;
+      }
+      else {
+        // probably (request_state == EXECUTING) ?
+        return NodeStatus::RUNNING;
+      }
+    }
+
+    void onHalted() override
+    {
+      // notify the server that the operation have been aborted
+      sendAbortSignalToServer();
+    }
+};
+```
