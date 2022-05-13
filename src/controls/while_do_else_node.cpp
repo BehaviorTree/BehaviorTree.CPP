@@ -33,7 +33,7 @@ NodeStatus WhileDoElseNode::tick()
 
   if(children_count != 3)
   {
-    throw std::logic_error("WhileDoElse must have either 2 or 3 children");
+    throw std::logic_error("WhileDoElse must have 3 children");
   }
 
   setStatus(NodeStatus::RUNNING);
