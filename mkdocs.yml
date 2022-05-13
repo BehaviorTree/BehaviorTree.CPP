@@ -48,7 +48,7 @@ nav:
       - "Tutorial 4: Reactive Trees":          tutorial_04_sequence.md
       - "Tutorial 5: Subtrees and Loggers":    tutorial_05_subtrees.md
       - "Tutorial 6: Ports remapping":         tutorial_06_subtree_ports.md
-      - "Tutorial 7: Load from multiple XMLs": tutorial_07_multiple_xml.md
+      - "Tutorial 7: Load multiple XMLs":      tutorial_07_multiple_xml.md
       - "Tutorial 8: Additional arguments":    tutorial_08_additional_args.md
       - "Tutorial 9: Coroutines":              tutorial_09_coroutines.md
     

@@ -8,7 +8,7 @@ If multiple Subtrees were used, they were all included into the same XML.
 In recent version of BT.CPP (3.7+), the user can more easily
 load trees from multiple files, if needed.
 
-## Using the \<include\> tag
+## Load multiple files with "include"
 
 We will consider a main tree that invoke 2 different subtrees.
 
@@ -56,7 +56,7 @@ We need to create the tree as usual:
 factory.createTreeFromFile("main_tree.xml")
 ```
 
-## Load multiple files without \<include\>
+## Load multiple files manually
 
 If we don't want to add relative and hard-coded paths into our XML,
 or if we want to instantiate a subtree instead of the main tree, there is a

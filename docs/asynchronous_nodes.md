@@ -177,9 +177,10 @@ class BadSleepNode : public BT::AsyncActionNode
         return NodeStatus::SUCCESS;
      }
 
-    // The halt() method can not kill the spawned thread :()
-    // void halt(); 
-    }
+    // The halt() method can not kill the spawned thread :(
+
+    // Keep in mind that most of the time we should not
+    // override AsyncActionNode::halt()
 };
 ```
 
