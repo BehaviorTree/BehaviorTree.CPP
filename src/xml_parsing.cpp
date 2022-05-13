@@ -22,6 +22,7 @@
 #pragma warning(disable : 4996) // do not complain about sprintf
 #endif
 
+#include <map>
 #include "behaviortree_cpp_v3/xml_parsing.h"
 #include "private/tinyxml2.h"
 #include "filesystem/path.h"
@@ -59,10 +60,10 @@ struct XMLParser::Pimpl
 
     void getPortsRecursively(const XMLElement* element, std::vector<std::string> &output_ports);
 
-    void loadDocImpl(BT_TinyXML2::XMLDocument* doc);
+    void loadDocImpl(BT_TinyXML2::XMLDocument* doc, bool add_includes);
 
     std::list<std::unique_ptr<BT_TinyXML2::XMLDocument> > opened_documents;
-    std::unordered_map<std::string,const XMLElement*>  tree_roots;
+    std::map<std::string,const XMLElement*>  tree_roots;
 
     const BehaviorTreeFactory& factory;
 
@@ -100,7 +101,7 @@ XMLParser::~XMLParser()
     delete _p;
 }
 
-void XMLParser::loadFromFile(const std::string& filename)
+void XMLParser::loadFromFile(const std::string& filename, bool add_includes)
 {
     _p->opened_documents.emplace_back(new BT_TinyXML2::XMLDocument());
 
@@ -110,20 +111,30 @@ void XMLParser::loadFromFile(const std::string& filename)
     filesystem::path file_path( filename );
     _p->current_path = file_path.parent_path().make_absolute();
 
-    _p->loadDocImpl( doc );
+    _p->loadDocImpl( doc, add_includes );
 }
 
-void XMLParser::loadFromText(const std::string& xml_text)
+void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
 {
     _p->opened_documents.emplace_back(new BT_TinyXML2::XMLDocument());
 
     BT_TinyXML2::XMLDocument* doc = _p->opened_documents.back().get();
     doc->Parse(xml_text.c_str(), xml_text.size());
 
-    _p->loadDocImpl( doc );
+    _p->loadDocImpl( doc, add_includes );
 }
 
-void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc)
+std::vector<std::string> XMLParser::registeredBehaviorTrees() const
+{
+    std::vector<std::string> out;
+    for(const auto& it: _p->tree_roots)
+    {
+        out.push_back(it.first);
+    }
+    return out;
+}
+
+void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc, bool add_includes)
 {
     if (doc->Error())
     {
@@ -139,10 +150,13 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc)
          include_node != nullptr;
          include_node = include_node->NextSiblingElement("include"))
     {
+        if( !add_includes )
+        {
+            break;
+        }
 
         filesystem::path file_path( include_node->Attribute("path") );
         const char* ros_pkg_relative_path = include_node->Attribute("ros_pkg");
-        std::string ros_pkg_path;
 
         if( ros_pkg_relative_path )
         {
@@ -151,17 +165,18 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc)
                 std::cout << "WARNING: <include path=\"...\"> contains an absolute path.\n"
                           << "Attribute [ros_pkg] will be ignored."<< std::endl;
             }
-            else 
+            else
             {
+                std::string ros_pkg_path;
 #ifdef USING_ROS
-            ros_pkg_path = ros::package::getPath(ros_pkg_relative_path);
+               ros_pkg_path = ros::package::getPath(ros_pkg_relative_path);
 #elif defined USING_ROS2
-            ros_pkg_path = ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
+               ros_pkg_path = ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
+               file_path = filesystem::path( ros_pkg_path ) / file_path;
 #else
-            throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was compiled "
-                               "without ROS support. Recompile the BehaviorTree.CPP using catkin");
+               throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was compiled "
+                                  "without ROS support. Recompile the BehaviorTree.CPP using catkin");
 #endif
-            file_path = filesystem::path( ros_pkg_path ) / file_path;
             }
         }
 
@@ -173,7 +188,7 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc)
         opened_documents.emplace_back(new BT_TinyXML2::XMLDocument());
         BT_TinyXML2::XMLDocument* next_doc = opened_documents.back().get();
         next_doc->LoadFile(file_path.str().c_str());
-        loadDocImpl(next_doc);
+        loadDocImpl(next_doc, add_includes);
     }
 
     for (auto bt_node = xml_root->FirstChildElement("BehaviorTree");
@@ -407,41 +422,40 @@ void VerifyXML(const std::string& xml_text,
             recursiveStep(bt_root->FirstChildElement());
         }
     }
-
-    if (xml_root->Attribute("main_tree_to_execute"))
-    {
-        std::string main_tree = xml_root->Attribute("main_tree_to_execute");
-        if (std::find(tree_names.begin(), tree_names.end(), main_tree) == tree_names.end())
-        {
-            throw RuntimeError("The tree specified in [main_tree_to_execute] can't be found");
-        }
-    }
-    else
-    {
-        if (tree_count != 1)
-        {
-            throw RuntimeError("If you don't specify the attribute [main_tree_to_execute], "
-                               "Your file must contain a single BehaviorTree");
-        }
-    }
 }
 
-Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard)
+Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
+                                std::string main_tree_to_execute)
 {
     Tree output_tree;
+    std::string main_tree_ID = main_tree_to_execute;
 
-    XMLElement* xml_root = _p->opened_documents.front()->RootElement();
-
-    std::string main_tree_ID;
-    if (xml_root->Attribute("main_tree_to_execute"))
+    if( main_tree_ID.empty() )
     {
-        main_tree_ID = xml_root->Attribute("main_tree_to_execute");
+        for( const auto& doc: _p->opened_documents)
+        {
+            XMLElement* xml_root = doc->RootElement();
+            if (xml_root->Attribute("main_tree_to_execute"))
+            {
+                if(!main_tree_ID.empty())
+                {
+                    throw RuntimeError("The attribute [main_tree_to_execute] has been "
+                                       "found multiple times. You must specify explicitly the name "
+                                       "of the <BehaviorTree> to instantiate.");
+                }
+                main_tree_ID = xml_root->Attribute("main_tree_to_execute");
+            }
+        }
     }
-    else if( _p->tree_roots.size() == 1)
+
+    // special case: no name, but there is only one registered BT.
+    if( main_tree_ID.empty() && _p->tree_roots.size() == 1)
     {
         main_tree_ID = _p->tree_roots.begin()->first;
     }
-    else{
+
+    if( main_tree_ID.empty() )
+    {
         throw RuntimeError("[main_tree_to_execute] was not specified correctly");
     }
     //--------------------------------------
