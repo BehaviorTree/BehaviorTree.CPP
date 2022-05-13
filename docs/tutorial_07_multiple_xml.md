@@ -62,7 +62,21 @@ If we don't want to add relative and hard-coded paths into our XML,
 or if we want to instantiate a subtree instead of the main tree, there is a
 new approach, since BT.CPP 3.7+.
 
-This process requires few more steps, but offers more flexibility.
+The simplified version of **main_tree.xml** will be:
+
+```XML
+<root>
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SaySomething message="starting MainTree" />
+            <SubTree ID="SubTreeA" />
+            <SubTree ID="SubTreeB" />
+        </Sequence>
+    </BehaviorTree>
+<root>
+```
+
+To load manually the multiple files:
 
 ```c++
 int main()
