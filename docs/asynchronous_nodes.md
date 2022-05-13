@@ -33,12 +33,12 @@ In general, an Asynchronous Action (or TreeNode) is simply one that:
 
 When your Tree ends up executing an Asynchronous action that returns running, that RUNNING state is usually propagated backbard and the entire Tree is itself in the RUNNING state.
 
-In the example below, "ActionE" is asynchronous and the RUNNING; when
+In the example below, "ActionE" is asynchronous and RUNNING; when
 a node is RUNNING, usually its parent returns RUNNING too.
 
 ![tree in running state](images/RunningTree.svg)
 
-Let's consider a simple "SleepNode". A good template to get started is the StatefullAction
+Let's consider a simple "SleepNode". A good template to get started is the StatefulAction
 
 ```c++
 // Example os Asynchronous node that use StatefulActionNode as base class
@@ -97,7 +97,7 @@ class SleepNode : public BT::StatefulActionNode
 
 In the code above:
 
-1. When the SleedNode is ticked the first time, the `onStart()` method is executed.
+1. When the SleepNode is ticked the first time, the `onStart()` method is executed.
 This may return SUCCESS immediately if the sleep time is 0 or will return RUNNING otherwise.
 2. We should continue ticking the tree in a loop. This will invoke the method
 `onRunning()` that may return RUNNING again or, eventually, SUCCESS.
@@ -142,7 +142,7 @@ class BadSleepNode : public BT::ActionNodeBase
 ## The problem with multi-threading
 
 In the early days of this library (version 1.x), spawning a new thread
-looked as a good solution to build asynchronous Actions.
+looked like a good solution to build asynchronous Actions.
 
 That was a bad idea, for multiple reasons:
 
@@ -150,11 +150,11 @@ That was a bad idea, for multiple reasons:
 - You probably don't need to.
 - People think that this will magically make the Action "asynchronous", but they forget that it is still **their responsibility** to stop that thread "somehow" when the `halt()`method is invoked.
 
-For this reason, user a usually discouraged from using `BT::AsyncActionNode` as a
+For this reason, users are usually discouraged from using `BT::AsyncActionNode` as a
 base class. Let's have a look again at the SleepNode.
 
 ```c++
-// This will spawn its own thread. But it still have problems when halted
+// This will spawn its own thread. But it still has problems when halted
 class BadSleepNode : public BT::AsyncActionNode
 {
   public:
@@ -169,8 +169,8 @@ class BadSleepNode : public BT::AsyncActionNode
 
     NodeStatus tick() override
     {  
-        // This code run in its own thread, therefore the Tree is still running.
-        // Think looks good but the thread can't be aborted
+        // This code runs in its own thread, therefore the Tree is still running.
+        // This seems good but the thread still can't be aborted
         int msec = 0;
         getInput("msec", msec);
         std::this_thread::sleep_for( std::chrono::milliseconds(msec) );
@@ -207,7 +207,7 @@ class ThreadedSleepNode : public BT::AsyncActionNode
         getInput("msec", msec);
 
         using namespace std::chrono;
-        auto deadline = system_clock::now() + milliseconds(msec);
+        const auto deadline = system_clock::now() + milliseconds(msec);
 
         // periodically check isHaltRequested() 
         // and sleep for a small amount of time only (1 millisecond)
