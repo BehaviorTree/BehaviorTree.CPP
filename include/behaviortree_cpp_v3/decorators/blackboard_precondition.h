@@ -14,6 +14,7 @@
 #define DECORATOR_BLACKBOARD_PRECONDITION_NODE_H
 
 #include "behaviortree_cpp_v3/decorator_node.h"
+#include <type_traits>
 
 namespace BT
 {
@@ -71,10 +72,17 @@ NodeStatus BlackboardPreconditionNode<T>::tick()
     setStatus(NodeStatus::RUNNING);
 
     if( getInput("value_A", value_A) &&
-        getInput("value_B", value_B) &&
-        value_B == value_A )
+        getInput("value_B", value_B) )
     {
-        return child_node_->executeTick();
+        bool is_equal = (value_B == value_A);
+        if ( std::is_same<double, T>::value || std::is_same<float, T>::value )
+        {
+            is_equal = std::abs(value_B - value_A) <= std::numeric_limits<float>::epsilon();
+        }
+        if(is_equal)
+        {
+            return child_node_->executeTick();
+        }
     }
 
     if( child()->status() == NodeStatus::RUNNING )
