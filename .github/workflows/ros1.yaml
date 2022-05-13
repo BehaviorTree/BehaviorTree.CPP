@@ -8,7 +8,7 @@ jobs:
       matrix:
         env:
           - {ROS_DISTRO: melodic, ROS_REPO: main}
-          - {ROS_DISTRO: kinetic, ROS_REPO: main}
+          - {ROS_DISTRO: noetic, ROS_REPO: main}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
