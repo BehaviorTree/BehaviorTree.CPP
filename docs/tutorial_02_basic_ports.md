@@ -189,16 +189,13 @@ static value into an entry using the built-in Actions called `SetBlackboard`.
 
 ## A complete example
 
-In this example, a Sequence of 5 Actions is executed:
+In this example, a Sequence of 4 Actions is executed:
 
-- Actions 1 and 4 read the input `message` from a static string.
+- Actions 1 and 2 read the input `message` from a static string (`SaySomething2` is a SimpleActionNode).
 
-- Actions 3 and 5 read the input `message` from an entry in the
-  blackboard called `the_answer`.
+- Action 3 writes something into the entry of the blackboard called `the_answer`.
 
-- Action 2 writes something into the entry of the blackboard called `the_answer`.
-
-`SaySomething2` is a SimpleActionNode. 
+- Action 4 read the input `message` from an entry in the blackboard called `the_answer`.
 
 ```XML
 <root main_tree_to_execute = "MainTree" >
