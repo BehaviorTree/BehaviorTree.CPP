@@ -72,7 +72,64 @@ static const char* xml_text_subtree = R"(
 
 </root>  )";
 
+static const char* xml_text_subtree_part1 = R"(
+
+<root>
+  <BehaviorTree ID="MainTree">
+    <Fallback name="root_selector">
+      <SubTree ID="CrossDoorSubtree" />
+      <Action ID="PassThroughWindow" />
+    </Fallback>
+  </BehaviorTree>
+</root>  )";
+
+static const char* xml_text_subtree_part2 = R"(
+
+<root>
+  <BehaviorTree ID="CrossDoorSubtree">
+    <Sequence name="door_sequence">
+      <Decorator ID="Inverter">
+        <Action ID="IsDoorLocked" />
+      </Decorator>
+      <Action ID="OpenDoor" />
+      <Action ID="PassThroughDoor" />
+      <Action ID="CloseDoor" />
+    </Sequence>
+  </BehaviorTree>
+</root>  )";
+
 // clang-format on
+
+
+TEST(BehaviorTreeFactory, XMLParsingOrder)
+{
+    BehaviorTreeFactory factory;
+    CrossDoor::RegisterNodes(factory);
+
+    {
+        XMLParser parser(factory);
+        parser.loadFromText(xml_text_subtree);
+        auto trees = parser.registeredBehaviorTrees();
+        ASSERT_EQ(trees[0], "CrossDoorSubtree");
+        ASSERT_EQ(trees[1], "MainTree");
+    }
+    {
+        XMLParser parser(factory);
+        parser.loadFromText(xml_text_subtree_part1);
+        parser.loadFromText(xml_text_subtree_part2);
+        auto trees = parser.registeredBehaviorTrees();
+        ASSERT_EQ(trees[0], "CrossDoorSubtree");
+        ASSERT_EQ(trees[1], "MainTree");
+    }
+    {
+        XMLParser parser(factory);
+        parser.loadFromText(xml_text_subtree_part2);
+        parser.loadFromText(xml_text_subtree_part1);
+        auto trees = parser.registeredBehaviorTrees();
+        ASSERT_EQ(trees[0], "CrossDoorSubtree");
+        ASSERT_EQ(trees[1], "MainTree");
+    }
+}
 
 TEST(BehaviorTreeFactory, VerifyLargeTree)
 {
@@ -114,6 +171,8 @@ TEST(BehaviorTreeFactory, VerifyLargeTree)
 
     ASSERT_EQ(decorator->child()->name(), "IsDoorOpen");
 }
+
+
 
 TEST(BehaviorTreeFactory, Subtree)
 {

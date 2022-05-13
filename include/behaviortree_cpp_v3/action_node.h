@@ -183,9 +183,8 @@ class StatefulActionNode : public ActionNodeBase
 #ifndef BT_NO_COROUTINES
 
 /**
- * @brief The CoroActionNode class is an ideal candidate for asynchronous actions
- * which need to communicate with an external service using an asynch request/reply interface
- * (being notable examples ActionLib in ROS, MoveIt clients or move_base clients).
+ * @brief The CoroActionNode class is an a good candidate for asynchronous actions
+ * which need to communicate with an external service using an asynch request/reply interface.
  *
  * It is up to the user to decide when to suspend execution of the Action and resume
  * the parent node, invoking the method setStatusRunningAndYield().

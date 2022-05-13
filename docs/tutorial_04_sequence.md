@@ -1,4 +1,4 @@
-# Sequences and AsyncActionNode
+# Reactive Sequences and Asynchronous Nodes
 
 The next example shows the difference between a `SequenceNode` and a 
 `ReactiveSequence`.
@@ -6,6 +6,13 @@ The next example shows the difference between a `SequenceNode` and a
 An Asynchronous Action has it's own thread. This allows the user to 
 use blocking functions but to return the flow of execution 
 to the tree.
+
+!!! warning "Learn more about Asynchronous Actions"
+     
+    Users should fully understand how Concurrency is achieved in BT.CPP
+    and learn best practices about how to develop their own Asynchronous
+    Actions. You will find an extensive article 
+    [here](asynchronous_nodes.md).
 
 ```C++
 

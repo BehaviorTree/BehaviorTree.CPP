@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1) # version on Ubuntu Xenial
+cmake_minimum_required(VERSION 3.10.2) # version on Ubuntu Bionic
 project(behaviortree_cpp_v3)
 
 #---- Add the subdirectory cmake ----
@@ -111,14 +111,18 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 elseif(BUILD_UNIT_TESTS)
-    include(FetchContent)
-    FetchContent_Declare(
-      googletest
-      URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-    )
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
+    if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
+        find_package(GTest REQUIRED)
+    else()
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+            )
+        # For Windows: Prevent overriding the parent project's compiler/linker settings
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(googletest)
+    endif()
 endif()
 
 
@@ -230,6 +234,7 @@ endif()
 if(ament_cmake_FOUND)
     find_package(ament_index_cpp REQUIRED)
     ament_target_dependencies(${BEHAVIOR_TREE_LIBRARY} PUBLIC ament_index_cpp)
+    ament_export_dependencies(ament_index_cpp)
 
     set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
     set( BEHAVIOR_TREE_INC_DESTINATION   include )

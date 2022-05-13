@@ -44,8 +44,7 @@ Alternatively, the library provides a mechanism to create a TreeNode passing a
 __function pointer__ to a wrapper (dependency injection).
 
 This approach reduces the amount of boilerplate in your code; as a reference
-please look at the [first tutorial](tutorial_01_first_tree.md) and the one
-describing [non intrusive integration with legacy code](tutorial_07_legacy.md).
+please look at the [first tutorial](tutorial_01_first_tree.md).
 
 ## Dataflow, Ports and Blackboard
 
