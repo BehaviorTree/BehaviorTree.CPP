@@ -93,6 +93,9 @@ class TreeNode
     using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
     using StatusChangeCallback = StatusChangeSignal::CallableFunction;
 
+    using PreTickOverrideCallback = std::function<Optional<NodeStatus>(TreeNode&, NodeStatus)>;
+    using PostTickOverrideCallback = std::function<Optional<NodeStatus>(TreeNode&, NodeStatus, NodeStatus)>;
+
     /**
      * @brief subscribeToStatusChange is used to attach a callback to a status change.
      * When StatusChangeSubscriber goes out of scope (it is a shared_ptr) the callback
@@ -103,6 +106,27 @@ class TreeNode
      * @return the subscriber handle.
      */
     StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
+
+    /** This method attaches to the TreeNode a callback with signature:
+     *
+     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus current_status)
+     *
+     * This callback is executed BEFORE the tick() and, if it returns a valid Optional<NodeStatus>,
+     * the actual tick() will NOT be executed and this result will be returned instead.
+     *
+     * This is useful to inject a "dummy" implementation of the TreeNode at run-time
+     */
+    void setPreTickOverrideFunction(PreTickOverrideCallback callback);
+
+    /**
+     * This method attaches to the TreeNode a callback with signature:
+     *
+     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus prev_status, NodeStatus tick_status)
+     *
+     * This callback is executed AFTER the tick() and, if it returns a valid Optional<NodeStatus>,
+     * the value returned by the actual tick() is overriden with this one.
+     */
+    void setPostTickOverrideFunction(PostTickOverrideCallback callback);
 
     // get an unique identifier of this instance of treeNode
     uint16_t UID() const;
@@ -160,10 +184,7 @@ class TreeNode
     friend class Tree;
 
     // Only BehaviorTreeFactory should call this
-    void setRegistrationID(StringView ID)
-    {
-        registration_ID_.assign(ID.data(), ID.size());
-    }
+    void setRegistrationID(StringView ID);
 
     void modifyPortsRemapping(const PortsRemapping& new_remapping);
 
@@ -185,6 +206,10 @@ class TreeNode
     NodeConfiguration config_;
 
     std::string registration_ID_;
+
+    PreTickOverrideCallback pre_condition_callback_;
+
+    PostTickOverrideCallback post_condition_callback_;
 };
 
 //-------------------------------------------------------

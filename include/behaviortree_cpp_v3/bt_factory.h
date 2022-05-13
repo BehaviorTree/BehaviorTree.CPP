@@ -381,7 +381,7 @@ public:
     Tree createTreeFromFile(const std::string& file_path,
                             Blackboard::Ptr blackboard = Blackboard::create());
 
-    Tree createdTree(const std::string& tree_name,
+    Tree createTree(const std::string& tree_name,
                      Blackboard::Ptr blackboard = Blackboard::create());
 
 private:

@@ -4,6 +4,12 @@ include_directories( ../sample_nodes )
 
 set(CMAKE_DEBUG_POSTFIX "")
 
+function(CompileExample name)
+    add_executable(${name}  ${name}.cpp )
+    target_link_libraries(${name} ${BEHAVIOR_TREE_LIBRARY}  bt_sample_nodes )
+endfunction()
+
+
 # The plugin libdummy_nodes.so can be linked statically or
 # loaded dynamically at run-time.
 add_executable(t01_first_tree_static  t01_build_your_first_tree.cpp )
@@ -13,44 +19,18 @@ target_link_libraries(t01_first_tree_static ${BEHAVIOR_TREE_LIBRARY}   bt_sample
 add_executable(t01_first_tree_dynamic  t01_build_your_first_tree.cpp )
 target_link_libraries(t01_first_tree_dynamic ${BEHAVIOR_TREE_LIBRARY}  )
 
-
-add_executable(t02_basic_ports  t02_basic_ports.cpp )
-target_link_libraries(t02_basic_ports ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
-
-add_executable(t03_generic_ports        t03_generic_ports.cpp )
-target_link_libraries(t03_generic_ports ${BEHAVIOR_TREE_LIBRARY}  bt_sample_nodes  )
-
-add_executable(t04_reactive_sequence         t04_reactive_sequence.cpp )
-target_link_libraries(t04_reactive_sequence  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes  )
-
-add_executable(t05_cross_door         t05_crossdoor.cpp )
-target_link_libraries(t05_cross_door   ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
-
-add_executable(t06_subtree_port_remapping  t06_subtree_port_remapping.cpp )
-target_link_libraries(t06_subtree_port_remapping ${BEHAVIOR_TREE_LIBRARY}   bt_sample_nodes )
-
-add_executable(t07_wrap_legacy         t07_wrap_legacy.cpp )
-target_link_libraries(t07_wrap_legacy   ${BEHAVIOR_TREE_LIBRARY} )
-
-add_executable(t08_additional_node_args   t08_additional_node_args.cpp )
-target_link_libraries(t08_additional_node_args   ${BEHAVIOR_TREE_LIBRARY} )
+CompileExample("t02_basic_ports")
+CompileExample("t03_generic_ports")
+CompileExample("t04_reactive_sequence")
+CompileExample("t05_crossdoor")
+CompileExample("t06_subtree_port_remapping")
+CompileExample("t07_load_multiple_xml")
+CompileExample("t08_additional_node_args")
 
 if (BT_COROUTINES)
-    add_executable(t09_async_actions_coroutines  t09_async_actions_coroutines.cpp )
-    target_link_libraries(t09_async_actions_coroutines ${BEHAVIOR_TREE_LIBRARY} )
+    CompileExample("t09_async_actions_coroutines")
 endif()
 
-add_executable(t10_include_trees  t10_include_trees.cpp )
-target_link_libraries(t10_include_trees  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
-
-
-add_executable(t11_runtime_ports  t11_runtime_ports.cpp )
-target_link_libraries(t11_runtime_ports  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
-
-if(CURSES_FOUND)
-    add_executable(t12_ncurses_manual_selector  t12_ncurses_manual_selector.cpp )
-    target_link_libraries(t12_ncurses_manual_selector  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
-endif()
-
-add_executable(t13_load_multiple_BTs  t13_load_multiple_BTs.cpp )
-target_link_libraries(t13_load_multiple_BTs  ${BEHAVIOR_TREE_LIBRARY} bt_sample_nodes )
+CompileExample("ex01_wrap_legacy")
+CompileExample("ex02_runtime_ports")
+CompileExample("ex03_ncurses_manual_selector")

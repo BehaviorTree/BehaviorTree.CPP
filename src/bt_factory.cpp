@@ -287,7 +287,7 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
     return tree;
 }
 
-Tree BehaviorTreeFactory::createdTree(const std::string &tree_name, Blackboard::Ptr blackboard)
+Tree BehaviorTreeFactory::createTree(const std::string &tree_name, Blackboard::Ptr blackboard)
 {
     auto tree = parser_->instantiateTree(blackboard, tree_name);
     tree.manifests = this->manifests();
