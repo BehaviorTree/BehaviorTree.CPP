@@ -263,7 +263,7 @@ class ActionClientNode : public BT::StatefulActionNode
     {
       // send a request to the server
       bool accepted = sendStartRequestToServer();
-      // check if the request was rejected
+      // check if the request was rejected by the server
       if( !accepted ) {
         return NodeStatus::FAILURE;
       }
@@ -280,7 +280,9 @@ class ActionClientNode : public BT::StatefulActionNode
 
       if( request_state == DONE )
       {
+        // retrieve the result
         auto result = getResult();
+        // check if this result should be considered "good"
         if( IsValidResult(result) ) {
           return NodeStatus::SUCCESS;
         } 
@@ -289,10 +291,12 @@ class ActionClientNode : public BT::StatefulActionNode
         }
       }
       else if( request_state == ABORTED ) {
+        // fail if the action was aborted by some other client
+        // or by the server itself
         return NodeStatus::FAILURE;
       }
       else {
-        // request_state == EXECUTING ?
+        // probably (request_state == EXECUTING) ?
         return NodeStatus::RUNNING;
       }
     }
