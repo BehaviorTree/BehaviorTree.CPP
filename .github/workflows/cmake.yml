@@ -1,6 +1,6 @@
-name: CMake Build Matrix
+name: cmake
 
-on: [push]
+on: [push, pull_request]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
