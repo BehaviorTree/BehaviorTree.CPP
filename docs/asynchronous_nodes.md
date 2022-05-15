@@ -46,7 +46,7 @@ a node is RUNNING, usually its parent returns RUNNING too.
 Let's consider a simple "SleepNode". A good template to get started is the StatefulAction
 
 ```c++
-// Example os Asynchronous node that use StatefulActionNode as base class
+// Example of Asynchronous node that use StatefulActionNode as base class
 class SleepNode : public BT::StatefulActionNode
 {
   public:
@@ -188,7 +188,7 @@ class BadSleepNode : public BT::AsyncActionNode
 };
 ```
 
-A "correct" (but over-engineered) version of it would be:
+A correct version would be:
 
 ```c++
 // I will create my own thread here, for no good reason
@@ -222,8 +222,8 @@ class ThreadedSleepNode : public BT::AsyncActionNode
       return NodeStatus::SUCCESS;
     }
 
-    // The halt() method can not kill the spawned thread :()
-    // void halt(); 
+    // The halt() method will set isHaltRequested() to true 
+    // and stop the while loop in the spawned thread.
 };
 ```
 
@@ -276,9 +276,9 @@ class ActionClientNode : public BT::StatefulActionNode
     NodeStatus onRunning() override
     {
       // more psuedo-code
-      auto request_state = getCurrentStateFromServer();
+      auto current_state = getCurrentStateFromServer();
 
-      if( request_state == DONE )
+      if( current_state == DONE )
       {
         // retrieve the result
         auto result = getResult();
@@ -290,13 +290,13 @@ class ActionClientNode : public BT::StatefulActionNode
           return NodeStatus::FAILURE;
         }
       }
-      else if( request_state == ABORTED ) {
+      else if( current_state == ABORTED ) {
         // fail if the action was aborted by some other client
         // or by the server itself
         return NodeStatus::FAILURE;
       }
       else {
-        // probably (request_state == EXECUTING) ?
+        // probably (current_state == EXECUTING) ?
         return NodeStatus::RUNNING;
       }
     }
