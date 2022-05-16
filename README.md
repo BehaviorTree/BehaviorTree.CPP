@@ -41,12 +41,10 @@ You can learn about the main concepts, the API and the tutorials here: https://w
 
 To find more details about the conceptual ideas that make this implementation different from others, you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
 
-# Does your company use BehaviorTree.CPP?
+# Commercial support
 
-No company, institution or public/private funding is currently supporting the development of BehaviorTree.CPP and Groot. As a consequence, my time to support **BehaviorTree.CPP** is very limited and I decided won't spend any time at all supporting **Groot**.
-Pull Requests are welcome and will be reviewed, even if with some delay.
-
-If your company use this software, consider becoming a **sponsor** to support bug fixing and development of new features. You can find contact details in [package.xml](package.xml).
+Are you using BT.CPP in your commercial product and you need technical support / consulting?
+You can get in touch at dfaconti@aurynrobotics.com and we will happy to discuss your use case and needs.
 
 # Design principles
 
