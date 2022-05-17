@@ -35,13 +35,19 @@ to visualize, record, replay and analyze state transitions.
 
 - Last but not least: it is well [documented](https://www.behaviortree.dev/)!
 
-# Documentation
+## Documentation
 
 You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
 
-To find more details about the conceptual ideas that make this implementation different from others, you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
+To find more details about the conceptual ideas that make this implementation different from others,
+you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
 
-# Commercial support
+## Forum and Community
+
+If the documentation doesn't answer your questions and/or you want to
+connect with the other **BT.CPP** users, visit https://discourse.behaviortree.dev/
+
+## Commercial support
 
 Are you using BT.CPP in your commercial product and you need technical support / consulting?
 You can get in touch at dfaconti@aurynrobotics.com and we will happy to discuss your use case and needs.

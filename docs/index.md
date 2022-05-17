@@ -20,6 +20,11 @@ to visualize, record, replay and analyze state transitions.
 
 ![ReadTheDocs](images/ReadTheDocs.png)  
 
+## Community
+
+If this documentation doesn't answer your questions or if you simply want to
+connect with the community of BT.CPP users, visit https://discourse.behaviortree.dev/
+
 ## What is a Behavior Tree?
 
 A Behavior Tree (__BT__) is a way to structure the switching between different 
