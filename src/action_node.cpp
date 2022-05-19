@@ -138,7 +138,7 @@ NodeStatus StatefulActionNode::tick()
     NodeStatus new_status = onStart();
     if( new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("AsyncActionNode2::onStart() must not return IDLE");
+      throw std::logic_error("StatefulActionNode::onStart() must not return IDLE");
     }
     return new_status;
   }
@@ -148,7 +148,7 @@ NodeStatus StatefulActionNode::tick()
     NodeStatus new_status = onRunning();
     if( new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("AsyncActionNode2::onRunning() must not return IDLE");
+      throw std::logic_error("StatefulActionNode::onRunning() must not return IDLE");
     }
     return new_status;
   }
@@ -167,6 +167,7 @@ void StatefulActionNode::halt()
 
 NodeStatus BT::AsyncActionNode::executeTick()
 {
+    using lock_type = std::unique_lock<std::mutex>;
     //send signal to other thread.
     // The other thread is in charge for changing the status
     if (status() == NodeStatus::IDLE)
@@ -182,16 +183,23 @@ NodeStatus BT::AsyncActionNode::executeTick()
             {
                 std::cerr << "\nUncaught exception from the method tick(): ["
                           << registrationName() << "/" << name() << "]\n" << std::endl;
+                // Set the exception pointer and the status atomically.
+                lock_type l(m_);
                 exptr_ = std::current_exception();
-                thread_handle_.wait();
+                setStatus(BT::NodeStatus::IDLE);
             }
             return status();
         });
     }
 
+    lock_type l(m_);
     if( exptr_ )
     {
-        std::rethrow_exception(exptr_);
+        // The official interface of std::exception_ptr does not define any move
+        // semantics. Thus, we copy and reset exptr_ manually.
+        const auto exptr_copy = exptr_;
+        exptr_ = nullptr;
+        std::rethrow_exception(exptr_copy);
     }
     return status();
 }

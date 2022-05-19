@@ -80,8 +80,7 @@ This ControlNode is used when you want to interrupt an __asynchronous__
 child if one of the previous Conditions changes its state from 
 FAILURE to SUCCESS.
 
-In the following example, character will sleep up to 8 hours or less,
-if he/she is fully rested.
+In the following example, the character will sleep *up to* 8 hours. If he/she has fully rested, then the node `areYouRested?` will return SUCCESS and the asynchronous nodes `Timeout (8 hrs)` and `Sleep` will be interrupted.
 
 ![ReactiveFallback](images/ReactiveFallback.png)
 

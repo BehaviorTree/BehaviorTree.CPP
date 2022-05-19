@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1) # version on Ubuntu Xenial
+cmake_minimum_required(VERSION 3.10.2) # version on Ubuntu Bionic
 project(behaviortree_cpp_v3)
 
 #---- Add the subdirectory cmake ----
@@ -83,8 +83,7 @@ find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
 
-    # Not adding -DUSING_ROS since xml_parsing.cpp hasn't been ported to ROS2
-
+    add_definitions( -DUSING_ROS2 )
     message(STATUS "------------------------------------------")
     message(STATUS "BehaviourTree is being built using AMENT.")
     message(STATUS "------------------------------------------")
@@ -112,38 +111,20 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 elseif(BUILD_UNIT_TESTS)
-    find_package(GTest REQUIRED)
+    if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
+        find_package(GTest REQUIRED)
+    else()
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+            )
+        # For Windows: Prevent overriding the parent project's compiler/linker settings
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(googletest)
+    endif()
 endif()
 
-
-#############################################################
-if(ament_cmake_FOUND)
-    set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
-    set( BEHAVIOR_TREE_INC_DESTINATION   include )
-    set( BEHAVIOR_TREE_BIN_DESTINATION   bin )
-
-    ament_export_include_directories(include)
-    ament_export_libraries(${BEHAVIOR_TREE_LIBRARY})
-    ament_package()
-elseif(catkin_FOUND)
-    set( BEHAVIOR_TREE_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
-    set( BEHAVIOR_TREE_INC_DESTINATION   ${CATKIN_GLOBAL_INCLUDE_DESTINATION} )
-    set( BEHAVIOR_TREE_BIN_DESTINATION   ${CATKIN_GLOBAL_BIN_DESTINATION} )
-else()
-    set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
-    set( BEHAVIOR_TREE_INC_DESTINATION   include )
-    set( BEHAVIOR_TREE_BIN_DESTINATION   bin )
-
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_BIN_DESTINATION}" )
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_LIB_DESTINATION}" )
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_BIN_DESTINATION}" )
-endif()
-
-message( STATUS "BEHAVIOR_TREE_LIB_DESTINATION:   ${BEHAVIOR_TREE_LIB_DESTINATION} " )
-message( STATUS "BEHAVIOR_TREE_BIN_DESTINATION:   ${BEHAVIOR_TREE_BIN_DESTINATION} " )
-message( STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY:  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} " )
-message( STATUS "CMAKE_LIBRARY_OUTPUT_DIRECTORY:  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} " )
-message( STATUS "CMAKE_ARCHIVE_OUTPUT_DIRECTORY:  ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} " )
 
 #############################################################
 # LIBRARY
@@ -248,6 +229,39 @@ else()
     target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         -Wall -Wextra -Werror=return-type)
 endif()
+
+#############################################################
+if(ament_cmake_FOUND)
+    find_package(ament_index_cpp REQUIRED)
+    ament_target_dependencies(${BEHAVIOR_TREE_LIBRARY} PUBLIC ament_index_cpp)
+    ament_export_dependencies(ament_index_cpp)
+
+    set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
+    set( BEHAVIOR_TREE_INC_DESTINATION   include )
+    set( BEHAVIOR_TREE_BIN_DESTINATION   bin )
+
+    ament_export_include_directories(include)
+    ament_export_libraries(${BEHAVIOR_TREE_LIBRARY})
+    ament_package()
+elseif(catkin_FOUND)
+    set( BEHAVIOR_TREE_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
+    set( BEHAVIOR_TREE_INC_DESTINATION   ${CATKIN_GLOBAL_INCLUDE_DESTINATION} )
+    set( BEHAVIOR_TREE_BIN_DESTINATION   ${CATKIN_GLOBAL_BIN_DESTINATION} )
+else()
+    set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
+    set( BEHAVIOR_TREE_INC_DESTINATION   include )
+    set( BEHAVIOR_TREE_BIN_DESTINATION   bin )
+
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_BIN_DESTINATION}" )
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_LIB_DESTINATION}" )
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_BIN_DESTINATION}" )
+endif()
+
+message( STATUS "BEHAVIOR_TREE_LIB_DESTINATION:   ${BEHAVIOR_TREE_LIB_DESTINATION} " )
+message( STATUS "BEHAVIOR_TREE_BIN_DESTINATION:   ${BEHAVIOR_TREE_BIN_DESTINATION} " )
+message( STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY:  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} " )
+message( STATUS "CMAKE_LIBRARY_OUTPUT_DIRECTORY:  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} " )
+message( STATUS "CMAKE_ARCHIVE_OUTPUT_DIRECTORY:  ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} " )
 
 ######################################################
 # Samples

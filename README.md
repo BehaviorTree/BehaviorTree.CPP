@@ -1,6 +1,6 @@
 ![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
-![Version](https://img.shields.io/badge/version-3.5-blue.svg)
-[![Build Status](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP.svg?branch=master)](https://travis-ci.org/BehaviorTree/BehaviorTree.CPP)
+![Version](https://img.shields.io/badge/version-3.6-blue.svg)
+[![cmake](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake.yml)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 [![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)](https://lgtm.com/projects/g/BehaviorTree/BehaviorTree.CPP/context:cpp)
@@ -35,18 +35,22 @@ to visualize, record, replay and analyze state transitions.
 
 - Last but not least: it is well [documented](https://www.behaviortree.dev/)!
 
-# Documentation
+## Documentation
 
 You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
 
-To find more details about the conceptual ideas that make this implementation different from others, you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
+To find more details about the conceptual ideas that make this implementation different from others,
+you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
 
-# Does your company use BehaviorTree.CPP?
+## Forum and Community
 
-No company, institution or public/private funding is currently supporting the development of BehaviorTree.CPP and Groot. As a consequence, my time to support **BehaviorTree.CPP** is very limited and I decided won't spend any time at all supporting **Groot**.
-Pull Requests are welcome and will be reviewed, even if with some delay.
+If the documentation doesn't answer your questions and/or you want to
+connect with the other **BT.CPP** users, visit https://discourse.behaviortree.dev/
 
-If your company use this software, consider becoming a **sponsor** to support bug fixing and development of new features. You can find contact details in [package.xml](package.xml).
+## Commercial support
+
+Are you using BT.CPP in your commercial product and you need technical support / consulting?
+You can get in touch at dfaconti@aurynrobotics.com and we will happy to discuss your use case and needs.
 
 # Design principles
 

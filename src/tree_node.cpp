@@ -32,9 +32,33 @@ TreeNode::TreeNode(std::string name, NodeConfiguration config)
 
 NodeStatus TreeNode::executeTick()
 {
-    const NodeStatus status = tick();
-    setStatus(status);
-    return status;
+    NodeStatus new_status = status_;
+    // a pre-condition may return the new status.
+    // In this case it override the actual tick()
+    if( pre_condition_callback_ )
+    {
+        if(auto res = pre_condition_callback_(*this, status_))
+        {
+            new_status = res.value();
+        }
+    }
+    else
+    {
+        new_status = tick();
+    }
+
+    // a post-condition may overwrite the result of the tick
+    // with its own result.
+    if( post_condition_callback_ )
+    {
+        if(auto res = post_condition_callback_(*this, status_, new_status))
+        {
+            new_status = res.value();
+        }
+    }
+
+    setStatus(new_status);
+    return new_status;
 }
 
 void TreeNode::setStatus(NodeStatus new_status)
@@ -93,7 +117,7 @@ uint16_t TreeNode::UID() const
 
 const std::string& TreeNode::registrationName() const
 {
-    return registration_ID_;
+  return registration_ID_;
 }
 
 const NodeConfiguration &TreeNode::config() const
@@ -157,9 +181,14 @@ Optional<StringView> TreeNode::getRemappedKey(StringView port_name, StringView r
     return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
+void TreeNode::setRegistrationID(StringView ID)
+{
+  registration_ID_.assign(ID.data(), ID.size());
+}
+
 void TreeNode::modifyPortsRemapping(const PortsRemapping &new_remapping)
 {
-    for (const auto& new_it: new_remapping)
+  for (const auto& new_it: new_remapping)
     {
         auto it = config_.input_ports.find( new_it.first );
         if( it != config_.input_ports.end() )

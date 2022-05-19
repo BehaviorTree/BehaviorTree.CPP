@@ -7,10 +7,12 @@
 namespace DummyNodes
 {
 
-BT::NodeStatus CheckBattery();
+using BT::NodeStatus;
 
-BT::NodeStatus CheckTemperature();
-BT::NodeStatus SayHello();
+NodeStatus CheckBattery();
+
+NodeStatus CheckTemperature();
+NodeStatus SayHello();
 
 class GripperInterface
 {
@@ -19,9 +21,9 @@ class GripperInterface
     {
     }
 
-    BT::NodeStatus open();
+    NodeStatus open();
 
-    BT::NodeStatus close();
+    NodeStatus close();
 
   private:
     bool _opened;
@@ -40,7 +42,7 @@ class ApproachObject : public BT::SyncActionNode
     }
 
     // You must override the virtual function tick()
-    BT::NodeStatus tick() override;
+    NodeStatus tick() override;
 };
 
 // Example of custom SyncActionNode (synchronous action)
@@ -54,7 +56,7 @@ class SaySomething : public BT::SyncActionNode
     }
 
     // You must override the virtual function tick()
-    BT::NodeStatus tick() override;
+    NodeStatus tick() override;
 
     // It is mandatory to define this static method.
     static BT::PortsList providedPorts()
@@ -64,8 +66,60 @@ class SaySomething : public BT::SyncActionNode
 };
 
 //Same as class SaySomething, but to be registered with SimpleActionNode
-BT::NodeStatus SaySomethingSimple(BT::TreeNode& self);
+NodeStatus SaySomethingSimple(BT::TreeNode& self);
 
+// Example os Asynchronous node that use StatefulActionNode as base class
+class SleepNode : public BT::StatefulActionNode
+{
+  public:
+    SleepNode(const std::string& name, const BT::NodeConfiguration& config)
+      : BT::StatefulActionNode(name, config)
+    {}
+
+    static BT::PortsList providedPorts()
+    {
+        // amount of milliseconds that we want to sleep
+        return{ BT::InputPort<int>("msec") };
+    }
+
+    NodeStatus onStart() override
+    {
+        int msec = 0;
+        getInput("msec", msec);
+        if( msec <= 0 )
+        {
+            // no need to go into the RUNNING state
+            return NodeStatus::SUCCESS;
+        }
+        else {
+            using namespace std::chrono;
+            // once the deadline is reached, we will return SUCCESS.
+            deadline_ = system_clock::now() + milliseconds(msec);
+            return NodeStatus::RUNNING;
+        }
+    }
+
+    /// method invoked by an action in the RUNNING state.
+    NodeStatus onRunning() override
+    {
+        if ( std::chrono::system_clock::now() >= deadline_ )
+        {
+            return NodeStatus::SUCCESS;
+        }
+        else {
+            return NodeStatus::RUNNING;
+        }
+    }
+
+    void onHalted() override
+    {
+        // nothing to do here...
+        std::cout << "SleepNode interrupted" << std::endl;
+    }
+
+  private:
+    std::chrono::system_clock::time_point deadline_;
+};
 
 inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
 {

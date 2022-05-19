@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <set>
 
-
 #include "behaviortree_cpp_v3/behavior_tree.h"
 
 namespace BT
@@ -197,6 +196,8 @@ public:
 
 };
 
+class Parser;
+
 /**
  * @brief The BehaviorTreeFactory is used to create instances of a
  * TreeNode at run-time.
@@ -269,6 +270,12 @@ public:
      *
      */
     void registerFromROSPlugins();
+
+    void registerBehaviorTreeFromFile(const std::string& filename);
+
+    void registerBehaviorTreeFromText(const std::string& xml_text);
+
+    std::vector<std::string> registeredBehaviorTrees() const;
 
     /**
      * @brief instantiateTreeNode creates an instance of a previously registered TreeNode.
@@ -374,11 +381,16 @@ public:
     Tree createTreeFromFile(const std::string& file_path,
                             Blackboard::Ptr blackboard = Blackboard::create());
 
+    Tree createTree(const std::string& tree_name,
+                     Blackboard::Ptr blackboard = Blackboard::create());
+
 private:
     std::unordered_map<std::string, NodeBuilder> builders_;
     std::unordered_map<std::string, TreeNodeManifest> manifests_;
     std::set<std::string> builtin_IDs_;
+    std::unordered_map<std::string, Any> behavior_tree_definitions_;
 
+    std::shared_ptr<BT::Parser> parser_;
     // clang-format on
 };
 

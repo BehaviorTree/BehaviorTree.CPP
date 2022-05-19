@@ -16,16 +16,19 @@ class XMLParser: public Parser
   public:
     XMLParser(const BehaviorTreeFactory& factory);
 
-    ~XMLParser();
+    ~XMLParser() override;
 
     XMLParser(const XMLParser& other) = delete;
     XMLParser& operator=(const XMLParser& other) = delete;
 
-    void loadFromFile(const std::string& filename) override;
+    void loadFromFile(const std::string& filename, bool add_includes = true) override;
 
-    void loadFromText(const std::string& xml_text) override;
+    void loadFromText(const std::string& xml_text, bool add_includes = true) override;
 
-    Tree instantiateTree(const Blackboard::Ptr &root_blackboard) override;
+    std::vector<std::string> registeredBehaviorTrees() const override;
+
+    Tree instantiateTree(const Blackboard::Ptr &root_blackboard,
+                         std::string main_tree_to_execute = {}) override;
 
   private:
 
