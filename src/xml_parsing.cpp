@@ -11,6 +11,7 @@
 */
 
 #include <functional>
+#include <numeric>
 #include <list>
 
 #if defined(__linux) || defined(__linux__)
@@ -535,9 +536,16 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         {
             if( manifest.ports.count( remap_it.first ) == 0 )
             {
+                auto port_names = std::vector<std::string>{};
+                std::transform(manifest.ports.begin(), manifest.ports.end(),
+                                std::back_inserter(port_names),
+                                [](const auto& value) { return value.first; });
+                auto newline_fold = [](std::string a, std::string b){return std::move(a) + "\n" + std::move(b);};
+                const std::string port_list = std::accumulate(port_names.begin(), port_names.end(), std::string{"\n"}, newline_fold);
                 throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
-                                   remap_it.first, "\" in node [", ID," / ", instance_name,
-                                   "], but the manifest of this node does not contain a port with this name.");
+                                    remap_it.first, "\" in node [", ID, " / ", instance_name,
+                                    "], but the manifest of this node does not contain a port with "
+                                    "this name. Currently registered ports for this node are: " + port_list);
             }
         }
 
