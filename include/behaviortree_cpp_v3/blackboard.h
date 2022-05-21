@@ -155,23 +155,24 @@ class Blackboard
             if( locked_type && *locked_type != typeid(T) && *locked_type != temp.type() )
             {
                 bool mismatching = true;
-                if( std::is_constructible<StringView, T>::value )
-                {
-                    Any any_from_string;
-                    try {
-                        any_from_string = port_info.parseString( value );
-                    } catch (std::runtime_error) {
-                        goto mismatch;
-                    }
+                Any any_from_string = port_info.parseString(value);
+                // if( std::is_constructible<StringView, T>::value )
+                // {
+                //     Any any_from_string;
+                //     try {
+                //         any_from_string = port_info.parseString( value );
+                //     } catch (const BT::RuntimeError&) {
+                //         goto mismatch;
+                //     }
 
-                    if( any_from_string.empty() == false)
-                    {
-                        mismatching = false;
-                        temp = std::move( any_from_string );
-                    }
-                }
+                //     if( any_from_string.empty() == false)
+                //     {
+                //         mismatching = false;
+                //         temp = std::move( any_from_string );
+                //     }
+                // }
 
-                mismatch:
+                // mismatch:
                 if( mismatching )
                 {
                     debugMessage();
