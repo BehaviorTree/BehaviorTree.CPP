@@ -2,6 +2,41 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add netlify stuff
+* Event based trigger introduced
+  Added a new mechanism to emit "state changed" events that can "wake up" a tree.
+  In short, it just provide an interruptible "sleep" function.
+* Fixed bug where including relative paths would fail to find the correct file (`#358 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/358>`_)
+  * Added unit tests to verify current behavior
+  * Fixed bug where including relative paths would fail to find the correct file
+  * Added gtest environment to access executable path
+  This path lets tests access files relative to the executable for better transportability
+  * Changed file commandto add_custom_target
+  The file command only copies during the cmake configure step. If source files change, file is not ran again
+* Added pure CMake action to PR checks (`#378 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/378>`_)
+  * Added CMake CI to PR checks
+  * Renamed action to follow pattern
+* updated documentation
+* add the ability to register multiple BTs (`#373 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/373>`_)
+* Update ros1.yaml
+* fix `#338 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/338>`_
+* fix issue `#330 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/330>`_
+* fix issue `#360 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/360>`_
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* Update Tutorial 2 Docuemtation (`#372 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/372>`_)
+* Update tutorial_09_coroutines.md (`#359 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/359>`_)
+  Minor fix, renamed Timepoint to TimePoint.
+* Export dependency on ament_index_cpp (`#362 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/362>`_)
+  To make dependent packages try to link ament_index_cpp, export the
+  dependency explicitly.
+* Change order of lock to prevent deadlock. (`#368 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/368>`_)
+  Resolves `#367 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/367>`_.
+* Fix `#320 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/320>`_ : forbit refrences in Any
+* Update action_node.h
+* Contributors: Adam Sasine, Davide Faconti, Fabian Schurig, Griswald Brooks, Hyeongsik Min, Robodrome, imgbot[bot], panwauu
+
 3.6.1 (2022-03-06)
 ------------------
 * remove windows tests
