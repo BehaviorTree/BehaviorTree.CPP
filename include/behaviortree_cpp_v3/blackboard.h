@@ -155,7 +155,13 @@ class Blackboard
                 bool mismatching = true;
                 if( std::is_constructible<StringView, T>::value )
                 {
-                    Any any_from_string = port_info.parseString( value );
+                    Any any_from_string;
+                    try {
+                        any_from_string = port_info.parseString( value );
+                    } catch (const BT::RuntimeError&) {
+                        goto mismatch;
+                    };
+
                     if( any_from_string.empty() == false)
                     {
                         mismatching = false;
@@ -163,6 +169,7 @@ class Blackboard
                     }
                 }
 
+                mismatch:
                 if( mismatching )
                 {
                     debugMessage();
