@@ -143,10 +143,6 @@ public:
     Tree(Tree&& other)
     {
         (*this) = std::move(other);
-        for(auto& node: nodes)
-        {
-            node->setWakeUpInstance( &wake_up_ );
-        }
     }
 
     Tree& operator=(Tree&& other)
@@ -154,12 +150,17 @@ public:
         nodes = std::move(other.nodes);
         blackboard_stack = std::move(other.blackboard_stack);
         manifests = std::move(other.manifests);
+        wake_up_ = other.wake_up_;
+        return *this;
+    }
 
+    void initialize()
+    {
+        wake_up_ = std::make_shared<WakeUpSignal>();
         for(auto& node: nodes)
         {
-            node->setWakeUpInstance( &wake_up_ );
+            node->setWakeUpInstance(wake_up_);
         }
-        return *this;
     }
 
     void haltTree()
@@ -183,11 +184,16 @@ public:
 
     TreeNode* rootNode() const
     {
-      return nodes.empty() ? nullptr : nodes.front().get();
+        return nodes.empty() ? nullptr : nodes.front().get();
     }
 
     NodeStatus tickRoot()
-    {       
+    {
+      if(!wake_up_)
+      {
+        initialize();
+      }
+
       if(!rootNode())
       {
         throw RuntimeError("Empty Tree");
@@ -209,7 +215,7 @@ public:
     Blackboard::Ptr rootBlackboard();
 
 private:
-    WakeUpSignal wake_up_;
+    std::shared_ptr<WakeUpSignal> wake_up_;
 };
 
 class Parser;

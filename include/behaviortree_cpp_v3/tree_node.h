@@ -190,7 +190,7 @@ class TreeNode
     // Only BehaviorTreeFactory should call this
     void setRegistrationID(StringView ID);
 
-    void setWakeUpInstance(WakeUpSignal* instance);
+    void setWakeUpInstance(std::shared_ptr<WakeUpSignal> instance);
 
     void modifyPortsRemapping(const PortsRemapping& new_remapping);
 
@@ -217,7 +217,7 @@ class TreeNode
 
     PostTickOverrideCallback post_condition_callback_;
 
-    WakeUpSignal* wake_up_ = nullptr;
+    std::shared_ptr<WakeUpSignal> wake_up_;
 };
 
 //-------------------------------------------------------

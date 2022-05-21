@@ -194,7 +194,7 @@ void TreeNode::setRegistrationID(StringView ID)
     registration_ID_.assign(ID.data(), ID.size());
 }
 
-void TreeNode::setWakeUpInstance(WakeUpSignal *instance)
+void TreeNode::setWakeUpInstance(std::shared_ptr<WakeUpSignal> instance)
 {
     wake_up_ = instance;
 }

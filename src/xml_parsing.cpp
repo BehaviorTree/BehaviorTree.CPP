@@ -471,6 +471,7 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
                               output_tree,
                               root_blackboard,
                               TreeNode::Ptr() );
+    output_tree.initialize();
     return output_tree;
 }
 
