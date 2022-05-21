@@ -1,0 +1,5 @@
+<root main_tree_to_execute = "ChildNoInclude">
+  <BehaviorTree ID="ChildNoInclude">
+    <AlwaysSuccess />
+  </BehaviorTree>
+</root>

@@ -2,6 +2,7 @@
 #include "action_test_node.h"
 #include "condition_test_node.h"
 #include "behaviortree_cpp_v3/xml_parsing.h"
+#include "environment.h"
 #include "../sample_nodes/crossdoor_nodes.h"
 #include "../sample_nodes/dummy_nodes.h"
 
@@ -303,4 +304,58 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
     ASSERT_FALSE( talk_bb->getAny("talk_out") );
 }
 
+#if !defined(USING_ROS) && !defined(USING_ROS2)
+TEST(BehaviorTreeFactory, CreateTreeFromFile)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_no_include.xml").str());
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
 
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromSameDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/child/child_include_sibling.xml").str());
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child.xml").str());
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromSameDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_sibling.xml").str());
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromChildDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_child.xml").str());
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromParentDirectory)
+{
+    BehaviorTreeFactory factory;
+    
+    // should not throw
+    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_parent.xml").str());
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+}
+#endif

@@ -187,8 +187,16 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc, bool add_inclu
 
         opened_documents.emplace_back(new BT_TinyXML2::XMLDocument());
         BT_TinyXML2::XMLDocument* next_doc = opened_documents.back().get();
+
+        // change current path to the included file for handling additional relative paths
+        const filesystem::path previous_path = current_path;
+        current_path = file_path.parent_path().make_absolute();
+
         next_doc->LoadFile(file_path.str().c_str());
         loadDocImpl(next_doc, add_includes);
+
+        // reset current path to the previous value
+        current_path = previous_path;
     }
 
     for (auto bt_node = xml_root->FirstChildElement("BehaviorTree");
