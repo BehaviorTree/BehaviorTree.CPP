@@ -430,34 +430,27 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
     Tree output_tree;
     std::string main_tree_ID = main_tree_to_execute;
 
+    // use the main_tree_to_execute argument if it was provided by the user
+    // or the one in the FIRST document opened
     if( main_tree_ID.empty() )
     {
-        for( const auto& doc: _p->opened_documents)
+        XMLElement* first_xml_root = _p->opened_documents.front()->RootElement();
+
+        if (auto main_tree_attribute = first_xml_root->Attribute("main_tree_to_execute"))
         {
-            XMLElement* xml_root = doc->RootElement();
-            if (xml_root->Attribute("main_tree_to_execute"))
-            {
-                if(!main_tree_ID.empty())
-                {
-                    throw RuntimeError("The attribute [main_tree_to_execute] has been "
-                                       "found multiple times. You must specify explicitly the name "
-                                       "of the <BehaviorTree> to instantiate.");
-                }
-                main_tree_ID = xml_root->Attribute("main_tree_to_execute");
-            }
+            main_tree_ID = main_tree_attribute;
+        }
+        else if(_p->tree_roots.size() == 1)
+        {
+            // special case: there is only one registered BT.
+            main_tree_ID = _p->tree_roots.begin()->first;
+        }
+        else
+        {
+            throw RuntimeError("[main_tree_to_execute] was not specified correctly");
         }
     }
 
-    // special case: no name, but there is only one registered BT.
-    if( main_tree_ID.empty() && _p->tree_roots.size() == 1)
-    {
-        main_tree_ID = _p->tree_roots.begin()->first;
-    }
-
-    if( main_tree_ID.empty() )
-    {
-        throw RuntimeError("[main_tree_to_execute] was not specified correctly");
-    }
     //--------------------------------------
     if( !root_blackboard )
     {
