@@ -18,6 +18,7 @@ set(BT_TESTS
   navigation_test.cpp
   gtest_subtree.cpp
   gtest_switch.cpp
+  gtest_wakeup.cpp
 )
 
 if( BT_COROUTINES )

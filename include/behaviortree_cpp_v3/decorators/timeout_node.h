@@ -85,6 +85,7 @@ class TimeoutNode : public DecoratorNode
                                            {
                                                child_halted_ = true;
                                                haltChild();
+                                               emitStateChanged();
                                            }
                                        });
             }

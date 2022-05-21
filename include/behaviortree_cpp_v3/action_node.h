@@ -113,6 +113,9 @@ class SimpleActionNode : public SyncActionNode
  * - remember, with few exceptions, a halted AsyncAction must return NodeStatus::IDLE.
  *
  * For a complete example, look at __AsyncActionTest__ in action_test_node.h in the folder test.
+ *
+ * NOTE: when the thread is completed, i.e. the tick() returns its status,
+ * a TreeNode::emitStateChanged() will be called.
  */
 class AsyncActionNode : public ActionNodeBase
 {
@@ -136,7 +139,7 @@ class AsyncActionNode : public ActionNodeBase
 
     std::exception_ptr exptr_;
     std::atomic_bool halt_requested_;
-    std::future<NodeStatus> thread_handle_;
+    std::future<void> thread_handle_;
     std::mutex m_;
 };
 

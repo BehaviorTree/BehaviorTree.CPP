@@ -188,7 +188,7 @@ NodeStatus BT::AsyncActionNode::executeTick()
                 exptr_ = std::current_exception();
                 setStatus(BT::NodeStatus::IDLE);
             }
-            return status();
+            emitStateChanged();
         });
     }
 

@@ -9,11 +9,6 @@ struct Pose2D
     double x, y, theta;
 };
 
-inline void SleepMS(int ms)
-{
-    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-}
-
 namespace BT
 {
 // This template specialization is needed only if you want

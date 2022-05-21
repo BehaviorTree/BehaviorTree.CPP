@@ -181,9 +181,22 @@ Optional<StringView> TreeNode::getRemappedKey(StringView port_name, StringView r
     return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
+void TreeNode::emitStateChanged()
+{
+    if( wake_up_ )
+    {
+        wake_up_->emitSignal();
+    }
+}
+
 void TreeNode::setRegistrationID(StringView ID)
 {
-  registration_ID_.assign(ID.data(), ID.size());
+    registration_ID_.assign(ID.data(), ID.size());
+}
+
+void TreeNode::setWakeUpInstance(WakeUpSignal *instance)
+{
+    wake_up_ = instance;
 }
 
 void TreeNode::modifyPortsRemapping(const PortsRemapping &new_remapping)

@@ -7,6 +7,11 @@ BT_REGISTER_NODES(factory)
     CrossDoor::RegisterNodes(factory);
 }
 
+inline void SleepMS(int ms)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}
+
 // For simplicity, in this example the status of the door is not shared
 // using ports and blackboards
 static bool _door_open   = false;

@@ -143,6 +143,10 @@ public:
     Tree(Tree&& other)
     {
         (*this) = std::move(other);
+        for(auto& node: nodes)
+        {
+            node->setWakeUpInstance( &wake_up_ );
+        }
     }
 
     Tree& operator=(Tree&& other)
@@ -150,6 +154,11 @@ public:
         nodes = std::move(other.nodes);
         blackboard_stack = std::move(other.blackboard_stack);
         manifests = std::move(other.manifests);
+
+        for(auto& node: nodes)
+        {
+            node->setWakeUpInstance( &wake_up_ );
+        }
         return *this;
     }
 
@@ -178,7 +187,7 @@ public:
     }
 
     NodeStatus tickRoot()
-    {
+    {       
       if(!rootNode())
       {
         throw RuntimeError("Empty Tree");
@@ -190,10 +199,17 @@ public:
       return ret;
     }
 
+    /// Sleep for a certain amount of time.
+    /// This sleep could be interrupted by the method
+    /// TreeNode::emitStateChanged()
+    void sleep(std::chrono::system_clock::duration timeout);
+
     ~Tree();
 
     Blackboard::Ptr rootBlackboard();
 
+private:
+    WakeUpSignal wake_up_;
 };
 
 class Parser;

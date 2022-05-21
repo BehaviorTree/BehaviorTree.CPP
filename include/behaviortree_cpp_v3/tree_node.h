@@ -21,6 +21,7 @@
 #include "behaviortree_cpp_v3/basic_types.h"
 #include "behaviortree_cpp_v3/blackboard.h"
 #include "behaviortree_cpp_v3/utils/strcat.hpp"
+#include "behaviortree_cpp_v3/utils/wakeup_signal.hpp"
 
 #ifdef _MSC_VER 
 #pragma warning(disable : 4127) 
@@ -174,6 +175,9 @@ class TreeNode
 
     static Optional<StringView> getRemappedKey(StringView port_name, StringView remapping_value);
 
+    // Notify the tree should be ticked again()
+    void emitStateChanged();
+
   protected:
     /// Method to be implemented by the user
     virtual BT::NodeStatus tick() = 0;
@@ -185,6 +189,8 @@ class TreeNode
 
     // Only BehaviorTreeFactory should call this
     void setRegistrationID(StringView ID);
+
+    void setWakeUpInstance(WakeUpSignal* instance);
 
     void modifyPortsRemapping(const PortsRemapping& new_remapping);
 
@@ -210,6 +216,8 @@ class TreeNode
     PreTickOverrideCallback pre_condition_callback_;
 
     PostTickOverrideCallback post_condition_callback_;
+
+    WakeUpSignal* wake_up_ = nullptr;
 };
 
 //-------------------------------------------------------

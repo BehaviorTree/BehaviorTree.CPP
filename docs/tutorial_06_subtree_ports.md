@@ -78,7 +78,9 @@ int main()
     while( status == NodeStatus::RUNNING)
     {
         status = tree.tickRoot();
-        SleepMS(1);   // optional sleep to avoid "busy loops"
+        // IMPORTANT: add sleep to avoid busy loops.
+        // You should use Tree::sleep(). Don't be afraid to run this at 1 KHz.
+        tree.sleep( std::chrono::milliseconds(1) );
     }
 
     // let's visualize some information about the current state of the blackboards.

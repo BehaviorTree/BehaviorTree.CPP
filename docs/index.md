@@ -23,7 +23,7 @@ to visualize, record, replay and analyze state transitions.
 ## Community
 
 If this documentation doesn't answer your questions or if you simply want to
-connect with the community of BT.CPP users, visit https://discourse.behaviortree.dev/
+connect with the community of BT.CPP users, visit [discourse.behaviortree.dev](https://discourse.behaviortree.dev/).
 
 ## What is a Behavior Tree?
 

@@ -294,6 +294,11 @@ Tree BehaviorTreeFactory::createTree(const std::string &tree_name, Blackboard::P
     return tree;
 }
 
+void Tree::sleep(std::chrono::system_clock::duration timeout)
+{
+    wake_up_.waitFor(timeout);
+}
+
 Tree::~Tree()
 {
     haltTree();

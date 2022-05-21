@@ -22,11 +22,11 @@ BT::NodeStatus MoveBaseAction::tick()
     int count = 0;
 
     // Pretend that "computing" takes 250 milliseconds.
-    // It is up to you to check periodicall _halt_requested and interrupt
+    // It is up to you to check periodically _halt_requested and interrupt
     // this tick() if it is true.
     while (!_halt_requested && count++ < 25)
     {
-        SleepMS(10);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     std::cout << "[ MoveBase: FINISHED ]" << std::endl;

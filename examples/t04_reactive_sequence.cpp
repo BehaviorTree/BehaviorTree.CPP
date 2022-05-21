@@ -57,9 +57,11 @@ void Assert(bool condition)
         throw RuntimeError("this is not what I expected");
 }
 
+
 int main()
 {
     using namespace DummyNodes;
+    using std::chrono::milliseconds;
 
     BehaviorTreeFactory factory;
     factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
@@ -85,12 +87,12 @@ int main()
         status = tree.tickRoot();
         Assert(status == NodeStatus::RUNNING);
 
-        SleepMS(150);
+        tree.sleep( milliseconds(150) );
         std::cout << "\n--- 2nd executeTick() ---" << std::endl;
         status = tree.tickRoot();
         Assert(status == NodeStatus::RUNNING);
 
-        SleepMS(150);
+        tree.sleep( milliseconds(150) );
         std::cout << "\n--- 3rd executeTick() ---" << std::endl;
         status = tree.tickRoot();
         Assert(status == NodeStatus::SUCCESS);
