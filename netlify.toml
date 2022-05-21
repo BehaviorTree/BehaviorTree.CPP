@@ -1,0 +1,7 @@
+[build]
+publish = "site"
+command = """
+pip3 install mkdocs-material &&
+pip3 install mkdocs-include-markdown-plugin &&
+mkdocs build -d site
+"""
