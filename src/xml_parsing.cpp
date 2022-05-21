@@ -737,10 +737,17 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
         }
     };
 
-    auto root_element = tree_roots[tree_ID]->FirstChildElement();
+    try
+    {
+        auto root_element = tree_roots.at(tree_ID)->FirstChildElement();
 
-    // start recursion
-    recursiveStep(root_parent, root_element);
+        // start recursion
+        recursiveStep(root_parent, root_element);
+    }
+    catch (std::out_of_range&)
+    {
+        throw RuntimeError("Trying to construct Subtree [", tree_ID, "], but Subtree definition was not found");
+    }
 }
 
 void XMLParser::Pimpl::getPortsRecursively(const XMLElement *element,
