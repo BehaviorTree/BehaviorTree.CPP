@@ -338,7 +338,8 @@ public:
         static_assert(default_constructable || param_constructable,
                       "[registerNode]: the registered class must have at least one of these two "
                       "constructors: "
-                      "  (const std::string&, const NodeConfiguration&) or (const std::string&).");
+                      "  (const std::string&, const NodeConfiguration&) or (const std::string&).\n"
+                      "Check also if the constructor is public!");
 
         static_assert(!(param_constructable && !has_static_ports_list),
                       "[registerNode]: you MUST implement the static method: "
