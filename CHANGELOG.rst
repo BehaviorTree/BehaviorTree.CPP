@@ -2,7 +2,7 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
+3.7.0 (2022-05-23)
 -----------
 * add netlify stuff
 * Event based trigger introduced
