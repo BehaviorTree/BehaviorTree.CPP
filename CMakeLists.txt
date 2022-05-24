@@ -291,7 +291,7 @@ INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
 
 install(EXPORT ${PROJECT_NAME}Targets
     FILE "${PROJECT_NAME}Targets.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
     NAMESPACE BT::
     )
 
@@ -302,7 +302,7 @@ include(CMakePackageConfigHelpers)
 configure_package_config_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+  INSTALL_DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
 )
 
 # This requires to declare to project version in the project() macro
@@ -317,7 +317,7 @@ install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
     #    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
+    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
 )
 
 ######################################################
