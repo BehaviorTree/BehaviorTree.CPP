@@ -50,6 +50,32 @@ TEST(PortTest, DefaultPorts)
     ASSERT_EQ( status, NodeStatus::SUCCESS );
 }
 
+TEST(PortTest, Descriptions)
+{
+    std::string xml_txt = R"(
+    <root main_tree_to_execute = "MainTree" >
+        <BehaviorTree ID="MainTree" _description="this is my tree" >
+            <Sequence>
+                <NodeWithPorts name="first"  in_port_B="66" _description="this is my action" />
+                <SubTree ID="SubTree" name="second" _description="this is a subtree"/>
+            </Sequence>
+        </BehaviorTree>
+
+        <BehaviorTree ID="SubTree" _description="this is a subtre" >
+            <NodeWithPorts name="third" in_port_B="99" />
+        </BehaviorTree>
+
+    </root>)";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<NodeWithPorts>("NodeWithPorts");
+
+    auto tree = factory.createTreeFromText(xml_txt);
+
+    NodeStatus status = tree.tickRoot();
+    ASSERT_EQ( status, NodeStatus::FAILURE ); // failure because in_port_B="99"
+}
+
 struct MyType
 {
   std::string value;
@@ -124,5 +150,27 @@ TEST(PortTest, EmptyPort)
   NodeStatus status = tree.tickRoot();
   // expect failure because port is not set yet
   ASSERT_EQ( status, NodeStatus::FAILURE );
+}
+
+
+class IllegalPorts: public SyncActionNode
+{
+  public:
+    IllegalPorts(const std::string & name, const NodeConfiguration & config)
+    : SyncActionNode(name, config)
+    { }
+
+    NodeStatus tick() { return NodeStatus::SUCCESS; }
+
+    static PortsList providedPorts()
+    {
+        return { BT::InputPort<std::string>("name") };
+    }
+};
+
+TEST(PortTest, IllegalPorts)
+{
+  BehaviorTreeFactory factory;
+  ASSERT_ANY_THROW(factory.registerNodeType<IllegalPorts>("nope"));
 }
 

@@ -209,6 +209,12 @@ template <typename T> using Optional = nonstd::expected<T, std::string>;
  * */
 using Result = Optional<void>;
 
+
+const std::unordered_set<std::string> ReservedPortNames =
+{
+    "ID", "name", "_description"
+};
+
 class PortInfo
 {
 
@@ -261,15 +267,20 @@ std::pair<std::string,PortInfo> CreatePort(PortDirection direction,
                                            StringView name,
                                            StringView description = {})
 {
+    auto sname = static_cast<std::string>(name);
+    if( ReservedPortNames.count(sname) != 0 )
+    {
+        throw std::runtime_error("A port can not use a reserved name. See ReservedPortNames");
+    }
+
     std::pair<std::string,PortInfo> out;
 
     if( std::is_same<T, void>::value)
     {
-        out = {static_cast<std::string>(name), PortInfo(direction) };
+        out = {sname, PortInfo(direction) };
     }
     else{
-        out =  {static_cast<std::string>(name), PortInfo(direction, typeid(T),
-                                          GetAnyFromStringFunctor<T>() ) };
+        out =  {sname, PortInfo(direction, typeid(T), GetAnyFromStringFunctor<T>() ) };
     }
     if( !description.empty() )
     {

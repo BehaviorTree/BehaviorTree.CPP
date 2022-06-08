@@ -35,6 +35,7 @@ struct TreeNodeManifest
     NodeType type;
     std::string registration_ID;
     PortsList ports;
+    std::string description;
 };
 
 typedef std::unordered_map<std::string, std::string> PortsRemapping;

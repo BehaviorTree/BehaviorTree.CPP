@@ -294,6 +294,16 @@ Tree BehaviorTreeFactory::createTree(const std::string &tree_name, Blackboard::P
     return tree;
 }
 
+void BehaviorTreeFactory::addDescriptionToManifest(const std::string &node_id, const std::string &description)
+{
+    auto it = manifests_.find(node_id);
+    if( it == manifests_.end() )
+    {
+        throw std::runtime_error("addDescriptionToManifest: wrong ID");
+    }
+    it->second.description = description;
+}
+
 void Tree::sleep(std::chrono::system_clock::duration timeout)
 {
     wake_up_->waitFor(timeout);
