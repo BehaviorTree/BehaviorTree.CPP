@@ -168,13 +168,16 @@ list(APPEND BT_SOURCE
     )
 
 if(BUILD_MANUAL_SELECTOR)
-    find_package(Curses REQUIRED)
-
-    list(APPEND BT_SOURCE
-        src/controls/manual_node.cpp
-        )
-    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${CURSES_LIBRARIES})
-    add_definitions(-DNCURSES_FOUND)
+    find_package(Curses QUIET)
+    if(CURSES_FOUND)
+        list(APPEND BT_SOURCE
+            src/controls/manual_node.cpp
+            )
+        list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${CURSES_LIBRARIES})
+        add_definitions(-DNCURSES_FOUND)
+    else()
+        message(WARNING "NCurses NOT found. Skipping the build of manual selector node.")
+    endif()
 endif()
 
 
