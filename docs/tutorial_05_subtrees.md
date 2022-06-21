@@ -44,7 +44,14 @@ It is also the first practical example that uses `Decorators` and `Fallback`.
 </root>
 ```
 
-It may be noticed that we incapsulated a quite complex branch of the tree,
+For readability, our custom nodes are registered with the one-liner:
+
+`CrossDoor::RegisterNodes(factory);`
+
+Default nodes provided by the BT library such as `Fallback` are already registered by
+the BehaviorTreeFactory.
+
+It may be noticed that we encapsulated a quite complex branch of the tree,
 the one to execute when the door is closed, into a separate tree called
 `DoorClosed`.
 
