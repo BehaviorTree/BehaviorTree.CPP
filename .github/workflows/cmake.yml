@@ -48,5 +48,5 @@ jobs:
     - name: run test (Linux)
       if: matrix.os == 'ubuntu-latest'
       working-directory: ${{github.workspace}}/build
-      run: ./bin/behaviortree_cpp_v3_test
+      run: ./tests/behaviortree_cpp_v3_test
       
