@@ -255,7 +255,7 @@ The corresponding **pseudo-code** implementation will look like this:
 class ActionClientNode : public BT::StatefulActionNode
 {
   public:
-    SleepNode(const std::string& name, const BT::NodeConfiguration& config)
+    ActionClientNode(const std::string& name, const BT::NodeConfiguration& config)
       : BT::StatefulActionNode(name, config)
     {}
 
