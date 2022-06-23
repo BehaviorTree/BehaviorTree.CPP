@@ -91,12 +91,12 @@ PublisherZMQ::PublisherZMQ(const BT::Tree& tree,
 PublisherZMQ::~PublisherZMQ()
 {
     active_server_ = false;
-    zmq_->context.shutdown();
     if (thread_.joinable())
     {
         thread_.join();
     }
     flush();
+    zmq_->context.shutdown();
     delete zmq_;
     ref_count = false;
 }
