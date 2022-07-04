@@ -23,6 +23,7 @@ option(BUILD_SAMPLES    "Build sample nodes" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 option(BUILD_TOOLS "Build commandline tools" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(BUILD_MANUAL_SELECTOR "Build manual selector node" ON)
 option(ENABLE_COROUTINES "Enable boost coroutines" ON)
 
 #---- Include boost to add coroutines ----
@@ -166,14 +167,17 @@ list(APPEND BT_SOURCE
     3rdparty/minitrace/minitrace.cpp
     )
 
-find_package(Curses QUIET)
-
-if(CURSES_FOUND)
-    list(APPEND BT_SOURCE
-        src/controls/manual_node.cpp
-        )
-    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${CURSES_LIBRARIES})
-    add_definitions(-DNCURSES_FOUND)
+if(BUILD_MANUAL_SELECTOR)
+    find_package(Curses QUIET)
+    if(CURSES_FOUND)
+        list(APPEND BT_SOURCE
+            src/controls/manual_node.cpp
+            )
+        list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${CURSES_LIBRARIES})
+        add_definitions(-DNCURSES_FOUND)
+    else()
+        message(WARNING "NCurses NOT found. Skipping the build of manual selector node.")
+    endif()
 endif()
 
 
@@ -252,16 +256,12 @@ else()
     set( BEHAVIOR_TREE_INC_DESTINATION   include )
     set( BEHAVIOR_TREE_BIN_DESTINATION   bin )
 
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_BIN_DESTINATION}" )
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_LIB_DESTINATION}" )
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BEHAVIOR_TREE_BIN_DESTINATION}" )
 endif()
 
 message( STATUS "BEHAVIOR_TREE_LIB_DESTINATION:   ${BEHAVIOR_TREE_LIB_DESTINATION} " )
 message( STATUS "BEHAVIOR_TREE_BIN_DESTINATION:   ${BEHAVIOR_TREE_BIN_DESTINATION} " )
-message( STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY:  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} " )
-message( STATUS "CMAKE_LIBRARY_OUTPUT_DIRECTORY:  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} " )
-message( STATUS "CMAKE_ARCHIVE_OUTPUT_DIRECTORY:  ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} " )
+message( STATUS "BUILD_UNIT_TESTS:   ${BUILD_UNIT_TESTS} " )
+
 
 ######################################################
 # Samples

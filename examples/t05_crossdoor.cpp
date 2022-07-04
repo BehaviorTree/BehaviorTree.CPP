@@ -61,7 +61,9 @@ int main(int argc, char** argv)
 {
     BT::BehaviorTreeFactory factory;
 
-    // register all the actions into the factory
+    // Register our custom nodes into the factory.
+    // Any default nodes provided by the BT library (such as Fallback) are registered by
+    // default in the BehaviorTreeFactory.
     CrossDoor::RegisterNodes(factory);
 
     // Important: when the object tree goes out of scope, all the TreeNodes are destroyed
