@@ -789,7 +789,8 @@ void XMLParser::Pimpl::getPortsRecursively(const XMLElement *element,
 }
 
 
-std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory)
+std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
+                                   bool include_builtin)
 {
     using namespace BT_TinyXML2;
 
@@ -801,27 +802,51 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory)
     XMLElement* model_root = doc.NewElement("TreeNodesModel");
     rootXML->InsertEndChild(model_root);
 
+    std::set<std::string> ordered_names;
+
     for (auto& model_it : factory.manifests())
     {
-        const auto& registration_ID = model_it.first;
-        const auto& model = model_it.second;
+      const auto& registration_ID = model_it.first;
+      if( !include_builtin &&
+          factory.builtinNodes().count( registration_ID ) != 0)
+      {
+        continue;
+      }
+      ordered_names.insert( registration_ID );
+    }
 
-        if( factory.builtinNodes().count( registration_ID ) != 0)
-        {
-            continue;
-        }
+    for (auto& registration_ID : ordered_names)
+    {
+        const auto& model = factory.manifests().at(registration_ID);
 
-        if (model.type == NodeType::CONTROL)
-        {
-            continue;
-        }
         XMLElement* element = doc.NewElement( toStr(model.type).c_str() );
         element->SetAttribute("ID", model.registration_ID.c_str());
 
-        for (auto& port : model.ports)
+        std::vector<std::string> ordered_ports;
+        PortDirection directions[3] = { PortDirection::INPUT,
+                                        PortDirection::OUTPUT,
+                                        PortDirection::INOUT };
+        for(int d=0; d<3; d++)
         {
+          std::set<std::string> port_names;
+          for (auto& port : model.ports)
+          {
             const auto& port_name = port.first;
             const auto& port_info = port.second;
+            if( port_info.direction() == directions[d] )
+            {
+              port_names.insert(port_name);
+            }
+          }
+          for (auto& port : port_names)
+          {
+            ordered_ports.push_back(port);
+          }
+        }
+
+        for (const auto& port_name : ordered_ports)
+        {
+            const auto& port_info = model.ports.at(port_name);
 
             XMLElement* port_element = nullptr;
             switch(  port_info.direction() )
