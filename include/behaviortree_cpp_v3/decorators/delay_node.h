@@ -8,9 +8,8 @@
 namespace BT
 {
 /**
- * @brief The delay node will introduce a delay in milliseconds
- * and then tick the child returning the status of the child as it is 
- * upon completion
+ * @brief The delay node will introduce a delay and then tick the
+ * child returning the status of the child as it is upon completion
  * The delay is in milliseconds and it is passed using the port "delay_msec".
  *
  * During the delay the node changes status to RUNNING
