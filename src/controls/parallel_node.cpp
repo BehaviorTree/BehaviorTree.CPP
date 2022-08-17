@@ -22,8 +22,8 @@ namespace BT
 constexpr const char* ParallelNode::THRESHOLD_FAILURE;
 constexpr const char* ParallelNode::THRESHOLD_SUCCESS;
 
-ParallelNode::ParallelNode(const std::string& name, unsigned success_threshold,
-                           unsigned failure_threshold)
+ParallelNode::ParallelNode(const std::string& name, int success_threshold,
+                           int failure_threshold)
     : ControlNode::ControlNode(name, {} ),
     success_threshold_(success_threshold),
     failure_threshold_(failure_threshold),
@@ -61,12 +61,12 @@ NodeStatus ParallelNode::tick()
 
     const size_t children_count = children_nodes_.size();
 
-    if( children_count < thresholdM())
+    if( children_count < successThreshold())
     {
         throw LogicError("Number of children is less than threshold. Can never succeed.");
     }
 
-    if( children_count < thresholdFM())
+    if( children_count < failureThreshold())
     {
         throw LogicError("Number of children is less than threshold. Can never fail.");
     }
@@ -97,7 +97,7 @@ NodeStatus ParallelNode::tick()
                 }
                 success_childred_num++;
 
-                if (success_childred_num == thresholdM())
+                if (success_childred_num == successThreshold())
                 {
                     skip_list_.clear();
                     haltChildren();
@@ -115,8 +115,8 @@ NodeStatus ParallelNode::tick()
                 
                 // It fails if it is not possible to succeed anymore or if 
                 // number of failures are equal to failure_threshold_
-                if ((failure_childred_num > children_count - thresholdM())
-                    || (failure_childred_num == thresholdFM()))
+                if ((failure_childred_num > children_count - successThreshold())
+                    || (failure_childred_num == failureThreshold()))
                 {
                     skip_list_.clear();
                     haltChildren();
@@ -145,26 +145,26 @@ void ParallelNode::halt()
     ControlNode::halt();
 }
 
-unsigned int ParallelNode::thresholdM()
+size_t ParallelNode::successThreshold() const
 {
     return success_threshold_ < 0
-      ? std::max(children_nodes_.size() + success_threshold_ + 1, static_cast<std::size_t>(0))
+           ? std::max(children_nodes_.size() + success_threshold_ + 1, size_t(0))
       : success_threshold_;
 }
 
-unsigned int ParallelNode::thresholdFM()
+size_t ParallelNode::failureThreshold() const
 {
     return failure_threshold_ < 0
-      ? std::max(children_nodes_.size() + failure_threshold_ + 1, static_cast<std::size_t>(0))
+           ? std::max(children_nodes_.size() + failure_threshold_ + 1, size_t(0))
       : failure_threshold_;
 }
 
-void ParallelNode::setThresholdM(int threshold_M)
+void ParallelNode::setSuccessThreshold(int threshold_M)
 {
     success_threshold_ = threshold_M;
 }
 
-void ParallelNode::setThresholdFM(int threshold_M)
+void ParallelNode::setFailureThreshold(int threshold_M)
 {
     failure_threshold_ = threshold_M;
 }

@@ -20,29 +20,50 @@
 namespace BT
 {
 
+/**
+ * @brief The ParallelNode execute all its children
+ * __concurrently__, but not in separate threads!
+ *
+ * Even if this may look similar to ReactiveSequence,
+ * this Control Node is the only one that may have
+ * multiple children in the RUNNING state at the same time.
+ *
+ * The Node is completed either when the THRESHOLD_SUCCESS
+ * or THRESHOLD_FAILURE number is reached (both configured using ports).
+ *
+ * If any of the threahold is reached, and other childen are still running,
+ * they will be halted.
+ *
+ * Note that threshold indexes work as in Python:
+ * https://www.i2tutorials.com/what-are-negative-indexes-and-why-are-they-used/
+ *
+ * Therefore -1 is equivalent to the number of children.
+ */
 class ParallelNode : public ControlNode
 {
   public:
 
-    ParallelNode(const std::string& name, unsigned success_threshold,
-                 unsigned failure_threshold = 1);
+    ParallelNode(const std::string& name, int success_threshold,
+                 int failure_threshold = 1);
 
     ParallelNode(const std::string& name, const NodeConfiguration& config);
 
     static PortsList providedPorts()
     {
-        return { InputPort<unsigned>(THRESHOLD_SUCCESS, "number of childen which need to succeed to trigger a SUCCESS" ),
-                 InputPort<unsigned>(THRESHOLD_FAILURE, 1, "number of childen which need to fail to trigger a FAILURE" ) };
+        return { InputPort<int>(THRESHOLD_SUCCESS,
+                              "number of childen which need to succeed to trigger a SUCCESS" ),
+                 InputPort<int>(THRESHOLD_FAILURE, 1,
+                              "number of childen which need to fail to trigger a FAILURE" ) };
     }
 
     ~ParallelNode() = default;
 
     virtual void halt() override;
 
-    unsigned int thresholdM();
-    unsigned int thresholdFM();
-    void setThresholdM(int threshold_M);
-    void setThresholdFM(int threshold_M);
+    size_t successThreshold() const;
+    size_t failureThreshold() const;
+    void setSuccessThreshold(int threshold_M);
+    void setFailureThreshold(int threshold_M);
 
   private:
     int success_threshold_;
