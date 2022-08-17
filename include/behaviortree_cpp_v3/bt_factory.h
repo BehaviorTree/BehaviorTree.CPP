@@ -235,7 +235,11 @@ public:
     /// Remove a registered ID.
     bool unregisterBuilder(const std::string& ID);
 
-    /// The most generic way to register your own builder.
+    /** The most generic way to register a NodeBuilder.
+    *
+    * Throws if you try to register twice a builder with the same
+    * registration_ID.
+    */
     void registerBuilder(const TreeNodeManifest& manifest, const NodeBuilder& builder);
 
     template <typename T>
@@ -293,10 +297,24 @@ public:
      */
     void registerFromROSPlugins();
 
+    /**
+     * @brief registerBehaviorTreeFromFile.
+     * Load the definition of an entire behavior tree, but don't instantiate it.
+     * You can instantiate it later with:
+     *
+     *    BehaviorTreeFactory::createTree(tree_id)
+     *
+     * where "tree_id" come from the XML attribute <BehaviorTree ID="tree_id">
+     *
+     */
     void registerBehaviorTreeFromFile(const std::string& filename);
 
+    /// Same of registerBehaviorTreeFromFile, but passing the XML text,
+    /// instead of the filename.
     void registerBehaviorTreeFromText(const std::string& xml_text);
 
+    /// Returns the ID of the trees registered either with
+    /// registerBehaviorTreeFromFile or registerBehaviorTreeFromText.
     std::vector<std::string> registeredBehaviorTrees() const;
 
     /**

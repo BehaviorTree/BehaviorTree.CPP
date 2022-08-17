@@ -86,9 +86,9 @@ int main()
 
     // Register the behavior tree definitions, but don't instantiate them, yet.
     // Order is not important.
-    factory.registerBehaviorTreeFromText("main_tree.xml");
-    factory.registerBehaviorTreeFromText("subtree_A.xml");
-    factory.registerBehaviorTreeFromText("subtree_B.xml");
+    factory.registerBehaviorTreeFromFile("main_tree.xml");
+    factory.registerBehaviorTreeFromFile("subtree_A.xml");
+    factory.registerBehaviorTreeFromFile("subtree_B.xml");
 
     //Check that the BTs have been registered correctly
     std::cout << "Registered BehaviorTrees:" << std::endl;
