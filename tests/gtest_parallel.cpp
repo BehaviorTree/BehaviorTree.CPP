@@ -145,6 +145,85 @@ TEST_F(SimpleParallelTest, Threshold_3)
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
 
+TEST_F(SimpleParallelTest, Threshold_neg2)
+{
+    root.setThresholdM(-2);
+    action_1.setTime( milliseconds(100) );
+    action_2.setTime( milliseconds(500) ); // this takes a lot of time
+
+    BT::NodeStatus state = root.executeTick();
+    // first tick, zero wait
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+
+    std::this_thread::sleep_for( milliseconds(150) );
+    state = root.executeTick();
+    // second tick: action1 should be completed, but not action2
+    // nevertheless it is sufficient because threshold is 3
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+}
+
+
+TEST_F(SimpleParallelTest, Threshold_neg1)
+{
+    root.setThresholdM(-1);
+    action_1.setTime( milliseconds(100) );
+    action_2.setTime( milliseconds(500) ); // this takes a lot of time
+
+    BT::NodeStatus state = root.executeTick();
+    // first tick, zero wait
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+
+    std::this_thread::sleep_for( milliseconds(150) );
+    state = root.executeTick();
+    // second tick: action1 should be completed, but not action2
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_1.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, condition_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, action_1.status());
+    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+
+    std::this_thread::sleep_for( milliseconds(650) );
+    state = root.executeTick();
+    // third tick: all actions completed
+    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+}
+
+
+TEST_F(SimpleParallelTest, Threshold_thresholdFneg1)
+{
+    root.setThresholdM(1);
+    root.setThresholdFM(-1);
+    action_1.setTime( milliseconds(100) );
+    action_1.setExpectedResult(NodeStatus::FAILURE);
+    condition_1.setExpectedResult(NodeStatus::FAILURE);
+    action_2.setTime( milliseconds(200) );
+    condition_2.setExpectedResult(NodeStatus::FAILURE);
+    action_2.setExpectedResult(NodeStatus::FAILURE);
+
+    BT::NodeStatus state = root.executeTick();
+    ASSERT_EQ(NodeStatus::RUNNING, state);
+
+    std::this_thread::sleep_for(milliseconds(250));
+    state = root.executeTick();
+    ASSERT_EQ(NodeStatus::FAILURE, state);
+}
+
 TEST_F(SimpleParallelTest, Threshold_2)
 {
     root.setThresholdM(2);
@@ -270,6 +349,7 @@ TEST_F(ComplexParallelTest, ConditionRightFalse_thresholdF_2)
 
     ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
+
 
 TEST_F(ComplexParallelTest, ConditionRightFalseAction1Done)
 {
