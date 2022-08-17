@@ -425,6 +425,10 @@ public:
     Tree createTree(const std::string& tree_name,
                      Blackboard::Ptr blackboard = Blackboard::create());
 
+    /// Add a description to a specific manifest. This description will be added
+    /// to <TreeNodesModel> with the function writeTreeNodesModelXML()
+    void addDescriptionToManifest(const std::string& node_id, const std::string& description );
+
 private:
     std::unordered_map<std::string, NodeBuilder> builders_;
     std::unordered_map<std::string, TreeNodeManifest> manifests_;

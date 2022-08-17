@@ -516,7 +516,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement *element,
         for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
         {
             const std::string attribute_name = att->Name();
-            if (attribute_name != "ID" && attribute_name != "name")
+            if ( ReservedPortNames.count(attribute_name) == 0 )
             {
                 port_remap[attribute_name] = att->Value();
             }
@@ -661,10 +661,10 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
                 for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
                 {
-                    if( strcmp(attr->Name(), "__shared_blackboard") == 0  &&
-                        convertFromString<bool>(attr->Value()) == true )
+                    if( StrEqual(attr->Name(), "__shared_blackboard") )
                     {
-                        is_isolated = false;
+                        is_isolated = !convertFromString<bool>(attr->Value());
+                        break;
                     }
                 }
 
@@ -678,11 +678,10 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
                     for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
                     {
-                        if( strcmp(attr->Name(), "ID") == 0 )
+                        if( ReservedPortNames.count(attr->Name()) == 0 )
                         {
-                            continue;
+                            new_bb->addSubtreeRemapping( attr->Name(), attr->Value() );
                         }
-                        new_bb->addSubtreeRemapping( attr->Name(), attr->Value() );
                     }
                     output_tree.blackboard_stack.emplace_back(new_bb);
                     recursivelyCreateTree( node->name(), output_tree, new_bb, node );
@@ -701,7 +700,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                     const char* attr_name = attr->Name();
                     const char* attr_value = attr->Value();
 
-                    if( StrEqual(attr_name, "ID") )
+                    if( ReservedPortNames.count(attr->Name()) != 0 )
                     {
                         continue;
                     }
@@ -772,9 +771,8 @@ void XMLParser::Pimpl::getPortsRecursively(const XMLElement *element,
     {
         const char* attr_name = attr->Name();
         const char* attr_value = attr->Value();
-        if( !StrEqual(attr_name, "ID") &&
-            !StrEqual(attr_name, "name") &&
-             TreeNode::isBlackboardPointer(attr_value) )
+        if( ReservedPortNames.count(attr_name) == 0 &&
+            TreeNode::isBlackboardPointer(attr_value) )
         {
             auto port_name = TreeNode::stripBlackboardPointer(attr_value);
             output_ports.push_back( static_cast<std::string>(port_name) );
@@ -870,8 +868,12 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
             {
                 port_element->SetText( port_info.description().c_str() );
             }
-
             element->InsertEndChild(port_element);
+        }
+
+        if(!model.description.empty())
+        {
+            element->SetAttribute("description", model.registration_ID.c_str());
         }
 
         model_root->InsertEndChild(element);
