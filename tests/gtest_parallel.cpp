@@ -122,7 +122,7 @@ TEST_F(SimpleParallelTest, ConditionsTrue)
 
 TEST_F(SimpleParallelTest, Threshold_3)
 {
-    root.setThresholdM(3);
+    root.setSuccessThreshold(3);
     action_1.setTime( milliseconds(100) );
     action_2.setTime( milliseconds(500) ); // this takes a lot of time
 
@@ -147,7 +147,7 @@ TEST_F(SimpleParallelTest, Threshold_3)
 
 TEST_F(SimpleParallelTest, Threshold_neg2)
 {
-    root.setThresholdM(-2);
+    root.setSuccessThreshold(-2);
     action_1.setTime( milliseconds(100) );
     action_2.setTime( milliseconds(500) ); // this takes a lot of time
 
@@ -173,7 +173,7 @@ TEST_F(SimpleParallelTest, Threshold_neg2)
 
 TEST_F(SimpleParallelTest, Threshold_neg1)
 {
-    root.setThresholdM(-1);
+    root.setSuccessThreshold(-1);
     action_1.setTime( milliseconds(100) );
     action_2.setTime( milliseconds(500) ); // this takes a lot of time
 
@@ -207,8 +207,8 @@ TEST_F(SimpleParallelTest, Threshold_neg1)
 
 TEST_F(SimpleParallelTest, Threshold_thresholdFneg1)
 {
-    root.setThresholdM(1);
-    root.setThresholdFM(-1);
+    root.setSuccessThreshold(1);
+    root.setFailureThreshold(-1);
     action_1.setTime( milliseconds(100) );
     action_1.setExpectedResult(NodeStatus::FAILURE);
     condition_1.setExpectedResult(NodeStatus::FAILURE);
@@ -226,7 +226,7 @@ TEST_F(SimpleParallelTest, Threshold_thresholdFneg1)
 
 TEST_F(SimpleParallelTest, Threshold_2)
 {
-    root.setThresholdM(2);
+    root.setSuccessThreshold(2);
     BT::NodeStatus state = root.executeTick();
 
     ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
@@ -270,8 +270,8 @@ TEST_F(ComplexParallelTest, ConditionsTrue)
 
 TEST_F(ComplexParallelTest, ConditionsLeftFalse)
 {
-    parallel_left.setThresholdFM(3);
-    parallel_left.setThresholdM(3);
+    parallel_left.setFailureThreshold(3);
+    parallel_left.setSuccessThreshold(3);
     condition_L1.setExpectedResult(NodeStatus::FAILURE);
     condition_L2.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = parallel_root.executeTick();
@@ -315,7 +315,7 @@ TEST_F(ComplexParallelTest, ConditionRightFalse)
 
 TEST_F(ComplexParallelTest, ConditionRightFalse_thresholdF_2)
 {
-    parallel_right.setThresholdFM(2);
+    parallel_right.setFailureThreshold(2);
     condition_R.setExpectedResult(NodeStatus::FAILURE);
     BT::NodeStatus state = parallel_root.executeTick();
 
@@ -355,8 +355,8 @@ TEST_F(ComplexParallelTest, ConditionRightFalseAction1Done)
 {
     condition_R.setExpectedResult(NodeStatus::FAILURE);
 
-    parallel_right.setThresholdFM(2);
-    parallel_left.setThresholdM(4);
+    parallel_right.setFailureThreshold(2);
+    parallel_left.setSuccessThreshold(4);
 
     BT::NodeStatus state = parallel_root.executeTick();
     std::this_thread::sleep_for(milliseconds(300));
