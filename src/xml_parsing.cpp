@@ -484,6 +484,11 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
   return output_tree;
 }
 
+void XMLParser::clearInternalState()
+{
+    _p->clear();
+}
+
 TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
                                                   const Blackboard::Ptr& blackboard,
                                                   const TreeNode::Ptr& node_parent)
