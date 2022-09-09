@@ -3,6 +3,8 @@
 
 #include "behaviortree_cpp_v3/bt_parser.h"
 
+#include <unordered_map>
+
 namespace BT
 {
 
@@ -38,7 +40,7 @@ class XMLParser: public Parser
 };
 
 void VerifyXML(const std::string& xml_text,
-               const std::set<std::string> &registered_nodes);
+               const std::unordered_map<std::string, NodeType> &registered_nodes);
 
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
                                    bool include_builtin = false);

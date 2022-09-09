@@ -214,25 +214,25 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc, bool add_inclu
         tree_roots.insert( {tree_name, bt_node} );
     }
 
-    std::set<std::string> registered_nodes;
+    std::unordered_map<std::string, BT::NodeType> registered_nodes;
     XMLPrinter printer;
     doc->Print(&printer);
     auto xml_text = std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 
     for( const auto& it: factory.manifests())
     {
-        registered_nodes.insert( it.first );
+        registered_nodes.insert({it.first, it.second.type});
     }
     for( const auto& it: tree_roots)
     {
-        registered_nodes.insert( it.first );
+        registered_nodes.insert({it.first, NodeType::SUBTREE});
     }
 
     VerifyXML(xml_text, registered_nodes);
 }
 
 void VerifyXML(const std::string& xml_text,
-               const std::set<std::string>& registered_nodes)
+               const std::unordered_map<std::string, BT::NodeType>& registered_nodes)
 {
 
     BT_TinyXML2::XMLDocument doc;
@@ -391,11 +391,21 @@ void VerifyXML(const std::string& xml_text,
         else
         {
             // search in the factory and the list of subtrees
-            bool found = ( registered_nodes.find(name)  != registered_nodes.end() );
+            const auto search = registered_nodes.find(name);
+            bool found = ( search != registered_nodes.end() );
             if (!found)
             {
                 ThrowError(node->GetLineNum(),
                            std::string("Node not recognized: ") + name);
+            }
+
+            if (search->second == NodeType::DECORATOR)
+            {
+                if (children_count != 1)
+                {
+                    ThrowError(node->GetLineNum(),
+                            std::string("The node <") + name + "> must have exactly 1 child");
+                }
             }
         }
         //recursion
