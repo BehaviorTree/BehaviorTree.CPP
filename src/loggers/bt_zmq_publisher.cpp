@@ -95,6 +95,11 @@ PublisherZMQ::~PublisherZMQ()
     {
         thread_.join();
     }
+    if (send_pending_)
+    {
+        send_condition_variable_.notify_all();
+        send_future_.get();
+    }
     flush();
     zmq_->context.shutdown();
     delete zmq_;
@@ -126,12 +131,17 @@ void PublisherZMQ::callback(Duration timestamp, const TreeNode& node, NodeStatus
         transition_buffer_.push_back(transition);
     }
 
-    if (!send_pending_)
+    if (!send_pending_.exchange(true))
     {
-        send_pending_ = true;
         send_future_ = std::async(std::launch::async, [this]() {
-            std::this_thread::sleep_for(min_time_between_msgs_);
-            flush();
+            std::unique_lock<std::mutex> lock(mutex_);
+            const bool is_server_inactive = send_condition_variable_.wait_for(
+                lock, min_time_between_msgs_, [this]() { return !active_server_; });
+            lock.unlock();
+            if (!is_server_inactive)
+            {
+                flush();
+            }
         });
     }
 }
