@@ -79,7 +79,7 @@ template <typename T> inline
 template <typename T> inline
 TreeNodeManifest CreateManifest(const std::string& ID, PortsList portlist = getProvidedPorts<T>())
 {
-  return { getType<T>(), ID, portlist };
+  return { getType<T>(), ID, portlist, {} };
 }
 
 

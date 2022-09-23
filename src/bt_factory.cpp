@@ -109,7 +109,7 @@ void BehaviorTreeFactory::registerSimpleCondition(const std::string& ID,
         return std::make_unique<SimpleConditionNode>(name, tick_functor, config);
     };
 
-    TreeNodeManifest manifest = { NodeType::CONDITION, ID, std::move(ports) };
+    TreeNodeManifest manifest = { NodeType::CONDITION, ID, std::move(ports), {} };
     registerBuilder(manifest, builder);
 }
 
@@ -121,7 +121,7 @@ void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
         return std::make_unique<SimpleActionNode>(name, tick_functor, config);
     };
 
-    TreeNodeManifest manifest = { NodeType::ACTION, ID, std::move(ports) };
+    TreeNodeManifest manifest = { NodeType::ACTION, ID, std::move(ports), {} };
     registerBuilder(manifest, builder);
 }
 
@@ -133,7 +133,7 @@ void BehaviorTreeFactory::registerSimpleDecorator(const std::string& ID,
         return std::make_unique<SimpleDecoratorNode>(name, tick_functor, config);
     };
 
-    TreeNodeManifest manifest = { NodeType::DECORATOR, ID, std::move(ports) };
+    TreeNodeManifest manifest = { NodeType::DECORATOR, ID, std::move(ports), {} };
     registerBuilder(manifest, builder);
 }
 
