@@ -12,6 +12,7 @@ void Blackboard::setPortInfo(std::string key, const PortInfo& info)
         if( remapping_it != internal_to_external_.end())
         {
             parent->setPortInfo( remapping_it->second, info );
+            return;
         }
     }
 
@@ -25,8 +26,8 @@ void Blackboard::setPortInfo(std::string key, const PortInfo& info)
         if( old_type && old_type != info.type() )
         {
             throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                             "Declared type [",     BT::demangle( old_type ),
-                             "] != current type [", BT::demangle( info.type() ), "]" );
+                             "Previously declared type [", BT::demangle( old_type ),
+                             "] != new type [", BT::demangle( info.type() ), "]" );
         }
     }
 }
@@ -34,6 +35,16 @@ void Blackboard::setPortInfo(std::string key, const PortInfo& info)
 const PortInfo* Blackboard::portInfo(const std::string &key)
 {
     std::unique_lock<std::mutex> lock(mutex_);
+
+    if( auto parent = parent_bb_.lock())
+    {
+        auto remapping_it = internal_to_external_.find(key);
+        if( remapping_it != internal_to_external_.end())
+        {
+            return parent->portInfo( remapping_it->second );
+        }
+    }
+
     auto it = storage_.find(key);
     if( it == storage_.end() )
     {

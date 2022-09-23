@@ -275,5 +275,41 @@ TEST(SubTree, SubtreePlusD)
     ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
 }
 
+TEST(SubTree, SubtreeIssue433)
+{
+    BT::NodeConfiguration config;
+    config.blackboard = BT::Blackboard::create();
+    static const char* xml_text = R"(
+
+<root main_tree_to_execute = "TestTree" >
+    <BehaviorTree ID="Subtree1">
+        <Decorator ID="Repeat" num_cycles="{port_to_use}">
+            <Action ID="AlwaysSuccess"/>
+        </Decorator>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Subtree2">
+        <Action ID="SetBlackboard" output_key="test_port" value="{port_to_read}"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="TestTree">
+        <Sequence>
+            <Action ID="SetBlackboard" output_key="test_port" value="1"/>
+            <SubTree ID="Subtree1" port_to_use="test_port"/>
+            <SubTree ID="Subtree2" port_to_read="test_port"/>
+        </Sequence>
+    </BehaviorTree>
+</root> )";
+
+    BT::BehaviorTreeFactory factory;
+
+    BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
+    auto ret = tree.tickRoot();
+
+    ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
+}
+
+
+
 
 
