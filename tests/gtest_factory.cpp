@@ -359,3 +359,35 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryW
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 #endif
+
+TEST(BehaviorTreeFactory, DecoratorWithoutChildThrows)
+{
+    BehaviorTreeFactory factory;
+    const std::string tree_xml = R"(
+<root>
+    <BehaviorTree ID="Main">
+        <ForceSuccess>
+        </ForceSuccess>
+    </BehaviorTree>
+</root>
+)";
+
+    ASSERT_THROW(factory.createTreeFromText(tree_xml), BehaviorTreeException);
+}
+
+TEST(BehaviorTreeFactory, DecoratorWithTwoChildrenThrows)
+{
+    BehaviorTreeFactory factory;
+    const std::string tree_xml = R"(
+<root>
+    <BehaviorTree ID="Main">
+        <ForceSuccess>
+          <AlwaysSuccess />
+          <AlwaysSuccess />
+        </ForceSuccess>
+    </BehaviorTree>
+</root>
+)";
+
+    ASSERT_THROW(factory.createTreeFromText(xml_text), BehaviorTreeException);
+}
