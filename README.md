@@ -161,7 +161,10 @@ The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
 The MIT License (MIT)
 
 Copyright (c) 2014-2018 Michele Colledanchise
-Copyright (c) 2018-2021 Davide Faconti
+
+Copyright (c) 2018-2019 Davide Faconti, Eurecat
+
+Copyright (c) 2019-2021 Davide Faconti
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
