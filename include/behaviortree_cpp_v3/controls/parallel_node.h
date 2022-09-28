@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2022 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef PARALLEL_NODE_H
-#define PARALLEL_NODE_H
+#pragma once
 
 #include <set>
 #include "behaviortree_cpp_v3/control_node.h"
@@ -25,13 +24,13 @@ namespace BT
  * __concurrently__, but not in separate threads!
  *
  * Even if this may look similar to ReactiveSequence,
- * this Control Node is the only one that may have
- * multiple children in the RUNNING state at the same time.
+ * this Control Node is the __only__ one that can have
+ * multiple children RUNNING at the same time.
  *
  * The Node is completed either when the THRESHOLD_SUCCESS
  * or THRESHOLD_FAILURE number is reached (both configured using ports).
  *
- * If any of the threahold is reached, and other childen are still running,
+ * If any of the threaholds is reached, and other children are still running,
  * they will be halted.
  *
  * Note that threshold indexes work as in Python:
@@ -56,7 +55,7 @@ class ParallelNode : public ControlNode
                               "number of childen which need to fail to trigger a FAILURE" ) };
     }
 
-    ~ParallelNode() = default;
+    ~ParallelNode() override = default;
 
     virtual void halt() override;
 
@@ -79,4 +78,3 @@ class ParallelNode : public ControlNode
 };
 
 }
-#endif   // PARALLEL_NODE_H

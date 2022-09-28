@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Davide Faconti -  All Rights Reserved
+/* Copyright (C) 2020-2022 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,8 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef SWITCH_NODE_H
-#define SWITCH_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/control_node.h"
 
@@ -80,9 +79,6 @@ class SwitchNode : public ControlNode
 template<size_t NUM_CASES> inline
 NodeStatus SwitchNode<NUM_CASES>::tick()
 {
-    constexpr const char * case_port_names[9] = {
-      "case_1", "case_2", "case_3", "case_4", "case_5", "case_6", "case_7", "case_8", "case_9"};
-
     if( childrenCount() != NUM_CASES+1)
     {
         throw LogicError("Wrong number of children in SwitchNode; "
@@ -91,43 +87,36 @@ NodeStatus SwitchNode<NUM_CASES>::tick()
 
     std::string variable;
     std::string value;
-    int child_index = NUM_CASES; // default index;
+    int match_index = int(NUM_CASES); // default index;
 
     if (getInput("variable", variable)) // no variable? jump to default
     {
         // check each case until you find a match
-        for (unsigned index = 0; index < NUM_CASES; ++index)
+        for (int index = 0; index < int(NUM_CASES); ++index)
         {
-            bool found = false;
-            if( index < 9 )
-            {
-                found = (bool)getInput(case_port_names[index], value);
-            }
-            else{
-                char case_str[20];
-                sprintf(case_str, "case_%d", index+1);
-                found = (bool)getInput(case_str, value);
-            }
+            char case_key[20];
+            sprintf(case_key, "case_%d", int(index+1));
+            bool found = static_cast<bool>(getInput(case_key, value));
 
             if (found && variable == value)
             {
-                child_index = index;
+                match_index = index;
                 break;
             }
         }
     }
 
     // if another one was running earlier, halt it
-    if( running_child_ != -1 && running_child_ != child_index)
+    if( running_child_ != -1 && running_child_ != match_index)
     {
         haltChild(running_child_);
     }
 
-    auto& selected_child = children_nodes_[child_index];
+    auto& selected_child = children_nodes_[match_index];
     NodeStatus ret = selected_child->executeTick();
     if( ret == NodeStatus::RUNNING )
     {
-        running_child_ = child_index;
+        running_child_ = match_index;
     }
     else{
         haltChildren();
@@ -138,4 +127,3 @@ NodeStatus SwitchNode<NUM_CASES>::tick()
 
 }
 
-#endif // SWITCH_NODE_H

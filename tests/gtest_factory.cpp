@@ -310,7 +310,8 @@ TEST(BehaviorTreeFactory, CreateTreeFromFile)
     BehaviorTreeFactory factory;
     
     // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_no_include.xml").str());
+    auto path = (environment->executable_path.parent_path() / "trees/parent_no_include.xml");
+    Tree tree = factory.createTreeFromFile(path.str());
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
@@ -319,7 +320,8 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromSameDirectory)
     BehaviorTreeFactory factory;
     
     // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/child/child_include_sibling.xml").str());
+    auto path = (environment->executable_path.parent_path() / "trees/child/child_include_sibling.xml");
+    Tree tree = factory.createTreeFromFile(path.str());
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
@@ -328,7 +330,8 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectory)
     BehaviorTreeFactory factory;
     
     // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child.xml").str());
+    auto path = (environment->executable_path.parent_path() / "trees/parent_include_child.xml");
+    Tree tree = factory.createTreeFromFile(path.str());
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
@@ -337,7 +340,8 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryW
     BehaviorTreeFactory factory;
     
     // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_sibling.xml").str());
+    auto path = (environment->executable_path.parent_path() / "trees/parent_include_child_include_sibling.xml");
+    Tree tree = factory.createTreeFromFile(path.str());
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
@@ -346,7 +350,8 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryW
     BehaviorTreeFactory factory;
     
     // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_child.xml").str());
+    auto path = (environment->executable_path.parent_path() / "trees/parent_include_child_include_child.xml");
+    Tree tree = factory.createTreeFromFile(path.str());
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
@@ -355,7 +360,8 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryW
     BehaviorTreeFactory factory;
     
     // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_parent.xml").str());
+    auto path = (environment->executable_path.parent_path() / "trees/parent_include_child_include_parent.xml");
+    Tree tree = factory.createTreeFromFile(path.str());
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 #endif

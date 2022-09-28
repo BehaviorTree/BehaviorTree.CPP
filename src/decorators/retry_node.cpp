@@ -20,7 +20,7 @@ constexpr const char* RetryNode::NUM_ATTEMPTS;
 RetryNode::RetryNode(const std::string& name, int NTries)
     : DecoratorNode(name, {} ),
     max_attempts_(NTries),
-    try_index_(0),
+    try_count_(0),
     read_parameter_from_ports_(false)
 {
     setRegistrationID("RetryUntilSuccessful");
@@ -29,14 +29,14 @@ RetryNode::RetryNode(const std::string& name, int NTries)
 RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config)
   : DecoratorNode(name, config),
     max_attempts_(0),
-    try_index_(0),
+    try_count_(0),
     read_parameter_from_ports_(true)
 {
 }
 
 void RetryNode::halt()
 {
-    try_index_ = 0;
+    try_count_ = 0;
     DecoratorNode::halt();
 }
 
@@ -52,21 +52,21 @@ NodeStatus RetryNode::tick()
 
     setStatus(NodeStatus::RUNNING);
 
-    while (try_index_ < max_attempts_ || max_attempts_ == -1)
+    while (try_count_ < max_attempts_ || max_attempts_ == -1)
     {
         NodeStatus child_state = child_node_->executeTick();
         switch (child_state)
         {
             case NodeStatus::SUCCESS:
             {
-                try_index_ = 0;
+                try_count_ = 0;
                 haltChild();
                 return (NodeStatus::SUCCESS);
             }
 
             case NodeStatus::FAILURE:
             {
-                try_index_++;
+                try_count_++;
                 haltChild();
             }
             break;
@@ -83,7 +83,7 @@ NodeStatus RetryNode::tick()
         }
     }
 
-    try_index_ = 0;
+    try_count_ = 0;
     return NodeStatus::FAILURE;
 }
 

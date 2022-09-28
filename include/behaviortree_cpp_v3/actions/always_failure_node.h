@@ -10,8 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef ACTION_ALWAYS_FAILURE_NODE_H
-#define ACTION_ALWAYS_FAILURE_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/action_node.h"
 
@@ -37,4 +36,3 @@ class AlwaysFailureNode : public SyncActionNode
 };
 }
 
-#endif

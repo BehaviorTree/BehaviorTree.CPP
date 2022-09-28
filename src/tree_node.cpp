@@ -77,6 +77,12 @@ void TreeNode::setStatus(NodeStatus new_status)
     }
 }
 
+void TreeNode::resetStatus()
+{
+    std::unique_lock<std::mutex> lock(state_mutex_);
+    status_ = NodeStatus::IDLE;
+}
+
 NodeStatus TreeNode::status() const
 {
     std::lock_guard<std::mutex> lock(state_mutex_);
@@ -117,7 +123,7 @@ uint16_t TreeNode::UID() const
 
 const std::string& TreeNode::registrationName() const
 {
-  return registration_ID_;
+    return registration_ID_;
 }
 
 const NodeConfiguration &TreeNode::config() const
@@ -201,7 +207,7 @@ void TreeNode::setWakeUpInstance(std::shared_ptr<WakeUpSignal> instance)
 
 void TreeNode::modifyPortsRemapping(const PortsRemapping &new_remapping)
 {
-  for (const auto& new_it: new_remapping)
+    for (const auto& new_it: new_remapping)
     {
         auto it = config_.input_ports.find( new_it.first );
         if( it != config_.input_ports.end() )

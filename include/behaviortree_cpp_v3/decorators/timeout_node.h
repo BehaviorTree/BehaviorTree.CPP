@@ -1,9 +1,8 @@
-#ifndef DECORATOR_TIMEOUT_NODE_H
-#define DECORATOR_TIMEOUT_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 #include <atomic>
-#include "timer_queue.h"
+#include "behaviortree_cpp_v3/decorators/timer_queue.h"
 
 namespace BT
 {
@@ -122,4 +121,3 @@ class TimeoutNode : public DecoratorNode
 };
 }
 
-#endif   // DEADLINE_NODE_H

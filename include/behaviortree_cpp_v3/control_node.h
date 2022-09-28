@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef CONTROLNODE_H
-#define CONTROLNODE_H
+#pragma once
 
 #include <vector>
 #include "behaviortree_cpp_v3/tree_node.h"
@@ -57,4 +56,3 @@ class ControlNode : public TreeNode
 };
 }
 
-#endif

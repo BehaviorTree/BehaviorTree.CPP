@@ -15,10 +15,11 @@ public:
     bool waitFor(std::chrono::system_clock::duration tm)
     {
         std::unique_lock<std::mutex> lk(mutex_);
-        ready_ = false;
-        return cv_.wait_for(lk, tm, [this]{
+        auto res = cv_.wait_for(lk, tm, [this]{
           return ready_;
         });
+        ready_ = false;
+        return res;
     }
 
     void emitSignal()

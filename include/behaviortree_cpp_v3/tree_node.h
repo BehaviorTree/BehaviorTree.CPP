@@ -11,11 +11,12 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef BEHAVIORTREECORE_TREENODE_H
-#define BEHAVIORTREECORE_TREENODE_H
+#pragma once
 
 #include <condition_variable>
 #include <mutex>
+#include <map>
+
 #include "behaviortree_cpp_v3/utils/signal.h"
 #include "behaviortree_cpp_v3/exceptions.h"
 #include "behaviortree_cpp_v3/basic_types.h"
@@ -219,6 +220,9 @@ class TreeNode
     PostTickOverrideCallback post_condition_callback_;
 
     std::shared_ptr<WakeUpSignal> wake_up_;
+
+    /// Set the status to IDLE
+    void resetStatus();
 };
 
 //-------------------------------------------------------
@@ -326,4 +330,3 @@ inline void assignDefaultRemapping(NodeConfiguration& config)
 
 }   // namespace BT
 
-#endif

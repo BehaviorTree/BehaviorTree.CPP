@@ -25,9 +25,8 @@ namespace BT
 {
 
 // IMPORTANT: Actions which returned SUCCESS or FAILURE will not be ticked
-// again unless setStatus(IDLE) is called first.
+// again unless resetStatus() is called first.
 // Keep this in mind when writing your custom Control and Decorator nodes.
-
 
 /**
  * @brief The ActionNodeBase is the base class to use to create any kind of action.
@@ -64,9 +63,7 @@ class SyncActionNode : public ActionNodeBase
 
     /// You don't need to override this
     virtual void halt() override final
-    {
-        setStatus(NodeStatus::IDLE);
-    }
+    { }
 };
 
 /**
@@ -140,7 +137,7 @@ class AsyncActionNode : public ActionNodeBase
     std::exception_ptr exptr_;
     std::atomic_bool halt_requested_;
     std::future<void> thread_handle_;
-    std::mutex m_;
+    std::mutex mutex_;
 };
 
 /**

@@ -26,8 +26,8 @@ void Blackboard::setPortInfo(std::string key, const PortInfo& info)
         if( old_type && old_type != info.type() )
         {
             throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                             "Previously declared type [", BT::demangle( old_type ),
-                             "] != new type [", BT::demangle( info.type() ), "]" );
+                             "Declared type [",    BT::demangle(old_type),
+                             "] != current type [", BT::demangle(info.type()), "]" );
         }
     }
 }

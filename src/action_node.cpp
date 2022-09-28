@@ -162,7 +162,6 @@ void StatefulActionNode::halt()
   {
     onHalted();
   }
-  setStatus(NodeStatus::IDLE);
 }
 
 NodeStatus BT::AsyncActionNode::executeTick()
@@ -177,14 +176,18 @@ NodeStatus BT::AsyncActionNode::executeTick()
         thread_handle_ = std::async(std::launch::async, [this]() {
 
             try {
-                setStatus(tick());
+                auto status = tick();
+                if( !isHaltRequested() )
+                {
+                    setStatus(status);
+                }
             }
             catch (std::exception&)
             {
                 std::cerr << "\nUncaught exception from the method tick(): ["
                           << registrationName() << "/" << name() << "]\n" << std::endl;
                 // Set the exception pointer and the status atomically.
-                lock_type l(m_);
+                lock_type l(mutex_);
                 exptr_ = std::current_exception();
                 setStatus(BT::NodeStatus::IDLE);
             }
@@ -192,7 +195,7 @@ NodeStatus BT::AsyncActionNode::executeTick()
         });
     }
 
-    lock_type l(m_);
+    lock_type l(mutex_);
     if( exptr_ )
     {
         // The official interface of std::exception_ptr does not define any move

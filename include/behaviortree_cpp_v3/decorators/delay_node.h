@@ -1,5 +1,4 @@
-#ifndef DECORATOR_DELAY_NODE_H
-#define DECORATOR_DELAY_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 #include <atomic>
@@ -59,4 +58,3 @@ class DelayNode : public DecoratorNode
 
 }   // namespace BT
 
-#endif   // DELAY_NODE_H

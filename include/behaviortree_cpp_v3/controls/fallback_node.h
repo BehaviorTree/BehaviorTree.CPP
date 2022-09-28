@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef FALLBACKNODE_H
-#define FALLBACKNODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/control_node.h"
 
@@ -47,4 +46,3 @@ class FallbackNode : public ControlNode
 
 }
 
-#endif

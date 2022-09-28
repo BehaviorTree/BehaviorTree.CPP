@@ -34,7 +34,7 @@ class AsyncActionTest : public AsyncActionNode
   public:
     AsyncActionTest(const std::string& name, BT::Duration deadline_ms = std::chrono::milliseconds(100) );
 
-    virtual ~AsyncActionTest()
+    virtual ~AsyncActionTest() override
     {
         halt();
     }

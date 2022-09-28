@@ -20,7 +20,7 @@ constexpr const char* RepeatNode::NUM_CYCLES;
 RepeatNode::RepeatNode(const std::string& name, int NTries)
     : DecoratorNode(name, {} ),
     num_cycles_(NTries),
-    try_index_(0),
+    repeat_count_(0),
     read_parameter_from_ports_(false)
 {
      setRegistrationID("Repeat");
@@ -29,7 +29,7 @@ RepeatNode::RepeatNode(const std::string& name, int NTries)
 RepeatNode::RepeatNode(const std::string& name, const NodeConfiguration& config)
   : DecoratorNode(name, config),
     num_cycles_(0),
-    try_index_(0),
+    repeat_count_(0),
     read_parameter_from_ports_(true)
 {
 
@@ -47,7 +47,7 @@ NodeStatus RepeatNode::tick()
 
     setStatus(NodeStatus::RUNNING);
 
-    while (try_index_ < num_cycles_ || num_cycles_== -1 )
+    while (repeat_count_ < num_cycles_ || num_cycles_== -1 )
     {
         NodeStatus child_state = child_node_->executeTick();
 
@@ -55,14 +55,14 @@ NodeStatus RepeatNode::tick()
         {
             case NodeStatus::SUCCESS:
             {
-                try_index_++;
+                repeat_count_++;
                 haltChild();
             }
             break;
 
             case NodeStatus::FAILURE:
             {
-                try_index_ = 0;
+                repeat_count_ = 0;
                 haltChild();
                 return (NodeStatus::FAILURE);
             }
@@ -79,13 +79,13 @@ NodeStatus RepeatNode::tick()
         }
     }
 
-    try_index_ = 0;
+    repeat_count_ = 0;
     return NodeStatus::SUCCESS;
 }
 
 void RepeatNode::halt()
 {
-    try_index_ = 0;
+    repeat_count_ = 0;
     DecoratorNode::halt();
 }
 

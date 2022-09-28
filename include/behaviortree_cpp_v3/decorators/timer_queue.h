@@ -1,11 +1,11 @@
-#ifndef TIMERQUEUE_H
-#define TIMERQUEUE_H
+#pragma once
 
 #include <mutex>
 #include <condition_variable>
 #include <thread>
 #include <queue>
 #include <chrono>
+#include <functional>
 #include <assert.h>
 
 namespace BT
@@ -260,4 +260,3 @@ class TimerQueue
 };
 }
 
-#endif   // TIMERQUEUE_H

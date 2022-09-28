@@ -26,10 +26,7 @@ class ConditionNode : public LeafNode
     virtual ~ConditionNode() override = default;
 
     //Do nothing
-    virtual void halt() override final
-    {
-        setStatus(NodeStatus::IDLE);
-    }
+    virtual void halt() override final {}
 
     virtual NodeType type() const override final
     {

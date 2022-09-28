@@ -40,6 +40,12 @@ enum class NodeStatus
     FAILURE
 };
 
+inline bool StatusCompleted(const NodeStatus& status)
+{
+    return status == NodeStatus::SUCCESS ||
+           status == NodeStatus::FAILURE;
+}
+
 enum class PortDirection{
     INPUT,
     OUTPUT,

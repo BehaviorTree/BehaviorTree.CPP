@@ -37,7 +37,7 @@ BT::NodeStatus BT::AsyncActionTest::tick()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    // check if we exited the while(9 loop because of the flag stop_loop_
+    // check if we exited the while() loop because of the flag stop_loop_
     if( isHaltRequested() ){
         return NodeStatus::IDLE;
     }

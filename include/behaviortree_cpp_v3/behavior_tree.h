@@ -89,6 +89,7 @@ inline NodeType getType()
     return NodeType::UNDEFINED;
     // clang-format on
 }
+
 }
 
 #endif   // BEHAVIOR_TREE_H

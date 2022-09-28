@@ -51,7 +51,7 @@ class Blackboard
     const Any* getAny(const std::string& key) const
     {
         std::unique_lock<std::mutex> lock(mutex_);
-
+        // search first if this port was remapped
         if( auto parent = parent_bb_.lock())
         {
             auto remapping_it = internal_to_external_.find(key);
@@ -67,7 +67,7 @@ class Blackboard
     Any* getAny(const std::string& key)
     {
         std::unique_lock<std::mutex> lock(mutex_);
-
+        // search first if this port was remapped
         if( auto parent = parent_bb_.lock())
         {
             auto remapping_it = internal_to_external_.find(key);
@@ -118,39 +118,33 @@ class Blackboard
     {
         std::unique_lock<std::mutex> lock_entry(entry_mutex_);
         std::unique_lock<std::mutex> lock(mutex_);
-        auto it = storage_.find(key);
 
-        if( auto parent = parent_bb_.lock())
+        // search first if this port was remapped.
+        // Change the parent_bb_ in that case
+        auto remapping_it = internal_to_external_.find(key);
+        if( remapping_it != internal_to_external_.end())
         {
-            auto remapping_it = internal_to_external_.find(key);
-            if( remapping_it != internal_to_external_.end())
+            const auto& remapped_key = remapping_it->second;
+            if( auto parent = parent_bb_.lock())
             {
-                const auto& remapped_key = remapping_it->second;
-                if( it == storage_.end() ) // virgin entry
-                {
-                    auto parent_info = parent->portInfo(remapped_key);
-                    if( parent_info )
-                    {
-                        storage_.emplace( key, Entry( *parent_info ) );
-                    }
-                    else{
-                        storage_.emplace( key, Entry( PortInfo() ) );
-                    }
-                }
                 parent->set( remapped_key, value );
                 return;
             }
         }
 
-        if( it != storage_.end() ) // already there. check the type
+        // check local storage
+        auto it = storage_.find(key);
+        if( it != storage_.end() )
         {
             const PortInfo& port_info = it->second.port_info;
             auto& previous_any = it->second.value;
-            const auto locked_type = port_info.type();
+            const auto previous_type = port_info.type();
 
-            Any temp(value);
+            Any new_value(value);
 
-            if( locked_type && *locked_type != typeid(T) && *locked_type != temp.type() )
+            if( previous_type &&
+                *previous_type != typeid(T) &&
+                *previous_type != new_value.type() )
             {
                 bool mismatching = true;
                 if( std::is_constructible<StringView, T>::value )
@@ -159,7 +153,7 @@ class Blackboard
                     if( any_from_string.empty() == false)
                     {
                         mismatching = false;
-                        temp = std::move( any_from_string );
+                        new_value = std::move( any_from_string );
                     }
                 }
 
@@ -168,11 +162,11 @@ class Blackboard
                     debugMessage();
 
                     throw LogicError( "Blackboard::set() failed: once declared, the type of a port shall not change. "
-                                     "Declared type [", demangle( locked_type ),
-                                     "] != current type [", demangle( typeid(T) ),"]" );
+                                     "Declared type [", BT::demangle(previous_type),
+                                     "] != current type [", BT::demangle(typeid(T)),"]" );
                 }
             }
-            previous_any = std::move(temp);
+            previous_any = std::move(new_value);
         }
         else{ // create for the first time without any info
             storage_.emplace( key, Entry( Any(value), PortInfo() ) );
@@ -201,7 +195,7 @@ class Blackboard
     // done using the value.
     std::mutex& entryMutex()
     {
-      return entry_mutex_;
+        return entry_mutex_;
     }
   
   private:

@@ -33,7 +33,6 @@ void DecoratorNode::setChild(TreeNode* child)
 void DecoratorNode::halt()
 {
     haltChild();
-    setStatus(NodeStatus::IDLE);
 }
 
 const TreeNode* DecoratorNode::child() const
@@ -55,7 +54,7 @@ void DecoratorNode::haltChild()
     {
         child_node_->halt();
     }
-    child_node_->setStatus(NodeStatus::IDLE);
+    child_node_->resetStatus();
 }
 
 SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,
@@ -75,7 +74,7 @@ NodeStatus DecoratorNode::executeTick()
     NodeStatus child_status = child()->status();
     if( child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE )
     {
-        child()->setStatus(NodeStatus::IDLE);
+        child()->resetStatus();
     }
     return status;
 }
