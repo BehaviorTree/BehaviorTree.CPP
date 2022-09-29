@@ -18,18 +18,18 @@ namespace BT
 
 class StdCoutLogger : public StatusChangeLogger
 {
-    static std::atomic<bool> ref_count;
+  static std::atomic<bool> ref_count;
 
-  public:
-    StdCoutLogger(const BT::Tree& tree);
-    ~StdCoutLogger() override;
+public:
+  StdCoutLogger(const BT::Tree& tree);
+  ~StdCoutLogger() override;
 
-    virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
-                          NodeStatus status) override;
+  virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
+                        NodeStatus status) override;
 
-    virtual void flush() override;
+  virtual void flush() override;
 };
 
-}   // end namespace
+}   // namespace BT
 
 #endif   // BT_COUT_LOGGER_H

@@ -32,17 +32,15 @@ namespace BT
  */
 class WhileDoElseNode : public ControlNode
 {
-  public:
-    WhileDoElseNode(const std::string& name);
+public:
+  WhileDoElseNode(const std::string& name);
 
-    virtual ~WhileDoElseNode() override = default;
+  virtual ~WhileDoElseNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-  private:
-
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
 
-}
-
+}   // namespace BT

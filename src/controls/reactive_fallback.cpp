@@ -14,53 +14,48 @@
 
 namespace BT
 {
-
 NodeStatus ReactiveFallback::tick()
 {
-    size_t failure_count = 0;
+  size_t failure_count = 0;
 
-    for (size_t index = 0; index < childrenCount(); index++)
+  for (size_t index = 0; index < childrenCount(); index++)
+  {
+    TreeNode* current_child_node = children_nodes_[index];
+    const NodeStatus child_status = current_child_node->executeTick();
+
+    switch (child_status)
     {
-        TreeNode* current_child_node = children_nodes_[index];
-        const NodeStatus child_status = current_child_node->executeTick();
-
-        switch (child_status)
+      case NodeStatus::RUNNING: {
+        for (size_t i = index + 1; i < childrenCount(); i++)
         {
-            case NodeStatus::RUNNING:
-            {
-                for(size_t i=index+1; i < childrenCount(); i++)
-                {
-                    haltChild(i);
-                }
-                return NodeStatus::RUNNING;
-            }
+          haltChild(i);
+        }
+        return NodeStatus::RUNNING;
+      }
 
-            case NodeStatus::FAILURE:
-            {
-                failure_count++;
-            }break;
+      case NodeStatus::FAILURE: {
+        failure_count++;
+      }
+      break;
 
-            case NodeStatus::SUCCESS:
-            {
-                haltChildren();
-                return NodeStatus::SUCCESS;
-            }
-
-            case NodeStatus::IDLE:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
-        }   // end switch
-    } //end for
-
-    if( failure_count == childrenCount() )
-    {
+      case NodeStatus::SUCCESS: {
         haltChildren();
-        return NodeStatus::FAILURE;
-    }
+        return NodeStatus::SUCCESS;
+      }
 
-    return NodeStatus::RUNNING;
+      case NodeStatus::IDLE: {
+        throw LogicError("A child node must never return IDLE");
+      }
+    }   // end switch
+  }     //end for
+
+  if (failure_count == childrenCount())
+  {
+    haltChildren();
+    return NodeStatus::FAILURE;
+  }
+
+  return NodeStatus::RUNNING;
 }
 
-}
-
+}   // namespace BT

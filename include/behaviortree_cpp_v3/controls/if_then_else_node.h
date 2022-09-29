@@ -33,18 +33,17 @@ namespace BT
  */
 class IfThenElseNode : public ControlNode
 {
-  public:
-    IfThenElseNode(const std::string& name);
+public:
+  IfThenElseNode(const std::string& name);
 
-    virtual ~IfThenElseNode() override = default;
+  virtual ~IfThenElseNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-  private:
-    size_t child_idx_;
+private:
+  size_t child_idx_;
 
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 };
 
-}
-
+}   // namespace BT

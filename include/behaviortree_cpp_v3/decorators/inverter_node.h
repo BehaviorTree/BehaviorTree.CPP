@@ -24,14 +24,12 @@ namespace BT
  */
 class InverterNode : public DecoratorNode
 {
-  public:
-    InverterNode(const std::string& name);
+public:
+  InverterNode(const std::string& name);
 
-    virtual ~InverterNode() override = default;
+  virtual ~InverterNode() override = default;
 
-  private:
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
-}
-
-
+}   // namespace BT

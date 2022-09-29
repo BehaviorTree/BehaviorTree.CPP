@@ -32,18 +32,17 @@ namespace BT
  */
 class SequenceNode : public ControlNode
 {
-  public:
-    SequenceNode(const std::string& name);
+public:
+  SequenceNode(const std::string& name);
 
-    virtual ~SequenceNode() override = default;
+  virtual ~SequenceNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-  private:
-    size_t current_child_idx_;
+private:
+  size_t current_child_idx_;
 
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 };
 
-}
-
+}   // namespace BT

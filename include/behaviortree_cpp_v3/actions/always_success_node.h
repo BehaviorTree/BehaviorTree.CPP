@@ -21,18 +21,16 @@ namespace BT
  */
 class AlwaysSuccessNode : public SyncActionNode
 {
-  public:
-    AlwaysSuccessNode(const std::string& name) :
-        SyncActionNode(name, {} )
-    {
-        setRegistrationID("AlwaysSuccess");
-    }
+public:
+  AlwaysSuccessNode(const std::string& name) : SyncActionNode(name, {})
+  {
+    setRegistrationID("AlwaysSuccess");
+  }
 
-  private:
-    virtual BT::NodeStatus tick() override
-    {
-        return NodeStatus::SUCCESS;
-    }
+private:
+  virtual BT::NodeStatus tick() override
+  {
+    return NodeStatus::SUCCESS;
+  }
 };
-}
-
+}   // namespace BT

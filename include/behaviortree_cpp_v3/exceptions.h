@@ -22,53 +22,50 @@ namespace BT
 {
 class BehaviorTreeException : public std::exception
 {
-  public:
+public:
+  BehaviorTreeException(nonstd::string_view message) :
+    message_(static_cast<std::string>(message))
+  {}
 
-    BehaviorTreeException(nonstd::string_view message):  message_(static_cast<std::string>(message))
-    {}
+  template <typename... SV>
+  BehaviorTreeException(const SV&... args) : message_(StrCat(args...))
+  {}
 
-    template <typename... SV>
-    BehaviorTreeException(const SV&... args): message_(StrCat (args...))
-    { }
+  const char* what() const noexcept
+  {
+    return message_.c_str();
+  }
 
-
-    const char* what() const noexcept
-    {
-        return message_.c_str();
-    }
-
-  private:
-    std::string message_;
+private:
+  std::string message_;
 };
 
 // This errors are usually related to problems that "probably" require code refactoring
 // to be fixed.
-class LogicError: public BehaviorTreeException
+class LogicError : public BehaviorTreeException
 {
-  public:
-    LogicError(nonstd::string_view message):  BehaviorTreeException(message)
-    {}
+public:
+  LogicError(nonstd::string_view message) : BehaviorTreeException(message)
+  {}
 
-    template <typename... SV>
-    LogicError(const SV&... args): BehaviorTreeException(args...)
-    { }
-
+  template <typename... SV>
+  LogicError(const SV&... args) : BehaviorTreeException(args...)
+  {}
 };
 
 // This errors are usually related to problems that are relted to data or conditions
 // that happen only at run-time
-class RuntimeError: public BehaviorTreeException
+class RuntimeError : public BehaviorTreeException
 {
-  public:
-    RuntimeError(nonstd::string_view message):  BehaviorTreeException(message)
-    {}
+public:
+  RuntimeError(nonstd::string_view message) : BehaviorTreeException(message)
+  {}
 
-    template <typename... SV>
-    RuntimeError(const SV&... args): BehaviorTreeException(args...)
-    { }
+  template <typename... SV>
+  RuntimeError(const SV&... args) : BehaviorTreeException(args...)
+  {}
 };
 
-
-}
+}   // namespace BT
 
 #endif

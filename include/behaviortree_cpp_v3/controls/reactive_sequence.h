@@ -32,14 +32,12 @@ namespace BT
  */
 class ReactiveSequence : public ControlNode
 {
-  public:
+public:
+  ReactiveSequence(const std::string& name) : ControlNode(name, {})
+  {}
 
-    ReactiveSequence(const std::string& name):
-        ControlNode(name, {}) {}
-
-  private:
-
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
 
-}
+}   // namespace BT

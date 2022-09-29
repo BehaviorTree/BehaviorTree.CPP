@@ -14,54 +14,49 @@
 
 namespace BT
 {
-
 NodeStatus ReactiveSequence::tick()
 {
-    size_t success_count = 0;
-    size_t running_count = 0;
+  size_t success_count = 0;
+  size_t running_count = 0;
 
-    for (size_t index = 0; index < childrenCount(); index++)
+  for (size_t index = 0; index < childrenCount(); index++)
+  {
+    TreeNode* current_child_node = children_nodes_[index];
+    const NodeStatus child_status = current_child_node->executeTick();
+
+    switch (child_status)
     {
-        TreeNode* current_child_node = children_nodes_[index];
-        const NodeStatus child_status = current_child_node->executeTick();
+      case NodeStatus::RUNNING: {
+        running_count++;
 
-        switch (child_status)
+        for (size_t i = index + 1; i < childrenCount(); i++)
         {
-            case NodeStatus::RUNNING:
-            {
-                running_count++;
+          haltChild(i);
+        }
+        return NodeStatus::RUNNING;
+      }
 
-                for(size_t i=index+1; i < childrenCount(); i++)
-                {
-                    haltChild(i);
-                }
-                return NodeStatus::RUNNING;
-            }
-
-            case NodeStatus::FAILURE:
-            {
-                haltChildren();
-                return NodeStatus::FAILURE;
-            }
-            case NodeStatus::SUCCESS:
-            {
-                success_count++;
-            }break;
-
-            case NodeStatus::IDLE:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
-        }   // end switch
-    } //end for
-
-    if( success_count == childrenCount())
-    {
+      case NodeStatus::FAILURE: {
         haltChildren();
-        return NodeStatus::SUCCESS;
-    }
-    return NodeStatus::RUNNING;
+        return NodeStatus::FAILURE;
+      }
+      case NodeStatus::SUCCESS: {
+        success_count++;
+      }
+      break;
+
+      case NodeStatus::IDLE: {
+        throw LogicError("A child node must never return IDLE");
+      }
+    }   // end switch
+  }     //end for
+
+  if (success_count == childrenCount())
+  {
+    haltChildren();
+    return NodeStatus::SUCCESS;
+  }
+  return NodeStatus::RUNNING;
 }
 
-
-}
+}   // namespace BT

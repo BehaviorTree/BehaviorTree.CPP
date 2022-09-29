@@ -21,37 +21,38 @@ namespace BT
  */
 class ManualSelectorNode : public ControlNode
 {
-  public:
-    ManualSelectorNode(const std::string& name, const NodeConfiguration& config);
+public:
+  ManualSelectorNode(const std::string& name, const NodeConfiguration& config);
 
-    virtual ~ManualSelectorNode() override = default;
+  virtual ~ManualSelectorNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<bool>(REPEAT_LAST_SELECTION, false,
-                                 "If true, execute again the same child that was selected the last time") };
-    }
+  static PortsList providedPorts()
+  {
+    return {InputPort<bool>(REPEAT_LAST_SELECTION, false,
+                            "If true, execute again the same child that was selected the "
+                            "last "
+                            "time")};
+  }
 
-  private:
+private:
+  static constexpr const char* REPEAT_LAST_SELECTION = "repeat_last_selection";
 
-    static constexpr const char* REPEAT_LAST_SELECTION = "repeat_last_selection";
+  virtual BT::NodeStatus tick() override;
+  int running_child_idx_;
+  int previously_executed_idx_;
 
-    virtual BT::NodeStatus tick() override;
-    int running_child_idx_;
-    int previously_executed_idx_;
+  enum NumericarStatus
+  {
+    NUM_SUCCESS = 253,
+    NUM_FAILURE = 254,
+    NUM_RUNNING = 255,
+  };
 
-    enum NumericarStatus{
-        NUM_SUCCESS = 253,
-        NUM_FAILURE = 254,
-        NUM_RUNNING = 255,
-    };
+  NodeStatus selectStatus() const;
 
-    NodeStatus selectStatus() const;
-
-    uint8_t selectChild() const;
+  uint8_t selectChild() const;
 };
 
-}
-
+}   // namespace BT

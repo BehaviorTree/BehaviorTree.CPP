@@ -12,12 +12,10 @@
 
 #include "behaviortree_cpp_v3/controls/while_do_else_node.h"
 
-
 namespace BT
 {
-
-WhileDoElseNode::WhileDoElseNode(const std::string &name)
-  : ControlNode::ControlNode(name, {} )
+WhileDoElseNode::WhileDoElseNode(const std::string& name) :
+  ControlNode::ControlNode(name, {})
 {
   setRegistrationID("WhileDoElse");
 }
@@ -31,7 +29,7 @@ NodeStatus WhileDoElseNode::tick()
 {
   const size_t children_count = children_nodes_.size();
 
-  if(children_count != 3)
+  if (children_count != 3)
   {
     throw std::logic_error("WhileDoElse must have 3 children");
   }
@@ -69,4 +67,4 @@ NodeStatus WhileDoElseNode::tick()
   }
 }
 
-}  // namespace BT
+}   // namespace BT

@@ -24,139 +24,143 @@ namespace BT
 {
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
-    parser_ = std::make_shared<XMLParser>(*this);
-    registerNodeType<FallbackNode>("Fallback");
-    registerNodeType<SequenceNode>("Sequence");
-    registerNodeType<SequenceStarNode>("SequenceStar");
-    registerNodeType<ParallelNode>("Parallel");
-    registerNodeType<ReactiveSequence>("ReactiveSequence");
-    registerNodeType<ReactiveFallback>("ReactiveFallback");
-    registerNodeType<IfThenElseNode>("IfThenElse");
-    registerNodeType<WhileDoElseNode>("WhileDoElse");
+  parser_ = std::make_shared<XMLParser>(*this);
+  registerNodeType<FallbackNode>("Fallback");
+  registerNodeType<SequenceNode>("Sequence");
+  registerNodeType<SequenceStarNode>("SequenceStar");
+  registerNodeType<ParallelNode>("Parallel");
+  registerNodeType<ReactiveSequence>("ReactiveSequence");
+  registerNodeType<ReactiveFallback>("ReactiveFallback");
+  registerNodeType<IfThenElseNode>("IfThenElse");
+  registerNodeType<WhileDoElseNode>("WhileDoElse");
 
-    registerNodeType<InverterNode>("Inverter");
-    //registerNodeType<RetryNodeTypo>("RetryUntilSuccesful"); //typo but back compatibility
-    registerNodeType<RetryNode>("RetryUntilSuccessful"); // correct one
-    registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
-    registerNodeType<RepeatNode>("Repeat");
-    registerNodeType<TimeoutNode<>>("Timeout");
-    registerNodeType<DelayNode>("Delay");
+  registerNodeType<InverterNode>("Inverter");
+  //registerNodeType<RetryNodeTypo>("RetryUntilSuccesful"); //typo but back compatibility
+  registerNodeType<RetryNode>("RetryUntilSuccessful");   // correct one
+  registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
+  registerNodeType<RepeatNode>("Repeat");
+  registerNodeType<TimeoutNode<>>("Timeout");
+  registerNodeType<DelayNode>("Delay");
 
-    registerNodeType<ForceSuccessNode>("ForceSuccess");
-    registerNodeType<ForceFailureNode>("ForceFailure");
+  registerNodeType<ForceSuccessNode>("ForceSuccess");
+  registerNodeType<ForceFailureNode>("ForceFailure");
 
-    registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
-    registerNodeType<AlwaysFailureNode>("AlwaysFailure");
-    registerNodeType<SetBlackboard>("SetBlackboard");
+  registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
+  registerNodeType<AlwaysFailureNode>("AlwaysFailure");
+  registerNodeType<SetBlackboard>("SetBlackboard");
 
-    registerNodeType<SubtreeNode>("SubTree");
-    registerNodeType<SubtreePlusNode>("SubTreePlus");
+  registerNodeType<SubtreeNode>("SubTree");
+  registerNodeType<SubtreePlusNode>("SubTreePlus");
 
-    registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
-    registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
-    registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
-    registerNodeType<BlackboardPreconditionNode<bool>>("BlackboardCheckBool");
+  registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
+  registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
+  registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
+  registerNodeType<BlackboardPreconditionNode<bool>>("BlackboardCheckBool");
 
-    registerNodeType<SwitchNode<2>>("Switch2");
-    registerNodeType<SwitchNode<3>>("Switch3");
-    registerNodeType<SwitchNode<4>>("Switch4");
-    registerNodeType<SwitchNode<5>>("Switch5");
-    registerNodeType<SwitchNode<6>>("Switch6");
+  registerNodeType<SwitchNode<2>>("Switch2");
+  registerNodeType<SwitchNode<3>>("Switch3");
+  registerNodeType<SwitchNode<4>>("Switch4");
+  registerNodeType<SwitchNode<5>>("Switch5");
+  registerNodeType<SwitchNode<6>>("Switch6");
 
 #ifdef NCURSES_FOUND
-    registerNodeType<ManualSelectorNode>("ManualSelector");
+  registerNodeType<ManualSelectorNode>("ManualSelector");
 #endif
-    for( const auto& it: builders_)
-    {
-        builtin_IDs_.insert( it.first );
-    }
+  for (const auto& it : builders_)
+  {
+    builtin_IDs_.insert(it.first);
+  }
 }
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
 {
-    if( builtinNodes().count(ID) )
-    {
-        throw LogicError("You can not remove the builtin registration ID [", ID, "]");
-    }
-    auto it = builders_.find(ID);
-    if (it == builders_.end())
-    {
-        return false;
-    }
-    builders_.erase(ID);
-    manifests_.erase(ID);
-    return true;
+  if (builtinNodes().count(ID))
+  {
+    throw LogicError("You can not remove the builtin registration ID [", ID, "]");
+  }
+  auto it = builders_.find(ID);
+  if (it == builders_.end())
+  {
+    return false;
+  }
+  builders_.erase(ID);
+  manifests_.erase(ID);
+  return true;
 }
 
-void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest, const NodeBuilder& builder)
+void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest,
+                                          const NodeBuilder& builder)
 {
-    auto it = builders_.find( manifest.registration_ID);
-    if (it != builders_.end())
-    {
-        throw BehaviorTreeException("ID [", manifest.registration_ID, "] already registered");
-    }
+  auto it = builders_.find(manifest.registration_ID);
+  if (it != builders_.end())
+  {
+    throw BehaviorTreeException("ID [", manifest.registration_ID, "] already registered");
+  }
 
-    builders_.insert(  {manifest.registration_ID, builder} );
-    manifests_.insert( {manifest.registration_ID, manifest} );
+  builders_.insert({manifest.registration_ID, builder});
+  manifests_.insert({manifest.registration_ID, manifest});
 }
 
-void BehaviorTreeFactory::registerSimpleCondition(const std::string& ID,
-                                                  const SimpleConditionNode::TickFunctor& tick_functor,
-                                                  PortsList ports)
+void BehaviorTreeFactory::registerSimpleCondition(
+    const std::string& ID, const SimpleConditionNode::TickFunctor& tick_functor,
+    PortsList ports)
 {
-    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeConfiguration& config) {
-        return std::make_unique<SimpleConditionNode>(name, tick_functor, config);
-    };
+  NodeBuilder builder = [tick_functor, ID](const std::string& name,
+                                           const NodeConfiguration& config) {
+    return std::make_unique<SimpleConditionNode>(name, tick_functor, config);
+  };
 
-    TreeNodeManifest manifest = { NodeType::CONDITION, ID, std::move(ports), {} };
-    registerBuilder(manifest, builder);
+  TreeNodeManifest manifest = {NodeType::CONDITION, ID, std::move(ports), {}};
+  registerBuilder(manifest, builder);
 }
 
-void BehaviorTreeFactory::registerSimpleAction(const std::string& ID,
-                                               const SimpleActionNode::TickFunctor& tick_functor,
-                                               PortsList ports)
+void BehaviorTreeFactory::registerSimpleAction(
+    const std::string& ID, const SimpleActionNode::TickFunctor& tick_functor,
+    PortsList ports)
 {
-    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeConfiguration& config) {
-        return std::make_unique<SimpleActionNode>(name, tick_functor, config);
-    };
+  NodeBuilder builder = [tick_functor, ID](const std::string& name,
+                                           const NodeConfiguration& config) {
+    return std::make_unique<SimpleActionNode>(name, tick_functor, config);
+  };
 
-    TreeNodeManifest manifest = { NodeType::ACTION, ID, std::move(ports), {} };
-    registerBuilder(manifest, builder);
+  TreeNodeManifest manifest = {NodeType::ACTION, ID, std::move(ports), {}};
+  registerBuilder(manifest, builder);
 }
 
-void BehaviorTreeFactory::registerSimpleDecorator(const std::string& ID,
-                                                  const SimpleDecoratorNode::TickFunctor& tick_functor,
-                                                  PortsList ports)
+void BehaviorTreeFactory::registerSimpleDecorator(
+    const std::string& ID, const SimpleDecoratorNode::TickFunctor& tick_functor,
+    PortsList ports)
 {
-    NodeBuilder builder = [tick_functor, ID](const std::string& name, const NodeConfiguration& config) {
-        return std::make_unique<SimpleDecoratorNode>(name, tick_functor, config);
-    };
+  NodeBuilder builder = [tick_functor, ID](const std::string& name,
+                                           const NodeConfiguration& config) {
+    return std::make_unique<SimpleDecoratorNode>(name, tick_functor, config);
+  };
 
-    TreeNodeManifest manifest = { NodeType::DECORATOR, ID, std::move(ports), {} };
-    registerBuilder(manifest, builder);
+  TreeNodeManifest manifest = {NodeType::DECORATOR, ID, std::move(ports), {}};
+  registerBuilder(manifest, builder);
 }
 
 void BehaviorTreeFactory::registerFromPlugin(const std::string& file_path)
 {
-    BT::SharedLibrary loader;
-    loader.load(file_path);
-    typedef void (*Func)(BehaviorTreeFactory&);
+  BT::SharedLibrary loader;
+  loader.load(file_path);
+  typedef void (*Func)(BehaviorTreeFactory&);
 
-    if (loader.hasSymbol(PLUGIN_SYMBOL))
-    {
-        Func func = (Func)loader.getSymbol(PLUGIN_SYMBOL);
-        func(*this);
-    }
-    else
-    {
-        std::cout << "ERROR loading library [" << file_path << "]: can't find symbol ["
-                  << PLUGIN_SYMBOL << "]" << std::endl;
-    }
+  if (loader.hasSymbol(PLUGIN_SYMBOL))
+  {
+    Func func = (Func)loader.getSymbol(PLUGIN_SYMBOL);
+    func(*this);
+  }
+  else
+  {
+    std::cout << "ERROR loading library [" << file_path << "]: can't find symbol ["
+              << PLUGIN_SYMBOL << "]" << std::endl;
+  }
 }
 
 #ifdef USING_ROS
 
-    #ifdef _WIN32
+#ifdef _WIN32
 const char os_pathsep(';');   // NOLINT
 #else
 const char os_pathsep(':');   // NOLINT
@@ -167,160 +171,161 @@ const char os_pathsep(':');   // NOLINT
 // https://github.com/ros/pluginlib
 std::vector<std::string> getCatkinLibraryPaths()
 {
-    std::vector<std::string> lib_paths;
-    const char* env = std::getenv("CMAKE_PREFIX_PATH");
-    if (env)
+  std::vector<std::string> lib_paths;
+  const char* env = std::getenv("CMAKE_PREFIX_PATH");
+  if (env)
+  {
+    const std::string env_catkin_prefix_paths(env);
+    std::vector<BT::StringView> catkin_prefix_paths =
+        splitString(env_catkin_prefix_paths, os_pathsep);
+    for (BT::StringView catkin_prefix_path : catkin_prefix_paths)
     {
-        const std::string env_catkin_prefix_paths(env);
-        std::vector<BT::StringView> catkin_prefix_paths =
-            splitString(env_catkin_prefix_paths, os_pathsep);
-        for (BT::StringView catkin_prefix_path : catkin_prefix_paths)
-        {
-            filesystem::path path(static_cast<std::string>(catkin_prefix_path));
-            filesystem::path lib("lib");
-            lib_paths.push_back((path / lib).str());
-        }
+      filesystem::path path(static_cast<std::string>(catkin_prefix_path));
+      filesystem::path lib("lib");
+      lib_paths.push_back((path / lib).str());
     }
-    return lib_paths;
+  }
+  return lib_paths;
 }
 
 void BehaviorTreeFactory::registerFromROSPlugins()
 {
-    std::vector<std::string> plugins;
-    ros::package::getPlugins("behaviortree_cpp_v3", "bt_lib_plugin", plugins, true);
-    std::vector<std::string> catkin_lib_paths = getCatkinLibraryPaths();
+  std::vector<std::string> plugins;
+  ros::package::getPlugins("behaviortree_cpp_v3", "bt_lib_plugin", plugins, true);
+  std::vector<std::string> catkin_lib_paths = getCatkinLibraryPaths();
 
-    for (const auto& plugin : plugins)
+  for (const auto& plugin : plugins)
+  {
+    auto filename = filesystem::path(plugin + BT::SharedLibrary::suffix());
+    for (const auto& lib_path : catkin_lib_paths)
     {
-        auto filename = filesystem::path(plugin + BT::SharedLibrary::suffix());
-        for (const auto& lib_path : catkin_lib_paths)
-        {
-            const auto full_path = filesystem::path(lib_path) / filename;
-            if (full_path.exists())
-            {
-                std::cout << "Registering ROS plugins from " << full_path.str() << std::endl;
-                registerFromPlugin(full_path.str());
-                break;
-            }
-        }
+      const auto full_path = filesystem::path(lib_path) / filename;
+      if (full_path.exists())
+      {
+        std::cout << "Registering ROS plugins from " << full_path.str() << std::endl;
+        registerFromPlugin(full_path.str());
+        break;
+      }
     }
+  }
 }
 #else
 
-    void BehaviorTreeFactory::registerFromROSPlugins()
-    {
-        throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was compiled "
-                           "without ROS support. Recompile the BehaviorTree.CPP using catkin");
-    }
+void BehaviorTreeFactory::registerFromROSPlugins()
+{
+  throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was "
+                     "compiled "
+                     "without ROS support. Recompile the BehaviorTree.CPP using "
+                     "catkin");
+}
 #endif
 
-
-void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::string &filename)
+void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::string& filename)
 {
-    parser_->loadFromFile(filename);
+  parser_->loadFromFile(filename);
 }
 
-void BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string &xml_text)
+void BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string& xml_text)
 {
-    parser_->loadFromText(xml_text);
+  parser_->loadFromText(xml_text);
 }
 
 std::vector<std::string> BehaviorTreeFactory::registeredBehaviorTrees() const
 {
-    return parser_->registeredBehaviorTrees();
+  return parser_->registeredBehaviorTrees();
 }
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
-        const std::string& name,
-        const std::string& ID,
-        const NodeConfiguration& config) const
+    const std::string& name, const std::string& ID, const NodeConfiguration& config) const
 {
-    auto it = builders_.find(ID);
-    if (it == builders_.end())
+  auto it = builders_.find(ID);
+  if (it == builders_.end())
+  {
+    std::cerr << ID << " not included in this list:" << std::endl;
+    for (const auto& builder_it : builders_)
     {
-        std::cerr << ID << " not included in this list:" << std::endl;
-        for (const auto& builder_it: builders_)
-        {
-            std::cerr << builder_it.first << std::endl;
-        }
-        throw RuntimeError("BehaviorTreeFactory: ID [", ID, "] not registered");
+      std::cerr << builder_it.first << std::endl;
     }
+    throw RuntimeError("BehaviorTreeFactory: ID [", ID, "] not registered");
+  }
 
-    std::unique_ptr<TreeNode> node = it->second(name, config);
-    node->setRegistrationID( ID );
-    return node;
+  std::unique_ptr<TreeNode> node = it->second(name, config);
+  node->setRegistrationID(ID);
+  return node;
 }
 
-const std::unordered_map<std::string, NodeBuilder> &BehaviorTreeFactory::builders() const
+const std::unordered_map<std::string, NodeBuilder>& BehaviorTreeFactory::builders() const
 {
-    return builders_;
+  return builders_;
 }
 
-const std::unordered_map<std::string,TreeNodeManifest>& BehaviorTreeFactory::manifests() const
+const std::unordered_map<std::string, TreeNodeManifest>&
+BehaviorTreeFactory::manifests() const
 {
-    return manifests_;
+  return manifests_;
 }
 
-const std::set<std::string> &BehaviorTreeFactory::builtinNodes() const
+const std::set<std::string>& BehaviorTreeFactory::builtinNodes() const
 {
-    return builtin_IDs_;
+  return builtin_IDs_;
 }
 
-Tree BehaviorTreeFactory::createTreeFromText(const std::string &text,
+Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
                                              Blackboard::Ptr blackboard)
 {
-    XMLParser parser(*this);
-    parser.loadFromText(text);
-    auto tree = parser.instantiateTree(blackboard);
-    tree.manifests = this->manifests();
-    return tree;
+  XMLParser parser(*this);
+  parser.loadFromText(text);
+  auto tree = parser.instantiateTree(blackboard);
+  tree.manifests = this->manifests();
+  return tree;
 }
 
-Tree BehaviorTreeFactory::createTreeFromFile(const std::string &file_path,
+Tree BehaviorTreeFactory::createTreeFromFile(const std::string& file_path,
                                              Blackboard::Ptr blackboard)
 {
-    XMLParser parser(*this);
-    parser.loadFromFile(file_path);
-    auto tree = parser.instantiateTree(blackboard);
-    tree.manifests = this->manifests();
-    return tree;
+  XMLParser parser(*this);
+  parser.loadFromFile(file_path);
+  auto tree = parser.instantiateTree(blackboard);
+  tree.manifests = this->manifests();
+  return tree;
 }
 
-Tree BehaviorTreeFactory::createTree(const std::string &tree_name, Blackboard::Ptr blackboard)
+Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
+                                     Blackboard::Ptr blackboard)
 {
-    auto tree = parser_->instantiateTree(blackboard, tree_name);
-    tree.manifests = this->manifests();
-    return tree;
+  auto tree = parser_->instantiateTree(blackboard, tree_name);
+  tree.manifests = this->manifests();
+  return tree;
 }
 
-void BehaviorTreeFactory::addDescriptionToManifest(const std::string &node_id, const std::string &description)
+void BehaviorTreeFactory::addDescriptionToManifest(const std::string& node_id,
+                                                   const std::string& description)
 {
-    auto it = manifests_.find(node_id);
-    if( it == manifests_.end() )
-    {
-        throw std::runtime_error("addDescriptionToManifest: wrong ID");
-    }
-    it->second.description = description;
+  auto it = manifests_.find(node_id);
+  if (it == manifests_.end())
+  {
+    throw std::runtime_error("addDescriptionToManifest: wrong ID");
+  }
+  it->second.description = description;
 }
 
 void Tree::sleep(std::chrono::system_clock::duration timeout)
 {
-    wake_up_->waitFor(timeout);
+  wake_up_->waitFor(timeout);
 }
 
 Tree::~Tree()
 {
-    haltTree();
+  haltTree();
 }
 
 Blackboard::Ptr Tree::rootBlackboard()
 {
-    if( blackboard_stack.size() > 0)
-    {
-        return blackboard_stack.front();
-    }
-    return {};
+  if (blackboard_stack.size() > 0)
+  {
+    return blackboard_stack.front();
+  }
+  return {};
 }
 
-
-}   // end namespace
+}   // namespace BT

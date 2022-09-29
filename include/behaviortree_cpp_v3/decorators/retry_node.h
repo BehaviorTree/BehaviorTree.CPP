@@ -38,47 +38,42 @@ namespace BT
  */
 class RetryNode : public DecoratorNode
 {
-  public:
-    
-    RetryNode(const std::string& name, int NTries);
+public:
+  RetryNode(const std::string& name, int NTries);
 
-    RetryNode(const std::string& name, const NodeConfiguration& config);
+  RetryNode(const std::string& name, const NodeConfiguration& config);
 
-    virtual ~RetryNode() override = default;
+  virtual ~RetryNode() override = default;
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<int>(NUM_ATTEMPTS,
-                               "Execute again a failing child up to N times. "
-                               "Use -1 to create an infinite loop.") };
-    }
+  static PortsList providedPorts()
+  {
+    return {InputPort<int>(NUM_ATTEMPTS, "Execute again a failing child up to N times. "
+                                         "Use -1 to create an infinite loop.")};
+  }
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-  private:
-    int max_attempts_;
-    int try_count_;
+private:
+  int max_attempts_;
+  int try_count_;
 
-    bool read_parameter_from_ports_;
-    static constexpr const char* NUM_ATTEMPTS = "num_attempts";
+  bool read_parameter_from_ports_;
+  static constexpr const char* NUM_ATTEMPTS = "num_attempts";
 
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 };
 
-class
-[[deprecated("RetryUntilSuccesful was a typo and deprecated, use RetryUntilSuccessful instead.")]]
-RetryNodeTypo : public RetryNode{
-  public:
-    RetryNodeTypo(const std::string& name, int NTries)
-      : RetryNode(name, NTries)
-    { };
+class [[deprecated("RetryUntilSuccesful was a typo and deprecated, use "
+                   "RetryUntilSuccessful "
+                   "instead.")]] RetryNodeTypo : public RetryNode
+{
+public:
+  RetryNodeTypo(const std::string& name, int NTries) : RetryNode(name, NTries){};
 
-    RetryNodeTypo(const std::string& name, const NodeConfiguration& config)
-      : RetryNode(name, config)
-    { };
+  RetryNodeTypo(const std::string& name, const NodeConfiguration& config) :
+    RetryNode(name, config){};
 
-    virtual ~RetryNodeTypo() override = default;
+  virtual ~RetryNodeTypo() override = default;
 };
 
-}
-
+}   // namespace BT

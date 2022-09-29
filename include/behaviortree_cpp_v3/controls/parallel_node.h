@@ -18,7 +18,6 @@
 
 namespace BT
 {
-
 /**
  * @brief The ParallelNode execute all its children
  * __concurrently__, but not in separate threads!
@@ -40,41 +39,40 @@ namespace BT
  */
 class ParallelNode : public ControlNode
 {
-  public:
+public:
+  ParallelNode(const std::string& name, int success_threshold, int failure_threshold = 1);
 
-    ParallelNode(const std::string& name, int success_threshold,
-                 int failure_threshold = 1);
+  ParallelNode(const std::string& name, const NodeConfiguration& config);
 
-    ParallelNode(const std::string& name, const NodeConfiguration& config);
+  static PortsList providedPorts()
+  {
+    return {InputPort<int>(THRESHOLD_SUCCESS, "number of childen which need to succeed "
+                                              "to "
+                                              "trigger a SUCCESS"),
+            InputPort<int>(THRESHOLD_FAILURE, 1,
+                           "number of childen which need to fail to trigger a FAILURE")};
+  }
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<int>(THRESHOLD_SUCCESS,
-                              "number of childen which need to succeed to trigger a SUCCESS" ),
-                 InputPort<int>(THRESHOLD_FAILURE, 1,
-                              "number of childen which need to fail to trigger a FAILURE" ) };
-    }
+  ~ParallelNode() override = default;
 
-    ~ParallelNode() override = default;
+  virtual void halt() override;
 
-    virtual void halt() override;
+  size_t successThreshold() const;
+  size_t failureThreshold() const;
+  void setSuccessThreshold(int threshold_M);
+  void setFailureThreshold(int threshold_M);
 
-    size_t successThreshold() const;
-    size_t failureThreshold() const;
-    void setSuccessThreshold(int threshold_M);
-    void setFailureThreshold(int threshold_M);
+private:
+  int success_threshold_;
+  int failure_threshold_;
 
-  private:
-    int success_threshold_;
-    int failure_threshold_;
+  std::set<int> skip_list_;
 
-    std::set<int> skip_list_;
+  bool read_parameter_from_ports_;
+  static constexpr const char* THRESHOLD_SUCCESS = "success_threshold";
+  static constexpr const char* THRESHOLD_FAILURE = "failure_threshold";
 
-    bool read_parameter_from_ports_;
-    static constexpr const char* THRESHOLD_SUCCESS = "success_threshold";
-    static constexpr const char* THRESHOLD_FAILURE = "failure_threshold";
-
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 };
 
-}
+}   // namespace BT

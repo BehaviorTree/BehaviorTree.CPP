@@ -34,32 +34,29 @@ namespace BT
  */
 class RepeatNode : public DecoratorNode
 {
-  public:
+public:
+  RepeatNode(const std::string& name, int NTries);
 
-    RepeatNode(const std::string& name, int NTries);
+  RepeatNode(const std::string& name, const NodeConfiguration& config);
 
-    RepeatNode(const std::string& name, const NodeConfiguration& config);
+  virtual ~RepeatNode() override = default;
 
-    virtual ~RepeatNode() override = default;
+  static PortsList providedPorts()
+  {
+    return {InputPort<int>(NUM_CYCLES, "Repeat a succesful child up to N times. "
+                                       "Use -1 to create an infinite loop.")};
+  }
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<int>(NUM_CYCLES,
-                                "Repeat a succesful child up to N times. "
-                               "Use -1 to create an infinite loop.") };
-    }
+private:
+  int num_cycles_;
+  int repeat_count_;
 
-  private:
-    int num_cycles_;
-    int repeat_count_;
+  bool read_parameter_from_ports_;
+  static constexpr const char* NUM_CYCLES = "num_cycles";
 
-    bool read_parameter_from_ports_;
-    static constexpr const char* NUM_CYCLES = "num_cycles";
+  virtual NodeStatus tick() override;
 
-    virtual NodeStatus tick() override;
-
-    void halt() override;
+  void halt() override;
 };
 
-}
-
+}   // namespace BT

@@ -21,18 +21,16 @@ namespace BT
  */
 class AlwaysFailureNode : public SyncActionNode
 {
-  public:
-    AlwaysFailureNode(const std::string& name) :
-        SyncActionNode(name, {})
-    {
-        setRegistrationID("AlwaysFailure");
-    }
+public:
+  AlwaysFailureNode(const std::string& name) : SyncActionNode(name, {})
+  {
+    setRegistrationID("AlwaysFailure");
+  }
 
-  private:
-    virtual BT::NodeStatus tick() override
-    {
-        return NodeStatus::FAILURE;
-    }
+private:
+  virtual BT::NodeStatus tick() override
+  {
+    return NodeStatus::FAILURE;
+  }
 };
-}
-
+}   // namespace BT

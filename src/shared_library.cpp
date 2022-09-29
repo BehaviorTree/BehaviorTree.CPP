@@ -3,24 +3,24 @@
 
 BT::SharedLibrary::SharedLibrary(const std::string& path, int flags)
 {
-    load(path, flags);
+  load(path, flags);
 }
 
 void* BT::SharedLibrary::getSymbol(const std::string& name)
 {
-    void* result = findSymbol(name);
-    if (result)
-        return result;
-    else
-        throw RuntimeError( "[SharedLibrary::getSymbol]: can't find symbol ", name );
+  void* result = findSymbol(name);
+  if (result)
+    return result;
+  else
+    throw RuntimeError("[SharedLibrary::getSymbol]: can't find symbol ", name);
 }
 
 bool BT::SharedLibrary::hasSymbol(const std::string& name)
 {
-    return findSymbol(name) != nullptr;
+  return findSymbol(name) != nullptr;
 }
 
 std::string BT::SharedLibrary::getOSName(const std::string& name)
 {
-    return prefix() + name + suffix();
+  return prefix() + name + suffix();
 }

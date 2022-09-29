@@ -21,44 +21,39 @@ namespace BT
  */
 class ForceSuccessNode : public DecoratorNode
 {
-  public:
-    ForceSuccessNode(const std::string& name) :
-        DecoratorNode(name, {} )
-    {
-        setRegistrationID("ForceSuccess");
-    }
+public:
+  ForceSuccessNode(const std::string& name) : DecoratorNode(name, {})
+  {
+    setRegistrationID("ForceSuccess");
+  }
 
-  private:
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
 
 //------------ implementation ----------------------------
 
 inline NodeStatus ForceSuccessNode::tick()
 {
-    setStatus(NodeStatus::RUNNING);
+  setStatus(NodeStatus::RUNNING);
 
-    const NodeStatus child_state = child_node_->executeTick();
+  const NodeStatus child_state = child_node_->executeTick();
 
-    switch (child_state)
-    {
-        case NodeStatus::FAILURE:
-        case NodeStatus::SUCCESS:
-        {
-            return NodeStatus::SUCCESS;
-        }
-
-        case NodeStatus::RUNNING:
-        {
-            return NodeStatus::RUNNING;
-        }
-
-        default:
-        {
-            // TODO throw?
-        }
+  switch (child_state)
+  {
+    case NodeStatus::FAILURE:
+    case NodeStatus::SUCCESS: {
+      return NodeStatus::SUCCESS;
     }
-    return status();
-}
-}
 
+    case NodeStatus::RUNNING: {
+      return NodeStatus::RUNNING;
+    }
+
+    default: {
+      // TODO throw?
+    }
+  }
+  return status();
+}
+}   // namespace BT

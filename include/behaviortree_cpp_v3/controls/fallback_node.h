@@ -31,18 +31,17 @@ namespace BT
  */
 class FallbackNode : public ControlNode
 {
-  public:
-    FallbackNode(const std::string& name);
+public:
+  FallbackNode(const std::string& name);
 
-    virtual ~FallbackNode() override = default;
+  virtual ~FallbackNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-  private:
-    size_t current_child_idx_;
+private:
+  size_t current_child_idx_;
 
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 };
 
-}
-
+}   // namespace BT

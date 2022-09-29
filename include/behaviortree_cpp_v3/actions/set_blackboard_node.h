@@ -29,35 +29,38 @@ namespace BT
  */
 class SetBlackboard : public SyncActionNode
 {
-  public:
-    SetBlackboard(const std::string& name, const NodeConfiguration& config)
-      : SyncActionNode(name, config)
-    {
-        setRegistrationID("SetBlackboard");
-    }
+public:
+  SetBlackboard(const std::string& name, const NodeConfiguration& config) :
+    SyncActionNode(name, config)
+  {
+    setRegistrationID("SetBlackboard");
+  }
 
-    static PortsList providedPorts()
-    {
-        return { InputPort("value", "Value represented as a string. convertFromString must be implemented."),
-                 BidirectionalPort("output_key", "Name of the blackboard entry where the value should be written") };
-    }
+  static PortsList providedPorts()
+  {
+    return {InputPort("value", "Value represented as a string. convertFromString must be "
+                               "implemented."),
+            BidirectionalPort("output_key", "Name of the blackboard entry where the "
+                                            "value "
+                                            "should be written")};
+  }
 
-  private:
-    virtual BT::NodeStatus tick() override
+private:
+  virtual BT::NodeStatus tick() override
+  {
+    std::string key, value;
+    if (!getInput("output_key", key))
     {
-        std::string key, value;
-        if ( !getInput("output_key", key) )
-        {
-            throw RuntimeError("missing port [output_key]");
-        }
-        if ( !getInput("value", value) )
-        {
-            throw RuntimeError("missing port [value]");
-        }
-        setOutput("output_key", value);
-        return NodeStatus::SUCCESS;
+      throw RuntimeError("missing port [output_key]");
     }
+    if (!getInput("value", value))
+    {
+      throw RuntimeError("missing port [value]");
+    }
+    setOutput("output_key", value);
+    return NodeStatus::SUCCESS;
+  }
 };
-}
+}   // namespace BT
 
 #endif

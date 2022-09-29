@@ -16,7 +16,6 @@
 
 namespace BT
 {
-
 /**
  * @brief The ReactiveFallback is similar to a ParallelNode.
  * All the children are ticked from first to last:
@@ -33,14 +32,12 @@ namespace BT
  */
 class ReactiveFallback : public ControlNode
 {
-  public:
+public:
+  ReactiveFallback(const std::string& name) : ControlNode(name, {})
+  {}
 
-    ReactiveFallback(const std::string& name):
-      ControlNode(name, {}){}
-
-  private:
-
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
 
-}
+}   // namespace BT
