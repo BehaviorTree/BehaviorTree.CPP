@@ -20,305 +20,293 @@ using std::chrono::milliseconds;
 
 struct SimpleFallbackTest : testing::Test
 {
-    BT::FallbackNode root;
-    BT::ConditionTestNode condition;
-    BT::AsyncActionTest action;
+  BT::FallbackNode root;
+  BT::ConditionTestNode condition;
+  BT::AsyncActionTest action;
 
-    SimpleFallbackTest() :
-      root("root_fallback")
-      , condition("condition")
-      , action("action", milliseconds(100) )
-    {
-        root.addChild(&condition);
-        root.addChild(&action);
-    }
-    ~SimpleFallbackTest()
-    {
-        
-    }
+  SimpleFallbackTest() :
+    root("root_fallback"), condition("condition"), action("action", milliseconds(100))
+  {
+    root.addChild(&condition);
+    root.addChild(&action);
+  }
+  ~SimpleFallbackTest()
+  {}
 };
 
 struct ReactiveFallbackTest : testing::Test
 {
-    BT::ReactiveFallback root;
-    BT::ConditionTestNode condition_1;
-    BT::ConditionTestNode condition_2;
-    BT::AsyncActionTest action_1;
+  BT::ReactiveFallback root;
+  BT::ConditionTestNode condition_1;
+  BT::ConditionTestNode condition_2;
+  BT::AsyncActionTest action_1;
 
-    ReactiveFallbackTest()
-      : root("root_first")
-      , condition_1("condition_1")
-      , condition_2("condition_2")
-      , action_1("action_1", milliseconds(100) )
-    {
-        root.addChild(&condition_1);
-        root.addChild(&condition_2);
-        root.addChild(&action_1);
-    }
-    ~ReactiveFallbackTest()
-    {
-        
-    }
+  ReactiveFallbackTest() :
+    root("root_first"),
+    condition_1("condition_1"),
+    condition_2("condition_2"),
+    action_1("action_1", milliseconds(100))
+  {
+    root.addChild(&condition_1);
+    root.addChild(&condition_2);
+    root.addChild(&action_1);
+  }
+  ~ReactiveFallbackTest()
+  {}
 };
 
 struct SimpleFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackNode root;
-    BT::AsyncActionTest action;
-    BT::ConditionTestNode condition;
+  BT::FallbackNode root;
+  BT::AsyncActionTest action;
+  BT::ConditionTestNode condition;
 
-    SimpleFallbackWithMemoryTest() :
-      root("root_sequence")
-      , action("action", milliseconds(100) )
-      , condition("condition")
-    {
-        root.addChild(&condition);
-        root.addChild(&action);
-    }
-    ~SimpleFallbackWithMemoryTest()
-    {
-        
-    }
+  SimpleFallbackWithMemoryTest() :
+    root("root_sequence"), action("action", milliseconds(100)), condition("condition")
+  {
+    root.addChild(&condition);
+    root.addChild(&action);
+  }
+  ~SimpleFallbackWithMemoryTest()
+  {}
 };
 
 struct ComplexFallbackWithMemoryTest : testing::Test
 {
-    BT::FallbackNode root;
+  BT::FallbackNode root;
 
-    BT::AsyncActionTest action_1;
-    BT::AsyncActionTest action_2;
+  BT::AsyncActionTest action_1;
+  BT::AsyncActionTest action_2;
 
-    BT::ConditionTestNode condition_1;
-    BT::ConditionTestNode condition_2;
+  BT::ConditionTestNode condition_1;
+  BT::ConditionTestNode condition_2;
 
-    BT::FallbackNode fal_conditions;
-    BT::FallbackNode fal_actions;
+  BT::FallbackNode fal_conditions;
+  BT::FallbackNode fal_actions;
 
-    ComplexFallbackWithMemoryTest()
-      : root("root_fallback")
-      , action_1("action_1", milliseconds(100) )
-      , action_2("action_2", milliseconds(100) )
-      , condition_1("condition_1")
-      , condition_2("condition_2")
-      , fal_conditions("fallback_conditions")
-      , fal_actions("fallback_actions")
+  ComplexFallbackWithMemoryTest() :
+    root("root_fallback"),
+    action_1("action_1", milliseconds(100)),
+    action_2("action_2", milliseconds(100)),
+    condition_1("condition_1"),
+    condition_2("condition_2"),
+    fal_conditions("fallback_conditions"),
+    fal_actions("fallback_actions")
+  {
+    root.addChild(&fal_conditions);
     {
-        root.addChild(&fal_conditions);
-        {
-            fal_conditions.addChild(&condition_1);
-            fal_conditions.addChild(&condition_2);
-        }
-        root.addChild(&fal_actions);
-        {
-            fal_actions.addChild(&action_1);
-            fal_actions.addChild(&action_2);
-        }
+      fal_conditions.addChild(&condition_1);
+      fal_conditions.addChild(&condition_2);
     }
-    ~ComplexFallbackWithMemoryTest()
+    root.addChild(&fal_actions);
     {
-        
+      fal_actions.addChild(&action_1);
+      fal_actions.addChild(&action_2);
     }
+  }
+  ~ComplexFallbackWithMemoryTest()
+  {}
 };
 
 /****************TESTS START HERE***************************/
 
 TEST_F(SimpleFallbackTest, ConditionTrue)
 {
-    // Ticking the root node
-    condition.setExpectedResult(NodeStatus::SUCCESS);
-    BT::NodeStatus state = root.executeTick();
+  // Ticking the root node
+  condition.setExpectedResult(NodeStatus::SUCCESS);
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, condition.status());
-    ASSERT_EQ(NodeStatus::IDLE, action.status());
+  ASSERT_EQ(NodeStatus::SUCCESS, state);
+  ASSERT_EQ(NodeStatus::IDLE, condition.status());
+  ASSERT_EQ(NodeStatus::IDLE, action.status());
 }
 
 TEST_F(SimpleFallbackTest, ConditionChangeWhileRunning)
 {
-    BT::NodeStatus state = BT::NodeStatus::IDLE;
+  BT::NodeStatus state = BT::NodeStatus::IDLE;
 
-    condition.setExpectedResult(NodeStatus::FAILURE);
-    state = root.executeTick();
+  condition.setExpectedResult(NodeStatus::FAILURE);
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    condition.setExpectedResult(NodeStatus::SUCCESS);
-    state = root.executeTick();
+  condition.setExpectedResult(NodeStatus::SUCCESS);
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action.status());
 }
 
 TEST_F(ReactiveFallbackTest, Condition1ToTrue)
 {
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    condition_2.setExpectedResult(NodeStatus::FAILURE);
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  condition_2.setExpectedResult(NodeStatus::FAILURE);
 
-    BT::NodeStatus state = root.executeTick();
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
-    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+  ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    condition_1.setExpectedResult(NodeStatus::SUCCESS);
+  condition_1.setExpectedResult(NodeStatus::SUCCESS);
 
-    state = root.executeTick();
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+  ASSERT_EQ(NodeStatus::SUCCESS, state);
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_1.status());
 }
 
 TEST_F(ReactiveFallbackTest, Condition2ToTrue)
 {
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    condition_2.setExpectedResult(NodeStatus::FAILURE);
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  condition_2.setExpectedResult(NodeStatus::FAILURE);
 
-    BT::NodeStatus state = root.executeTick();
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
-    ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
+  ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
-    condition_2.setExpectedResult(NodeStatus::SUCCESS);
+  condition_2.setExpectedResult(NodeStatus::SUCCESS);
 
-    state = root.executeTick();
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+  ASSERT_EQ(NodeStatus::SUCCESS, state);
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_1.status());
 }
 
 TEST_F(SimpleFallbackWithMemoryTest, ConditionFalse)
 {
-    condition.setExpectedResult(NodeStatus::FAILURE);
-    BT::NodeStatus state = root.executeTick();
+  condition.setExpectedResult(NodeStatus::FAILURE);
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action.status());
 }
 
 TEST_F(SimpleFallbackWithMemoryTest, ConditionTurnToTrue)
 {
-    condition.setExpectedResult(NodeStatus::FAILURE);
-    BT::NodeStatus state = root.executeTick();
+  condition.setExpectedResult(NodeStatus::FAILURE);
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action.status());
 
-    condition.setExpectedResult(NodeStatus::SUCCESS);
-    state = root.executeTick();
+  condition.setExpectedResult(NodeStatus::SUCCESS);
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, condition.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, condition.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action.status());
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, ConditionsTrue)
 {
-    BT::NodeStatus state = root.executeTick();
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::IDLE, fal_actions.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+  ASSERT_EQ(NodeStatus::SUCCESS, state);
+  ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::IDLE, fal_actions.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Condition1False)
 {
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    BT::NodeStatus state = root.executeTick();
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::IDLE, fal_actions.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+  ASSERT_EQ(NodeStatus::SUCCESS, state);
+  ASSERT_EQ(NodeStatus::IDLE, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::IDLE, fal_actions.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, ConditionsFalse)
 {
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    condition_2.setExpectedResult(NodeStatus::FAILURE);
-    BT::NodeStatus state = root.executeTick();
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  condition_2.setExpectedResult(NodeStatus::FAILURE);
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Conditions1ToTrue)
 {
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    condition_2.setExpectedResult(NodeStatus::FAILURE);
-    BT::NodeStatus state = root.executeTick();
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  condition_2.setExpectedResult(NodeStatus::FAILURE);
+  BT::NodeStatus state = root.executeTick();
 
-    condition_1.setExpectedResult(NodeStatus::SUCCESS);
-    state = root.executeTick();
+  condition_1.setExpectedResult(NodeStatus::SUCCESS);
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Conditions2ToTrue)
 {
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    condition_2.setExpectedResult(NodeStatus::FAILURE);
-    BT::NodeStatus state = root.executeTick();
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  condition_2.setExpectedResult(NodeStatus::FAILURE);
+  BT::NodeStatus state = root.executeTick();
 
-    condition_2.setExpectedResult(NodeStatus::SUCCESS);
-    state = root.executeTick();
+  condition_2.setExpectedResult(NodeStatus::SUCCESS);
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, action_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
 TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
 {
-    action_1.setExpectedResult(NodeStatus::FAILURE);
-    action_2.setExpectedResult(NodeStatus::SUCCESS);
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    condition_2.setExpectedResult(NodeStatus::FAILURE);
+  action_1.setExpectedResult(NodeStatus::FAILURE);
+  action_2.setExpectedResult(NodeStatus::SUCCESS);
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  condition_2.setExpectedResult(NodeStatus::FAILURE);
 
-    BT::NodeStatus state = root.executeTick();
+  BT::NodeStatus state = root.executeTick();
 
-    state = root.executeTick();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    state = root.executeTick();
+  state = root.executeTick();
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
-    ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::FAILURE, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, fal_actions.status());
+  ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 }

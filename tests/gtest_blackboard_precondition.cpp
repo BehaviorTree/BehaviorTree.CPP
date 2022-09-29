@@ -7,9 +7,9 @@ using namespace BT;
 
 TEST(BlackboardPreconditionTest, IntEquals)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -24,16 +24,16 @@ TEST(BlackboardPreconditionTest, IntEquals)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::FAILURE);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::FAILURE);
 }
 
 TEST(BlackboardPreconditionTest, IntDoesNotEqual)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -48,16 +48,16 @@ TEST(BlackboardPreconditionTest, IntDoesNotEqual)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::SUCCESS);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
 TEST(BlackboardPreconditionTest, DoubleEquals)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -72,16 +72,16 @@ TEST(BlackboardPreconditionTest, DoubleEquals)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::FAILURE);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::FAILURE);
 }
 
 TEST(BlackboardPreconditionTest, DoubleDoesNotEqual)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -96,16 +96,16 @@ TEST(BlackboardPreconditionTest, DoubleDoesNotEqual)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::SUCCESS);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
 TEST(BlackboardPreconditionTest, StringEquals)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -120,16 +120,16 @@ TEST(BlackboardPreconditionTest, StringEquals)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::FAILURE);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::FAILURE);
 }
 
 TEST(BlackboardPreconditionTest, StringDoesNotEqual)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -144,16 +144,16 @@ TEST(BlackboardPreconditionTest, StringDoesNotEqual)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::SUCCESS);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
 TEST(BlackboardPreconditionTest, BoolEquals)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -168,16 +168,16 @@ TEST(BlackboardPreconditionTest, BoolEquals)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::FAILURE);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::FAILURE);
 }
 
 TEST(BlackboardPreconditionTest, BoolDoesNotEqual)
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    const std::string xml_text = R"(
+  const std::string xml_text = R"(
 
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
@@ -192,7 +192,7 @@ TEST(BlackboardPreconditionTest, BoolDoesNotEqual)
         </BehaviorTree>
     </root>)";
 
-    auto tree = factory.createTreeFromText(xml_text);
-    const auto status = tree.tickRoot();
-    ASSERT_EQ(status, NodeStatus::SUCCESS);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
