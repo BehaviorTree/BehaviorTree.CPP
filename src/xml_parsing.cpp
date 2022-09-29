@@ -24,7 +24,7 @@
 
 #include <map>
 #include "behaviortree_cpp_v3/xml_parsing.h"
-#include "private/tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 #include "filesystem/path.h"
 
 #ifdef USING_ROS
@@ -40,7 +40,7 @@
 
 namespace BT
 {
-using namespace BT_TinyXML2;
+using namespace tinyxml2;
 
 auto StrEqual = [](const char* str1, const char* str2) -> bool {
     return strcmp(str1, str2) == 0;
@@ -60,9 +60,9 @@ struct XMLParser::Pimpl
 
     void getPortsRecursively(const XMLElement* element, std::vector<std::string> &output_ports);
 
-    void loadDocImpl(BT_TinyXML2::XMLDocument* doc, bool add_includes);
+    void loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes);
 
-    std::list<std::unique_ptr<BT_TinyXML2::XMLDocument> > opened_documents;
+    std::list<std::unique_ptr<tinyxml2::XMLDocument> > opened_documents;
     std::map<std::string,const XMLElement*>  tree_roots;
 
     const BehaviorTreeFactory& factory;
@@ -103,9 +103,9 @@ XMLParser::~XMLParser()
 
 void XMLParser::loadFromFile(const std::string& filename, bool add_includes)
 {
-    _p->opened_documents.emplace_back(new BT_TinyXML2::XMLDocument());
+    _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
 
-    BT_TinyXML2::XMLDocument* doc = _p->opened_documents.back().get();
+    tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
     doc->LoadFile(filename.c_str());
 
     filesystem::path file_path( filename );
@@ -116,9 +116,9 @@ void XMLParser::loadFromFile(const std::string& filename, bool add_includes)
 
 void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
 {
-    _p->opened_documents.emplace_back(new BT_TinyXML2::XMLDocument());
+    _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
 
-    BT_TinyXML2::XMLDocument* doc = _p->opened_documents.back().get();
+    tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
     doc->Parse(xml_text.c_str(), xml_text.size());
 
     _p->loadDocImpl( doc, add_includes );
@@ -134,7 +134,7 @@ std::vector<std::string> XMLParser::registeredBehaviorTrees() const
     return out;
 }
 
-void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc, bool add_includes)
+void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
 {
     if (doc->Error())
     {
@@ -185,8 +185,8 @@ void XMLParser::Pimpl::loadDocImpl(BT_TinyXML2::XMLDocument* doc, bool add_inclu
             file_path = current_path / file_path;
         }
 
-        opened_documents.emplace_back(new BT_TinyXML2::XMLDocument());
-        BT_TinyXML2::XMLDocument* next_doc = opened_documents.back().get();
+        opened_documents.emplace_back(new tinyxml2::XMLDocument());
+        tinyxml2::XMLDocument* next_doc = opened_documents.back().get();
 
         // change current path to the included file for handling additional relative paths
         const filesystem::path previous_path = current_path;
@@ -235,7 +235,7 @@ void VerifyXML(const std::string& xml_text,
                const std::unordered_map<std::string, BT::NodeType>& registered_nodes)
 {
 
-    BT_TinyXML2::XMLDocument doc;
+    tinyxml2::XMLDocument doc;
     auto xml_error = doc.Parse( xml_text.c_str(), xml_text.size());
     if (xml_error)
     {
@@ -800,9 +800,7 @@ void XMLParser::Pimpl::getPortsRecursively(const XMLElement *element,
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
                                    bool include_builtin)
 {
-    using namespace BT_TinyXML2;
-
-    BT_TinyXML2::XMLDocument doc;
+    XMLDocument doc;
 
     XMLElement* rootXML = doc.NewElement("root");
     doc.InsertFirstChild(rootXML);

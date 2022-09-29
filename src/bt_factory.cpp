@@ -14,7 +14,6 @@
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "behaviortree_cpp_v3/xml_parsing.h"
-#include "private/tinyxml2.h"
 
 #ifdef USING_ROS
 #include "filesystem/path.h"
