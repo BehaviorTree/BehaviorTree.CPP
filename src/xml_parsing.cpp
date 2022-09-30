@@ -381,9 +381,6 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
     current_path = previous_path;
   }
 
-  // Validate the TreeNodesModel, if it is present in the XML
-  verifyTreeNodesModel(xml_root);
-
   // Collect the names of all nodes registered with the behavior tree factory
   std::unordered_map<std::string, BT::NodeType> registered_nodes;
   for (const auto& it : factory.manifests())
@@ -391,44 +388,27 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
     registered_nodes.insert({it.first, it.second.type});
   }
 
+  // Validate the TreeNodesModel, if it is present in the XML
+  verifyTreeNodesModel(xml_root);
+
   // Validate each BehaviorTree within the XML
-  for (auto bt_node = xml_root->FirstChildElement("BehaviorTree"); bt_node != nullptr;
-       bt_node = bt_node->NextSiblingElement("BehaviorTree"))
+  for (auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
+       bt_root = bt_root->NextSiblingElement("BehaviorTree"))
   {
+    verifyXMLRecursively(bt_root, registered_nodes);
+
     std::string tree_name;
-    if (bt_node->Attribute("ID"))
+    if (bt_root->Attribute("ID"))
     {
-      tree_name = bt_node->Attribute("ID");
+      tree_name = bt_root->Attribute("ID");
     }
     else
     {
       tree_name = "BehaviorTree_" + std::to_string(suffix_count++);
     }
 
-    // Validate the structure of the BehaviorTree node
-    try
-    {
-      verifyXMLRecursively(bt_node, registered_nodes);
-    }
-    catch (const std::exception& e)
-    {
-      continue;
-    }
-
     // Only add this behavior tree to the list of registered behavior trees if its XML representation is valid.
-    tree_roots.insert({tree_name, bt_node});
-  }
-
-  for (const auto& it : tree_roots)
-  {
-    registered_nodes.insert({it.first, NodeType::SUBTREE});
-  }
-
-  //-------------------------------------------------
-  for (auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
-       bt_root = bt_root->NextSiblingElement("BehaviorTree"))
-  {
-    verifyXMLRecursively(bt_root, registered_nodes);
+    tree_roots.insert({tree_name, bt_root});
   }
 }
 
