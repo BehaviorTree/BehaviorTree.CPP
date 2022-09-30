@@ -220,7 +220,12 @@ TEST(BehaviorTreeFactory, Issue7)
   BehaviorTreeFactory factory;
   XMLParser parser(factory);
 
+  // We expect that an incorrectly-constructed behavior tree will fail to load
   EXPECT_THROW(parser.loadFromText(xml_text_issue), RuntimeError);
+
+  // We expect that no behavior trees will be registered after we unsuccessfully attempt to load a single tree
+  auto trees = parser.registeredBehaviorTrees();
+  EXPECT_TRUE( trees.empty() );
 }
 
 // clang-format off
@@ -409,4 +414,36 @@ TEST(BehaviorTreeFactory, DecoratorWithTwoChildrenThrows)
 )";
 
   ASSERT_THROW(factory.createTreeFromText(xml_text), BehaviorTreeException);
+}
+
+TEST(BehaviorTreeFactory, RegisterValidAndInvalidTrees)
+{
+const std::string xml_text_ok = R"(
+<root>
+    <BehaviorTree ID="ValidTree">
+      <Sequence name="door_open_sequence">
+        <Action ID="AlwaysSuccess" />
+      </Sequence>
+    </BehaviorTree>
+</root> )";
+
+const std::string xml_text_invalid = R"(
+<root>
+    <BehaviorTree ID="InvalidTreeWithNoChildren">
+    </BehaviorTree>
+</root> )";
+
+    BehaviorTreeFactory factory;
+    XMLParser parser(factory);
+
+    // GIVEN that a valid tree has been loaded
+    ASSERT_NO_THROW(parser.loadFromText(xml_text_ok));
+
+    // WHEN we attempt to load an invalid tree
+    ASSERT_THROW(parser.loadFromText(xml_text_invalid), RuntimeError);
+
+    // THEN the valid tree is still registered
+    auto trees = parser.registeredBehaviorTrees();
+    ASSERT_EQ(trees.size(), 1);
+    EXPECT_EQ(trees[0], "ValidTree");
 }
