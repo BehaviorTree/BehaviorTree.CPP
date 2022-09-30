@@ -109,6 +109,7 @@ TEST(BehaviorTreeFactory, XMLParsingOrder)
     XMLParser parser(factory);
     parser.loadFromText(xml_text_subtree);
     auto trees = parser.registeredBehaviorTrees();
+    ASSERT_EQ(trees.size(), 2);
     ASSERT_EQ(trees[0], "CrossDoorSubtree");
     ASSERT_EQ(trees[1], "MainTree");
   }
@@ -117,6 +118,7 @@ TEST(BehaviorTreeFactory, XMLParsingOrder)
     parser.loadFromText(xml_text_subtree_part1);
     parser.loadFromText(xml_text_subtree_part2);
     auto trees = parser.registeredBehaviorTrees();
+    ASSERT_EQ(trees.size(), 2);
     ASSERT_EQ(trees[0], "CrossDoorSubtree");
     ASSERT_EQ(trees[1], "MainTree");
   }
@@ -125,6 +127,7 @@ TEST(BehaviorTreeFactory, XMLParsingOrder)
     parser.loadFromText(xml_text_subtree_part2);
     parser.loadFromText(xml_text_subtree_part1);
     auto trees = parser.registeredBehaviorTrees();
+    ASSERT_EQ(trees.size(), 2);
     ASSERT_EQ(trees[0], "CrossDoorSubtree");
     ASSERT_EQ(trees[1], "MainTree");
   }
