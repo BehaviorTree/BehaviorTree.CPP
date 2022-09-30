@@ -36,9 +36,6 @@ private:
   Pimpl* _p;
 };
 
-void VerifyXML(const std::string& xml_text,
-               const std::unordered_map<std::string, NodeType>& registered_nodes);
-
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
                                    bool include_builtin = false);
 
