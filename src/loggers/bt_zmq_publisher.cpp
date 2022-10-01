@@ -92,6 +92,10 @@ PublisherZMQ::~PublisherZMQ()
   }
   flush();
   zmq_->context.shutdown();
+  if (send_future_.valid())
+  {
+    send_future_.wait();
+  }
   delete zmq_;
   ref_count = false;
 }
