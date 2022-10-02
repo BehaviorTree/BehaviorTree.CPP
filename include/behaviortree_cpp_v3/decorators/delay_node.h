@@ -1,5 +1,4 @@
-#ifndef DECORATOR_DELAY_NODE_H
-#define DECORATOR_DELAY_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 #include <atomic>
@@ -22,41 +21,39 @@ namespace BT
  */
 class DelayNode : public DecoratorNode
 {
-  public:
-    DelayNode(const std::string& name, unsigned milliseconds);
+public:
+  DelayNode(const std::string& name, unsigned milliseconds);
 
-    DelayNode(const std::string& name, const NodeConfiguration& config);
+  DelayNode(const std::string& name, const NodeConfiguration& config);
 
-    ~DelayNode() override
-    {
-        halt();
-    }
+  ~DelayNode() override
+  {
+    halt();
+  }
 
-    static PortsList providedPorts()
-    {
-        return {InputPort<unsigned>("delay_msec", "Tick the child after a few milliseconds")};
-    }
-    void halt() override
-    {
-        delay_started_ = false;
-        timer_.cancelAll();
-        DecoratorNode::halt();
-    }
+  static PortsList providedPorts()
+  {
+    return {InputPort<unsigned>("delay_msec", "Tick the child after a few milliseconds")};
+  }
+  void halt() override
+  {
+    delay_started_ = false;
+    timer_.cancelAll();
+    DecoratorNode::halt();
+  }
 
-  private:
-    TimerQueue<> timer_;
-    uint64_t timer_id_;
+private:
+  TimerQueue<> timer_;
+  uint64_t timer_id_;
 
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 
-    bool delay_started_;
-    bool delay_complete_;
-    bool delay_aborted_;
-    unsigned msec_;
-    bool read_parameter_from_ports_;
-    std::mutex delay_mutex_;
+  bool delay_started_;
+  bool delay_complete_;
+  bool delay_aborted_;
+  unsigned msec_;
+  bool read_parameter_from_ports_;
+  std::mutex delay_mutex_;
 };
 
 }   // namespace BT
-
-#endif   // DELAY_NODE_H

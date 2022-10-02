@@ -18,155 +18,152 @@
 
 namespace BT
 {
-
 constexpr const char* ParallelNode::THRESHOLD_FAILURE;
 constexpr const char* ParallelNode::THRESHOLD_SUCCESS;
 
 ParallelNode::ParallelNode(const std::string& name, int success_threshold,
-                           int failure_threshold)
-    : ControlNode::ControlNode(name, {} ),
-    success_threshold_(success_threshold),
-    failure_threshold_(failure_threshold),
-    read_parameter_from_ports_(false)
+                           int failure_threshold) :
+  ControlNode::ControlNode(name, {}),
+  success_threshold_(success_threshold),
+  failure_threshold_(failure_threshold),
+  read_parameter_from_ports_(false)
 {
-    setRegistrationID("Parallel");
+  setRegistrationID("Parallel");
 }
 
-ParallelNode::ParallelNode(const std::string &name,
-                               const NodeConfiguration& config)
-    : ControlNode::ControlNode(name, config),
-      success_threshold_(1),
-      failure_threshold_(1),
-      read_parameter_from_ports_(true)
-{
-}
+ParallelNode::ParallelNode(const std::string& name, const NodeConfiguration& config) :
+  ControlNode::ControlNode(name, config),
+  success_threshold_(1),
+  failure_threshold_(1),
+  read_parameter_from_ports_(true)
+{}
 
 NodeStatus ParallelNode::tick()
 {
-    if(read_parameter_from_ports_)
+  if (read_parameter_from_ports_)
+  {
+    if (!getInput(THRESHOLD_SUCCESS, success_threshold_))
     {
-        if( !getInput(THRESHOLD_SUCCESS, success_threshold_) )
-        {
-            throw RuntimeError("Missing parameter [", THRESHOLD_SUCCESS, "] in ParallelNode");
-        }
-
-        if( !getInput(THRESHOLD_FAILURE, failure_threshold_) )
-        {
-            throw RuntimeError("Missing parameter [", THRESHOLD_FAILURE, "] in ParallelNode");
-        }
+      throw RuntimeError("Missing parameter [", THRESHOLD_SUCCESS, "] in ParallelNode");
     }
 
-    size_t success_childred_num = 0;
-    size_t failure_childred_num = 0;
-
-    const size_t children_count = children_nodes_.size();
-
-    if( children_count < successThreshold())
+    if (!getInput(THRESHOLD_FAILURE, failure_threshold_))
     {
-        throw LogicError("Number of children is less than threshold. Can never succeed.");
+      throw RuntimeError("Missing parameter [", THRESHOLD_FAILURE, "] in ParallelNode");
+    }
+  }
+
+  size_t success_childred_num = 0;
+  size_t failure_childred_num = 0;
+
+  const size_t children_count = children_nodes_.size();
+
+  if (children_count < successThreshold())
+  {
+    throw LogicError("Number of children is less than threshold. Can never succeed.");
+  }
+
+  if (children_count < failureThreshold())
+  {
+    throw LogicError("Number of children is less than threshold. Can never fail.");
+  }
+
+  // Routing the tree according to the sequence node's logic:
+  for (unsigned int i = 0; i < children_count; i++)
+  {
+    TreeNode* child_node = children_nodes_[i];
+
+    bool in_skip_list = (skip_list_.count(i) != 0);
+
+    NodeStatus child_status;
+    if (in_skip_list)
+    {
+      child_status = child_node->status();
+    }
+    else
+    {
+      child_status = child_node->executeTick();
     }
 
-    if( children_count < failureThreshold())
+    switch (child_status)
     {
-        throw LogicError("Number of children is less than threshold. Can never fail.");
-    }
-
-    // Routing the tree according to the sequence node's logic:
-    for (unsigned int i = 0; i < children_count; i++)
-    {
-        TreeNode* child_node = children_nodes_[i];
-
-        bool in_skip_list = (skip_list_.count(i) != 0);
-
-        NodeStatus child_status;
-        if( in_skip_list )
+      case NodeStatus::SUCCESS: {
+        if (!in_skip_list)
         {
-            child_status = child_node->status();
+          skip_list_.insert(i);
         }
-        else {
-            child_status = child_node->executeTick();
-        }
+        success_childred_num++;
 
-        switch (child_status)
+        if (success_childred_num == successThreshold())
         {
-            case NodeStatus::SUCCESS:
-            {
-                if( !in_skip_list )
-                {
-                    skip_list_.insert(i);
-                }
-                success_childred_num++;
-
-                if (success_childred_num == successThreshold())
-                {
-                    skip_list_.clear();
-                    haltChildren();
-                    return NodeStatus::SUCCESS;
-                }
-            } break;
-
-            case NodeStatus::FAILURE:
-            {
-                if( !in_skip_list )
-                {
-                    skip_list_.insert(i);
-                }
-                failure_childred_num++;
-                
-                // It fails if it is not possible to succeed anymore or if 
-                // number of failures are equal to failure_threshold_
-                if ((failure_childred_num > children_count - successThreshold())
-                    || (failure_childred_num == failureThreshold()))
-                {
-                    skip_list_.clear();
-                    haltChildren();
-                    return NodeStatus::FAILURE;
-                }
-            } break;
-
-            case NodeStatus::RUNNING:
-            {
-                // do nothing
-            }  break;
-
-            default:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
+          skip_list_.clear();
+          haltChildren();
+          return NodeStatus::SUCCESS;
         }
-    }
+      }
+      break;
 
-    return NodeStatus::RUNNING;
+      case NodeStatus::FAILURE: {
+        if (!in_skip_list)
+        {
+          skip_list_.insert(i);
+        }
+        failure_childred_num++;
+
+        // It fails if it is not possible to succeed anymore or if
+        // number of failures are equal to failure_threshold_
+        if ((failure_childred_num > children_count - successThreshold()) ||
+            (failure_childred_num == failureThreshold()))
+        {
+          skip_list_.clear();
+          haltChildren();
+          return NodeStatus::FAILURE;
+        }
+      }
+      break;
+
+      case NodeStatus::RUNNING: {
+        // do nothing
+      }
+      break;
+
+      default: {
+        throw LogicError("A child node must never return IDLE");
+      }
+    }
+  }
+
+  return NodeStatus::RUNNING;
 }
 
 void ParallelNode::halt()
 {
-    skip_list_.clear();
-    ControlNode::halt();
+  skip_list_.clear();
+  ControlNode::halt();
 }
 
 size_t ParallelNode::successThreshold() const
 {
-    return success_threshold_ < 0
-           ? std::max(children_nodes_.size() + success_threshold_ + 1, size_t(0))
-      : success_threshold_;
+  return success_threshold_ < 0 ?
+             std::max(children_nodes_.size() + success_threshold_ + 1, size_t(0)) :
+             success_threshold_;
 }
 
 size_t ParallelNode::failureThreshold() const
 {
-    return failure_threshold_ < 0
-           ? std::max(children_nodes_.size() + failure_threshold_ + 1, size_t(0))
-      : failure_threshold_;
+  return failure_threshold_ < 0 ?
+             std::max(children_nodes_.size() + failure_threshold_ + 1, size_t(0)) :
+             failure_threshold_;
 }
 
 void ParallelNode::setSuccessThreshold(int threshold_M)
 {
-    success_threshold_ = threshold_M;
+  success_threshold_ = threshold_M;
 }
 
 void ParallelNode::setFailureThreshold(int threshold_M)
 {
-    failure_threshold_ = threshold_M;
+  failure_threshold_ = threshold_M;
 }
 
-}
+}   // namespace BT

@@ -5,7 +5,6 @@
 
 namespace BT
 {
-
 /**
  * @brief The SubtreeNode is a way to wrap an entire Subtree,
  * creating a separated BlackBoard.
@@ -14,28 +13,27 @@ namespace BT
  */
 class SubtreeNode : public DecoratorNode
 {
-  public:
-    SubtreeNode(const std::string& name);
+public:
+  SubtreeNode(const std::string& name);
 
-    virtual ~SubtreeNode() override = default;
+  virtual ~SubtreeNode() override = default;
 
-  private:
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<bool>("__shared_blackboard", false,
-                                 "If false (default) the subtree has its own blackboard and you"
-                                 "need to do port remapping to connect it to the parent") };
-    }
+  static PortsList providedPorts()
+  {
+    return {InputPort<bool>("__shared_blackboard", false,
+                            "If false (default) the subtree has its own blackboard and "
+                            "you"
+                            "need to do port remapping to connect it to the parent")};
+  }
 
-    virtual NodeType type() const override final
-    {
-        return NodeType::SUBTREE;
-    }
+  virtual NodeType type() const override final
+  {
+    return NodeType::SUBTREE;
+  }
 };
-
-
 
 /**
  * @brief The SubtreePlus is a new kind of subtree that gives you much more control over remapping:
@@ -89,8 +87,9 @@ private:
 
   static PortsList providedPorts()
   {
-      return { InputPort<bool>("__autoremap", false,
-                               "If true, all the ports with the same name will be remapped") };
+    return {InputPort<bool>("__autoremap", false,
+                            "If true, all the ports with the same name will be "
+                            "remapped")};
   }
 
   virtual NodeType type() const override final
@@ -99,8 +98,6 @@ private:
   }
 };
 
-
-
-}
+}   // namespace BT
 
 #endif   // DECORATOR_SUBTREE_NODE_H

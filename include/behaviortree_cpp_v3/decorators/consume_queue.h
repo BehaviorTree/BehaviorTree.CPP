@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018-2022 Davide Faconti, Eurecat -  All Rights Reserved
+/*  Copyright (C) 2022 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,9 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
-#ifndef BEHAVIORTREE_CONSUME_QUEUE_H
-#define BEHAVIORTREE_CONSUME_QUEUE_H
+#pragma once
 
 #include <list>
 #include "behaviortree_cpp_v3/decorator_node.h"
@@ -20,7 +18,6 @@
 
 namespace BT
 {
-
 /**
  * Execute the child node as long as the queue is not empty.
  * At each iteration, an item of type T is popped from the "queue" and
@@ -31,73 +28,74 @@ namespace BT
 template <typename T>
 class ConsumeQueue : public DecoratorNode
 {
-  public:
-    ConsumeQueue(const std::string& name, const NodeConfiguration& config)
-      : DecoratorNode(name, config)
+public:
+  ConsumeQueue(const std::string& name, const NodeConfiguration& config) :
+    DecoratorNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    if (running_child_)
     {
+      NodeStatus child_state = child_node_->executeTick();
+      running_child_ = (child_state == NodeStatus::RUNNING);
+      if (running_child_)
+      {
+        return NodeStatus::RUNNING;
+      }
+      else
+      {
+        haltChild();
+      }
     }
 
-    NodeStatus tick() override
+    std::shared_ptr<ProtectedQueue<T>> queue;
+    if (getInput("queue", queue) && queue)
     {
-        if( running_child_ )
+      std::unique_lock<std::mutex> lk(queue->mtx);
+      auto& items = queue->items;
+
+      while (!items.empty())
+      {
+        setStatus(NodeStatus::RUNNING);
+
+        T val = items.front();
+        items.pop_front();
+        setOutput("popped_item", val);
+
+        lk.unlock();
+        NodeStatus child_state = child_node_->executeTick();
+        lk.lock();
+
+        running_child_ = (child_state == NodeStatus::RUNNING);
+        if (running_child_)
         {
-            NodeStatus child_state = child_node_->executeTick();
-            running_child_ = (child_state == NodeStatus::RUNNING);
-            if(running_child_)
-            {
-                return NodeStatus::RUNNING;
-            }
-            else{
-                haltChild();
-            }
+          return NodeStatus::RUNNING;
         }
-
-        std::shared_ptr<ProtectedQueue<T>> queue;
-        if( getInput("queue", queue) && queue  )
+        else
         {
-            std::unique_lock<std::mutex> lk(queue->mtx);
-            auto& items = queue->items;
-
-            while( !items.empty() )
-            {
-                setStatus(NodeStatus::RUNNING);
-
-                T val = items.front();
-                items.pop_front();
-                setOutput("popped_item", val);
-
-                lk.unlock();
-                NodeStatus child_state = child_node_->executeTick();
-                lk.lock();
-
-                running_child_ = (child_state == NodeStatus::RUNNING);
-                if(running_child_)
-                {
-                    return NodeStatus::RUNNING;
-                }
-                else
-                {
-                    haltChild();
-                    if( child_state == NodeStatus::FAILURE )
-                    {
-                        return NodeStatus::FAILURE;
-                    }
-                }
-            }
+          haltChild();
+          if (child_state == NodeStatus::FAILURE)
+          {
+            return NodeStatus::FAILURE;
+          }
         }
-
-        return NodeStatus::SUCCESS;
+      }
     }
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"),
-                 OutputPort<T>("popped_item") };
-    }
-  private:
-    bool running_child_ = false;
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"), OutputPort<T>("popped"
+                                                                                  "_"
+                                                                                  "ite"
+                                                                                  "m")};
+  }
+
+private:
+  bool running_child_ = false;
 };
 
-}
-
-#endif // BEHAVIORTREE_CONSUME_QUEUE_H
+}   // namespace BT

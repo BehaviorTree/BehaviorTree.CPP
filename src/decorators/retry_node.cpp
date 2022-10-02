@@ -17,74 +17,69 @@ namespace BT
 {
 constexpr const char* RetryNode::NUM_ATTEMPTS;
 
-RetryNode::RetryNode(const std::string& name, int NTries)
-    : DecoratorNode(name, {} ),
-    max_attempts_(NTries),
-    try_index_(0),
-    read_parameter_from_ports_(false)
+RetryNode::RetryNode(const std::string& name, int NTries) :
+  DecoratorNode(name, {}),
+  max_attempts_(NTries),
+  try_count_(0),
+  read_parameter_from_ports_(false)
 {
-    setRegistrationID("RetryUntilSuccessful");
+  setRegistrationID("RetryUntilSuccessful");
 }
 
-RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config)
-  : DecoratorNode(name, config),
-    max_attempts_(0),
-    try_index_(0),
-    read_parameter_from_ports_(true)
-{
-}
+RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config) :
+  DecoratorNode(name, config),
+  max_attempts_(0),
+  try_count_(0),
+  read_parameter_from_ports_(true)
+{}
 
 void RetryNode::halt()
 {
-    try_index_ = 0;
-    DecoratorNode::halt();
+  try_count_ = 0;
+  DecoratorNode::halt();
 }
 
 NodeStatus RetryNode::tick()
 {
-    if( read_parameter_from_ports_ )
+  if (read_parameter_from_ports_)
+  {
+    if (!getInput(NUM_ATTEMPTS, max_attempts_))
     {
-        if( !getInput(NUM_ATTEMPTS, max_attempts_) )
-        {
-            throw RuntimeError("Missing parameter [", NUM_ATTEMPTS,"] in RetryNode");
-        }
+      throw RuntimeError("Missing parameter [", NUM_ATTEMPTS, "] in RetryNode");
     }
+  }
 
-    setStatus(NodeStatus::RUNNING);
+  setStatus(NodeStatus::RUNNING);
 
-    while (try_index_ < max_attempts_ || max_attempts_ == -1)
+  while (try_count_ < max_attempts_ || max_attempts_ == -1)
+  {
+    NodeStatus child_state = child_node_->executeTick();
+    switch (child_state)
     {
-        NodeStatus child_state = child_node_->executeTick();
-        switch (child_state)
-        {
-            case NodeStatus::SUCCESS:
-            {
-                try_index_ = 0;
-                haltChild();
-                return (NodeStatus::SUCCESS);
-            }
+      case NodeStatus::SUCCESS: {
+        try_count_ = 0;
+        haltChild();
+        return (NodeStatus::SUCCESS);
+      }
 
-            case NodeStatus::FAILURE:
-            {
-                try_index_++;
-                haltChild();
-            }
-            break;
+      case NodeStatus::FAILURE: {
+        try_count_++;
+        haltChild();
+      }
+      break;
 
-            case NodeStatus::RUNNING:
-            {
-                return NodeStatus::RUNNING;
-            }
+      case NodeStatus::RUNNING: {
+        return NodeStatus::RUNNING;
+      }
 
-            default:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
-        }
+      default: {
+        throw LogicError("A child node must never return IDLE");
+      }
     }
+  }
 
-    try_index_ = 0;
-    return NodeStatus::FAILURE;
+  try_count_ = 0;
+  return NodeStatus::FAILURE;
 }
 
-}
+}   // namespace BT

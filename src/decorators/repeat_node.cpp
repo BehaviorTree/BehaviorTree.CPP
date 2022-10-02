@@ -17,76 +17,70 @@ namespace BT
 {
 constexpr const char* RepeatNode::NUM_CYCLES;
 
-RepeatNode::RepeatNode(const std::string& name, int NTries)
-    : DecoratorNode(name, {} ),
-    num_cycles_(NTries),
-    try_index_(0),
-    read_parameter_from_ports_(false)
+RepeatNode::RepeatNode(const std::string& name, int NTries) :
+  DecoratorNode(name, {}),
+  num_cycles_(NTries),
+  repeat_count_(0),
+  read_parameter_from_ports_(false)
 {
-     setRegistrationID("Repeat");
+  setRegistrationID("Repeat");
 }
 
-RepeatNode::RepeatNode(const std::string& name, const NodeConfiguration& config)
-  : DecoratorNode(name, config),
-    num_cycles_(0),
-    try_index_(0),
-    read_parameter_from_ports_(true)
-{
-
-}
+RepeatNode::RepeatNode(const std::string& name, const NodeConfiguration& config) :
+  DecoratorNode(name, config),
+  num_cycles_(0),
+  repeat_count_(0),
+  read_parameter_from_ports_(true)
+{}
 
 NodeStatus RepeatNode::tick()
 {
-    if( read_parameter_from_ports_ )
+  if (read_parameter_from_ports_)
+  {
+    if (!getInput(NUM_CYCLES, num_cycles_))
     {
-        if( !getInput(NUM_CYCLES, num_cycles_) )
-        {
-            throw RuntimeError("Missing parameter [", NUM_CYCLES, "] in RepeatNode");
-        }
+      throw RuntimeError("Missing parameter [", NUM_CYCLES, "] in RepeatNode");
     }
+  }
 
-    setStatus(NodeStatus::RUNNING);
+  setStatus(NodeStatus::RUNNING);
 
-    while (try_index_ < num_cycles_ || num_cycles_== -1 )
+  while (repeat_count_ < num_cycles_ || num_cycles_ == -1)
+  {
+    NodeStatus child_state = child_node_->executeTick();
+
+    switch (child_state)
     {
-        NodeStatus child_state = child_node_->executeTick();
+      case NodeStatus::SUCCESS: {
+        repeat_count_++;
+        haltChild();
+      }
+      break;
 
-        switch (child_state)
-        {
-            case NodeStatus::SUCCESS:
-            {
-                try_index_++;
-                haltChild();
-            }
-            break;
+      case NodeStatus::FAILURE: {
+        repeat_count_ = 0;
+        haltChild();
+        return (NodeStatus::FAILURE);
+      }
 
-            case NodeStatus::FAILURE:
-            {
-                try_index_ = 0;
-                haltChild();
-                return (NodeStatus::FAILURE);
-            }
+      case NodeStatus::RUNNING: {
+        return NodeStatus::RUNNING;
+      }
 
-            case NodeStatus::RUNNING:
-            {
-                return NodeStatus::RUNNING;
-            }
-
-            default:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
-        }
+      default: {
+        throw LogicError("A child node must never return IDLE");
+      }
     }
+  }
 
-    try_index_ = 0;
-    return NodeStatus::SUCCESS;
+  repeat_count_ = 0;
+  return NodeStatus::SUCCESS;
 }
 
 void RepeatNode::halt()
 {
-    try_index_ = 0;
-    DecoratorNode::halt();
+  repeat_count_ = 0;
+  DecoratorNode::halt();
 }
 
-}
+}   // namespace BT

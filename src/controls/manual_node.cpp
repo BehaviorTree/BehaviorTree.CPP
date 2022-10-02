@@ -17,199 +17,203 @@
 
 namespace BT
 {
-
-
-ManualSelectorNode::ManualSelectorNode(const std::string& name, const NodeConfiguration& config)
-    : ControlNode::ControlNode(name, config )
-  , running_child_idx_(-1)
-  , previously_executed_idx_(-1)
+ManualSelectorNode::ManualSelectorNode(const std::string& name,
+                                       const NodeConfiguration& config) :
+  ControlNode::ControlNode(name, config),
+  running_child_idx_(-1),
+  previously_executed_idx_(-1)
 {
-    setRegistrationID("ManualSelector");
+  setRegistrationID("ManualSelector");
 }
 
 void ManualSelectorNode::halt()
 {
-    if( running_child_idx_ >= 0 )
-    {
-        haltChild( size_t(running_child_idx_) );
-    }
-    running_child_idx_ = -1;
-    ControlNode::halt();
+  if (running_child_idx_ >= 0)
+  {
+    haltChild(size_t(running_child_idx_));
+  }
+  running_child_idx_ = -1;
+  ControlNode::halt();
 }
 
 NodeStatus ManualSelectorNode::tick()
 {
-    const size_t children_count = children_nodes_.size();
+  const size_t children_count = children_nodes_.size();
 
-    if( children_count == 0 )
+  if (children_count == 0)
+  {
+    return selectStatus();
+  }
+
+  bool repeat_last = false;
+  getInput(REPEAT_LAST_SELECTION, repeat_last);
+
+  int idx = 0;
+
+  if (repeat_last && previously_executed_idx_ >= 0)
+  {
+    idx = previously_executed_idx_;
+  }
+  else
+  {
+    setStatus(NodeStatus::RUNNING);
+    idx = selectChild();
+    previously_executed_idx_ = idx;
+
+    if (idx == NUM_SUCCESS)
     {
-        return selectStatus();
+      return NodeStatus::SUCCESS;
     }
-
-    bool repeat_last = false;
-    getInput(REPEAT_LAST_SELECTION, repeat_last);
-
-    int idx = 0;
-
-    if( repeat_last && previously_executed_idx_ >= 0)
+    if (idx == NUM_FAILURE)
     {
-        idx = previously_executed_idx_;
+      return NodeStatus::FAILURE;
     }
-    else{
-        setStatus(NodeStatus::RUNNING);
-        idx = selectChild();
-        previously_executed_idx_ = idx;
-
-        if( idx == NUM_SUCCESS ){
-            return NodeStatus::SUCCESS;
-        }
-        if( idx == NUM_FAILURE ){
-            return NodeStatus::FAILURE;
-        }
-        if( idx == NUM_RUNNING ){
-            return NodeStatus::RUNNING;
-        }
-    }
-
-    NodeStatus ret = children_nodes_[idx]->executeTick();
-    if(ret == NodeStatus::RUNNING)
+    if (idx == NUM_RUNNING)
     {
-        running_child_idx_ = idx;
+      return NodeStatus::RUNNING;
     }
-    return ret;
+  }
+
+  NodeStatus ret = children_nodes_[idx]->executeTick();
+  if (ret == NodeStatus::RUNNING)
+  {
+    running_child_idx_ = idx;
+  }
+  return ret;
 }
 
 NodeStatus ManualSelectorNode::selectStatus() const
 {
-    WINDOW *win;
-    initscr();
-    cbreak();
+  WINDOW* win;
+  initscr();
+  cbreak();
 
-    win = newwin( 6, 70, 1, 1 ); // create a new window
+  win = newwin(6, 70, 1, 1);   // create a new window
 
-    mvwprintw( win, 0, 0, "No children." );
-    mvwprintw( win, 1, 0, "Press: S to return SUCCESFULL," );
-    mvwprintw( win, 2, 0, "       F to return FAILURE, or" );
-    mvwprintw( win, 3, 0, "       R to return RUNNING." );
+  mvwprintw(win, 0, 0, "No children.");
+  mvwprintw(win, 1, 0, "Press: S to return SUCCESFULL,");
+  mvwprintw(win, 2, 0, "       F to return FAILURE, or");
+  mvwprintw(win, 3, 0, "       R to return RUNNING.");
 
-    wrefresh( win ); // update the terminal screen
-    noecho(); // disable echoing of characters on the screen
-    keypad( win, TRUE ); // enable keyboard input for the window.
-    curs_set( 0 ); // hide the default screen cursor.
+  wrefresh(win);       // update the terminal screen
+  noecho();            // disable echoing of characters on the screen
+  keypad(win, TRUE);   // enable keyboard input for the window.
+  curs_set(0);         // hide the default screen cursor.
 
-    int ch = 0;
-    NodeStatus ret;
-    while(1)
+  int ch = 0;
+  NodeStatus ret;
+  while (1)
+  {
+    if (ch == 's' || ch == 'S')
     {
-        if( ch == 's' || ch == 'S')
-        {
-            ret = NodeStatus::SUCCESS;
-            break;
-        }
-        else if( ch == 'f' || ch == 'F')
-        {
-            ret = NodeStatus::FAILURE;
-            break;
-        }
-        else if( ch == 'r' || ch == 'R')
-        {
-            ret = NodeStatus::RUNNING;
-            break;
-        }
-        ch = wgetch(win);
+      ret = NodeStatus::SUCCESS;
+      break;
     }
-    werase( win ) ;
-    wrefresh( win );
-    delwin( win );
-    endwin();
-    return ret;
+    else if (ch == 'f' || ch == 'F')
+    {
+      ret = NodeStatus::FAILURE;
+      break;
+    }
+    else if (ch == 'r' || ch == 'R')
+    {
+      ret = NodeStatus::RUNNING;
+      break;
+    }
+    ch = wgetch(win);
+  }
+  werase(win);
+  wrefresh(win);
+  delwin(win);
+  endwin();
+  return ret;
 }
 
 uint8_t ManualSelectorNode::selectChild() const
 {
-    const size_t children_count = children_nodes_.size();
+  const size_t children_count = children_nodes_.size();
 
-    std::vector<std::string> list;
-    list.reserve(children_count);
-    for(const auto& child: children_nodes_)
+  std::vector<std::string> list;
+  list.reserve(children_count);
+  for (const auto& child : children_nodes_)
+  {
+    list.push_back(child->name());
+  }
+
+  size_t width = 10;
+  for (const auto& str : list)
+  {
+    width = std::max(width, str.size() + 2);
+  }
+
+  WINDOW* win;
+  initscr();
+  cbreak();
+
+  win = newwin(children_count + 6, 70, 1, 1);   // create a new window
+
+  mvwprintw(win, 0, 0, "Use UP/DOWN arrow to select the child, Enter to confirm.");
+  mvwprintw(win, 1, 0, "Press: S to skip and return SUCCESFULL,");
+  mvwprintw(win, 2, 0, "       F to skip and return FAILURE, or");
+  mvwprintw(win, 3, 0, "       R to skip and return RUNNING.");
+
+  // now print all the menu items and highlight the first one
+  for (size_t i = 0; i < list.size(); i++)
+  {
+    mvwprintw(win, i + 5, 0, "%2ld. %s", i + 1, list[i].c_str());
+  }
+
+  wrefresh(win);       // update the terminal screen
+  noecho();            // disable echoing of characters on the screen
+  keypad(win, TRUE);   // enable keyboard input for the window.
+  curs_set(0);         // hide the default screen cursor.
+
+  uint8_t row = 0;
+  int ch = 0;
+  while (1)
+  {
+    // right pad with spaces to make the items appear with even width.
+    wattroff(win, A_STANDOUT);
+    mvwprintw(win, row + 5, 4, "%s", list[row].c_str());
+    // use a variable to increment or decrement the value based on the input.
+    if (ch == KEY_DOWN)
     {
-        list.push_back(child->name());
+      row = (row == children_count - 1) ? 0 : row + 1;
+    }
+    else if (ch == KEY_UP)
+    {
+      row = (row == 0) ? (children_count - 1) : row - 1;
+    }
+    else if (ch == KEY_ENTER || ch == 10)
+    {
+      break;
+    }
+    else if (ch == 's' || ch == 'S')
+    {
+      row = NUM_SUCCESS;
+      break;
+    }
+    else if (ch == 'f' || ch == 'F')
+    {
+      row = NUM_FAILURE;
+      break;
+    }
+    else if (ch == 'r' || ch == 'R')
+    {
+      row = NUM_RUNNING;
+      break;
     }
 
-    size_t width = 10;
-    for(const auto& str: list) {
-        width = std::max(width, str.size()+2);
-    }
+    // now highlight the next item in the list.
+    wattron(win, A_STANDOUT);
+    mvwprintw(win, row + 5, 4, "%s", list[row].c_str());
+    ch = wgetch(win);
+  };
 
-    WINDOW *win;
-    initscr();
-    cbreak();
-
-    win = newwin( children_count+6, 70, 1, 1 ); // create a new window
-
-    mvwprintw( win, 0, 0, "Use UP/DOWN arrow to select the child, Enter to confirm." );
-    mvwprintw( win, 1, 0, "Press: S to skip and return SUCCESFULL," );
-    mvwprintw( win, 2, 0, "       F to skip and return FAILURE, or" );
-    mvwprintw( win, 3, 0, "       R to skip and return RUNNING." );
-
-    // now print all the menu items and highlight the first one
-    for(size_t i=0; i<list.size(); i++ )
-    {
-        mvwprintw( win, i+5, 0, "%2ld. %s", i+1, list[i].c_str() );
-    }
-
-    wrefresh( win ); // update the terminal screen
-    noecho(); // disable echoing of characters on the screen
-    keypad( win, TRUE ); // enable keyboard input for the window.
-    curs_set( 0 ); // hide the default screen cursor.
-
-    uint8_t row = 0;
-    int ch=0;
-    while(1)
-    {
-        // right pad with spaces to make the items appear with even width.
-        wattroff( win, A_STANDOUT );
-        mvwprintw( win, row+5, 4, "%s", list[row].c_str() );
-        // use a variable to increment or decrement the value based on the input.
-        if( ch == KEY_DOWN )
-        {
-            row = (row == children_count-1) ? 0 : row+1;
-        }
-        else if( ch == KEY_UP )
-        {
-            row = ( row == 0) ? (children_count-1) : row-1;
-        }
-        else if( ch == KEY_ENTER || ch == 10 )
-        {
-            break;
-        }
-        else if( ch == 's' || ch == 'S')
-        {
-            row = NUM_SUCCESS;
-            break;
-        }
-        else if( ch == 'f' || ch == 'F')
-        {
-            row = NUM_FAILURE;
-            break;
-        }
-        else if( ch == 'r' || ch == 'R')
-        {
-            row = NUM_RUNNING;
-            break;
-        }
-
-        // now highlight the next item in the list.
-        wattron( win, A_STANDOUT );
-        mvwprintw( win, row+5, 4, "%s", list[row].c_str());
-        ch = wgetch(win);
-    };
-
-    werase( win ) ;
-    wrefresh( win );
-    delwin( win );
-    endwin();
-    return row;
+  werase(win);
+  wrefresh(win);
+  delwin(win);
+  endwin();
+  return row;
 }
 
-}
+}   // namespace BT

@@ -6,8 +6,7 @@ using namespace BT;
 
 TEST(SubTree, SiblingPorts_Issue_72)
 {
-
-static const char* xml_text = R"(
+  static const char* xml_text = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -25,37 +24,36 @@ static const char* xml_text = R"(
     </BehaviorTree>
 </root> )";
 
-    BehaviorTreeFactory factory;
-    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-    Tree tree = factory.createTreeFromText(xml_text);
+  Tree tree = factory.createTreeFromText(xml_text);
 
-    for( auto& bb: tree.blackboard_stack)
-    {
-        bb->debugMessage();
-        std::cout << "-----" << std::endl;
-    }
+  for (auto& bb : tree.blackboard_stack)
+  {
+    bb->debugMessage();
+    std::cout << "-----" << std::endl;
+  }
 
-    auto ret = tree.tickRoot();
+  auto ret = tree.tickRoot();
 
-    ASSERT_EQ(ret, NodeStatus::SUCCESS );
-    ASSERT_EQ(tree.blackboard_stack.size(), 3 );
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+  ASSERT_EQ(tree.blackboard_stack.size(), 3);
 }
 
 class CopyPorts : public BT::SyncActionNode
 {
 public:
-  CopyPorts(const std::string& name, const BT::NodeConfiguration& config)
-  : BT::SyncActionNode(name, config)
-  {
-  }
+  CopyPorts(const std::string& name, const BT::NodeConfiguration& config) :
+    BT::SyncActionNode(name, config)
+  {}
 
   BT::NodeStatus tick() override
   {
     auto msg = getInput<std::string>("in");
     if (!msg)
     {
-      throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
+      throw BT::RuntimeError("missing required input [message]: ", msg.error());
     }
     setOutput("out", msg.value());
     return BT::NodeStatus::SUCCESS;
@@ -63,11 +61,9 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return{ BT::InputPort<std::string>("in"),
-            BT::OutputPort<std::string>("out")};
+    return {BT::InputPort<std::string>("in"), BT::OutputPort<std::string>("out")};
   }
 };
-
 
 TEST(SubTree, GoodRemapping)
 {
@@ -94,7 +90,7 @@ TEST(SubTree, GoodRemapping)
 
   Tree tree = factory.createTreeFromText(xml_text);
   auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS );
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
 }
 
 TEST(SubTree, BadRemapping)
@@ -120,7 +116,7 @@ TEST(SubTree, BadRemapping)
 </root> )";
 
   Tree tree_bad_in = factory.createTreeFromText(xml_text_bad_in);
-  EXPECT_ANY_THROW( tree_bad_in.tickRoot() );
+  EXPECT_ANY_THROW(tree_bad_in.tickRoot());
 
   static const char* xml_text_bad_out = R"(
 <root main_tree_to_execute = "MainTree" >
@@ -139,12 +135,12 @@ TEST(SubTree, BadRemapping)
 </root> )";
 
   Tree tree_bad_out = factory.createTreeFromText(xml_text_bad_out);
-  EXPECT_ANY_THROW( tree_bad_out.tickRoot() );
+  EXPECT_ANY_THROW(tree_bad_out.tickRoot());
 }
 
 TEST(SubTree, SubtreePlusA)
 {
-    static const char* xml_text = R"(
+  static const char* xml_text = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -163,12 +159,12 @@ TEST(SubTree, SubtreePlusA)
     </BehaviorTree>
 </root> )";
 
-    BehaviorTreeFactory factory;
-    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-    Tree tree = factory.createTreeFromText(xml_text);
-    auto ret = tree.tickRoot();
-    ASSERT_EQ(ret, NodeStatus::SUCCESS );
+  Tree tree = factory.createTreeFromText(xml_text);
+  auto ret = tree.tickRoot();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
 }
 
 TEST(SubTree, SubtreePlusB)
@@ -199,12 +195,12 @@ TEST(SubTree, SubtreePlusB)
 
   Tree tree = factory.createTreeFromText(xml_text);
   auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS );
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
 }
 
 TEST(SubTree, SubtreePlusC)
 {
-    static const char* xml_text = R"(
+  static const char* xml_text = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -224,36 +220,42 @@ TEST(SubTree, SubtreePlusC)
     </BehaviorTree>
 </root> )";
 
-    BehaviorTreeFactory factory;
-    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-    Tree tree = factory.createTreeFromText(xml_text);
-    auto ret = tree.tickRoot();
-    ASSERT_EQ(ret, NodeStatus::SUCCESS );
+  Tree tree = factory.createTreeFromText(xml_text);
+  auto ret = tree.tickRoot();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
 }
-
 
 class ReadInConstructor : public BT::SyncActionNode
 {
-  public:
-    ReadInConstructor(const std::string& name, const BT::NodeConfiguration& config)
-      : BT::SyncActionNode(name, config)
+public:
+  ReadInConstructor(const std::string& name, const BT::NodeConfiguration& config) :
+    BT::SyncActionNode(name, config)
+  {
+    auto msg = getInput<std::string>("message");
+    if (!msg)
     {
-        auto msg = getInput<std::string>("message");
-        if (!msg) {
-            throw BT::RuntimeError("missing required input [message]: ", msg.error());
-        }
+      throw BT::RuntimeError("missing required input [message]: ", msg.error());
     }
+  }
 
-    BT::NodeStatus tick() override { return BT::NodeStatus::SUCCESS; }
-    static BT::PortsList providedPorts() { return {BT::InputPort<std::string>("message")}; }
+  BT::NodeStatus tick() override
+  {
+    return BT::NodeStatus::SUCCESS;
+  }
+  static BT::PortsList providedPorts()
+  {
+    return {BT::InputPort<std::string>("message")};
+  }
 };
 
 TEST(SubTree, SubtreePlusD)
 {
-    BT::NodeConfiguration config;
-    config.blackboard = BT::Blackboard::create();
-    static const char* xml_text = R"(
+  BT::NodeConfiguration config;
+  config.blackboard = BT::Blackboard::create();
+  static const char* xml_text = R"(
 
 <root main_tree_to_execute = "MainTree" >
 
@@ -267,13 +269,44 @@ TEST(SubTree, SubtreePlusD)
     </BehaviorTree>
 </root> )";
 
-    BT::BehaviorTreeFactory factory;
-    factory.registerNodeType<ReadInConstructor>("ReadInConstructor");
-    config.blackboard->set("message", "hello");
-    BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
-    auto ret = tree.tickRoot();
-    ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<ReadInConstructor>("ReadInConstructor");
+  config.blackboard->set("message", "hello");
+  BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
+  auto ret = tree.tickRoot();
+  ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
 }
 
+TEST(SubTree, SubtreeIssue433)
+{
+  BT::NodeConfiguration config;
+  config.blackboard = BT::Blackboard::create();
+  static const char* xml_text = R"(
 
+<root main_tree_to_execute = "TestTree" >
+    <BehaviorTree ID="Subtree1">
+        <Decorator ID="Repeat" num_cycles="{port_to_use}">
+            <Action ID="AlwaysSuccess"/>
+        </Decorator>
+    </BehaviorTree>
 
+    <BehaviorTree ID="Subtree2">
+        <Action ID="SetBlackboard" output_key="test_port" value="{port_to_read}"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="TestTree">
+        <Sequence>
+            <Action ID="SetBlackboard" output_key="test_port" value="1"/>
+            <SubTree ID="Subtree1" port_to_use="test_port"/>
+            <SubTree ID="Subtree2" port_to_read="test_port"/>
+        </Sequence>
+    </BehaviorTree>
+</root> )";
+
+  BT::BehaviorTreeFactory factory;
+
+  BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
+  auto ret = tree.tickRoot();
+
+  ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
+}

@@ -53,53 +53,52 @@ static const char* xml_text_reactive = R"(
 
 void Assert(bool condition)
 {
-    if (!condition)
-        throw RuntimeError("this is not what I expected");
+  if (!condition)
+    throw RuntimeError("this is not what I expected");
 }
-
 
 int main()
 {
-    using namespace DummyNodes;
-    using std::chrono::milliseconds;
+  using namespace DummyNodes;
+  using std::chrono::milliseconds;
 
-    BehaviorTreeFactory factory;
-    factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
-    factory.registerNodeType<MoveBaseAction>("MoveBase");
-    factory.registerNodeType<SaySomething>("SaySomething");
+  BehaviorTreeFactory factory;
+  factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
+  factory.registerNodeType<MoveBaseAction>("MoveBase");
+  factory.registerNodeType<SaySomething>("SaySomething");
 
-    // Compare the state transitions and messages using either
-    // xml_text_sequence and xml_text_sequence_star
+  // Compare the state transitions and messages using either
+  // xml_text_sequence and xml_text_sequence_star
 
-    // The main difference that you should notice is:
-    //  1) When Sequence is used, BatteryOK is executed at __each__ tick()
-    //  2) When SequenceStar is used, those ConditionNodes are executed only __once__.
+  // The main difference that you should notice is:
+  //  1) When Sequence is used, BatteryOK is executed at __each__ tick()
+  //  2) When SequenceStar is used, those ConditionNodes are executed only __once__.
 
-    for (auto& xml_text : {xml_text_sequence, xml_text_reactive})
-    {
-        std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
+  for (auto& xml_text : {xml_text_sequence, xml_text_reactive})
+  {
+    std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
 
-        auto tree = factory.createTreeFromText(xml_text);
+    auto tree = factory.createTreeFromText(xml_text);
 
-        NodeStatus status;
+    NodeStatus status;
 
-        std::cout << "\n--- 1st executeTick() ---" << std::endl;
-        status = tree.tickRoot();
-        Assert(status == NodeStatus::RUNNING);
+    std::cout << "\n--- 1st executeTick() ---" << std::endl;
+    status = tree.tickRoot();
+    Assert(status == NodeStatus::RUNNING);
 
-        tree.sleep( milliseconds(150) );
-        std::cout << "\n--- 2nd executeTick() ---" << std::endl;
-        status = tree.tickRoot();
-        Assert(status == NodeStatus::RUNNING);
+    tree.sleep(milliseconds(150));
+    std::cout << "\n--- 2nd executeTick() ---" << std::endl;
+    status = tree.tickRoot();
+    Assert(status == NodeStatus::RUNNING);
 
-        tree.sleep( milliseconds(150) );
-        std::cout << "\n--- 3rd executeTick() ---" << std::endl;
-        status = tree.tickRoot();
-        Assert(status == NodeStatus::SUCCESS);
+    tree.sleep(milliseconds(150));
+    std::cout << "\n--- 3rd executeTick() ---" << std::endl;
+    status = tree.tickRoot();
+    Assert(status == NodeStatus::SUCCESS);
 
-        std::cout << std::endl;
-    }
-    return 0;
+    std::cout << std::endl;
+  }
+  return 0;
 }
 
 /*

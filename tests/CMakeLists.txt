@@ -19,6 +19,7 @@ set(BT_TESTS
   gtest_subtree.cpp
   gtest_switch.cpp
   gtest_wakeup.cpp
+  gtest_logger_zmq.cpp
 )
 
 if( BT_COROUTINES )

@@ -15,56 +15,54 @@
 
 namespace BT
 {
-ControlNode::ControlNode(const std::string& name, const NodeConfiguration& config)
-  : TreeNode::TreeNode(name, config)
-{
-}
+ControlNode::ControlNode(const std::string& name, const NodeConfiguration& config) :
+  TreeNode::TreeNode(name, config)
+{}
 
 void ControlNode::addChild(TreeNode* child)
 {
-    children_nodes_.push_back(child);
+  children_nodes_.push_back(child);
 }
 
 size_t ControlNode::childrenCount() const
 {
-    return children_nodes_.size();
+  return children_nodes_.size();
 }
 
 void ControlNode::halt()
 {
-    haltChildren();
-    setStatus(NodeStatus::IDLE);
+  haltChildren();
 }
 
 const std::vector<TreeNode*>& ControlNode::children() const
 {
-    return children_nodes_;
+  return children_nodes_;
 }
 
 void ControlNode::haltChild(size_t i)
 {
-    auto child = children_nodes_[i];
-    if (child->status() == NodeStatus::RUNNING)
-    {
-        child->halt();
-    }
-    child->setStatus(NodeStatus::IDLE);
+  auto child = children_nodes_[i];
+  if (child->status() == NodeStatus::RUNNING)
+  {
+    child->halt();
+  }
+  child->resetStatus();
 }
 
 void ControlNode::haltChildren()
 {
-    for (size_t i = 0; i < children_nodes_.size(); i++)
-    {
-        haltChild(i);
-    }
+  for (size_t i = 0; i < children_nodes_.size(); i++)
+  {
+    haltChild(i);
+  }
 }
 
 void ControlNode::haltChildren(size_t first)
 {
-    for (size_t i = first; i < children_nodes_.size(); i++)
-    {
-        haltChild(i);
-    }
+  for (size_t i = first; i < children_nodes_.size(); i++)
+  {
+    haltChild(i);
+  }
 }
 
-} // end namespace
+}   // namespace BT

@@ -7,33 +7,32 @@ namespace BT
 {
 class DecoratorNode : public TreeNode
 {
-  protected:
-    TreeNode* child_node_;
+protected:
+  TreeNode* child_node_;
 
-  public:
+public:
+  DecoratorNode(const std::string& name, const NodeConfiguration& config);
 
-    DecoratorNode(const std::string& name, const NodeConfiguration& config);
+  virtual ~DecoratorNode() override = default;
 
-    virtual ~DecoratorNode() override = default;
+  void setChild(TreeNode* child);
 
-    void setChild(TreeNode* child);
+  const TreeNode* child() const;
 
-    const TreeNode* child() const;
+  TreeNode* child();
 
-    TreeNode* child();
+  /// The method used to interrupt the execution of this node
+  virtual void halt() override;
 
-    /// The method used to interrupt the execution of this node
-    virtual void halt() override;
+  /// Halt() the child node
+  void haltChild();
 
-    /// Halt() the child node
-    void haltChild();
+  virtual NodeType type() const override
+  {
+    return NodeType::DECORATOR;
+  }
 
-    virtual NodeType type() const override
-    {
-        return NodeType::DECORATOR;
-    }
-
-    NodeStatus executeTick() override;
+  NodeStatus executeTick() override;
 };
 
 /**
@@ -49,19 +48,20 @@ class DecoratorNode : public TreeNode
  */
 class SimpleDecoratorNode : public DecoratorNode
 {
-  public:
-    typedef std::function<NodeStatus(NodeStatus, TreeNode&)> TickFunctor;
+public:
+  typedef std::function<NodeStatus(NodeStatus, TreeNode&)> TickFunctor;
 
-    // You must provide the function to call when tick() is invoked
-    SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor, const NodeConfiguration& config);
+  // You must provide the function to call when tick() is invoked
+  SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,
+                      const NodeConfiguration& config);
 
-    ~SimpleDecoratorNode() override = default;
+  ~SimpleDecoratorNode() override = default;
 
-  protected:
-    virtual NodeStatus tick() override;
+protected:
+  virtual NodeStatus tick() override;
 
-    TickFunctor tick_functor_;
+  TickFunctor tick_functor_;
 };
-}
+}   // namespace BT
 
 #endif

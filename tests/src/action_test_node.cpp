@@ -15,75 +15,75 @@
 #include <string>
 
 BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadline_ms) :
-    AsyncActionNode(name, {}),
-  success_count_(0),
-  failure_count_(0)
+  AsyncActionNode(name, {}), success_count_(0), failure_count_(0)
 {
-    expected_result_ = NodeStatus::SUCCESS;
-    time_ = deadline_ms;
-    tick_count_ = 0;
+  expected_result_ = NodeStatus::SUCCESS;
+  time_ = deadline_ms;
+  tick_count_ = 0;
 }
 
 BT::NodeStatus BT::AsyncActionTest::tick()
 {
-    using std::chrono::high_resolution_clock;
-    tick_count_++;
+  using std::chrono::high_resolution_clock;
+  tick_count_++;
 
-    auto initial_time = high_resolution_clock::now();
+  auto initial_time = high_resolution_clock::now();
 
-    // we simulate an asynchronous action that takes an amount of time equal to time_
-    while (!isHaltRequested() && high_resolution_clock::now() < initial_time + time_)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+  // we simulate an asynchronous action that takes an amount of time equal to time_
+  while (!isHaltRequested() && high_resolution_clock::now() < initial_time + time_)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
 
-    // check if we exited the while(9 loop because of the flag stop_loop_
-    if( isHaltRequested() ){
-        return NodeStatus::IDLE;
-    }
+  // check if we exited the while() loop because of the flag stop_loop_
+  if (isHaltRequested())
+  {
+    return NodeStatus::IDLE;
+  }
 
-    if( expected_result_ == NodeStatus::SUCCESS){
-        success_count_++;
-    }
-    else if( expected_result_ == NodeStatus::FAILURE){
-        failure_count_++;
-    }
+  if (expected_result_ == NodeStatus::SUCCESS)
+  {
+    success_count_++;
+  }
+  else if (expected_result_ == NodeStatus::FAILURE)
+  {
+    failure_count_++;
+  }
 
-    return expected_result_;
+  return expected_result_;
 }
 
 void BT::AsyncActionTest::halt()
 {
-    // do more cleanup here if necessary
-    AsyncActionNode::halt();
+  // do more cleanup here if necessary
+  AsyncActionNode::halt();
 }
 
 void BT::AsyncActionTest::setTime(BT::Duration time)
 {
-    time_ = time;
+  time_ = time;
 }
 
 void BT::AsyncActionTest::setExpectedResult(BT::NodeStatus res)
 {
-    expected_result_ = res;
+  expected_result_ = res;
 }
 
 //----------------------------------------------
 
-BT::SyncActionTest::SyncActionTest(const std::string& name) :
-    SyncActionNode(name, {})
+BT::SyncActionTest::SyncActionTest(const std::string& name) : SyncActionNode(name, {})
 {
-    tick_count_ = 0;
-    expected_result_ = NodeStatus::SUCCESS;
+  tick_count_ = 0;
+  expected_result_ = NodeStatus::SUCCESS;
 }
 
 BT::NodeStatus BT::SyncActionTest::tick()
 {
-    tick_count_++;
-    return expected_result_;
+  tick_count_++;
+  return expected_result_;
 }
 
 void BT::SyncActionTest::setExpectedResult(NodeStatus res)
 {
-    expected_result_ = res;
+  expected_result_ = res;
 }

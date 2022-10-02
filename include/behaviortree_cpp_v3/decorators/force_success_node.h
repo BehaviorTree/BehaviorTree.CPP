@@ -10,8 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATOR_ALWAYS_SUCCESS_NODE_H
-#define DECORATOR_ALWAYS_SUCCESS_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 
@@ -22,45 +21,39 @@ namespace BT
  */
 class ForceSuccessNode : public DecoratorNode
 {
-  public:
-    ForceSuccessNode(const std::string& name) :
-        DecoratorNode(name, {} )
-    {
-        setRegistrationID("ForceSuccess");
-    }
+public:
+  ForceSuccessNode(const std::string& name) : DecoratorNode(name, {})
+  {
+    setRegistrationID("ForceSuccess");
+  }
 
-  private:
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
 
 //------------ implementation ----------------------------
 
 inline NodeStatus ForceSuccessNode::tick()
 {
-    setStatus(NodeStatus::RUNNING);
+  setStatus(NodeStatus::RUNNING);
 
-    const NodeStatus child_state = child_node_->executeTick();
+  const NodeStatus child_state = child_node_->executeTick();
 
-    switch (child_state)
-    {
-        case NodeStatus::FAILURE:
-        case NodeStatus::SUCCESS:
-        {
-            return NodeStatus::SUCCESS;
-        }
-
-        case NodeStatus::RUNNING:
-        {
-            return NodeStatus::RUNNING;
-        }
-
-        default:
-        {
-            // TODO throw?
-        }
+  switch (child_state)
+  {
+    case NodeStatus::FAILURE:
+    case NodeStatus::SUCCESS: {
+      return NodeStatus::SUCCESS;
     }
-    return status();
-}
-}
 
-#endif
+    case NodeStatus::RUNNING: {
+      return NodeStatus::RUNNING;
+    }
+
+    default: {
+      // TODO throw?
+    }
+  }
+  return status();
+}
+}   // namespace BT

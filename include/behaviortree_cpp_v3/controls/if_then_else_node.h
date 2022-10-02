@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Davide Faconti -  All Rights Reserved
+/* Copyright (C) 2020-2022 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,8 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef BT_IF_THEN_ELSE_H
-#define BT_IF_THEN_ELSE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/control_node.h"
 
@@ -34,19 +33,17 @@ namespace BT
  */
 class IfThenElseNode : public ControlNode
 {
-  public:
-    IfThenElseNode(const std::string& name);
+public:
+  IfThenElseNode(const std::string& name);
 
-    virtual ~IfThenElseNode() override = default;
+  virtual ~IfThenElseNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-  private:
-    size_t child_idx_;
+private:
+  size_t child_idx_;
 
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 };
 
-}
-
-#endif // BT_IF_THEN_ELSE_H
+}   // namespace BT

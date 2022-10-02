@@ -24,99 +24,98 @@ using std::chrono::milliseconds;
 
 struct BehaviorTreeTest : testing::Test
 {
-    BT::SequenceNode root;
-    BT::AsyncActionTest action_1;
-    BT::ConditionTestNode condition_1;
-    BT::ConditionTestNode condition_2;
+  BT::SequenceNode root;
+  BT::AsyncActionTest action_1;
+  BT::ConditionTestNode condition_1;
+  BT::ConditionTestNode condition_2;
 
-    BT::FallbackNode fal_conditions;
+  BT::FallbackNode fal_conditions;
 
-    BehaviorTreeTest()
-      : root("root_sequence")
-      , action_1("action_1", milliseconds(100) )
-      , condition_1("condition_1")
-      , condition_2("condition_2")
-      , fal_conditions("fallback_conditions")
+  BehaviorTreeTest() :
+    root("root_sequence"),
+    action_1("action_1", milliseconds(100)),
+    condition_1("condition_1"),
+    condition_2("condition_2"),
+    fal_conditions("fallback_conditions")
+  {
+    root.addChild(&fal_conditions);
     {
-        root.addChild(&fal_conditions);
-        {
-            fal_conditions.addChild(&condition_1);
-            fal_conditions.addChild(&condition_2);
-        }
-        root.addChild(&action_1);
+      fal_conditions.addChild(&condition_1);
+      fal_conditions.addChild(&condition_2);
     }
-    ~BehaviorTreeTest()
-    {
-    }
+    root.addChild(&action_1);
+  }
+  ~BehaviorTreeTest()
+  {}
 };
 
 /****************TESTS START HERE***************************/
 
 TEST_F(BehaviorTreeTest, Condition1ToFalseCondition2True)
 {
-    condition_1.setExpectedResult(NodeStatus::FAILURE);
-    condition_2.setExpectedResult(NodeStatus::SUCCESS);
+  condition_1.setExpectedResult(NodeStatus::FAILURE);
+  condition_2.setExpectedResult(NodeStatus::SUCCESS);
 
-    BT::NodeStatus state = root.executeTick();
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::SUCCESS, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::SUCCESS, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 }
 
 TEST_F(BehaviorTreeTest, Condition2ToFalseCondition1True)
 {
-    condition_2.setExpectedResult(NodeStatus::FAILURE);
-    condition_1.setExpectedResult(NodeStatus::SUCCESS);
+  condition_2.setExpectedResult(NodeStatus::FAILURE);
+  condition_1.setExpectedResult(NodeStatus::SUCCESS);
 
-    BT::NodeStatus state = root.executeTick();
+  BT::NodeStatus state = root.executeTick();
 
-    ASSERT_EQ(NodeStatus::RUNNING, state);
-    ASSERT_EQ(NodeStatus::SUCCESS, fal_conditions.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-    ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
-    ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
+  ASSERT_EQ(NodeStatus::RUNNING, state);
+  ASSERT_EQ(NodeStatus::SUCCESS, fal_conditions.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
+  ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 }
 
 TEST_F(BehaviorTreeTest, PrintWithStream)
 {
-    // no stream parameter should go to default stream (std::cout)
-    BT::printTreeRecursively(&root);
+  // no stream parameter should go to default stream (std::cout)
+  BT::printTreeRecursively(&root);
 
-    // verify value for with custom stream parameter
-    std::stringstream stream;
-    BT::printTreeRecursively(&root, stream);
-    const auto string = stream.str();
-    std::string line;
+  // verify value for with custom stream parameter
+  std::stringstream stream;
+  BT::printTreeRecursively(&root, stream);
+  const auto string = stream.str();
+  std::string line;
 
-    // first line is all dashes
-    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
-    ASSERT_STREQ("----------------", line.c_str());
+  // first line is all dashes
+  ASSERT_FALSE(std::getline(stream, line, '\n').fail());
+  ASSERT_STREQ("----------------", line.c_str());
 
-    // each line is the name of the node, indented by depth * 3 spaces
-    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
-    ASSERT_STREQ(root.name().c_str(), line.c_str());
+  // each line is the name of the node, indented by depth * 3 spaces
+  ASSERT_FALSE(std::getline(stream, line, '\n').fail());
+  ASSERT_STREQ(root.name().c_str(), line.c_str());
 
-    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
-    ASSERT_STREQ(("   " + fal_conditions.name()).c_str(), line.c_str());
+  ASSERT_FALSE(std::getline(stream, line, '\n').fail());
+  ASSERT_STREQ(("   " + fal_conditions.name()).c_str(), line.c_str());
 
-    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
-    ASSERT_STREQ(("      " + condition_1.name()).c_str(), line.c_str());
+  ASSERT_FALSE(std::getline(stream, line, '\n').fail());
+  ASSERT_STREQ(("      " + condition_1.name()).c_str(), line.c_str());
 
-    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
-    ASSERT_STREQ(("      " + condition_2.name()).c_str(), line.c_str());
+  ASSERT_FALSE(std::getline(stream, line, '\n').fail());
+  ASSERT_STREQ(("      " + condition_2.name()).c_str(), line.c_str());
 
-    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
-    ASSERT_STREQ(("   " + action_1.name()).c_str(), line.c_str());
+  ASSERT_FALSE(std::getline(stream, line, '\n').fail());
+  ASSERT_STREQ(("   " + action_1.name()).c_str(), line.c_str());
 
-    // last line is all dashes
-    ASSERT_FALSE(std::getline(stream, line, '\n').fail());
-    ASSERT_STREQ("----------------", line.c_str());
+  // last line is all dashes
+  ASSERT_FALSE(std::getline(stream, line, '\n').fail());
+  ASSERT_STREQ("----------------", line.c_str());
 
-    // no more lines
-    ASSERT_TRUE(std::getline(stream, line, '\n').fail());
+  // no more lines
+  ASSERT_TRUE(std::getline(stream, line, '\n').fail());
 }
 
 // define extern variable from environment.h
@@ -124,11 +123,11 @@ Environment* environment;
 
 int main(int argc, char** argv)
 {
-    testing::InitGoogleTest(&argc, argv);
+  testing::InitGoogleTest(&argc, argv);
 
-    // gtest will take ownership of this pointer and free it for us
-    environment = new Environment(argc, argv);
-    testing::AddGlobalTestEnvironment(environment);
-    
-    return RUN_ALL_TESTS();
+  // gtest will take ownership of this pointer and free it for us
+  environment = new Environment(argc, argv);
+  testing::AddGlobalTestEnvironment(environment);
+
+  return RUN_ALL_TESTS();
 }

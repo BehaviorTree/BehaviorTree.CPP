@@ -15,69 +15,68 @@
 
 namespace BT
 {
-DecoratorNode::DecoratorNode(const std::string& name, const NodeConfiguration& config)
-  : TreeNode::TreeNode(name, config), child_node_(nullptr)
-{
-}
+DecoratorNode::DecoratorNode(const std::string& name, const NodeConfiguration& config) :
+  TreeNode::TreeNode(name, config), child_node_(nullptr)
+{}
 
 void DecoratorNode::setChild(TreeNode* child)
 {
-    if (child_node_)
-    {
-        throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
-    }
+  if (child_node_)
+  {
+    throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
+  }
 
-    child_node_ = child;
+  child_node_ = child;
 }
 
 void DecoratorNode::halt()
 {
-    haltChild();
-    setStatus(NodeStatus::IDLE);
+  haltChild();
 }
 
 const TreeNode* DecoratorNode::child() const
 {
-    return child_node_;
+  return child_node_;
 }
 
 TreeNode* DecoratorNode::child()
 {
-    return child_node_;
+  return child_node_;
 }
 
 void DecoratorNode::haltChild()
 {
-    if( !child_node_ ){
-        return;
-    }
-    if (child_node_->status() == NodeStatus::RUNNING)
-    {
-        child_node_->halt();
-    }
-    child_node_->setStatus(NodeStatus::IDLE);
+  if (!child_node_)
+  {
+    return;
+  }
+  if (child_node_->status() == NodeStatus::RUNNING)
+  {
+    child_node_->halt();
+  }
+  child_node_->resetStatus();
 }
 
-SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,
-                                         const NodeConfiguration& config)
-  : DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
-{
-}
+SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name,
+                                         TickFunctor tick_functor,
+                                         const NodeConfiguration& config) :
+  DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
+{}
 
 NodeStatus SimpleDecoratorNode::tick()
 {
-    return tick_functor_(child()->executeTick(), *this);
+  return tick_functor_(child()->executeTick(), *this);
 }
 
 NodeStatus DecoratorNode::executeTick()
 {
-    NodeStatus status = TreeNode::executeTick();
-    NodeStatus child_status = child()->status();
-    if( child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE )
-    {
-        child()->setStatus(NodeStatus::IDLE);
-    }
-    return status;
+  NodeStatus status = TreeNode::executeTick();
+  NodeStatus child_status = child()->status();
+  if (child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE)
+  {
+    child()->resetStatus();
+  }
+  return status;
 }
 
-}
+}   // namespace BT

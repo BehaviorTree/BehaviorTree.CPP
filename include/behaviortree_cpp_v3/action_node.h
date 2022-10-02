@@ -23,11 +23,9 @@
 
 namespace BT
 {
-
 // IMPORTANT: Actions which returned SUCCESS or FAILURE will not be ticked
-// again unless setStatus(IDLE) is called first.
+// again unless resetStatus() is called first.
 // Keep this in mind when writing your custom Control and Decorator nodes.
-
 
 /**
  * @brief The ActionNodeBase is the base class to use to create any kind of action.
@@ -36,15 +34,14 @@ namespace BT
  */
 class ActionNodeBase : public LeafNode
 {
-  public:
+public:
+  ActionNodeBase(const std::string& name, const NodeConfiguration& config);
+  ~ActionNodeBase() override = default;
 
-    ActionNodeBase(const std::string& name, const NodeConfiguration& config);
-    ~ActionNodeBase() override = default;
-
-    virtual NodeType type() const override final
-    {
-        return NodeType::ACTION;
-    }
+  virtual NodeType type() const override final
+  {
+    return NodeType::ACTION;
+  }
 };
 
 /**
@@ -54,19 +51,16 @@ class ActionNodeBase : public LeafNode
  */
 class SyncActionNode : public ActionNodeBase
 {
-  public:
+public:
+  SyncActionNode(const std::string& name, const NodeConfiguration& config);
+  ~SyncActionNode() override = default;
 
-    SyncActionNode(const std::string& name, const NodeConfiguration& config);
-    ~SyncActionNode() override = default;
+  /// throws if the derived class return RUNNING.
+  virtual NodeStatus executeTick() override;
 
-    /// throws if the derived class return RUNNING.
-    virtual NodeStatus executeTick() override;
-
-    /// You don't need to override this
-    virtual void halt() override final
-    {
-        setStatus(NodeStatus::IDLE);
-    }
+  /// You don't need to override this
+  virtual void halt() override final
+  {}
 };
 
 /**
@@ -83,19 +77,19 @@ class SyncActionNode : public ActionNodeBase
  */
 class SimpleActionNode : public SyncActionNode
 {
-  public:
-    typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
+public:
+  typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
 
-    // You must provide the function to call when tick() is invoked
-    SimpleActionNode(const std::string& name, TickFunctor tick_functor,
-                     const NodeConfiguration& config);
+  // You must provide the function to call when tick() is invoked
+  SimpleActionNode(const std::string& name, TickFunctor tick_functor,
+                   const NodeConfiguration& config);
 
-    ~SimpleActionNode() override = default;
+  ~SimpleActionNode() override = default;
 
-  protected:
-    virtual NodeStatus tick() override final;
+protected:
+  virtual NodeStatus tick() override final;
 
-    TickFunctor tick_functor_;
+  TickFunctor tick_functor_;
 };
 
 /**
@@ -119,28 +113,26 @@ class SimpleActionNode : public SyncActionNode
  */
 class AsyncActionNode : public ActionNodeBase
 {
-  public:
+public:
+  AsyncActionNode(const std::string& name, const NodeConfiguration& config) :
+    ActionNodeBase(name, config)
+  {}
 
-    AsyncActionNode(const std::string& name, const NodeConfiguration& config):ActionNodeBase(name, config)
-    {
-    }
+  bool isHaltRequested() const
+  {
+    return halt_requested_.load();
+  }
 
-    bool isHaltRequested() const
-    {
-        return halt_requested_.load();
-    }
+  // This method spawn a new thread. Do NOT remove the "final" keyword.
+  virtual NodeStatus executeTick() override final;
 
-    // This method spawn a new thread. Do NOT remove the "final" keyword.
-    virtual NodeStatus executeTick() override final;
+  virtual void halt() override;
 
-    virtual void halt() override;
-
-  private:
-
-    std::exception_ptr exptr_;
-    std::atomic_bool halt_requested_;
-    std::future<void> thread_handle_;
-    std::mutex m_;
+private:
+  std::exception_ptr exptr_;
+  std::atomic_bool halt_requested_;
+  std::future<void> thread_handle_;
+  std::mutex mutex_;
 };
 
 /**
@@ -160,28 +152,27 @@ class AsyncActionNode : public ActionNodeBase
  */
 class StatefulActionNode : public ActionNodeBase
 {
-  public:
-      StatefulActionNode(const std::string& name, const NodeConfiguration& config):
-        ActionNodeBase(name,config)
-      {}
+public:
+  StatefulActionNode(const std::string& name, const NodeConfiguration& config) :
+    ActionNodeBase(name, config)
+  {}
 
-      // do not override this method
-      NodeStatus tick() override final;
-      // do not override this method
-      void halt() override final;
+  // do not override this method
+  NodeStatus tick() override final;
+  // do not override this method
+  void halt() override final;
 
-      /// method to be called at the beginning.
-      /// If it returns RUNNING, this becomes an asychronous node.
-      virtual NodeStatus onStart() = 0;
+  /// method to be called at the beginning.
+  /// If it returns RUNNING, this becomes an asychronous node.
+  virtual NodeStatus onStart() = 0;
 
-      /// method invoked by a RUNNING action.
-      virtual NodeStatus onRunning() = 0;
+  /// method invoked by a RUNNING action.
+  virtual NodeStatus onRunning() = 0;
 
-      /// when the method halt() is called and the action is RUNNING, this method is invoked.
-      /// This is a convenient place todo a cleanup, if needed.
-      virtual void onHalted() = 0;
+  /// when the method halt() is called and the action is RUNNING, this method is invoked.
+  /// This is a convenient place todo a cleanup, if needed.
+  virtual void onHalted() = 0;
 };
-
 
 #ifndef BT_NO_COROUTINES
 
@@ -194,18 +185,17 @@ class StatefulActionNode : public ActionNodeBase
  */
 class CoroActionNode : public ActionNodeBase
 {
-  public:
+public:
+  CoroActionNode(const std::string& name, const NodeConfiguration& config);
+  virtual ~CoroActionNode() override;
 
-    CoroActionNode(const std::string& name, const NodeConfiguration& config);
-    virtual ~CoroActionNode() override;
+  /// Use this method to return RUNNING and temporary "pause" the Action.
+  void setStatusRunningAndYield();
 
-    /// Use this method to return RUNNING and temporary "pause" the Action.
-    void setStatusRunningAndYield();
+  // This method triggers the TickEngine. Do NOT remove the "final" keyword.
+  virtual NodeStatus executeTick() override final;
 
-    // This method triggers the TickEngine. Do NOT remove the "final" keyword.
-    virtual NodeStatus executeTick() override final;
-
-    /** You may want to override this method. But still, remember to call this
+  /** You may want to override this method. But still, remember to call this
     * implementation too.
     *
     * Example:
@@ -216,15 +206,14 @@ class CoroActionNode : public ActionNodeBase
     *         CoroActionNode::halt();
     *     }
     */
-    void halt() override;
+  void halt() override;
 
-  protected:
-
-    struct Pimpl; // The Pimpl idiom
-    std::unique_ptr<Pimpl> _p;
+protected:
+  struct Pimpl;   // The Pimpl idiom
+  std::unique_ptr<Pimpl> _p;
 };
 #endif
 
-}   //end namespace
+}   // namespace BT
 
 #endif

@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Davide Faconti -  All Rights Reserved
+/* Copyright (C) 2020-2022 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,8 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef SWITCH_NODE_H
-#define SWITCH_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/control_node.h"
 
@@ -43,99 +42,87 @@ or the default one (last).
 template <size_t NUM_CASES>
 class SwitchNode : public ControlNode
 {
-  public:
-    SwitchNode(const std::string& name, const BT::NodeConfiguration& config)
-    : ControlNode::ControlNode(name, config ),
-      running_child_(-1)
+public:
+  SwitchNode(const std::string& name, const BT::NodeConfiguration& config) :
+    ControlNode::ControlNode(name, config), running_child_(-1)
+  {
+    setRegistrationID("Switch");
+  }
+
+  virtual ~SwitchNode() override = default;
+
+  void halt() override
+  {
+    running_child_ = -1;
+    ControlNode::halt();
+  }
+
+  static PortsList providedPorts()
+  {
+    PortsList ports;
+    ports.insert(BT::InputPort<std::string>("variable"));
+    for (unsigned i = 0; i < NUM_CASES; i++)
     {
-        setRegistrationID("Switch");
+      char case_str[20];
+      sprintf(case_str, "case_%d", i + 1);
+      ports.insert(BT::InputPort<std::string>(case_str));
     }
+    return ports;
+  }
 
-    virtual ~SwitchNode() override = default;
-
-    void halt() override
-    {
-        running_child_ = -1;
-        ControlNode::halt();
-    }
-
-    static PortsList providedPorts()
-    {
-        PortsList ports;
-        ports.insert( BT::InputPort<std::string>("variable") );
-        for(unsigned i=0; i < NUM_CASES; i++)
-        {
-            char case_str[20];
-            sprintf(case_str, "case_%d", i+1);
-            ports.insert( BT::InputPort<std::string>(case_str) );
-        }
-        return ports;
-    }
-
-  private:
-    int running_child_;
-    virtual BT::NodeStatus tick() override;
+private:
+  int running_child_;
+  virtual BT::NodeStatus tick() override;
 };
 
-template<size_t NUM_CASES> inline
-NodeStatus SwitchNode<NUM_CASES>::tick()
+template <size_t NUM_CASES>
+inline NodeStatus SwitchNode<NUM_CASES>::tick()
 {
-    constexpr const char * case_port_names[9] = {
-      "case_1", "case_2", "case_3", "case_4", "case_5", "case_6", "case_7", "case_8", "case_9"};
+  if (childrenCount() != NUM_CASES + 1)
+  {
+    throw LogicError("Wrong number of children in SwitchNode; "
+                     "must be (num_cases + default)");
+  }
 
-    if( childrenCount() != NUM_CASES+1)
+  std::string variable;
+  std::string value;
+  int match_index = int(NUM_CASES);   // default index;
+
+  if (getInput("variable", variable))   // no variable? jump to default
+  {
+    // check each case until you find a match
+    for (int index = 0; index < int(NUM_CASES); ++index)
     {
-        throw LogicError("Wrong number of children in SwitchNode; "
-                         "must be (num_cases + default)");
-    }
+      char case_key[20];
+      sprintf(case_key, "case_%d", int(index + 1));
+      bool found = static_cast<bool>(getInput(case_key, value));
 
-    std::string variable;
-    std::string value;
-    int child_index = NUM_CASES; // default index;
-
-    if (getInput("variable", variable)) // no variable? jump to default
-    {
-        // check each case until you find a match
-        for (unsigned index = 0; index < NUM_CASES; ++index)
-        {
-            bool found = false;
-            if( index < 9 )
-            {
-                found = (bool)getInput(case_port_names[index], value);
-            }
-            else{
-                char case_str[20];
-                sprintf(case_str, "case_%d", index+1);
-                found = (bool)getInput(case_str, value);
-            }
-
-            if (found && variable == value)
-            {
-                child_index = index;
-                break;
-            }
-        }
+      if (found && variable == value)
+      {
+        match_index = index;
+        break;
+      }
     }
+  }
 
-    // if another one was running earlier, halt it
-    if( running_child_ != -1 && running_child_ != child_index)
-    {
-        haltChild(running_child_);
-    }
+  // if another one was running earlier, halt it
+  if (running_child_ != -1 && running_child_ != match_index)
+  {
+    haltChild(running_child_);
+  }
 
-    auto& selected_child = children_nodes_[child_index];
-    NodeStatus ret = selected_child->executeTick();
-    if( ret == NodeStatus::RUNNING )
-    {
-        running_child_ = child_index;
-    }
-    else{
-        haltChildren();
-        running_child_ = -1;
-    }
-    return ret;
+  auto& selected_child = children_nodes_[match_index];
+  NodeStatus ret = selected_child->executeTick();
+  if (ret == NodeStatus::RUNNING)
+  {
+    running_child_ = match_index;
+  }
+  else
+  {
+    haltChildren();
+    running_child_ = -1;
+  }
+  return ret;
 }
 
-}
-
-#endif // SWITCH_NODE_H
+}   // namespace BT

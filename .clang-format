@@ -13,9 +13,10 @@ AlwaysBreakTemplateDeclarations: true
 AlwaysBreakBeforeMultilineStrings: false
 BreakBeforeBinaryOperators: false
 BreakBeforeTernaryOperators: false
-BreakConstructorInitializersBeforeComma: true
+BreakConstructorInitializersBeforeComma: false
+BreakConstructorInitializers: AfterColon
 BinPackParameters: true
-ColumnLimit:    100
+ColumnLimit:    90
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 DerivePointerBinding: false
 PointerBindsToType: true
@@ -33,8 +34,8 @@ PenaltyReturnTypeOnItsOwnLine: 90
 SpacesBeforeTrailingComments: 3
 Cpp11BracedListStyle: true
 Standard:        Auto
-IndentWidth:     4
-TabWidth:        4
+IndentWidth:     2
+TabWidth:        2
 UseTab:          Never
 IndentFunctionDeclarationAfterType: false
 SpacesInParentheses: false
@@ -63,6 +64,7 @@ BraceWrapping: {
     BeforeCatch : 'true'
     BeforeElse : 'true'
     IndentBraces : 'false'
+    SplitEmptyFunction: 'false'
 }
 ...
 

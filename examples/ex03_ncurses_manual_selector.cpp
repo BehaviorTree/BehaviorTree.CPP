@@ -28,15 +28,13 @@ static const char* xml_text = R"(
 
 int main()
 {
-    BehaviorTreeFactory factory;
-    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-    auto tree = factory.createTreeFromText(xml_text);
-    auto ret = tree.tickRoot();
+  auto tree = factory.createTreeFromText(xml_text);
+  auto ret = tree.tickRoot();
 
-    std::cout << "Result: " << ret << std::endl;
+  std::cout << "Result: " << ret << std::endl;
 
-    return 0;
+  return 0;
 }
-
-

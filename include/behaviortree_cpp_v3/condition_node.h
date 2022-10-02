@@ -20,21 +20,19 @@ namespace BT
 {
 class ConditionNode : public LeafNode
 {
-  public:
-    ConditionNode(const std::string& name, const NodeConfiguration& config);
+public:
+  ConditionNode(const std::string& name, const NodeConfiguration& config);
 
-    virtual ~ConditionNode() override = default;
+  virtual ~ConditionNode() override = default;
 
-    //Do nothing
-    virtual void halt() override final
-    {
-        setStatus(NodeStatus::IDLE);
-    }
+  //Do nothing
+  virtual void halt() override final
+  {}
 
-    virtual NodeType type() const override final
-    {
-        return NodeType::CONDITION;
-    }
+  virtual NodeType type() const override final
+  {
+    return NodeType::CONDITION;
+  }
 };
 
 /**
@@ -50,20 +48,20 @@ class ConditionNode : public LeafNode
  */
 class SimpleConditionNode : public ConditionNode
 {
-  public:
-    typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
+public:
+  typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
 
-    // You must provide the function to call when tick() is invoked
-    SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
-                        const NodeConfiguration& config);
+  // You must provide the function to call when tick() is invoked
+  SimpleConditionNode(const std::string& name, TickFunctor tick_functor,
+                      const NodeConfiguration& config);
 
-    ~SimpleConditionNode() override = default;
+  ~SimpleConditionNode() override = default;
 
-  protected:
-    virtual NodeStatus tick() override;
+protected:
+  virtual NodeStatus tick() override;
 
-    TickFunctor tick_functor_;
+  TickFunctor tick_functor_;
 };
-}
+}   // namespace BT
 
 #endif

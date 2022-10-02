@@ -20,14 +20,14 @@ namespace BT
 {
 class LeafNode : public TreeNode
 {
-  protected:
-  public:
-    LeafNode(const std::string& name, const NodeConfiguration& config)
-      : TreeNode(name, config)
-    { }
+protected:
+public:
+  LeafNode(const std::string& name, const NodeConfiguration& config) :
+    TreeNode(name, config)
+  {}
 
-    virtual ~LeafNode() override = default;
+  virtual ~LeafNode() override = default;
 };
-}
+}   // namespace BT
 
 #endif

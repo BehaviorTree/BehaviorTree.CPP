@@ -12,13 +12,10 @@
 
 #include "behaviortree_cpp_v3/controls/if_then_else_node.h"
 
-
 namespace BT
 {
-
-IfThenElseNode::IfThenElseNode(const std::string &name)
-  : ControlNode::ControlNode(name, {} )
-  , child_idx_(0)
+IfThenElseNode::IfThenElseNode(const std::string& name) :
+  ControlNode::ControlNode(name, {}), child_idx_(0)
 {
   setRegistrationID("IfThenElse");
 }
@@ -33,7 +30,7 @@ NodeStatus IfThenElseNode::tick()
 {
   const size_t children_count = children_nodes_.size();
 
-  if(children_count != 2 && children_count != 3)
+  if (children_count != 2 && children_count != 3)
   {
     throw std::logic_error("IfThenElseNode must have either 2 or 3 children");
   }
@@ -54,10 +51,12 @@ NodeStatus IfThenElseNode::tick()
     }
     else if (condition_status == NodeStatus::FAILURE)
     {
-      if( children_count == 3){
+      if (children_count == 3)
+      {
         child_idx_ = 2;
       }
-      else{
+      else
+      {
         return condition_status;
       }
     }
@@ -70,7 +69,8 @@ NodeStatus IfThenElseNode::tick()
     {
       return NodeStatus::RUNNING;
     }
-    else{
+    else
+    {
       haltChildren();
       child_idx_ = 0;
       return status;
@@ -80,4 +80,4 @@ NodeStatus IfThenElseNode::tick()
   throw std::logic_error("Something unexpected happened in IfThenElseNode");
 }
 
-}  // namespace BT
+}   // namespace BT

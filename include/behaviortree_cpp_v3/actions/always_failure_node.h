@@ -10,8 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef ACTION_ALWAYS_FAILURE_NODE_H
-#define ACTION_ALWAYS_FAILURE_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/action_node.h"
 
@@ -22,19 +21,16 @@ namespace BT
  */
 class AlwaysFailureNode : public SyncActionNode
 {
-  public:
-    AlwaysFailureNode(const std::string& name) :
-        SyncActionNode(name, {})
-    {
-        setRegistrationID("AlwaysFailure");
-    }
+public:
+  AlwaysFailureNode(const std::string& name) : SyncActionNode(name, {})
+  {
+    setRegistrationID("AlwaysFailure");
+  }
 
-  private:
-    virtual BT::NodeStatus tick() override
-    {
-        return NodeStatus::FAILURE;
-    }
+private:
+  virtual BT::NodeStatus tick() override
+  {
+    return NodeStatus::FAILURE;
+  }
 };
-}
-
-#endif
+}   // namespace BT

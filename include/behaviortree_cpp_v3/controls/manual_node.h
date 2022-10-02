@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Davide Faconti -  All Rights Reserved
+/* Copyright (C) 2020-2022 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,8 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MANUAL_SELECTION_NODE_H
-#define MANUAL_SELECTION_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/control_node.h"
 
@@ -22,38 +21,38 @@ namespace BT
  */
 class ManualSelectorNode : public ControlNode
 {
-  public:
-    ManualSelectorNode(const std::string& name, const NodeConfiguration& config);
+public:
+  ManualSelectorNode(const std::string& name, const NodeConfiguration& config);
 
-    virtual ~ManualSelectorNode() override = default;
+  virtual ~ManualSelectorNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<bool>(REPEAT_LAST_SELECTION, false,
-                                 "If true, execute again the same child that was selected the last time") };
-    }
+  static PortsList providedPorts()
+  {
+    return {InputPort<bool>(REPEAT_LAST_SELECTION, false,
+                            "If true, execute again the same child that was selected the "
+                            "last "
+                            "time")};
+  }
 
-  private:
+private:
+  static constexpr const char* REPEAT_LAST_SELECTION = "repeat_last_selection";
 
-    static constexpr const char* REPEAT_LAST_SELECTION = "repeat_last_selection";
+  virtual BT::NodeStatus tick() override;
+  int running_child_idx_;
+  int previously_executed_idx_;
 
-    virtual BT::NodeStatus tick() override;
-    int running_child_idx_;
-    int previously_executed_idx_;
+  enum NumericarStatus
+  {
+    NUM_SUCCESS = 253,
+    NUM_FAILURE = 254,
+    NUM_RUNNING = 255,
+  };
 
-    enum NumericarStatus{
-        NUM_SUCCESS = 253,
-        NUM_FAILURE = 254,
-        NUM_RUNNING = 255,
-    };
+  NodeStatus selectStatus() const;
 
-    NodeStatus selectStatus() const;
-
-    uint8_t selectChild() const;
+  uint8_t selectChild() const;
 };
 
-}
-
-#endif // MANUAL_SELECTION_NODE_H
+}   // namespace BT

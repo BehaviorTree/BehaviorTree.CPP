@@ -100,129 +100,125 @@ static const char* xml_text_subtree_part2 = R"(
 
 // clang-format on
 
-
 TEST(BehaviorTreeFactory, XMLParsingOrder)
 {
-    BehaviorTreeFactory factory;
-    CrossDoor::RegisterNodes(factory);
+  BehaviorTreeFactory factory;
+  CrossDoor::RegisterNodes(factory);
 
-    {
-        XMLParser parser(factory);
-        parser.loadFromText(xml_text_subtree);
-        auto trees = parser.registeredBehaviorTrees();
-        ASSERT_EQ(trees[0], "CrossDoorSubtree");
-        ASSERT_EQ(trees[1], "MainTree");
-    }
-    {
-        XMLParser parser(factory);
-        parser.loadFromText(xml_text_subtree_part1);
-        parser.loadFromText(xml_text_subtree_part2);
-        auto trees = parser.registeredBehaviorTrees();
-        ASSERT_EQ(trees[0], "CrossDoorSubtree");
-        ASSERT_EQ(trees[1], "MainTree");
-    }
-    {
-        XMLParser parser(factory);
-        parser.loadFromText(xml_text_subtree_part2);
-        parser.loadFromText(xml_text_subtree_part1);
-        auto trees = parser.registeredBehaviorTrees();
-        ASSERT_EQ(trees[0], "CrossDoorSubtree");
-        ASSERT_EQ(trees[1], "MainTree");
-    }
+  {
+    XMLParser parser(factory);
+    parser.loadFromText(xml_text_subtree);
+    auto trees = parser.registeredBehaviorTrees();
+    ASSERT_EQ(trees[0], "CrossDoorSubtree");
+    ASSERT_EQ(trees[1], "MainTree");
+  }
+  {
+    XMLParser parser(factory);
+    parser.loadFromText(xml_text_subtree_part1);
+    parser.loadFromText(xml_text_subtree_part2);
+    auto trees = parser.registeredBehaviorTrees();
+    ASSERT_EQ(trees[0], "CrossDoorSubtree");
+    ASSERT_EQ(trees[1], "MainTree");
+  }
+  {
+    XMLParser parser(factory);
+    parser.loadFromText(xml_text_subtree_part2);
+    parser.loadFromText(xml_text_subtree_part1);
+    auto trees = parser.registeredBehaviorTrees();
+    ASSERT_EQ(trees[0], "CrossDoorSubtree");
+    ASSERT_EQ(trees[1], "MainTree");
+  }
 }
 
 TEST(BehaviorTreeFactory, VerifyLargeTree)
 {
-    BehaviorTreeFactory factory;
-    CrossDoor::RegisterNodes(factory);
+  BehaviorTreeFactory factory;
+  CrossDoor::RegisterNodes(factory);
 
-    Tree tree = factory.createTreeFromText(xml_text);
+  Tree tree = factory.createTreeFromText(xml_text);
 
-    printTreeRecursively(tree.rootNode());
+  printTreeRecursively(tree.rootNode());
 
-    ASSERT_EQ(tree.rootNode()->name(), "root_selector");
+  ASSERT_EQ(tree.rootNode()->name(), "root_selector");
 
-    auto fallback = dynamic_cast<const FallbackNode*>(tree.rootNode());
-    ASSERT_TRUE(fallback != nullptr);
+  auto fallback = dynamic_cast<const FallbackNode*>(tree.rootNode());
+  ASSERT_TRUE(fallback != nullptr);
 
-    ASSERT_EQ(fallback->children().size(), 3);
-    ASSERT_EQ(fallback->child(0)->name(), "door_open_sequence");
-    ASSERT_EQ(fallback->child(1)->name(), "door_closed_sequence");
-    ASSERT_EQ(fallback->child(2)->name(), "PassThroughWindow");
+  ASSERT_EQ(fallback->children().size(), 3);
+  ASSERT_EQ(fallback->child(0)->name(), "door_open_sequence");
+  ASSERT_EQ(fallback->child(1)->name(), "door_closed_sequence");
+  ASSERT_EQ(fallback->child(2)->name(), "PassThroughWindow");
 
-    auto sequence_open = dynamic_cast<const SequenceNode*>(fallback->child(0));
-    ASSERT_TRUE(sequence_open != nullptr);
+  auto sequence_open = dynamic_cast<const SequenceNode*>(fallback->child(0));
+  ASSERT_TRUE(sequence_open != nullptr);
 
-    ASSERT_EQ(sequence_open->children().size(), 2);
-    ASSERT_EQ(sequence_open->child(0)->name(), "IsDoorOpen");
-    ASSERT_EQ(sequence_open->child(1)->name(), "PassThroughDoor");
+  ASSERT_EQ(sequence_open->children().size(), 2);
+  ASSERT_EQ(sequence_open->child(0)->name(), "IsDoorOpen");
+  ASSERT_EQ(sequence_open->child(1)->name(), "PassThroughDoor");
 
-    auto sequence_closed = dynamic_cast<const SequenceNode*>(fallback->child(1));
-    ASSERT_TRUE(sequence_closed != nullptr);
+  auto sequence_closed = dynamic_cast<const SequenceNode*>(fallback->child(1));
+  ASSERT_TRUE(sequence_closed != nullptr);
 
-    ASSERT_EQ(sequence_closed->children().size(), 4);
-    ASSERT_EQ(sequence_closed->child(0)->name(), "Inverter");
-    ASSERT_EQ(sequence_closed->child(1)->name(), "OpenDoor");
-    ASSERT_EQ(sequence_closed->child(2)->name(), "PassThroughDoor");
-    ASSERT_EQ(sequence_closed->child(3)->name(), "CloseDoor");
+  ASSERT_EQ(sequence_closed->children().size(), 4);
+  ASSERT_EQ(sequence_closed->child(0)->name(), "Inverter");
+  ASSERT_EQ(sequence_closed->child(1)->name(), "OpenDoor");
+  ASSERT_EQ(sequence_closed->child(2)->name(), "PassThroughDoor");
+  ASSERT_EQ(sequence_closed->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const InverterNode*>(sequence_closed->child(0));
-    ASSERT_TRUE(decorator != nullptr);
+  auto decorator = dynamic_cast<const InverterNode*>(sequence_closed->child(0));
+  ASSERT_TRUE(decorator != nullptr);
 
-    ASSERT_EQ(decorator->child()->name(), "IsDoorOpen");
+  ASSERT_EQ(decorator->child()->name(), "IsDoorOpen");
 }
-
-
 
 TEST(BehaviorTreeFactory, Subtree)
 {
-    BehaviorTreeFactory factory;
-    CrossDoor::RegisterNodes(factory);
+  BehaviorTreeFactory factory;
+  CrossDoor::RegisterNodes(factory);
 
-    Tree tree = factory.createTreeFromText(xml_text_subtree);
+  Tree tree = factory.createTreeFromText(xml_text_subtree);
 
-    printTreeRecursively(tree.rootNode());
+  printTreeRecursively(tree.rootNode());
 
-    ASSERT_EQ(tree.rootNode()->name(), "root_selector");
+  ASSERT_EQ(tree.rootNode()->name(), "root_selector");
 
-    auto root_selector = dynamic_cast<const FallbackNode*>(tree.rootNode());
-    ASSERT_TRUE(root_selector != nullptr);
-    ASSERT_EQ(root_selector->children().size(), 2);
-    ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
-    ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
+  auto root_selector = dynamic_cast<const FallbackNode*>(tree.rootNode());
+  ASSERT_TRUE(root_selector != nullptr);
+  ASSERT_EQ(root_selector->children().size(), 2);
+  ASSERT_EQ(root_selector->child(0)->name(), "CrossDoorSubtree");
+  ASSERT_EQ(root_selector->child(1)->name(), "PassThroughWindow");
 
-    auto subtree = dynamic_cast<const SubtreeNode*>(root_selector->child(0));
-    ASSERT_TRUE(subtree != nullptr);
+  auto subtree = dynamic_cast<const SubtreeNode*>(root_selector->child(0));
+  ASSERT_TRUE(subtree != nullptr);
 
-    auto sequence = dynamic_cast<const SequenceNode*>(subtree->child());
-    ASSERT_TRUE(sequence != nullptr);
+  auto sequence = dynamic_cast<const SequenceNode*>(subtree->child());
+  ASSERT_TRUE(sequence != nullptr);
 
-    ASSERT_EQ(sequence->children().size(), 4);
-    ASSERT_EQ(sequence->child(0)->name(), "Inverter");
-    ASSERT_EQ(sequence->child(1)->name(), "OpenDoor");
-    ASSERT_EQ(sequence->child(2)->name(), "PassThroughDoor");
-    ASSERT_EQ(sequence->child(3)->name(), "CloseDoor");
+  ASSERT_EQ(sequence->children().size(), 4);
+  ASSERT_EQ(sequence->child(0)->name(), "Inverter");
+  ASSERT_EQ(sequence->child(1)->name(), "OpenDoor");
+  ASSERT_EQ(sequence->child(2)->name(), "PassThroughDoor");
+  ASSERT_EQ(sequence->child(3)->name(), "CloseDoor");
 
-    auto decorator = dynamic_cast<const InverterNode*>(sequence->child(0));
-    ASSERT_TRUE(decorator != nullptr);
+  auto decorator = dynamic_cast<const InverterNode*>(sequence->child(0));
+  ASSERT_TRUE(decorator != nullptr);
 
-    ASSERT_EQ(decorator->child()->name(), "IsDoorLocked");
+  ASSERT_EQ(decorator->child()->name(), "IsDoorLocked");
 }
 
 TEST(BehaviorTreeFactory, Issue7)
 {
-const std::string xml_text_issue = R"(
+  const std::string xml_text_issue = R"(
 <root>
     <BehaviorTree ID="ReceiveGuest">
     </BehaviorTree>
 </root> )";
 
-    BehaviorTreeFactory factory;
-    XMLParser parser(factory);
+  BehaviorTreeFactory factory;
+  XMLParser parser(factory);
 
-    EXPECT_THROW( parser.loadFromText(xml_text_issue), RuntimeError );
+  EXPECT_THROW(parser.loadFromText(xml_text_issue), RuntimeError);
 }
-
 
 // clang-format off
 
@@ -255,107 +251,159 @@ static const char* xml_ports_subtree = R"(
 
 TEST(BehaviorTreeFactory, SubTreeWithRemapping)
 {
-    BehaviorTreeFactory factory;
-    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-    Tree tree = factory.createTreeFromText(xml_ports_subtree);
+  Tree tree = factory.createTreeFromText(xml_ports_subtree);
 
-    auto main_bb = tree.blackboard_stack.at(0);
-    auto talk_bb = tree.blackboard_stack.at(1);
+  auto main_bb = tree.blackboard_stack.at(0);
+  auto talk_bb = tree.blackboard_stack.at(1);
 
-    std::cout << "\n --------------------------------- \n" << std::endl;
-    main_bb->debugMessage();
-    std::cout << "\n ----- \n" << std::endl;
-    talk_bb->debugMessage();
-    std::cout << "\n --------------------------------- \n" << std::endl;
+  std::cout << "\n --------------------------------- \n" << std::endl;
+  main_bb->debugMessage();
+  std::cout << "\n ----- \n" << std::endl;
+  talk_bb->debugMessage();
+  std::cout << "\n --------------------------------- \n" << std::endl;
 
-    ASSERT_EQ( main_bb->portInfo("talk_hello")->type(), &typeid(std::string) );
-    ASSERT_EQ( main_bb->portInfo("talk_bye")->type(),   &typeid(std::string) );
-    ASSERT_EQ( main_bb->portInfo("talk_out")->type(),   &typeid(std::string) );
+  ASSERT_EQ(main_bb->portInfo("talk_hello")->type(), &typeid(std::string));
+  ASSERT_EQ(main_bb->portInfo("talk_bye")->type(), &typeid(std::string));
+  ASSERT_EQ(main_bb->portInfo("talk_out")->type(), &typeid(std::string));
 
-    ASSERT_EQ( talk_bb->portInfo("bye_msg")->type(),   &typeid(std::string) );
-    ASSERT_EQ( talk_bb->portInfo("hello_msg")->type(), &typeid(std::string) );
+  ASSERT_EQ(talk_bb->portInfo("bye_msg")->type(), &typeid(std::string));
+  ASSERT_EQ(talk_bb->portInfo("hello_msg")->type(), &typeid(std::string));
 
-    // Should not throw
-    tree.tickRoot();
+  // Should not throw
+  tree.tickRoot();
 
-    std::cout << "\n --------------------------------- \n" << std::endl;
-    main_bb->debugMessage();
-    std::cout << "\n ----- \n" << std::endl;
-    talk_bb->debugMessage();
-    std::cout << "\n --------------------------------- \n" << std::endl;
+  std::cout << "\n --------------------------------- \n" << std::endl;
+  main_bb->debugMessage();
+  std::cout << "\n ----- \n" << std::endl;
+  talk_bb->debugMessage();
+  std::cout << "\n --------------------------------- \n" << std::endl;
 
-    ASSERT_EQ( main_bb->portInfo("talk_hello")->type(), &typeid(std::string) );
-    ASSERT_EQ( main_bb->portInfo("talk_bye")->type(),   &typeid(std::string) );
-    ASSERT_EQ( main_bb->portInfo("talk_out")->type(),   &typeid(std::string) );
+  ASSERT_EQ(main_bb->portInfo("talk_hello")->type(), &typeid(std::string));
+  ASSERT_EQ(main_bb->portInfo("talk_bye")->type(), &typeid(std::string));
+  ASSERT_EQ(main_bb->portInfo("talk_out")->type(), &typeid(std::string));
 
-    ASSERT_EQ( talk_bb->portInfo("bye_msg")->type(),   &typeid(std::string) );
-    ASSERT_EQ( talk_bb->portInfo("hello_msg")->type(), &typeid(std::string) );
-    ASSERT_EQ( talk_bb->portInfo("output")->type(),    &typeid(std::string) );
+  ASSERT_EQ(talk_bb->portInfo("bye_msg")->type(), &typeid(std::string));
+  ASSERT_EQ(talk_bb->portInfo("hello_msg")->type(), &typeid(std::string));
+  ASSERT_EQ(talk_bb->portInfo("output")->type(), &typeid(std::string));
 
+  ASSERT_EQ(main_bb->get<std::string>("talk_hello"), "hello");
+  ASSERT_EQ(main_bb->get<std::string>("talk_bye"), "bye bye");
+  ASSERT_EQ(main_bb->get<std::string>("talk_out"), "done!");
 
-    ASSERT_EQ( main_bb->get<std::string>("talk_hello"), "hello");
-    ASSERT_EQ( main_bb->get<std::string>("talk_bye"), "bye bye");
-    ASSERT_EQ( main_bb->get<std::string>("talk_out"), "done!");
-
-    // these ports should not be present in the subtree TalkToMe
-    ASSERT_FALSE( talk_bb->getAny("talk_hello") );
-    ASSERT_FALSE( talk_bb->getAny("talk_bye") );
-    ASSERT_FALSE( talk_bb->getAny("talk_out") );
+  // these ports should not be present in the subtree TalkToMe
+  ASSERT_FALSE(talk_bb->getAny("talk_hello"));
+  ASSERT_FALSE(talk_bb->getAny("talk_bye"));
+  ASSERT_FALSE(talk_bb->getAny("talk_out"));
 }
 
 #if !defined(USING_ROS) && !defined(USING_ROS2)
 TEST(BehaviorTreeFactory, CreateTreeFromFile)
 {
-    BehaviorTreeFactory factory;
-    
-    // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_no_include.xml").str());
-    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  BehaviorTreeFactory factory;
+
+  // should not throw
+  auto path = (environment->executable_path.parent_path() / "trees/"
+                                                            "parent_no_include.xml");
+  Tree tree = factory.createTreeFromFile(path.str());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
 TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromSameDirectory)
 {
-    BehaviorTreeFactory factory;
-    
-    // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/child/child_include_sibling.xml").str());
-    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  BehaviorTreeFactory factory;
+
+  // should not throw
+  auto path = (environment->executable_path.parent_path() / "trees/child/"
+                                                            "child_include_sibling.xml");
+  Tree tree = factory.createTreeFromFile(path.str());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
 TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectory)
 {
-    BehaviorTreeFactory factory;
-    
-    // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child.xml").str());
-    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  BehaviorTreeFactory factory;
+
+  // should not throw
+  auto path = (environment->executable_path.parent_path() / "trees/"
+                                                            "parent_include_child.xml");
+  Tree tree = factory.createTreeFromFile(path.str());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
-TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromSameDirectory)
+TEST(
+    BehaviorTreeFactory,
+    CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromSameDirectory)
 {
-    BehaviorTreeFactory factory;
-    
-    // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_sibling.xml").str());
-    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  BehaviorTreeFactory factory;
+
+  // should not throw
+  auto path = (environment->executable_path.parent_path() / "trees/"
+                                                            "parent_include_child_"
+                                                            "include_sibling.xml");
+  Tree tree = factory.createTreeFromFile(path.str());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
-TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromChildDirectory)
+TEST(
+    BehaviorTreeFactory,
+    CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromChildDirectory)
 {
-    BehaviorTreeFactory factory;
-    
-    // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_child.xml").str());
-    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  BehaviorTreeFactory factory;
+
+  // should not throw
+  auto path = (environment->executable_path.parent_path() / "trees/"
+                                                            "parent_include_child_"
+                                                            "include_child.xml");
+  Tree tree = factory.createTreeFromFile(path.str());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 
-TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromParentDirectory)
+TEST(
+    BehaviorTreeFactory,
+    CreateTreeFromFileWhichIncludesFileFromChildDirectoryWhichIncludesFileFromParentDirectory)
 {
-    BehaviorTreeFactory factory;
-    
-    // should not throw
-    Tree tree = factory.createTreeFromFile((environment->executable_path.parent_path() / "trees/parent_include_child_include_parent.xml").str());
-    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  BehaviorTreeFactory factory;
+
+  // should not throw
+  auto path = (environment->executable_path.parent_path() / "trees/"
+                                                            "parent_include_child_"
+                                                            "include_parent.xml");
+  Tree tree = factory.createTreeFromFile(path.str());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
 }
 #endif
+
+TEST(BehaviorTreeFactory, DecoratorWithoutChildThrows)
+{
+  BehaviorTreeFactory factory;
+  const std::string tree_xml = R"(
+<root>
+    <BehaviorTree ID="Main">
+        <ForceSuccess>
+        </ForceSuccess>
+    </BehaviorTree>
+</root>
+)";
+
+  ASSERT_THROW(factory.createTreeFromText(tree_xml), BehaviorTreeException);
+}
+
+TEST(BehaviorTreeFactory, DecoratorWithTwoChildrenThrows)
+{
+  BehaviorTreeFactory factory;
+  const std::string tree_xml = R"(
+<root>
+    <BehaviorTree ID="Main">
+        <ForceSuccess>
+          <AlwaysSuccess />
+          <AlwaysSuccess />
+        </ForceSuccess>
+    </BehaviorTree>
+</root>
+)";
+
+  ASSERT_THROW(factory.createTreeFromText(xml_text), BehaviorTreeException);
+}

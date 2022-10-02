@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef FALLBACKNODE_H
-#define FALLBACKNODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/control_node.h"
 
@@ -32,19 +31,17 @@ namespace BT
  */
 class FallbackNode : public ControlNode
 {
-  public:
-    FallbackNode(const std::string& name);
+public:
+  FallbackNode(const std::string& name);
 
-    virtual ~FallbackNode() override = default;
+  virtual ~FallbackNode() override = default;
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-  private:
-    size_t current_child_idx_;
+private:
+  size_t current_child_idx_;
 
-    virtual BT::NodeStatus tick() override;
+  virtual BT::NodeStatus tick() override;
 };
 
-}
-
-#endif
+}   // namespace BT

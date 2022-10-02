@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATOR_KEEP_RUNNING_UNTIL_FAILURE_H
-#define DECORATOR_KEEP_RUNNING_UNTIL_FAILURE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 
@@ -23,44 +22,38 @@ namespace BT
  */
 class KeepRunningUntilFailureNode : public DecoratorNode
 {
-  public:
-    KeepRunningUntilFailureNode(const std::string& name) :
-        DecoratorNode(name, {} )
-    {
-        setRegistrationID("KeepRunningUntilFailure");
-    }
+public:
+  KeepRunningUntilFailureNode(const std::string& name) : DecoratorNode(name, {})
+  {
+    setRegistrationID("KeepRunningUntilFailure");
+  }
 
-  private:
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
 
 //------------ implementation ----------------------------
 
 inline NodeStatus KeepRunningUntilFailureNode::tick()
 {
-    setStatus(NodeStatus::RUNNING);
+  setStatus(NodeStatus::RUNNING);
 
-    const NodeStatus child_state = child_node_->executeTick();
+  const NodeStatus child_state = child_node_->executeTick();
 
-    switch (child_state)
-    {
-        case NodeStatus::FAILURE:
-        {
-            return NodeStatus::FAILURE;
-        }    
-        case NodeStatus::SUCCESS:
-        case NodeStatus::RUNNING:
-        {
-            return NodeStatus::RUNNING;
-        }
-
-        default:
-        {
-            // TODO throw?
-        }
+  switch (child_state)
+  {
+    case NodeStatus::FAILURE: {
+      return NodeStatus::FAILURE;
     }
-    return status();
-}
-}
+    case NodeStatus::SUCCESS:
+    case NodeStatus::RUNNING: {
+      return NodeStatus::RUNNING;
+    }
 
-#endif
+    default: {
+      // TODO throw?
+    }
+  }
+  return status();
+}
+}   // namespace BT

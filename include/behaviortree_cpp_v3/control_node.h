@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef CONTROLNODE_H
-#define CONTROLNODE_H
+#pragma once
 
 #include <vector>
 #include "behaviortree_cpp_v3/tree_node.h"
@@ -21,40 +20,38 @@ namespace BT
 {
 class ControlNode : public TreeNode
 {
-  protected:
-    std::vector<TreeNode*> children_nodes_;
+protected:
+  std::vector<TreeNode*> children_nodes_;
 
-  public:
-    ControlNode(const std::string& name, const NodeConfiguration& config);
+public:
+  ControlNode(const std::string& name, const NodeConfiguration& config);
 
-    virtual ~ControlNode() override = default;
+  virtual ~ControlNode() override = default;
 
-    /// The method used to add nodes to the children vector
-    void addChild(TreeNode* child);
+  /// The method used to add nodes to the children vector
+  void addChild(TreeNode* child);
 
-    size_t childrenCount() const;
+  size_t childrenCount() const;
 
-    const std::vector<TreeNode*>& children() const;
+  const std::vector<TreeNode*>& children() const;
 
-    const TreeNode* child(size_t index) const
-    {
-        return children().at(index);
-    }
+  const TreeNode* child(size_t index) const
+  {
+    return children().at(index);
+  }
 
-    virtual void halt() override;
+  virtual void halt() override;
 
-    void haltChildren();
+  void haltChildren();
 
-    [[deprecated( "deprecated: please use explicitly haltChildren() or haltChild(i)")]]
-    void haltChildren(size_t first);
+  [[deprecated("deprecated: please use explicitly haltChildren() or haltChild(i)")]] void
+  haltChildren(size_t first);
 
-    void haltChild(size_t i);
+  void haltChild(size_t i);
 
-    virtual NodeType type() const override final
-    {
-        return NodeType::CONTROL;
-    }
+  virtual NodeType type() const override final
+  {
+    return NodeType::CONTROL;
+  }
 };
-}
-
-#endif
+}   // namespace BT

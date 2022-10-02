@@ -50,37 +50,36 @@ static const char* xml_text = R"(
 
 // clang-format on
 
-
 using namespace BT;
 using namespace DummyNodes;
 
 int main()
 {
-    BehaviorTreeFactory factory;
+  BehaviorTreeFactory factory;
 
-    factory.registerNodeType<SaySomething>("SaySomething");
-    factory.registerNodeType<MoveBaseAction>("MoveBase");
+  factory.registerNodeType<SaySomething>("SaySomething");
+  factory.registerNodeType<MoveBaseAction>("MoveBase");
 
-    auto tree = factory.createTreeFromText(xml_text);
+  auto tree = factory.createTreeFromText(xml_text);
 
-    NodeStatus status = NodeStatus::RUNNING;
-    // Keep on ticking until you get either a SUCCESS or FAILURE state
-    while( status == NodeStatus::RUNNING)
-    {
-        status = tree.tickRoot();
-        // IMPORTANT: add sleep to avoid busy loops.
-        // You should use Tree::sleep(). Don't be afraid to run this at 1 KHz.
-        tree.sleep( std::chrono::milliseconds(1) );
-    }
+  NodeStatus status = NodeStatus::RUNNING;
+  // Keep on ticking until you get either a SUCCESS or FAILURE state
+  while (status == NodeStatus::RUNNING)
+  {
+    status = tree.tickRoot();
+    // IMPORTANT: add sleep to avoid busy loops.
+    // You should use Tree::sleep(). Don't be afraid to run this at 1 KHz.
+    tree.sleep(std::chrono::milliseconds(1));
+  }
 
-    // let's visualize some information about the current state of the blackboards.
-    std::cout << "--------------" << std::endl;
-    tree.blackboard_stack[0]->debugMessage();
-    std::cout << "--------------" << std::endl;
-    tree.blackboard_stack[1]->debugMessage();
-    std::cout << "--------------" << std::endl;
+  // let's visualize some information about the current state of the blackboards.
+  std::cout << "--------------" << std::endl;
+  tree.blackboard_stack[0]->debugMessage();
+  std::cout << "--------------" << std::endl;
+  tree.blackboard_stack[1]->debugMessage();
+  std::cout << "--------------" << std::endl;
 
-    return 0;
+  return 0;
 }
 
 /* Expected output:

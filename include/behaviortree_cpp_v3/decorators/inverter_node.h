@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef DECORATOR_INVERTER_NODE_H
-#define DECORATOR_INVERTER_NODE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 
@@ -25,14 +24,12 @@ namespace BT
  */
 class InverterNode : public DecoratorNode
 {
-  public:
-    InverterNode(const std::string& name);
+public:
+  InverterNode(const std::string& name);
 
-    virtual ~InverterNode() override = default;
+  virtual ~InverterNode() override = default;
 
-  private:
-    virtual BT::NodeStatus tick() override;
+private:
+  virtual BT::NodeStatus tick() override;
 };
-}
-
-#endif
+}   // namespace BT

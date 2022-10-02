@@ -48,13 +48,13 @@
 
 namespace BT
 {
-
 //Call the visitor for each node of the tree, given a root.
 void applyRecursiveVisitor(const TreeNode* root_node,
                            const std::function<void(const TreeNode*)>& visitor);
 
 //Call the visitor for each node of the tree, given a root.
-void applyRecursiveVisitor(TreeNode* root_node, const std::function<void(TreeNode*)>& visitor);
+void applyRecursiveVisitor(TreeNode* root_node,
+                           const std::function<void(TreeNode*)>& visitor);
 
 /**
  * Debug function to print the hierarchy of the tree. Prints to std::cout by default.
@@ -79,7 +79,7 @@ void buildSerializedStatusSnapshot(const TreeNode* root_node,
 template <typename T>
 inline NodeType getType()
 {
-    // clang-format off
+  // clang-format off
     if( std::is_base_of<ActionNodeBase, T>::value )        return NodeType::ACTION;
     if( std::is_base_of<ConditionNode, T>::value )         return NodeType::CONDITION;
     if( std::is_base_of<SubtreeNode, T>::value )           return NodeType::SUBTREE;
@@ -87,8 +87,9 @@ inline NodeType getType()
     if( std::is_base_of<DecoratorNode, T>::value )         return NodeType::DECORATOR;
     if( std::is_base_of<ControlNode, T>::value )           return NodeType::CONTROL;
     return NodeType::UNDEFINED;
-    // clang-format on
+  // clang-format on
 }
-}
+
+}   // namespace BT
 
 #endif   // BEHAVIOR_TREE_H
