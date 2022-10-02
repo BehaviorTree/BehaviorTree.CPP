@@ -88,12 +88,12 @@ PublisherZMQ::~PublisherZMQ()
   active_server_ = false;
   if (thread_.joinable())
   {
-      thread_.join();
+    thread_.join();
   }
   if (send_pending_)
   {
-      send_condition_variable_.notify_all();
-      send_future_.get();
+    send_condition_variable_.notify_all();
+    send_future_.get();
   }
   flush();
   zmq_->context.shutdown();
