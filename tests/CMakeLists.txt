@@ -19,8 +19,11 @@ set(BT_TESTS
   gtest_subtree.cpp
   gtest_switch.cpp
   gtest_wakeup.cpp
-  gtest_logger_zmq.cpp
 )
+
+if( ZMQ_FOUND )
+    LIST( APPEND BT_TESTS gtest_logger_zmq.cpp)
+endif()
 
 if( BT_COROUTINES )
     LIST( APPEND BT_TESTS gtest_coroutines.cpp)
