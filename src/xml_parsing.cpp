@@ -213,7 +213,7 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
   // Verify the validity of the XML before adding any behavior trees to the parser's list of registered trees
   VerifyXML(xml_text, registered_nodes);
 
-  // Validate each BehaviorTree within the XML
+  // Register each BehaviorTree within the XML
   for (auto bt_node = xml_root->FirstChildElement("BehaviorTree"); bt_node != nullptr;
        bt_node = bt_node->NextSiblingElement("BehaviorTree"))
   {
