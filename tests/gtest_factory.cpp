@@ -447,3 +447,52 @@ const std::string xml_text_invalid = R"(
     ASSERT_EQ(trees.size(), 1);
     EXPECT_EQ(trees[0], "ValidTree");
 }
+
+TEST(BehaviorTreeFactory, RegisterInvalidXMLBadActionNodeThrows)
+{
+  // GIVEN an invalid tree
+  // This tree contains invalid XML because the action node is missing a trailing `/`.
+  // A valid line would read: <Action ID="AlwaysSuccess" />
+const std::string xml_text_invalid = R"(
+<root>
+    <BehaviorTree ID="InvalidTreeWithBadChild">
+      <Sequence name="seq">
+        <Action ID="AlwaysSuccess" >
+      </Sequence>
+    </BehaviorTree>
+</root> )";
+
+    BehaviorTreeFactory factory;
+    XMLParser parser(factory);
+
+    // WHEN we attempt to load an invalid tree
+    // THEN a RuntimeError exception is thrown
+    EXPECT_THROW(parser.loadFromText(xml_text_invalid), RuntimeError);
+
+    // THEN no tree is registered
+    auto trees = parser.registeredBehaviorTrees();
+    EXPECT_TRUE(trees.empty());
+}
+
+TEST(BehaviorTreeFactory, RegisterInvalidXMLNoRootThrows)
+{
+  // GIVEN an invalid tree
+  // This tree contains invalid XML because it does not have a root node
+const std::string xml_text_invalid = R"(
+    <BehaviorTree ID="InvalidTreeNoRoot">
+      <Sequence name="seq">
+        <Action ID="AlwaysSuccess" />
+      </Sequence>
+    </BehaviorTree> )";
+
+    BehaviorTreeFactory factory;
+    XMLParser parser(factory);
+
+    // WHEN we attempt to load an invalid tree
+    // THEN a RuntimeError exception is thrown
+    EXPECT_THROW(parser.loadFromText(xml_text_invalid), RuntimeError);
+
+    // THEN no tree is registered
+    auto trees = parser.registeredBehaviorTrees();
+    EXPECT_TRUE(trees.empty());
+}
