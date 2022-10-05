@@ -496,6 +496,7 @@ const std::string xml_text_invalid = R"(
     // THEN no tree is registered
     auto trees = parser.registeredBehaviorTrees();
     EXPECT_TRUE(trees.empty());
+}
 
 TEST(BehaviorTreeFactory, ParserClearRegisteredBehaviorTrees)
 {
