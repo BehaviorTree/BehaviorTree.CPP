@@ -407,3 +407,49 @@ TEST(BehaviorTreeFactory, DecoratorWithTwoChildrenThrows)
 
   ASSERT_THROW(factory.createTreeFromText(xml_text), BehaviorTreeException);
 }
+
+TEST(BehaviorTreeFactory, ParserClearRegisteredBehaviorTrees)
+{
+  const std::string tree_xml = R"(
+<root>
+    <BehaviorTree ID="Main">
+        <AlwaysSuccess />
+    </BehaviorTree>
+</root>
+)";
+
+  BehaviorTreeFactory factory;
+  XMLParser parser(factory);
+
+  ASSERT_NO_THROW(parser.loadFromText(tree_xml));
+
+  const auto trees = parser.registeredBehaviorTrees();
+  ASSERT_FALSE(trees.empty());
+
+  parser.clearInternalState();
+
+  const auto trees_after_clear = parser.registeredBehaviorTrees();
+  EXPECT_TRUE(trees_after_clear.empty());
+}
+
+TEST(BehaviorTreeFactory, FactoryClearRegisteredBehaviorTrees)
+{
+  BehaviorTreeFactory factory;
+  const std::string tree_xml = R"(
+<root>
+    <BehaviorTree ID="Main">
+        <AlwaysSuccess />
+    </BehaviorTree>
+</root>
+)";
+
+  ASSERT_NO_THROW(factory.registerBehaviorTreeFromText(tree_xml));
+
+  const auto trees = factory.registeredBehaviorTrees();
+  ASSERT_FALSE(trees.empty());
+
+  factory.clearRegisteredBehaviorTrees();
+
+  const auto trees_after_clear = factory.registeredBehaviorTrees();
+  EXPECT_TRUE(trees_after_clear.empty());
+}

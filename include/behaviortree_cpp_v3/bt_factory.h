@@ -317,6 +317,11 @@ public:
   std::vector<std::string> registeredBehaviorTrees() const;
 
   /**
+   * @brief Clear previously-registered behavior trees.
+   */
+  void clearRegisteredBehaviorTrees();
+
+  /**
      * @brief instantiateTreeNode creates an instance of a previously registered TreeNode.
      *
      * @param name     name of this particular instance
