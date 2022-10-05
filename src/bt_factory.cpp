@@ -227,12 +227,17 @@ void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::string& filena
 
 void BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string& xml_text)
 {
-  parser_->loadFromText(xml_text);
+  parser_->loadFromText(xml_text, true /* add_includes */);
 }
 
 std::vector<std::string> BehaviorTreeFactory::registeredBehaviorTrees() const
 {
   return parser_->registeredBehaviorTrees();
+}
+
+void BehaviorTreeFactory::clearRegisteredBehaviorTrees()
+{
+    parser_->clearInternalState();
 }
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
