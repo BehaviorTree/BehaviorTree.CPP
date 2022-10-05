@@ -199,6 +199,21 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
     current_path = previous_path;
   }
 
+  // Collect the names of all nodes registered with the behavior tree factory
+  std::unordered_map<std::string, BT::NodeType> registered_nodes;
+  for (const auto& it : factory.manifests())
+  {
+    registered_nodes.insert({it.first, it.second.type});
+  }
+
+  XMLPrinter printer;
+  doc->Print(&printer);
+  auto xml_text = std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
+
+  // Verify the validity of the XML before adding any behavior trees to the parser's list of registered trees
+  VerifyXML(xml_text, registered_nodes);
+
+  // Register each BehaviorTree within the XML
   for (auto bt_node = xml_root->FirstChildElement("BehaviorTree"); bt_node != nullptr;
        bt_node = bt_node->NextSiblingElement("BehaviorTree"))
   {
@@ -211,24 +226,9 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
     {
       tree_name = "BehaviorTree_" + std::to_string(suffix_count++);
     }
+
     tree_roots.insert({tree_name, bt_node});
   }
-
-  std::unordered_map<std::string, BT::NodeType> registered_nodes;
-  XMLPrinter printer;
-  doc->Print(&printer);
-  auto xml_text = std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
-
-  for (const auto& it : factory.manifests())
-  {
-    registered_nodes.insert({it.first, it.second.type});
-  }
-  for (const auto& it : tree_roots)
-  {
-    registered_nodes.insert({it.first, NodeType::SUBTREE});
-  }
-
-  VerifyXML(xml_text, registered_nodes);
 }
 
 void VerifyXML(const std::string& xml_text,
@@ -390,6 +390,14 @@ void VerifyXML(const std::string& xml_text,
                                        "attribute [ID]");
       }
     }
+    else if (StrEqual(name, "BehaviorTree"))
+    {
+      if (children_count != 1)
+      {
+        ThrowError(node->GetLineNum(), "The node <BehaviorTree> must have exactly 1 "
+                                       "child");
+      }
+    }
     else
     {
       // search in the factory and the list of subtrees
@@ -420,26 +428,10 @@ void VerifyXML(const std::string& xml_text,
     }
   };
 
-  std::vector<std::string> tree_names;
-  int tree_count = 0;
-
   for (auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
        bt_root = bt_root->NextSiblingElement("BehaviorTree"))
   {
-    tree_count++;
-    if (bt_root->Attribute("ID"))
-    {
-      tree_names.emplace_back(bt_root->Attribute("ID"));
-    }
-    if (ChildrenCount(bt_root) != 1)
-    {
-      ThrowError(bt_root->GetLineNum(), "The node <BehaviorTree> must have exactly "
-                                        "1 child");
-    }
-    else
-    {
-      recursiveStep(bt_root->FirstChildElement());
-    }
+    recursiveStep(bt_root);
   }
 }
 
