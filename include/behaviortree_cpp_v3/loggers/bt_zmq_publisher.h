@@ -37,7 +37,7 @@ private:
   TimePoint deadline_;
   std::mutex mutex_;
   std::atomic_bool send_pending_;
-
+  std::condition_variable send_condition_variable_;
   std::future<void> send_future_;
 
   struct Pimpl;

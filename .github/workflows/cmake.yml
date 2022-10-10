@@ -21,7 +21,7 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Install Dependencies (Linux)
-      run: sudo apt-get install libboost-dev
+      run: sudo apt-get install libboost-dev libzmq3-dev
       if: matrix.os == 'ubuntu-latest'
 
     - name: Create Build Environment
