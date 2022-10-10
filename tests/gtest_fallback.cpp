@@ -30,7 +30,7 @@ struct SimpleFallbackTest : testing::Test
     root.addChild(&condition);
     root.addChild(&action);
   }
-  ~SimpleFallbackTest()
+  ~SimpleFallbackTest() override
   {}
 };
 
@@ -51,7 +51,7 @@ struct ReactiveFallbackTest : testing::Test
     root.addChild(&condition_2);
     root.addChild(&action_1);
   }
-  ~ReactiveFallbackTest()
+  ~ReactiveFallbackTest() override
   {}
 };
 
@@ -67,7 +67,7 @@ struct SimpleFallbackWithMemoryTest : testing::Test
     root.addChild(&condition);
     root.addChild(&action);
   }
-  ~SimpleFallbackWithMemoryTest()
+  ~SimpleFallbackWithMemoryTest() override
   {}
 };
 
@@ -104,7 +104,7 @@ struct ComplexFallbackWithMemoryTest : testing::Test
       fal_actions.addChild(&action_2);
     }
   }
-  ~ComplexFallbackWithMemoryTest()
+  ~ComplexFallbackWithMemoryTest() override
   {}
 };
 

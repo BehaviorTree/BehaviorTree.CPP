@@ -23,7 +23,7 @@ using namespace BT;
 class BB_TestNode : public SyncActionNode
 {
 public:
-  BB_TestNode(const std::string& name, const NodeConfiguration& config) :
+  BB_TestNode(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 
@@ -33,7 +33,7 @@ public:
     auto res = getInput<int>("in_port");
     if (!res)
     {
-      throw RuntimeError("BB_TestNode needs input", res.error());
+      throw RuntimeError("BB_TestNode needs input: ", res.error());
     }
     value = res.value() * 2;
     if (!setOutput("out_port", value))
@@ -52,7 +52,7 @@ public:
 class BB_TypedTestNode : public SyncActionNode
 {
 public:
-  BB_TypedTestNode(const std::string& name, const NodeConfiguration& config) :
+  BB_TypedTestNode(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 
@@ -77,7 +77,7 @@ TEST(BlackboardTest, GetInputsFromBlackboard)
 {
   auto bb = Blackboard::create();
 
-  NodeConfiguration config;
+  NodeConfig config;
   assignDefaultRemapping<BB_TestNode>(config);
 
   config.blackboard = bb;
@@ -95,7 +95,7 @@ TEST(BlackboardTest, BasicRemapping)
 {
   auto bb = Blackboard::create();
 
-  NodeConfiguration config;
+  NodeConfig config;
 
   config.blackboard = bb;
   config.input_ports["in_port"] = "{my_input_port}";
@@ -112,7 +112,7 @@ TEST(BlackboardTest, GetInputsFromText)
 {
   auto bb = Blackboard::create();
 
-  NodeConfiguration config;
+  NodeConfig config;
   config.input_ports["in_port"] = "11";
 
   BB_TestNode missing_out("missing_output", config);
@@ -135,7 +135,7 @@ TEST(BlackboardTest, SetOutputFromText)
          <BehaviorTree ID="MainTree">
             <Sequence>
                 <BB_TestNode in_port="11" out_port="{my_port}"/>
-                <SetBlackboard output_key="my_port" value="-43" />
+                <Script code="my_port=-43" />
             </Sequence>
          </BehaviorTree>
      </root>
@@ -161,13 +161,13 @@ TEST(BlackboardTest, WithFactory)
     <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
             <Sequence>
-                <BB_TestNode name = "first" in_port="11"
+                <BB_TestNode in_port="11"
                              out_port="{my_input_port}"/>
 
-                <BB_TestNode name = "second" in_port="{my_input_port}"
+                <BB_TestNode in_port="{my_input_port}"
                              out_port="{my_input_port}" />
 
-                <BB_TestNode name = "third" in_port="{my_input_port}"
+                <BB_TestNode in_port="{my_input_port}"
                              out_port="{my_output_port}" />
             </Sequence>
         </BehaviorTree>

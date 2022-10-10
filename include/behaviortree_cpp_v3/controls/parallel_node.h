@@ -40,15 +40,15 @@ namespace BT
 class ParallelNode : public ControlNode
 {
 public:
-  ParallelNode(const std::string& name, int success_threshold, int failure_threshold = 1);
+  ParallelNode(const std::string& name);
 
-  ParallelNode(const std::string& name, const NodeConfiguration& config);
+  ParallelNode(const std::string& name, const NodeConfig& config);
 
   static PortsList providedPorts()
   {
-    return {InputPort<int>(THRESHOLD_SUCCESS, "number of childen which need to succeed "
-                                              "to "
-                                              "trigger a SUCCESS"),
+    return {InputPort<int>(THRESHOLD_SUCCESS, -1,
+                           "number of childen which need to succeed to trigger a "
+                           "SUCCESS"),
             InputPort<int>(THRESHOLD_FAILURE, 1,
                            "number of childen which need to fail to trigger a FAILURE")};
   }
@@ -59,18 +59,18 @@ public:
 
   size_t successThreshold() const;
   size_t failureThreshold() const;
-  void setSuccessThreshold(int threshold_M);
-  void setFailureThreshold(int threshold_M);
+  void setSuccessThreshold(int threshold);
+  void setFailureThreshold(int threshold);
 
 private:
   int success_threshold_;
   int failure_threshold_;
 
-  std::set<int> skip_list_;
+  std::set<size_t> skip_list_;
 
   bool read_parameter_from_ports_;
-  static constexpr const char* THRESHOLD_SUCCESS = "success_threshold";
-  static constexpr const char* THRESHOLD_FAILURE = "failure_threshold";
+  static constexpr const char* THRESHOLD_SUCCESS = "success_count";
+  static constexpr const char* THRESHOLD_FAILURE = "failure_count";
 
   virtual BT::NodeStatus tick() override;
 };

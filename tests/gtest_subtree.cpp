@@ -12,15 +12,15 @@ TEST(SubTree, SiblingPorts_Issue_72)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="hello" output_key="myParam" />
-            <SubTree ID="mySubtree" param="myParam" />
-            <SetBlackboard value="world" output_key="myParam" />
-            <SubTree ID="mySubtree" param="myParam" />
+            <Script code = " myParam = 'hello' " />
+            <SubTree ID="mySubtree" param="{myParam}" />
+            <Script code = " myParam = 'world' " />
+            <SubTree ID="mySubtree" param="{myParam}" />
         </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="mySubtree">
-            <SaySomething ID="AlwaysSuccess" message="{param}" />
+            <SaySomething message="{param}" />
     </BehaviorTree>
 </root> )";
 
@@ -29,22 +29,21 @@ TEST(SubTree, SiblingPorts_Issue_72)
 
   Tree tree = factory.createTreeFromText(xml_text);
 
-  for (auto& bb : tree.blackboard_stack)
+  for (auto& subtree : tree.subtrees)
   {
-    bb->debugMessage();
+    subtree->blackboard->debugMessage();
     std::cout << "-----" << std::endl;
   }
 
-  auto ret = tree.tickRoot();
-
-  ASSERT_EQ(ret, NodeStatus::SUCCESS);
-  ASSERT_EQ(tree.blackboard_stack.size(), 3);
+  auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(tree.subtrees.size(), 3);
 }
 
 class CopyPorts : public BT::SyncActionNode
 {
 public:
-  CopyPorts(const std::string& name, const BT::NodeConfiguration& config) :
+  CopyPorts(const std::string& name, const BT::NodeConfig& config) :
     BT::SyncActionNode(name, config)
   {}
 
@@ -73,8 +72,8 @@ TEST(SubTree, GoodRemapping)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="hello" output_key="thoughts" />
-            <SubTree ID="CopySubtree" in_arg="thoughts" out_arg="greetings"/>
+            <Script code = " thoughts = 'hello' " />
+            <SubTree ID="CopySubtree" in_arg="{thoughts}" out_arg="{greetings}"/>
             <SaySomething  message="{greetings}" />
         </Sequence>
     </BehaviorTree>
@@ -89,8 +88,9 @@ TEST(SubTree, GoodRemapping)
   factory.registerNodeType<CopyPorts>("CopyPorts");
 
   Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+
+  auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
 TEST(SubTree, BadRemapping)
@@ -104,8 +104,8 @@ TEST(SubTree, BadRemapping)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="hello" output_key="thoughts" />
-            <SubTree ID="CopySubtree" out_arg="greetings"/>
+            <Script code = " thoughts='hello' " />
+            <SubTree ID="CopySubtree" out_arg="{greetings}"/>
             <SaySomething  message="{greetings}" />
         </Sequence>
     </BehaviorTree>
@@ -123,8 +123,8 @@ TEST(SubTree, BadRemapping)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="hello" output_key="thoughts" />
-            <SubTree ID="CopySubtree" in_arg="thoughts"/>
+            <Script code = " thoughts='hello' " />
+            <SubTree ID="CopySubtree" in_arg="{thoughts}"/>
             <SaySomething  message="{greetings}" />
         </Sequence>
     </BehaviorTree>
@@ -146,11 +146,11 @@ TEST(SubTree, SubtreePlusA)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="Hello" output_key="myParam" />
-            <SubTreePlus ID="mySubtree" param="{myParam}" />
-            <SubTreePlus ID="mySubtree" param="World" />
-            <SetBlackboard value="Auto remapped" output_key="param" />
-            <SubTreePlus ID="mySubtree" __autoremap="1"  />
+            <Script code = "myParam = 'Hello' " />
+            <SubTree ID="mySubtree" param="{myParam}" />
+            <SubTree ID="mySubtree" param="World" />
+            <Script code = "param = 'Auto remapped' " />
+            <SubTree ID="mySubtree" _autoremap="1"  />
         </Sequence>
     </BehaviorTree>
 
@@ -163,8 +163,9 @@ TEST(SubTree, SubtreePlusA)
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
   Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+
+  auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
 TEST(SubTree, SubtreePlusB)
@@ -175,9 +176,8 @@ TEST(SubTree, SubtreePlusB)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="Hello World" output_key="myParam" />
-            <SetBlackboard value="Auto remapped" output_key="param3" />
-            <SubTreePlus ID="mySubtree" __autoremap="1" param1="{myParam}" param2="Straight Talking" />
+            <Script code = "myParam = 'Hello World'; param3='Auto remapped' " />
+            <SubTree ID="mySubtree" _autoremap="1" param1="{myParam}" param2="Straight Talking" />
         </Sequence>
     </BehaviorTree>
 
@@ -194,44 +194,15 @@ TEST(SubTree, SubtreePlusB)
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
   Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS);
-}
 
-TEST(SubTree, SubtreePlusC)
-{
-  static const char* xml_text = R"(
-
-<root main_tree_to_execute = "MainTree" >
-
-    <BehaviorTree ID="MainTree">
-        <Sequence>
-            <SetBlackboard value="Hello" output_key="param1" />
-            <SetBlackboard value="World" output_key="param2" />
-            <SubTree ID="mySubtree" __shared_blackboard="true"/>
-        </Sequence>
-    </BehaviorTree>
-
-    <BehaviorTree ID="mySubtree">
-        <Sequence>
-            <SaySomething message="{param1}" />
-            <SaySomething message="{param2}" />
-        </Sequence>
-    </BehaviorTree>
-</root> )";
-
-  BehaviorTreeFactory factory;
-  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
-
-  Tree tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+  auto status = tree.tickRoot();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
 class ReadInConstructor : public BT::SyncActionNode
 {
 public:
-  ReadInConstructor(const std::string& name, const BT::NodeConfiguration& config) :
+  ReadInConstructor(const std::string& name, const BT::NodeConfig& config) :
     BT::SyncActionNode(name, config)
   {
     auto msg = getInput<std::string>("message");
@@ -253,7 +224,7 @@ public:
 
 TEST(SubTree, SubtreePlusD)
 {
-  BT::NodeConfiguration config;
+  BT::NodeConfig config;
   config.blackboard = BT::Blackboard::create();
   static const char* xml_text = R"(
 
@@ -261,7 +232,7 @@ TEST(SubTree, SubtreePlusD)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SubTreePlus ID="mySubtree" __autoremap="1"/>
+            <SubTree ID="mySubtree" _autoremap="1"/>
         </Sequence>
     </BehaviorTree>
     <BehaviorTree ID="mySubtree">
@@ -273,40 +244,7 @@ TEST(SubTree, SubtreePlusD)
   factory.registerNodeType<ReadInConstructor>("ReadInConstructor");
   config.blackboard->set("message", "hello");
   BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
-  auto ret = tree.tickRoot();
-  ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
-}
 
-TEST(SubTree, SubtreeIssue433)
-{
-  BT::NodeConfiguration config;
-  config.blackboard = BT::Blackboard::create();
-  static const char* xml_text = R"(
-
-<root main_tree_to_execute = "TestTree" >
-    <BehaviorTree ID="Subtree1">
-        <Decorator ID="Repeat" num_cycles="{port_to_use}">
-            <Action ID="AlwaysSuccess"/>
-        </Decorator>
-    </BehaviorTree>
-
-    <BehaviorTree ID="Subtree2">
-        <Action ID="SetBlackboard" output_key="test_port" value="{port_to_read}"/>
-    </BehaviorTree>
-
-    <BehaviorTree ID="TestTree">
-        <Sequence>
-            <Action ID="SetBlackboard" output_key="test_port" value="1"/>
-            <SubTree ID="Subtree1" port_to_use="test_port"/>
-            <SubTree ID="Subtree2" port_to_read="test_port"/>
-        </Sequence>
-    </BehaviorTree>
-</root> )";
-
-  BT::BehaviorTreeFactory factory;
-
-  BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
-  auto ret = tree.tickRoot();
-
-  ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
+  auto status = tree.tickRoot();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
 }

@@ -35,7 +35,7 @@ struct MockedAsyncActionNode : public BT::AsyncActionNode
 // The fixture taking care of the node-setup.
 struct MockedAsyncActionFixture : public testing::Test
 {
-  BT::NodeConfiguration config;
+  BT::NodeConfig config;
   MockedAsyncActionNode sn;
   MockedAsyncActionFixture() : sn("node", config)
   {}

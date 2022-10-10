@@ -24,23 +24,21 @@ static const char* xml_text = R"(
 <root main_tree_to_execute = "MainTree">
 
     <BehaviorTree ID="MainTree">
-
-        <Sequence name="main_sequence">
-            <SetBlackboard output_key="move_goal" value="1;2;3" />
-            <SubTree ID="MoveRobot" target="move_goal" output="move_result" />
+        <Sequence>
+            <Script script=" move_goal='1;2;3' " />
+            <SubTree ID="MoveRobot" target="{move_goal}" result="{move_result}" />
             <SaySomething message="{move_result}"/>
         </Sequence>
-
     </BehaviorTree>
 
     <BehaviorTree ID="MoveRobot">
-        <Fallback name="move_robot_main">
-            <SequenceStar>
-                <MoveBase       goal="{target}"/>
-                <SetBlackboard output_key="output" value="mission accomplished" />
-            </SequenceStar>
+        <Fallback>
+            <Sequence>
+                <MoveBase  goal="{target}"/>
+                <Script script=" result:='goal reached' " />
+            </Sequence>
             <ForceFailure>
-                <SetBlackboard output_key="output" value="mission failed" />
+                <Script script=" result:='error' " />
             </ForceFailure>
         </Fallback>
     </BehaviorTree>
@@ -62,37 +60,25 @@ int main()
 
   auto tree = factory.createTreeFromText(xml_text);
 
-  NodeStatus status = NodeStatus::RUNNING;
-  // Keep on ticking until you get either a SUCCESS or FAILURE state
-  while (status == NodeStatus::RUNNING)
-  {
-    status = tree.tickRoot();
-    // IMPORTANT: add sleep to avoid busy loops.
-    // You should use Tree::sleep(). Don't be afraid to run this at 1 KHz.
-    tree.sleep(std::chrono::milliseconds(1));
-  }
+  tree.tickRoot(Tree::WHILE_RUNNING);
 
   // let's visualize some information about the current state of the blackboards.
-  std::cout << "--------------" << std::endl;
-  tree.blackboard_stack[0]->debugMessage();
-  std::cout << "--------------" << std::endl;
-  tree.blackboard_stack[1]->debugMessage();
-  std::cout << "--------------" << std::endl;
+  std::cout << "\n------ First BB ------" << std::endl;
+  tree.subtrees[0]->blackboard->debugMessage();
+  std::cout << "\n------ Second BB------" << std::endl;
+  tree.subtrees[1]->blackboard->debugMessage();
 
   return 0;
 }
 
 /* Expected output:
 
-    [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
-    [ MoveBase: FINISHED ]
-    Robot says: mission accomplished
-    --------------
-    move_result (std::string) -> full
-    move_goal (Pose2D) -> full
-    --------------
-    output (std::string) -> remapped to parent [move_result]
-    target (Pose2D) -> remapped to parent [move_goal]
-    --------------
+------ First BB ------
+move_result (std::string)
+move_goal (Pose2D)
+
+------ Second BB------
+[result] remapped to port of parent tree [move_result]
+[target] remapped to port of parent tree [move_goal]
 
 */

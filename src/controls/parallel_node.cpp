@@ -21,19 +21,18 @@ namespace BT
 constexpr const char* ParallelNode::THRESHOLD_FAILURE;
 constexpr const char* ParallelNode::THRESHOLD_SUCCESS;
 
-ParallelNode::ParallelNode(const std::string& name, int success_threshold,
-                           int failure_threshold) :
+ParallelNode::ParallelNode(const std::string& name) :
   ControlNode::ControlNode(name, {}),
-  success_threshold_(success_threshold),
-  failure_threshold_(failure_threshold),
+  success_threshold_(-1),
+  failure_threshold_(1),
   read_parameter_from_ports_(false)
 {
   setRegistrationID("Parallel");
 }
 
-ParallelNode::ParallelNode(const std::string& name, const NodeConfiguration& config) :
+ParallelNode::ParallelNode(const std::string& name, const NodeConfig& config) :
   ControlNode::ControlNode(name, config),
-  success_threshold_(1),
+  success_threshold_(-1),
   failure_threshold_(1),
   read_parameter_from_ports_(true)
 {}
@@ -69,29 +68,26 @@ NodeStatus ParallelNode::tick()
   }
 
   // Routing the tree according to the sequence node's logic:
-  for (unsigned int i = 0; i < children_count; i++)
+  for (size_t i = 0; i < children_count; i++)
   {
     TreeNode* child_node = children_nodes_[i];
 
-    bool in_skip_list = (skip_list_.count(i) != 0);
+    bool const in_skip_list = (skip_list_.count(i) != 0);
 
-    NodeStatus child_status;
-    if (in_skip_list)
+    NodeStatus const prev_status = child_node->status();
+    NodeStatus const child_status =
+        in_skip_list ? prev_status : child_node->executeTick();
+
+    // switch to RUNNING state as soon as you find an active child
+    if (child_status != NodeStatus::SKIPPED)
     {
-      child_status = child_node->status();
-    }
-    else
-    {
-      child_status = child_node->executeTick();
+      setStatus(NodeStatus::RUNNING);
     }
 
     switch (child_status)
     {
       case NodeStatus::SUCCESS: {
-        if (!in_skip_list)
-        {
-          skip_list_.insert(i);
-        }
+        skip_list_.insert(i);
         success_childred_num++;
 
         if (success_childred_num == successThreshold())
@@ -104,10 +100,7 @@ NodeStatus ParallelNode::tick()
       break;
 
       case NodeStatus::FAILURE: {
-        if (!in_skip_list)
-        {
-          skip_list_.insert(i);
-        }
+        skip_list_.insert(i);
         failure_childred_num++;
 
         // It fails if it is not possible to succeed anymore or if
@@ -123,17 +116,22 @@ NodeStatus ParallelNode::tick()
       break;
 
       case NodeStatus::RUNNING: {
-        // do nothing
+        // Still working. Check the next
       }
       break;
 
-      default: {
-        throw LogicError("A child node must never return IDLE");
+      case NodeStatus::SKIPPED: {
+        // Node requested to be skipped or halted. Check the next
+      }
+      break;
+
+      case NodeStatus::IDLE: {
+        throw LogicError("[", name(), "]: A children should not return IDLE");
       }
     }
   }
-
-  return NodeStatus::RUNNING;
+  // Skip if ALL the nodes have been skipped
+  return status() == (NodeStatus::RUNNING) ? NodeStatus::RUNNING : NodeStatus::SKIPPED;
 }
 
 void ParallelNode::halt()
@@ -144,26 +142,36 @@ void ParallelNode::halt()
 
 size_t ParallelNode::successThreshold() const
 {
-  return success_threshold_ < 0 ?
-             std::max(children_nodes_.size() + success_threshold_ + 1, size_t(0)) :
-             success_threshold_;
+  if (success_threshold_ < 0)
+  {
+    return size_t(std::max(int(children_nodes_.size()) + success_threshold_ + 1, 0));
+  }
+  else
+  {
+    return size_t(success_threshold_);
+  }
 }
 
 size_t ParallelNode::failureThreshold() const
 {
-  return failure_threshold_ < 0 ?
-             std::max(children_nodes_.size() + failure_threshold_ + 1, size_t(0)) :
-             failure_threshold_;
+  if (failure_threshold_ < 0)
+  {
+    return size_t(std::max(int(children_nodes_.size()) + failure_threshold_ + 1, 0));
+  }
+  else
+  {
+    return size_t(failure_threshold_);
+  }
 }
 
-void ParallelNode::setSuccessThreshold(int threshold_M)
+void ParallelNode::setSuccessThreshold(int threshold)
 {
-  success_threshold_ = threshold_M;
+  success_threshold_ = threshold;
 }
 
-void ParallelNode::setFailureThreshold(int threshold_M)
+void ParallelNode::setFailureThreshold(int threshold)
 {
-  failure_threshold_ = threshold_M;
+  failure_threshold_ = threshold;
 }
 
 }   // namespace BT

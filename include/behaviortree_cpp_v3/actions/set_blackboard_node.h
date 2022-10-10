@@ -30,7 +30,7 @@ namespace BT
 class SetBlackboard : public SyncActionNode
 {
 public:
-  SetBlackboard(const std::string& name, const NodeConfiguration& config) :
+  SetBlackboard(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {
     setRegistrationID("SetBlackboard");

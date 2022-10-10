@@ -10,11 +10,11 @@
 #include <functional>
 #include <chrono>
 #include <memory>
-#include "behaviortree_cpp_v3/utils/string_view.hpp"
+#include <string_view>
+
 #include "behaviortree_cpp_v3/utils/safe_any.hpp"
 #include "behaviortree_cpp_v3/exceptions.h"
 #include "behaviortree_cpp_v3/utils/expected.hpp"
-#include "behaviortree_cpp_v3/utils/make_unique.hpp"
 
 namespace BT
 {
@@ -35,10 +35,16 @@ enum class NodeType
 enum class NodeStatus
 {
   IDLE = 0,
-  RUNNING,
-  SUCCESS,
-  FAILURE
+  RUNNING = 1,
+  SUCCESS = 2,
+  FAILURE = 3,
+  SKIPPED = 4,
 };
+
+inline bool StatusActive(const NodeStatus& status)
+{
+  return status != NodeStatus::IDLE && status != NodeStatus::SKIPPED;
+}
 
 inline bool StatusCompleted(const NodeStatus& status)
 {
@@ -52,7 +58,7 @@ enum class PortDirection
   INOUT
 };
 
-typedef nonstd::string_view StringView;
+using StringView = std::string_view;
 
 /**
  * convertFromString is used to convert a string into a custom type.
@@ -216,23 +222,26 @@ using Optional = nonstd::expected<T, std::string>;
  * */
 using Result = Optional<void>;
 
-const std::unordered_set<std::string> ReservedPortNames = {"ID", "name", "_description"};
+bool IsAllowedPortName(StringView str);
 
 class PortInfo
 {
 public:
+  struct AnyTypeAllowed
+  {
+  };
+
   PortInfo(PortDirection direction = PortDirection::INOUT) :
-    _type(direction), _info(nullptr)
+    _type(direction), _type_info(typeid(AnyTypeAllowed))
   {}
 
-  PortInfo(PortDirection direction, const std::type_info& type_info,
-           StringConverter conv) :
-    _type(direction), _info(&type_info), _converter(conv)
+  PortInfo(PortDirection direction, std::type_index type_info, StringConverter conv) :
+    _type(direction), _type_info(type_info), _converter(conv)
   {}
 
   PortDirection direction() const;
 
-  const std::type_info* type() const;
+  const std::type_index& type() const;
 
   Any parseString(const char* str) const;
 
@@ -253,22 +262,33 @@ public:
 
   const std::string& defaultValue() const;
 
+  bool isStronglyTyped() const
+  {
+    return _type_info == typeid(AnyTypeAllowed);
+  }
+
+  const StringConverter& converter() const
+  {
+    return _converter;
+  }
+
 private:
   PortDirection _type;
-  const std::type_info* _info;
+  std::type_index _type_info;
   StringConverter _converter;
   std::string description_;
   std::string default_value_;
 };
 
-template <typename T = void>
+template <typename T = PortInfo::AnyTypeAllowed>
 std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView name,
                                             StringView description = {})
 {
   auto sname = static_cast<std::string>(name);
-  if (ReservedPortNames.count(sname) != 0)
+  if (!IsAllowedPortName(sname))
   {
-    throw std::runtime_error("A port can not use a reserved name. See ReservedPortNames");
+    throw RuntimeError("The name of a port must start with an alphabetic characted. "
+                       "Underscore is reserved.");
   }
 
   std::pair<std::string, PortInfo> out;

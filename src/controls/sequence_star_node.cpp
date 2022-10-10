@@ -15,22 +15,28 @@
 
 namespace BT
 {
-SequenceStarNode::SequenceStarNode(const std::string& name) :
+SequenceWithMemory::SequenceWithMemory(const std::string& name) :
   ControlNode::ControlNode(name, {}), current_child_idx_(0)
 {
   setRegistrationID("SequenceStar");
 }
 
-NodeStatus SequenceStarNode::tick()
+NodeStatus SequenceWithMemory::tick()
 {
   const size_t children_count = children_nodes_.size();
-
-  setStatus(NodeStatus::RUNNING);
 
   while (current_child_idx_ < children_count)
   {
     TreeNode* current_child_node = children_nodes_[current_child_idx_];
+
+    auto prev_status = current_child_node->status();
     const NodeStatus child_status = current_child_node->executeTick();
+
+    // switch to RUNNING state as soon as you find an active child
+    if (child_status != NodeStatus::SKIPPED)
+    {
+      setStatus(NodeStatus::RUNNING);
+    }
 
     switch (child_status)
     {
@@ -48,11 +54,25 @@ NodeStatus SequenceStarNode::tick()
       }
       case NodeStatus::SUCCESS: {
         current_child_idx_++;
+        // Return the execution flow if the child is async,
+        // to make this interruptable.
+        if (requiresWakeUp() && prev_status == NodeStatus::IDLE &&
+            current_child_idx_ < children_count)
+        {
+          emitWakeUpSignal();
+          return NodeStatus::RUNNING;
+        }
+      }
+      break;
+
+      case NodeStatus::SKIPPED: {
+        // It was requested to skip this node
+        current_child_idx_++;
       }
       break;
 
       case NodeStatus::IDLE: {
-        throw LogicError("A child node must never return IDLE");
+        throw LogicError("[", name(), "]: A children should not return IDLE");
       }
     }   // end switch
   }     // end while loop
@@ -63,10 +83,11 @@ NodeStatus SequenceStarNode::tick()
     haltChildren();
     current_child_idx_ = 0;
   }
-  return NodeStatus::SUCCESS;
+  // Skip if ALL the nodes have been skipped
+  return status() == (NodeStatus::RUNNING) ? NodeStatus::SUCCESS : NodeStatus::SKIPPED;
 }
 
-void SequenceStarNode::halt()
+void SequenceWithMemory::halt()
 {
   // DO NOT reset current_child_idx_ on halt
   ControlNode::halt();

@@ -15,7 +15,7 @@
 
 namespace BT
 {
-DecoratorNode::DecoratorNode(const std::string& name, const NodeConfiguration& config) :
+DecoratorNode::DecoratorNode(const std::string& name, const NodeConfig& config) :
   TreeNode::TreeNode(name, config), child_node_(nullptr)
 {}
 
@@ -52,14 +52,14 @@ void DecoratorNode::haltChild()
   }
   if (child_node_->status() == NodeStatus::RUNNING)
   {
-    child_node_->halt();
+    child_node_->haltNode();
   }
   child_node_->resetStatus();
 }
 
 SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name,
                                          TickFunctor tick_functor,
-                                         const NodeConfiguration& config) :
+                                         const NodeConfig& config) :
   DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
 {}
 

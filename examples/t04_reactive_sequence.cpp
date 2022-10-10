@@ -9,8 +9,7 @@ using namespace BT;
  *
  *  - The difference between Sequence and ReactiveSequence
  *
- *  - How to create an asynchronous ActionNode (an action that is execute in
- *    its own thread).
+ *  - How to create an asynchronous ActionNode.
 */
 
 // clang-format off
@@ -51,17 +50,10 @@ static const char* xml_text_reactive = R"(
 
 // clang-format on
 
-void Assert(bool condition)
-{
-  if (!condition)
-    throw RuntimeError("this is not what I expected");
-}
+using namespace DummyNodes;
 
 int main()
 {
-  using namespace DummyNodes;
-  using std::chrono::milliseconds;
-
   BehaviorTreeFactory factory;
   factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
   factory.registerNodeType<MoveBaseAction>("MoveBase");
@@ -76,60 +68,33 @@ int main()
 
   for (auto& xml_text : {xml_text_sequence, xml_text_reactive})
   {
-    std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
+    std::cout << "\n------------ BUILDING A NEW TREE ------------\n\n";
 
     auto tree = factory.createTreeFromText(xml_text);
 
-    NodeStatus status;
-
-    std::cout << "\n--- 1st executeTick() ---" << std::endl;
+    NodeStatus status = NodeStatus::IDLE;
+#if 0
+    // Tick the root until we receive either SUCCESS or RUNNING
+    // same as: tree.tickRoot(Tree::WHILE_RUNNING)
+    std::cout << "--- ticking\n";
     status = tree.tickRoot();
-    Assert(status == NodeStatus::RUNNING);
+    std::cout << "--- status: " << toStr(status) << "\n\n";
+#else
+    // If we need to run code between one tick() and the next,
+    // we can implement our own while loop
+    while (status != NodeStatus::SUCCESS)
+    {
+      std::cout << "--- ticking\n";
+      status = tree.tickRoot(Tree::ONCE);
+      std::cout << "--- status: " << toStr(status) << "\n\n";
 
-    tree.sleep(milliseconds(150));
-    std::cout << "\n--- 2nd executeTick() ---" << std::endl;
-    status = tree.tickRoot();
-    Assert(status == NodeStatus::RUNNING);
-
-    tree.sleep(milliseconds(150));
-    std::cout << "\n--- 3rd executeTick() ---" << std::endl;
-    status = tree.tickRoot();
-    Assert(status == NodeStatus::SUCCESS);
-
-    std::cout << std::endl;
+      // if still running, add some wait time
+      if (status == NodeStatus::RUNNING)
+      {
+        tree.sleep(std::chrono::milliseconds(100));
+      }
+    }
+#endif
   }
   return 0;
 }
-
-/*
- Expected output:
-
------------- BUILDING A NEW TREE ------------
-
---- 1st executeTick() ---
-[ Battery: OK ]
-Robot says: "mission started..."
-[ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
-
---- 2nd executeTick() ---
-[ MoveBase: FINISHED ]
-
---- 3rd executeTick() ---
-Robot says: "mission completed!"
-
------------- BUILDING A NEW TREE ------------
-
---- 1st executeTick() ---
-[ Battery: OK ]
-Robot says: "mission started..."
-[ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
-
---- 2nd executeTick() ---
-[ Battery: OK ]
-[ MoveBase: FINISHED ]
-
---- 3rd executeTick() ---
-[ Battery: OK ]
-Robot says: "mission completed!"
-
-*/

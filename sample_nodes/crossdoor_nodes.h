@@ -2,24 +2,28 @@
 
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-using namespace BT;
-
-namespace CrossDoor
+class CrossDoor
 {
+public:
+    void registerNodes(BT::BehaviorTreeFactory& factory);
 
-BT::NodeStatus IsDoorOpen();
+    // SUCCESS if _door_open == true
+    BT::NodeStatus isDoorClosed();
 
-BT::NodeStatus IsDoorLocked();
+    // SUCCESS if _door_open == true
+    BT::NodeStatus passThroughDoor();
 
-BT::NodeStatus UnlockDoor();
+    // After 3 attempts, will open a locked door
+    BT::NodeStatus pickLock();
 
-BT::NodeStatus PassThroughDoor();
+    // FAILURE if door locked
+    BT::NodeStatus openDoor();
 
-BT::NodeStatus PassThroughWindow();
+    // WILL always open a door
+    BT::NodeStatus smashDoor();
 
-BT::NodeStatus OpenDoor();
-
-BT::NodeStatus CloseDoor();
-
-void RegisterNodes(BT::BehaviorTreeFactory& factory);
-}
+private:
+    bool _door_open   = false;
+    bool _door_locked = true;
+    int _pick_attempts = 0;
+};

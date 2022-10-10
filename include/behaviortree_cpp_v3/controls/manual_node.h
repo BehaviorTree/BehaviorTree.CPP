@@ -22,7 +22,7 @@ namespace BT
 class ManualSelectorNode : public ControlNode
 {
 public:
-  ManualSelectorNode(const std::string& name, const NodeConfiguration& config);
+  ManualSelectorNode(const std::string& name, const NodeConfig& config);
 
   virtual ~ManualSelectorNode() override = default;
 

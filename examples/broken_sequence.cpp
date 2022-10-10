@@ -31,7 +31,6 @@ public:
   virtual void halt() override
   {
     stop_loop_ = true;
-    setStatus(NodeStatus::IDLE);
   }
 
 private:

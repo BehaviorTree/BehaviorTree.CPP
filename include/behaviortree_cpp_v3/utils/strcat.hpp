@@ -1,7 +1,7 @@
 #ifndef STRCAT_HPP
 #define STRCAT_HPP
 
-#include "string_view.hpp"
+#include <string_view>
 #include <array>
 #include <cstdint>
 #include <string>
@@ -21,7 +21,7 @@ namespace BT {
 namespace strings_internal {
 
 inline void AppendPieces(std::string* dest,
-                         std::initializer_list<nonstd::string_view> pieces)
+                         std::initializer_list<std::string_view> pieces)
 {
     size_t size = 0;
     for (const auto& piece: pieces)
@@ -35,7 +35,7 @@ inline void AppendPieces(std::string* dest,
     }
 }
 
-inline std::string CatPieces(std::initializer_list<nonstd::string_view> pieces)
+inline std::string CatPieces(std::initializer_list<std::string_view> pieces)
 {
     std::string out;
     AppendPieces(&out, std::move(pieces));
@@ -46,54 +46,54 @@ inline std::string CatPieces(std::initializer_list<nonstd::string_view> pieces)
 
 inline std::string StrCat() { return std::string(); }
 
-inline std::string StrCat(const nonstd::string_view& a) {
+inline std::string StrCat(const std::string_view& a) {
     return std::string(a.data(), a.size());
 }
 
-inline std::string StrCat(const nonstd::string_view& a,
-                   const nonstd::string_view& b)
+inline std::string StrCat(const std::string_view& a,
+                   const std::string_view& b)
 {
     return strings_internal::CatPieces( {a, b} );
 }
 
-inline std::string StrCat(const nonstd::string_view& a,
-                          const nonstd::string_view& b,
-                          const nonstd::string_view& c)
+inline std::string StrCat(const std::string_view& a,
+                          const std::string_view& b,
+                          const std::string_view& c)
 {
     return strings_internal::CatPieces( {a, b, c} );
 }
 
 // Support 4 or more arguments
 template <typename... AV>
-inline std::string StrCat(const nonstd::string_view& a,
-                          const nonstd::string_view& b,
-                          const nonstd::string_view& c,
-                          const nonstd::string_view& d,
+inline std::string StrCat(const std::string_view& a,
+                          const std::string_view& b,
+                          const std::string_view& c,
+                          const std::string_view& d,
                           const AV&... args)
 {
-    return strings_internal::CatPieces( {a, b, c, d,  static_cast<const nonstd::string_view&>(args)...});
+    return strings_internal::CatPieces( {a, b, c, d,  static_cast<const std::string_view&>(args)...});
 }
 
 //-----------------------------------------------
 
 
 inline void StrAppend(std::string* destination,
-                      const nonstd::string_view& a)
+                      const std::string_view& a)
 {
     destination->append( a.data(), a.size());
 }
 
 inline void StrAppend(std::string* destination,
-                      const nonstd::string_view& a,
-                      const nonstd::string_view& b)
+                      const std::string_view& a,
+                      const std::string_view& b)
 {
     strings_internal::AppendPieces( destination, {a, b} );
 }
 
 inline void StrAppend(std::string* destination,
-                      const nonstd::string_view& a,
-                      const nonstd::string_view& b,
-                      const nonstd::string_view& c)
+                      const std::string_view& a,
+                      const std::string_view& b,
+                      const std::string_view& c)
 {
     strings_internal::AppendPieces( destination, {a, b, c} );
 }
@@ -101,13 +101,13 @@ inline void StrAppend(std::string* destination,
 // Support 4 or more arguments
 template <typename... AV>
 inline void StrAppend(std::string* destination,
-                      const nonstd::string_view& a,
-                      const nonstd::string_view& b,
-                      const nonstd::string_view& c,
-                      const nonstd::string_view& d,
+                      const std::string_view& a,
+                      const std::string_view& b,
+                      const std::string_view& c,
+                      const std::string_view& d,
                       const AV&... args)
 {
-    strings_internal::AppendPieces( destination, {a, b, c, d,  static_cast<const nonstd::string_view&>(args)...});
+    strings_internal::AppendPieces( destination, {a, b, c, d,  static_cast<const std::string_view&>(args)...});
 }
 
 

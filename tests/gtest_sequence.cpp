@@ -21,16 +21,16 @@ using std::chrono::milliseconds;
 struct SimpleSequenceTest : testing::Test
 {
   BT::SequenceNode root;
-  BT::AsyncActionTest action;
   BT::ConditionTestNode condition;
+  BT::AsyncActionTest action;
 
   SimpleSequenceTest() :
-    root("root_sequence"), action("action", milliseconds(100)), condition("condition")
+    root("root_sequence"), condition("condition"), action("action", milliseconds(100))
   {
     root.addChild(&condition);
     root.addChild(&action);
   }
-  ~SimpleSequenceTest()
+  ~SimpleSequenceTest() override
   {}
 };
 
@@ -57,7 +57,7 @@ struct ComplexSequenceTest : testing::Test
     }
     root.addChild(&action_1);
   }
-  ~ComplexSequenceTest()
+  ~ComplexSequenceTest() override
   {}
 };
 
@@ -81,7 +81,7 @@ struct SequenceTripleActionTest : testing::Test
     root.addChild(&action_2);
     root.addChild(&action_3);
   }
-  ~SequenceTripleActionTest()
+  ~SequenceTripleActionTest() override
   {}
 };
 
@@ -116,13 +116,13 @@ struct ComplexSequence2ActionsTest : testing::Test
       seq_2.addChild(&action_2);
     }
   }
-  ~ComplexSequence2ActionsTest()
+  ~ComplexSequence2ActionsTest() override
   {}
 };
 
 struct SimpleSequenceWithMemoryTest : testing::Test
 {
-  BT::SequenceStarNode root;
+  BT::SequenceWithMemory root;
   BT::AsyncActionTest action;
   BT::ConditionTestNode condition;
 
@@ -132,13 +132,13 @@ struct SimpleSequenceWithMemoryTest : testing::Test
     root.addChild(&condition);
     root.addChild(&action);
   }
-  ~SimpleSequenceWithMemoryTest()
+  ~SimpleSequenceWithMemoryTest() override
   {}
 };
 
 struct ComplexSequenceWithMemoryTest : testing::Test
 {
-  BT::SequenceStarNode root;
+  BT::SequenceWithMemory root;
 
   BT::AsyncActionTest action_1;
   BT::AsyncActionTest action_2;
@@ -146,8 +146,8 @@ struct ComplexSequenceWithMemoryTest : testing::Test
   BT::ConditionTestNode condition_1;
   BT::ConditionTestNode condition_2;
 
-  BT::SequenceStarNode seq_conditions;
-  BT::SequenceStarNode seq_actions;
+  BT::SequenceWithMemory seq_conditions;
+  BT::SequenceWithMemory seq_actions;
 
   ComplexSequenceWithMemoryTest() :
     root("root_sequence"),
@@ -169,7 +169,7 @@ struct ComplexSequenceWithMemoryTest : testing::Test
       seq_actions.addChild(&action_2);
     }
   }
-  ~ComplexSequenceWithMemoryTest()
+  ~ComplexSequenceWithMemoryTest() override
   {}
 };
 
@@ -183,18 +183,19 @@ struct SimpleParallelTest : testing::Test
   BT::ConditionTestNode condition_2;
 
   SimpleParallelTest() :
-    root("root_parallel", 4),
+    root("root_parallel"),
     action_1("action_1", milliseconds(100)),
     condition_1("condition_1"),
     action_2("action_2", milliseconds(100)),
     condition_2("condition_2")
   {
+    root.setSuccessThreshold(4);
     root.addChild(&condition_1);
     root.addChild(&action_1);
     root.addChild(&condition_2);
     root.addChild(&action_2);
   }
-  ~SimpleParallelTest()
+  ~SimpleParallelTest() override
   {}
 };
 

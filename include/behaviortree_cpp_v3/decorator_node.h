@@ -11,7 +11,7 @@ protected:
   TreeNode* child_node_;
 
 public:
-  DecoratorNode(const std::string& name, const NodeConfiguration& config);
+  DecoratorNode(const std::string& name, const NodeConfig& config);
 
   virtual ~DecoratorNode() override = default;
 
@@ -53,7 +53,7 @@ public:
 
   // You must provide the function to call when tick() is invoked
   SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,
-                      const NodeConfiguration& config);
+                      const NodeConfig& config);
 
   ~SimpleDecoratorNode() override = default;
 

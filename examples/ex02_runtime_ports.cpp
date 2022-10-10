@@ -17,7 +17,7 @@ static const char* xml_text = R"(
 class ThinkRuntimePort : public BT::SyncActionNode
 {
 public:
-  ThinkRuntimePort(const std::string& name, const BT::NodeConfiguration& config) :
+  ThinkRuntimePort(const std::string& name, const BT::NodeConfig& config) :
     BT::SyncActionNode(name, config)
   {}
 
@@ -31,7 +31,7 @@ public:
 class SayRuntimePort : public BT::SyncActionNode
 {
 public:
-  SayRuntimePort(const std::string& name, const BT::NodeConfiguration& config) :
+  SayRuntimePort(const std::string& name, const BT::NodeConfig& config) :
     BT::SyncActionNode(name, config)
   {}
 

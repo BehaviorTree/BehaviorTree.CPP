@@ -57,7 +57,7 @@ template <typename T>
 class PopFromQueue : public SyncActionNode
 {
   public:
-    PopFromQueue(const std::string& name, const NodeConfiguration& config)
+    PopFromQueue(const std::string& name, const NodeConfig& config)
       : SyncActionNode(name, config)
     {
     }
@@ -108,7 +108,7 @@ template <typename T>
 class QueueSize : public SyncActionNode
 {
   public:
-    QueueSize(const std::string& name, const NodeConfiguration& config)
+    QueueSize(const std::string& name, const NodeConfig& config)
       : SyncActionNode(name, config)
     {
     }

@@ -18,7 +18,7 @@
 namespace BT
 {
 ManualSelectorNode::ManualSelectorNode(const std::string& name,
-                                       const NodeConfiguration& config) :
+                                       const NodeConfig& config) :
   ControlNode::ControlNode(name, config),
   running_child_idx_(-1),
   previously_executed_idx_(-1)
@@ -207,7 +207,7 @@ uint8_t ManualSelectorNode::selectChild() const
     wattron(win, A_STANDOUT);
     mvwprintw(win, row + 5, 4, "%s", list[row].c_str());
     ch = wgetch(win);
-  };
+  }
 
   werase(win);
   wrefresh(win);

@@ -35,7 +35,7 @@ namespace BT
 class ActionNodeBase : public LeafNode
 {
 public:
-  ActionNodeBase(const std::string& name, const NodeConfiguration& config);
+  ActionNodeBase(const std::string& name, const NodeConfig& config);
   ~ActionNodeBase() override = default;
 
   virtual NodeType type() const override final
@@ -52,7 +52,7 @@ public:
 class SyncActionNode : public ActionNodeBase
 {
 public:
-  SyncActionNode(const std::string& name, const NodeConfiguration& config);
+  SyncActionNode(const std::string& name, const NodeConfig& config);
   ~SyncActionNode() override = default;
 
   /// throws if the derived class return RUNNING.
@@ -82,7 +82,7 @@ public:
 
   // You must provide the function to call when tick() is invoked
   SimpleActionNode(const std::string& name, TickFunctor tick_functor,
-                   const NodeConfiguration& config);
+                   const NodeConfig& config);
 
   ~SimpleActionNode() override = default;
 
@@ -93,10 +93,10 @@ protected:
 };
 
 /**
- * @brief The AsyncActionNode uses a different thread, where the action will be
- * executed.
+ * @brief The ThreadedAction executes the tick in a different thread.
  *
- * IMPORTANT: this action is quite hard to implement correctly. Please be sure that you know what you are doing.
+ * IMPORTANT: this action is quite hard to implement correctly.
+ * Please make sure that you know what you are doing.
  *
  * - In your overriden tick() method, you must check periodically
  *   the result of the method isHaltRequested() and stop your execution accordingly.
@@ -109,12 +109,13 @@ protected:
  * For a complete example, look at __AsyncActionTest__ in action_test_node.h in the folder test.
  *
  * NOTE: when the thread is completed, i.e. the tick() returns its status,
- * a TreeNode::emitStateChanged() will be called.
+ * a TreeNode::emitWakeUpSignal() will be called.
  */
-class AsyncActionNode : public ActionNodeBase
+
+class ThreadedAction : public ActionNodeBase
 {
 public:
-  AsyncActionNode(const std::string& name, const NodeConfiguration& config) :
+  ThreadedAction(const std::string& name, const NodeConfig& config) :
     ActionNodeBase(name, config)
   {}
 
@@ -135,8 +136,12 @@ private:
   std::mutex mutex_;
 };
 
+#ifdef USE_BTCPP3_OLD_NAMES
+using AsyncActionNode = ThreadedActionNode;
+#endif
+
 /**
- * @brief The ActionNode is the prefered way to implement asynchronous Actions.
+ * @brief The StatefulAsyncAction is the prefered way to implement asynchronous Actions.
  * It is actually easier to use correctly, when compared with AsyncAction
  *
  * It is particularly useful when your code contains a request-reply pattern,
@@ -150,29 +155,38 @@ private:
  *
  * -) if halted, method onHalted() is invoked
  */
-class StatefulActionNode : public ActionNodeBase
+class StatefulAsyncAction : public ActionNodeBase
 {
 public:
-  StatefulActionNode(const std::string& name, const NodeConfiguration& config) :
+  StatefulAsyncAction(const std::string& name, const NodeConfig& config) :
     ActionNodeBase(name, config)
   {}
 
-  // do not override this method
-  NodeStatus tick() override final;
-  // do not override this method
-  void halt() override final;
-
-  /// method to be called at the beginning.
+  /// Method called once, when transitioning from the state IDLE.
   /// If it returns RUNNING, this becomes an asychronous node.
   virtual NodeStatus onStart() = 0;
 
-  /// method invoked by a RUNNING action.
+  /// method invoked when the action is already in the RUNNING state.
   virtual NodeStatus onRunning() = 0;
 
   /// when the method halt() is called and the action is RUNNING, this method is invoked.
   /// This is a convenient place todo a cleanup, if needed.
   virtual void onHalted() = 0;
+
+  bool isHaltRequested() const;
+
+protected:
+  // do not override this method
+  NodeStatus tick() override final;
+  // do not override this method
+  void halt() override final;
+
+private:
+  std::atomic_bool halt_requested_;
 };
+
+// old name, for backward compatibility
+using StatefulActionNode = StatefulAsyncAction;
 
 #ifndef BT_NO_COROUTINES
 
@@ -186,7 +200,7 @@ public:
 class CoroActionNode : public ActionNodeBase
 {
 public:
-  CoroActionNode(const std::string& name, const NodeConfiguration& config);
+  CoroActionNode(const std::string& name, const NodeConfig& config);
   virtual ~CoroActionNode() override;
 
   /// Use this method to return RUNNING and temporary "pause" the Action.

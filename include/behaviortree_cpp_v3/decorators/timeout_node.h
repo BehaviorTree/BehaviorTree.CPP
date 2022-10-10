@@ -35,7 +35,7 @@ public:
     setRegistrationID("Timeout");
   }
 
-  TimeoutNode(const std::string& name, const NodeConfiguration& config) :
+  TimeoutNode(const std::string& name, const NodeConfig& config) :
     DecoratorNode(name, config),
     child_halted_(false),
     timer_id_(0),
@@ -82,7 +82,7 @@ private:
           {
             child_halted_ = true;
             haltChild();
-            emitStateChanged();
+            emitWakeUpSignal();
           }
         });
       }

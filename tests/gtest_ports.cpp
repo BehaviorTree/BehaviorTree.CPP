@@ -6,7 +6,7 @@ using namespace BT;
 class NodeWithPorts : public SyncActionNode
 {
 public:
-  NodeWithPorts(const std::string& name, const NodeConfiguration& config) :
+  NodeWithPorts(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {
     std::cout << "ctor" << std::endl;
@@ -74,6 +74,11 @@ TEST(PortTest, Descriptions)
   auto tree = factory.createTreeFromText(xml_txt);
 
   NodeStatus status = tree.tickRoot();
+  while (status == NodeStatus::RUNNING)
+  {
+    status = tree.tickRoot();
+  }
+
   ASSERT_EQ(status, NodeStatus::FAILURE);   // failure because in_port_B="99"
 }
 
@@ -85,7 +90,7 @@ struct MyType
 class NodeInPorts : public SyncActionNode
 {
 public:
-  NodeInPorts(const std::string& name, const NodeConfiguration& config) :
+  NodeInPorts(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 
@@ -109,7 +114,7 @@ public:
 class NodeOutPorts : public SyncActionNode
 {
 public:
-  NodeOutPorts(const std::string& name, const NodeConfiguration& config) :
+  NodeOutPorts(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 
@@ -150,7 +155,7 @@ TEST(PortTest, EmptyPort)
 class IllegalPorts : public SyncActionNode
 {
 public:
-  IllegalPorts(const std::string& name, const NodeConfiguration& config) :
+  IllegalPorts(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 

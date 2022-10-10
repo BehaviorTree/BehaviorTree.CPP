@@ -5,7 +5,7 @@
 
 TEST(LoggerZMQ, ZMQLoggerDeletesCleanlyAfterTickingTree)
 {
-// GIVEN we create a behavior tree through the BT factory and attach a ZMQ publisher to it
+  // GIVEN we create a behavior tree through the BT factory and attach a ZMQ publisher to it
   static constexpr auto XML = R"(
 <root>
     <BehaviorTree>
@@ -28,7 +28,7 @@ TEST(LoggerZMQ, ZMQLoggerDeletesCleanlyAfterTickingTree)
 
 TEST(LoggerZMQ, ZMQLoggerDeletesCleanlyAfterNotTickingTree)
 {
-// GIVEN we create a behavior tree through the BT factory and attach a ZMQ publisher to it
+  // GIVEN we create a behavior tree through the BT factory and attach a ZMQ publisher to it
   static constexpr auto XML = R"(
 <root>
     <BehaviorTree>

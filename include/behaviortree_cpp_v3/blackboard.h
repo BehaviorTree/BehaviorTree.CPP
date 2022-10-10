@@ -131,16 +131,45 @@ public:
 
     // check local storage
     auto it = storage_.find(key);
-    if (it != storage_.end())
+    if (it == storage_.end())
     {
-      const PortInfo& port_info = it->second.port_info;
-      auto& previous_any = it->second.value;
-      const auto previous_type = port_info.type();
+      // Not defined before. Let's create an entry with a generic PortInfo
+      if (std::is_constructible<StringView, T>::value)
+      {
+        PortInfo new_port(PortDirection::INOUT, typeid(std::string), {});
+        storage_.emplace(key, Entry(Any(value), new_port));
+      }
+      else
+      {
+        PortInfo new_port(PortDirection::INOUT, typeid(T), {});
+        storage_.emplace(key, Entry(Any(value), new_port));
+      }
+    }
+    else
+    {
+      // this is not the first time we set this entry, we need to check
+      // if the type is the same or not.
+      Entry& entry = it->second;
+      Any& previous_any = entry.value;
+      const PortInfo& port_info = entry.port_info;
 
       Any new_value(value);
 
-      if (previous_type && *previous_type != typeid(T) &&
-          *previous_type != new_value.type())
+      // special case: entry exists but it is not strongly typed... yet
+      if (!port_info.isStronglyTyped())
+      {
+        // Use the new type to create a new entry that is strongly typed.
+        entry.port_info =
+            PortInfo(port_info.direction(), new_value.type(), port_info.converter());
+        previous_any = std::move(new_value);
+        return;
+      }
+
+      std::type_index previous_type = port_info.type();
+
+      // check type mismatch
+      if (previous_type != std::type_index(typeid(T)) &&
+          previous_type != new_value.type())
       {
         bool mismatching = true;
         if (std::is_constructible<StringView, T>::value)
@@ -166,11 +195,6 @@ public:
       }
       previous_any = std::move(new_value);
     }
-    else
-    {   // create for the first time without any info
-      storage_.emplace(key, Entry(Any(value), PortInfo()));
-    }
-    return;
   }
 
   void setPortInfo(std::string key, const PortInfo& info);
@@ -201,7 +225,7 @@ private:
   struct Entry
   {
     Any value;
-    const PortInfo port_info;
+    PortInfo port_info;
 
     Entry(const PortInfo& info) : port_info(info)
     {}

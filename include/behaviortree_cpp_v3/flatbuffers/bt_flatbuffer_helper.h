@@ -32,6 +32,7 @@ inline Serialization::NodeStatus convertToFlatbuffers(BT::NodeStatus type)
 {
   switch (type)
   {
+    case BT::NodeStatus::SKIPPED:
     case BT::NodeStatus::IDLE:
       return Serialization::NodeStatus::IDLE;
     case BT::NodeStatus::SUCCESS:

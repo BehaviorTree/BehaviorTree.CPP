@@ -1,92 +1,157 @@
-#ifndef SIMPLE_STRING_HPP
-#define SIMPLE_STRING_HPP
+#pragma once
 
 #include <string>
 #include <cstring>
+#include <stdexcept>
+#include <limits>
+#include <cstdint>
 
-namespace SafeAny
-{
-// Version of string that uses only two words. Good for small object optimization in linb::any
-class SimpleString
-{
+namespace SafeAny{
+
+// Read only version of String that has size 16 bytes and can store
+// in-place strings with size up to 15 bytes.
+
+// Inspired by https://github.com/elliotgoodrich/SSO-23
+
+class SimpleString {
   public:
-    SimpleString(const std::string& str) : SimpleString(str.data(), str.size())
-    {
-    }
-    SimpleString(const char* input_data) : SimpleString(input_data, strlen(input_data))
-    {
-    }
 
-    SimpleString(const char* input_data, std::size_t size) : _size(size)
-    {
-        if(size >= sizeof(void*) )
-        {
-            _data.ptr = new char[_size + 1];
-        }
-        std::memcpy(data(), input_data, _size);
-        data()[_size] = '\0';
-    }
+  SimpleString(const std::string &str): SimpleString(str.data(), str.size())
+  {}
 
-    SimpleString(const SimpleString& other) : SimpleString(other.data(), other.size())
-    {
-    }
+  SimpleString(const SimpleString& other): SimpleString(other.data(), other.size())
+  {}
 
-    SimpleString& operator = (const SimpleString& other)
-    {
-      _data = other._data;
-      _size = other._size;
-      return *this;
-    }
+  SimpleString& operator=(const SimpleString& other)
+  {
+    this->~SimpleString();
+    createImpl(other.data(), other.size());
+    return *this;
+  }
 
-    ~SimpleString()
-    {
-        if ( _size >= sizeof(void*) && _data.ptr )
-        {
-            delete[] _data.ptr;
-        }
-    }
+  SimpleString(SimpleString&& other): SimpleString(nullptr, 0)
+  {
+    std::swap(_storage, other._storage);
+  }
 
-    std::string toStdString() const
-    {
-        return std::string(data(), _size);
-    }
+  SimpleString& operator=(SimpleString&& other)
+  {
+    this->~SimpleString();
 
-    const char* data() const
-    {
-        if( _size >= sizeof(void*))
-        {
-            return _data.ptr;
-        }
-        else{
-            return _data.soo;
-        }
-    }
+    std::swap(_storage, other._storage);
+    return *this;
+  }
 
-    char* data()
-    {
-        if( _size >= sizeof(void*))
-        {
-            return _data.ptr;
-        }
-        else{
-            return _data.soo;
-        }
-    }
+  SimpleString(const char *input_data)
+      : SimpleString(input_data, strlen(input_data)) {}
 
-    std::size_t size() const
-    {
-        return _size;
+  SimpleString(const char *input_data, std::size_t size)
+  {
+    createImpl(input_data, size);
+  }
+
+  ~SimpleString()
+  {
+    if (!isSOO()) {
+      delete _storage.str.data;
     }
+    _storage.soo.capacity_left = CAPACITY;
+  }
+
+  std::string toStdString() const
+  {
+    return size() > 0 ? std::string(data(), size()) : std::string();
+  }
+
+  const char *data() const
+  {
+    if (isSOO()) {
+      return _storage.soo.data;
+    } else {
+      return _storage.str.data;
+    }
+  }
+
+  std::size_t size() const
+  {
+    if (isSOO()) {
+      return CAPACITY - _storage.soo.capacity_left;
+    }
+    else {
+      return _storage.str.size & LONG_MASK;
+    }
+  }
+
+  bool operator==(const SimpleString& other) const
+  {
+    size_t N = size();
+    return other.size() == N && std::strncmp(data(), other.data(), N) == 0;
+  }
+
+  bool operator!=(const SimpleString& other) const
+  {
+    size_t N = size();
+    return other.size() != N || std::strncmp(data(), other.data(), N) != 0;
+  }
+
+  bool operator<=(const SimpleString& other) const
+  {
+    return std::strcmp(data(), other.data()) <= 0;
+  }
+
+  bool operator>=(const SimpleString& other) const
+  {
+    return std::strcmp(data(), other.data()) >= 0;
+  }
+
+  bool operator<(const SimpleString& other) const
+  {
+    return std::strcmp(data(), other.data()) < 0;
+  }
+
+  bool operator>(const SimpleString& other) const
+  {
+    return std::strcmp(data(), other.data()) > 0;
+  }
+
+  bool isSOO() const { return !(_storage.soo.capacity_left & IS_LONG_BIT); }
 
   private:
-    union{
-        char*  ptr;
-        char   soo[sizeof(void*)] ;
-    }_data;
+  constexpr static std::size_t CAPACITY = sizeof(void *) * 2 - 1;
+  constexpr static std::size_t IS_LONG_BIT = 1 << 7;
+  constexpr static std::size_t LONG_MASK = ~(uint32_t(0));
 
-    std::size_t _size;
+  union {
+    struct String {
+      char *data;
+      std::size_t size;
+    } str;
+
+    struct SOO {
+      char data[CAPACITY];
+      uint8_t capacity_left;
+    } soo;
+  } _storage;
+
+  private:
+
+  void createImpl(const char *input_data, std::size_t size)
+  {
+    if (size > CAPACITY) {
+      _storage.str.size = size;
+      _storage.soo.capacity_left = IS_LONG_BIT;
+      _storage.str.data = new char[size + 1];
+      std::memcpy(_storage.str.data, input_data, size);
+      _storage.str.data[size] = '\0';
+
+    } else {
+      _storage.soo.capacity_left = uint8_t(CAPACITY - size);
+      if (size > 0) {
+        std::memcpy(_storage.soo.data, input_data, size);
+      }
+      _storage.soo.data[size] = '\0';
+    }
+  }
 };
 
 }
-
-#endif   // SIMPLE_STRING_HPP

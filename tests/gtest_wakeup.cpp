@@ -3,12 +3,12 @@
 
 using namespace BT;
 
-class FastAction : public BT::AsyncActionNode
+class FastAction : public BT::ThreadedAction
 {
 public:
   // Any TreeNode with ports must have a constructor with this signature
-  FastAction(const std::string& name, const BT::NodeConfiguration& config) :
-    AsyncActionNode(name, config)
+  FastAction(const std::string& name, const BT::NodeConfig& config) :
+    ThreadedAction(name, config)
   {}
 
   static BT::PortsList providedPorts()
@@ -19,6 +19,7 @@ public:
   BT::NodeStatus tick() override
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    emitWakeUpSignal();
     return BT::NodeStatus::SUCCESS;
   }
 };
@@ -41,7 +42,7 @@ TEST(WakeUp, BasicTest)
   using namespace std::chrono;
 
   auto t1 = system_clock::now();
-  tree.tickRoot();
+  tree.tickRoot(Tree::ONCE);
   tree.sleep(milliseconds(200));
   auto t2 = system_clock::now();
 

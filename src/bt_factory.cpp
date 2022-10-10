@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+/*  Copyright (C) 2018-2022 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,13 +10,14 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <filesystem>
 #include <fstream>
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "behaviortree_cpp_v3/xml_parsing.h"
+#include "tinyxml2/tinyxml2.h"
 
 #ifdef USING_ROS
-#include "filesystem/path.h"
 #include <ros/package.h>
 #endif
 
@@ -27,7 +28,12 @@ BehaviorTreeFactory::BehaviorTreeFactory()
   parser_ = std::make_shared<XMLParser>(*this);
   registerNodeType<FallbackNode>("Fallback");
   registerNodeType<SequenceNode>("Sequence");
-  registerNodeType<SequenceStarNode>("SequenceStar");
+  registerNodeType<SequenceWithMemory>("SequenceWithMemory");
+
+#ifdef USE_BTCPP3_OLD_NAMES
+  registerNodeType<SequenceWithMemory>("SequenceStar");   // backward compatibility
+#endif
+
   registerNodeType<ParallelNode>("Parallel");
   registerNodeType<ReactiveSequence>("ReactiveSequence");
   registerNodeType<ReactiveFallback>("ReactiveFallback");
@@ -35,8 +41,8 @@ BehaviorTreeFactory::BehaviorTreeFactory()
   registerNodeType<WhileDoElseNode>("WhileDoElse");
 
   registerNodeType<InverterNode>("Inverter");
-  //registerNodeType<RetryNodeTypo>("RetryUntilSuccesful"); //typo but back compatibility
-  registerNodeType<RetryNode>("RetryUntilSuccessful");   // correct one
+
+  registerNodeType<RetryNode>("RetryUntilSuccessful");
   registerNodeType<KeepRunningUntilFailureNode>("KeepRunningUntilFailure");
   registerNodeType<RepeatNode>("Repeat");
   registerNodeType<TimeoutNode<>>("Timeout");
@@ -47,15 +53,11 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 
   registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
   registerNodeType<AlwaysFailureNode>("AlwaysFailure");
-  registerNodeType<SetBlackboard>("SetBlackboard");
+  registerNodeType<ScriptNode>("Script");
 
-  registerNodeType<SubtreeNode>("SubTree");
-  registerNodeType<SubtreePlusNode>("SubTreePlus");
+  registerNodeType<SubTreeNode>("SubTree");
 
-  registerNodeType<BlackboardPreconditionNode<int>>("BlackboardCheckInt");
-  registerNodeType<BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
-  registerNodeType<BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
-  registerNodeType<BlackboardPreconditionNode<bool>>("BlackboardCheckBool");
+  registerNodeType<PreconditionNode>("Precondition");
 
   registerNodeType<SwitchNode<2>>("Switch2");
   registerNodeType<SwitchNode<3>>("Switch3");
@@ -70,6 +72,8 @@ BehaviorTreeFactory::BehaviorTreeFactory()
   {
     builtin_IDs_.insert(it.first);
   }
+
+  scripting_enums_ = std::make_shared<std::unordered_map<std::string, int>>();
 }
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
@@ -106,7 +110,7 @@ void BehaviorTreeFactory::registerSimpleCondition(
     PortsList ports)
 {
   NodeBuilder builder = [tick_functor, ID](const std::string& name,
-                                           const NodeConfiguration& config) {
+                                           const NodeConfig& config) {
     return std::make_unique<SimpleConditionNode>(name, tick_functor, config);
   };
 
@@ -119,7 +123,7 @@ void BehaviorTreeFactory::registerSimpleAction(
     PortsList ports)
 {
   NodeBuilder builder = [tick_functor, ID](const std::string& name,
-                                           const NodeConfiguration& config) {
+                                           const NodeConfig& config) {
     return std::make_unique<SimpleActionNode>(name, tick_functor, config);
   };
 
@@ -132,7 +136,7 @@ void BehaviorTreeFactory::registerSimpleDecorator(
     PortsList ports)
 {
   NodeBuilder builder = [tick_functor, ID](const std::string& name,
-                                           const NodeConfiguration& config) {
+                                           const NodeConfig& config) {
     return std::make_unique<SimpleDecoratorNode>(name, tick_functor, config);
   };
 
@@ -180,8 +184,8 @@ std::vector<std::string> getCatkinLibraryPaths()
         splitString(env_catkin_prefix_paths, os_pathsep);
     for (BT::StringView catkin_prefix_path : catkin_prefix_paths)
     {
-      filesystem::path path(static_cast<std::string>(catkin_prefix_path));
-      filesystem::path lib("lib");
+      std::filesystem::path path(static_cast<std::string>(catkin_prefix_path));
+      std::filesystem::path lib("lib");
       lib_paths.push_back((path / lib).str());
     }
   }
@@ -196,10 +200,10 @@ void BehaviorTreeFactory::registerFromROSPlugins()
 
   for (const auto& plugin : plugins)
   {
-    auto filename = filesystem::path(plugin + BT::SharedLibrary::suffix());
+    auto filename = std::filesystem::path(plugin + BT::SharedLibrary::suffix());
     for (const auto& lib_path : catkin_lib_paths)
     {
-      const auto full_path = filesystem::path(lib_path) / filename;
+      const auto full_path = std::filesystem::path(lib_path) / filename;
       if (full_path.exists())
       {
         std::cout << "Registering ROS plugins from " << full_path.str() << std::endl;
@@ -214,9 +218,8 @@ void BehaviorTreeFactory::registerFromROSPlugins()
 void BehaviorTreeFactory::registerFromROSPlugins()
 {
   throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was "
-                     "compiled "
-                     "without ROS support. Recompile the BehaviorTree.CPP using "
-                     "catkin");
+                     "compiled without ROS support. Recompile the BehaviorTree.CPP "
+                     "using catkin");
 }
 #endif
 
@@ -227,7 +230,7 @@ void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::string& filena
 
 void BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string& xml_text)
 {
-  parser_->loadFromText(xml_text, true /* add_includes */);
+  parser_->loadFromText(xml_text);
 }
 
 std::vector<std::string> BehaviorTreeFactory::registeredBehaviorTrees() const
@@ -237,11 +240,11 @@ std::vector<std::string> BehaviorTreeFactory::registeredBehaviorTrees() const
 
 void BehaviorTreeFactory::clearRegisteredBehaviorTrees()
 {
-    parser_->clearInternalState();
+  parser_->clearInternalState();
 }
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
-    const std::string& name, const std::string& ID, const NodeConfiguration& config) const
+    const std::string& name, const std::string& ID, const NodeConfig& config) const
 {
   auto it = builders_.find(ID);
   if (it == builders_.end())
@@ -256,6 +259,24 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
 
   std::unique_ptr<TreeNode> node = it->second(name, config);
   node->setRegistrationID(ID);
+  node->config_.enums = scripting_enums_;
+
+  auto AssignConditions = [](auto& conditions, auto& excutors) {
+    for (const auto& [cond_id, script] : conditions)
+    {
+      if (auto executor = ParseScript(script))
+      {
+        excutors[size_t(cond_id)] = executor.value();
+      }
+      else
+      {
+        throw LogicError("Error in the script \"", script, "\"\n", executor.error());
+      }
+    }
+  };
+  AssignConditions(config.pre_conditions, node->pre_parsed_);
+  AssignConditions(config.post_conditions, node->post_parsed_);
+
   return node;
 }
 
@@ -314,6 +335,21 @@ void BehaviorTreeFactory::addDescriptionToManifest(const std::string& node_id,
   it->second.description = description;
 }
 
+void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
+{
+  (*scripting_enums_)[std::string(name)] = value;
+}
+
+TreeNode* Tree::rootNode() const
+{
+  if (subtrees.empty())
+  {
+    return nullptr;
+  }
+  auto& subtree_nodes = subtrees.front()->nodes;
+  return subtree_nodes.empty() ? nullptr : subtree_nodes.front().get();
+}
+
 void Tree::sleep(std::chrono::system_clock::duration timeout)
 {
   wake_up_->waitFor(timeout);
@@ -326,11 +362,29 @@ Tree::~Tree()
 
 Blackboard::Ptr Tree::rootBlackboard()
 {
-  if (blackboard_stack.size() > 0)
+  if (subtrees.size() > 0)
   {
-    return blackboard_stack.front();
+    return subtrees.front()->blackboard;
   }
   return {};
+}
+
+void Tree::applyVisitor(const std::function<void(const TreeNode*)>& visitor)
+{
+  for (auto const& subtree : subtrees)
+  {
+    BT::applyRecursiveVisitor(static_cast<const TreeNode*>(subtree->nodes.front().get()),
+                              visitor);
+  }
+}
+
+void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
+{
+  for (auto const& subtree : subtrees)
+  {
+    BT::applyRecursiveVisitor(static_cast<TreeNode*>(subtree->nodes.front().get()),
+                              visitor);
+  }
 }
 
 }   // namespace BT

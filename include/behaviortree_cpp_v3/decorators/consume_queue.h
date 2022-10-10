@@ -29,7 +29,7 @@ template <typename T>
 class ConsumeQueue : public DecoratorNode
 {
 public:
-  ConsumeQueue(const std::string& name, const NodeConfiguration& config) :
+  ConsumeQueue(const std::string& name, const NodeConfig& config) :
     DecoratorNode(name, config)
   {}
 
@@ -89,8 +89,7 @@ public:
   static PortsList providedPorts()
   {
     return {InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"), OutputPort<T>("popped"
-                                                                                  "_"
-                                                                                  "ite"
+                                                                                  "_ite"
                                                                                   "m")};
   }
 

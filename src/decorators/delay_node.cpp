@@ -15,7 +15,7 @@ DelayNode::DelayNode(const std::string& name, unsigned milliseconds) :
   setRegistrationID("Delay");
 }
 
-DelayNode::DelayNode(const std::string& name, const NodeConfiguration& config) :
+DelayNode::DelayNode(const std::string& name, const NodeConfig& config) :
   DecoratorNode(name, config),
   delay_started_(false),
   delay_aborted_(false),

@@ -41,7 +41,7 @@ class RetryNode : public DecoratorNode
 public:
   RetryNode(const std::string& name, int NTries);
 
-  RetryNode(const std::string& name, const NodeConfiguration& config);
+  RetryNode(const std::string& name, const NodeConfig& config);
 
   virtual ~RetryNode() override = default;
 
@@ -70,7 +70,7 @@ class [[deprecated("RetryUntilSuccesful was a typo and deprecated, use "
 public:
   RetryNodeTypo(const std::string& name, int NTries) : RetryNode(name, NTries){};
 
-  RetryNodeTypo(const std::string& name, const NodeConfiguration& config) :
+  RetryNodeTypo(const std::string& name, const NodeConfig& config) :
     RetryNode(name, config){};
 
   virtual ~RetryNodeTypo() override = default;

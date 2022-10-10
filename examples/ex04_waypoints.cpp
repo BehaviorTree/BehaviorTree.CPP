@@ -24,7 +24,7 @@ struct Pose2D
 class GenerateWaypoints : public SyncActionNode
 {
 public:
-  GenerateWaypoints(const std::string& name, const NodeConfiguration& config) :
+  GenerateWaypoints(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 
@@ -45,11 +45,11 @@ public:
   }
 };
 //--------------------------------------------------------------
-class UseWaypointQueue : public AsyncActionNode
+class UseWaypointQueue : public ThreadedAction
 {
 public:
-  UseWaypointQueue(const std::string& name, const NodeConfiguration& config) :
-    AsyncActionNode(name, config)
+  UseWaypointQueue(const std::string& name, const NodeConfig& config) :
+    ThreadedAction(name, config)
   {}
 
   NodeStatus tick() override
@@ -95,11 +95,11 @@ public:
 /**
  * @brief Simple Action that uses the output of PopFromQueue<Pose2D> or ConsumeQueue<Pose2D>
  */
-class UseWaypoint : public AsyncActionNode
+class UseWaypoint : public ThreadedAction
 {
 public:
-  UseWaypoint(const std::string& name, const NodeConfiguration& config) :
-    AsyncActionNode(name, config)
+  UseWaypoint(const std::string& name, const NodeConfig& config) :
+    ThreadedAction(name, config)
   {}
 
   NodeStatus tick() override

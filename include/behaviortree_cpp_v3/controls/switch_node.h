@@ -43,7 +43,7 @@ template <size_t NUM_CASES>
 class SwitchNode : public ControlNode
 {
 public:
-  SwitchNode(const std::string& name, const BT::NodeConfiguration& config) :
+  SwitchNode(const std::string& name, const BT::NodeConfig& config) :
     ControlNode::ControlNode(name, config), running_child_(-1)
   {
     setRegistrationID("Switch");
@@ -113,7 +113,14 @@ inline NodeStatus SwitchNode<NUM_CASES>::tick()
 
   auto& selected_child = children_nodes_[match_index];
   NodeStatus ret = selected_child->executeTick();
-  if (ret == NodeStatus::RUNNING)
+  if (ret == NodeStatus::SKIPPED)
+  {
+    // if the matching child is SKIPPED, should I jump to default or
+    // be SKIPPED myself? Going with the former, for the time being.
+    running_child_ = -1;
+    return NodeStatus::SKIPPED;
+  }
+  else if (ret == NodeStatus::RUNNING)
   {
     running_child_ = match_index;
   }

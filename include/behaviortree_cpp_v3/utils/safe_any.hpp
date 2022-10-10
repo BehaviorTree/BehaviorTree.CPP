@@ -1,5 +1,16 @@
-#ifndef SAFE_ANY_VARNUMBER_H
-#define SAFE_ANY_VARNUMBER_H
+/* Copyright (C) 2022 Davide Faconti -  All Rights Reserved
+*
+*   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
+*   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+*   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+*   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+*
+*   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+*   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#pragma once
 
 #include <exception>
 #include <algorithm>
@@ -8,11 +19,11 @@
 #include <string>
 #include <cstring>
 #include <type_traits>
+#include <typeindex>
 #include "any.hpp"
 #include "demangle_util.h"
 #include "convert_impl.hpp"
 #include "expected.hpp"
-#include "strcat.hpp"
 #include "strcat.hpp"
 
 namespace BT
@@ -44,7 +55,7 @@ class Any
                                 !std::is_same<T, std::string>::value>::type*;
 
   public:
-    Any(): _original_type(nullptr)
+    Any(): _original_type(typeid(nullptr))
     {
     }
 
@@ -58,39 +69,39 @@ class Any
     {
     }
 
-    explicit Any(const double& value) : _any(value), _original_type( &typeid(double) )
+    explicit Any(const double& value) : _any(value), _original_type( typeid(double) )
     {
     }
 
-    explicit Any(const uint64_t& value) : _any(value), _original_type( &typeid(uint64_t) )
+    explicit Any(const uint64_t& value) : _any(value), _original_type( typeid(uint64_t) )
     {
     }
 
-    explicit Any(const float& value) : _any(double(value)), _original_type( &typeid(float) )
+    explicit Any(const float& value) : _any(double(value)), _original_type( typeid(float) )
     {
     }
 
-    explicit Any(const std::string& str) : _any(SafeAny::SimpleString(str)), _original_type( &typeid(std::string) )
+    explicit Any(const std::string& str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
     {
     }
 
-    explicit Any(const char* str) : _any(SafeAny::SimpleString(str)), _original_type( &typeid(std::string) )
+    explicit Any(const char* str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
     {
     }
 
-    explicit Any(const SafeAny::SimpleString& str) : _any(str), _original_type( &typeid(std::string) )
+    explicit Any(const SafeAny::SimpleString& str) : _any(str), _original_type( typeid(std::string) )
     {
     }
 
     // all the other integrals are casted to int64_t
     template <typename T>
-    explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( &typeid(T) )
+    explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( typeid(T) )
     {
     }
 
     // default for other custom types
     template <typename T>
-    explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value), _original_type( &typeid(T) )
+    explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value), _original_type( typeid(T) )
     {
         static_assert(!std::is_reference<T>::value, "Any can not contain references");
     }
@@ -112,6 +123,50 @@ class Any
     bool isString() const
     {
         return _any.type() == typeid(SafeAny::SimpleString);
+    }
+
+    template <typename T>
+    bool isType() const
+    {
+      return _any.type() == typeid(T);
+    }
+
+    // copy the value (casting into dst). We preserve the destination type.
+    void copyInto(Any& dst)
+    {
+        if(dst.empty())
+        {
+            dst = *this;
+            return;
+        }
+
+        const auto& dst_type = dst.castedType();
+
+        if ((type() == dst_type) || (isString() && dst.isString()) )
+        {
+            dst._any = _any;
+        }
+        else if(isNumber() && dst.isNumber())
+        {
+            if (dst_type == typeid(int64_t))
+            {
+                dst._any = cast<int64_t>();
+            }
+            else if (dst_type == typeid(uint64_t))
+            {
+                dst._any = cast<uint64_t>();
+            }
+            else if (dst_type == typeid(double))
+            {
+                dst._any = cast<double>();
+            }
+            else{
+                throw std::runtime_error("Any::copyInto fails");
+            }
+        }
+        else{
+            throw std::runtime_error("Any::copyInto fails");
+        }
     }
 
     // this is different from any_cast, because if allows safe
@@ -140,9 +195,9 @@ class Any
         }
     }
 
-    const std::type_info& type() const noexcept
+    const std::type_index& type() const noexcept
     {
-        return *_original_type;
+        return _original_type;
     }
 
     const std::type_info& castedType() const noexcept
@@ -157,7 +212,7 @@ class Any
 
   private:
     linb::any _any;
-    const std::type_info* _original_type;
+    std::type_index _original_type;
 
     //----------------------------
 
@@ -187,7 +242,7 @@ class Any
     }
 
     template <typename DST>
-    nonstd::expected<DST,std::string> convert(EnableArithmetic<DST> = 0) const
+    nonstd::expected<DST,std::string> convert(EnableArithmetic<DST> = nullptr) const
     {
         using SafeAny::details::convertNumber;
         DST out;
@@ -221,12 +276,12 @@ class Any
 
         if (type == typeid(int64_t))
         {
-            uint64_t out = linb::any_cast<int64_t>(_any);
+            auto out = linb::any_cast<int64_t>(_any);
             return static_cast<DST>(out);
         }
         else if (type == typeid(uint64_t))
         {
-            uint64_t out = linb::any_cast<uint64_t>(_any);
+            auto out = linb::any_cast<uint64_t>(_any);
             return static_cast<DST>(out);
         }
 
@@ -249,4 +304,3 @@ class Any
 
 }   // end namespace BT
 
-#endif   // VARNUMBER_H

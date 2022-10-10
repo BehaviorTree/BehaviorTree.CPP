@@ -24,7 +24,7 @@ protected:
   std::vector<TreeNode*> children_nodes_;
 
 public:
-  ControlNode(const std::string& name, const NodeConfiguration& config);
+  ControlNode(const std::string& name, const NodeConfig& config);
 
   virtual ~ControlNode() override = default;
 

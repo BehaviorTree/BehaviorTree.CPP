@@ -13,7 +13,7 @@ class SimpleCoroAction : public BT::CoroActionNode
 {
 public:
   SimpleCoroAction(milliseconds timeout, bool will_fail, const std::string& node_name,
-                   const BT::NodeConfiguration& config) :
+                   const BT::NodeConfig& config) :
     BT::CoroActionNode(node_name, config),
     will_fail_(will_fail),
     timeout_(timeout),
@@ -83,7 +83,7 @@ BT::NodeStatus executeWhileRunning(BT::TreeNode& node)
 
 TEST(CoroTest, do_action)
 {
-  BT::NodeConfiguration node_config_;
+  BT::NodeConfig node_config_;
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
   SimpleCoroAction node(milliseconds(200), false, "Action", node_config_);
@@ -108,7 +108,7 @@ TEST(CoroTest, do_action)
 
 TEST(CoroTest, do_action_timeout)
 {
-  BT::NodeConfiguration node_config_;
+  BT::NodeConfig node_config_;
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
@@ -128,7 +128,7 @@ TEST(CoroTest, do_action_timeout)
 
 TEST(CoroTest, sequence_child)
 {
-  BT::NodeConfiguration node_config_;
+  BT::NodeConfig node_config_;
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
@@ -148,7 +148,7 @@ TEST(CoroTest, sequence_child)
 
 TEST(CoroTest, OtherThreadHalt)
 {
-  BT::NodeConfiguration node_config_;
+  BT::NodeConfig node_config_;
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 

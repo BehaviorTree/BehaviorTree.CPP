@@ -18,11 +18,11 @@
 #include <map>
 
 #include "behaviortree_cpp_v3/utils/signal.h"
-#include "behaviortree_cpp_v3/exceptions.h"
 #include "behaviortree_cpp_v3/basic_types.h"
 #include "behaviortree_cpp_v3/blackboard.h"
 #include "behaviortree_cpp_v3/utils/strcat.hpp"
 #include "behaviortree_cpp_v3/utils/wakeup_signal.hpp"
+#include "behaviortree_cpp_v3/scripting/script_parser.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)
@@ -41,15 +41,59 @@ struct TreeNodeManifest
 
 typedef std::unordered_map<std::string, std::string> PortsRemapping;
 
-struct NodeConfiguration
+enum class PreCond
 {
-  NodeConfiguration()
+  // order of the enums also tell us the execution order
+  FAILURE_IF = 0,
+  SUCCESS_IF,
+  SKIP_IF,
+  WHILE_TRUE,
+  COUNT_
+};
+
+enum class PostCond
+{
+  // order of the enums also tell us the execution order
+  ON_HALTED = 0,
+  ON_FAILURE,
+  ON_SUCCESS,
+  ALWAYS,
+  COUNT_
+};
+
+using ScriptingEnumsRegistry = std::unordered_map<std::string, int>;
+
+struct NodeConfig
+{
+  NodeConfig()
   {}
 
   Blackboard::Ptr blackboard;
+  std::shared_ptr<ScriptingEnumsRegistry> enums;
   PortsRemapping input_ports;
   PortsRemapping output_ports;
+
+  std::map<PreCond, std::string> pre_conditions;
+  std::map<PostCond, std::string> post_conditions;
 };
+
+#ifdef USE_BTCPP3_OLD_NAMES
+// back compatibility
+using NodeConfig = NodeConfig;
+#endif
+
+template <typename T>
+inline constexpr bool hasNodeNameCtor()
+{
+  return std::is_constructible<T, const std::string&>::value;
+}
+
+template <typename T, typename... ExtraArgs>
+inline constexpr bool hasNodeFullCtor()
+{
+  return std::is_constructible<T, const std::string&, const NodeConfig&,
+                               ExtraArgs...>::value;
+}
 
 /// Abstract base class for Behavior Tree Nodes
 class TreeNode
@@ -61,22 +105,20 @@ public:
      * @brief TreeNode main constructor.
      *
      * @param name     name of the instance, not the type.
-     * @param config   information about input/output ports. See NodeConfiguration
+     * @param config   information about input/output ports. See NodeConfig
      *
      * Note: If your custom node has ports, the derived class must implement:
      *
      *     static PortsList providedPorts();
      */
-  TreeNode(std::string name, NodeConfiguration config);
+  TreeNode(std::string name, NodeConfig config);
 
   virtual ~TreeNode() = default;
 
   /// The method that should be used to invoke tick() and setStatus();
   virtual BT::NodeStatus executeTick();
 
-  /// The method used to interrupt the execution of a RUNNING node.
-  /// Only Async nodes that may return RUNNING should implement it.
-  virtual void halt() = 0;
+  void haltNode();
 
   bool isHalted() const;
 
@@ -140,7 +182,7 @@ public:
 
   /// Configuration passed at construction time. Can never change after the
   /// creation of the TreeNode instance.
-  const NodeConfiguration& config() const;
+  const NodeConfig& config() const;
 
   /** Read an input port, which, in practice, is an entry in the blackboard.
      * If the blackboard contains a std::string and T is not a string,
@@ -177,19 +219,48 @@ public:
   static StringView stripBlackboardPointer(StringView str);
 
   static Optional<StringView> getRemappedKey(StringView port_name,
-                                             StringView remapping_value);
+                                             StringView remapped_port);
 
-  // Notify the tree should be ticked again()
-  void emitStateChanged();
+  /// Notify that the tree should be ticked again()
+  void emitWakeUpSignal();
+
+  bool requiresWakeUp() const;
+
+  /** Used to inject config into a node, even if it doesn't have the proper
+     *  constructor
+     */
+  template <class DerivedT, typename... ExtraArgs>
+  static std::unique_ptr<TreeNode> Instantiate(const std::string& name,
+                                               const NodeConfig& config,
+                                               ExtraArgs... args)
+  {
+    static_assert(hasNodeFullCtor<DerivedT, ExtraArgs...>() ||
+                  hasNodeNameCtor<DerivedT>());
+
+    if constexpr (hasNodeFullCtor<DerivedT, ExtraArgs...>())
+    {
+      return std::make_unique<DerivedT>(name, config, args...);
+    }
+    else if constexpr (hasNodeNameCtor<DerivedT>())
+    {
+      auto node_ptr = new DerivedT(name);
+      node_ptr->config_ = config;
+      return std::unique_ptr<DerivedT>(node_ptr);
+    }
+    return {};
+  }
 
 protected:
-  /// Method to be implemented by the user
-  virtual BT::NodeStatus tick() = 0;
-
   friend class BehaviorTreeFactory;
   friend class DecoratorNode;
   friend class ControlNode;
   friend class Tree;
+
+  /// Method to be implemented by the user
+  virtual BT::NodeStatus tick() = 0;
+
+  /// Set the status to IDLE
+  void resetStatus();
 
   // Only BehaviorTreeFactory should call this
   void setRegistrationID(StringView ID);
@@ -198,6 +269,11 @@ protected:
 
   void modifyPortsRemapping(const PortsRemapping& new_remapping);
 
+  /**
+     * @brief setStatus changes the status of the node.
+     * it will throw if you try to change the status to IDLE, because
+     * your parent node should do that, not the user!.
+     */
   void setStatus(NodeStatus new_status);
 
 private:
@@ -213,7 +289,7 @@ private:
 
   const uint16_t uid_;
 
-  NodeConfiguration config_;
+  NodeConfig config_;
 
   std::string registration_ID_;
 
@@ -223,8 +299,17 @@ private:
 
   std::shared_ptr<WakeUpSignal> wake_up_;
 
-  /// Set the status to IDLE
-  void resetStatus();
+  std::array<ScriptFunction, size_t(PreCond::COUNT_)> pre_parsed_;
+  std::array<ScriptFunction, size_t(PostCond::COUNT_)> post_parsed_;
+
+  std::shared_ptr<ScriptingEnumsRegistry> scripting_enums_;
+
+  Optional<NodeStatus> checkPreConditions();
+  void checkPostConditions(NodeStatus status);
+
+  /// The method used to interrupt the execution of a RUNNING node.
+  /// Only Async nodes that may return RUNNING should implement it.
+  virtual void halt() = 0;
 };
 
 //-------------------------------------------------------
@@ -235,7 +320,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
   if (remap_it == config_.input_ports.end())
   {
     return nonstd::make_unexpected(StrCat("getInput() failed because "
-                                          "NodeConfiguration::input_ports "
+                                          "NodeConfig::input_ports "
                                           "does not contain the key: [",
                                           key, "]"));
   }
@@ -296,7 +381,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   if (remap_it == config_.output_ports.end())
   {
     return nonstd::make_unexpected(StrCat("setOutput() failed: "
-                                          "NodeConfiguration::output_ports "
+                                          "NodeConfig::output_ports "
                                           "does not "
                                           "contain the key: [",
                                           key, "]"));
@@ -317,7 +402,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
 
 // Utility function to fill the list of ports using T::providedPorts();
 template <typename T>
-inline void assignDefaultRemapping(NodeConfiguration& config)
+inline void assignDefaultRemapping(NodeConfig& config)
 {
   for (const auto& it : getProvidedPorts<T>())
   {

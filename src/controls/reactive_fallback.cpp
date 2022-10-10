@@ -23,6 +23,12 @@ NodeStatus ReactiveFallback::tick()
     TreeNode* current_child_node = children_nodes_[index];
     const NodeStatus child_status = current_child_node->executeTick();
 
+    // switch to RUNNING state as soon as you find an active child
+    if (child_status != NodeStatus::SKIPPED)
+    {
+      setStatus(NodeStatus::RUNNING);
+    }
+
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
@@ -43,8 +49,13 @@ NodeStatus ReactiveFallback::tick()
         return NodeStatus::SUCCESS;
       }
 
+      case NodeStatus::SKIPPED: {
+        // node skipped
+      }
+      break;
+
       case NodeStatus::IDLE: {
-        throw LogicError("A child node must never return IDLE");
+        throw LogicError("[", name(), "]: A children should not return IDLE");
       }
     }   // end switch
   }     //end for
@@ -55,7 +66,8 @@ NodeStatus ReactiveFallback::tick()
     return NodeStatus::FAILURE;
   }
 
-  return NodeStatus::RUNNING;
+  // Skip if ALL the nodes have been skipped
+  return status() == (NodeStatus::RUNNING) ? NodeStatus::SUCCESS : NodeStatus::SKIPPED;
 }
 
 }   // namespace BT

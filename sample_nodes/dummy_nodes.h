@@ -50,7 +50,7 @@ class ApproachObject : public BT::SyncActionNode
 class SaySomething : public BT::SyncActionNode
 {
   public:
-    SaySomething(const std::string& name, const BT::NodeConfiguration& config)
+    SaySomething(const std::string& name, const BT::NodeConfig& config)
       : BT::SyncActionNode(name, config)
     {
     }
@@ -72,7 +72,7 @@ NodeStatus SaySomethingSimple(BT::TreeNode& self);
 class SleepNode : public BT::StatefulActionNode
 {
   public:
-    SleepNode(const std::string& name, const BT::NodeConfiguration& config)
+    SleepNode(const std::string& name, const BT::NodeConfig& config)
       : BT::StatefulActionNode(name, config)
     {}
 

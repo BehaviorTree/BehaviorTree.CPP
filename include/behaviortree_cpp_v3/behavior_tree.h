@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2022 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,8 +11,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef BEHAVIOR_TREE_H
-#define BEHAVIOR_TREE_H
+#pragma once
 
 #include "behaviortree_cpp_v3/controls/parallel_node.h"
 #include "behaviortree_cpp_v3/controls/reactive_sequence.h"
@@ -35,12 +34,12 @@
 
 #include "behaviortree_cpp_v3/actions/always_success_node.h"
 #include "behaviortree_cpp_v3/actions/always_failure_node.h"
-#include "behaviortree_cpp_v3/actions/set_blackboard_node.h"
+#include "behaviortree_cpp_v3/actions/script_node.h"
 
 #include "behaviortree_cpp_v3/decorators/force_success_node.h"
 #include "behaviortree_cpp_v3/decorators/force_failure_node.h"
 #include "behaviortree_cpp_v3/decorators/keep_running_until_failure_node.h"
-#include "behaviortree_cpp_v3/decorators/blackboard_precondition.h"
+#include "behaviortree_cpp_v3/decorators/script_precondition.h"
 #include "behaviortree_cpp_v3/decorators/timeout_node.h"
 #include "behaviortree_cpp_v3/decorators/delay_node.h"
 
@@ -82,8 +81,7 @@ inline NodeType getType()
   // clang-format off
     if( std::is_base_of<ActionNodeBase, T>::value )        return NodeType::ACTION;
     if( std::is_base_of<ConditionNode, T>::value )         return NodeType::CONDITION;
-    if( std::is_base_of<SubtreeNode, T>::value )           return NodeType::SUBTREE;
-    if( std::is_base_of<SubtreePlusNode, T>::value )       return NodeType::SUBTREE;
+    if( std::is_base_of<SubTreeNode, T>::value )           return NodeType::SUBTREE;
     if( std::is_base_of<DecoratorNode, T>::value )         return NodeType::DECORATOR;
     if( std::is_base_of<ControlNode, T>::value )           return NodeType::CONTROL;
     return NodeType::UNDEFINED;
@@ -91,5 +89,3 @@ inline NodeType getType()
 }
 
 }   // namespace BT
-
-#endif   // BEHAVIOR_TREE_H

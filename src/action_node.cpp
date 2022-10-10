@@ -15,7 +15,7 @@
 
 using namespace BT;
 
-ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfiguration& config) :
+ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfig& config) :
   LeafNode::LeafNode(name, config)
 {}
 
@@ -23,7 +23,7 @@ ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfiguration&
 
 SimpleActionNode::SimpleActionNode(const std::string& name,
                                    SimpleActionNode::TickFunctor tick_functor,
-                                   const NodeConfiguration& config) :
+                                   const NodeConfig& config) :
   SyncActionNode(name, config), tick_functor_(std::move(tick_functor))
 {}
 
@@ -47,7 +47,7 @@ NodeStatus SimpleActionNode::tick()
 
 //-------------------------------------------------------
 
-SyncActionNode::SyncActionNode(const std::string& name, const NodeConfiguration& config) :
+SyncActionNode::SyncActionNode(const std::string& name, const NodeConfig& config) :
   ActionNodeBase(name, config)
 {}
 
@@ -81,7 +81,7 @@ struct CoroActionNode::Pimpl
   coroutine<void>::push_type* yield_ptr;
 };
 
-CoroActionNode::CoroActionNode(const std::string& name, const NodeConfiguration& config) :
+CoroActionNode::CoroActionNode(const std::string& name, const NodeConfig& config) :
   ActionNodeBase(name, config), _p(new Pimpl)
 {
   _p->func = [this](coroutine<void>::push_type& yield) {
@@ -107,7 +107,7 @@ NodeStatus CoroActionNode::executeTick()
     return status();
   }
 
-  if (status() == NodeStatus::RUNNING && (bool)_p->coro)
+  if (status() == NodeStatus::RUNNING && bool(_p->coro))
   {
     (*_p->coro)();
   }
@@ -121,43 +121,47 @@ void CoroActionNode::halt()
 }
 #endif
 
+bool StatefulAsyncAction::isHaltRequested() const
+{
+  return halt_requested_.load();
+}
+
 NodeStatus StatefulActionNode::tick()
 {
-  const NodeStatus initial_status = status();
+  const NodeStatus prev_status = status();
 
-  if (initial_status == NodeStatus::IDLE)
+  if (prev_status == NodeStatus::IDLE)
   {
     NodeStatus new_status = onStart();
     if (new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("StatefulActionNode::onStart() must not return IDLE");
+      throw LogicError("StatefulActionNode::onStart() must not return IDLE");
     }
     return new_status;
   }
   //------------------------------------------
-  if (initial_status == NodeStatus::RUNNING)
+  if (prev_status == NodeStatus::RUNNING)
   {
     NodeStatus new_status = onRunning();
     if (new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("StatefulActionNode::onRunning() must not return "
-                             "IDLE");
+      throw LogicError("StatefulActionNode::onRunning() must not return IDLE");
     }
     return new_status;
   }
-  //------------------------------------------
-  return initial_status;
+  return prev_status;
 }
 
 void StatefulActionNode::halt()
 {
+  halt_requested_.store(true);
   if (status() == NodeStatus::RUNNING)
   {
     onHalted();
   }
 }
 
-NodeStatus BT::AsyncActionNode::executeTick()
+NodeStatus BT::ThreadedAction::executeTick()
 {
   using lock_type = std::unique_lock<std::mutex>;
   //send signal to other thread.
@@ -177,15 +181,15 @@ NodeStatus BT::AsyncActionNode::executeTick()
       }
       catch (std::exception&)
       {
-        std::cerr << "\nUncaught exception from the method tick(): ["
-                  << registrationName() << "/" << name() << "]\n"
+        std::cerr << "\nUncaught exception from tick(): [" << registrationName() << "/"
+                  << name() << "]\n"
                   << std::endl;
         // Set the exception pointer and the status atomically.
         lock_type l(mutex_);
         exptr_ = std::current_exception();
         setStatus(BT::NodeStatus::IDLE);
       }
-      emitStateChanged();
+      emitWakeUpSignal();
     });
   }
 
@@ -201,7 +205,7 @@ NodeStatus BT::AsyncActionNode::executeTick()
   return status();
 }
 
-void AsyncActionNode::halt()
+void ThreadedAction::halt()
 {
   halt_requested_.store(true);
 

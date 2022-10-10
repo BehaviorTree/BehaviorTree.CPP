@@ -23,7 +23,7 @@ namespace BT
 class BehaviorTreeException : public std::exception
 {
 public:
-  BehaviorTreeException(nonstd::string_view message) :
+  BehaviorTreeException(std::string_view message) :
     message_(static_cast<std::string>(message))
   {}
 
@@ -40,12 +40,12 @@ private:
   std::string message_;
 };
 
-// This errors are usually related to problems that "probably" require code refactoring
+// This errors are usually related to problems which "probably" require code refactoring
 // to be fixed.
 class LogicError : public BehaviorTreeException
 {
 public:
-  LogicError(nonstd::string_view message) : BehaviorTreeException(message)
+  LogicError(std::string_view message) : BehaviorTreeException(message)
   {}
 
   template <typename... SV>
@@ -58,7 +58,7 @@ public:
 class RuntimeError : public BehaviorTreeException
 {
 public:
-  RuntimeError(nonstd::string_view message) : BehaviorTreeException(message)
+  RuntimeError(std::string_view message) : BehaviorTreeException(message)
   {}
 
   template <typename... SV>

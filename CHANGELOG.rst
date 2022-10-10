@@ -240,7 +240,7 @@ Changelog for package behaviortree_cpp
 * fix ros2 compilation?
 * move to github actions
 * replace dot by zero in boost version (`#197 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/197>`_)
-* Always use nonstd::string_view for binary compatibility (fix issue `#200 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/200>`_)
+* Always use std::string_view for binary compatibility (fix issue `#200 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/200>`_)
 * Adding ForceRunningNode Decorator (`#192 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/192>`_)
 * updated doc
 * Add XML parsing support for custom Control Nodes (`#194 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/194>`_)

@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <clocale>
+#include <charconv>
 
 namespace BT
 {
@@ -18,6 +19,8 @@ std::string toStr<NodeStatus>(NodeStatus status)
       return "RUNNING";
     case NodeStatus::IDLE:
       return "IDLE";
+    case NodeStatus::SKIPPED:
+      return "SKIPPED";
   }
   return "";
 }
@@ -49,6 +52,7 @@ std::string toStr(NodeStatus status, bool colored)
         return "\x1b[33m"
                "RUNNING"
                "\x1b[0m";   // YELLOW
+      case NodeStatus::SKIPPED:
       case NodeStatus::IDLE:
         return "\x1b[36m"
                "IDLE"
@@ -102,25 +106,33 @@ std::string convertFromString<std::string>(StringView str)
 template <>
 int convertFromString<int>(StringView str)
 {
-  return std::stoi(str.data());
+  int result = 0;
+  std::from_chars(str.data(), str.data() + str.size(), result);
+  return result;
 }
 
 template <>
 long convertFromString<long>(StringView str)
 {
-  return std::stol(str.data());
+  long result = 0;
+  std::from_chars(str.data(), str.data() + str.size(), result);
+  return result;
 }
 
 template <>
 unsigned convertFromString<unsigned>(StringView str)
 {
-  return unsigned(std::stoul(str.data()));
+  unsigned result = 0;
+  std::from_chars(str.data(), str.data() + str.size(), result);
+  return result;
 }
 
 template <>
 unsigned long convertFromString<unsigned long>(StringView str)
 {
-  return std::stoul(str.data());
+  unsigned long result = 0;
+  std::from_chars(str.data(), str.data() + str.size(), result);
+  return result;
 }
 
 template <>
@@ -154,8 +166,7 @@ std::vector<int> convertFromString<std::vector<int>>(StringView str)
   output.reserve(parts.size());
   for (const StringView& part : parts)
   {
-    char* end;
-    output.push_back(std::strtol(part.data(), &end, 10));
+    output.push_back(convertFromString<int>(part));
   }
   return output;
 }
@@ -168,8 +179,7 @@ std::vector<double> convertFromString<std::vector<double>>(StringView str)
   output.reserve(parts.size());
   for (const StringView& part : parts)
   {
-    char* end;
-    output.push_back(std::strtod(part.data(), &end));
+    output.push_back(convertFromString<double>(part));
   }
   return output;
 }
@@ -231,7 +241,7 @@ NodeType convertFromString<NodeType>(StringView str)
     return NodeType::CONTROL;
   if (str == "Decorator")
     return NodeType::DECORATOR;
-  if (str == "SubTree" || str == "SubTreePlus")
+  if (str == "SubTree")
     return NodeType::SUBTREE;
   return NodeType::UNDEFINED;
 }
@@ -289,9 +299,9 @@ PortDirection PortInfo::direction() const
   return _type;
 }
 
-const std::type_info* PortInfo::type() const
+const std::type_index& PortInfo::type() const
 {
-  return _info;
+  return _type_info;
 }
 
 Any PortInfo::parseString(const char* str) const
@@ -330,6 +340,24 @@ const std::string& PortInfo::description() const
 const std::string& PortInfo::defaultValue() const
 {
   return default_value_;
+}
+
+bool IsAllowedPortName(StringView str)
+{
+  if (str.empty())
+  {
+    return false;
+  }
+  const char first_char = str.data()[0];
+  if (!std::isalpha(first_char))
+  {
+    return false;
+  }
+  if (str == "name" || str == "ID")
+  {
+    return false;
+  }
+  return true;
 }
 
 }   // namespace BT

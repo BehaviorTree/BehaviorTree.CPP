@@ -6,37 +6,10 @@
 namespace BT
 {
 /**
- * @brief The SubtreeNode is a way to wrap an entire Subtree,
+ * @brief The SubTreeNode is a way to wrap an entire Subtree,
  * creating a separated BlackBoard.
  * If you want to have data flow through ports, you need to explicitly
  * remap the ports.
- */
-class SubtreeNode : public DecoratorNode
-{
-public:
-  SubtreeNode(const std::string& name);
-
-  virtual ~SubtreeNode() override = default;
-
-private:
-  virtual BT::NodeStatus tick() override;
-
-  static PortsList providedPorts()
-  {
-    return {InputPort<bool>("__shared_blackboard", false,
-                            "If false (default) the subtree has its own blackboard and "
-                            "you"
-                            "need to do port remapping to connect it to the parent")};
-  }
-
-  virtual NodeType type() const override final
-  {
-    return NodeType::SUBTREE;
-  }
-};
-
-/**
- * @brief The SubtreePlus is a new kind of subtree that gives you much more control over remapping:
  *
  * Consider this example:
 
@@ -46,12 +19,12 @@ private:
         <Sequence>
 
         <SetBlackboard value="Hello" output_key="myParam" />
-        <SubTreePlus ID="Talk" param="{myParam}" />
+        <SubTree ID="Talk" param="{myParam}" />
 
-        <SubTreePlus ID="Talk" param="World" />
+        <SubTree ID="Talk" param="World" />
 
         <SetBlackboard value="Auto remapped" output_key="param" />
-        <SubTreePlus ID="Talk" __autoremap="1"  />
+        <SubTree ID="Talk" __autoremap="1"  />
 
         </Sequence>
     </BehaviorTree>
@@ -68,26 +41,25 @@ private:
  *    {myParam} to say that you are remapping the another port.
  *
  * 2) Subtree: "{param}" -> Value: "World"
- *    syntax without {}, in this case param directly point to the string "World".
+ *    syntax without {}, in this case param directly point to the __string__ "World".
  *
  * 3) Subtree: "{param}" -> Parent: "{parent}"
- *    Setting to true (or 1) the attribute "__autoremap", we are automatically remapping
- *    each port. Usefull to avoid some boilerplate.
-
+ *    Setting to true (or 1) the attribute "_autoremap", we are automatically remapping
+ *    each port. Usefull to avoid boilerplate.
  */
-class SubtreePlusNode : public DecoratorNode
+class SubTreeNode : public DecoratorNode
 {
 public:
-  SubtreePlusNode(const std::string& name);
+  SubTreeNode(const std::string& instance_name);
 
-  virtual ~SubtreePlusNode() override = default;
+  virtual ~SubTreeNode() override = default;
 
 private:
   virtual BT::NodeStatus tick() override;
 
   static PortsList providedPorts()
   {
-    return {InputPort<bool>("__autoremap", false,
+    return {InputPort<bool>("_autoremap", false,
                             "If true, all the ports with the same name will be "
                             "remapped")};
   }

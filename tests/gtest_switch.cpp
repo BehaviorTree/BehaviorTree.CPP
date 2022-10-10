@@ -23,6 +23,16 @@ static const char* xml_text = R"(
 </root>
         )";
 
+BT::NodeStatus TickWhileRunning(BT::TreeNode& node)
+{
+  auto status = node.executeTick();
+  while (status == BT::NodeStatus::RUNNING)
+  {
+    status = node.executeTick();
+  }
+  return status;
+}
+
 struct SwitchTest : testing::Test
 {
   using Switch2 = BT::SwitchNode<2>;
@@ -31,7 +41,7 @@ struct SwitchTest : testing::Test
   BT::AsyncActionTest action_42;
   BT::AsyncActionTest action_def;
   BT::Blackboard::Ptr bb = BT::Blackboard::create();
-  BT::NodeConfiguration simple_switch_config_;
+  BT::NodeConfig simple_switch_config_;
 
   SwitchTest() :
     action_1("action_1", milliseconds(100)),
@@ -43,7 +53,7 @@ struct SwitchTest : testing::Test
     input.insert(std::make_pair("case_1", "1"));
     input.insert(std::make_pair("case_2", "42"));
 
-    BT::NodeConfiguration simple_switch_config_;
+    BT::NodeConfig simple_switch_config_;
     simple_switch_config_.blackboard = bb;
     simple_switch_config_.input_ports = input;
 

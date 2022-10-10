@@ -41,7 +41,7 @@ public:
   virtual Tree instantiateTree(const Blackboard::Ptr& root_blackboard,
                                std::string tree_name = {}) = 0;
 
-  virtual void clearInternalState() {};
+  virtual void clearInternalState(){};
 };
 
 }   // namespace BT

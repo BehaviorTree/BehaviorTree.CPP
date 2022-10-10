@@ -24,7 +24,7 @@ class DelayNode : public DecoratorNode
 public:
   DelayNode(const std::string& name, unsigned milliseconds);
 
-  DelayNode(const std::string& name, const NodeConfiguration& config);
+  DelayNode(const std::string& name, const NodeConfig& config);
 
   ~DelayNode() override
   {

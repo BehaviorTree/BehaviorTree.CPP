@@ -5,8 +5,8 @@ project(behaviortree_cpp_v3)
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 
-#---- Enable C++14 ----
-set(CMAKE_CXX_STANDARD 14)
+#---- Enable C++17 ----
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
@@ -25,6 +25,7 @@ option(BUILD_TOOLS "Build commandline tools" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(BUILD_MANUAL_SELECTOR "Build manual selector node" ON)
 option(ENABLE_COROUTINES "Enable boost coroutines" ON)
+option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
 #---- Include boost to add coroutines ----
 if(ENABLE_COROUTINES)
@@ -53,6 +54,10 @@ endif()
 
 if(NOT DEFINED BT_COROUTINES)
     add_definitions(-DBT_NO_COROUTINES)
+endif()
+
+if(USE_V3_COMPATIBLE_NAMES)
+    add_definitions(-DUSE_BTCPP3_OLD_NAMES)
 endif()
 
 #---- Find other packages ----
@@ -130,6 +135,8 @@ endif()
 #############################################################
 # LIBRARY
 
+add_subdirectory(3rdparty/lexy)
+
 list(APPEND BT_SOURCE
     src/action_node.cpp
     src/basic_types.cpp
@@ -141,6 +148,7 @@ list(APPEND BT_SOURCE
     src/control_node.cpp
     src/shared_library.cpp
     src/tree_node.cpp
+    src/script_parser.cpp
     src/xml_parsing.cpp
 
     src/decorators/inverter_node.cpp
@@ -208,7 +216,9 @@ target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
     ${Boost_LIBRARIES}
-    ${ZMQ_LIBRARIES})
+    ${ZMQ_LIBRARIES}
+    foonathan::lexy
+)
 
 #get_target_property(my_libs ${BEHAVIOR_TREE_LIBRARY} INTERFACE_LINK_LIBRARIES)
 #list(REMOVE_ITEM _libs X)
@@ -220,6 +230,7 @@ target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TI
 
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     ${BUILD_TOOL_INCLUDE_DIRS})

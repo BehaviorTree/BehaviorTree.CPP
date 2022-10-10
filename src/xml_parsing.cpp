@@ -25,7 +25,7 @@
 #include <map>
 #include "behaviortree_cpp_v3/xml_parsing.h"
 #include "tinyxml2/tinyxml2.h"
-#include "filesystem/path.h"
+#include <filesystem>
 
 #ifdef USING_ROS
 #include <ros/package.h>
@@ -66,18 +66,18 @@ struct XMLParser::Pimpl
 
   const BehaviorTreeFactory& factory;
 
-  filesystem::path current_path;
+  std::filesystem::path current_path;
 
   int suffix_count;
 
   explicit Pimpl(const BehaviorTreeFactory& fact) :
-    factory(fact), current_path(filesystem::path::getcwd()), suffix_count(0)
+    factory(fact), current_path(std::filesystem::current_path()), suffix_count(0)
   {}
 
   void clear()
   {
     suffix_count = 0;
-    current_path = filesystem::path::getcwd();
+    current_path = std::filesystem::current_path();
     opened_documents.clear();
     tree_roots.clear();
   }
@@ -102,8 +102,8 @@ void XMLParser::loadFromFile(const std::string& filename, bool add_includes)
   tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
   doc->LoadFile(filename.c_str());
 
-  filesystem::path file_path(filename);
-  _p->current_path = file_path.parent_path().make_absolute();
+  std::filesystem::path file_path(filename);
+  _p->current_path = std::filesystem::absolute(file_path.parent_path());
 
   _p->loadDocImpl(doc, add_includes);
 }
@@ -140,24 +140,22 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
   const XMLElement* xml_root = doc->RootElement();
 
   // recursively include other files
-  for (auto include_node = xml_root->FirstChildElement("include");
-       include_node != nullptr; include_node = include_node->NextSiblingElement("includ"
-                                                                                "e"))
+  for (auto incl_node = xml_root->FirstChildElement("include"); incl_node != nullptr;
+       incl_node = incl_node->NextSiblingElement("include"))
   {
     if (!add_includes)
     {
       break;
     }
 
-    filesystem::path file_path(include_node->Attribute("path"));
-    const char* ros_pkg_relative_path = include_node->Attribute("ros_pkg");
+    std::filesystem::path file_path(incl_node->Attribute("path"));
+    const char* ros_pkg_relative_path = incl_node->Attribute("ros_pkg");
 
     if (ros_pkg_relative_path)
     {
       if (file_path.is_absolute())
       {
-        std::cout << "WARNING: <include path=\"...\"> contains an absolute "
-                     "path.\n"
+        std::cout << "WARNING: <include path=\"...\"> contains an absolute path.\n"
                   << "Attribute [ros_pkg] will be ignored." << std::endl;
       }
       else
@@ -168,14 +166,11 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
 #elif defined USING_ROS2
         ros_pkg_path =
             ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
-        file_path = filesystem::path(ros_pkg_path) / file_path;
+        file_path = std::filesystem::path(ros_pkg_path) / file_path;
 #else
-        throw RuntimeError("Using attribute [ros_pkg] in <include>, but this "
-                           "library was "
-                           "compiled "
-                           "without ROS support. Recompile the BehaviorTree.CPP "
-                           "using "
-                           "catkin");
+        throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was "
+                           "compiled without ROS support. Recompile the BehaviorTree.CPP "
+                           "using catkin");
 #endif
       }
     }
@@ -189,10 +184,10 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
     tinyxml2::XMLDocument* next_doc = opened_documents.back().get();
 
     // change current path to the included file for handling additional relative paths
-    const filesystem::path previous_path = current_path;
-    current_path = file_path.parent_path().make_absolute();
+    const auto previous_path = current_path;
+    current_path = std::filesystem::absolute(file_path.parent_path());
 
-    next_doc->LoadFile(file_path.str().c_str());
+    next_doc->LoadFile(file_path.string().c_str());
     loadDocImpl(next_doc, add_includes);
 
     // reset current path to the previous value
@@ -293,8 +288,7 @@ void VerifyXML(const std::string& xml_text,
         if (!ID)
         {
           ThrowError(node->GetLineNum(), "Error at line %d: -> The attribute "
-                                         "[ID] is "
-                                         "mandatory");
+                                         "[ID] is mandatory");
         }
       }
     }
@@ -468,8 +462,6 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
     throw RuntimeError("XMLParser::instantiateTree needs a non-empty "
                        "root_blackboard");
   }
-  // first blackboard
-  output_tree.blackboard_stack.push_back(root_blackboard);
 
   _p->recursivelyCreateTree(main_tree_ID, output_tree, root_blackboard, TreeNode::Ptr());
   output_tree.initialize();
@@ -478,109 +470,113 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
 
 void XMLParser::clearInternalState()
 {
-    _p->clear();
+  _p->clear();
 }
 
 TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
                                                   const Blackboard::Ptr& blackboard,
                                                   const TreeNode::Ptr& node_parent)
 {
-  const std::string element_name = element->Name();
-  std::string ID;
-  std::string instance_name;
+  auto element_name = element->Name();
+  auto element_ID = element->Attribute("ID");
 
-  // Actions and Decorators have their own ID
-  if (element_name == "Action" || element_name == "Decorator" ||
-      element_name == "Condition" || element_name == "Control")
+  auto node_type = convertFromString<NodeType>(element_name);
+  // name used by the factory
+  std::string type_ID;
+
+  if (node_type == NodeType::UNDEFINED)
   {
-    ID = element->Attribute("ID");
+    // This is the case of nodes like <MyCustomAction>
+    // check if the factory has this name
+    if (factory.builders().count(element_name) == 0)
+    {
+      throw RuntimeError(element_name, " is not a registered node");
+    }
+    type_ID = element_name;
+
+    if (element_ID)
+    {
+      throw RuntimeError("Attribute [ID] is not allowed in <", type_ID, ">");
+    }
   }
   else
   {
-    ID = element_name;
+    // in this case, it is mandatory to have a field "ID"
+    if (!element_ID)
+    {
+      throw RuntimeError("Attribute [ID] is mandatory in <", type_ID, ">");
+    }
+    type_ID = element_ID;
   }
 
-  const char* attr_alias = element->Attribute("name");
-  if (attr_alias)
-  {
-    instance_name = attr_alias;
-  }
-  else
-  {
-    instance_name = ID;
-  }
+  // By default, the instance name is equal to ID, unless the
+  // attribute [name] is present.
+  const char* attr_name = element->Attribute("name");
+  std::string instance_name = attr_name ? attr_name : type_ID;
 
   PortsRemapping port_remap;
 
-  if (element_name == "SubTree" || element_name == "SubTreePlus")
-  {
-    instance_name = element->Attribute("ID");
-  }
-  else
+  if (node_type != NodeType::SUBTREE)
   {
     // do this only if it NOT a Subtree
     for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
     {
-      const std::string attribute_name = att->Name();
-      if (ReservedPortNames.count(attribute_name) == 0)
+      if (IsAllowedPortName(att->Name()))
       {
+        const std::string attribute_name = att->Name();
         port_remap[attribute_name] = att->Value();
       }
     }
   }
-  NodeConfiguration config;
+  NodeConfig config;
   config.blackboard = blackboard;
 
   //---------------------------------------------
-  TreeNode::Ptr child_node;
+  TreeNode::Ptr new_node;
 
-  if (factory.builders().count(ID) != 0)
+  if (node_type == NodeType::SUBTREE)
   {
-    const auto& manifest = factory.manifests().at(ID);
+    new_node = std::make_unique<SubTreeNode>(instance_name);
+  }
+  else
+  {
+    const auto& manifest = factory.manifests().at(type_ID);
 
     //Check that name in remapping can be found in the manifest
     for (const auto& remap_it : port_remap)
     {
       if (manifest.ports.count(remap_it.first) == 0)
       {
-        throw RuntimeError("Possible typo? In the XML, you tried to remap port "
-                           "\"",
-                           remap_it.first, "\" in node [", ID, " / ", instance_name,
-                           "], but the manifest of this node does not contain a "
-                           "port with "
-                           "this name.");
+        throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
+                           remap_it.first, "\" in node [", type_ID, " / ", instance_name,
+                           "], but the manifest of this node does not contain a port "
+                           "with this "
+                           "name.");
       }
     }
 
     // Initialize the ports in the BB to set the type
-    for (const auto& port_it : manifest.ports)
+    for (const auto& [port_name, port_info] : manifest.ports)
     {
-      const std::string& port_name = port_it.first;
-      const auto& port_info = port_it.second;
-
       auto remap_it = port_remap.find(port_name);
       if (remap_it == port_remap.end())
       {
         continue;
       }
-      StringView param_value = remap_it->second;
-      auto param_res = TreeNode::getRemappedKey(port_name, param_value);
-      if (param_res)
+      StringView remapped_port = remap_it->second;
+
+      if (auto param_res = TreeNode::getRemappedKey(port_name, remapped_port))
       {
+        // port_key will contain the key to find the entry in the blackboard
         const auto port_key = static_cast<std::string>(param_res.value());
 
-        auto prev_info = blackboard->portInfo(port_key);
-        if (!prev_info)
-        {
-          // not found, insert for the first time.
-          blackboard->setPortInfo(port_key, port_info);
-        }
-        else
+        // if the entry already exists, check that the type is the same
+        if (auto prev_info = blackboard->portInfo(port_key))
         {
           // found. check consistency
-          if (prev_info->type() &&
-              port_info.type() &&   // null type means that everything is valid
-              *prev_info->type() != *port_info.type())
+          // null type means that everything is valid
+          if (!prev_info->isStronglyTyped() && !port_info.isStronglyTyped() &&
+              prev_info->type() != port_info.type())
           {
             blackboard->debugMessage();
 
@@ -590,10 +586,15 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
                                demangle(port_info.type()), "] was used somewhere else.");
           }
         }
+        else
+        {
+          // not found, insert for the first time.
+          blackboard->setPortInfo(port_key, port_info);
+        }
       }
     }
 
-    // use manifest to initialize NodeConfiguration
+    // Set the port direction in config
     for (const auto& remap_it : port_remap)
     {
       const auto& port_name = remap_it.first;
@@ -627,29 +628,40 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
       }
     }
 
-    child_node = factory.instantiateTreeNode(instance_name, ID, config);
-  }
-  else if (tree_roots.count(ID) != 0)
-  {
-    child_node = std::make_unique<SubtreeNode>(instance_name);
-  }
-  else
-  {
-    throw RuntimeError(ID, " is not a registered node, nor a Subtree");
+    auto AddCondition = [&](auto& conditions, const char* attr_name, auto ID) {
+      if (auto script = element->Attribute(attr_name))
+      {
+        conditions.insert({ID, std::string(script)});
+      }
+    };
+
+    AddCondition(config.pre_conditions, "_successIf", PreCond::SUCCESS_IF);
+    AddCondition(config.pre_conditions, "_failureIf", PreCond::FAILURE_IF);
+    AddCondition(config.pre_conditions, "_skipIf", PreCond::SKIP_IF);
+    AddCondition(config.pre_conditions, "_while", PreCond::WHILE_TRUE);
+
+    AddCondition(config.post_conditions, "_onSuccess", PostCond::ON_SUCCESS);
+    AddCondition(config.post_conditions, "_onFailure", PostCond::ON_FAILURE);
+    AddCondition(config.post_conditions, "_onHalted", PostCond::ON_HALTED);
+    AddCondition(config.post_conditions, "_post", PostCond::ALWAYS);
+
+    new_node = factory.instantiateTreeNode(instance_name, type_ID, config);
   }
 
+  // add the pointer of this node to the parent
   if (node_parent)
   {
     if (auto control_parent = dynamic_cast<ControlNode*>(node_parent.get()))
     {
-      control_parent->addChild(child_node.get());
+      control_parent->addChild(new_node.get());
     }
     if (auto decorator_parent = dynamic_cast<DecoratorNode*>(node_parent.get()))
     {
-      decorator_parent->setChild(child_node.get());
+      decorator_parent->setChild(new_node.get());
     }
   }
-  return child_node;
+
+  return new_node;
 }
 
 void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
@@ -657,114 +669,78 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
                                                  Blackboard::Ptr blackboard,
                                                  const TreeNode::Ptr& root_parent)
 {
-  std::function<void(const TreeNode::Ptr&, const XMLElement*)> recursiveStep;
+  std::function<void(const TreeNode::Ptr&, Tree::Subtree::Ptr, const XMLElement*)>
+      recursiveStep;
 
-  recursiveStep = [&](const TreeNode::Ptr& parent, const XMLElement* element) {
+  recursiveStep = [&](const TreeNode::Ptr& parent, Tree::Subtree::Ptr subtree,
+                      const XMLElement* element) {
     // create the node
     auto node = createNodeFromXML(element, blackboard, parent);
-    output_tree.nodes.push_back(node);
+    subtree->nodes.push_back(node);
 
-    if (node->type() == NodeType::SUBTREE)
-    {
-      if (dynamic_cast<const SubtreeNode*>(node.get()))
-      {
-        bool is_isolated = true;
-
-        for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
-             attr = attr->Next())
-        {
-          if (StrEqual(attr->Name(), "__shared_blackboard"))
-          {
-            is_isolated = !convertFromString<bool>(attr->Value());
-            break;
-          }
-        }
-
-        if (!is_isolated)
-        {
-          recursivelyCreateTree(node->name(), output_tree, blackboard, node);
-        }
-        else
-        {
-          // Creating an isolated
-          auto new_bb = Blackboard::create(blackboard);
-
-          for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
-               attr = attr->Next())
-          {
-            if (ReservedPortNames.count(attr->Name()) == 0)
-            {
-              new_bb->addSubtreeRemapping(attr->Name(), attr->Value());
-            }
-          }
-          output_tree.blackboard_stack.emplace_back(new_bb);
-          recursivelyCreateTree(node->name(), output_tree, new_bb, node);
-        }
-      }
-      else if (dynamic_cast<const SubtreePlusNode*>(node.get()))
-      {
-        auto new_bb = Blackboard::create(blackboard);
-        output_tree.blackboard_stack.emplace_back(new_bb);
-        std::set<StringView> mapped_keys;
-
-        bool do_autoremap = false;
-
-        for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
-             attr = attr->Next())
-        {
-          const char* attr_name = attr->Name();
-          const char* attr_value = attr->Value();
-
-          if (ReservedPortNames.count(attr->Name()) != 0)
-          {
-            continue;
-          }
-          if (StrEqual(attr_name, "__autoremap"))
-          {
-            do_autoremap = convertFromString<bool>(attr_value);
-            continue;
-          }
-
-          if (TreeNode::isBlackboardPointer(attr_value))
-          {
-            // do remapping
-            StringView port_name = TreeNode::stripBlackboardPointer(attr_value);
-            new_bb->addSubtreeRemapping(attr_name, port_name);
-            mapped_keys.insert(attr_name);
-          }
-          else
-          {
-            // constant string: just set that constant value into the BB
-            new_bb->set(attr_name, static_cast<std::string>(attr_value));
-            mapped_keys.insert(attr_name);
-          }
-        }
-
-        if (do_autoremap)
-        {
-          std::vector<std::string> remapped_ports;
-          auto new_root_element = tree_roots[node->name()]->FirstChildElement();
-
-          getPortsRecursively(new_root_element, remapped_ports);
-          for (const auto& port : remapped_ports)
-          {
-            if (mapped_keys.count(port) == 0)
-            {
-              new_bb->addSubtreeRemapping(port, port);
-            }
-          }
-        }
-
-        recursivelyCreateTree(node->name(), output_tree, new_bb, node);
-      }
-    }
-    else
+    // common case: iterate through all children
+    if (node->type() != NodeType::SUBTREE)
     {
       for (auto child_element = element->FirstChildElement(); child_element;
            child_element = child_element->NextSiblingElement())
       {
-        recursiveStep(node, child_element);
+        recursiveStep(node, subtree, child_element);
       }
+    }
+    else   // special case: SubTreeNode
+    {
+      auto new_bb = Blackboard::create(blackboard);
+
+      std::set<StringView> mapped_keys;
+
+      bool do_autoremap = false;
+
+      for (auto attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
+      {
+        const char* attr_name = attr->Name();
+        const char* attr_value = attr->Value();
+
+        if (StrEqual(attr_name, "_autoremap"))
+        {
+          do_autoremap = convertFromString<bool>(attr_value);
+          continue;
+        }
+        if (!IsAllowedPortName(attr->Name()))
+        {
+          continue;
+        }
+
+        if (TreeNode::isBlackboardPointer(attr_value))
+        {
+          // do remapping
+          StringView port_name = TreeNode::stripBlackboardPointer(attr_value);
+          new_bb->addSubtreeRemapping(attr_name, port_name);
+          mapped_keys.insert(attr_name);
+        }
+        else
+        {
+          // constant string: just set that constant value into the BB
+          new_bb->set(attr_name, static_cast<std::string>(attr_value));
+          mapped_keys.insert(attr_name);
+        }
+      }
+
+      if (do_autoremap)
+      {
+        std::vector<std::string> remapped_ports;
+        auto new_root_element = tree_roots[node->name()]->FirstChildElement();
+
+        getPortsRecursively(new_root_element, remapped_ports);
+        for (const auto& port : remapped_ports)
+        {
+          if (mapped_keys.count(port) == 0)
+          {
+            new_bb->addSubtreeRemapping(port, port);
+          }
+        }
+      }
+      auto subtree_ID = element->Attribute("ID");
+      recursivelyCreateTree(subtree_ID, output_tree, new_bb, node);
     }
   };
 
@@ -776,8 +752,13 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
   auto root_element = it->second->FirstChildElement();
 
-  // start recursion
-  recursiveStep(root_parent, root_element);
+  //-------- start recursion -----------
+
+  // Append a new subtree to the list
+  output_tree.subtrees.push_back(std::make_shared<Tree::Subtree>());
+  output_tree.subtrees.back()->blackboard = blackboard;
+
+  recursiveStep(root_parent, output_tree.subtrees.back(), root_element);
 }
 
 void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,
@@ -788,8 +769,7 @@ void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,
   {
     const char* attr_name = attr->Name();
     const char* attr_value = attr->Value();
-    if (ReservedPortNames.count(attr_name) == 0 &&
-        TreeNode::isBlackboardPointer(attr_value))
+    if (IsAllowedPortName(attr_name) && TreeNode::isBlackboardPointer(attr_value))
     {
       auto port_name = TreeNode::stripBlackboardPointer(attr_value);
       output_ports.push_back(static_cast<std::string>(port_name));
@@ -873,7 +853,7 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
       }
 
       port_element->SetAttribute("name", port_name.c_str());
-      if (port_info.type())
+      if (port_info.type() != typeid(void))
       {
         port_element->SetAttribute("type", BT::demangle(port_info.type()).c_str());
       }

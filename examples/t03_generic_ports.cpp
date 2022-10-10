@@ -40,7 +40,7 @@ inline Position2D convertFromString(StringView str)
 class CalculateGoal : public SyncActionNode
 {
 public:
-  CalculateGoal(const std::string& name, const NodeConfiguration& config) :
+  CalculateGoal(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 
@@ -59,7 +59,7 @@ public:
 class PrintTarget : public SyncActionNode
 {
 public:
-  PrintTarget(const std::string& name, const NodeConfiguration& config) :
+  PrintTarget(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {}
 

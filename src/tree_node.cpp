@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2022 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -22,7 +22,7 @@ static uint16_t getUID()
   return uid++;
 }
 
-TreeNode::TreeNode(std::string name, NodeConfiguration config) :
+TreeNode::TreeNode(std::string name, NodeConfig config) :
   name_(std::move(name)),
   status_(NodeStatus::IDLE),
   uid_(getUID()),
@@ -31,37 +31,59 @@ TreeNode::TreeNode(std::string name, NodeConfiguration config) :
 
 NodeStatus TreeNode::executeTick()
 {
-  NodeStatus new_status = status_;
+  auto new_status = status_;
   // a pre-condition may return the new status.
   // In this case it override the actual tick()
-  if (pre_condition_callback_)
+
+  if (auto precond = checkPreConditions())
   {
-    if (auto res = pre_condition_callback_(*this, status_))
-    {
-      new_status = res.value();
-    }
+    new_status = precond.value();
   }
   else
   {
+    //Call the actual tick
     new_status = tick();
   }
+
+  checkPostConditions(new_status);
 
   // a post-condition may overwrite the result of the tick
   // with its own result.
   if (post_condition_callback_)
   {
-    if (auto res = post_condition_callback_(*this, status_, new_status))
+    // may overwrite the status
+    if (auto post = post_condition_callback_(*this, status_, new_status))
     {
-      new_status = res.value();
+      new_status = post.value();
     }
   }
 
   setStatus(new_status);
+
   return new_status;
+}
+
+void TreeNode::haltNode()
+{
+  halt();
+
+  const auto& parse_executor = post_parsed_[size_t(PostCond::ON_HALTED)];
+  if (parse_executor)
+  {
+    Ast::Environment env = {config().blackboard, config().enums};
+    parse_executor(env);
+  }
 }
 
 void TreeNode::setStatus(NodeStatus new_status)
 {
+  if (new_status == NodeStatus::IDLE)
+  {
+    throw RuntimeError("Node [", name(),
+                       "]: you are not allowed to set manually the status to IDLE. "
+                       "If you know what you are doing (?) use resetStatus() instead.");
+  }
+
   NodeStatus prev_status;
   {
     std::unique_lock<std::mutex> UniqueLock(state_mutex_);
@@ -74,6 +96,76 @@ void TreeNode::setStatus(NodeStatus new_status)
     state_change_signal_.notify(std::chrono::high_resolution_clock::now(), *this,
                                 prev_status, new_status);
   }
+}
+
+Optional<NodeStatus> TreeNode::checkPreConditions()
+{
+  // check the pre-conditions
+  for (size_t index = 0; index < size_t(PreCond::COUNT_); index++)
+  {
+    PreCond preID = PreCond(index);
+    const auto& parse_executor = pre_parsed_[index];
+    if (!parse_executor)
+    {
+      continue;
+    }
+    Ast::Environment env = {config().blackboard, config().enums};
+    auto result = parse_executor(env);
+    // what to do if the condition is true
+    if (result.cast<bool>())
+    {
+      // Some preconditions are applied only when the node is started
+      if (status_ == NodeStatus::IDLE)
+      {
+        if (preID == PreCond::FAILURE_IF)
+        {
+          return NodeStatus::FAILURE;
+        }
+        else if (preID == PreCond::SUCCESS_IF)
+        {
+          return NodeStatus::SUCCESS;
+        }
+        else if (preID == PreCond::SKIP_IF)
+        {
+          return NodeStatus::SKIPPED;
+        }
+      }
+    }
+    else   // condition is false
+    {
+      if (preID == PreCond::WHILE_TRUE)
+      {
+        if (status_ == NodeStatus::RUNNING)
+        {
+          halt();
+        }
+        return NodeStatus::SKIPPED;
+      }
+    }
+  }
+  return nonstd::make_unexpected("");   // no precondition
+}
+
+void TreeNode::checkPostConditions(NodeStatus status)
+{
+  auto ExecuteScript = [this](const PostCond& cond) {
+    const auto& parse_executor = post_parsed_[size_t(cond)];
+    if (parse_executor)
+    {
+      Ast::Environment env = {config().blackboard, config().enums};
+      parse_executor(env);
+    }
+  };
+
+  if (status == NodeStatus::SUCCESS)
+  {
+    ExecuteScript(PostCond::ON_SUCCESS);
+  }
+  else if (status == NodeStatus::FAILURE)
+  {
+    ExecuteScript(PostCond::ON_FAILURE);
+  }
+  ExecuteScript(PostCond::ALWAYS);
 }
 
 void TreeNode::resetStatus()
@@ -125,7 +217,7 @@ const std::string& TreeNode::registrationName() const
   return registration_ID_;
 }
 
-const NodeConfiguration& TreeNode::config() const
+const NodeConfig& TreeNode::config() const
 {
   return config_;
 }
@@ -136,7 +228,7 @@ StringView TreeNode::getRawPortValue(const std::string& key) const
   if (remap_it == config_.input_ports.end())
   {
     throw std::logic_error(StrCat("getInput() failed because "
-                                  "NodeConfiguration::input_ports "
+                                  "NodeConfig::input_ports "
                                   "does not contain the key: [",
                                   key, "]"));
   }
@@ -178,25 +270,30 @@ StringView TreeNode::stripBlackboardPointer(StringView str)
 }
 
 Optional<StringView> TreeNode::getRemappedKey(StringView port_name,
-                                              StringView remapping_value)
+                                              StringView remapped_port)
 {
-  if (remapping_value == "=")
+  if (remapped_port == "=")
   {
     return {port_name};
   }
-  if (isBlackboardPointer(remapping_value))
+  if (isBlackboardPointer(remapped_port))
   {
-    return {stripBlackboardPointer(remapping_value)};
+    return {stripBlackboardPointer(remapped_port)};
   }
   return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
-void TreeNode::emitStateChanged()
+void TreeNode::emitWakeUpSignal()
 {
   if (wake_up_)
   {
     wake_up_->emitSignal();
   }
+}
+
+bool TreeNode::requiresWakeUp() const
+{
+  return bool(wake_up_);
 }
 
 void TreeNode::setRegistrationID(StringView ID)

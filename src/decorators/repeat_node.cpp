@@ -26,7 +26,7 @@ RepeatNode::RepeatNode(const std::string& name, int NTries) :
   setRegistrationID("Repeat");
 }
 
-RepeatNode::RepeatNode(const std::string& name, const NodeConfiguration& config) :
+RepeatNode::RepeatNode(const std::string& name, const NodeConfig& config) :
   DecoratorNode(name, config),
   num_cycles_(0),
   repeat_count_(0),
@@ -43,17 +43,34 @@ NodeStatus RepeatNode::tick()
     }
   }
 
-  setStatus(NodeStatus::RUNNING);
+  bool do_loop = repeat_count_ < num_cycles_ || num_cycles_ == -1;
 
-  while (repeat_count_ < num_cycles_ || num_cycles_ == -1)
+  while (do_loop)
   {
-    NodeStatus child_state = child_node_->executeTick();
+    NodeStatus const prev_status = child_node_->status();
+    NodeStatus child_status = child_node_->executeTick();
 
-    switch (child_state)
+    // switch to RUNNING state as soon as you find an active child
+    if (child_status != NodeStatus::SKIPPED)
+    {
+      setStatus(NodeStatus::RUNNING);
+    }
+
+    switch (child_status)
     {
       case NodeStatus::SUCCESS: {
         repeat_count_++;
+        do_loop = repeat_count_ < num_cycles_ || num_cycles_ == -1;
+
         haltChild();
+
+        // Return the execution flow if the child is async,
+        // to make this interruptable.
+        if (requiresWakeUp() && prev_status == NodeStatus::IDLE && do_loop)
+        {
+          emitWakeUpSignal();
+          return NodeStatus::RUNNING;
+        }
       }
       break;
 
@@ -67,8 +84,13 @@ NodeStatus RepeatNode::tick()
         return NodeStatus::RUNNING;
       }
 
-      default: {
-        throw LogicError("A child node must never return IDLE");
+      case NodeStatus::SKIPPED: {
+        // the child has been skipped. Skip the decorator too.
+        // Don't reset the counter, though !
+        return NodeStatus::IDLE;
+      }
+      case NodeStatus::IDLE: {
+        throw LogicError("[", name(), "]: A children should not return IDLE");
       }
     }
   }

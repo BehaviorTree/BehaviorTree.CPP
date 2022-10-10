@@ -29,7 +29,7 @@ private:
   int tick_count_;
 };
 
-class AsyncActionTest : public AsyncActionNode
+class AsyncActionTest : public ThreadedAction
 {
 public:
   AsyncActionTest(const std::string& name,

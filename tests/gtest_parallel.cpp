@@ -28,7 +28,7 @@ struct SimpleParallelTest : testing::Test
   BT::ConditionTestNode condition_2;
 
   SimpleParallelTest() :
-    root("root_parallel", 4),
+    root("root_parallel"),
     action_1("action_1", milliseconds(100)),
     condition_1("condition_1"),
     action_2("action_2", milliseconds(300)),
@@ -39,7 +39,7 @@ struct SimpleParallelTest : testing::Test
     root.addChild(&condition_2);
     root.addChild(&action_2);
   }
-  ~SimpleParallelTest()
+  ~SimpleParallelTest() override
   {}
 };
 
@@ -59,9 +59,9 @@ struct ComplexParallelTest : testing::Test
   BT::ConditionTestNode condition_R;
 
   ComplexParallelTest() :
-    parallel_root("root", 2),
-    parallel_left("par1", 3),
-    parallel_right("par2", 1),
+    parallel_root("root"),
+    parallel_left("par1"),
+    parallel_right("par2"),
     action_L1("action_1", milliseconds(100)),
     condition_L1("condition_1"),
     action_L2("action_2", milliseconds(200)),
@@ -81,8 +81,11 @@ struct ComplexParallelTest : testing::Test
       parallel_right.addChild(&condition_R);
       parallel_right.addChild(&action_R);
     }
+    parallel_root.setSuccessThreshold(2);
+    parallel_left.setSuccessThreshold(3);
+    parallel_right.setSuccessThreshold(1);
   }
-  ~ComplexParallelTest()
+  ~ComplexParallelTest() override
   {}
 };
 

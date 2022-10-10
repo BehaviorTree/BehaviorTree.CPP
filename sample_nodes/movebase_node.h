@@ -37,17 +37,16 @@ Pose2D convertFromString(StringView key)
 }
 } // end namespace BT
 
-// This is an asynchronous operation that will run in a separate thread.
-// It requires the input port "goal".
+namespace chr = std::chrono;
 
-class MoveBaseAction : public BT::AsyncActionNode
+// This is an asynchronous operation
+class MoveBaseAction : public BT::StatefulAsyncAction
 {
   public:
     // Any TreeNode with ports must have a constructor with this signature
-    MoveBaseAction(const std::string& name, const BT::NodeConfiguration& config)
-      : AsyncActionNode(name, config)
-    {
-    }
+    MoveBaseAction(const std::string& name, const BT::NodeConfig& config)
+      : StatefulAsyncAction(name, config)
+    {}
 
     // It is mandatory to define this static method.
     static BT::PortsList providedPorts()
@@ -55,12 +54,19 @@ class MoveBaseAction : public BT::AsyncActionNode
         return{ BT::InputPort<Pose2D>("goal") };
     }
 
-    BT::NodeStatus tick() override;
+    // this function is invoked once at the beginning.
+    BT::NodeStatus onStart() override;
 
-    virtual void halt() override;
+    // If onStart() returned RUNNING, we will keep calling
+    // this method until it return something different from RUNNING
+    BT::NodeStatus onRunning() override;
+
+    // callback to execute if the action was aborted by another node
+    void onHalted() override;
 
   private:
-    std::atomic_bool _halt_requested;
+    Pose2D _goal;
+      chr::system_clock::time_point _completion_time;
 };
 
 #endif   // MOVEBASE_BT_NODES_H

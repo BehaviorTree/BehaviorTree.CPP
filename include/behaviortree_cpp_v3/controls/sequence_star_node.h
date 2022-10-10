@@ -31,12 +31,12 @@ namespace BT
  *
  */
 
-class SequenceStarNode : public ControlNode
+class SequenceWithMemory : public ControlNode
 {
 public:
-  SequenceStarNode(const std::string& name);
+  SequenceWithMemory(const std::string& name);
 
-  virtual ~SequenceStarNode() override = default;
+  virtual ~SequenceWithMemory() override = default;
 
   virtual void halt() override;
 

@@ -15,13 +15,13 @@
 
 namespace BT
 {
-ConditionNode::ConditionNode(const std::string& name, const NodeConfiguration& config) :
+ConditionNode::ConditionNode(const std::string& name, const NodeConfig& config) :
   LeafNode::LeafNode(name, config)
 {}
 
 SimpleConditionNode::SimpleConditionNode(const std::string& name,
                                          TickFunctor tick_functor,
-                                         const NodeConfiguration& config) :
+                                         const NodeConfig& config) :
   ConditionNode(name, config), tick_functor_(std::move(tick_functor))
 {}
 

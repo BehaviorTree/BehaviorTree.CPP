@@ -191,21 +191,24 @@ TEST(Navigationtest, MoveBaseRecovery)
   ComputePathToPose* compute_node = nullptr;
   FollowPath* follow_node = nullptr;
 
-  for (auto& node : tree.nodes)
+  for (auto& subtree : tree.subtrees)
   {
-    auto ptr = node.get();
+    for (auto& node : subtree->nodes)
+    {
+      auto ptr = node.get();
 
-    if (!first_stuck_node)
-    {
-      TryDynamicCastPtr(ptr, first_stuck_node);
+      if (!first_stuck_node)
+      {
+        TryDynamicCastPtr(ptr, first_stuck_node);
+      }
+      else
+      {
+        TryDynamicCastPtr(ptr, second_stuck_node);
+      }
+      TryDynamicCastPtr(ptr, back_spin_node);
+      TryDynamicCastPtr(ptr, follow_node);
+      TryDynamicCastPtr(ptr, compute_node);
     }
-    else
-    {
-      TryDynamicCastPtr(ptr, second_stuck_node);
-    }
-    TryDynamicCastPtr(ptr, back_spin_node);
-    TryDynamicCastPtr(ptr, follow_node);
-    TryDynamicCastPtr(ptr, compute_node);
   }
 
   ASSERT_TRUE(first_stuck_node);

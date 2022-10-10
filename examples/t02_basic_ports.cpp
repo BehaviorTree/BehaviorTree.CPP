@@ -46,7 +46,7 @@ static const char* xml_text = R"(
 class ThinkWhatToSay : public BT::SyncActionNode
 {
 public:
-  ThinkWhatToSay(const std::string& name, const BT::NodeConfiguration& config) :
+  ThinkWhatToSay(const std::string& name, const BT::NodeConfig& config) :
     BT::SyncActionNode(name, config)
   {}
 

@@ -15,7 +15,7 @@
 
 namespace BT
 {
-ControlNode::ControlNode(const std::string& name, const NodeConfiguration& config) :
+ControlNode::ControlNode(const std::string& name, const NodeConfig& config) :
   TreeNode::TreeNode(name, config)
 {}
 
@@ -44,7 +44,7 @@ void ControlNode::haltChild(size_t i)
   auto child = children_nodes_[i];
   if (child->status() == NodeStatus::RUNNING)
   {
-    child->halt();
+    child->haltNode();
   }
   child->resetStatus();
 }

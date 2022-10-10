@@ -26,7 +26,7 @@ RetryNode::RetryNode(const std::string& name, int NTries) :
   setRegistrationID("RetryUntilSuccessful");
 }
 
-RetryNode::RetryNode(const std::string& name, const NodeConfiguration& config) :
+RetryNode::RetryNode(const std::string& name, const NodeConfig& config) :
   DecoratorNode(name, config),
   max_attempts_(0),
   try_count_(0),
@@ -49,12 +49,19 @@ NodeStatus RetryNode::tick()
     }
   }
 
-  setStatus(NodeStatus::RUNNING);
-
-  while (try_count_ < max_attempts_ || max_attempts_ == -1)
+  bool do_loop = try_count_ < max_attempts_ || max_attempts_ == -1;
+  while (do_loop)
   {
-    NodeStatus child_state = child_node_->executeTick();
-    switch (child_state)
+    NodeStatus prev_status = child_node_->status();
+    NodeStatus child_status = child_node_->executeTick();
+
+    // switch to RUNNING state as soon as you find an active child
+    if (child_status != NodeStatus::SKIPPED)
+    {
+      setStatus(NodeStatus::RUNNING);
+    }
+
+    switch (child_status)
     {
       case NodeStatus::SUCCESS: {
         try_count_ = 0;
@@ -64,7 +71,17 @@ NodeStatus RetryNode::tick()
 
       case NodeStatus::FAILURE: {
         try_count_++;
+        do_loop = try_count_ < max_attempts_ || max_attempts_ == -1;
+
         haltChild();
+
+        // Return the execution flow if the child is async,
+        // to make this interruptable.
+        if (requiresWakeUp() && prev_status == NodeStatus::IDLE && do_loop)
+        {
+          emitWakeUpSignal();
+          return NodeStatus::RUNNING;
+        }
       }
       break;
 
@@ -72,8 +89,13 @@ NodeStatus RetryNode::tick()
         return NodeStatus::RUNNING;
       }
 
-      default: {
-        throw LogicError("A child node must never return IDLE");
+      case NodeStatus::SKIPPED: {
+        // the child has been skipped. Slip this too
+        return NodeStatus::SKIPPED;
+      }
+
+      case NodeStatus::IDLE: {
+        throw LogicError("[", name(), "]: A children should not return IDLE");
       }
     }
   }
