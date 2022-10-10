@@ -1,5 +1,5 @@
-#include "behaviortree_cpp_v3/scripting/script_parser.hpp"
-#include "behaviortree_cpp_v3/scripting/operators.hpp"
+#include "behaviortree_cpp/scripting/script_parser.hpp"
+#include "behaviortree_cpp/scripting/operators.hpp"
 
 #include <lexy/action/parse.hpp>
 #include <lexy/action/validate.hpp>

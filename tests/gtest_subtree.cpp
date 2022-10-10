@@ -1,5 +1,5 @@
 ﻿#include <gtest/gtest.h>
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
 
 using namespace BT;

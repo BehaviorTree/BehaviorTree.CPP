@@ -109,23 +109,23 @@ If you want to use BT.CPp in your application a typical **CMakeLists.txt** file
 will look like this:
 
 ```cmake
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10.2)
 
 project(hello_BT)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-find_package(behaviortree_cpp_v3)
+find_package(behaviortree_cpp)
 
 add_executable(${PROJECT_NAME} "hello_BT.cpp")
-target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp_v3)
+target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp)
 ```
 
 ## ROS1 or ROS2 users (Catkin/Ament)
 
 You can easily install the package with the command
 
-      sudo apt-get install ros-$ROS_DISTRO-behaviortree-cpp-v3
+      sudo apt-get install ros-$ROS_DISTRO-behaviortree-cpp-v4
       
 If you want to compile it with catkin, you __must__ include this package 
 to your catkin workspace.

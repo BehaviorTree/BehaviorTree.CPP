@@ -17,4 +17,4 @@ jobs:
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
         with:
-            package-name: behaviortree_cpp_v3
+            package-name: behaviortree_cpp

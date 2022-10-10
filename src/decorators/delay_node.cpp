@@ -1,7 +1,7 @@
 /*  Contributed by Indraneel on 26/04/2020
 */
-#include "behaviortree_cpp_v3/decorators/delay_node.h"
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/decorators/delay_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 namespace BT
 {

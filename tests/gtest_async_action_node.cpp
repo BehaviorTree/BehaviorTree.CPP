@@ -1,5 +1,5 @@
-#include "behaviortree_cpp_v3/action_node.h"
-#include "behaviortree_cpp_v3/basic_types.h"
+#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp/basic_types.h"
 
 #include <chrono>
 #include <condition_variable>

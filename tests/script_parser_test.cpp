@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "behaviortree_cpp_v3/scripting/operators.hpp"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/scripting/operators.hpp"
+#include "behaviortree_cpp/bt_factory.h"
 #include <lexy/input/string_input.hpp>
 
 TEST(ParserTest, AnyTypes)

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <string>
-#include "behaviortree_cpp_v3/basic_types.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 using namespace BT;
 

@@ -1,4 +1,4 @@
-#include "behaviortree_cpp_v3/decorators/subtree_node.h"
+#include "behaviortree_cpp/decorators/subtree_node.h"
 
 BT::SubTreeNode::SubTreeNode(const std::string& instance_name) :
   DecoratorNode(instance_name, {})

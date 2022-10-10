@@ -1,5 +1,5 @@
 #include "dummy_nodes.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 /** This example show how it is possible to:
  * - load BehaviorTrees from multiple files manually (without the <include> tag)

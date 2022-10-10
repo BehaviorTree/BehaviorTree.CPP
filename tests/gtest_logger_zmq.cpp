@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/loggers/bt_zmq_publisher.h"
 
 TEST(LoggerZMQ, ZMQLoggerDeletesCleanlyAfterTickingTree)
 {

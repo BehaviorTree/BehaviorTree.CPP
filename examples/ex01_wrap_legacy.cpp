@@ -1,5 +1,5 @@
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/loggers/bt_cout_logger.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
 
 /** In this tutorial we will see how to wrap legacy code into a
  * BehaviorTree in a non-intrusive way, i.e. without modifying the

@@ -1,6 +1,6 @@
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/actions/pop_from_queue.hpp"
-#include "behaviortree_cpp_v3/decorators/consume_queue.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/actions/pop_from_queue.hpp"
+#include "behaviortree_cpp/decorators/consume_queue.h"
 #include <list>
 
 using namespace BT;

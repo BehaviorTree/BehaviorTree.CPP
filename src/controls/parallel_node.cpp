@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <cstddef>
 
-#include "behaviortree_cpp_v3/controls/parallel_node.h"
+#include "behaviortree_cpp/controls/parallel_node.h"
 
 namespace BT
 {

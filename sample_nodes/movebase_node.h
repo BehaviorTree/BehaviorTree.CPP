@@ -1,7 +1,7 @@
 #ifndef MOVEBASE_BT_NODES_H
 #define MOVEBASE_BT_NODES_H
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp/behavior_tree.h"
 
 // Custom type
 struct Pose2D

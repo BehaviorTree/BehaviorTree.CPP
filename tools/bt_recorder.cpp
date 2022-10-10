@@ -4,7 +4,7 @@
 #include <signal.h>
 #include <fstream>
 #include "cppzmq/zmq.hpp"
-#include "behaviortree_cpp_v3/flatbuffers/BT_logger_generated.h"
+#include "behaviortree_cpp/flatbuffers/BT_logger_generated.h"
 
 // http://zguide.zeromq.org/cpp:interrupt
 static bool s_interrupted = false;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2) # version on Ubuntu Bionic
-project(behaviortree_cpp_v3)
+project(behaviortree_cpp)
 
 #---- Add the subdirectory cmake ----
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")

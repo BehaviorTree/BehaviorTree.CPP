@@ -1,5 +1,5 @@
-#include "behaviortree_cpp_v3/decorators/timeout_node.h"
-#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp/decorators/timeout_node.h"
+#include "behaviortree_cpp/behavior_tree.h"
 #include <chrono>
 #include <future>
 #include <gtest/gtest.h>

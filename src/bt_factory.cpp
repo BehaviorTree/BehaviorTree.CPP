@@ -12,9 +12,9 @@
 
 #include <filesystem>
 #include <fstream>
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "behaviortree_cpp_v3/xml_parsing.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/xml_parsing.h"
 #include "tinyxml2/tinyxml2.h"
 
 #ifdef USING_ROS
@@ -195,7 +195,7 @@ std::vector<std::string> getCatkinLibraryPaths()
 void BehaviorTreeFactory::registerFromROSPlugins()
 {
   std::vector<std::string> plugins;
-  ros::package::getPlugins("behaviortree_cpp_v3", "bt_lib_plugin", plugins, true);
+  ros::package::getPlugins("behaviortree_cpp", "bt_lib_plugin", plugins, true);
   std::vector<std::string> catkin_lib_paths = getCatkinLibraryPaths();
 
   for (const auto& plugin : plugins)

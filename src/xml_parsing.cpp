@@ -23,7 +23,7 @@
 #endif
 
 #include <map>
-#include "behaviortree_cpp_v3/xml_parsing.h"
+#include "behaviortree_cpp/xml_parsing.h"
 #include "tinyxml2/tinyxml2.h"
 #include <filesystem>
 
@@ -35,8 +35,8 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
 
-#include "behaviortree_cpp_v3/blackboard.h"
-#include "behaviortree_cpp_v3/utils/demangle_util.h"
+#include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/utils/demangle_util.h"
 
 namespace BT
 {
