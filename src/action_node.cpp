@@ -121,7 +121,7 @@ void CoroActionNode::halt()
 }
 #endif
 
-bool StatefulAsyncAction::isHaltRequested() const
+bool StatefulActionNode::isHaltRequested() const
 {
   return halt_requested_.load();
 }

@@ -186,7 +186,7 @@ std::vector<std::string> getCatkinLibraryPaths()
     {
       std::filesystem::path path(static_cast<std::string>(catkin_prefix_path));
       std::filesystem::path lib("lib");
-      lib_paths.push_back((path / lib).str());
+      lib_paths.push_back((path / lib).string());
     }
   }
   return lib_paths;
@@ -206,8 +206,8 @@ void BehaviorTreeFactory::registerFromROSPlugins()
       const auto full_path = std::filesystem::path(lib_path) / filename;
       if (full_path.exists())
       {
-        std::cout << "Registering ROS plugins from " << full_path.str() << std::endl;
-        registerFromPlugin(full_path.str());
+        std::cout << "Registering ROS plugins from " << full_path.string() << std::endl;
+        registerFromPlugin(full_path.string());
         break;
       }
     }

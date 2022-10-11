@@ -155,10 +155,10 @@ using AsyncActionNode = ThreadedActionNode;
  *
  * -) if halted, method onHalted() is invoked
  */
-class StatefulAsyncAction : public ActionNodeBase
+class StatefulActionNode : public ActionNodeBase
 {
 public:
-  StatefulAsyncAction(const std::string& name, const NodeConfig& config) :
+  StatefulActionNode(const std::string& name, const NodeConfig& config) :
     ActionNodeBase(name, config)
   {}
 
@@ -185,8 +185,6 @@ private:
   std::atomic_bool halt_requested_;
 };
 
-// old name, for backward compatibility
-using StatefulActionNode = StatefulAsyncAction;
 
 #ifndef BT_NO_COROUTINES
 

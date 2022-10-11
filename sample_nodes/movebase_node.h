@@ -40,12 +40,12 @@ Pose2D convertFromString(StringView key)
 namespace chr = std::chrono;
 
 // This is an asynchronous operation
-class MoveBaseAction : public BT::StatefulAsyncAction
+class MoveBaseAction : public BT::StatefulActionNode
 {
   public:
     // Any TreeNode with ports must have a constructor with this signature
     MoveBaseAction(const std::string& name, const BT::NodeConfig& config)
-      : StatefulAsyncAction(name, config)
+      : StatefulActionNode(name, config)
     {}
 
     // It is mandatory to define this static method.
