@@ -58,12 +58,12 @@ int main()
   // You can create the MainTree and the subtrees will be added automatically.
   std::cout << "----- MainTree tick ----" << std::endl;
   auto main_tree = factory.createTree("MainTree");
-  main_tree.tickRoot();
+  main_tree.tickWhileRunning();
 
   // ... or you can create only one of the subtree
   std::cout << "----- SubA tick ----" << std::endl;
   auto subA_tree = factory.createTree("SubA");
-  subA_tree.tickRoot();
+  subA_tree.tickWhileRunning();
 
   return 0;
 }

@@ -35,7 +35,7 @@ TEST(SubTree, SiblingPorts_Issue_72)
     std::cout << "-----" << std::endl;
   }
 
-  auto status = tree.tickRoot();
+  auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   ASSERT_EQ(tree.subtrees.size(), 3);
 }
@@ -89,7 +89,7 @@ TEST(SubTree, GoodRemapping)
 
   Tree tree = factory.createTreeFromText(xml_text);
 
-  auto status = tree.tickRoot();
+  auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
@@ -116,7 +116,7 @@ TEST(SubTree, BadRemapping)
 </root> )";
 
   Tree tree_bad_in = factory.createTreeFromText(xml_text_bad_in);
-  EXPECT_ANY_THROW(tree_bad_in.tickRoot());
+  EXPECT_ANY_THROW(tree_bad_in.tickWhileRunning());
 
   static const char* xml_text_bad_out = R"(
 <root main_tree_to_execute = "MainTree" >
@@ -135,7 +135,7 @@ TEST(SubTree, BadRemapping)
 </root> )";
 
   Tree tree_bad_out = factory.createTreeFromText(xml_text_bad_out);
-  EXPECT_ANY_THROW(tree_bad_out.tickRoot());
+  EXPECT_ANY_THROW(tree_bad_out.tickWhileRunning());
 }
 
 TEST(SubTree, SubtreePlusA)
@@ -164,7 +164,7 @@ TEST(SubTree, SubtreePlusA)
 
   Tree tree = factory.createTreeFromText(xml_text);
 
-  auto status = tree.tickRoot();
+  auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
@@ -195,7 +195,7 @@ TEST(SubTree, SubtreePlusB)
 
   Tree tree = factory.createTreeFromText(xml_text);
 
-  auto status = tree.tickRoot();
+  auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
@@ -245,6 +245,6 @@ TEST(SubTree, SubtreePlusD)
   config.blackboard->set("message", "hello");
   BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
 
-  auto status = tree.tickRoot();
+  auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
 }

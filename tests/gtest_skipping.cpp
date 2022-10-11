@@ -25,7 +25,7 @@ TEST(SkippingLogic, Sequence)
     </root>)";
 
   auto tree = factory.createTreeFromText(xml_text);
-  const auto status = tree.tickRoot();
+  const auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   ASSERT_EQ(counters[0], 0);
   ASSERT_EQ(counters[1], 1);
@@ -52,7 +52,7 @@ TEST(SkippingLogic, SkipAll)
   auto tree = factory.createTreeFromText(xml_text);
   tree.rootBlackboard()->set("A", 1);
 
-  const auto status = tree.tickRoot();
+  const auto status = tree.tickWhileRunning();
   ASSERT_EQ(counters[0], 0);
   ASSERT_EQ(counters[1], 0);
   ASSERT_EQ(counters[2], 0);

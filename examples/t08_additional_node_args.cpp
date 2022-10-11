@@ -100,7 +100,7 @@ int main()
   // apply the visitor to all the nodes of the tree
   tree.applyVisitor(visitor);
 
-  tree.tickRoot();
+  tree.tickWhileRunning();
 
   /* Expected output:
         Action_A: 42 / hello world

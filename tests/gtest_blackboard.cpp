@@ -147,7 +147,7 @@ TEST(BlackboardTest, SetOutputFromText)
   auto bb = Blackboard::create();
 
   auto tree = factory.createTreeFromText(xml_text, bb);
-  tree.tickRoot();
+  tree.tickWhileRunning();
 }
 
 TEST(BlackboardTest, WithFactory)
@@ -176,7 +176,7 @@ TEST(BlackboardTest, WithFactory)
   auto bb = Blackboard::create();
 
   auto tree = factory.createTreeFromText(xml_text, bb);
-  NodeStatus status = tree.tickRoot();
+  NodeStatus status = tree.tickWhileRunning();
 
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   ASSERT_EQ(bb->get<int>("my_input_port"), 44);

@@ -240,7 +240,7 @@ TEST(ParserTest, Enums)
   factory.registerScriptingEnums<Color>();
 
   auto tree = factory.createTreeFromText(xml_text);
-  const auto status = tree.tickRoot();
+  const auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
 
   const auto& blackboard = tree.subtrees.front()->blackboard;

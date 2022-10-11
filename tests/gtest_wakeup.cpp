@@ -42,7 +42,7 @@ TEST(WakeUp, BasicTest)
   using namespace std::chrono;
 
   auto t1 = system_clock::now();
-  tree.tickRoot(Tree::ONCE);
+  tree.tickOnce();
   tree.sleep(milliseconds(200));
   auto t2 = system_clock::now();
 

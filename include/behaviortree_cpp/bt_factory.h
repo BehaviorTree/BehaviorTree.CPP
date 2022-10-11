@@ -84,10 +84,6 @@ See examples for more information about configuring CMake correctly
 /**
  * @brief Struct used to store a tree.
  * If this object goes out of scope, the tree is destroyed.
- *
- * To tick the tree, simply call:
- *
- *    NodeStatus status = my_tree.tickRoot();
  */
 class Tree
 {
@@ -154,48 +150,21 @@ public:
 
   TreeNode* rootNode() const;
 
-  enum TickOption
-  {
-    ONCE,
-    WHILE_RUNNING
-  };
-
-  NodeStatus tickRoot(TickOption opt = TickOption::WHILE_RUNNING)
-  {
-    NodeStatus status = NodeStatus::IDLE;
-
-    while (status == NodeStatus::IDLE ||
-           (opt == TickOption::WHILE_RUNNING && status == NodeStatus::RUNNING))
-    {
-      if (!wake_up_)
-      {
-        initialize();
-      }
-
-      if (!rootNode())
-      {
-        throw RuntimeError("Empty Tree");
-      }
-      status = rootNode()->executeTick();
-      if (status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE)
-      {
-        rootNode()->resetStatus();
-      }
-      if (status == NodeStatus::RUNNING)
-      {
-        sleep(std::chrono::milliseconds(1));
-      }
-    }
-
-    return status;
-  }
-
   /// Sleep for a certain amount of time.
   /// This sleep could be interrupted by the method
   /// TreeNode::emitWakeUpSignal()
   void sleep(std::chrono::system_clock::duration timeout);
 
   ~Tree();
+
+  /// Tick the root of the tree once.
+  NodeStatus tickOnce();
+
+  /// Call tickOnce until the status is different from RUNNING.
+  /// Note that between one tick and the following one,
+  /// a Tree::sleep() is used
+  NodeStatus
+  tickWhileRunning(std::chrono::milliseconds sleep_time = std::chrono::milliseconds(10));
 
   Blackboard::Ptr rootBlackboard();
 
@@ -207,6 +176,14 @@ public:
 
 private:
   std::shared_ptr<WakeUpSignal> wake_up_;
+
+  enum TickOption
+  {
+    ONCE,
+    WHILE_RUNNING
+  };
+
+  NodeStatus tickRoot(TickOption opt, std::chrono::milliseconds sleep_time);
 };
 
 class Parser;
@@ -394,10 +371,14 @@ public:
         std::is_constructible<T, const std::string&, const NodeConfig&>::value;
     constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
 
-    static_assert(default_constructable || param_constructable,
-                  "[registerNode]: the registered class must have at "
-                  "least one of these two constructors: (const std::string&, const "
-                  "NodeConfig&) or (const std::string&).");
+    static_assert(default_constructable || param_constructable, "[registerNode]: the "
+                                                                "registered class must "
+                                                                "have at "
+                                                                "least one of these two "
+                                                                "constructors: (const "
+                                                                "std::string&, const "
+                                                                "NodeConfig&) or (const "
+                                                                "std::string&).");
 
     static_assert(!has_static_ports_list, "[registerNode]: ports are passed to this node "
                                           "explicitly. The static method"

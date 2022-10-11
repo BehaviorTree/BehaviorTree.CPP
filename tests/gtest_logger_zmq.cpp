@@ -18,7 +18,7 @@ TEST(LoggerZMQ, ZMQLoggerDeletesCleanlyAfterTickingTree)
 
   {
     BT::PublisherZMQ zmq_logger{tree, 1};
-    tree.tickRoot();
+    tree.tickWhileRunning();
     // WHEN zmq_logger goes out of scope
   }
 

@@ -32,7 +32,7 @@ int main()
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
   auto tree = factory.createTreeFromText(xml_text);
-  auto ret = tree.tickRoot();
+  auto ret = tree.tickWhileRunning();
 
   std::cout << "Result: " << ret << std::endl;
 

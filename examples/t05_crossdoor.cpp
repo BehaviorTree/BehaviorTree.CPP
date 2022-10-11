@@ -53,7 +53,7 @@ int main()
   BT::printTreeRecursively(tree.rootNode());
 
   // Tick multiple times, until either FAILURE of SUCCESS is returned
-  tree.tickRoot(BT::Tree::WHILE_RUNNING);
+  tree.tickWhileRunning();
 
   return 0;
 }

@@ -126,7 +126,7 @@ int main()
   factory.registerNodeType<PrintTarget>("PrintTarget");
 
   auto tree = factory.createTreeFromText(xml_text);
-  tree.tickRoot();
+  tree.tickWhileRunning();
 
   /* Expected output:
  *

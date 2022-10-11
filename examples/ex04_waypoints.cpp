@@ -186,10 +186,7 @@ int main()
   for (const auto& xml_text : {xml_implicit, xml_A, xml_B})
   {
     auto tree = factory.createTreeFromText(xml_text);
-    while (tree.tickRoot() == NodeStatus::RUNNING)
-    {
-      tree.sleep(std::chrono::milliseconds(10));
-    }
+    tree.tickWhileRunning();
     std::cout << "--------------" << std::endl;
   }
 

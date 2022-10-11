@@ -30,7 +30,7 @@ TEST(PostConditions, BasicTest)
     </root>)";
 
   auto tree = factory.createTreeFromText(xml_text);
-  const auto status = tree.tickRoot();
+  const auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 
   ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 42);

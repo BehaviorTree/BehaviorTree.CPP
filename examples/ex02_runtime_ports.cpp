@@ -63,6 +63,7 @@ int main()
   factory.registerNodeType<SayRuntimePort>("SayRuntimePort", say_ports);
 
   auto tree = factory.createTreeFromText(xml_text);
-  tree.tickRoot();
+  tree.tickWhileRunning();
+
   return 0;
 }

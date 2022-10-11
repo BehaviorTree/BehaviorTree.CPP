@@ -360,6 +360,16 @@ Tree::~Tree()
   haltTree();
 }
 
+NodeStatus Tree::tickOnce()
+{
+  return tickRoot(ONCE, {});
+}
+
+NodeStatus Tree::tickWhileRunning(std::chrono::milliseconds sleep_time)
+{
+  return tickRoot(WHILE_RUNNING, sleep_time);
+}
+
 Blackboard::Ptr Tree::rootBlackboard()
 {
   if (subtrees.size() > 0)
@@ -385,6 +395,36 @@ void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
     BT::applyRecursiveVisitor(static_cast<TreeNode*>(subtree->nodes.front().get()),
                               visitor);
   }
+}
+
+NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
+{
+  NodeStatus status = NodeStatus::IDLE;
+
+  while (status == NodeStatus::IDLE ||
+         (opt == TickOption::WHILE_RUNNING && status == NodeStatus::RUNNING))
+  {
+    if (!wake_up_)
+    {
+      initialize();
+    }
+
+    if (!rootNode())
+    {
+      throw RuntimeError("Empty Tree");
+    }
+    status = rootNode()->executeTick();
+    if (status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE)
+    {
+      rootNode()->resetStatus();
+    }
+    if (status == NodeStatus::RUNNING)
+    {
+      sleep(std::chrono::milliseconds(sleep_time));
+    }
+  }
+
+  return status;
 }
 
 }   // namespace BT

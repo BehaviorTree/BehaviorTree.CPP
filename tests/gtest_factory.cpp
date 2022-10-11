@@ -225,7 +225,7 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
   std::cout << "\n --------------------------------- \n" << std::endl;
 
   // Should not throw
-  tree.tickRoot();
+  tree.tickWhileRunning();
 
   ASSERT_EQ(main_bb->portInfo("talk_hello")->type(), typeid(std::string));
   ASSERT_EQ(main_bb->portInfo("talk_bye")->type(), typeid(std::string));
@@ -283,7 +283,7 @@ TEST(BehaviorTreeFactory, CreateTreeFromFile)
   // should not throw
   std::string path = FilePath("trees/parent_no_include.xml");
   Tree tree = factory.createTreeFromFile(path);
-  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
 TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromSameDirectory)
@@ -293,7 +293,7 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromSameDirectory)
   // should not throw
   std::string path = FilePath("trees/child/child_include_sibling.xml");
   Tree tree = factory.createTreeFromFile(path);
-  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
 TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectory)
@@ -303,7 +303,7 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesFileFromChildDirectory)
   // should not throw
   std::string path = FilePath("trees/parent_include_child.xml");
   Tree tree = factory.createTreeFromFile(path);
-  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
 TEST(
@@ -315,7 +315,7 @@ TEST(
   // should not throw
   std::string path = FilePath("trees/parent_include_child_include_sibling.xml");
   Tree tree = factory.createTreeFromFile(path);
-  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
 TEST(
@@ -327,7 +327,7 @@ TEST(
   // should not throw
   std::string path = FilePath("trees/parent_include_child_include_child.xml");
   Tree tree = factory.createTreeFromFile(path);
-  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
 TEST(
@@ -339,5 +339,5 @@ TEST(
   // should not throw
   std::string path = FilePath("trees/parent_include_child_include_parent.xml");
   Tree tree = factory.createTreeFromFile(path);
-  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickRoot());
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }

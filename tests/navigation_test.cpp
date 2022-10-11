@@ -226,7 +226,7 @@ TEST(Navigationtest, MoveBaseRecovery)
 
   while (status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
   {
-    status = tree.tickRoot();
+    status = tree.tickWhileRunning();
     std::this_thread::sleep_for(Milliseconds(100));
   }
 
@@ -263,7 +263,7 @@ TEST(Navigationtest, MoveBaseRecovery)
       first_stuck_node->setExpectedResult(true);
       second_stuck_node->setExpectedResult(true);
     }
-    status = tree.tickRoot();
+    status = tree.tickWhileRunning();
     std::this_thread::sleep_for(Milliseconds(100));
   }
 
@@ -302,7 +302,7 @@ TEST(Navigationtest, MoveBaseRecovery)
 
   while (status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
   {
-    status = tree.tickRoot();
+    status = tree.tickWhileRunning();
     std::this_thread::sleep_for(Milliseconds(100));
   }
 

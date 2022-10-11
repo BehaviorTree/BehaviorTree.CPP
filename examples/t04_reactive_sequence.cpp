@@ -77,7 +77,7 @@ int main()
     // Tick the root until we receive either SUCCESS or RUNNING
     // same as: tree.tickRoot(Tree::WHILE_RUNNING)
     std::cout << "--- ticking\n";
-    status = tree.tickRoot();
+    status = tree.tickWhileRunning();
     std::cout << "--- status: " << toStr(status) << "\n\n";
 #else
     // If we need to run code between one tick() and the next,
@@ -85,7 +85,7 @@ int main()
     while (status != NodeStatus::SUCCESS)
     {
       std::cout << "--- ticking\n";
-      status = tree.tickRoot(Tree::ONCE);
+      status = tree.tickOnce();
       std::cout << "--- status: " << toStr(status) << "\n\n";
 
       // if still running, add some wait time

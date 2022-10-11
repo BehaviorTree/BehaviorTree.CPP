@@ -60,7 +60,7 @@ int main()
 
   auto tree = factory.createTreeFromText(xml_text);
 
-  tree.tickRoot(Tree::WHILE_RUNNING);
+  tree.tickWhileRunning();
 
   // let's visualize some information about the current state of the blackboards.
   std::cout << "\n------ First BB ------" << std::endl;

@@ -185,7 +185,6 @@ private:
   std::atomic_bool halt_requested_;
 };
 
-
 #ifndef BT_NO_COROUTINES
 
 /**

@@ -46,7 +46,7 @@ int main()
   factory.registerScriptingEnum("THE_ANSWER", 42);
 
   auto tree = factory.createTreeFromText(xml_text);
-  tree.tickRoot();
+  tree.tickWhileRunning();
 
   return 0;
 }

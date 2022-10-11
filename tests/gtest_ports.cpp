@@ -47,7 +47,7 @@ TEST(PortTest, DefaultPorts)
 
   auto tree = factory.createTreeFromText(xml_txt);
 
-  NodeStatus status = tree.tickRoot();
+  NodeStatus status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
@@ -73,10 +73,10 @@ TEST(PortTest, Descriptions)
 
   auto tree = factory.createTreeFromText(xml_txt);
 
-  NodeStatus status = tree.tickRoot();
+  NodeStatus status = tree.tickWhileRunning();
   while (status == NodeStatus::RUNNING)
   {
-    status = tree.tickRoot();
+    status = tree.tickWhileRunning();
   }
 
   ASSERT_EQ(status, NodeStatus::FAILURE);   // failure because in_port_B="99"
@@ -147,7 +147,7 @@ TEST(PortTest, EmptyPort)
 
   auto tree = factory.createTreeFromText(xml_txt);
 
-  NodeStatus status = tree.tickRoot();
+  NodeStatus status = tree.tickWhileRunning();
   // expect failure because port is not set yet
   ASSERT_EQ(status, NodeStatus::FAILURE);
 }
