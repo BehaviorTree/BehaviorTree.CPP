@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.8.0 (2022-10-11)
+------------------
 * tickRootWhileRunning method
 * Fix: PublisherZMQ::flush is called after the publisher has been destructed (`#426 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/426>`_)
   * fix: PublisherZMQ::flush is called after the publisher has been destructed
