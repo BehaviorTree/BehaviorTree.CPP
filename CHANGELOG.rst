@@ -2,6 +2,69 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* tickRootWhileRunning method
+* Fix: PublisherZMQ::flush is called after the publisher has been destructed (`#426 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/426>`_)
+  * fix: PublisherZMQ::flush is called after the publisher has been destructed
+  * style: Adjust code formatting of ~PublisherZMQ
+  * chore: Install zmq-dev in ubuntu pipeline and exclude gtest_logger_zmq.cpp when zmq is not found.
+  * chore: Define WIN32_LEAN_AND_MEAN to avoid ambiguity between tinyxml and msxml
+* fix missing closing brace in unit test (`#442 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/442>`_)
+* Fix incorrect registration of behavior trees containing faulty XML (`#438 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/438>`_)
+  * fix incorrect registration of faulty trees
+  * format
+  * simplify XML validation
+  * fix possible out-of-range exception in tests
+  * Add tests
+  * reduce scale of diffs
+  * fix comment
+  * add more test cases
+  Co-authored-by: Davide Faconti <davide.faconti@gmail.com>
+* Add functionality to clear registered behavior trees. (`#439 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/439>`_)
+  Co-authored-by: Jere Liukkonen <jere@picknik.ai>
+* Wait for the thread to finish before deleting zmq (`#440 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/440>`_)
+  Co-authored-by: JafarAbdi <cafer.abdi@gmail.com>
+* clang form at
+* clang format
+* new clang format
+* Moving tinyxml2 to 3rdparty
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* backporting changes from v4.x
+* Update README.md
+* fix warnings
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* fix issue `#433 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/433>`_
+* Added ros_environment dependency to make sure ROS_VERSION is initialized (`#420 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/420>`_)
+* Added XML validation for decorators without children (`#424 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/424>`_)
+  * Added unit tests to demonstrate failure
+  * Added validation that decorators have only one child
+* Update expected-lite to 0.6.2 (`#418 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/418>`_)
+* fix test
+* parallel node fix
+* threshold child count dynamically in parallel control node (`#363 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/363>`_)
+* Adding the reserved word "_description" (`#394 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/394>`_)
+* fix(README): change find_package() instruction for BT external usage (`#401 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/401>`_)
+  Co-authored-by: Luca Bonamini <luca.bonamini@yapemobility.it>
+* Example suggests it's not restricted to a few (`#414 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/414>`_)
+  * Example suggests it's not restricted to a few
+  * Update delay_node.h
+  Fix flow of sentence, milliseconds is already put in specification.
+* documentation and doc correction
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* improve writeTreeNodesModelXML
+* Shutdown zmq context after joining the server thread and flushing (`#400 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/400>`_)
+* Update README.md
+* add option to conditionally build manual selector node (`#397 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/397>`_)
+  * add option to conditionally build manual selector node
+  * do not fail if BUILD_MANUAL_SELECTOR is true but Curses is not found
+* remove variables that depend on CMAKE_BINARY_DIR being set (`#398 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/398>`_)
+  * remove variables that depend on CMAKE_BINARY_DIR being set
+  * Update cmake.yml
+* Small comments on node registration (`#399 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/399>`_)
+* Fix destination in CMakeLists.txt (`#389 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/389>`_)
+* Contributors: Adam Sasine, Alberto Soragna, AndyZe, Davide Faconti, Dennis, Gaël Écorchard, Jafar, Joseph Schornak, Luca Bonamini, Paul Bovbel, Tim Clephas, Will
+
 3.7.0 (2022-05-23)
 -----------
 * add netlify stuff
