@@ -95,8 +95,7 @@ int main()
      */
 
   auto tree = factory.createTreeFromText(xml_text);
-
-  tree.tickRoot();
+  tree.tickRootWhileRunning();
 
   /*  Expected output:
      *

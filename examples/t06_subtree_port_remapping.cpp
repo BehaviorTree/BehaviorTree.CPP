@@ -62,15 +62,7 @@ int main()
 
   auto tree = factory.createTreeFromText(xml_text);
 
-  NodeStatus status = NodeStatus::RUNNING;
-  // Keep on ticking until you get either a SUCCESS or FAILURE state
-  while (status == NodeStatus::RUNNING)
-  {
-    status = tree.tickRoot();
-    // IMPORTANT: add sleep to avoid busy loops.
-    // You should use Tree::sleep(). Don't be afraid to run this at 1 KHz.
-    tree.sleep(std::chrono::milliseconds(1));
-  }
+  tree.tickRootWhileRunning();
 
   // let's visualize some information about the current state of the blackboards.
   std::cout << "--------------" << std::endl;

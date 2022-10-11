@@ -86,25 +86,12 @@ int main(int argc, char** argv)
 
   const bool LOOP = (argc == 2 && strcmp(argv[1], "loop") == 0);
 
-  using std::chrono::milliseconds;
-  do
+  NodeStatus status = tree.tickRoot();
+  while(LOOP || status == NodeStatus::RUNNING)
   {
-    NodeStatus status = NodeStatus::RUNNING;
-    // Keep on ticking until you get either a SUCCESS or FAILURE state
-    while (status == NodeStatus::RUNNING)
-    {
-      status = tree.tickRoot();
-      // IMPORTANT: you must always add some sleep if you call tickRoot()
-      // in a loop, to avoid using 100% of your CPU (busy loop).
-      // The method Tree::sleep() is recommended, because it can be
-      // interrupted by an internal event inside the tree.
-      tree.sleep(milliseconds(10));
-    }
-    if (LOOP)
-    {
-      std::this_thread::sleep_for(milliseconds(1000));
-    }
-  } while (LOOP);
+    tree.sleep(std::chrono::milliseconds(10));
+    status = tree.tickRoot();
+  }
 
   return 0;
 }

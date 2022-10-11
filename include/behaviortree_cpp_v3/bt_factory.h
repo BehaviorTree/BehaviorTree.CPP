@@ -185,6 +185,30 @@ public:
     return nodes.empty() ? nullptr : nodes.front().get();
   }
 
+  /**
+   * @brief tickRootWhileRunning imply execute tickRoot in a loop
+   * as long as the status is RUNNING.
+   *
+   * @param sleep_time maximum sleep time between consecutive loops.
+   *
+   * @return should return only SUCCESS or FAILURE.
+   */
+  NodeStatus tickRootWhileRunning(std::chrono::milliseconds sleep_time = std::chrono::milliseconds(10))
+  {
+    NodeStatus status = tickRoot();
+
+    while (status == NodeStatus::RUNNING)
+    {
+      this->sleep(sleep_time);
+      status = tickRoot();
+    }
+    return status;
+  }
+
+  /**
+   * @brief tickRoot send the tick signal to the root node.
+   * It will propagate through the entire tree.
+   */
   NodeStatus tickRoot()
   {
     if (!wake_up_)

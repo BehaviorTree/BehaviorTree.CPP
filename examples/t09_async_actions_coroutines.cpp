@@ -114,11 +114,8 @@ int main()
   auto tree = factory.createTreeFromText(xml_text);
 
   //---------------------------------------
-  // keep executing tick until it returns either SUCCESS or FAILURE
-  while (tree.tickRoot() == NodeStatus::RUNNING)
-  {
-    tree.sleep(std::chrono::milliseconds(10));
-  }
+  tree.tickRootWhileRunning();
+
   return 0;
 }
 

@@ -111,7 +111,7 @@ int main()
     }
   }
 
-  tree.tickRoot();
+  tree.tickRootWhileRunning();
 
   /* Expected output:
 

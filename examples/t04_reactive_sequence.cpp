@@ -80,56 +80,68 @@ int main()
 
     auto tree = factory.createTreeFromText(xml_text);
 
-    NodeStatus status;
+    // Here, instead of tree.tickRootWhileRunning(),
+    // we prefer our own loop.
+    std::cout << "--- ticking\n";
+    NodeStatus status = tree.tickRoot();
+    std::cout << "--- status: " << toStr(status) << "\n\n";
 
-    std::cout << "\n--- 1st executeTick() ---" << std::endl;
-    status = tree.tickRoot();
-    Assert(status == NodeStatus::RUNNING);
+    while(status == NodeStatus::RUNNING)
+    {
+      // Sleep to avoid busy loops.
+      // do NOT use other sleep functions!
+      // Small sleep time is OK, here we use a large one only to
+      // have less messages on the console.
+      tree.sleep(std::chrono::milliseconds(100));
 
-    tree.sleep(milliseconds(150));
-    std::cout << "\n--- 2nd executeTick() ---" << std::endl;
-    status = tree.tickRoot();
-    Assert(status == NodeStatus::RUNNING);
-
-    tree.sleep(milliseconds(150));
-    std::cout << "\n--- 3rd executeTick() ---" << std::endl;
-    status = tree.tickRoot();
-    Assert(status == NodeStatus::SUCCESS);
-
-    std::cout << std::endl;
+      std::cout << "--- ticking\n";
+      status = tree.tickRoot();
+      std::cout << "--- status: " << toStr(status) << "\n\n";
+    }
   }
   return 0;
 }
 
 /*
- Expected output:
+* Expected output:
 
 ------------ BUILDING A NEW TREE ------------
-
---- 1st executeTick() ---
+--- ticking
 [ Battery: OK ]
-Robot says: "mission started..."
+Robot says: mission started...
+--- status: RUNNING
+
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
+--- ticking
+--- status: RUNNING
 
---- 2nd executeTick() ---
+--- ticking
+--- status: RUNNING
+
 [ MoveBase: FINISHED ]
+--- ticking
+Robot says: mission completed!
+--- status: SUCCESS
 
---- 3rd executeTick() ---
-Robot says: "mission completed!"
 
 ------------ BUILDING A NEW TREE ------------
-
---- 1st executeTick() ---
+--- ticking
 [ Battery: OK ]
-Robot says: "mission started..."
+Robot says: mission started...
+--- status: RUNNING
+
 [ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
-
---- 2nd executeTick() ---
+--- ticking
 [ Battery: OK ]
+--- status: RUNNING
+
+--- ticking
+[ Battery: OK ]
+--- status: RUNNING
+
 [ MoveBase: FINISHED ]
-
---- 3rd executeTick() ---
+--- ticking
 [ Battery: OK ]
-Robot says: "mission completed!"
-
+Robot says: mission completed!
+--- status: SUCCESS
 */
