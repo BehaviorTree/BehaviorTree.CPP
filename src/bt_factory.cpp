@@ -204,7 +204,7 @@ void BehaviorTreeFactory::registerFromROSPlugins()
     for (const auto& lib_path : catkin_lib_paths)
     {
       const auto full_path = std::filesystem::path(lib_path) / filename;
-      if (full_path.exists())
+      if (std::filesystem::exists(full_path))
       {
         std::cout << "Registering ROS plugins from " << full_path.string() << std::endl;
         registerFromPlugin(full_path.string());
