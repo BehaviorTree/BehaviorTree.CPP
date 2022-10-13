@@ -8,7 +8,7 @@
 
 # BehaviorTree.CPP
 
-<p align="center"><img src="animated.svg"></p>
+<p align="center"><img width=350 src="animated.svg"></p>
 
 This  __C++ 17__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use, reactive and fast.
