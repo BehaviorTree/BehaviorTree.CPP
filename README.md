@@ -6,7 +6,7 @@
 [![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)](https://lgtm.com/projects/g/BehaviorTree/BehaviorTree.CPP/context:cpp)
 ![Discourse topics](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fdiscourse.behaviortree.dev)
 
-# BehaviorTree.CPP
+# BehaviorTree.CPP 4.0
 
 <p align="center"><img width=350 src="animated.svg"></p>
 
@@ -33,20 +33,25 @@ and load them at run-time.
 - It includes a __logging/profiling__ infrastructure that allows the user 
 to visualize, record, replay and analyze state transitions.
 
-## Documentation
+## Documentation and Community
 
 You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
-
-
-## Forum and Community
 
 If the documentation doesn't answer your questions and/or you want to
 connect with the other **BT.CPP** users, visit https://discourse.behaviortree.dev/
 
+## Previous version
+
+Version 3.8 of the software can be found in the branch 
+[v3.8](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/v3.8).
+
+That branch might receive bug fixes, but the new features will be implemented
+only in the master branch.
+
 ## Commercial support
 
 Are you using BT.CPP in your commercial product and you need technical support / consulting?
-You can get in touch at dfaconti@aurynrobotics.com and we will happy to discuss your use case and needs.
+You can contact the main author dfaconti@aurynrobotics.com to discuss your use case and needs.
 
 # Design principles
 
@@ -73,7 +78,7 @@ If you are looking for a more fancy graphical user interface (and I know you do)
 
 ![Groot screenshot](docs/groot-screenshot.png)
 
-# How to compile (plain old cmake)
+# How to compile
 
 On Ubuntu, you are encourage to install the following dependencies:
 
