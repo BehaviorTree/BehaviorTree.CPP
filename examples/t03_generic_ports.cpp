@@ -108,7 +108,7 @@ static const char* xml_text = R"(
         <Sequence name="root">
             <CalculateGoal   goal="{GoalPosition}" />
             <PrintTarget     target="{GoalPosition}" />
-            <SetBlackboard   output_key="OtherGoal" value="-1;3" />
+            <Script          code="OtherGoal='-1;3'" />
             <PrintTarget     target="{OtherGoal}" />
         </Sequence>
      </BehaviorTree>

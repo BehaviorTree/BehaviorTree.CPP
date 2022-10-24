@@ -98,7 +98,7 @@ void TreeNode::setStatus(NodeStatus new_status)
   }
 }
 
-Optional<NodeStatus> TreeNode::checkPreConditions()
+Expected<NodeStatus> TreeNode::checkPreConditions()
 {
   // check the pre-conditions
   for (size_t index = 0; index < size_t(PreCond::COUNT_); index++)
@@ -269,7 +269,7 @@ StringView TreeNode::stripBlackboardPointer(StringView str)
   return {};
 }
 
-Optional<StringView> TreeNode::getRemappedKey(StringView port_name,
+Expected<StringView> TreeNode::getRemappedKey(StringView port_name,
                                               StringView remapped_port)
 {
   if (remapped_port == "=")

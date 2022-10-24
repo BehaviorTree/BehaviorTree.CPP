@@ -11,6 +11,7 @@
 #include <chrono>
 #include <memory>
 #include <string_view>
+#include <variant>
 
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
@@ -183,9 +184,9 @@ using enable_if = typename std::enable_if<Predicate::value>::type*;
 template <typename Predicate>
 using enable_if_not = typename std::enable_if<!Predicate::value>::type*;
 
-/** Usage: given a function/method like:
+/** Usage: given a function/method like this:
  *
- *     Optional<double> getAnswer();
+ *     Expected<double> getAnswer();
  *
  * User code can check result and error message like this:
  *
@@ -200,7 +201,11 @@ using enable_if_not = typename std::enable_if<!Predicate::value>::type*;
  *
  * */
 template <typename T>
+#ifdef USE_BTCPP3_OLD_NAMES
 using Optional = nonstd::expected<T, std::string>;
+#else
+using Expected = nonstd::expected<T, std::string>;
+#endif
 // note: we use the name Optional instead of expected because it is more intuitive
 // for users that are not up to date with "modern" C++
 
@@ -220,7 +225,7 @@ using Optional = nonstd::expected<T, std::string>;
  *     }
  *
  * */
-using Result = Optional<void>;
+using Result = Expected<std::monostate>;
 
 bool IsAllowedPortName(StringView str);
 

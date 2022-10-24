@@ -8,9 +8,11 @@
 
 namespace BT
 {
-Optional<ScriptFunction> ParseScript(const std::string& script)
+
+using ErrorReport = lexy_ext::_report_error<char*>;
+
+Expected<ScriptFunction> ParseScript(const std::string& script)
 {
-  using ErrorReport = lexy_ext::_report_error<char*>;
   char error_msgs_buffer[2048];
 
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
@@ -45,7 +47,7 @@ Optional<ScriptFunction> ParseScript(const std::string& script)
   }
 }
 
-BT::Optional<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string& script)
+BT::Expected<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string& script)
 {
   auto executor = ParseScript(script);
   if (executor)
@@ -56,6 +58,33 @@ BT::Optional<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string
   {
     return nonstd::make_unexpected(executor.error());
   }
+}
+
+Result ValidateScript(const std::string &script)
+{
+  char error_msgs_buffer[2048];
+
+  auto input = lexy::string_input<lexy::utf8_encoding>(script);
+  auto result =
+      lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
+  if (result.has_value() && result.error_count() == 0)
+  {
+    try
+    {
+      std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
+      if (exprs.empty())
+      {
+        return nonstd::make_unexpected("Empty Script");
+      }
+      // valid script
+      return {};
+    }
+    catch (std::runtime_error& err)
+    {
+      return nonstd::make_unexpected(err.what());
+    }
+  }
+  return nonstd::make_unexpected(error_msgs_buffer);
 }
 
 }   // namespace BT

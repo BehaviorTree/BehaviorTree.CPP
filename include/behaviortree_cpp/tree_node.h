@@ -138,9 +138,9 @@ public:
   using StatusChangeCallback = StatusChangeSignal::CallableFunction;
 
   using PreTickOverrideCallback =
-      std::function<Optional<NodeStatus>(TreeNode&, NodeStatus)>;
+      std::function<Expected<NodeStatus>(TreeNode&, NodeStatus)>;
   using PostTickOverrideCallback =
-      std::function<Optional<NodeStatus>(TreeNode&, NodeStatus, NodeStatus)>;
+      std::function<Expected<NodeStatus>(TreeNode&, NodeStatus, NodeStatus)>;
 
   /**
      * @brief subscribeToStatusChange is used to attach a callback to a status change.
@@ -198,11 +198,11 @@ public:
      * but using optional.
      */
   template <typename T>
-  Optional<T> getInput(const std::string& key) const
+  Expected<T> getInput(const std::string& key) const
   {
     T out;
     auto res = getInput(key, out);
-    return (res) ? Optional<T>(out) : nonstd::make_unexpected(res.error());
+    return (res) ? Expected<T>(out) : nonstd::make_unexpected(res.error());
   }
 
   template <typename T>
@@ -218,7 +218,7 @@ public:
 
   static StringView stripBlackboardPointer(StringView str);
 
-  static Optional<StringView> getRemappedKey(StringView port_name,
+  static Expected<StringView> getRemappedKey(StringView port_name,
                                              StringView remapped_port);
 
   /// Notify that the tree should be ticked again()
@@ -304,7 +304,7 @@ private:
 
   std::shared_ptr<ScriptingEnumsRegistry> scripting_enums_;
 
-  Optional<NodeStatus> checkPreConditions();
+  Expected<NodeStatus> checkPreConditions();
   void checkPostConditions(NodeStatus status);
 
   /// The method used to interrupt the execution of a RUNNING node.

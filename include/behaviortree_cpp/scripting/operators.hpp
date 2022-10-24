@@ -21,7 +21,7 @@
 #include <utility>
 
 #include "behaviortree_cpp/scripting/any_types.hpp"
-#include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/scripting/script_parser.hpp"
 
 // Naive implementation of an AST with simple evaluation function.
 namespace BT::Ast
@@ -29,13 +29,6 @@ namespace BT::Ast
 using SimpleString = SafeAny::SimpleString;
 
 using expr_ptr = std::shared_ptr<struct ExprBase>;
-
-using EnumsTablePtr = std::shared_ptr<std::unordered_map<std::string, int>>;
-
-struct Environment{
-    BT::Blackboard::Ptr vars;
-    EnumsTablePtr enums;
-};
 
 struct ExprBase
 {

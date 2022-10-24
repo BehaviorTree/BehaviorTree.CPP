@@ -12,18 +12,39 @@
 
 #pragma once
 
-#include "behaviortree_cpp/scripting/operators.hpp"
+#include "behaviortree_cpp/blackboard.h"
 
 namespace BT
 {
 
-std::string ValidateScript(const std::string& script);
+/// Simple map (string->nt), used to convert enums in the
+/// scripting language
+using EnumsTable = std::unordered_map<std::string, int>;
+using EnumsTablePtr = std::shared_ptr<EnumsTable>;
+
+namespace Ast
+{
+   /**
+   * @brief The Environment class is used to encapsulate
+   * the information and states neded by the sriting language
+   */
+  struct Environment{
+    BT::Blackboard::Ptr vars;
+    EnumsTablePtr enums;
+  };
+}
+
+  /**
+ * @brief ValidateScript will check if a certain string is valid.
+ */
+Result ValidateScript(const std::string& script);
 
 using ScriptFunction = std::function<Any(Ast::Environment& env)>;
 
-Optional<ScriptFunction> ParseScript(const std::string& script);
+Expected<ScriptFunction> ParseScript(const std::string& script);
 
-Optional<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string& script);
+Expected<Any> ParseScriptAndExecute(Ast::Environment& env,
+                                    const std::string& script);
 
 }
 
