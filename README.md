@@ -78,14 +78,14 @@ If you are looking for a more fancy graphical user interface (and I know you do)
 
 ![Groot screenshot](docs/groot-screenshot.png)
 
-# How to compile
+# How to compile (Ubuntu)
 
-On Ubuntu, you are encourage to install the following dependencies:
+Please note that **Ubuntu 18.04 is not supported anymore in version 4.X**. Ubuntu 20.04 or later is required.
+
+First, install the following dependencies (optional, but recommended):
 
      sudo apt-get install libzmq3-dev libboost-dev
      
-Other dependencies are already included in the __3rdparty__ folder.
-
 To compile and install the library, from the BehaviorTree.CPP folder, execute:
 
      mkdir build; cd build
