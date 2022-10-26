@@ -24,7 +24,7 @@ namespace BT
         <SubTree ID="Talk" param="World" />
 
         <SetBlackboard value="Auto remapped" output_key="param" />
-        <SubTree ID="Talk" __autoremap="1"  />
+        <SubTree ID="Talk" _autoremap="1"  />
 
         </Sequence>
     </BehaviorTree>
