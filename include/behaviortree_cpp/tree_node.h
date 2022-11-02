@@ -208,7 +208,7 @@ public:
   template <typename T>
   Result setOutput(const std::string& key, const T& value);
 
-  // function provide mostrly for debugging purpose to see the raw value
+  // function provide mostly for debugging purpose to see the raw value
   // in the port (no remapping and no conversion to a type)
   StringView getRawPortValue(const std::string& key) const;
 

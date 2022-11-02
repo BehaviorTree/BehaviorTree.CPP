@@ -121,7 +121,7 @@ public:
         // Zero time, so it stays at the top for immediate execution
         newItem.end = std::chrono::time_point<_Clock, _Duration>();
         newItem.id = 0;   // Means it is a canceled item
-        // Move the handler from item to newitem.
+        // Move the handler from item to newItem.
         // Also, we need to manually set the handler to nullptr, since
         // the standard does not guarantee moving an std::function will
         // empty it. Some STL implementation will empty it, others will

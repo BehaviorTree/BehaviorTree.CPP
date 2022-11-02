@@ -29,7 +29,7 @@ namespace BT
  * The Node is completed either when the THRESHOLD_SUCCESS
  * or THRESHOLD_FAILURE number is reached (both configured using ports).
  *
- * If any of the threaholds is reached, and other children are still running,
+ * If any of the thresholds is reached, and other children are still running,
  * they will be halted.
  *
  * Note that threshold indexes work as in Python:

@@ -246,7 +246,7 @@ TEST(Navigationtest, MoveBaseRecovery)
 
   // Second case: get stuck after a while
 
-  // Initialize evrything first
+  // Initialize everything first
   first_stuck_node->resetTickCount();
   second_stuck_node->resetTickCount();
   compute_node->resetTickCount();
@@ -257,7 +257,7 @@ TEST(Navigationtest, MoveBaseRecovery)
 
   while (status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
   {
-    // At the fifth cycle get stucked
+    // At the fifth cycle get stuck
     if (++cycle == 2)
     {
       first_stuck_node->setExpectedResult(true);

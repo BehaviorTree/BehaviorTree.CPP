@@ -550,8 +550,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
         throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
                            remap_it.first, "\" in node [", type_ID, " / ", instance_name,
                            "], but the manifest of this node does not contain a port "
-                           "with this "
-                           "name.");
+                           "with this name.");
       }
     }
 

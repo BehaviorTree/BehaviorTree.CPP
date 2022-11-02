@@ -26,7 +26,7 @@ namespace Ast
 {
    /**
    * @brief The Environment class is used to encapsulate
-   * the information and states neded by the sriting language
+   * the information and states needed by the scripting language
    */
   struct Environment{
     BT::Blackboard::Ptr vars;

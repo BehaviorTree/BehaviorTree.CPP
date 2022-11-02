@@ -33,7 +33,7 @@ namespace BT
  * </RetryUntilSuccessful>
  *
  * Note:
- * RetryNodeTypo is only included to support the depricated typo
+ * RetryNodeTypo is only included to support the deprecated typo
  * "RetryUntilSuccesful" (note the single 's' in Succesful)
  */
 class RetryNode : public DecoratorNode

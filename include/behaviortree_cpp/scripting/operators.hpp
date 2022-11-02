@@ -464,7 +464,7 @@ struct Expression : lexy::expression_production
 
     // Each of the nested classes defines one operation.
     // They inherit from a tag type that specify the kind of operation (prefix, infix, postfix),
-    // and associativy (left, right, single (non-associative)),
+    // and associativity (left, right, single (non-associative)),
     // and specify the operator rule and operand.
 
     // -x
