@@ -45,7 +45,7 @@ namespace BT
  *
  * 3) Subtree: "{param}" -> Parent: "{parent}"
  *    Setting to true (or 1) the attribute "_autoremap", we are automatically remapping
- *    each port. Usefull to avoid boilerplate.
+ *    each port. Useful to avoid boilerplate.
  */
 class SubTreeNode : public DecoratorNode
 {

@@ -141,11 +141,11 @@ using AsyncActionNode = ThreadedActionNode;
 #endif
 
 /**
- * @brief The StatefulAsyncAction is the prefered way to implement asynchronous Actions.
+ * @brief The StatefulAsyncAction is the preferred way to implement asynchronous Actions.
  * It is actually easier to use correctly, when compared with AsyncAction
  *
  * It is particularly useful when your code contains a request-reply pattern,
- * i.e. when the actions sends an asychronous request, then checks periodically
+ * i.e. when the actions sends an asynchronous request, then checks periodically
  * if the reply has been received and, eventually, analyze the reply to determine
  * if the result is SUCCESS or FAILURE.
  *
@@ -163,7 +163,7 @@ public:
   {}
 
   /// Method called once, when transitioning from the state IDLE.
-  /// If it returns RUNNING, this becomes an asychronous node.
+  /// If it returns RUNNING, this becomes an asynchronous node.
   virtual NodeStatus onStart() = 0;
 
   /// method invoked when the action is already in the RUNNING state.
@@ -189,7 +189,7 @@ private:
 
 /**
  * @brief The CoroActionNode class is an a good candidate for asynchronous actions
- * which need to communicate with an external service using an asynch request/reply interface.
+ * which need to communicate with an external service using an async request/reply interface.
  *
  * It is up to the user to decide when to suspend execution of the Action and resume
  * the parent node, invoking the method setStatusRunningAndYield().

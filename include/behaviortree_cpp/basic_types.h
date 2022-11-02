@@ -107,10 +107,10 @@ float convertFromString<float>(StringView str);
 template <>
 double convertFromString<double>(StringView str);
 
-template <>   // Integer numbers separated by the characted ";"
+template <>   // Integer numbers separated by the character ";"
 std::vector<int> convertFromString<std::vector<int>>(StringView str);
 
-template <>   // Real numbers separated by the characted ";"
+template <>   // Real numbers separated by the character ";"
 std::vector<double> convertFromString<std::vector<double>>(StringView str);
 
 template <>   // This recognizes either 0/1, true/false, TRUE/FALSE
@@ -292,7 +292,7 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView 
   auto sname = static_cast<std::string>(name);
   if (!IsAllowedPortName(sname))
   {
-    throw RuntimeError("The name of a port must start with an alphabetic characted. "
+    throw RuntimeError("The name of a port must start with an alphabetic character. "
                        "Underscore is reserved.");
   }
 
