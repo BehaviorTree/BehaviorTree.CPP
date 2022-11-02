@@ -43,7 +43,7 @@ private:
   int running_child_idx_;
   int previously_executed_idx_;
 
-  enum NumericarStatus
+  enum NumericalStatus
   {
     NUM_SUCCESS = 253,
     NUM_FAILURE = 254,

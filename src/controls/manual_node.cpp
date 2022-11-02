@@ -91,7 +91,7 @@ NodeStatus ManualSelectorNode::selectStatus() const
   win = newwin(6, 70, 1, 1);   // create a new window
 
   mvwprintw(win, 0, 0, "No children.");
-  mvwprintw(win, 1, 0, "Press: S to return SUCCESFULL,");
+  mvwprintw(win, 1, 0, "Press: S to return SUCCESSFUL,");
   mvwprintw(win, 2, 0, "       F to return FAILURE, or");
   mvwprintw(win, 3, 0, "       R to return RUNNING.");
 
@@ -152,7 +152,7 @@ uint8_t ManualSelectorNode::selectChild() const
   win = newwin(children_count + 6, 70, 1, 1);   // create a new window
 
   mvwprintw(win, 0, 0, "Use UP/DOWN arrow to select the child, Enter to confirm.");
-  mvwprintw(win, 1, 0, "Press: S to skip and return SUCCESFULL,");
+  mvwprintw(win, 1, 0, "Press: S to skip and return SUCCESSFUL,");
   mvwprintw(win, 2, 0, "       F to skip and return FAILURE, or");
   mvwprintw(win, 3, 0, "       R to skip and return RUNNING.");
 
