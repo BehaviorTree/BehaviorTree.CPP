@@ -62,7 +62,7 @@ TEST(PortTest, Descriptions)
             </Sequence>
         </BehaviorTree>
 
-        <BehaviorTree ID="SubTree" _description="this is a subtre" >
+        <BehaviorTree ID="SubTree" _description="this is a subtree" >
             <NodeWithPorts name="third" in_port_B="99" />
         </BehaviorTree>
 
