@@ -54,7 +54,7 @@ table NodeModel
 }
 
 
-table BehaviorTree 
+table BehaviorTree
 {
   root_uid : uint16;
   nodes    : [TreeNode];
@@ -67,7 +67,7 @@ struct Timestamp
 }
 
 
-struct StatusChange 
+struct StatusChange
 {
   uid         : uint16;
   prev_status : NodeStatus;

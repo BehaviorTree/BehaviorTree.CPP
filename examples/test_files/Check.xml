@@ -6,5 +6,5 @@
             <Action ID="CheckTemperature"/>
         </SequenceStar>
     </BehaviorTree>
-    
+
 </root>

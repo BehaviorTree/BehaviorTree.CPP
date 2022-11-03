@@ -23,7 +23,7 @@ namespace details{
 template <typename BoolCondition>
 using EnableIf = typename std::enable_if< BoolCondition::value, void>::type;
 
-template <typename T> 
+template <typename T>
 constexpr bool is_integer()
 {
     return std::is_same<T, bool>::value ||
@@ -31,7 +31,7 @@ constexpr bool is_integer()
            std::is_integral<T>::value;
 }
 
-template <typename T> 
+template <typename T>
 constexpr bool is_convertible_type()
 {
     return is_integer<T>() ||
@@ -41,7 +41,7 @@ constexpr bool is_convertible_type()
            std::is_enum<T>::value;
 }
 
-template <typename T> 
+template <typename T>
 constexpr bool is_convertible_to_bool()
 {
     return is_integer<T>() ||
@@ -110,7 +110,7 @@ void convertNumber( const SRC& source, DST& target )
         // No check needed
         target = static_cast<DST>(source);
     }
-    else if constexpr( both_integers ) 
+    else if constexpr( both_integers )
     {
         if constexpr( sizeof(SRC) == sizeof(DST) && !is_signed<SRC>() && is_signed<DST>() )
         {

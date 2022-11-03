@@ -30,7 +30,7 @@ and load them at run-time.
 - It provides a type-safe and flexible mechanism to do __Dataflow__ between
   Nodes of the Tree.
 
-- It includes a __logging/profiling__ infrastructure that allows the user 
+- It includes a __logging/profiling__ infrastructure that allows the user
 to visualize, record, replay and analyze state transitions.
 
 ## Documentation and Community
@@ -42,7 +42,7 @@ connect with the other **BT.CPP** users, visit https://discourse.behaviortree.de
 
 ## Previous version
 
-Version 3.8 of the software can be found in the branch 
+Version 3.8 of the software can be found in the branch
 [v3.8](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/v3.8).
 
 That branch might receive bug fixes, but the new features will be implemented
@@ -56,24 +56,24 @@ You can contact the main author dfaconti@aurynrobotics.com to discuss your use c
 # Design principles
 
 The main goal of this project is to create a Behavior Tree implementation
-that uses the principles of Model Driven Development to separate the role 
+that uses the principles of Model Driven Development to separate the role
 of the __Component Developer__ from the __Behavior Designer__.
 
 In practice, this means that:
 
-- Custom TreeNodes must be reusable building blocks. 
+- Custom TreeNodes must be reusable building blocks.
  You should be able to implement them once and reuse them to build many behaviors.
 
-- To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
+- To build a Behavior Tree out of TreeNodes, the Behavior Designer must
 not need to read nor to modify the C++ source code..
 
-- Complex Behaviours must be composable using Subtrees. 
+- Complex Behaviours must be composable using Subtrees.
 
 # GUI Editor
 
 Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
 
-If you are looking for a more fancy graphical user interface (and I know you do) check 
+If you are looking for a more fancy graphical user interface (and I know you do) check
 [Groot](https://github.com/BehaviorTree/Groot) out.
 
 ![Groot screenshot](docs/groot-screenshot.png)
@@ -85,7 +85,7 @@ Please note that **Ubuntu 18.04 is not supported anymore in version 4.X**. Ubunt
 First, install the following dependencies (optional, but recommended):
 
      sudo apt-get install libzmq3-dev libboost-dev libncurses5-dev libncursesw5-dev
-     
+
 To compile and install the library, from the BehaviorTree.CPP folder, execute:
 
      mkdir build; cd build
@@ -93,7 +93,7 @@ To compile and install the library, from the BehaviorTree.CPP folder, execute:
      make
      sudo make install
 
-If you want to use BT.CPP in your application a typical **CMakeLists.txt** file 
+If you want to use BT.CPP in your application a typical **CMakeLists.txt** file
 will look like this:
 
 ```cmake
