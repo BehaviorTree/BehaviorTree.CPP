@@ -3,3 +3,6 @@
 build*
 site/*
 /.vscode/
+
+# clangd cache
+/.cache/*
