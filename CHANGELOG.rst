@@ -487,7 +487,7 @@ Changelog for package behaviortree_cpp
 * merge pull request #14 related to #10 (with some minor changes)
 * Fix issue #8 and warning reported in #4
   Fixed problem of visibility with TinyXML2
-* Contributors: Davide Faconti, Uilian Ries 
+* Contributors: Davide Faconti, Uilian Ries
 
 2.1.0 (2018-11-16)
 ------------------

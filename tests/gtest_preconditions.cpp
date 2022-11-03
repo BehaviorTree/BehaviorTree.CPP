@@ -89,7 +89,7 @@ TEST(PreconditionsDecorator, StringEquals)
                 <Script code = "A:='hello'" />
                 <Script code = "B:='world'" />
                 <Script code = "C:='world'" />
-                
+
                 <Precondition if=" A==B " else="SUCCESS">
                     <TestA/>
                 </Precondition>

@@ -42,7 +42,7 @@ How to use
 
   6. Click Open, and choose your trace.json
 
-  7. Navigate the trace view using the WASD keys, and Look for bottlenecks and optimize your application. 
+  7. Navigate the trace view using the WASD keys, and Look for bottlenecks and optimize your application.
 
   8. In your final release build, build with
 

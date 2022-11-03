@@ -175,7 +175,7 @@ class Any
     T cast() const
     {
         static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, can not cast to reference");
-        
+
         if( _any.empty() )
         {
             throw std::runtime_error("Any::cast failed because it is empty");
