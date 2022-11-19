@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.1 (2022-11-19)
+------------------
 * version 4.X
 * Contributors: Adam Aposhian, Adam Sasine, Alberto Soragna, Ali Aydın KÜÇÜKÇÖLLÜ, AndyZe, Davide Faconti, Dennis, Gaël Écorchard, Jafar, Joseph Schornak, Luca Bonamini, Paul Bovbel, SubaruArai, Tim Clephas, Will
 
