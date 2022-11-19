@@ -18,17 +18,24 @@ endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #---- project configuration ----
-option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
-option(BUILD_SAMPLES    "Build sample nodes" ON)
-option(BUILD_UNIT_TESTS "Build the unit tests" ON)
-option(BUILD_TOOLS "Build commandline tools" ON)
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(BUILD_MANUAL_SELECTOR "Build manual selector node" ON)
-option(ENABLE_COROUTINES "Enable boost coroutines" ON)
+option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
+option(BTCPP_ENABLE_COROUTINES "Enable boost coroutines" ON)
+option(BTCPP_MANUAL_SELECTOR "Build manual selector node" ON)
+
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR} )
+    option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
+    option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
+    option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
+else()
+    option(BTCPP_EXAMPLES   "Build tutorials and examples" OFF)
+    option(BTCPP_UNIT_TESTS "Build the unit tests" OFF)
+    option(BTCPP_BUILD_TOOLS "Build commandline tools" OFF)
+endif()
+
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
 #---- Include boost to add coroutines ----
-if(ENABLE_COROUTINES)
+if(BTCPP_ENABLE_COROUTINES)
     find_package(Boost COMPONENTS coroutine QUIET)
 
     if(Boost_FOUND)
@@ -36,23 +43,23 @@ if(ENABLE_COROUTINES)
         if(NOT Boost_VERSION_NODOT VERSION_LESS 105900)
             message(STATUS "Found boost::coroutine2.")
             add_definitions(-DBT_BOOST_COROUTINE2)
-            set(BT_COROUTINES true)
+            set(BT_COROUTINES_FOUND true)
         elseif(NOT Boost_VERSION_NODOT VERSION_LESS 105300)
             message(STATUS "Found boost::coroutine.")
             add_definitions(-DBT_BOOST_COROUTINE)
-            set(BT_COROUTINES true)
+            set(BT_COROUTINES_FOUND true)
         endif()
         include_directories(${Boost_INCLUDE_DIRS})
     endif()
 
-    if(NOT DEFINED BT_COROUTINES)
+    if(NOT DEFINED BT_COROUTINES_FOUND)
         message(STATUS "Boost coroutines disabled. Install Boost (version 1.59+ recommended).")
     endif()
 else()
     message(STATUS "Boost coroutines disabled by CMake option.")
 endif()
 
-if(NOT DEFINED BT_COROUTINES)
+if(NOT DEFINED BT_COROUTINES_FOUND)
     add_definitions(-DBT_NO_COROUTINES)
 endif()
 
@@ -116,7 +123,7 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
     list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
     set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
-elseif(BUILD_UNIT_TESTS)
+elseif(BTCPP_UNIT_TESTS)
     if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
         find_package(GTest REQUIRED)
     else()
@@ -175,7 +182,7 @@ list(APPEND BT_SOURCE
     3rdparty/minitrace/minitrace.cpp
     )
 
-if(BUILD_MANUAL_SELECTOR)
+if(BTCPP_MANUAL_SELECTOR)
     find_package(Curses QUIET)
     if(CURSES_FOUND)
         list(APPEND BT_SOURCE
@@ -211,13 +218,13 @@ if( ZMQ_FOUND )
     list(APPEND BUILD_TOOL_INCLUDE_DIRS ${ZMQ_INCLUDE_DIRS})
 endif()
 
-target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PUBLIC
-    ${BEHAVIOR_TREE_PUBLIC_LIBRARIES})
-
-target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-    ${Boost_LIBRARIES}
-    ${ZMQ_LIBRARIES}
-    foonathan::lexy
+target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
+    PUBLIC
+        ${BEHAVIOR_TREE_PUBLIC_LIBRARIES}
+    PRIVATE
+        ${Boost_LIBRARIES}
+        ${ZMQ_LIBRARIES}
+        $<BUILD_INTERFACE:foonathan::lexy>
 )
 
 #get_target_property(my_libs ${BEHAVIOR_TREE_LIBRARY} INTERFACE_LINK_LIBRARIES)
@@ -229,11 +236,14 @@ target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
 target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     ${BUILD_TOOL_INCLUDE_DIRS})
+
+target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
+    )
 
 if( ZMQ_FOUND )
     target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC ZMQ_FOUND)
@@ -271,18 +281,13 @@ endif()
 
 message( STATUS "BEHAVIOR_TREE_LIB_DESTINATION:   ${BEHAVIOR_TREE_LIB_DESTINATION} " )
 message( STATUS "BEHAVIOR_TREE_BIN_DESTINATION:   ${BEHAVIOR_TREE_BIN_DESTINATION} " )
-message( STATUS "BUILD_UNIT_TESTS:   ${BUILD_UNIT_TESTS} " )
+message( STATUS "BTCPP_UNIT_TESTS:   ${BTCPP_UNIT_TESTS} " )
 
-
-######################################################
-# Samples
-if (BUILD_SAMPLES)
-    add_subdirectory(sample_nodes)
-endif()
+add_subdirectory(sample_nodes)
 
 ######################################################
 # Test
-if (BUILD_UNIT_TESTS AND BUILD_SAMPLES)
+if (BTCPP_UNIT_TESTS)
     add_subdirectory(tests)
 endif()
 
@@ -333,10 +338,10 @@ install(
 
 ######################################################
 # EXAMPLES and TOOLS
-if(BUILD_TOOLS)
+if(BTCPP_BUILD_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if(BUILD_EXAMPLES AND BUILD_SAMPLES)
+if(BTCPP_EXAMPLES)
     add_subdirectory(examples)
 endif()

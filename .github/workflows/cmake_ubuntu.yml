@@ -1,4 +1,4 @@
-name: cmake
+name: cmake Ubuntu
 
 on: [push, pull_request]
 
@@ -15,14 +15,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-20.04]
 
     steps:
     - uses: actions/checkout@v2
     
     - name: Install Dependencies (Linux)
       run: sudo apt-get install libboost-dev libzmq3-dev
-      if: matrix.os == 'ubuntu-latest'
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
@@ -34,8 +33,8 @@ jobs:
       # access regardless of the host operating system
       shell: bash
       working-directory: ${{github.workspace}}/build
-      # Note the current convention is to use the -S and -B options here to specify source
-      # and build directories, but this is only available with CMake 3.13 and higher.
+      # Note the current convention is to use the -S and -B options here to specify source 
+      # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
@@ -46,7 +45,6 @@ jobs:
       run: cmake --build . --config $BUILD_TYPE
       
     - name: run test (Linux)
-      if: matrix.os == 'ubuntu-latest'
       working-directory: ${{github.workspace}}/build
       run: ./tests/behaviortree_cpp_test
       

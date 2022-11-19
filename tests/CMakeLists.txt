@@ -24,7 +24,7 @@ set(BT_TESTS
   script_parser_test.cpp
 )
 
-if( BT_COROUTINES )
+if( BTCPP_ENABLE_COROUTINES AND BT_COROUTINES_FOUND )
     LIST( APPEND BT_TESTS gtest_coroutines.cpp)
 endif()
 
@@ -60,7 +60,7 @@ elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
 
-elseif(BUILD_UNIT_TESTS)
+elseif(BTCPP_UNIT_TESTS)
 
     enable_testing()
 
