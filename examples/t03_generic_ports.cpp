@@ -93,7 +93,7 @@ public:
 *  2) Call PrintTarget. The input "target" will be read from the Blackboard
 *     entry "GoalPosition".
 *
-*  3) Use the built-in action SetBlackboard to write the key "OtherGoal".
+*  3) Use the built-in action Script to write the key "OtherGoal".
 *     A conversion from string to Position2D will be done under the hood.
 *
 *  4) Call PrintTarget. The input "goal" will be read from the Blackboard
@@ -103,7 +103,7 @@ public:
 // clang-format off
 static const char* xml_text = R"(
 
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
             <CalculateGoal   goal="{GoalPosition}" />
@@ -126,6 +126,7 @@ int main()
   factory.registerNodeType<PrintTarget>("PrintTarget");
 
   auto tree = factory.createTreeFromText(xml_text);
+
   tree.tickWhileRunning();
 
   /* Expected output:

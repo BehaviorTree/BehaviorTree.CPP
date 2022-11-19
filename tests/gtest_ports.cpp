@@ -36,7 +36,7 @@ public:
 TEST(PortTest, DefaultPorts)
 {
   std::string xml_txt = R"(
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <NodeWithPorts name = "first"  in_port_B="66" />
         </BehaviorTree>
@@ -54,7 +54,7 @@ TEST(PortTest, DefaultPorts)
 TEST(PortTest, Descriptions)
 {
   std::string xml_txt = R"(
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree" _description="this is my tree" >
             <Sequence>
                 <NodeWithPorts name="first"  in_port_B="66" _description="this is my action" />
@@ -71,7 +71,8 @@ TEST(PortTest, Descriptions)
   BehaviorTreeFactory factory;
   factory.registerNodeType<NodeWithPorts>("NodeWithPorts");
 
-  auto tree = factory.createTreeFromText(xml_txt);
+  factory.registerBehaviorTreeFromText(xml_txt);
+  auto tree = factory.createTree("MainTree");
 
   NodeStatus status = tree.tickWhileRunning();
   while (status == NodeStatus::RUNNING)
@@ -132,7 +133,7 @@ public:
 TEST(PortTest, EmptyPort)
 {
   std::string xml_txt = R"(
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <NodeInPorts  int_port="{ip}" any_port="{ap}" />

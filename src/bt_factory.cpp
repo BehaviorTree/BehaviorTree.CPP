@@ -15,7 +15,6 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/xml_parsing.h"
-#include "tinyxml2/tinyxml2.h"
 
 #ifdef USING_ROS
 #include <ros/package.h>
@@ -54,6 +53,7 @@ BehaviorTreeFactory::BehaviorTreeFactory()
   registerNodeType<AlwaysSuccessNode>("AlwaysSuccess");
   registerNodeType<AlwaysFailureNode>("AlwaysFailure");
   registerNodeType<ScriptNode>("Script");
+  registerNodeType<SetBlackboard>("SetBlackboard");
 
   registerNodeType<SubTreeNode>("SubTree");
 

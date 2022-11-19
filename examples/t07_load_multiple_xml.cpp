@@ -9,7 +9,7 @@
 // clang-format off
 
 static const char* xml_text_main = R"(
-<root main_tree_to_execute="MainTree">
+<root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
         <Sequence>
             <SaySomething message="starting MainTree" />
@@ -20,14 +20,14 @@ static const char* xml_text_main = R"(
 </root>  )";
 
 static const char* xml_text_subA = R"(
-<root>
+<root BTCPP_format="4">
     <BehaviorTree ID="SubA">
         <SaySomething message="Executing SubA" />
     </BehaviorTree>
 </root>  )";
 
 static const char* xml_text_subB = R"(
-<root>
+<root BTCPP_format="4">
     <BehaviorTree ID="SubB">
         <SaySomething message="Executing SubB" />
     </BehaviorTree>

@@ -11,7 +11,7 @@ TEST(PostConditions, BasicTest)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <Script code = "A:=1; B:=1; C:=1; D:=1" />

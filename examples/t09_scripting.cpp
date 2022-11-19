@@ -5,7 +5,7 @@ using namespace BT;
 
 // clang-format off
 static const char* xml_text = R"(
- <root >
+ <root BTCPP_format="4">
      <BehaviorTree>
         <Sequence>
             <Script code=" msg:='hello world' " />

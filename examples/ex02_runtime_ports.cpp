@@ -3,7 +3,7 @@ using namespace BT;
 
 // clang-format off
 static const char* xml_text = R"(
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
             <ThinkRuntimePort   text="{the_answer}"/>
@@ -62,7 +62,8 @@ int main()
   PortsList say_ports = {BT::InputPort<std::string>("message")};
   factory.registerNodeType<SayRuntimePort>("SayRuntimePort", say_ports);
 
-  auto tree = factory.createTreeFromText(xml_text);
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
   tree.tickWhileRunning();
 
   return 0;

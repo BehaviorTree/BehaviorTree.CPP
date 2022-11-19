@@ -18,12 +18,12 @@ namespace BT
     <BehaviorTree ID="MainTree">
         <Sequence>
 
-        <SetBlackboard value="Hello" output_key="myParam" />
+        <Script code="myParam='Hello'" />
         <SubTree ID="Talk" param="{myParam}" />
 
         <SubTree ID="Talk" param="World" />
 
-        <SetBlackboard value="Auto remapped" output_key="param" />
+        <Script code="param='Auto remapped'" />
         <SubTree ID="Talk" _autoremap="1"  />
 
         </Sequence>

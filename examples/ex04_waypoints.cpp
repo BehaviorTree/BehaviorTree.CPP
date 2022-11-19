@@ -126,7 +126,7 @@ public:
 // clang-format off
 
 static const char* xml_implicit = R"(
- <root main_tree_to_execute = "TreeImplicit" >
+ <root BTCPP_format="4" >
      <BehaviorTree ID="TreeImplicit">
         <Sequence>
             <GenerateWaypoints waypoints="{waypoints}" />
@@ -140,7 +140,7 @@ static const char* xml_implicit = R"(
 
 
 static const char* xml_A = R"(
- <root main_tree_to_execute = "TreeA" >
+ <root BTCPP_format="4" >
      <BehaviorTree ID="TreeA">
         <Sequence>
             <GenerateWaypoints waypoints="{waypoints}" />
@@ -157,7 +157,7 @@ static const char* xml_A = R"(
  )";
 
 static const char* xml_B = R"(
- <root main_tree_to_execute = "TreeB" >
+ <root BTCPP_format="4" >
      <BehaviorTree ID="TreeB">
         <Sequence>
             <GenerateWaypoints waypoints="{waypoints}" />

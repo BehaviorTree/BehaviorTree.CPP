@@ -8,7 +8,7 @@ TEST(SubTree, SiblingPorts_Issue_72)
 {
   static const char* xml_text = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" main_tree_to_execute="MainTree" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -68,7 +68,7 @@ TEST(SubTree, GoodRemapping)
 {
   static const char* xml_text = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -100,7 +100,7 @@ TEST(SubTree, BadRemapping)
   factory.registerNodeType<CopyPorts>("CopyPorts");
 
   static const char* xml_text_bad_in = R"(
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -115,11 +115,12 @@ TEST(SubTree, BadRemapping)
     </BehaviorTree>
 </root> )";
 
-  Tree tree_bad_in = factory.createTreeFromText(xml_text_bad_in);
+  factory.registerBehaviorTreeFromText(xml_text_bad_in);
+  Tree tree_bad_in = factory.createTree("MainTree");
   EXPECT_ANY_THROW(tree_bad_in.tickWhileRunning());
 
   static const char* xml_text_bad_out = R"(
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -134,7 +135,8 @@ TEST(SubTree, BadRemapping)
     </BehaviorTree>
 </root> )";
 
-  Tree tree_bad_out = factory.createTreeFromText(xml_text_bad_out);
+  factory.registerBehaviorTreeFromText(xml_text_bad_out);
+  Tree tree_bad_out = factory.createTree("MainTree");
   EXPECT_ANY_THROW(tree_bad_out.tickWhileRunning());
 }
 
@@ -142,7 +144,7 @@ TEST(SubTree, SubtreePlusA)
 {
   static const char* xml_text = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -162,7 +164,8 @@ TEST(SubTree, SubtreePlusA)
   BehaviorTreeFactory factory;
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-  Tree tree = factory.createTreeFromText(xml_text);
+  factory.registerBehaviorTreeFromText(xml_text);
+  Tree tree = factory.createTree("MainTree");
 
   auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
@@ -172,7 +175,7 @@ TEST(SubTree, SubtreePlusB)
 {
   static const char* xml_text = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -193,7 +196,8 @@ TEST(SubTree, SubtreePlusB)
   BehaviorTreeFactory factory;
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
-  Tree tree = factory.createTreeFromText(xml_text);
+  factory.registerBehaviorTreeFromText(xml_text);
+  Tree tree = factory.createTree("MainTree");
 
   auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
@@ -228,7 +232,7 @@ TEST(SubTree, SubtreePlusD)
   config.blackboard = BT::Blackboard::create();
   static const char* xml_text = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -243,7 +247,9 @@ TEST(SubTree, SubtreePlusD)
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ReadInConstructor>("ReadInConstructor");
   config.blackboard->set("message", "hello");
-  BT::Tree tree = factory.createTreeFromText(xml_text, config.blackboard);
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  Tree tree = factory.createTree("MainTree", config.blackboard);
 
   auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);

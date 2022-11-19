@@ -51,7 +51,7 @@ Point3D convertFromString(StringView key)
 // clang-format off
 static const char* xml_text = R"(
 
- <root>
+ <root BTCPP_format="4">
      <BehaviorTree>
         <MoveTo  goal="-1;3;0.5" />
      </BehaviorTree>

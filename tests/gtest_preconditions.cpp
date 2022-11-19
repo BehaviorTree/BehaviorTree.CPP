@@ -14,7 +14,7 @@ TEST(PreconditionsDecorator, Integers)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <Script code = "A:=1; B:=1; C:=3" />
@@ -47,7 +47,7 @@ TEST(PreconditionsDecorator, DoubleEquals)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <Script code = " A:=1.1; B:=(1.0+0.1); C:= 2.0 " />
@@ -83,7 +83,7 @@ TEST(PreconditionsDecorator, StringEquals)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <Script code = "A:='hello'" />
@@ -115,7 +115,7 @@ TEST(Preconditions, Basic)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <Script code = "A:=1" />

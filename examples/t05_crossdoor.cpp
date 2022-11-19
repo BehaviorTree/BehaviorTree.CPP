@@ -10,7 +10,7 @@
 // clang-format off
 
 static const char* xml_text = R"(
-<root main_tree_to_execute = "MainTree">
+<root BTCPP_format="4">
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -46,8 +46,12 @@ int main()
   CrossDoor cross_door;
   cross_door.registerNodes(factory);
 
-  // Load from text or file...
-  auto tree = factory.createTreeFromText(xml_text);
+  // In this example a single XML contains multiple tags <BehaviorTree>
+  // To determine which one is the "main one", we should first register
+  // the XML and then allocate a specific tree, using its ID
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
 
   // helper function to print the tree
   BT::printTreeRecursively(tree.rootNode());

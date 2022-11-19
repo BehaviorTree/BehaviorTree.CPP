@@ -139,6 +139,13 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
 
   const XMLElement* xml_root = doc->RootElement();
 
+  auto format = xml_root->Attribute("BTCPP_format");
+  if(!format)
+  {
+    std::cout << "Warnings: The first tag of the XML (<root>) should contain the attribute [BTCPP_format=\"4\"]\n"
+              << "Please check if your XML is compatible with version 4.x of BT.CPP" << std::endl;
+  }
+
   // recursively include other files
   for (auto incl_node = xml_root->FirstChildElement("include"); incl_node != nullptr;
        incl_node = incl_node->NextSiblingElement("include"))

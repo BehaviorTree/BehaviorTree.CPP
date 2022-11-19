@@ -12,7 +12,7 @@ using namespace BT;
 
 static const char* xml_text = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
 
     <BehaviorTree ID="MainTree">
         <Fallback name="root_selector">
@@ -49,7 +49,7 @@ static const char* xml_text = R"(
 
 static const char* xml_text_subtree = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" main_tree_to_execute="MainTree" >
 
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -183,7 +183,7 @@ TEST(BehaviorTreeFactory, Issue7)
 
 static const char* xml_ports_subtree = R"(
 
-<root main_tree_to_execute = "MainTree" format="4">
+<root BTCPP_format="4" format="4" main_tree_to_execute="MainTree">
 
   <BehaviorTree ID="TalkToMe">
     <Sequence>
@@ -345,14 +345,14 @@ TEST(
 TEST(BehaviorTreeReload, ReloadSameTree)
 {
   const char* xmlA = R"(
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
   <BehaviorTree ID="MainTree">
     <AlwaysSuccess/>
   </BehaviorTree>
 </root> )";
 
   const char* xmlB = R"(
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
   <BehaviorTree ID="MainTree">
     <AlwaysFailure/>
   </BehaviorTree>

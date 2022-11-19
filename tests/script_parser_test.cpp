@@ -141,10 +141,8 @@ TEST(ParserTest, Equations)
   EXPECT_ANY_THROW(GetResult("y ^ 5.1").cast<double>());
 
   // test string variables
-  EXPECT_EQ(GetResult("A:='hello'; B:=' '; C:='world'; A+B+C").cast<std::string>(), "hell"
-                                                                                    "o "
-                                                                                    "worl"
-                                                                                    "d");
+  EXPECT_EQ(GetResult("A:='hello'; B:=' '; C:='world'; A+B+C").cast<std::string>(),
+            "hello world");
   EXPECT_EQ(variables->getKeys().size(), 5);
   EXPECT_EQ(variables->get<std::string>("A"), "hello");
   EXPECT_EQ(variables->get<std::string>("B"), " ");
@@ -223,7 +221,7 @@ TEST(ParserTest, Enums)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Script code = "A:=THE_ANSWER; color1:=RED; color2:=BLUE; color3:=GREEN" />
         </BehaviorTree>

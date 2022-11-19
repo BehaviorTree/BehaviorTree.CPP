@@ -131,7 +131,7 @@ TEST(BlackboardTest, SetOutputFromText)
 {
   const char* xml_text = R"(
 
-     <root main_tree_to_execute = "MainTree" >
+     <root BTCPP_format="4" >
          <BehaviorTree ID="MainTree">
             <Sequence>
                 <BB_TestNode in_port="11" out_port="{my_port}"/>
@@ -158,7 +158,7 @@ TEST(BlackboardTest, WithFactory)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <BB_TestNode in_port="11"
@@ -190,7 +190,7 @@ TEST(BlackboardTest, TypoInPortName)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
              <BB_TestNode inpuuuut_port="{value}" />
         </BehaviorTree>
@@ -206,7 +206,7 @@ TEST(BlackboardTest, CheckPortType)
 
   //-----------------------------
   std::string good_one = R"(
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <TypedNode name = "first"  output_int="{matching}"  output_string="{whatever}" output="{no_problem}" />
@@ -219,7 +219,7 @@ TEST(BlackboardTest, CheckPortType)
   ASSERT_NE(tree.rootNode(), nullptr);
   //-----------------------------
   std::string bad_one = R"(
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <TypedNode name = "first"  output_int="{value}" />

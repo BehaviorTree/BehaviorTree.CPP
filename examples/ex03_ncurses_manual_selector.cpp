@@ -10,7 +10,7 @@ using namespace BT;
 
 // clang-format off
 static const char* xml_text = R"(
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
      <BehaviorTree ID="MainTree">
         <Repeat num_cycles="3">
             <ManualSelector repeat_last_selection="0">

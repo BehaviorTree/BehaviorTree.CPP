@@ -16,7 +16,7 @@ using namespace BT;
 
 static const char* xml_text_sequence = R"(
 
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
@@ -32,7 +32,7 @@ static const char* xml_text_sequence = R"(
 
 static const char* xml_text_reactive = R"(
 
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
         <ReactiveSequence name="root">
@@ -55,6 +55,7 @@ using namespace DummyNodes;
 int main()
 {
   BehaviorTreeFactory factory;
+
   factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
   factory.registerNodeType<MoveBaseAction>("MoveBase");
   factory.registerNodeType<SaySomething>("SaySomething");

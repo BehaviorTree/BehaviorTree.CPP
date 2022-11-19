@@ -14,7 +14,7 @@ TEST(SkippingLogic, Sequence)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <Script code = "A:=1"/>
@@ -39,7 +39,7 @@ TEST(SkippingLogic, SkipAll)
 
   const std::string xml_text = R"(
 
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
             <Sequence>
                 <TestA _skipIf="A==1"/>

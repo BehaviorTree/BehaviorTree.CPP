@@ -21,11 +21,11 @@
 // clang-format off
 
 static const char* xml_text = R"(
-<root main_tree_to_execute = "MainTree">
+<root BTCPP_format="4">
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <Script script=" move_goal='1;2;3' " />
+            <Script code=" move_goal='1;2;3' " />
             <SubTree ID="MoveRobot" target="{move_goal}" result="{move_result}" />
             <SaySomething message="{move_result}"/>
         </Sequence>
@@ -35,10 +35,10 @@ static const char* xml_text = R"(
         <Fallback>
             <Sequence>
                 <MoveBase  goal="{target}"/>
-                <Script script=" result:='goal reached' " />
+                <Script code=" result:='goal reached' " />
             </Sequence>
             <ForceFailure>
-                <Script script=" result:='error' " />
+                <Script code=" result:='error' " />
             </ForceFailure>
         </Fallback>
     </BehaviorTree>
@@ -58,7 +58,8 @@ int main()
   factory.registerNodeType<SaySomething>("SaySomething");
   factory.registerNodeType<MoveBaseAction>("MoveBase");
 
-  auto tree = factory.createTreeFromText(xml_text);
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
 
   tree.tickWhileRunning();
 

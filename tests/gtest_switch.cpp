@@ -10,7 +10,7 @@ using std::chrono::milliseconds;
 
 static const char* xml_text = R"(
 
-<root main_tree_to_execute = "MainTree" >
+<root BTCPP_format="4" >
 
     <BehaviorTree ID="MainTree">
         <Switch3 name="simple_switch" variable="{my_var}"  case_1="1" case_2="42 case_3="666" >

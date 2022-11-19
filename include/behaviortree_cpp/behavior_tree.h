@@ -35,6 +35,7 @@
 #include "behaviortree_cpp/actions/always_success_node.h"
 #include "behaviortree_cpp/actions/always_failure_node.h"
 #include "behaviortree_cpp/actions/script_node.h"
+#include "behaviortree_cpp/actions/set_blackboard_node.h"
 
 #include "behaviortree_cpp/decorators/force_success_node.h"
 #include "behaviortree_cpp/decorators/force_failure_node.h"
