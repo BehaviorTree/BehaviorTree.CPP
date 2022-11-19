@@ -2,6 +2,11 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* version 4.X
+* Contributors: Adam Aposhian, Adam Sasine, Alberto Soragna, Ali Aydın KÜÇÜKÇÖLLÜ, AndyZe, Davide Faconti, Dennis, Gaël Écorchard, Jafar, Joseph Schornak, Luca Bonamini, Paul Bovbel, SubaruArai, Tim Clephas, Will
+
 3.7.0 (2022-05-23)
 -----------
 * add netlify stuff
