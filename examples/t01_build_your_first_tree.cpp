@@ -73,13 +73,11 @@ int main()
   // it automated the registering step.
   factory.registerFromPlugin("./libdummy_nodes_dyn.so");
 #endif
-  // register the XML description
-  factory.registerBehaviorTreeFromText(xml_text);
 
   // Trees are created at deployment-time (i.e. at run-time, but only once at the beginning).
   // The currently supported format is XML.
   // IMPORTANT: when the object "tree" goes out of scope, all the TreeNodes are destroyed
-  auto tree = factory.createTree("MainTree");
+  auto tree = factory.createTreeFromText(xml_text);
 
   // To "execute" a Tree you need to "tick" it.
   // The tick is propagated to the children based on the logic of the tree.
