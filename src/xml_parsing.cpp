@@ -222,7 +222,7 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
       tree_name = "BehaviorTree_" + std::to_string(suffix_count++);
     }
 
-    tree_roots.insert({tree_name, bt_node});
+    tree_roots[tree_name] = bt_node;
   }
 }
 
@@ -430,10 +430,9 @@ void VerifyXML(const std::string& xml_text,
 }
 
 Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
-                                std::string main_tree_to_execute)
+                                std::string main_tree_ID)
 {
   Tree output_tree;
-  std::string main_tree_ID = main_tree_to_execute;
 
   // use the main_tree_to_execute argument if it was provided by the user
   // or the one in the FIRST document opened

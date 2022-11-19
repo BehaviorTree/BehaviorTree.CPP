@@ -341,3 +341,34 @@ TEST(
   Tree tree = factory.createTreeFromFile(path);
   ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
+
+TEST(BehaviorTreeReload, ReloadSameTree)
+{
+  const char* xmlA = R"(
+<root main_tree_to_execute = "MainTree" >
+  <BehaviorTree ID="MainTree">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root> )";
+
+  const char* xmlB = R"(
+<root main_tree_to_execute = "MainTree" >
+  <BehaviorTree ID="MainTree">
+    <AlwaysFailure/>
+  </BehaviorTree>
+</root> )";
+
+  BehaviorTreeFactory factory;
+
+  factory.registerBehaviorTreeFromText(xmlA);
+  {
+    auto tree = factory.createTree("MainTree");
+    ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
+  }
+
+  factory.registerBehaviorTreeFromText(xmlB);
+  {
+    auto tree = factory.createTree("MainTree");
+    ASSERT_EQ(NodeStatus::FAILURE, tree.tickWhileRunning());
+  }
+}
