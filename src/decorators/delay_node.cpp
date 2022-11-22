@@ -63,9 +63,12 @@ NodeStatus DelayNode::tick()
   }
   else if (delay_complete_)
   {
-    delay_started_ = false;
-    delay_aborted_ = false;
     auto child_status = child()->executeTick();
+    if(child_status != NodeStatus::RUNNING)
+    {
+      delay_started_ = false;
+      delay_aborted_ = false;
+    }
     return child_status;
   }
   else
