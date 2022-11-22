@@ -24,7 +24,7 @@ void Blackboard::setPortInfo(std::string key, const PortInfo& info)
   else
   {
     auto old_type = it->second.port_info.type();
-    if (old_type && old_type != info.type())
+    if (old_type && *old_type != *info.type())
     {
       throw LogicError("Blackboard::set() failed: once declared, the type of a "
                        "port shall "
