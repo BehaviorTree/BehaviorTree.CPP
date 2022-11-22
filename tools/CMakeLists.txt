@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty)
 
 add_executable(bt3_log_cat         bt_log_cat.cpp )
 target_link_libraries(bt3_log_cat  ${BEHAVIOR_TREE_LIBRARY} )
