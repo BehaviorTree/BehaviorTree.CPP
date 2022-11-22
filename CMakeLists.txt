@@ -49,7 +49,6 @@ if(BTCPP_ENABLE_COROUTINES)
             add_definitions(-DBT_BOOST_COROUTINE)
             set(BT_COROUTINES_FOUND true)
         endif()
-        include_directories(${Boost_INCLUDE_DIRS})
     endif()
 
     if(NOT DEFINED BT_COROUTINES_FOUND)
@@ -222,27 +221,23 @@ target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
     PUBLIC
         ${BEHAVIOR_TREE_PUBLIC_LIBRARIES}
     PRIVATE
-        ${Boost_LIBRARIES}
-        ${ZMQ_LIBRARIES}
+        $<BUILD_INTERFACE:Boost::coroutine>
+        $<BUILD_INTERFACE:${ZMQ_LIBRARIES}>
         $<BUILD_INTERFACE:foonathan::lexy>
 )
-
-#get_target_property(my_libs ${BEHAVIOR_TREE_LIBRARY} INTERFACE_LINK_LIBRARIES)
-#list(REMOVE_ITEM _libs X)
-#message("my_libs: ${my_libs}")
-
-#set_target_properties(${BEHAVIOR_TREE_LIBRARY} PROPERTIES INTERFACE_LINK_LIBRARIES "")
 
 target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
-    ${BUILD_TOOL_INCLUDE_DIRS})
+    )
 
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
+    $<BUILD_INTERFACE:${BUILD_TOOL_INCLUDE_DIRS}>
+    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
     )
 
 if( ZMQ_FOUND )
@@ -258,7 +253,13 @@ endif()
 #############################################################
 if(ament_cmake_FOUND)
     find_package(ament_index_cpp REQUIRED)
-    ament_target_dependencies(${BEHAVIOR_TREE_LIBRARY} PUBLIC ament_index_cpp)
+
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${ament_index_cpp_INCLUDE_DIRS}> )
+
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+            $<BUILD_INTERFACE:ament_index_cpp::ament_index_cpp> )
+
     ament_export_dependencies(ament_index_cpp)
 
     set( BEHAVIOR_TREE_LIB_DESTINATION   lib )
@@ -320,14 +321,6 @@ configure_package_config_file(
   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
   INSTALL_DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
 )
-
-# This requires to declare to project version in the project() macro
-
-#write_basic_package_version_file(
-#  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-#  VERSION ${PROJECT_VERSION}
-#  COMPATIBILITY AnyNewerVersion
-#)
 
 install(
   FILES
