@@ -210,12 +210,6 @@ target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
     ${Boost_LIBRARIES}
     ${ZMQ_LIBRARIES})
 
-#get_target_property(my_libs ${BEHAVIOR_TREE_LIBRARY} INTERFACE_LINK_LIBRARIES)
-#list(REMOVE_ITEM _libs X)
-#message("my_libs: ${my_libs}")
-
-#set_target_properties(${BEHAVIOR_TREE_LIBRARY} PROPERTIES INTERFACE_LINK_LIBRARIES "")
-
 target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
@@ -278,22 +272,50 @@ endif()
 ######################################################
 # INSTALL
 
+INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    DESTINATION ${BEHAVIOR_TREE_INC_DESTINATION}
+    FILES_MATCHING PATTERN "*.h*")
+
+
 INSTALL(TARGETS ${BEHAVIOR_TREE_LIBRARY}
     EXPORT ${PROJECT_NAME}Targets
     ARCHIVE DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
     LIBRARY DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
     RUNTIME DESTINATION ${BEHAVIOR_TREE_BIN_DESTINATION}
-    )
-
-INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-    DESTINATION ${BEHAVIOR_TREE_INC_DESTINATION}
-    FILES_MATCHING PATTERN "*.h*")
+)
 
 install(EXPORT ${PROJECT_NAME}Targets
     FILE "${PROJECT_NAME}Targets.cmake"
     DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
     NAMESPACE BT::
-    )
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
+)
+
+###### Fix back-compatibility problem ##########
+
+INSTALL(TARGETS ${BEHAVIOR_TREE_LIBRARY}
+    EXPORT BehaviorTreeV3Targets
+    ARCHIVE DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${BEHAVIOR_TREE_BIN_DESTINATION}
+)
+
+install(EXPORT BehaviorTreeV3Targets
+    FILE "BehaviorTreeV3Targets.cmake"
+    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/BehaviorTreeV3"
+    NAMESPACE BT::
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/BehaviorTreeV3Config.cmake"
+    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/BehaviorTreeV3"
+)
+
+################################################
 
 export(PACKAGE ${PROJECT_NAME})
 
@@ -305,20 +327,6 @@ configure_package_config_file(
   INSTALL_DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
 )
 
-# This requires to declare to project version in the project() macro
-
-#write_basic_package_version_file(
-#  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-#  VERSION ${PROJECT_VERSION}
-#  COMPATIBILITY AnyNewerVersion
-#)
-
-install(
-  FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-    #    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
-)
 
 ######################################################
 # EXAMPLES and TOOLS
