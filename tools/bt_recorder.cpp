@@ -62,7 +62,8 @@ int main(int argc, char* argv[])
         zmq::message_t msg;
         try
         {
-            subscriber.recv(update, zmq::recv_flags::none);
+            auto ret = subscriber.recv(update, zmq::recv_flags::none);
+            (void)ret;
         }
         catch (zmq::error_t& e)
         {
