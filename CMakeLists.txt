@@ -21,16 +21,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
 option(BTCPP_ENABLE_COROUTINES "Enable boost coroutines" ON)
 option(BTCPP_MANUAL_SELECTOR "Build manual selector node" ON)
-
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR} )
-    option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
-    option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
-    option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
-else()
-    option(BTCPP_EXAMPLES   "Build tutorials and examples" OFF)
-    option(BTCPP_UNIT_TESTS "Build the unit tests" OFF)
-    option(BTCPP_BUILD_TOOLS "Build commandline tools" OFF)
-endif()
+option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
+option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
+option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
@@ -221,24 +214,28 @@ target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
     PUBLIC
         ${BEHAVIOR_TREE_PUBLIC_LIBRARIES}
     PRIVATE
-        $<BUILD_INTERFACE:Boost::coroutine>
         $<BUILD_INTERFACE:${ZMQ_LIBRARIES}>
         $<BUILD_INTERFACE:foonathan::lexy>
 )
 
-target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
-
-target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+target_include_directories(${BEHAVIOR_TREE_LIBRARY}
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
+        $<BUILD_INTERFACE:${BUILD_TOOL_INCLUDE_DIRS}>
     )
 
+if(DEFINED BT_COROUTINES_FOUND)
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${Boost_LIBRARIES}> )
 target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
-    $<BUILD_INTERFACE:${BUILD_TOOL_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-    )
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}> )
+endif()
+
+target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
 if( ZMQ_FOUND )
     target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC ZMQ_FOUND)

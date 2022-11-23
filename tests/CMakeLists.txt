@@ -1,7 +1,7 @@
 ######################################################
 # TESTS
 
-include_directories(include)
+include_directories(include ${PROJECT_SOURCE_DIR}/3rdparty)
 
 set(BT_TESTS
   src/action_test_node.cpp
