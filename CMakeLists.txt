@@ -69,7 +69,7 @@ list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES
 )
 
 if( ZMQ_FOUND )
-    message(STATUS "ZeroMQ found.")
+    message(STATUS "ZeroMQ: found.")
     add_definitions( -DZMQ_FOUND )
     list(APPEND BT_SOURCE src/loggers/bt_zmq_publisher.cpp)
 else()
@@ -172,6 +172,7 @@ list(APPEND BT_SOURCE
 if(BTCPP_MANUAL_SELECTOR)
     find_package(Curses QUIET)
     if(CURSES_FOUND)
+        message(STATUS "NCurses: found.")
         list(APPEND BT_SOURCE src/controls/manual_node.cpp )
     else()
         message(WARNING "NCurses NOT found. Skipping the build of manual selector node.")
@@ -216,25 +217,25 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY}
 
 if(ZMQ_FOUND)
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${ZMQ_LIBRARIES}> )
+        ${ZMQ_LIBRARIES} )
     target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${ZMQ_INCLUDE_DIRS}> )
-    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC ZMQ_FOUND)
+        ${ZMQ_INCLUDE_DIRS} )
+    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE ZMQ_FOUND)
 endif()
 
 if(BT_COROUTINES_FOUND)
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${Boost_LIBRARIES}> )
+        ${Boost_LIBRARIES} )
     target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}> )
+        ${Boost_INCLUDE_DIRS} )
 endif()
 
 if(CURSES_FOUND)
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${CURSES_LIBRARIES}> )
+        ${CURSES_LIBRARIES} )
     target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${CURSES_INCLUDE_DIRS}> )
-    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC NCURSES_FOUND)
+        ${CURSES_INCLUDE_DIRS} )
+    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE NCURSES_FOUND)
 endif()
 
 
@@ -268,10 +269,10 @@ if(ament_cmake_FOUND)
 elseif(catkin_FOUND)
 
     target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${catkin_INCLUDE_DIRS}> )
+        ${catkin_INCLUDE_DIRS} )
 
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        $<BUILD_INTERFACE:${catkin_LIBRARIES}> )
+        ${catkin_LIBRARIES} )
 
     set( BEHAVIOR_TREE_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
     set( BEHAVIOR_TREE_INC_DESTINATION   ${CATKIN_GLOBAL_INCLUDE_DESTINATION} )
