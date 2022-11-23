@@ -19,7 +19,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #---- project configuration ----
 option(BUILD_EXAMPLES   "Build tutorials and examples" ON)
-option(BUILD_SAMPLES    "Build sample nodes" ON)
 option(BUILD_UNIT_TESTS "Build the unit tests" ON)
 option(BUILD_TOOLS "Build commandline tools" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -35,23 +34,22 @@ if(ENABLE_COROUTINES)
         if(NOT Boost_VERSION_NODOT VERSION_LESS 105900)
             message(STATUS "Found boost::coroutine2.")
             add_definitions(-DBT_BOOST_COROUTINE2)
-            set(BT_COROUTINES true)
+            set(BT_COROUTINES_FOUND true)
         elseif(NOT Boost_VERSION_NODOT VERSION_LESS 105300)
             message(STATUS "Found boost::coroutine.")
             add_definitions(-DBT_BOOST_COROUTINE)
-            set(BT_COROUTINES true)
+            set(BT_COROUTINES_FOUND true)
         endif()
-        include_directories(${Boost_INCLUDE_DIRS})
     endif()
 
-    if(NOT DEFINED BT_COROUTINES)
+    if(NOT DEFINED BT_COROUTINES_FOUND)
         message(STATUS "Boost coroutines disabled. Install Boost (version 1.59+ recommended).")
     endif()
 else()
     message(STATUS "Boost coroutines disabled by CMake option.")
 endif()
 
-if(NOT DEFINED BT_COROUTINES)
+if(NOT DEFINED BT_COROUTINES_FOUND)
     add_definitions(-DBT_NO_COROUTINES)
 endif()
 
@@ -59,13 +57,8 @@ endif()
 find_package(Threads)
 find_package(ZMQ)
 
-list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_DL_LIBS}
-)
-
 if( ZMQ_FOUND )
-    message(STATUS "ZeroMQ found.")
+    message(STATUS "ZeroMQ: found.")
     add_definitions( -DZMQ_FOUND )
     list(APPEND BT_SOURCE src/loggers/bt_zmq_publisher.cpp)
 else()
@@ -89,8 +82,6 @@ if ( ament_cmake_FOUND )
     message(STATUS "BehaviourTree is being built using AMENT.")
     message(STATUS "------------------------------------------")
 
-    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
-
 elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 
     set(catkin_FOUND 1)
@@ -107,9 +98,6 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
         LIBRARIES ${BEHAVIOR_TREE_LIBRARY}
         CATKIN_DEPENDS roslib
         )
-
-    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
-    set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 elseif(BUILD_UNIT_TESTS)
     if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
@@ -170,11 +158,8 @@ list(APPEND BT_SOURCE
 if(BUILD_MANUAL_SELECTOR)
     find_package(Curses QUIET)
     if(CURSES_FOUND)
-        list(APPEND BT_SOURCE
-            src/controls/manual_node.cpp
-            )
-        list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${CURSES_LIBRARIES})
-        add_definitions(-DNCURSES_FOUND)
+        message(STATUS "NCurses: found.")
+        list(APPEND BT_SOURCE src/controls/manual_node.cpp )
     else()
         message(WARNING "NCurses NOT found. Skipping the build of manual selector node.")
     endif()
@@ -199,34 +184,47 @@ else()
     add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE})
 endif()
 
-if( ZMQ_FOUND )
-    list(APPEND BUILD_TOOL_INCLUDE_DIRS ${ZMQ_INCLUDE_DIRS})
-endif()
-
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
     PUBLIC
-        ${BEHAVIOR_TREE_PUBLIC_LIBRARIES}
-    PRIVATE
-        $<BUILD_INTERFACE:Boost::coroutine>
-        $<BUILD_INTERFACE:${ZMQ_LIBRARIES}>
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${CMAKE_DL_LIBS}
 )
 
-target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
-
-target_include_directories(${BEHAVIOR_TREE_LIBRARY} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+target_include_directories(${BEHAVIOR_TREE_LIBRARY}
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
+        $<BUILD_INTERFACE:${BTCPP_EXTRA_INCLUDE_DIRS}>
     )
 
-target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
-    $<BUILD_INTERFACE:${BUILD_TOOL_INCLUDE_DIRS}>
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-    )
-
-if( ZMQ_FOUND )
-    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC ZMQ_FOUND)
+if(ZMQ_FOUND)
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${ZMQ_LIBRARIES} )
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${ZMQ_INCLUDE_DIRS} )
+    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE ZMQ_FOUND)
 endif()
+
+if(BT_COROUTINES_FOUND)
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${Boost_LIBRARIES} )
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${Boost_INCLUDE_DIRS} )
+endif()
+
+if(CURSES_FOUND)
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${CURSES_LIBRARIES} )
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${CURSES_INCLUDE_DIRS} )
+    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE NCURSES_FOUND)
+endif()
+
+
+target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
 if(MSVC)
 else()
@@ -242,7 +240,7 @@ if(ament_cmake_FOUND)
         $<BUILD_INTERFACE:${ament_index_cpp_INCLUDE_DIRS}> )
 
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-            $<BUILD_INTERFACE:ament_index_cpp::ament_index_cpp> )
+        $<BUILD_INTERFACE:ament_index_cpp::ament_index_cpp> )
 
     ament_export_dependencies(ament_index_cpp)
 
@@ -254,6 +252,13 @@ if(ament_cmake_FOUND)
     ament_export_libraries(${BEHAVIOR_TREE_LIBRARY})
     ament_package()
 elseif(catkin_FOUND)
+
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${catkin_INCLUDE_DIRS} )
+
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        ${catkin_LIBRARIES} )
+
     set( BEHAVIOR_TREE_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
     set( BEHAVIOR_TREE_INC_DESTINATION   ${CATKIN_GLOBAL_INCLUDE_DESTINATION} )
     set( BEHAVIOR_TREE_BIN_DESTINATION   ${CATKIN_GLOBAL_BIN_DESTINATION} )
@@ -268,16 +273,11 @@ message( STATUS "BEHAVIOR_TREE_LIB_DESTINATION:   ${BEHAVIOR_TREE_LIB_DESTINATIO
 message( STATUS "BEHAVIOR_TREE_BIN_DESTINATION:   ${BEHAVIOR_TREE_BIN_DESTINATION} " )
 message( STATUS "BUILD_UNIT_TESTS:   ${BUILD_UNIT_TESTS} " )
 
-
-######################################################
-# Samples
-if (BUILD_SAMPLES)
-    add_subdirectory(sample_nodes)
-endif()
+add_subdirectory(sample_nodes)
 
 ######################################################
 # Test
-if (BUILD_UNIT_TESTS AND BUILD_SAMPLES)
+if (BUILD_UNIT_TESTS)
     add_subdirectory(tests)
 endif()
 
@@ -307,28 +307,6 @@ install(FILES
     DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
 )
 
-###### Fix back-compatibility problem ##########
-
-INSTALL(TARGETS ${BEHAVIOR_TREE_LIBRARY}
-    EXPORT BehaviorTreeV3Targets
-    ARCHIVE DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${BEHAVIOR_TREE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${BEHAVIOR_TREE_BIN_DESTINATION}
-)
-
-install(EXPORT BehaviorTreeV3Targets
-    FILE "BehaviorTreeV3Targets.cmake"
-    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/BehaviorTreeV3"
-    NAMESPACE BT::
-)
-
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/BehaviorTreeV3Config.cmake"
-    DESTINATION "${BEHAVIOR_TREE_LIB_DESTINATION}/cmake/BehaviorTreeV3"
-)
-
-################################################
-
 export(PACKAGE ${PROJECT_NAME})
 
 include(CMakePackageConfigHelpers)
@@ -346,6 +324,6 @@ if(BUILD_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if(BUILD_EXAMPLES AND BUILD_SAMPLES)
+if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
