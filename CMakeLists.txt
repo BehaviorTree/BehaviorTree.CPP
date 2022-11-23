@@ -63,11 +63,6 @@ endif()
 find_package(Threads)
 find_package(ZMQ)
 
-list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES
-    ${CMAKE_THREAD_LIBS_INIT}
-    ${CMAKE_DL_LIBS}
-)
-
 if( ZMQ_FOUND )
     message(STATUS "ZeroMQ: found.")
     add_definitions( -DZMQ_FOUND )
@@ -200,7 +195,8 @@ endif()
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
     PUBLIC
-        ${BEHAVIOR_TREE_PUBLIC_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${CMAKE_DL_LIBS}
     PRIVATE
         $<BUILD_INTERFACE:foonathan::lexy>
 )
