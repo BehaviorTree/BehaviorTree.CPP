@@ -43,5 +43,5 @@ jobs:
       
     - name: run test (Windows)
       working-directory: ${{github.workspace}}/build
-      run: ./tests/Release/behaviortree_cpp_test
+      run: ctest -C $BUILD_TYPE
       
