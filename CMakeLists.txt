@@ -93,8 +93,6 @@ if ( ament_cmake_FOUND )
     message(STATUS "BehaviourTree is being built using AMENT.")
     message(STATUS "------------------------------------------")
 
-    set(BUILD_TOOL_INCLUDE_DIRS ${ament_INCLUDE_DIRS})
-
 elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
 
     set(catkin_FOUND 1)
@@ -111,9 +109,6 @@ elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
         LIBRARIES ${BEHAVIOR_TREE_LIBRARY}
         CATKIN_DEPENDS roslib
         )
-
-    list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${catkin_LIBRARIES})
-    set(BUILD_TOOL_INCLUDE_DIRS ${catkin_INCLUDE_DIRS})
 
 elseif(BTCPP_UNIT_TESTS)
     if(${CMAKE_VERSION} VERSION_LESS "3.11.0")
@@ -177,11 +172,7 @@ list(APPEND BT_SOURCE
 if(BTCPP_MANUAL_SELECTOR)
     find_package(Curses QUIET)
     if(CURSES_FOUND)
-        list(APPEND BT_SOURCE
-            src/controls/manual_node.cpp
-            )
-        list(APPEND BEHAVIOR_TREE_PUBLIC_LIBRARIES ${CURSES_LIBRARIES})
-        add_definitions(-DNCURSES_FOUND)
+        list(APPEND BT_SOURCE src/controls/manual_node.cpp )
     else()
         message(WARNING "NCurses NOT found. Skipping the build of manual selector node.")
     endif()
@@ -206,15 +197,10 @@ else()
     add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE})
 endif()
 
-if( ZMQ_FOUND )
-    list(APPEND BUILD_TOOL_INCLUDE_DIRS ${ZMQ_INCLUDE_DIRS})
-endif()
-
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
     PUBLIC
         ${BEHAVIOR_TREE_PUBLIC_LIBRARIES}
     PRIVATE
-        $<BUILD_INTERFACE:${ZMQ_LIBRARIES}>
         $<BUILD_INTERFACE:foonathan::lexy>
 )
 
@@ -225,21 +211,34 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY}
     PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
-        $<BUILD_INTERFACE:${BUILD_TOOL_INCLUDE_DIRS}>
+        $<BUILD_INTERFACE:${BTCPP_EXTRA_INCLUDE_DIRS}>
     )
 
-if(DEFINED BT_COROUTINES_FOUND)
+if(ZMQ_FOUND)
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${ZMQ_LIBRARIES}> )
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${ZMQ_INCLUDE_DIRS}> )
+    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC ZMQ_FOUND)
+endif()
+
+if(BT_COROUTINES_FOUND)
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         $<BUILD_INTERFACE:${Boost_LIBRARIES}> )
-target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}> )
 endif()
 
-target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
-
-if( ZMQ_FOUND )
-    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC ZMQ_FOUND)
+if(CURSES_FOUND)
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${CURSES_LIBRARIES}> )
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${CURSES_INCLUDE_DIRS}> )
+    target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PUBLIC NCURSES_FOUND)
 endif()
+
+
+target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 
 if(MSVC)
 else()
@@ -255,7 +254,7 @@ if(ament_cmake_FOUND)
         $<BUILD_INTERFACE:${ament_index_cpp_INCLUDE_DIRS}> )
 
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-            $<BUILD_INTERFACE:ament_index_cpp::ament_index_cpp> )
+        $<BUILD_INTERFACE:ament_index_cpp::ament_index_cpp> )
 
     ament_export_dependencies(ament_index_cpp)
 
@@ -267,6 +266,13 @@ if(ament_cmake_FOUND)
     ament_export_libraries(${BEHAVIOR_TREE_LIBRARY})
     ament_package()
 elseif(catkin_FOUND)
+
+    target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${catkin_INCLUDE_DIRS}> )
+
+    target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${catkin_LIBRARIES}> )
+
     set( BEHAVIOR_TREE_LIB_DESTINATION   ${CATKIN_PACKAGE_LIB_DESTINATION} )
     set( BEHAVIOR_TREE_INC_DESTINATION   ${CATKIN_GLOBAL_INCLUDE_DESTINATION} )
     set( BEHAVIOR_TREE_BIN_DESTINATION   ${CATKIN_GLOBAL_BIN_DESTINATION} )
