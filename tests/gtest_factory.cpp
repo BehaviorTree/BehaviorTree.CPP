@@ -77,7 +77,7 @@ static const char* xml_text_subtree = R"(
 
 static const char* xml_text_subtree_part1 = R"(
 
-<root>
+<root BTCPP_format="4">
   <BehaviorTree ID="MainTree">
     <Fallback name="root_selector">
       <SubTree ID="DoorClosedSubtree" />
@@ -88,7 +88,7 @@ static const char* xml_text_subtree_part1 = R"(
 
 static const char* xml_text_subtree_part2 = R"(
 
-<root>
+<root BTCPP_format="4">
   <BehaviorTree ID="DoorClosedSubtree">
     <Sequence name="door_sequence">
       <Decorator ID="Inverter">
@@ -168,7 +168,7 @@ TEST(BehaviorTreeFactory, Subtree)
 TEST(BehaviorTreeFactory, Issue7)
 {
   const std::string xml_text_issue = R"(
-<root>
+<root BTCPP_format="4">
     <BehaviorTree ID="ReceiveGuest">
     </BehaviorTree>
 </root> )";
@@ -183,7 +183,7 @@ TEST(BehaviorTreeFactory, Issue7)
 
 static const char* xml_ports_subtree = R"(
 
-<root BTCPP_format="4" format="4" main_tree_to_execute="MainTree">
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
 
   <BehaviorTree ID="TalkToMe">
     <Sequence>

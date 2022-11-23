@@ -1,4 +1,4 @@
-<root main_tree_to_execute = "ChildChildNoInclude">
+<root BTCPP_format="4" main_tree_to_execute = "ChildChildNoInclude">
   <BehaviorTree ID="ChildChildNoInclude">
     <AlwaysSuccess />
   </BehaviorTree>
