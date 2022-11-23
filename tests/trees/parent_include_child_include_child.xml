@@ -1,4 +1,4 @@
-<root main_tree_to_execute = "ParentIncludeChildIncludeChild">
+<root BTCPP_format="4" main_tree_to_execute = "ParentIncludeChildIncludeChild">
   <include path="child/child_include_child.xml" />
 
   <BehaviorTree ID="ParentIncludeChildIncludeChild">
