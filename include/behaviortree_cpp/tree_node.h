@@ -79,7 +79,7 @@ struct NodeConfig
 
 #ifdef USE_BTCPP3_OLD_NAMES
 // back compatibility
-using NodeConfig = NodeConfig;
+using NodeConfiguration = NodeConfig;
 #endif
 
 template <typename T>
