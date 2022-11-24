@@ -253,7 +253,10 @@ PortDirection convertFromString<PortDirection>(StringView str)
     return PortDirection::INPUT;
   if (str == "Output" || str == "OUTPUT")
     return PortDirection::OUTPUT;
-  return PortDirection::INOUT;
+  if (str == "InOut" || str == "INOUT")
+    return PortDirection::INOUT;
+  throw RuntimeError(std::string("Cannot convert this to PortDirection: ") +
+                     static_cast<std::string>(str));
 }
 
 std::ostream& operator<<(std::ostream& os, const NodeType& type)

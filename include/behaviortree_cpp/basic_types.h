@@ -292,7 +292,8 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView 
   auto sname = static_cast<std::string>(name);
   if (!IsAllowedPortName(sname))
   {
-    throw RuntimeError("The name of a port must start with an alphabetic character. "
+    throw RuntimeError("The name of a port must not be `name` or `ID` "
+                       "and must start with an alphabetic character. "
                        "Underscore is reserved.");
   }
 
