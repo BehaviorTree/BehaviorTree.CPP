@@ -15,7 +15,6 @@
 
 namespace BT
 {
-constexpr const char* RepeatNode::NUM_CYCLES;
 
 RepeatNode::RepeatNode(const std::string& name, int NTries) :
   DecoratorNode(name, {}),
