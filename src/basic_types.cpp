@@ -290,7 +290,7 @@ std::vector<StringView> splitString(const StringView& strToSplit, char delimeter
     {
       new_pos = strToSplit.size();
     }
-    StringView sv = {&strToSplit.data()[pos], new_pos - pos};
+    const auto sv = StringView{&strToSplit.data()[pos], new_pos - pos};
     splitted_strings.push_back(sv);
     pos = new_pos + 1;
   }
