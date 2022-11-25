@@ -28,12 +28,6 @@ if( BTCPP_ENABLE_COROUTINES AND BT_COROUTINES_FOUND )
     LIST( APPEND BT_TESTS gtest_coroutines.cpp)
 endif()
 
-#if(ament_cmake_FOUND OR catkin_FOUND)
-#    # This test requires gmock. Since we don't have a uniform way to include
-#    # gmock for non-users, it is turned of when build without ros.
-#    list(APPEND BT_TESTS gtest_async_action_node.cpp)
-#endif()
-
 
 if(ament_cmake_FOUND AND BUILD_TESTING)
 
@@ -80,5 +74,15 @@ elseif(BTCPP_UNIT_TESTS)
     add_test(BehaviorTreeCoreTest ${BEHAVIOR_TREE_LIBRARY}_test)
 
 endif()
+
+# if(BUILD_TESTING AND (ament_cmake_FOUND OR catkin_FOUND))
+#    # This test requires gmock. Since we don't have a uniform way to include
+#    # gmock for non-users, it is turned of when build without ros.
+#    list(APPEND BT_TESTS gtest_async_action_node.cpp)
+#    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test
+#         ${BEHAVIOR_TREE_LIBRARY}
+#         gmock
+#     )
+# endif()
 
 target_compile_definitions(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")

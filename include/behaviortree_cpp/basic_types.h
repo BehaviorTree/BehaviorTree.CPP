@@ -201,12 +201,12 @@ using enable_if_not = typename std::enable_if<!Predicate::value>::type*;
  *
  * */
 template <typename T>
-#ifdef USE_BTCPP3_OLD_NAMES
-using Optional = nonstd::expected<T, std::string>;
-// note: we use the name Optional instead of expected because it is more intuitive
-// for users that are not up to date with "modern" C++
-#else
 using Expected = nonstd::expected<T, std::string>;
+#ifdef USE_BTCPP3_OLD_NAMES
+// note: we also use the name Optional instead of expected because it is more intuitive
+// for users that are not up to date with "modern" C++
+template <typename T>
+using Optional = nonstd::expected<T, std::string>;
 #endif
 
 /** Usage: given a function/method like:
