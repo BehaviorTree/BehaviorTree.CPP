@@ -102,9 +102,9 @@ protected:
  *   the result of the method isHaltRequested() and stop your execution accordingly.
  *
  * - in the overriden halt() method, you can do some cleanup, but do not forget to
- *   invoke the base class method AsyncActionNode::halt();
+ *   invoke the base class method ThreadedAction::halt();
  *
- * - remember, with few exceptions, a halted AsyncAction must return NodeStatus::IDLE.
+ * - remember, with few exceptions, a halted ThreadedAction must return NodeStatus::IDLE.
  *
  * For a complete example, look at __AsyncActionTest__ in action_test_node.h in the folder test.
  *
@@ -137,12 +137,12 @@ private:
 };
 
 #ifdef USE_BTCPP3_OLD_NAMES
-using AsyncActionNode = ThreadedActionNode;
+using AsyncActionNode = ThreadedAction;
 #endif
 
 /**
- * @brief The StatefulAsyncAction is the preferred way to implement asynchronous Actions.
- * It is actually easier to use correctly, when compared with AsyncAction
+ * @brief The StatefulActionNode is the preferred way to implement asynchronous Actions.
+ * It is actually easier to use correctly, when compared with ThreadedAction
  *
  * It is particularly useful when your code contains a request-reply pattern,
  * i.e. when the actions sends an asynchronous request, then checks periodically
