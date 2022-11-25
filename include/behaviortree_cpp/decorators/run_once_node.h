@@ -47,8 +47,8 @@ inline NodeStatus RunOnceNode::tick()
   }
   else
   {
+    already_ticked_ = true;
     return child_node_->executeTick();
   }
-  already_ticked_ = true;
 }
 }   // namespace BT
