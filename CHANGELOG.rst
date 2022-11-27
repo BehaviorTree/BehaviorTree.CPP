@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.8.1 (2022-11-27)
+------------------
 * fix catkin installation `#478 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/478>`_
 * cherry picking changes from v4
 * fix `#227 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/227>`_

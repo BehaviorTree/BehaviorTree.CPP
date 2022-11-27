@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>behaviortree_cpp_v3</name>
-  <version>3.8.0</version>
+  <version>3.8.1</version>
   <description>
   This package provides the Behavior Trees core library.
   </description>
