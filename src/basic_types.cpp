@@ -253,7 +253,10 @@ PortDirection convertFromString<PortDirection>(StringView str)
     return PortDirection::INPUT;
   if (str == "Output" || str == "OUTPUT")
     return PortDirection::OUTPUT;
-  return PortDirection::INOUT;
+  if (str == "InOut" || str == "INOUT")
+    return PortDirection::INOUT;
+  throw RuntimeError(std::string("Cannot convert this to PortDirection: ") +
+                     static_cast<std::string>(str));
 }
 
 std::ostream& operator<<(std::ostream& os, const NodeType& type)
@@ -287,7 +290,7 @@ std::vector<StringView> splitString(const StringView& strToSplit, char delimeter
     {
       new_pos = strToSplit.size();
     }
-    StringView sv = {&strToSplit.data()[pos], new_pos - pos};
+    const auto sv = StringView{&strToSplit.data()[pos], new_pos - pos};
     splitted_strings.push_back(sv);
     pos = new_pos + 1;
   }

@@ -201,13 +201,13 @@ using enable_if_not = typename std::enable_if<!Predicate::value>::type*;
  *
  * */
 template <typename T>
-#ifdef USE_BTCPP3_OLD_NAMES
-using Optional = nonstd::expected<T, std::string>;
-#else
 using Expected = nonstd::expected<T, std::string>;
-#endif
-// note: we use the name Optional instead of expected because it is more intuitive
+#ifdef USE_BTCPP3_OLD_NAMES
+// note: we also use the name Optional instead of expected because it is more intuitive
 // for users that are not up to date with "modern" C++
+template <typename T>
+using Optional = nonstd::expected<T, std::string>;
+#endif
 
 /** Usage: given a function/method like:
  *
@@ -292,7 +292,8 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView 
   auto sname = static_cast<std::string>(name);
   if (!IsAllowedPortName(sname))
   {
-    throw RuntimeError("The name of a port must start with an alphabetic character. "
+    throw RuntimeError("The name of a port must not be `name` or `ID` "
+                       "and must start with an alphabetic character. "
                        "Underscore is reserved.");
   }
 
