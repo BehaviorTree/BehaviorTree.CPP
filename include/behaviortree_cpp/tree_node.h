@@ -287,7 +287,7 @@ private:
 
   StatusChangeSignal state_change_signal_;
 
-  const uint16_t uid_;
+  uint16_t uid_ = 0;
 
   NodeConfig config_;
 

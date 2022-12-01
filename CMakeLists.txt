@@ -161,6 +161,7 @@ list(APPEND BT_SOURCE
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_minitrace_logger.cpp
+    src/loggers/bt_observer.cpp
 
     3rdparty/tinyxml2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp

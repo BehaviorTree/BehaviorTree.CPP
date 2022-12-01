@@ -16,16 +16,10 @@
 
 namespace BT
 {
-static uint16_t getUID()
-{
-  static uint16_t uid = 1;
-  return uid++;
-}
 
 TreeNode::TreeNode(std::string name, NodeConfig config) :
   name_(std::move(name)),
   status_(NodeStatus::IDLE),
-  uid_(getUID()),
   config_(std::move(config))
 {}
 

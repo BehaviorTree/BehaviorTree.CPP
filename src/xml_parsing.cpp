@@ -36,6 +36,7 @@
 #endif
 
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_cpp/utils/demangle_util.h"
 
 namespace BT
@@ -52,9 +53,11 @@ struct XMLParser::Pimpl
                                   const Blackboard::Ptr& blackboard,
                                   const TreeNode::Ptr& node_parent);
 
-  void recursivelyCreateTree(const std::string& tree_ID, Tree& output_tree,
-                             Blackboard::Ptr blackboard,
-                             const TreeNode::Ptr& root_parent);
+  void recursivelyCreateSubtree(const std::string& tree_ID,
+                                const std::string &tree_name,
+                                Tree& output_tree,
+                                Blackboard::Ptr blackboard,
+                                const TreeNode::Ptr& root_node);
 
   void getPortsRecursively(const XMLElement* element,
                            std::vector<std::string>& output_ports);
@@ -469,7 +472,7 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
                        "root_blackboard");
   }
 
-  _p->recursivelyCreateTree(main_tree_ID, output_tree, root_blackboard, TreeNode::Ptr());
+  _p->recursivelyCreateSubtree(main_tree_ID, "", output_tree, root_blackboard, TreeNode::Ptr());
   output_tree.initialize();
   return output_tree;
 }
@@ -678,10 +681,11 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   return new_node;
 }
 
-void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
+void BT::XMLParser::Pimpl::recursivelyCreateSubtree(const std::string& tree_ID,
+                                                 const std::string& tree_name,
                                                  Tree& output_tree,
                                                  Blackboard::Ptr blackboard,
-                                                 const TreeNode::Ptr& root_parent)
+                                                 const TreeNode::Ptr& root_node)
 {
   std::function<void(const TreeNode::Ptr&, Tree::Subtree::Ptr, const XMLElement*)>
       recursiveStep;
@@ -753,8 +757,16 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
           }
         }
       }
-      auto subtree_ID = element->Attribute("ID");
-      recursivelyCreateTree(subtree_ID, output_tree, new_bb, node);
+      std::string subtree_ID = element->Attribute("ID");
+      std::string subtree_name;
+      if(auto name = element->Attribute("name") ) {
+        subtree_name = name;
+      }
+      else {
+        subtree_name = subtree_ID + "::" + std::to_string(node->UID());
+      }
+
+      recursivelyCreateSubtree(subtree_ID, subtree_name, output_tree, new_bb, node);
     }
   };
 
@@ -769,10 +781,12 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
   //-------- start recursion -----------
 
   // Append a new subtree to the list
-  output_tree.subtrees.push_back(std::make_shared<Tree::Subtree>());
-  output_tree.subtrees.back()->blackboard = blackboard;
+  auto new_tree = std::make_shared<Tree::Subtree>();
+  new_tree->blackboard = blackboard;
+  new_tree->instance_name = tree_name;
+  output_tree.subtrees.push_back(new_tree);
 
-  recursiveStep(root_parent, output_tree.subtrees.back(), root_element);
+  recursiveStep(root_node, new_tree, root_element);
 }
 
 void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,

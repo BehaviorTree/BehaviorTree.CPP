@@ -27,7 +27,7 @@ CompileExample("t06_subtree_port_remapping")
 CompileExample("t07_load_multiple_xml")
 CompileExample("t08_additional_node_args")
 CompileExample("t09_scripting")
-
+CompileExample("t10_observer")
 
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
