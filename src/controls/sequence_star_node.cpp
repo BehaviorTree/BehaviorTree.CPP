@@ -89,7 +89,7 @@ NodeStatus SequenceWithMemory::tick()
 
 void SequenceWithMemory::halt()
 {
-  // DO NOT reset current_child_idx_ on halt
+  current_child_idx_ = 0;
   ControlNode::halt();
 }
 
