@@ -681,19 +681,23 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   return new_node;
 }
 
-void BT::XMLParser::Pimpl::recursivelyCreateSubtree(const std::string& tree_ID,
-                                                 const std::string& tree_name,
-                                                 Tree& output_tree,
-                                                 Blackboard::Ptr blackboard,
-                                                 const TreeNode::Ptr& root_node)
+void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
+    const std::string& tree_ID,
+    const std::string& tree_name,
+    Tree& output_tree,
+    Blackboard::Ptr blackboard,
+    const TreeNode::Ptr& root_node)
 {
   std::function<void(const TreeNode::Ptr&, Tree::Subtree::Ptr, const XMLElement*)>
       recursiveStep;
 
-  recursiveStep = [&](const TreeNode::Ptr& parent, Tree::Subtree::Ptr subtree,
+  recursiveStep = [&](TreeNode::Ptr parent_node,
+                      Tree::Subtree::Ptr subtree,
                       const XMLElement* element) {
+
     // create the node
-    auto node = createNodeFromXML(element, blackboard, parent);
+    auto node = createNodeFromXML(element, blackboard, parent_node);
+    output_tree.assignUID(*node);
     subtree->nodes.push_back(node);
 
     // common case: iterate through all children
