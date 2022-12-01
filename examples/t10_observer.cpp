@@ -2,10 +2,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/bt_observer.h"
 
-/** This is a more complex example that uses Fallback,
- * Decorators and Subtrees
- *
- * For the sake of simplicity, we aren't focusing on ports remapping to the time being.
+/** Show the use of the TreeObserver.
  */
 
 // clang-format off
