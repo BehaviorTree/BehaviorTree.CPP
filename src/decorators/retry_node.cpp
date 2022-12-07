@@ -65,7 +65,7 @@ NodeStatus RetryNode::tick()
     {
       case NodeStatus::SUCCESS: {
         try_count_ = 0;
-        haltChild();
+        resetChild();
         return (NodeStatus::SUCCESS);
       }
 
@@ -73,7 +73,7 @@ NodeStatus RetryNode::tick()
         try_count_++;
         do_loop = try_count_ < max_attempts_ || max_attempts_ == -1;
 
-        haltChild();
+        resetChild();
 
         // Return the execution flow if the child is async,
         // to make this interruptable.

@@ -13,5 +13,11 @@ BT::NodeStatus BT::SubTreeNode::tick()
   {
     setStatus(NodeStatus::RUNNING);
   }
-  return child_node_->executeTick();
+  auto status = child_node_->executeTick();
+  if(status != NodeStatus::RUNNING)
+  {
+    resetChild();
+  }
+
+  return status;
 }

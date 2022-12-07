@@ -68,6 +68,7 @@ NodeStatus DelayNode::tick()
     {
       delay_started_ = false;
       delay_aborted_ = false;
+      resetChild();
     }
     return child_status;
   }

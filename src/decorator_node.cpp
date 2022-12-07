@@ -31,7 +31,7 @@ void DecoratorNode::setChild(TreeNode* child)
 
 void DecoratorNode::halt()
 {
-  haltChild();
+  resetChild();
 }
 
 const TreeNode* DecoratorNode::child() const
@@ -46,6 +46,11 @@ TreeNode* DecoratorNode::child()
 
 void DecoratorNode::haltChild()
 {
+  resetChild();
+}
+
+void DecoratorNode::resetChild()
+{
   if (!child_node_)
   {
     return;
@@ -56,6 +61,7 @@ void DecoratorNode::haltChild()
   }
   child_node_->resetStatus();
 }
+
 
 SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name,
                                          TickFunctor tick_functor,
