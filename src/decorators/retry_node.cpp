@@ -58,13 +58,13 @@ NodeStatus RetryNode::tick()
     {
       case NodeStatus::SUCCESS: {
         try_count_ = 0;
-        haltChild();
+        resetChild();
         return (NodeStatus::SUCCESS);
       }
 
       case NodeStatus::FAILURE: {
         try_count_++;
-        haltChild();
+        resetChild();
       }
       break;
 

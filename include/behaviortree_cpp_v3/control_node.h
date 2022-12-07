@@ -42,6 +42,7 @@ public:
 
   virtual void halt() override;
 
+  /// same as resetChildren()
   void haltChildren();
 
   [[deprecated("deprecated: please use explicitly haltChildren() or haltChild(i)")]] void
@@ -53,5 +54,9 @@ public:
   {
     return NodeType::CONTROL;
   }
+
+  /// Set the status of all children to IDLE.
+  /// also send a halt() signal to all RUNNING children
+  void resetChildren();
 };
 }   // namespace BT

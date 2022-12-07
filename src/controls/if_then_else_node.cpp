@@ -71,7 +71,7 @@ NodeStatus IfThenElseNode::tick()
     }
     else
     {
-      haltChildren();
+      resetChildren();
       child_idx_ = 0;
       return status;
     }

@@ -24,7 +24,7 @@ public:
   /// The method used to interrupt the execution of this node
   virtual void halt() override;
 
-  /// Halt() the child node
+  /// Same as resetChild()
   void haltChild();
 
   virtual NodeType type() const override
@@ -33,6 +33,10 @@ public:
   }
 
   NodeStatus executeTick() override;
+
+  /// Set the status of the child to IDLE.
+  /// also send a halt() signal to a RUNNING child
+  void resetChild();
 };
 
 /**

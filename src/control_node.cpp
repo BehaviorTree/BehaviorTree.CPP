@@ -31,7 +31,19 @@ size_t ControlNode::childrenCount() const
 
 void ControlNode::halt()
 {
-  haltChildren();
+  resetChildren();
+}
+
+void ControlNode::resetChildren()
+{
+  for (auto child: children_nodes_)
+  {
+    if (child->status() == NodeStatus::RUNNING)
+    {
+      child->halt();
+    }
+    child->resetStatus();
+  }
 }
 
 const std::vector<TreeNode*>& ControlNode::children() const

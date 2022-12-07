@@ -53,13 +53,13 @@ NodeStatus RepeatNode::tick()
     {
       case NodeStatus::SUCCESS: {
         repeat_count_++;
-        haltChild();
+        resetChild();
       }
       break;
 
       case NodeStatus::FAILURE: {
         repeat_count_ = 0;
-        haltChild();
+        resetChild();
         return (NodeStatus::FAILURE);
       }
 

@@ -39,7 +39,7 @@ NodeStatus ReactiveFallback::tick()
       break;
 
       case NodeStatus::SUCCESS: {
-        haltChildren();
+        resetChildren();
         return NodeStatus::SUCCESS;
       }
 
@@ -51,7 +51,7 @@ NodeStatus ReactiveFallback::tick()
 
   if (failure_count == childrenCount())
   {
-    haltChildren();
+    resetChildren();
     return NodeStatus::FAILURE;
   }
 

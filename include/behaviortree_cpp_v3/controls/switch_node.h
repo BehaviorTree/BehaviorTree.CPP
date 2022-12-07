@@ -119,7 +119,7 @@ inline NodeStatus SwitchNode<NUM_CASES>::tick()
   }
   else
   {
-    haltChildren();
+    resetChildren();
     running_child_ = -1;
   }
   return ret;

@@ -62,7 +62,7 @@ NodeStatus WhileDoElseNode::tick()
   }
   else
   {
-    haltChildren();
+    resetChildren();
     return status;
   }
 }
