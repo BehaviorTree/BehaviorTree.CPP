@@ -175,8 +175,13 @@ public:
      */
   void setPostTickOverrideFunction(PostTickOverrideCallback callback);
 
-  // get an unique identifier of this instance of treeNode
+  /// The unique identifier of this instance of treeNode.
+  /// It is assigneld by the factory
   uint16_t UID() const;
+
+  /// Human readable identifier, that includes the hierarchy of Subtrees
+  /// See tutorial 10 as an example.
+  const std::string& fullPath() const;
 
   /// registrationName is the ID used by BehaviorTreeFactory to create an instance.
   const std::string& registrationName() const;
@@ -288,6 +293,8 @@ private:
   StatusChangeSignal state_change_signal_;
 
   uint16_t uid_ = 0;
+
+  std::string full_path_;
 
   NodeConfig config_;
 

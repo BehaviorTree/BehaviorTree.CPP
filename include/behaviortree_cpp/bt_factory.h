@@ -119,17 +119,7 @@ public:
     return *this;
   }
 
-  void initialize()
-  {
-    wake_up_ = std::make_shared<WakeUpSignal>();
-    for (auto& subtree : subtrees)
-    {
-      for (auto& node : subtree->nodes)
-      {
-        node->setWakeUpInstance(wake_up_);
-      }
-    }
-  }
+  void initialize();
 
   void haltTree()
   {
@@ -172,11 +162,8 @@ public:
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(TreeNode*)>& visitor);
 
-  uint16_t assignUID(TreeNode& node) {
-    auto uid =  ++uid_counter_;
-    node.uid_ = uid;
-    return uid;
-  }
+  uint16_t assignUID(TreeNode& node);
+
 
 private:
   std::shared_ptr<WakeUpSignal> wake_up_;

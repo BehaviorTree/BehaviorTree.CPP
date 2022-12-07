@@ -6,50 +6,35 @@ namespace BT
 {
 TreeObserver::TreeObserver(const BT::Tree& tree) : StatusChangeLogger(tree.rootNode())
 {
-  std::function<void(const TreeNode&, std::string)> recursiveStep;
+  std::function<void(const TreeNode&)> recursiveStep;
 
-  recursiveStep = [&](const TreeNode& node, std::string prefix){
-
-
-    if (auto subtree = dynamic_cast<const SubTreeNode*>(&node))
-    {
-      for(auto const& sub: tree.subtrees)
-      {
-        if(sub->nodes.front().get() == subtree->child())
-        {
-          auto sub_prefix = prefix + sub->instance_name;
-          _path_to_uid[sub_prefix] = node.UID();
-          recursiveStep(*subtree->child(), sub_prefix + "/");
-          return;
-        }
-      }
-    }
-
-    auto new_prefix = prefix + node.name();
-    if(node.name() == node.registrationName()) {
-      new_prefix += "::" + std::to_string(node.UID());
-    }
+  recursiveStep = [&](const TreeNode& node){
 
     if (auto control = dynamic_cast<const ControlNode*>(&node))
     {
       for (const auto& child : control->children())
       {
-        recursiveStep(*child, prefix);
+        recursiveStep(*child);
       }
     }
     else if (auto decorator = dynamic_cast<const DecoratorNode*>(&node))
     {
-      recursiveStep(*decorator->child(), prefix);
+      if(decorator->type() != NodeType::SUBTREE)
+      {
+        recursiveStep(*decorator->child());
+      }
     }
 
-    if( _path_to_uid.count(new_prefix) != 0 ) {
+    if( _path_to_uid.count(node.fullPath()) != 0 ) {
       throw LogicError("TreeObserver not built correctly. Report issue");
     }
-    _path_to_uid[new_prefix] = node.UID();
+    _path_to_uid[node.fullPath()] = node.UID();
   };
 
-  recursiveStep(*tree.subtrees.front()->nodes.front(),
-                tree.subtrees.front()->instance_name);
+  for(const auto& subtree: tree.subtrees)
+  {
+    recursiveStep(*subtree->nodes.front());
+  }
 
   for(const auto& [path, uid]: _path_to_uid) {
     _statistics[uid] = {};

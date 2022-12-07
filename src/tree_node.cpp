@@ -206,6 +206,11 @@ uint16_t TreeNode::UID() const
   return uid_;
 }
 
+const std::string &TreeNode::fullPath() const
+{
+  return full_path_;
+}
+
 const std::string& TreeNode::registrationName() const
 {
   return registration_ID_;

@@ -762,12 +762,15 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
         }
       }
       std::string subtree_ID = element->Attribute("ID");
-      std::string subtree_name;
+      std::string subtree_name = subtree->instance_name;
+      if(!subtree_name.empty()) {
+        subtree_name += "/";
+      }
       if(auto name = element->Attribute("name") ) {
-        subtree_name = name;
+        subtree_name +=  name;
       }
       else {
-        subtree_name = subtree_ID + "::" + std::to_string(node->UID());
+        subtree_name += subtree_ID + "::" + std::to_string(node->UID());
       }
 
       recursivelyCreateSubtree(subtree_ID, subtree_name, output_tree, new_bb, node);

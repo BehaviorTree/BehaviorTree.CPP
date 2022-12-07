@@ -355,6 +355,28 @@ void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
   (*scripting_enums_)[std::string(name)] = value;
 }
 
+void Tree::initialize()
+{
+  wake_up_ = std::make_shared<WakeUpSignal>();
+  for (auto& subtree : subtrees)
+  {
+    for (auto& node : subtree->nodes)
+    {
+      node->setWakeUpInstance(wake_up_);
+
+      node->full_path_ = subtree->instance_name;
+      if(!node->full_path_.empty()) {
+        node->full_path_ += "/";
+      }
+      node->full_path_ += node->name();
+
+      if(node->name() == node->registrationName()) {
+        node->full_path_ += "::" + std::to_string(node->UID());
+      }
+    }
+  }
+}
+
 TreeNode* Tree::rootNode() const
 {
   if (subtrees.empty())
@@ -410,6 +432,12 @@ void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
     BT::applyRecursiveVisitor(static_cast<TreeNode*>(subtree->nodes.front().get()),
                               visitor);
   }
+}
+
+uint16_t Tree::assignUID(TreeNode &node) {
+  auto uid =  ++uid_counter_;
+  node.uid_ = uid;
+  return uid;
 }
 
 NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
