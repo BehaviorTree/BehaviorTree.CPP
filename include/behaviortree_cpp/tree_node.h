@@ -248,7 +248,6 @@ public:
       node_ptr->config_ = config;
       return std::unique_ptr<DerivedT>(node_ptr);
     }
-    return {};
   }
 
 protected:
