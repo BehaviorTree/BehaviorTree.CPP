@@ -60,7 +60,7 @@ if(USE_V3_COMPATIBLE_NAMES)
 endif()
 
 #---- Find other packages ----
-find_package(Threads)
+find_package(Threads REQUIRED)
 find_package(ZMQ)
 
 if( ZMQ_FOUND )
@@ -112,10 +112,12 @@ elseif(BTCPP_UNIT_TESTS)
         include(FetchContent)
         FetchContent_Declare(
             googletest
-            URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-            )
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG        release-1.12.1)
         # For Windows: Prevent overriding the parent project's compiler/linker settings
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+        set(BUILD_GTEST ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(googletest)
     endif()
 endif()
@@ -195,7 +197,7 @@ endif()
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
     PUBLIC
-        ${CMAKE_THREAD_LIBS_INIT}
+        Threads::Threads
         ${CMAKE_DL_LIBS}
     PRIVATE
         $<BUILD_INTERFACE:foonathan::lexy>

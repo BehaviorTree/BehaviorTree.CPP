@@ -73,9 +73,16 @@ inline void checkUpperLimit(const From& from)
 template <typename From, typename To>
 inline void checkLowerLimit(const From& from)
 {
-    if (from < std::numeric_limits<To>::min()){
-        throw std::runtime_error("Value outside the lovest numerical limit.");
+  if constexpr (std::is_same<To, bool>::value)
+  {
+    if (from !=0 && from != 1)
+    {
+      throw std::runtime_error("Implicit casting to bool is not allowed");
     }
+  }
+  else if (from < std::numeric_limits<To>::min()){
+    throw std::runtime_error("Value outside the lovest numerical limit.");
+  }
 }
 
 template <typename From, typename To>

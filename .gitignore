@@ -3,6 +3,8 @@
 build*
 site/*
 /.vscode/
+.vs/
 
 # clangd cache
 /.cache/*
+CMakeSettings.json

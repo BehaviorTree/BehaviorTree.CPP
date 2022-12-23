@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
         for (size_t i = 0; i < node->children_uid()->size(); i++)
         {
-            recursiveStep(node->children_uid()->Get(i), indent + 1);
+            recursiveStep(node->children_uid()->Get(uint16_t(i)), indent + 1);
         }
     };
 
