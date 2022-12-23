@@ -40,12 +40,19 @@ int main()
 {
   BT::BehaviorTreeFactory factory;
 
+  factory.registerSimpleAction("DummyAction", [](BT::TreeNode& node){
+    std::cout << "this is a test: "<< node.name() << std::endl;
+    return BT::NodeStatus::SUCCESS;
+  });
+
+  factory.addSubstitutionRule("mysub/action_*", "DummyAction");
+  factory.addSubstitutionRule("last_action", "DummyAction");
+
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
 
   // helper function to print the tree
   BT::printTreeRecursively(tree.rootNode());
-
   BT::TreeObserver observer(tree);
 
   std::map<uint16_t, std::string> ordered_UID_to_path;
@@ -59,6 +66,8 @@ int main()
 
   // Tick multiple times, until action_B is finally ticked.
   const auto& action_B_stats = observer.getStatistics("last_action");
+
+  std::cout << "----------------" << std::endl;
 
   while(action_B_stats.tick_count == 0) {
     tree.tickOnce();

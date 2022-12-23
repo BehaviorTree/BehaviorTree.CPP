@@ -15,6 +15,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/utils/globmatch.hpp"
 
 #ifdef USING_ROS
 #include <ros/package.h>
@@ -246,8 +247,7 @@ void BehaviorTreeFactory::clearRegisteredBehaviorTrees()
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     const std::string& name, const std::string& ID, const NodeConfig& config) const
 {
-  auto it = builders_.find(ID);
-  if (it == builders_.end())
+  auto idNotFound = [this, ID]
   {
     std::cerr << ID << " not included in this list:" << std::endl;
     for (const auto& builder_it : builders_)
@@ -255,9 +255,50 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
       std::cerr << builder_it.first << std::endl;
     }
     throw RuntimeError("BehaviorTreeFactory: ID [", ID, "] not registered");
+  };
+
+  auto it_manifest = manifests_.find(ID);
+  if (it_manifest == manifests_.end())
+  {
+    idNotFound();
+  }
+  auto& manifest = it_manifest->second;
+
+
+  std::string rule;
+  for(const auto& [filter, substitution]: substitution_rules_)
+  {
+    if( filter == name || filter == ID || glob::match(filter, config.path))
+    {
+      rule = substitution;
+      break;
+    }
   }
 
-  std::unique_ptr<TreeNode> node = it->second(name, config);
+  std::unique_ptr<TreeNode> node;
+
+  if(rule.empty())
+  {
+    auto it_builder = builders_.find(ID);
+    if (it_builder == builders_.end())
+    {
+      idNotFound();
+    }
+    auto& builder = it_builder->second;
+    node = builder(name, config);
+  }
+  else {
+    auto it_builder = builders_.find(rule);
+    if (it_builder != builders_.end())
+    {
+      auto& builder = it_builder->second;
+      node = builder(name, config);
+    }
+    else{
+      throw RuntimeError("Substitution rule not found");
+    }
+  }
+
   node->setRegistrationID(ID);
   node->config_.enums = scripting_enums_;
 
@@ -355,6 +396,16 @@ void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
   (*scripting_enums_)[std::string(name)] = value;
 }
 
+void BehaviorTreeFactory::clearSubstitutionRules()
+{
+  substitution_rules_.clear();
+}
+
+void BehaviorTreeFactory::addSubstitutionRule(StringView filter, StringView substitution)
+{
+  substitution_rules_[std::string(filter)] = substitution;
+}
+
 void Tree::initialize()
 {
   wake_up_ = std::make_shared<WakeUpSignal>();
@@ -364,15 +415,15 @@ void Tree::initialize()
     {
       node->setWakeUpInstance(wake_up_);
 
-      node->full_path_ = subtree->instance_name;
-      if(!node->full_path_.empty()) {
-        node->full_path_ += "/";
-      }
-      node->full_path_ += node->name();
+//      node->full_path_ = subtree->instance_name;
+//      if(!node->full_path_.empty()) {
+//        node->full_path_ += "/";
+//      }
+//      node->full_path_ += node->name();
 
-      if(node->name() == node->registrationName()) {
-        node->full_path_ += "::" + std::to_string(node->UID());
-      }
+//      if(node->name() == node->registrationName()) {
+//        node->full_path_ += "::" + std::to_string(node->UID());
+//      }
     }
   }
 }
@@ -434,9 +485,8 @@ void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
   }
 }
 
-uint16_t Tree::assignUID(TreeNode &node) {
+uint16_t Tree::getUID() {
   auto uid =  ++uid_counter_;
-  node.uid_ = uid;
   return uid;
 }
 

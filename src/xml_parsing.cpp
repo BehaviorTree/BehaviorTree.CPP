@@ -51,10 +51,13 @@ struct XMLParser::Pimpl
 {
   TreeNode::Ptr createNodeFromXML(const XMLElement* element,
                                   const Blackboard::Ptr& blackboard,
-                                  const TreeNode::Ptr& node_parent);
+                                  const TreeNode::Ptr& node_parent,
+                                  const std::string &prefix_path,
+                                  Tree& output_tree);
 
   void recursivelyCreateSubtree(const std::string& tree_ID,
                                 const std::string &tree_name,
+                                const std::string &prefix_path,
                                 Tree& output_tree,
                                 Blackboard::Ptr blackboard,
                                 const TreeNode::Ptr& root_node);
@@ -472,7 +475,8 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
                        "root_blackboard");
   }
 
-  _p->recursivelyCreateSubtree(main_tree_ID, "", output_tree, root_blackboard, TreeNode::Ptr());
+  _p->recursivelyCreateSubtree(main_tree_ID, {}, {},
+                               output_tree, root_blackboard, TreeNode::Ptr());
   output_tree.initialize();
   return output_tree;
 }
@@ -484,7 +488,9 @@ void XMLParser::clearInternalState()
 
 TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
                                                   const Blackboard::Ptr& blackboard,
-                                                  const TreeNode::Ptr& node_parent)
+                                                  const TreeNode::Ptr& node_parent,
+                                                  const std::string& prefix_path,
+                                                  Tree& output_tree)
 {
   auto element_name = element->Name();
   auto element_ID = element->Attribute("ID");
@@ -539,33 +545,39 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   }
   NodeConfig config;
   config.blackboard = blackboard;
+  config.path = prefix_path + instance_name;
+  config.uid = output_tree.getUID();
 
-  //---------------------------------------------
-  auto AddPrePostConditions = [&](auto& config) {
-    auto AddCondition = [&](auto& conditions, const char* attr_name, auto ID) {
-      if (auto script = element->Attribute(attr_name))
-      {
-        conditions.insert({ID, std::string(script)});
-      }
-    };
-    AddCondition(config.pre_conditions, "_successIf", PreCond::SUCCESS_IF);
-    AddCondition(config.pre_conditions, "_failureIf", PreCond::FAILURE_IF);
-    AddCondition(config.pre_conditions, "_skipIf", PreCond::SKIP_IF);
-    AddCondition(config.pre_conditions, "_while", PreCond::WHILE_TRUE);
+  if(type_ID == instance_name)
+  {
+    config.path += std::string("::") + std::to_string(config.uid);
+  }
 
-    AddCondition(config.post_conditions, "_onSuccess", PostCond::ON_SUCCESS);
-    AddCondition(config.post_conditions, "_onFailure", PostCond::ON_FAILURE);
-    AddCondition(config.post_conditions, "_onHalted", PostCond::ON_HALTED);
-    AddCondition(config.post_conditions, "_post", PostCond::ALWAYS);
+  auto AddCondition = [&](auto& conditions, const char* attr_name, auto ID) {
+    if (auto script = element->Attribute(attr_name))
+    {
+      conditions.insert({ID, std::string(script)});
+    }
   };
+
+  AddCondition(config.pre_conditions, "_successIf", PreCond::SUCCESS_IF);
+  AddCondition(config.pre_conditions, "_failureIf", PreCond::FAILURE_IF);
+  AddCondition(config.pre_conditions, "_skipIf", PreCond::SKIP_IF);
+  AddCondition(config.pre_conditions, "_while", PreCond::WHILE_TRUE);
+
+  AddCondition(config.post_conditions, "_onSuccess", PostCond::ON_SUCCESS);
+  AddCondition(config.post_conditions, "_onFailure", PostCond::ON_FAILURE);
+  AddCondition(config.post_conditions, "_onHalted", PostCond::ON_HALTED);
+  AddCondition(config.post_conditions, "_post", PostCond::ALWAYS);
 
   //---------------------------------------------
   TreeNode::Ptr new_node;
 
   if (node_type == NodeType::SUBTREE)
   {
-    AddPrePostConditions(config);
-    new_node = factory.instantiateTreeNode(instance_name, toStr(NodeType::SUBTREE), config);
+    new_node = factory.instantiateTreeNode(instance_name,
+                                           toStr(NodeType::SUBTREE),
+                                           config);
   }
   else
   {
@@ -661,7 +673,6 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
       }
     }
 
-    AddPrePostConditions(config);
     new_node = factory.instantiateTreeNode(instance_name, type_ID, config);
   }
 
@@ -684,20 +695,21 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
 void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
     const std::string& tree_ID,
     const std::string& tree_name,
+    const std::string& prefix_path,
     Tree& output_tree,
     Blackboard::Ptr blackboard,
     const TreeNode::Ptr& root_node)
 {
-  std::function<void(const TreeNode::Ptr&, Tree::Subtree::Ptr, const XMLElement*)>
+  std::function<void(const TreeNode::Ptr&, Tree::Subtree::Ptr, std::string, const XMLElement*)>
       recursiveStep;
 
   recursiveStep = [&](TreeNode::Ptr parent_node,
                       Tree::Subtree::Ptr subtree,
+                      std::string prefix,
                       const XMLElement* element) {
 
     // create the node
-    auto node = createNodeFromXML(element, blackboard, parent_node);
-    output_tree.assignUID(*node);
+    auto node = createNodeFromXML(element, blackboard, parent_node, prefix, output_tree);
     subtree->nodes.push_back(node);
 
     // common case: iterate through all children
@@ -706,7 +718,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
       for (auto child_element = element->FirstChildElement(); child_element;
            child_element = child_element->NextSiblingElement())
       {
-        recursiveStep(node, subtree, child_element);
+        recursiveStep(node, subtree, prefix, child_element);
       }
     }
     else   // special case: SubTreeNode
@@ -773,7 +785,10 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
         subtree_name += subtree_ID + "::" + std::to_string(node->UID());
       }
 
-      recursivelyCreateSubtree(subtree_ID, subtree_name, output_tree, new_bb, node);
+      recursivelyCreateSubtree(subtree_ID,
+                               subtree_name, // name
+                               subtree_name + "/",  //prefix
+                               output_tree, new_bb, node);
     }
   };
 
@@ -793,7 +808,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
   new_tree->instance_name = tree_name;
   output_tree.subtrees.push_back(new_tree);
 
-  recursiveStep(root_node, new_tree, root_element);
+  recursiveStep(root_node, new_tree, prefix_path, root_element);
 }
 
 void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,

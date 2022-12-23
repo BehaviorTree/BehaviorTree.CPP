@@ -287,7 +287,8 @@ private:
 };
 
 template <typename T = PortInfo::AnyTypeAllowed>
-std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView name,
+std::pair<std::string, PortInfo> CreatePort(PortDirection direction,
+                                            StringView name,
                                             StringView description = {})
 {
   auto sname = static_cast<std::string>(name);

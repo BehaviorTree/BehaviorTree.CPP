@@ -38,6 +38,7 @@ TreeObserver::TreeObserver(const BT::Tree& tree) : StatusChangeLogger(tree.rootN
 
   for(const auto& [path, uid]: _path_to_uid) {
     _statistics[uid] = {};
+    _uid_to_path[uid] = path;
   }
 }
 
@@ -92,6 +93,11 @@ const std::unordered_map<uint16_t, TreeObserver::NodeStatistics> &TreeObserver::
 
 const std::unordered_map<std::string, uint16_t> &TreeObserver::pathToUID() const {
   return _path_to_uid;
+}
+
+const std::map<uint16_t, std::string> &TreeObserver::uidToPath() const
+{
+  return _uid_to_path;
 }
 
 

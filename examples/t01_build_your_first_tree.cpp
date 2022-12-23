@@ -1,10 +1,5 @@
 #include "behaviortree_cpp/bt_factory.h"
-
-//#define MANUAL_STATIC_LINKING
-
-#ifdef MANUAL_STATIC_LINKING
 #include "dummy_nodes.h"
-#endif
 
 using namespace BT;
 
@@ -46,7 +41,6 @@ int main()
     *    - dynamically, loading the TreeNodes from a shared library (plugin).
     * */
 
-#ifdef MANUAL_STATIC_LINKING
   // Note: the name used to register should be the same used in the XML.
   // Note that the same operations could be done using DummyNodes::RegisterNodes(factory)
 
@@ -67,12 +61,6 @@ int main()
                                std::bind(&GripperInterface::open, &gripper));
   factory.registerSimpleAction("CloseGripper",
                                std::bind(&GripperInterface::close, &gripper));
-
-#else
-  // Load dynamically a plugin and register the TreeNodes it contains
-  // it automated the registering step.
-  factory.registerFromPlugin("./libdummy_nodes_dyn.so");
-#endif
 
   // Trees are created at deployment-time (i.e. at run-time, but only once at the beginning).
   // The currently supported format is XML.

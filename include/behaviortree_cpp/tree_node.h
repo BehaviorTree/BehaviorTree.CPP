@@ -69,10 +69,22 @@ struct NodeConfig
   NodeConfig()
   {}
 
+  // Pointer to the blackboard used by this node
   Blackboard::Ptr blackboard;
+  // List of enums available for scripting
   std::shared_ptr<ScriptingEnumsRegistry> enums;
+  // input ports
   PortsRemapping input_ports;
+  // output ports
   PortsRemapping output_ports;
+
+  // Numberic unique identifier
+  uint16_t uid = 0;
+  // Unique human-readable name, that encapsulate the subtree
+  // hierarchy, for instance, given 2 nested trees, it should be:
+  //
+  //   main_tree/nested_tree/my_action
+  std::string path;
 
   std::map<PreCond, std::string> pre_conditions;
   std::map<PostCond, std::string> post_conditions;
@@ -291,10 +303,6 @@ private:
   mutable std::mutex state_mutex_;
 
   StatusChangeSignal state_change_signal_;
-
-  uint16_t uid_ = 0;
-
-  std::string full_path_;
 
   NodeConfig config_;
 

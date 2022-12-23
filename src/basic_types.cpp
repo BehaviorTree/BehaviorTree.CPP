@@ -363,6 +363,10 @@ std::optional<std::string> PortInfo::defaultValue() const
 
 bool IsAllowedPortName(StringView str)
 {
+  if( str == "_autoremap")
+  {
+    return true;
+  }
   if (str.empty())
   {
     return false;

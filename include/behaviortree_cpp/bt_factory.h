@@ -40,7 +40,7 @@ inline NodeBuilder CreateBuilder(Args... args)
 }
 
 template <typename T>
-inline TreeNodeManifest CreateManifest(const std::string& ID, 
+inline TreeNodeManifest CreateManifest(const std::string& ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
   return {getType<T>(), ID, portlist, {}};
@@ -162,7 +162,7 @@ public:
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(TreeNode*)>& visitor);
 
-  uint16_t assignUID(TreeNode& node);
+  uint16_t getUID();
 
 
 private:
@@ -410,6 +410,10 @@ public:
     }
   }
 
+  void clearSubstitutionRules();
+
+  void addSubstitutionRule(StringView filter, StringView substitution);
+
 private:
   std::unordered_map<std::string, NodeBuilder> builders_;
   std::unordered_map<std::string, TreeNodeManifest> manifests_;
@@ -419,7 +423,9 @@ private:
   std::shared_ptr<std::unordered_map<std::string, int>> scripting_enums_;
 
   std::shared_ptr<BT::Parser> parser_;
-  // clang-format on
+
+  std::unordered_map<std::string, std::string> substitution_rules_;
+
 };
 
 }   // namespace BT

@@ -203,12 +203,12 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 
 uint16_t TreeNode::UID() const
 {
-  return uid_;
+  return config_.uid;
 }
 
 const std::string &TreeNode::fullPath() const
 {
-  return full_path_;
+  return config_.path;
 }
 
 const std::string& TreeNode::registrationName() const
