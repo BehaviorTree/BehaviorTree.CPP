@@ -28,6 +28,12 @@ struct _cfl : token_base<_cfl<Literal, CaseFolding>>, _lit_base
 
     using lit_case_folding = _cfl_folding<CaseFolding>;
 
+    template <typename Encoding>
+    static constexpr auto lit_first_char() -> typename Encoding::char_type
+    {
+        return Literal::template lit_first_char<Encoding>();
+    }
+
     template <typename Trie>
     static LEXY_CONSTEVAL std::size_t lit_insert(Trie& trie, std::size_t pos,
                                                  std::size_t char_class)

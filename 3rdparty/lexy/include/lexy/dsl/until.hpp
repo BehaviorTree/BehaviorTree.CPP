@@ -4,11 +4,35 @@
 #ifndef LEXY_DSL_UNTIL_HPP_INCLUDED
 #define LEXY_DSL_UNTIL_HPP_INCLUDED
 
+#include <lexy/_detail/swar.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/token.hpp>
 
 namespace lexyd
 {
+struct _nl;
+
+template <typename Condition, typename Reader>
+constexpr void _until_swar([[maybe_unused]] Reader& reader)
+{
+    if constexpr (std::is_same_v<Condition, _nl> //
+                  && lexy::_detail::is_swar_reader<Reader>)
+    {
+        // We use SWAR to skip characters until we have one that is <= 0xF or EOF.
+        // Then we need to inspect it in more detail.
+        using char_type = typename Reader::encoding::char_type;
+
+        while (true)
+        {
+            auto cur = reader.peek_swar();
+            if (lexy::_detail::swar_has_char<char_type, Reader::encoding::eof()>(cur)
+                || lexy::_detail::swar_has_char_less<char_type, 0xF>(cur))
+                break;
+            reader.bump_swar();
+        }
+    }
+}
+
 template <typename Condition>
 struct _until_eof : token_base<_until_eof<Condition>, unconditional_branch_base>
 {
@@ -23,6 +47,8 @@ struct _until_eof : token_base<_until_eof<Condition>, unconditional_branch_base>
         {
             while (true)
             {
+                _until_swar<Condition>(reader);
+
                 // Check whether we've reached the end of the input or the condition.
                 // Note that we're checking for EOF before the condition.
                 // This is a potential optimization: as we're accepting EOF anyway, we don't need to
@@ -58,6 +84,8 @@ struct _until : token_base<_until<Condition>>
         {
             while (true)
             {
+                _until_swar<Condition>(reader);
+
                 // Try to parse the condition.
                 if (lexy::try_match_token(Condition{}, reader))
                 {
@@ -67,8 +95,8 @@ struct _until : token_base<_until<Condition>>
                 }
 
                 // Check whether we've reached the end of the input.
-                // We need to do it after checking for condition, as the condition might just accept
-                // EOF.
+                // We need to do it after checking for condition, as the condition might just
+                // accept EOF.
                 if (reader.peek() == Reader::encoding::eof())
                 {
                     // It did, so we did not succeed.

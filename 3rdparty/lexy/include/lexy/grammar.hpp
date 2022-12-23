@@ -330,7 +330,7 @@ public:
     {
         if constexpr (lexy::is_callback_for<_type, Args&&...>)
         {
-            if constexpr (lexy::is_callback_state<_type, ParseState>)
+            if constexpr (!std::is_void_v<ParseState> && lexy::is_callback_state<_type, ParseState>)
                 return _get_value(_state)[*_state](LEXY_FWD(args)...);
             else
                 return _get_value(_state)(LEXY_FWD(args)...);

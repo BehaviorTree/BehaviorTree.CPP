@@ -4,12 +4,15 @@
 #ifndef LEXY_DSL_DIGIT_HPP_INCLUDED
 #define LEXY_DSL_DIGIT_HPP_INCLUDED
 
+#include <lexy/_detail/swar.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/char_class.hpp>
 #include <lexy/dsl/literal.hpp>
 #include <lexy/dsl/token.hpp>
 
 //=== bases ===//
+// SWAR matching code adapted from:
+// https://lemire.me/blog/2018/09/30/quickly-identifying-a-sequence-of-digits-in-a-string-of-characters/
 namespace lexyd
 {
 template <int Radix>
@@ -37,6 +40,16 @@ struct _d<2> : char_class_base<_d<2>>
     {
         return static_cast<unsigned>(c) - '0';
     }
+
+    template <typename CharT>
+    static constexpr bool swar_matches(lexy::_detail::swar_int c)
+    {
+        constexpr auto mask     = lexy::_detail::swar_fill_compl(CharT(0xF));
+        constexpr auto expected = lexy::_detail::swar_fill(CharT(0x30));
+        constexpr auto offset   = lexy::_detail::swar_fill(CharT(0x0E));
+
+        return (c & mask) == expected && ((c + offset) & mask) == expected;
+    }
 };
 using binary = _d<2>;
 
@@ -61,6 +74,16 @@ struct _d<8> : char_class_base<_d<8>>
     static constexpr unsigned digit_value(CharT c)
     {
         return static_cast<unsigned>(c) - '0';
+    }
+
+    template <typename CharT>
+    static constexpr bool swar_matches(lexy::_detail::swar_int c)
+    {
+        constexpr auto mask     = lexy::_detail::swar_fill_compl(CharT(0xF));
+        constexpr auto expected = lexy::_detail::swar_fill(CharT(0x30));
+        constexpr auto offset   = lexy::_detail::swar_fill(CharT(0x08));
+
+        return (c & mask) == expected && ((c + offset) & mask) == expected;
     }
 };
 using octal = _d<8>;
@@ -87,8 +110,90 @@ struct _d<10> : char_class_base<_d<10>>
     {
         return static_cast<unsigned>(c) - '0';
     }
+
+    template <typename CharT>
+    static constexpr bool swar_matches(lexy::_detail::swar_int c)
+    {
+        constexpr auto mask     = lexy::_detail::swar_fill_compl(CharT(0xF));
+        constexpr auto expected = lexy::_detail::swar_fill(CharT(0x30));
+        constexpr auto offset   = lexy::_detail::swar_fill(CharT(0x06));
+
+        return (c & mask) == expected && ((c + offset) & mask) == expected;
+    }
 };
 using decimal = _d<10>;
+
+struct hex_lower : char_class_base<hex_lower>
+{
+    static LEXY_CONSTEVAL auto char_class_name()
+    {
+        return "digit.hex-lower";
+    }
+
+    static LEXY_CONSTEVAL auto char_class_ascii()
+    {
+        lexy::_detail::ascii_set result;
+        result.insert('0', '9');
+        result.insert('a', 'f');
+        return result;
+    }
+
+    static constexpr unsigned digit_radix = 16;
+
+    template <typename CharT>
+    static constexpr unsigned digit_value(CharT c)
+    {
+        if (c >= 'a')
+            return static_cast<unsigned>(c) - 'a' + 10;
+        else if (c <= '9')
+            return static_cast<unsigned>(c) - '0';
+        else
+            return unsigned(-1);
+    }
+
+    template <typename CharT>
+    static constexpr bool swar_matches(lexy::_detail::swar_int c)
+    {
+        // False negative for hex digits, but that's okay.
+        return _d<10>::swar_matches<CharT>(c);
+    }
+};
+
+struct hex_upper : char_class_base<hex_upper>
+{
+    static LEXY_CONSTEVAL auto char_class_name()
+    {
+        return "digit.hex-upper";
+    }
+
+    static LEXY_CONSTEVAL auto char_class_ascii()
+    {
+        lexy::_detail::ascii_set result;
+        result.insert('0', '9');
+        result.insert('A', 'F');
+        return result;
+    }
+
+    static constexpr unsigned digit_radix = 16;
+
+    template <typename CharT>
+    static constexpr unsigned digit_value(CharT c)
+    {
+        if (c >= 'A')
+            return static_cast<unsigned>(c) - 'A' + 10;
+        else if (c <= '9')
+            return static_cast<unsigned>(c) - '0';
+        else
+            return unsigned(-1);
+    }
+
+    template <typename CharT>
+    static constexpr bool swar_matches(lexy::_detail::swar_int c)
+    {
+        // False negative for hex digits, but that's okay.
+        return _d<10>::swar_matches<CharT>(c);
+    }
+};
 
 template <>
 struct _d<16> : char_class_base<_d<16>>
@@ -121,66 +226,15 @@ struct _d<16> : char_class_base<_d<16>>
         else
             return unsigned(-1);
     }
+
+    template <typename CharT>
+    static constexpr bool swar_matches(lexy::_detail::swar_int c)
+    {
+        // False negative for hex digits, but that's okay.
+        return _d<10>::swar_matches<CharT>(c);
+    }
 };
 using hex = _d<16>;
-
-struct hex_lower : char_class_base<hex_lower>
-{
-    static LEXY_CONSTEVAL auto char_class_name()
-    {
-        return "digit.hex-lower";
-    }
-
-    static LEXY_CONSTEVAL auto char_class_ascii()
-    {
-        lexy::_detail::ascii_set result;
-        result.insert('0', '9');
-        result.insert('a', 'f');
-        return result;
-    }
-
-    static constexpr unsigned digit_radix = 16;
-
-    template <typename CharT>
-    static constexpr unsigned digit_value(CharT c)
-    {
-        if (c >= 'a')
-            return static_cast<unsigned>(c) - 'a' + 10;
-        else if (c <= '9')
-            return static_cast<unsigned>(c) - '0';
-        else
-            return unsigned(-1);
-    }
-};
-
-struct hex_upper : char_class_base<hex_upper>
-{
-    static LEXY_CONSTEVAL auto char_class_name()
-    {
-        return "digit.hex-upper";
-    }
-
-    static LEXY_CONSTEVAL auto char_class_ascii()
-    {
-        lexy::_detail::ascii_set result;
-        result.insert('0', '9');
-        result.insert('A', 'F');
-        return result;
-    }
-
-    static constexpr unsigned digit_radix = 16;
-
-    template <typename CharT>
-    static constexpr unsigned digit_value(CharT c)
-    {
-        if (c >= 'A')
-            return static_cast<unsigned>(c) - 'A' + 10;
-        else if (c <= '9')
-            return static_cast<unsigned>(c) - '0';
-        else
-            return unsigned(-1);
-    }
-};
 } // namespace lexyd
 
 //=== digit ===//
@@ -236,6 +290,65 @@ struct forbidden_leading_zero
 
 namespace lexyd
 {
+template <typename Base, typename Reader>
+constexpr bool _match_digits(Reader& reader)
+{
+    // Need at least one digit.
+    // Checking for a single digit is also cheaper than doing a SWAR comparison,
+    // so we do that manually in either case.
+    if (!lexy::try_match_token(digit<Base>, reader))
+        return false;
+
+    // Now we consume as many digits as possible.
+    // First using SWAR...
+    if constexpr (lexy::_detail::is_swar_reader<Reader>)
+    {
+        using char_type = typename Reader::encoding::char_type;
+        while (Base::template swar_matches<char_type>(reader.peek_swar()))
+            reader.bump_swar();
+    }
+
+    // ... then manually to get any trailing digits.
+    while (lexy::try_match_token(digit<Base>, reader))
+    {}
+
+    return true;
+}
+template <typename Base, typename Sep, typename Reader>
+constexpr bool _match_digits_sep(Reader& reader)
+{
+    // Need at least one digit.
+    if (!lexy::try_match_token(digit<Base>, reader))
+        return false;
+
+    // Might have following digits.
+    while (true)
+    {
+        if (lexy::try_match_token(Sep{}, reader))
+        {
+            // Need a digit after a separator.
+            if (!lexy::try_match_token(digit<Base>, reader))
+                return false;
+        }
+        else
+        {
+            // Attempt to consume as many digits as possible.
+            if constexpr (lexy::_detail::is_swar_reader<Reader>)
+            {
+                using char_type = typename Reader::encoding::char_type;
+                while (Base::template swar_matches<char_type>(reader.peek_swar()))
+                    reader.bump_swar();
+            }
+
+            if (!lexy::try_match_token(digit<Base>, reader))
+                // If we're not having a digit, we're done.
+                break;
+        }
+    }
+
+    return true;
+}
+
 template <typename Base, typename Sep>
 struct _digits_st : token_base<_digits_st<Base, Sep>>
 {
@@ -251,52 +364,20 @@ struct _digits_st : token_base<_digits_st<Base, Sep>>
 
         constexpr bool try_parse(Reader reader)
         {
-            // Check for a zero that is followed by a digit or separator.
-            if (reader.peek() == lexy::_detail::transcode_int<typename Reader::encoding>('0'))
-            {
-                reader.bump();
-                end = reader.position();
+            using char_type = typename Reader::encoding::char_type;
+            auto begin      = reader.position();
+            auto result     = _match_digits_sep<Base, Sep>(reader);
+            end             = reader.position();
 
-                if (lexy::try_match_token(digit<Base>, reader)
-                    || lexy::try_match_token(Sep{}, reader))
-                {
-                    forbidden_leading_zero = true;
-                    return false;
-                }
-
-                // Just zero.
-                return true;
-            }
-            // Need at least one digit.
-            else if (!lexy::try_match_token(digit<Base>, reader))
+            if (result && lexy::_detail::next(begin) != end
+                && *begin == lexy::_detail::transcode_char<char_type>('0'))
             {
-                end                    = reader.position();
-                forbidden_leading_zero = false;
+                end                    = lexy::_detail::next(begin);
+                forbidden_leading_zero = true;
                 return false;
             }
 
-            // Might have following digits.
-            while (true)
-            {
-                if (lexy::try_match_token(Sep{}, reader))
-                {
-                    // Need a digit after a separator.
-                    if (!lexy::try_match_token(digit<Base>, reader))
-                    {
-                        end                    = reader.position();
-                        forbidden_leading_zero = false;
-                        return false;
-                    }
-                }
-                else if (!lexy::try_match_token(digit<Base>, reader))
-                {
-                    // If we're not having a digit, we're done.
-                    break;
-                }
-            }
-
-            end = reader.position();
-            return true;
+            return result;
         }
 
         template <typename Context>
@@ -330,34 +411,9 @@ struct _digits_s : token_base<_digits_s<Base, Sep>>
 
         constexpr bool try_parse(Reader reader)
         {
-            // Need at least one digit.
-            if (!lexy::try_match_token(digit<Base>, reader))
-            {
-                end = reader.position();
-                return false;
-            }
-
-            // Might have following digits.
-            while (true)
-            {
-                if (lexy::try_match_token(Sep{}, reader))
-                {
-                    // Need a digit after a separator.
-                    if (!lexy::try_match_token(digit<Base>, reader))
-                    {
-                        end = reader.position();
-                        return false;
-                    }
-                }
-                else if (!lexy::try_match_token(digit<Base>, reader))
-                {
-                    // If we're not having a digit, we're done.
-                    break;
-                }
-            }
-
-            end = reader.position();
-            return true;
+            auto result = _match_digits_sep<Base, Sep>(reader);
+            end         = reader.position();
+            return result;
         }
 
         template <typename Context>
@@ -389,35 +445,20 @@ struct _digits_t : token_base<_digits_t<Base>>
 
         constexpr bool try_parse(Reader reader)
         {
-            // Check for a zero that is followed by a digit.
-            if (reader.peek() == lexy::_detail::transcode_int<typename Reader::encoding>('0'))
+            using char_type = typename Reader::encoding::char_type;
+            auto begin      = reader.position();
+            auto result     = _match_digits<Base>(reader);
+            end             = reader.position();
+
+            if (result && lexy::_detail::next(begin) != end
+                && *begin == lexy::_detail::transcode_char<char_type>('0'))
             {
-                reader.bump();
-                end = reader.position();
-
-                if (lexy::try_match_token(digit<Base>, reader))
-                {
-                    forbidden_leading_zero = true;
-                    return false;
-                }
-
-                // Just zero.
-                return true;
-            }
-
-            // Need at least one digit.
-            if (!lexy::try_match_token(digit<Base>, reader))
-            {
-                forbidden_leading_zero = false;
+                end                    = lexy::_detail::next(begin);
+                forbidden_leading_zero = true;
                 return false;
             }
 
-            // Might have more than one digit afterwards.
-            while (lexy::try_match_token(digit<Base>, reader))
-            {}
-
-            end = reader.position();
-            return true;
+            return result;
         }
 
         template <typename Context>
@@ -458,16 +499,9 @@ struct _digits : token_base<_digits<Base>>
 
         constexpr bool try_parse(Reader reader)
         {
-            // Need at least one digit.
-            if (!lexy::try_match_token(digit<Base>, reader))
-                return false;
-
-            // Might have more than one digit afterwards.
-            while (lexy::try_match_token(digit<Base>, reader))
-            {}
-
-            end = reader.position();
-            return true;
+            auto result = _match_digits<Base>(reader);
+            end         = reader.position();
+            return result;
         }
 
         template <typename Context>

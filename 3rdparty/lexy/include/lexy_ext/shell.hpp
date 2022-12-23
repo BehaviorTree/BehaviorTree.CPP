@@ -242,7 +242,7 @@ public:
     class writer
     {
     public:
-        writer(const writer&) = delete;
+        writer(const writer&)            = delete;
         writer& operator=(const writer&) = delete;
 
         ~writer() noexcept
@@ -400,8 +400,8 @@ using shell_lexeme = lexy::lexeme_for<shell<Prompt>>;
 template <typename Tag, typename Prompt = default_prompt<>>
 using shell_error = lexy::error_for<shell<Prompt>, Tag>;
 
-template <typename Production, typename Prompt = default_prompt<>>
-using shell_error_context = lexy::error_context<Production, shell<Prompt>>;
+template <typename Prompt = default_prompt<>>
+using shell_error_context = lexy::error_context<shell<Prompt>>;
 } // namespace lexy_ext
 
 #endif // LEXY_EXT_SHELL_HPP_INCLUDED

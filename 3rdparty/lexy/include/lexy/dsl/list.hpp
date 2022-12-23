@@ -15,7 +15,7 @@ template <typename Item, typename Sep>
 struct _lst : _copy_base<Item>
 {
     template <typename Context, typename Reader, typename Sink>
-    static constexpr bool _loop(Context& context, Reader& reader, Sink& sink)
+    LEXY_PARSER_FUNC static bool _loop(Context& context, Reader& reader, Sink& sink)
     {
         while (true)
         {
@@ -185,8 +185,8 @@ struct _lstt : rule_base
     };
 
     template <typename TermParser, typename Context, typename Reader, typename Sink>
-    static constexpr bool _loop(_state initial_state, TermParser& term, Context& context,
-                                Reader& reader, Sink& sink)
+    LEXY_PARSER_FUNC static bool _loop(_state initial_state, TermParser& term, Context& context,
+                                       Reader& reader, Sink& sink)
     {
         auto state = initial_state;
 

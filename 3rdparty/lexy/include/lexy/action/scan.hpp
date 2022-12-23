@@ -33,13 +33,13 @@ class scanner : public _detail::scanner<scanner<ControlProduction, Input, State,
 {
     using _impl       = _detail::scanner<scanner<ControlProduction, Input, State, ErrorCallback>,
                                    lexy::input_reader<Input>>;
-    using _handler    = lexy::validate_handler<Input, ErrorCallback>;
+    using _handler    = lexy::_vh<lexy::input_reader<Input>>;
     using _production = _scp<ControlProduction>;
 
 public:
     constexpr explicit scanner(const Input& input, State* state, const ErrorCallback& callback)
-    : _impl(input.reader()),
-      _cb(_handler(input, callback), state, max_recursion_depth<_production>()), _context(&_cb)
+    : _impl(input.reader()), _input(&input), _sink(_get_error_sink(callback)),
+      _cb(_handler(_input, _sink), state, max_recursion_depth<_production>()), _context(&_cb)
     {
         _context.on(parse_events::production_start{}, this->position());
     }
@@ -58,7 +58,8 @@ public:
         else
             _context.on(parse_events::production_cancel{}, this->position());
 
-        return LEXY_MOV(_cb.parse_handler).get_result_void(parse_result);
+        return LEXY_MOV(_cb.parse_handler)
+            .template get_result<validate_result<ErrorCallback>>(parse_result);
     }
 
 private:
@@ -67,8 +68,10 @@ private:
         return _context;
     }
 
-    _detail::parse_context_control_block<_handler> _cb;
-    _pc<_handler, State, _production>              _context;
+    _detail::any_holder<const Input*>                 _input;
+    _detail::any_holder<_error_sink_t<ErrorCallback>> _sink;
+    _detail::parse_context_control_block<_handler>    _cb;
+    _pc<_handler, State, _production>                 _context;
 
     friend _impl;
 };

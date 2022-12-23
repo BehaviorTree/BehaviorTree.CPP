@@ -130,6 +130,19 @@ struct _tokk : token_base<_tokk<Kind, Token>, Token>
 template <typename Tag, typename Token>
 struct _toke : token_base<_toke<Tag, Token>, Token>
 {
+    // If we're overriding the error for a char class rule, we also want to change its error
+    // reporting. Otherwise, rules such as `dsl::delimited()` building on char classes will generate
+    // the "wrong" error.
+    //
+    // If it's not a char class, adding this function doesn't hurt.
+    template <typename Reader, typename Context>
+    static constexpr void char_class_report_error(Context&                  context,
+                                                  typename Reader::iterator position)
+    {
+        auto err = lexy::error<Reader, Tag>(position, position);
+        context.on(_ev::error{}, err);
+    }
+
     template <typename Reader>
     struct tp : lexy::token_parser_for<Token, Reader>
     {
@@ -163,6 +176,7 @@ struct _token : token_base<_token<Rule>>
 {
     struct _production
     {
+        static constexpr auto name                = "<token>";
         static constexpr auto max_recursion_depth = 0;
         static constexpr auto rule                = Rule{};
     };
@@ -177,8 +191,11 @@ struct _token : token_base<_token<Rule>>
         constexpr bool try_parse(Reader reader)
         {
             // We match a dummy production that only consists of the rule.
-            auto success
-                = lexy::do_action<_production>(lexy::match_handler(), lexy::no_parse_state, reader);
+            auto success = lexy::do_action<
+                _production,
+                lexy::match_action<void, Reader>::template result_type>(lexy::_mh(),
+                                                                        lexy::no_parse_state,
+                                                                        reader);
             end = reader.position();
             return success;
         }

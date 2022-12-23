@@ -140,11 +140,19 @@ struct _peekn : branch_base
                 auto err  = lexy::error<Reader, tag>(impl.begin, impl.end);
                 context.on(_ev::error{}, err);
 
-                // But recover immediately, as we wouldn't have consumed anything either way.
-            }
+                // And recover by consuming the input.
+                context.on(_ev::recovery_start{}, impl.begin);
+                context.on(_ev::token{}, lexy::error_token_kind, impl.begin, impl.end);
+                context.on(_ev::recovery_finish{}, impl.end);
 
-            context.on(_ev::backtracked{}, impl.begin, impl.end);
-            return NextParser::parse(context, reader, LEXY_FWD(args)...);
+                reader.set_position(impl.end);
+                return NextParser::parse(context, reader, LEXY_FWD(args)...);
+            }
+            else
+            {
+                context.on(_ev::backtracked{}, impl.begin, impl.end);
+                return NextParser::parse(context, reader, LEXY_FWD(args)...);
+            }
         }
     };
 
@@ -160,8 +168,7 @@ constexpr auto peek(Rule)
     return _peek<Rule, void>{};
 }
 
-/// Check if at this reader position, the rule would not match, but don't actually consume any
-/// characters if it does.
+/// Checks if at this reader position, the rule would not match.
 template <typename Rule>
 constexpr auto peek_not(Rule)
 {

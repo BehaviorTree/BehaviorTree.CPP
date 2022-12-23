@@ -5,6 +5,7 @@
 #define LEXY_DSL_CHAR_CLASS_HPP_INCLUDED
 
 #include <lexy/_detail/code_point.hpp>
+#include <lexy/_detail/swar.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/token.hpp>
 
@@ -172,7 +173,7 @@ struct char_class_base : token_base<Derived>, _char_class_base
     // static const char* char_class_name();
     // static ascii_set char_class_ascii();
 
-    static constexpr auto char_class_unicode()
+    static constexpr bool char_class_unicode()
     {
         return true;
     }
@@ -189,6 +190,14 @@ struct char_class_base : token_base<Derived>, _char_class_base
         constexpr auto name = Derived::char_class_name();
         auto           err  = lexy::error<Reader, lexy::expected_char_class>(position, name);
         context.on(_ev::error{}, err);
+    }
+
+    /// Returns true if c contains only characters from the char class.
+    /// If it returns false, it may still be valid, it just couldn't be detected.
+    template <typename Encoding>
+    static constexpr auto char_class_match_swar(lexy::_detail::swar_int)
+    {
+        return std::false_type{};
     }
 
     //=== provided functions ===//

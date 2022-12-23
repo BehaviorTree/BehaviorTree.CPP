@@ -47,8 +47,19 @@ struct _idp : token_base<_idp<Leading, Trailing>>
                 return false;
 
             // Match zero or more trailing characters.
-            while (lexy::try_match_token(Trailing{}, reader))
-            {}
+            while (true)
+            {
+                if constexpr (lexy::_detail::is_swar_reader<Reader>)
+                {
+                    // If we have a swar reader, consume as much as possible at once.
+                    while (Trailing{}.template char_class_match_swar<typename Reader::encoding>(
+                        reader.peek_swar()))
+                        reader.bump_swar();
+                }
+
+                if (!lexy::try_match_token(Trailing{}, reader))
+                    break;
+            }
 
             end = reader.position();
             return true;
@@ -310,6 +321,14 @@ struct _kw : token_base<_kw<Id, CharT, C...>>, _lit_base
 
     using lit_case_folding = void;
 
+    template <typename Encoding>
+    static constexpr auto lit_first_char() -> typename Encoding::char_type
+    {
+        typename Encoding::char_type result = 0;
+        (void)((result = lexy::_detail::transcode_char<decltype(result)>(C), true) || ...);
+        return result;
+    }
+
     template <typename Trie>
     static LEXY_CONSTEVAL std::size_t lit_insert(Trie& trie, std::size_t pos,
                                                  std::size_t char_class)
@@ -329,7 +348,7 @@ struct _kw : token_base<_kw<Id, CharT, C...>>, _lit_base
         constexpr bool try_parse(Reader reader)
         {
             // Need to match the literal.
-            if (!lexy::try_match_token(_lit<CharT, C...>{}, reader))
+            if (!lexy::_detail::match_literal<0, CharT, C...>(reader))
                 return false;
             end = reader.position();
 

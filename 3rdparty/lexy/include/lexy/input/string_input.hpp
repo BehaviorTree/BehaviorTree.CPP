@@ -105,8 +105,8 @@ using string_lexeme = lexeme_for<string_input<Encoding>>;
 template <typename Tag, typename Encoding = default_encoding>
 using string_error = error_for<string_input<Encoding>, Tag>;
 
-template <typename Production, typename Encoding = default_encoding>
-using string_error_context = error_context<Production, string_input<Encoding>>;
+template <typename Encoding = default_encoding>
+using string_error_context = error_context<string_input<Encoding>>;
 } // namespace lexy
 
 #endif // LEXY_INPUT_STRING_INPUT_HPP_INCLUDED

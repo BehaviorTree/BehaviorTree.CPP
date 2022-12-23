@@ -102,6 +102,13 @@ using parser_for = typename Rule::template p<NextParser>;
 template <typename BranchRule, typename Reader>
 using branch_parser_for = typename BranchRule::template bp<Reader>;
 
+template <typename Production, typename Reader>
+struct _pb : lexy::branch_parser_for<lexy::production_rule<Production>, Reader>
+{};
+// We create a new type here to shorten its name.
+template <typename Production, typename Reader>
+using production_branch_parser = _pb<Production, Reader>;
+
 /// A branch parser that takes a branch unconditionally and forwards to the regular parser.
 template <typename Rule, typename Reader>
 struct unconditional_branch_parser

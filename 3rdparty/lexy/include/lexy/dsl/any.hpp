@@ -4,6 +4,7 @@
 #ifndef LEXY_DSL_ANY_HPP_INCLUDED
 #define LEXY_DSL_ANY_HPP_INCLUDED
 
+#include <lexy/_detail/swar.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/token.hpp>
 
@@ -20,8 +21,17 @@ struct _any : token_base<_any, unconditional_branch_base>
 
         constexpr std::true_type try_parse(Reader reader)
         {
-            while (reader.peek() != Reader::encoding::eof())
+            using encoding = typename Reader::encoding;
+            if constexpr (lexy::_detail::is_swar_reader<Reader>)
+            {
+                while (!lexy::_detail::swar_has_char<typename encoding::char_type, encoding::eof()>(
+                    reader.peek_swar()))
+                    reader.bump_swar();
+            }
+
+            while (reader.peek() != encoding::eof())
                 reader.bump();
+
             end = reader.position();
             return {};
         }

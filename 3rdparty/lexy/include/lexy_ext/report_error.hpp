@@ -233,8 +233,8 @@ private:
 
 namespace lexy_ext::_detail
 {
-template <typename OutputIt, typename Production, typename Input, typename Reader, typename Tag>
-OutputIt write_error(OutputIt out, const lexy::error_context<Production, Input>& context,
+template <typename OutputIt, typename Input, typename Reader, typename Tag>
+OutputIt write_error(OutputIt out, const lexy::error_context<Input>& context,
                      const lexy::error<Reader, Tag>& error, lexy::visualization_options opts,
                      const char* path)
 {
@@ -333,9 +333,9 @@ struct _report_error
 
         using return_type = std::size_t;
 
-        template <typename Production, typename Input, typename Reader, typename Tag>
-        void operator()(const lexy::error_context<Production, Input>& context,
-                        const lexy::error<Reader, Tag>&               error)
+        template <typename Input, typename Reader, typename Tag>
+        void operator()(const lexy::error_context<Input>& context,
+                        const lexy::error<Reader, Tag>&   error)
         {
             if constexpr (std::is_same_v<OutputIterator, int>)
                 _detail::write_error(lexy::cfile_output_iterator{stderr}, context, error, _opts,

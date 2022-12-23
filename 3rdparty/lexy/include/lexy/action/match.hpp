@@ -8,23 +8,24 @@
 
 namespace lexy
 {
-class match_handler
+class _mh
 {
 public:
-    constexpr match_handler() : _failed(false) {}
+    constexpr _mh() : _failed(false) {}
 
-    template <typename Production>
     class event_handler
     {
     public:
+        constexpr event_handler(production_info) {}
+
         template <typename Error>
-        constexpr void on(match_handler& handler, parse_events::error, Error&&)
+        constexpr void on(_mh& handler, parse_events::error, Error&&)
         {
             handler._failed = true;
         }
 
         template <typename Event, typename... Args>
-        constexpr int on(match_handler&, Event, const Args&...)
+        constexpr int on(_mh&, Event, const Args&...)
         {
             return 0; // operation_chain_start needs to return something
         }
@@ -33,7 +34,8 @@ public:
     template <typename Production, typename State>
     using value_callback = _detail::void_value_callback;
 
-    constexpr bool get_result_void(bool rule_parse_result) &&
+    template <typename>
+    constexpr bool get_result(bool rule_parse_result) &&
     {
         return rule_parse_result && !_failed;
     }
@@ -47,9 +49,12 @@ struct match_action
 {
     State* _state = nullptr;
 
-    using handler = match_handler;
+    using handler = _mh;
     using state   = State;
     using input   = Input;
+
+    template <typename>
+    using result_type = bool;
 
     constexpr match_action() = default;
     template <typename U = State>
@@ -60,7 +65,7 @@ struct match_action
     constexpr auto operator()(Production, const Input& input) const
     {
         auto reader = input.reader();
-        return lexy::do_action<Production>(handler(), _state, reader);
+        return lexy::do_action<Production, result_type>(handler(), _state, reader);
     }
 };
 

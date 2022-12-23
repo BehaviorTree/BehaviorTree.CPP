@@ -158,8 +158,8 @@ using argv_lexeme = lexeme_for<argv_input<Encoding>>;
 template <typename Tag, typename Encoding = default_encoding>
 using argv_error = error_for<argv_input<Encoding>, Tag>;
 
-template <typename Production, typename Encoding = default_encoding>
-using argv_error_context = error_context<Production, argv_input<Encoding>>;
+template <typename Encoding = default_encoding>
+using argv_error_context = error_context<argv_input<Encoding>>;
 } // namespace lexy
 
 namespace lexyd

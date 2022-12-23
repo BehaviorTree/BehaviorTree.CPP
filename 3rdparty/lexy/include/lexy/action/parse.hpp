@@ -89,28 +89,28 @@ private:
     _impl_t                     _impl;
     lexy::_detail::lazy_init<T> _value;
 
-    template <typename Input, typename Callback>
-    friend class parse_handler;
+    template <typename Reader>
+    friend class _ph;
 };
 } // namespace lexy
 
 namespace lexy
 {
-template <typename Input, typename ErrorCallback>
-class parse_handler
+template <typename Reader>
+class _ph
 {
-    using iterator = typename lexy::input_reader<Input>::iterator;
+    using iterator = typename Reader::iterator;
 
 public:
-    constexpr explicit parse_handler(const Input& input, const ErrorCallback& callback)
-    : _validate(input, callback)
+    template <typename Input, typename Sink>
+    constexpr explicit _ph(const _detail::any_holder<const Input*>& input,
+                           _detail::any_holder<Sink>&               sink)
+    : _validate(input, sink)
     {}
 
-    template <typename Production>
-    using event_handler =
-        typename validate_handler<Input, ErrorCallback>::template event_handler<Production>;
+    using event_handler = typename _vh<Reader>::event_handler;
 
-    constexpr operator validate_handler<Input, ErrorCallback>&()
+    constexpr operator _vh<Reader>&()
     {
         return _validate;
     }
@@ -118,28 +118,22 @@ public:
     template <typename Production, typename State>
     using value_callback = production_value_callback<Production, State>;
 
-    constexpr auto get_result_void(bool rule_parse_result) &&
-    {
-        return parse_result<void, ErrorCallback>(
-            LEXY_MOV(_validate).get_result_void(rule_parse_result));
-    }
-
-    template <typename T>
+    template <typename Result, typename T>
     constexpr auto get_result(bool rule_parse_result, T&& result) &&
     {
-        return parse_result<T, ErrorCallback>(LEXY_MOV(_validate).get_result_void(
-                                                  rule_parse_result),
-                                              LEXY_MOV(result));
+        using validate_result = lexy::validate_result<typename Result::error_callback>;
+        return Result(LEXY_MOV(_validate).template get_result<validate_result>(rule_parse_result),
+                      LEXY_MOV(result));
     }
-    template <typename T>
+    template <typename Result>
     constexpr auto get_result(bool rule_parse_result) &&
     {
-        return parse_result<T, ErrorCallback>(
-            LEXY_MOV(_validate).get_result_void(rule_parse_result));
+        using validate_result = lexy::validate_result<typename Result::error_callback>;
+        return Result(LEXY_MOV(_validate).template get_result<validate_result>(rule_parse_result));
     }
 
 private:
-    validate_handler<Input, ErrorCallback> _validate;
+    _vh<Reader> _validate;
 };
 
 template <typename State, typename Input, typename ErrorCallback>
@@ -148,9 +142,12 @@ struct parse_action
     const ErrorCallback* _callback;
     State*               _state = nullptr;
 
-    using handler = parse_handler<Input, ErrorCallback>;
+    using handler = _ph<lexy::input_reader<Input>>;
     using state   = State;
     using input   = Input;
+
+    template <typename T>
+    using result_type = parse_result<T, ErrorCallback>;
 
     constexpr explicit parse_action(const ErrorCallback& callback) : _callback(&callback) {}
     template <typename U = State>
@@ -161,8 +158,11 @@ struct parse_action
     template <typename Production>
     constexpr auto operator()(Production, const Input& input) const
     {
-        auto reader = input.reader();
-        return lexy::do_action<Production>(handler(input, *_callback), _state, reader);
+        _detail::any_holder input_holder(&input);
+        _detail::any_holder sink(_get_error_sink(*_callback));
+        auto                reader = input.reader();
+        return lexy::do_action<Production, result_type>(handler(input_holder, sink), _state,
+                                                        reader);
     }
 };
 

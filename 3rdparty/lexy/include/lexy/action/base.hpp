@@ -82,6 +82,23 @@ namespace _detail
           vars(nullptr),                                        //
           cur_depth(0), max_depth(static_cast<int>(max_depth)), enable_whitespace_skipping(true)
         {}
+
+        template <typename OtherHandler>
+        constexpr parse_context_control_block(Handler&& handler,
+                                              parse_context_control_block<OtherHandler, State>* cb)
+        : parse_handler(LEXY_MOV(handler)), parse_state(cb->parse_state), //
+          vars(cb->vars), cur_depth(cb->cur_depth), max_depth(cb->max_depth),
+          enable_whitespace_skipping(cb->enable_whitespace_skipping)
+        {}
+
+        template <typename OtherHandler>
+        constexpr void copy_vars_from(parse_context_control_block<OtherHandler, State>* cb)
+        {
+            vars                       = cb->vars;
+            cur_depth                  = cb->cur_depth;
+            max_depth                  = cb->max_depth;
+            enable_whitespace_skipping = cb->enable_whitespace_skipping;
+        }
     };
 } // namespace _detail
 
@@ -99,16 +116,19 @@ template <typename Handler, typename State, typename Production,
           typename WhitespaceProduction = _whitespace_production_of<Production>>
 struct _pc
 {
+    using handler_type = Handler;
+    using state_type   = State;
+
     using production            = Production;
     using whitespace_production = WhitespaceProduction;
     using value_type            = _production_value_type<Handler, State, Production>;
 
-    typename Handler::template event_handler<Production>  handler;
+    typename Handler::event_handler                       handler;
     _detail::parse_context_control_block<Handler, State>* control_block;
     _detail::lazy_init<value_type>                        value;
 
     constexpr explicit _pc(_detail::parse_context_control_block<Handler, State>* cb)
-    : control_block(cb)
+    : handler(Production{}), control_block(cb)
     {}
 
     template <typename ChildProduction>
@@ -196,7 +216,8 @@ constexpr auto _do_action(_pc<Handler, State, Production>& context, Reader& read
     return rule_result;
 }
 
-template <typename Production, typename Handler, typename State, typename Reader>
+template <typename Production, template <typename> typename Result, typename Handler,
+          typename State, typename Reader>
 constexpr auto do_action(Handler&& handler, State* state, Reader& reader)
 {
     static_assert(!std::is_reference_v<Handler>, "need to move handler in");
@@ -209,12 +230,13 @@ constexpr auto do_action(Handler&& handler, State* state, Reader& reader)
 
     using value_type = typename decltype(context)::value_type;
     if constexpr (std::is_void_v<value_type>)
-        return LEXY_MOV(control_block.parse_handler).get_result_void(rule_result);
+        return LEXY_MOV(control_block.parse_handler).template get_result<Result<void>>(rule_result);
     else if (context.value)
         return LEXY_MOV(control_block.parse_handler)
-            .template get_result<value_type>(rule_result, LEXY_MOV(*context.value));
+            .template get_result<Result<value_type>>(rule_result, LEXY_MOV(*context.value));
     else
-        return LEXY_MOV(control_block.parse_handler).template get_result<value_type>(rule_result);
+        return LEXY_MOV(control_block.parse_handler)
+            .template get_result<Result<value_type>>(rule_result);
 }
 } // namespace lexy
 

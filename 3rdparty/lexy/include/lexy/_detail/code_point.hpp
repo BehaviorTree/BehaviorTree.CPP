@@ -158,6 +158,7 @@ constexpr cp_result<Reader> parse_code_point(Reader reader)
     else if constexpr (std::is_same_v<typename Reader::encoding, lexy::utf8_encoding> //
                        || std::is_same_v<typename Reader::encoding, lexy::utf8_char_encoding>)
     {
+        using uchar_t                = unsigned char;
         constexpr auto payload_lead1 = 0b0111'1111;
         constexpr auto payload_lead2 = 0b0001'1111;
         constexpr auto payload_lead3 = 0b0000'1111;
@@ -170,7 +171,7 @@ constexpr cp_result<Reader> parse_code_point(Reader reader)
         constexpr auto pattern_lead4 = 0b11110 << 3;
         constexpr auto pattern_cont  = 0b10 << 6;
 
-        auto first = reader.peek();
+        auto first = uchar_t(reader.peek());
         if ((first & ~payload_lead1) == pattern_lead1)
         {
             // ASCII character.
@@ -185,7 +186,7 @@ constexpr cp_result<Reader> parse_code_point(Reader reader)
         {
             reader.bump();
 
-            auto second = reader.peek();
+            auto second = uchar_t(reader.peek());
             if ((second & ~payload_cont) != pattern_cont)
                 return {{}, cp_error::missing_trailing, reader.position()};
             reader.bump();
@@ -204,12 +205,12 @@ constexpr cp_result<Reader> parse_code_point(Reader reader)
         {
             reader.bump();
 
-            auto second = reader.peek();
+            auto second = uchar_t(reader.peek());
             if ((second & ~payload_cont) != pattern_cont)
                 return {{}, cp_error::missing_trailing, reader.position()};
             reader.bump();
 
-            auto third = reader.peek();
+            auto third = uchar_t(reader.peek());
             if ((third & ~payload_cont) != pattern_cont)
                 return {{}, cp_error::missing_trailing, reader.position()};
             reader.bump();
@@ -232,17 +233,17 @@ constexpr cp_result<Reader> parse_code_point(Reader reader)
         {
             reader.bump();
 
-            auto second = reader.peek();
+            auto second = uchar_t(reader.peek());
             if ((second & ~payload_cont) != pattern_cont)
                 return {{}, cp_error::missing_trailing, reader.position()};
             reader.bump();
 
-            auto third = reader.peek();
+            auto third = uchar_t(reader.peek());
             if ((third & ~payload_cont) != pattern_cont)
                 return {{}, cp_error::missing_trailing, reader.position()};
             reader.bump();
 
-            auto fourth = reader.peek();
+            auto fourth = uchar_t(reader.peek());
             if ((fourth & ~payload_cont) != pattern_cont)
                 return {{}, cp_error::missing_trailing, reader.position()};
             reader.bump();

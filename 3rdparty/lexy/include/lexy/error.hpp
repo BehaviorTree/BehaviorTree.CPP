@@ -35,6 +35,12 @@ public:
     {
         return _msg;
     }
+    template <typename Tag>
+    constexpr bool is(Tag = {}) const noexcept
+    {
+        // Just like production_info::operator==, we can safely compare strings.
+        return _msg == _detail::type_name<Tag>();
+    }
 
     constexpr auto begin() const noexcept
     {
@@ -188,12 +194,9 @@ namespace lexy
 template <typename Input>
 using _detect_parent_input = decltype(LEXY_DECLVAL(Input).parent_input());
 
-template <typename Production, typename Input>
-class error_context;
-
 /// Contains information about the context of an error, production is type-erased.
 template <typename Input>
-class error_context<void, Input>
+class error_context
 {
 public:
     constexpr explicit error_context(lexy::production_info production, const Input& input,
@@ -227,31 +230,6 @@ private:
     typename input_reader<Input>::iterator _pos;
     const char*                            _production;
 };
-
-/// Contains information about the context of an error.
-template <typename Production, typename Input>
-class error_context : public error_context<void, Input>
-{
-public:
-    constexpr explicit error_context(const Input&                           input,
-                                     typename input_reader<Input>::iterator pos) noexcept
-    : error_context(input, Production{}, pos)
-    {}
-    constexpr explicit error_context(Production production, const Input& input,
-                                     typename input_reader<Input>::iterator pos) noexcept
-    : error_context<void, Input>(production, input, pos)
-    {}
-
-    // We override production to make it static and constexpr.
-    static LEXY_CONSTEVAL const char* production()
-    {
-        return production_name<Production>();
-    }
-};
-
-template <typename Input>
-error_context(production_info, const Input&, typename input_reader<Input>::iterator)
-    -> error_context<void, Input>;
 } // namespace lexy
 
 #endif // LEXY_ERROR_HPP_INCLUDED

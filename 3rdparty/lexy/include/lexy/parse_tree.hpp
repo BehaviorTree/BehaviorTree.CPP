@@ -591,7 +591,7 @@ public:
 
     void cancel_production(marker&& m)
     {
-        LEXY_PRECONDITION(_cur.prod);
+        LEXY_PRECONDITION(_cur.prod || m.prod == _cur.prod);
         if (_cur.prod == m.prod)
             // We're backtracking a transparent production, do nothing.
             return;
@@ -758,7 +758,7 @@ public:
         if (lhs.is_token() && rhs.is_token())
             return lhs._ptr->as_token()->kind == rhs._ptr->as_token()->kind;
         else
-            // See the `operator==` for productions for rationale why this works.
+            // Just like `production_info::operator==`, we can compare strings.
             return lhs._ptr->as_production()->name == rhs._ptr->as_production()->name;
     }
     friend bool operator!=(node_kind lhs, node_kind rhs)

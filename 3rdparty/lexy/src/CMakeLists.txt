@@ -4,6 +4,7 @@
 get_filename_component(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include/lexy ABSOLUTE)
 get_filename_component(ext_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include/lexy_ext ABSOLUTE)
 set(header_files
+        ${include_dir}/_detail/any_ref.hpp
         ${include_dir}/_detail/assert.hpp
         ${include_dir}/_detail/buffer_builder.hpp
         ${include_dir}/_detail/code_point.hpp
@@ -18,6 +19,7 @@ set(header_files
         ${include_dir}/_detail/stateless_lambda.hpp
         ${include_dir}/_detail/std.hpp
         ${include_dir}/_detail/string_view.hpp
+        ${include_dir}/_detail/swar.hpp
         ${include_dir}/_detail/tuple.hpp
         ${include_dir}/_detail/type_name.hpp
 

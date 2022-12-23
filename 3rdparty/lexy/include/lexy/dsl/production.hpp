@@ -77,10 +77,8 @@ struct _prd
     template <typename Reader>
     struct bp
     {
-        using parser_t = lexy::branch_parser_for<lexy::production_rule<Production>, Reader>;
-
-        parser_t                  parser;
-        typename Reader::iterator begin;
+        lexy::production_branch_parser<Production, Reader> parser;
+        typename Reader::iterator                          begin;
 
         template <typename ControlBlock>
         constexpr auto try_parse(const ControlBlock* cb, const Reader& reader)
