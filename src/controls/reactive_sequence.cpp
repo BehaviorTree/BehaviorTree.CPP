@@ -43,7 +43,7 @@ NodeStatus ReactiveSequence::tick()
       }
 
       case NodeStatus::FAILURE: {
-        haltChildren();
+        resetChildren();
         return NodeStatus::FAILURE;
       }
       case NodeStatus::SUCCESS: {
@@ -64,7 +64,7 @@ NodeStatus ReactiveSequence::tick()
 
   if (success_count == childrenCount())
   {
-    haltChildren();
+    resetChildren();
 
     // Skip if ALL the nodes have been skipped
     return status() == (NodeStatus::RUNNING) ? NodeStatus::SUCCESS : NodeStatus::SKIPPED;

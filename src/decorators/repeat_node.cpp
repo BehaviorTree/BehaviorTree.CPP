@@ -15,7 +15,6 @@
 
 namespace BT
 {
-constexpr const char* RepeatNode::NUM_CYCLES;
 
 RepeatNode::RepeatNode(const std::string& name, int NTries) :
   DecoratorNode(name, {}),
@@ -62,7 +61,7 @@ NodeStatus RepeatNode::tick()
         repeat_count_++;
         do_loop = repeat_count_ < num_cycles_ || num_cycles_ == -1;
 
-        haltChild();
+        resetChild();
 
         // Return the execution flow if the child is async,
         // to make this interruptable.
@@ -76,7 +75,7 @@ NodeStatus RepeatNode::tick()
 
       case NodeStatus::FAILURE: {
         repeat_count_ = 0;
-        haltChild();
+        resetChild();
         return (NodeStatus::FAILURE);
       }
 

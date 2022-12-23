@@ -93,7 +93,7 @@ NodeStatus ParallelNode::tick()
         if (success_children_num == successThreshold())
         {
           skip_list_.clear();
-          haltChildren();
+          resetChildren();
           return NodeStatus::SUCCESS;
         }
       }
@@ -109,7 +109,7 @@ NodeStatus ParallelNode::tick()
             (failure_children_num == failureThreshold()))
         {
           skip_list_.clear();
-          haltChildren();
+          resetChildren();
           return NodeStatus::FAILURE;
         }
       }

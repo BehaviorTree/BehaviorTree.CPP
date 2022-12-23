@@ -14,6 +14,7 @@
 #pragma once
 
 #include <condition_variable>
+#include <exception>
 #include <mutex>
 #include <map>
 
@@ -79,7 +80,7 @@ struct NodeConfig
 
 #ifdef USE_BTCPP3_OLD_NAMES
 // back compatibility
-using NodeConfig = NodeConfig;
+using NodeConfiguration = NodeConfig;
 #endif
 
 template <typename T>
@@ -247,7 +248,6 @@ public:
       node_ptr->config_ = config;
       return std::unique_ptr<DerivedT>(node_ptr);
     }
-    return {};
   }
 
 protected:
@@ -343,9 +343,9 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
 
     std::unique_lock<std::mutex> entry_lock(config_.blackboard->entryMutex());
     const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
-    if (val && val->empty() == false)
+    if (val && !val->empty())
     {
-      if (std::is_same<T, std::string>::value == false &&
+      if (!std::is_same_v<T, std::string> &&
           val->type() == typeid(std::string))
       {
         destination = convertFromString<T>(val->cast<std::string>());

@@ -27,10 +27,12 @@ NodeStatus InverterNode::tick()
   switch (child_status)
   {
     case NodeStatus::SUCCESS: {
+      resetChild();
       return NodeStatus::FAILURE;
     }
 
     case NodeStatus::FAILURE: {
+      resetChild();
       return NodeStatus::SUCCESS;
     }
 
