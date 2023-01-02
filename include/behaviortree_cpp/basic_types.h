@@ -73,6 +73,7 @@ template <typename T>
 inline T convertFromString(StringView /*str*/)
 {
   static_assert(true, "This template specialization of convertFromString doesn't exist");
+  return T();
 }
 
 template <>
@@ -371,7 +372,7 @@ inline PortsList getProvidedPorts(enable_if<has_static_method_providedPorts<T>> 
 
 template <typename T>
 inline PortsList
-    getProvidedPorts(enable_if_not<has_static_method_providedPorts<T>> = nullptr)
+getProvidedPorts(enable_if_not<has_static_method_providedPorts<T>> = nullptr)
 {
   return {};
 }
