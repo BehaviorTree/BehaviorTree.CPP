@@ -107,7 +107,11 @@ template <>
 int convertFromString<int>(StringView str)
 {
   int result = 0;
-  std::from_chars(str.data(), str.data() + str.size(), result);
+  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  if(ec != std::errc())
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to int"));
+  }
   return result;
 }
 
@@ -115,7 +119,11 @@ template <>
 long convertFromString<long>(StringView str)
 {
   long result = 0;
-  std::from_chars(str.data(), str.data() + str.size(), result);
+  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  if(ec != std::errc())
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to long"));
+  }
   return result;
 }
 
@@ -123,7 +131,11 @@ template <>
 unsigned convertFromString<unsigned>(StringView str)
 {
   unsigned result = 0;
-  std::from_chars(str.data(), str.data() + str.size(), result);
+  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  if(ec != std::errc())
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to unsigned"));
+  }
   return result;
 }
 
@@ -131,7 +143,11 @@ template <>
 unsigned long convertFromString<unsigned long>(StringView str)
 {
   unsigned long result = 0;
-  std::from_chars(str.data(), str.data() + str.size(), result);
+  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  if(ec != std::errc())
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to unsigned long"));
+  }
   return result;
 }
 

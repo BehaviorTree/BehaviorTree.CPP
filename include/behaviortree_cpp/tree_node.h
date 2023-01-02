@@ -302,8 +302,6 @@ private:
   std::array<ScriptFunction, size_t(PreCond::COUNT_)> pre_parsed_;
   std::array<ScriptFunction, size_t(PostCond::COUNT_)> post_parsed_;
 
-  std::shared_ptr<ScriptingEnumsRegistry> scripting_enums_;
-
   Expected<NodeStatus> checkPreConditions();
   void checkPostConditions(NodeStatus status);
 
@@ -316,6 +314,28 @@ private:
 template <typename T>
 inline Result TreeNode::getInput(const std::string& key, T& destination) const
 {
+  // address the special case where T is an enum
+  auto ParseString = [this](const std::string& str) -> T
+  {
+    if constexpr (std::is_enum_v<T> && !std::is_same_v<T, NodeStatus>)
+    {
+      auto it = config_.enums->find(str);
+      // conversion available
+      if( it != config_.enums->end() )
+      {
+        return static_cast<T>(it->second);
+      }
+      else {
+        // hopefully str contains a number that can be parsed. May throw
+        return static_cast<T>(convertFromString<int>(str));
+      }
+    }
+    else {
+      return convertFromString<T>(str);
+    }
+  };
+
+
   auto remap_it = config_.input_ports.find(key);
   if (remap_it == config_.input_ports.end())
   {
@@ -327,18 +347,17 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
   auto remapped_res = getRemappedKey(key, remap_it->second);
   try
   {
+    // pure string, not a blackboard key
     if (!remapped_res)
     {
-      destination = convertFromString<T>(remap_it->second);
+      destination = ParseString(remap_it->second);
       return {};
     }
     const auto& remapped_key = remapped_res.value();
 
     if (!config_.blackboard)
     {
-      return nonstd::make_unexpected("getInput() trying to access a Blackboard(BB) "
-                                     "entry, "
-                                     "but BB is invalid");
+      return nonstd::make_unexpected("getInput(): trying to access an invalid Blackboard");
     }
 
     std::unique_lock<std::mutex> entry_lock(config_.blackboard->entryMutex());
@@ -348,7 +367,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
       if (!std::is_same_v<T, std::string> &&
           val->type() == typeid(std::string))
       {
-        destination = convertFromString<T>(val->cast<std::string>());
+        destination = ParseString(val->cast<std::string>());
       }
       else
       {
