@@ -578,10 +578,15 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
         // if the entry already exists, check that the type is the same
         if (auto prev_info = blackboard->portInfo(port_key))
         {
-          // found. check consistency
-          // null type means that everything is valid
-          if (!prev_info->isStronglyTyped() && !port_info.isStronglyTyped() &&
-              prev_info->type() != port_info.type())
+          // Check consistency of types.
+          bool const port_type_mismatch = (prev_info->isStronglyTyped() &&
+                                           port_info.isStronglyTyped() &&
+                                           prev_info->type() != port_info.type());
+
+          // special case related to convertFromString
+          bool const string_input = (prev_info->type() == typeid(std::string));
+
+          if(port_type_mismatch && !string_input)
           {
             blackboard->debugMessage();
 

@@ -72,15 +72,7 @@ using StringView = std::string_view;
 template <typename T>
 inline T convertFromString(StringView /*str*/)
 {
-  auto type_name = BT::demangle(typeid(T));
-
-  std::cerr << "You (maybe indirectly) called BT::convertFromString() for type ["
-            << type_name << "], but I can't find the template specialization.\n"
-            << std::endl;
-
-  throw LogicError(std::string("You didn't implement the template specialization of "
-                               "convertFromString for this type: ") +
-                   type_name);
+  static_assert(true, "This template specialization of convertFromString doesn't exist");
 }
 
 template <>
@@ -269,7 +261,7 @@ public:
 
   bool isStronglyTyped() const
   {
-    return _type_info == typeid(AnyTypeAllowed);
+    return _type_info != typeid(AnyTypeAllowed);
   }
 
   const StringConverter& converter() const
