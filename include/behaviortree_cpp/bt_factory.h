@@ -93,6 +93,7 @@ public:
     std::vector<TreeNode::Ptr> nodes;
     Blackboard::Ptr blackboard;
     std::string instance_name;
+    std::string tree_ID;
   };
 
   std::vector<Subtree::Ptr> subtrees;

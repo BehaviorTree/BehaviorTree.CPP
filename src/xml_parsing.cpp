@@ -809,6 +809,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
   auto new_tree = std::make_shared<Tree::Subtree>();
   new_tree->blackboard = blackboard;
   new_tree->instance_name = tree_name;
+  new_tree->tree_ID = tree_ID;
   output_tree.subtrees.push_back(new_tree);
 
   recursiveStep(root_node, new_tree, prefix_path, root_element);
@@ -974,7 +975,8 @@ void addTreeToXML(const Tree& tree,
   for(const auto& subtree: tree.subtrees)
   {
     XMLElement* subtree_elem = doc.NewElement("BehaviorTree");
-    subtree_elem->SetAttribute("ID", subtree->instance_name.c_str());
+    subtree_elem->SetAttribute("ID", subtree->tree_ID.c_str());
+    subtree_elem->SetAttribute("_fullpath", subtree->instance_name.c_str());
     rootXML->InsertEndChild(subtree_elem);
     addNode(*subtree->nodes.front(), subtree_elem);
   }

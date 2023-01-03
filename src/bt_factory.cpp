@@ -262,8 +262,6 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   {
     idNotFound();
   }
-  auto& manifest = it_manifest->second;
-
 
   std::string rule;
   for(const auto& [filter, substitution]: substitution_rules_)
