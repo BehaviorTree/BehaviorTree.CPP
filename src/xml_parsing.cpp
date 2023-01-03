@@ -560,15 +560,16 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     }
   };
 
-  AddCondition(config.pre_conditions, "_successIf", PreCond::SUCCESS_IF);
-  AddCondition(config.pre_conditions, "_failureIf", PreCond::FAILURE_IF);
-  AddCondition(config.pre_conditions, "_skipIf", PreCond::SKIP_IF);
-  AddCondition(config.pre_conditions, "_while", PreCond::WHILE_TRUE);
-
-  AddCondition(config.post_conditions, "_onSuccess", PostCond::ON_SUCCESS);
-  AddCondition(config.post_conditions, "_onFailure", PostCond::ON_FAILURE);
-  AddCondition(config.post_conditions, "_onHalted", PostCond::ON_HALTED);
-  AddCondition(config.post_conditions, "_post", PostCond::ALWAYS);
+  for(int i=0; i<int(PreCond::COUNT_); i++)
+  {
+    auto pre = static_cast<PreCond>(i);
+    AddCondition(config.pre_conditions, toStr(pre).c_str(), pre);
+  }
+  for(int i=0; i<int(PostCond::COUNT_); i++)
+  {
+    auto post = static_cast<PostCond>(i);
+    AddCondition(config.post_conditions, toStr(post).c_str(), post);
+  }
 
   //---------------------------------------------
   TreeNode::Ptr new_node;
@@ -578,6 +579,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     new_node = factory.instantiateTreeNode(instance_name,
                                            toStr(NodeType::SUBTREE),
                                            config);
+    auto subtree_node = dynamic_cast<SubTreeNode*>(new_node.get());
+    subtree_node->setSubtreeID(type_ID);
   }
   else
   {
@@ -667,9 +670,9 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
       auto direction = port_info.direction();
       if (direction != PortDirection::OUTPUT &&
           config.input_ports.count(port_name) == 0 &&
-          port_info.defaultValue())
+          port_info.defaultValue().empty() == false)
       {
-        config.input_ports.insert({port_name, *port_info.defaultValue()});
+        config.input_ports.insert({port_name, port_info.defaultValue()});
       }
     }
 
@@ -833,6 +836,169 @@ void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,
   }
 }
 
+void addNodeModelToXML(const TreeNodeManifest& model,
+                          XMLDocument& doc,
+                          XMLElement* model_root)
+{
+  XMLElement* element = doc.NewElement(toStr(model.type).c_str());
+  element->SetAttribute("ID", model.registration_ID.c_str());
+
+  std::vector<std::string> ordered_ports;
+  PortDirection const directions[3] = {PortDirection::INPUT,
+                                       PortDirection::OUTPUT,
+                                       PortDirection::INOUT};
+  for (PortDirection direction: directions)
+  {
+    std::set<std::string> port_names;
+    for (auto& port : model.ports)
+    {
+      const auto& port_name = port.first;
+      const auto& port_info = port.second;
+      if (port_info.direction() == direction)
+      {
+        port_names.insert(port_name);
+      }
+    }
+    for (auto& port : port_names)
+    {
+      ordered_ports.push_back(port);
+    }
+  }
+
+  for (const auto& port_name : ordered_ports)
+  {
+    const auto& port_info = model.ports.at(port_name);
+
+    XMLElement* port_element = nullptr;
+    switch (port_info.direction())
+    {
+      case PortDirection::INPUT:
+        port_element = doc.NewElement("input_port");
+        break;
+      case PortDirection::OUTPUT:
+        port_element = doc.NewElement("output_port");
+        break;
+      case PortDirection::INOUT:
+        port_element = doc.NewElement("inout_port");
+        break;
+    }
+
+    port_element->SetAttribute("name", port_name.c_str());
+    if (port_info.type() != typeid(void))
+    {
+      port_element->SetAttribute("type", BT::demangle(port_info.type()).c_str());
+    }
+    if (!port_info.defaultValue())
+    {
+      port_element->SetAttribute("default", port_info.defaultValue()->c_str());
+    }
+
+    if (!port_info.description().empty())
+    {
+      port_element->SetText(port_info.description().c_str());
+    }
+    element->InsertEndChild(port_element);
+  }
+
+  if (!model.description.empty())
+  {
+    element->SetAttribute("description", model.registration_ID.c_str());
+  }
+
+  model_root->InsertEndChild(element);
+}
+
+void addTreeToXML(const Tree& tree,
+                  XMLDocument& doc,
+                  XMLElement* rootXML)
+{  
+  std::function<void(const TreeNode&, XMLElement*)> addNode;
+  addNode = [&](const TreeNode& node,
+                XMLElement* parent_elem)
+  {
+    XMLElement* elem = nullptr;
+
+    if (auto subtree = dynamic_cast<const SubTreeNode*>(&node))
+    {
+      elem = doc.NewElement(node.registrationName().c_str());
+      elem->SetAttribute("ID", subtree->subtreeID().c_str());
+      elem->SetAttribute("_fullname", subtree->config().path.c_str());
+    }
+    else {
+      elem = doc.NewElement(node.registrationName().c_str());
+      elem->SetAttribute("name", node.name().c_str());
+    }
+
+    elem->SetAttribute("_uid", node.UID());
+
+    for(const auto& [name, value]: node.config().input_ports)
+    {
+      elem->SetAttribute(name.c_str(), value.c_str());
+    }
+    for(const auto& [name, value]: node.config().output_ports)
+    {
+      // avoid duplicates, in the case of INOUT ports
+      if(node.config().input_ports.count(name))
+      {
+        elem->SetAttribute(name.c_str(), value.c_str());
+      }
+    }
+
+    for(const auto& [pre, script]: node.config().pre_conditions)
+    {
+      elem->SetAttribute(toStr(pre).c_str(), script.c_str());
+    }
+    for(const auto& [post, script]: node.config().post_conditions)
+    {
+      elem->SetAttribute(toStr(post).c_str(), script.c_str());
+    }
+
+    parent_elem->InsertEndChild(elem);
+
+    if (auto control = dynamic_cast<const ControlNode*>(&node))
+    {
+      for (const auto& child : control->children())
+      {
+        addNode(*child, elem);
+      }
+    }
+    else if (auto decorator = dynamic_cast<const DecoratorNode*>(&node))
+    {
+      if(decorator->type() != NodeType::SUBTREE)
+      {
+        addNode(*decorator->child(), elem);
+      }
+    }
+  };
+
+  for(const auto& subtree: tree.subtrees)
+  {
+    XMLElement* subtree_elem = doc.NewElement("BehaviorTree");
+    subtree_elem->SetAttribute("ID", subtree->instance_name.c_str());
+    rootXML->InsertEndChild(subtree_elem);
+    addNode(*subtree->nodes.front(), subtree_elem);
+  }
+
+  XMLElement* model_root = doc.NewElement("TreeNodesModel");
+  rootXML->InsertEndChild(model_root);
+
+  static const BehaviorTreeFactory temp_factory;
+
+  std::map<std::string, const TreeNodeManifest*> ordered_models;
+  for (const auto& [registration_ID, model] : tree.manifests)
+  {
+    if(temp_factory.builtinNodes().count(registration_ID) == 0)
+    {
+      ordered_models.insert( {registration_ID, &model} );
+    }
+  }
+
+  for (const auto& [registration_ID, model] : ordered_models)
+  {
+    addNodeModelToXML(*model, doc, model_root);
+  }
+}
+
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
                                    bool include_builtin)
 {
@@ -844,87 +1010,19 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
   XMLElement* model_root = doc.NewElement("TreeNodesModel");
   rootXML->InsertEndChild(model_root);
 
-  std::set<std::string> ordered_names;
+  std::map<std::string, const TreeNodeManifest*> ordered_models;
 
-  for (auto& model_it : factory.manifests())
+  for (const auto& [registration_ID, model] : factory.manifests())
   {
-    const auto& registration_ID = model_it.first;
-    if (!include_builtin && factory.builtinNodes().count(registration_ID) != 0)
+    if (include_builtin || factory.builtinNodes().count(registration_ID) == 0)
     {
-      continue;
+      ordered_models.insert( {registration_ID, &model} );
     }
-    ordered_names.insert(registration_ID);
   }
 
-  for (auto& registration_ID : ordered_names)
+  for (const auto& [registration_ID, model] : ordered_models)
   {
-    const auto& model = factory.manifests().at(registration_ID);
-
-    XMLElement* element = doc.NewElement(toStr(model.type).c_str());
-    element->SetAttribute("ID", model.registration_ID.c_str());
-
-    std::vector<std::string> ordered_ports;
-    PortDirection directions[3] = {PortDirection::INPUT, PortDirection::OUTPUT,
-                                   PortDirection::INOUT};
-    for (int d = 0; d < 3; d++)
-    {
-      std::set<std::string> port_names;
-      for (auto& port : model.ports)
-      {
-        const auto& port_name = port.first;
-        const auto& port_info = port.second;
-        if (port_info.direction() == directions[d])
-        {
-          port_names.insert(port_name);
-        }
-      }
-      for (auto& port : port_names)
-      {
-        ordered_ports.push_back(port);
-      }
-    }
-
-    for (const auto& port_name : ordered_ports)
-    {
-      const auto& port_info = model.ports.at(port_name);
-
-      XMLElement* port_element = nullptr;
-      switch (port_info.direction())
-      {
-        case PortDirection::INPUT:
-          port_element = doc.NewElement("input_port");
-          break;
-        case PortDirection::OUTPUT:
-          port_element = doc.NewElement("output_port");
-          break;
-        case PortDirection::INOUT:
-          port_element = doc.NewElement("inout_port");
-          break;
-      }
-
-      port_element->SetAttribute("name", port_name.c_str());
-      if (port_info.type() != typeid(void))
-      {
-        port_element->SetAttribute("type", BT::demangle(port_info.type()).c_str());
-      }
-      if (!port_info.defaultValue())
-      {
-        port_element->SetAttribute("default", port_info.defaultValue()->c_str());
-      }
-
-      if (!port_info.description().empty())
-      {
-        port_element->SetText(port_info.description().c_str());
-      }
-      element->InsertEndChild(port_element);
-    }
-
-    if (!model.description.empty())
-    {
-      element->SetAttribute("description", model.registration_ID.c_str());
-    }
-
-    model_root->InsertEndChild(element);
+    addNodeModelToXML(*model, doc, model_root);
   }
 
   XMLPrinter printer;
@@ -940,12 +1038,27 @@ Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& te
   return parser.instantiateTree(blackboard);
 }
 
-Tree buildTreeFromFile(const BehaviorTreeFactory& factory, const std::string& filename,
+Tree buildTreeFromFile(const BehaviorTreeFactory& factory,
+                       const std::string& filename,
                        const Blackboard::Ptr& blackboard)
 {
   XMLParser parser(factory);
   parser.loadFromFile(filename);
   return parser.instantiateTree(blackboard);
+}
+
+std::string WriteTreeToXML(const Tree &tree)
+{
+  XMLDocument doc;
+
+  XMLElement* rootXML = doc.NewElement("root");
+  doc.InsertFirstChild(rootXML);
+
+  addTreeToXML(tree, doc, rootXML);
+
+  XMLPrinter printer;
+  doc.Print(&printer);
+  return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 }
 
 }   // namespace BT

@@ -62,6 +62,12 @@ enum class PostCond
   COUNT_
 };
 
+template <>
+std::string toStr<BT::PostCond>(BT::PostCond status);
+
+template <>
+std::string toStr<BT::PreCond>(BT::PreCond status);
+
 using ScriptingEnumsRegistry = std::unordered_map<std::string, int>;
 
 struct NodeConfig

@@ -44,6 +44,8 @@ void VerifyXML(const std::string& xml_text,
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
                                    bool include_builtin = false);
 
+std::string WriteTreeToXML(const Tree& tree);
+
 }   // namespace BT
 
 #endif   // XML_PARSING_BT_H

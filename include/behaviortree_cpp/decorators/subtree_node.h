@@ -56,13 +56,26 @@ public:
 
   static PortsList providedPorts();
 
-private:
+  void setSubtreeID(const std::string& ID)
+  {
+    subtree_id_ = ID;
+  }
+
+  const std::string& subtreeID() const
+  {
+    return subtree_id_;
+  }
   virtual BT::NodeStatus tick() override;
 
   virtual NodeType type() const override final
   {
     return NodeType::SUBTREE;
   }
+
+
+  private:
+  std::string subtree_id_;
+
 };
 
 }   // namespace BT

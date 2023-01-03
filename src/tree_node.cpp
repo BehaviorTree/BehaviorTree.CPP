@@ -322,4 +322,40 @@ void TreeNode::modifyPortsRemapping(const PortsRemapping& new_remapping)
   }
 }
 
+template <>
+std::string toStr<PreCond>(PreCond pre)
+{
+  switch (pre)
+  {
+    case PreCond::SUCCESS_IF:
+      return "_successIf";
+    case PreCond::FAILURE_IF:
+      return "_failureIf";
+    case PreCond::SKIP_IF:
+      return "_skipIf";
+    case PreCond::WHILE_TRUE:
+      return "_while";
+    default:
+      return "Undefined";
+  }
+}
+
+template <>
+std::string toStr<PostCond>(PostCond pre)
+{
+  switch (pre)
+  {
+    case PostCond::ON_SUCCESS:
+      return "_onSuccess";
+    case PostCond::ON_FAILURE:
+      return "_onFailure";
+    case PostCond::ALWAYS:
+      return "_post";
+    case PostCond::ON_HALTED:
+      return "_onHalted";
+    default:
+      return "Undefined";
+  }
+}
+
 }   // namespace BT
