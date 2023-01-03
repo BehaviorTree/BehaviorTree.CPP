@@ -923,7 +923,7 @@ void addTreeToXML(const Tree& tree,
     {
       elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("ID", subtree->subtreeID().c_str());
-      elem->SetAttribute("_fullname", subtree->config().path.c_str());
+      elem->SetAttribute("_fullpath", subtree->config().path.c_str());
     }
     else {
       elem = doc.NewElement(node.registrationName().c_str());
