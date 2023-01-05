@@ -2,6 +2,12 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* rebane haltChildren to resetChildren
+* revert `#329 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/329>`_
+* Contributors: Davide Faconti
+
 3.8.1 (2022-11-27)
 ------------------
 * fix catkin installation `#478 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/478>`_
