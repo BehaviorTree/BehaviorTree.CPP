@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.8.2 (2023-01-05)
+------------------
 * rebane haltChildren to resetChildren
 * revert `#329 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/329>`_
 * Contributors: Davide Faconti
