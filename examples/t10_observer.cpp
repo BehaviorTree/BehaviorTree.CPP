@@ -40,14 +40,6 @@ int main()
 {
   BT::BehaviorTreeFactory factory;
 
-  factory.registerSimpleAction("DummyAction", [](BT::TreeNode& node){
-    std::cout << "this is a test: "<< node.name() << std::endl;
-    return BT::NodeStatus::SUCCESS;
-  });
-
-  factory.addSubstitutionRule("mysub/action_*", "DummyAction");
-  factory.addSubstitutionRule("last_action", "DummyAction");
-
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
 
@@ -84,7 +76,6 @@ int main()
               << "/" << stats.failure_count
               << std::endl;
   }
-
 
   return 0;
 }

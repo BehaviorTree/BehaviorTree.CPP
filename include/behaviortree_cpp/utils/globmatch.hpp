@@ -40,7 +40,7 @@ namespace glob
       {
          typedef typename std::iterator_traits<Iterator>::value_type type;
 
-         const Iterator null_itr(0);
+         const Iterator null_itr(nullptr);
 
          Iterator p_itr  = pattern_begin;
          Iterator d_itr  = data_begin;

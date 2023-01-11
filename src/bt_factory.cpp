@@ -266,7 +266,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   std::string rule;
   for(const auto& [filter, substitution]: substitution_rules_)
   {
-    if( filter == name || filter == ID || glob::match(filter, config.path))
+    if( filter == name || filter == ID || glob::match(config.path, filter))
     {
       rule = substitution;
       break;

@@ -68,7 +68,7 @@ BT::NodeStatus SaySomethingSimple(BT::TreeNode &self)
         throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
     }
 
-    std::cout << "Robot says: " << msg.value() << std::endl;
+    std::cout << "Robot says(2): " << msg.value() << std::endl;
     return BT::NodeStatus::SUCCESS;
 }
 
