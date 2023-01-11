@@ -13,7 +13,10 @@ static const char* xml_text = R"(
                 <AlwaysFailure name="failing_action"/>
                 <SubTree ID="MySub" name="mysub"/>
             </Fallback>
+            <SaySomething message="before last_action"/>
+            <Script code="msg:='after last_action'"/>
             <AlwaysSuccess name="last_action"/>
+            <SaySomething message="{msg}"/>
         </Sequence>
     </BehaviorTree>
 
@@ -29,24 +32,23 @@ static const char* xml_text = R"(
 
 // clang-format on
 
-int main()
+int main(int argc, char** argv)
 {
   using namespace DummyNodes;
   BT::BehaviorTreeFactory factory;
 
   factory.registerNodeType<SaySomething>("SaySomething");
 
-  // Here we use lambdas and registerSimpleAction, to create the "dummy" or
-  // "test" nodes.
-  // You can't use the usual registerNodeType approach.
+  // We use lambdasand registerSimpleAction, to create
+  // a "dummy" node, that we want to create instead of a given one.
 
-  // Simple node that just print its name and return SUCCESS
+  // Simple node that just prints its name and return SUCCESS
   factory.registerSimpleAction("TestAction", [](BT::TreeNode& self){
     std::cout << "TestAction substituting: "<< self.name() << std::endl;
     return BT::NodeStatus::SUCCESS;
   });
 
-  // Action that is means to substitute SaySomething.
+  // Action that is meant to substitute SaySomething.
   // It will try to use the input port "message"
   factory.registerSimpleAction("TestSaySomething", [](BT::TreeNode& self){
     auto msg = self.getInput<std::string>("message");
@@ -58,12 +60,29 @@ int main()
     return BT::NodeStatus::SUCCESS;
   });
 
-  // Here we specify (using wildcard pattern, optionally) which
-  // Nodes should be sustityted and with which other node.
+  // These configurations will be passed to a TestNode
+  BT::TestNodeConfig test_config;
+  // Convert the node in asynchronous and wait 2000 ms
+  test_config.async_delay = std::chrono::milliseconds(2000);
+  // Execute this postcondition, once completed
+  test_config.post_script = "msg ='message SUBSTITUED'";
 
-  factory.addSubstitutionRule("mysub/action_*", "TestAction");
-  factory.addSubstitutionRule("last_action", "TestAction");
-  factory.addSubstitutionRule("talk", "TestSaySomething");
+  //----------------------------
+  // pass "no_sub" as first argument to avoid adding rules
+  bool skip_substitution = (argc == 2) && std::string(argv[1]) == "no_sub";
+
+  if(!skip_substitution)
+  {
+    // Substitute nodes which match this wildcard pattern with TestAction
+    factory.addSubstitutionRule("mysub/action_*", "TestAction");
+
+    // Substitute the node with name [talk] with TestSaySomething
+    factory.addSubstitutionRule("talk", "TestSaySomething");
+
+    // Substitute the node with name [last_action] with a TestNode,
+    // configured using test_config
+    factory.addSubstitutionRule("last_action", test_config);
+  }
 
   factory.registerBehaviorTreeFromText(xml_text);
 
@@ -71,9 +90,7 @@ int main()
   // rules will be used to instantiate the test nodes, instead of the
   // original ones.
   auto tree = factory.createTree("MainTree");
-
-  BT::printTreeRecursively(tree.rootNode());
-
   tree.tickWhileRunning();
+
   return 0;
 }

@@ -413,7 +413,20 @@ public:
 
   void clearSubstitutionRules();
 
-  void addSubstitutionRule(StringView filter, StringView substitution);
+  using SubstitutionRule = std::variant<std::string, TestNodeConfig>;
+
+  /**
+   * @brief addSubstitutionRule replace a node with another one when the tree is
+   * created.
+   * If the rule ia a string, we will use a diferent node type (already registered)
+   * instead.
+   * If the rule is a TestNodeConfig, a test node with that configuration will be created instead.
+   *
+   * @param filter   filter used to select the node to sobstitute. The node path is used.
+   *                 You may use wildcard matching.
+   * @param rule     pass either a string or a TestNodeConfig
+   */
+  void addSubstitutionRule(StringView filter, SubstitutionRule rule);
 
 private:
   std::unordered_map<std::string, NodeBuilder> builders_;
@@ -425,7 +438,7 @@ private:
 
   std::shared_ptr<BT::Parser> parser_;
 
-  std::unordered_map<std::string, std::string> substitution_rules_;
+  std::unordered_map<std::string, SubstitutionRule> substitution_rules_;
 
 };
 

@@ -263,19 +263,45 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     idNotFound();
   }
 
-  std::string rule;
-  for(const auto& [filter, substitution]: substitution_rules_)
-  {
-    if( filter == name || filter == ID || glob::match(config.path, filter))
-    {
-      rule = substitution;
-      break;
-    }
-  }
 
   std::unique_ptr<TreeNode> node;
 
-  if(rule.empty())
+  bool substituted = false;
+  for(const auto& [filter, rule]: substitution_rules_)
+  {
+    if( filter == name || filter == ID || glob::match(config.path, filter))
+    {
+      // first case: the rule is simply a string with the name of the
+      // node to create instead
+      if(const auto substituted_ID = std::get_if<std::string>(&rule) )
+      {
+        auto it_builder = builders_.find(*substituted_ID);
+        if (it_builder != builders_.end())
+        {
+          auto& builder = it_builder->second;
+          node = builder(name, config);
+        }
+        else{
+          throw RuntimeError("Substituted Node ID not found");
+        }
+        substituted = true;
+        break;
+      }
+      else if(const auto test_config = std::get_if<TestNodeConfig>(&rule) )
+      {
+        // second case, the varian is a TestNodeConfig
+        auto test_node = new TestNode(name, config);
+        test_node->setConfig(*test_config);
+
+        node.reset(test_node);
+        substituted = true;
+        break;
+      }
+    }
+  }
+
+  // No substitution rule applied:default behavior
+  if(!substituted)
   {
     auto it_builder = builders_.find(ID);
     if (it_builder == builders_.end())
@@ -284,17 +310,6 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     }
     auto& builder = it_builder->second;
     node = builder(name, config);
-  }
-  else {
-    auto it_builder = builders_.find(rule);
-    if (it_builder != builders_.end())
-    {
-      auto& builder = it_builder->second;
-      node = builder(name, config);
-    }
-    else{
-      throw RuntimeError("Substitution rule not found");
-    }
   }
 
   node->setRegistrationID(ID);
@@ -399,10 +414,11 @@ void BehaviorTreeFactory::clearSubstitutionRules()
   substitution_rules_.clear();
 }
 
-void BehaviorTreeFactory::addSubstitutionRule(StringView filter, StringView substitution)
+void BehaviorTreeFactory::addSubstitutionRule(StringView filter, SubstitutionRule rule)
 {
-  substitution_rules_[std::string(filter)] = substitution;
+  substitution_rules_[std::string(filter)] = rule;
 }
+
 
 void Tree::initialize()
 {
