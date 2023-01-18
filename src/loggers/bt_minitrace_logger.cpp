@@ -12,7 +12,7 @@ MinitraceLogger::MinitraceLogger(const Tree& tree, const char* filename_json) :
   bool expected = false;
   if (!ref_count.compare_exchange_strong(expected, true))
   {
-    throw LogicError("Only one instance of StdCoutLogger shall be created");
+    throw LogicError("Only one instance of MinitraceLogger shall be created");
   }
 
   minitrace::mtr_register_sigint_handler();
