@@ -109,6 +109,21 @@ add_executable(${PROJECT_NAME} "hello_BT.cpp")
 target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp)
 ```
 
+**Using BT.CPP in ROS2**
+
+If you want to use BT.CPP in your ROS2 application, a typical **CMakeLists.txt** file
+might look like this:
+
+```cmake
+...
+find_package(behaviortree_cpp REQUIRED)
+find_package(Threads REQUIRED)
+
+add_executable(${PROJECT_NAME} "hello_BT.cpp")
+target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp Threads::Threads)
+...
+```
+
 # License
 
 The MIT License (MIT)
