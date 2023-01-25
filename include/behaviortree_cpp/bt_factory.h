@@ -46,40 +46,38 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
   return {getType<T>(), ID, portlist, {}};
 }
 
-constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
+#ifdef BT_PLUGIN_EXPORT
 
-#ifndef BT_PLUGIN_EXPORT
-
-/* Use this macro to automatically register one or more custom Nodes
-into a factory. For instance:
-
-BT_REGISTER_NODES(factory)
-{
-    factory.registerNodeType<MoveBaseAction>("MoveBase");
-}
-
-IMPORTANT: this function MUST be declared in a cpp file, NOT a header file.
-See examples for more information about configuring CMake correctly
-*/
-#define BT_REGISTER_NODES(factory)                                                       \
-  static void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+#if defined(_WIN32)
+  #define BTCPP_EXPORT extern "C" __declspec(dllexport)
+#else
+  // Unix-like OSes
+  #define BTCPP_EXPORT extern "C" __attribute__ ((visibility ("default")))
+#endif
 
 #else
+  #define BTCPP_EXPORT
+#endif
+/* Use this macro to automatically register one or more custom Nodes
+* into a factory. For instance:
+*
+*   BT_REGISTER_NODES(factory)
+*   {
+*     factory.registerNodeType<MoveBaseAction>("MoveBase");
+*   }
+*
+* IMPORTANT: this function MUST be declared in a cpp file, NOT a header file.
+* In your cake, you must add the definition [BT_PLUGIN_EXPORT] with:
+*
+*   target_compile_definitions(my_plugin_target PRIVATE  BT_PLUGIN_EXPORT )
 
-#if defined(__linux__) || defined __APPLE__
+* See examples in sample_nodes directory.
+*/
 
 #define BT_REGISTER_NODES(factory)                                                       \
-  extern "C" void __attribute__((visibility("default")))                                 \
-  BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+  static BTCPP_EXPORT void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
 
-#elif _WIN32
-
-#define BT_REGISTER_NODES(factory)                                                       \
-  extern "C" void __declspec(dllexport)                                                  \
-      BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
-#endif
-
-#endif
+constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 
 /**
  * @brief Struct used to store a tree.
