@@ -278,6 +278,13 @@ const std::set<std::string>& BehaviorTreeFactory::builtinNodes() const
 Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
                                              Blackboard::Ptr blackboard)
 {
+  if(!parser_->registeredBehaviorTrees().empty()) {
+    std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromText "
+                 "after registerBehaviorTreeFrom[File/Text].\n"
+                 "This is NOTm probably, what you want to do.\n"
+                 "You should probably use BehaviorTreeFactory::createTree, instead"
+              << std::endl;
+  }
   XMLParser parser(*this);
   parser.loadFromText(text);
   auto tree = parser.instantiateTree(blackboard);
@@ -288,6 +295,14 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
 Tree BehaviorTreeFactory::createTreeFromFile(const std::string& file_path,
                                              Blackboard::Ptr blackboard)
 {
+  if(!parser_->registeredBehaviorTrees().empty()) {
+    std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromFile "
+                 "after registerBehaviorTreeFrom[File/Text].\n"
+                 "This is NOTm probably, what you want to do.\n"
+                 "You should probably use BehaviorTreeFactory::createTree, instead"
+              << std::endl;
+  }
+
   XMLParser parser(*this);
   parser.loadFromFile(file_path);
   auto tree = parser.instantiateTree(blackboard);
