@@ -164,6 +164,7 @@ list(APPEND BT_SOURCE
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
+    src/loggers/groot2_publisher.cpp
 
     3rdparty/tinyxml2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp
@@ -218,7 +219,7 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY}
 
 if(ZMQ_FOUND)
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        ${ZMQ_LIBRARIES} )
+        ${ZMQ_LIBRARIES} zmqpp )
     target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         ${ZMQ_INCLUDE_DIRS} )
     target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE ZMQ_FOUND)

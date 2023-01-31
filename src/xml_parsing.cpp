@@ -911,7 +911,8 @@ void addNodeModelToXML(const TreeNodeManifest& model,
 
 void addTreeToXML(const Tree& tree,
                   XMLDocument& doc,
-                  XMLElement* rootXML)
+                  XMLElement* rootXML,
+                  bool add_metadata)
 {  
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node,
@@ -923,14 +924,18 @@ void addTreeToXML(const Tree& tree,
     {
       elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("ID", subtree->subtreeID().c_str());
-      elem->SetAttribute("_fullpath", subtree->config().path.c_str());
+      if(add_metadata){
+        elem->SetAttribute("_fullpath", subtree->config().path.c_str());
+      }
     }
     else {
       elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("name", node.name().c_str());
     }
 
-    elem->SetAttribute("_uid", node.UID());
+    if(add_metadata){
+      elem->SetAttribute("_uid", node.UID());
+    }
 
     for(const auto& [name, value]: node.config().input_ports)
     {
@@ -1049,14 +1054,14 @@ Tree buildTreeFromFile(const BehaviorTreeFactory& factory,
   return parser.instantiateTree(blackboard);
 }
 
-std::string WriteTreeToXML(const Tree &tree)
+std::string WriteTreeToXML(const Tree &tree, bool add_metadata)
 {
   XMLDocument doc;
 
   XMLElement* rootXML = doc.NewElement("root");
   doc.InsertFirstChild(rootXML);
 
-  addTreeToXML(tree, doc, rootXML);
+  addTreeToXML(tree, doc, rootXML, add_metadata);
 
   XMLPrinter printer;
   doc.Print(&printer);
