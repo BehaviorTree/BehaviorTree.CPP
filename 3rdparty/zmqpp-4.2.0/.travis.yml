@@ -1,0 +1,31 @@
+# Zmqpp
+
+language: cpp
+
+env:
+  - ZMQ_REPO=zeromq3-x BUILD_TYPE=default
+  - ZMQ_REPO=zeromq4-x BUILD_TYPE=default WITH_LIBSODIUM=1
+  - ZMQ_REPO=zeromq4-1 BUILD_TYPE=default WITH_LIBSODIUM=1
+  - ZMQ_REPO=libzmq    BUILD_TYPE=default WITH_LIBSODIUM=1
+
+  - ZMQ_REPO=zeromq3-x BUILD_TYPE=cmake
+  - ZMQ_REPO=zeromq4-x BUILD_TYPE=cmake WITH_LIBSODIUM=1
+  - ZMQ_REPO=zeromq4-1 BUILD_TYPE=cmake WITH_LIBSODIUM=1
+  - ZMQ_REPO=libzmq    BUILD_TYPE=cmake WITH_LIBSODIUM=1
+
+before_install:
+  - if [ "$CXX" == "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+  - sudo add-apt-repository -y ppa:smspillaz/cmake-2.8.12
+  - sudo apt-get update
+
+install:
+  # g++4.8.1
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -q -y g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
+  # cmake (2.8.12 or higher)
+  - sudo apt-get install -q -y cmake-data cmake
+  # Requirements
+  - sudo apt-get install -q -y libboost-all-dev
+
+script:
+  - ./travis.sh

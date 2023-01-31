@@ -1,0 +1,13 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: libzmqpp
+Description: The high-level C++ binding for 0MQ
+Version:
+
+Requires: libzmq
+
+Libs: -L${libdir} -lzmqpp
+Cflags: -I${includedir}

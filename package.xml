@@ -22,7 +22,7 @@
   <depend condition="$ROS_VERSION == 2">ament_index_cpp</depend>
 
   <build_depend>libboost-dev</build_depend>
-  <depend>libzmqpp-dev</depend>
+  <depend>libzmq3-dev</depend>
   <depend>libncurses-dev</depend>
 
   <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
