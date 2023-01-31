@@ -20,6 +20,7 @@ CompileExample("t08_additional_node_args")
 CompileExample("t09_scripting")
 CompileExample("t10_observer")
 CompileExample("t11_replace_rules")
+CompileExample("t12_groot_howto")
 
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")

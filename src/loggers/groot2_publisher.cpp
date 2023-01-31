@@ -149,8 +149,6 @@ void Groot2Publisher::threadLoop()
 
     auto request_header = Monitor::DeserializeRequestHeader(request_str);
 
-    std::cout << "Request: [" << ToString(request_header.type) << std::endl;
-
     Monitor::ReplyHeader reply_header;
     reply_header.request = request_header;
     reply_header.tree_id = serialized_uuid;

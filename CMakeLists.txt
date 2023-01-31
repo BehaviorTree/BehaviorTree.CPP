@@ -66,9 +66,12 @@ find_package(ZMQ)
 if( ZMQ_FOUND )
     message(STATUS "ZeroMQ: found.")
     add_definitions( -DZMQ_FOUND )
-    list(APPEND BT_SOURCE src/loggers/bt_zmq_publisher.cpp)
+    list(APPEND BT_SOURCE
+        src/loggers/groot2_publisher.cpp )
+
+    add_subdirectory(3rdparty/zmqpp-4.2.0)
 else()
-    message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [bt_recorder].")
+    message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [Groot2Publisher].")
 endif()
 
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
@@ -164,7 +167,6 @@ list(APPEND BT_SOURCE
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
-    src/loggers/groot2_publisher.cpp
 
     3rdparty/tinyxml2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp
@@ -219,7 +221,7 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY}
 
 if(ZMQ_FOUND)
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        ${ZMQ_LIBRARIES} zmqpp )
+        ${ZMQ_LIBRARIES} zmqpp-static )
     target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         ${ZMQ_INCLUDE_DIRS} )
     target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE ZMQ_FOUND)
