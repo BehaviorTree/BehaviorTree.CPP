@@ -3,11 +3,12 @@
 
 #include <array>
 #include <future>
-#include "abstract_logger.h"
+#include "behaviortree_cpp/loggers/abstract_logger.h"
 
 namespace BT
 {
-class PublisherZMQ : public StatusChangeLogger
+class [[deprecated("Please use Groot2Publisher instead")]]
+PublisherZMQ : public StatusChangeLogger
 {
   static std::atomic<bool> ref_count;
 
@@ -15,7 +16,7 @@ public:
   PublisherZMQ(const BT::Tree& tree, unsigned max_msg_per_second = 25,
                unsigned publisher_port = 1666, unsigned server_port = 1667);
 
-  virtual ~PublisherZMQ();
+  ~PublisherZMQ() override;
 
 private:
   virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,

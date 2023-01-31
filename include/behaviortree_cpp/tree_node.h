@@ -96,10 +96,9 @@ struct NodeConfig
   std::map<PostCond, std::string> post_conditions;
 };
 
-#ifdef USE_BTCPP3_OLD_NAMES
 // back compatibility
 using NodeConfiguration = NodeConfig;
-#endif
+
 
 template <typename T>
 inline constexpr bool hasNodeNameCtor()

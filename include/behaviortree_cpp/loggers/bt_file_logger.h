@@ -4,7 +4,7 @@
 #include <fstream>
 #include <deque>
 #include <array>
-#include "abstract_logger.h"
+#include "behaviortree_cpp/loggers/abstract_logger.h"
 
 namespace BT
 {

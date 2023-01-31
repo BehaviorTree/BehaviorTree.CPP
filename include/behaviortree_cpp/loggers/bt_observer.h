@@ -2,7 +2,7 @@
 #define BT_OBSERVER_H
 
 #include <cstring>
-#include "abstract_logger.h"
+#include "behaviortree_cpp/loggers/abstract_logger.h"
 
 namespace BT
 {
