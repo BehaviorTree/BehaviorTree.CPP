@@ -1059,6 +1059,7 @@ std::string WriteTreeToXML(const Tree &tree, bool add_metadata)
   XMLDocument doc;
 
   XMLElement* rootXML = doc.NewElement("root");
+  rootXML->SetAttribute("BTCPP_format", 4);
   doc.InsertFirstChild(rootXML);
 
   addTreeToXML(tree, doc, rootXML, add_metadata);
