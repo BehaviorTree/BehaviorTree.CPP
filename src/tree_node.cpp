@@ -164,8 +164,19 @@ void TreeNode::checkPostConditions(NodeStatus status)
 
 void TreeNode::resetStatus()
 {
-  std::unique_lock<std::mutex> lock(state_mutex_);
-  status_ = NodeStatus::IDLE;
+  NodeStatus prev_status;
+  {
+    std::unique_lock<std::mutex> lock(state_mutex_);
+    prev_status = status_;
+    status_ = NodeStatus::IDLE;
+  }
+
+  if (prev_status != NodeStatus::IDLE)
+  {
+    state_condition_variable_.notify_all();
+    state_change_signal_.notify(std::chrono::high_resolution_clock::now(), *this,
+                                prev_status, NodeStatus::IDLE);
+  }
 }
 
 NodeStatus TreeNode::status() const
