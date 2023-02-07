@@ -33,18 +33,22 @@ int main(int argc, char* argv[])
 
     std::unordered_map<uint16_t, std::string> names_by_uid;
     std::unordered_map<uint16_t, const Serialization::TreeNode*> node_by_uid;
+    uint16_t max_uid = 0;
 
     for (const Serialization::TreeNode* node : *(behavior_tree->nodes()))
     {
         names_by_uid.insert({node->uid(), std::string(node->instance_name()->c_str())});
         node_by_uid.insert({node->uid(), node});
+        max_uid = std::max(max_uid, node->uid());
     }
+    uint16_t digits_max_uid = std::to_string(max_uid).size();
 
     printf("----------------------------\n");
 
     std::function<void(uint16_t, int)> recursiveStep;
 
     recursiveStep = [&](uint16_t uid, int indent) {
+        printf("(%*d): ", digits_max_uid, uid);
         for (int i = 0; i < indent; i++)
         {
             printf("    ");
@@ -98,7 +102,8 @@ int main(int argc, char* argv[])
         const uint32_t t_sec = flatbuffers::ReadScalar<uint32_t>(&buffer[index]);
         const uint32_t t_usec = flatbuffers::ReadScalar<uint32_t>(&buffer[index + 4]);
 
-        printf("[%d.%06d]: %s%s %s -> %s\n", t_sec, t_usec, name.c_str(),
+        printf("[%d.%06d] (%*d): %s%s %s -> %s\n", t_sec, t_usec, 
+               digits_max_uid, uid, name.c_str(),
                &whitespaces[std::min(ws_count, name.size())],
                printStatus(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index + 10])),
                printStatus(flatbuffers::ReadScalar<Serialization::NodeStatus>(&buffer[index + 11])));
