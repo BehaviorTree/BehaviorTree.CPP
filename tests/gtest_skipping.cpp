@@ -58,3 +58,38 @@ TEST(SkippingLogic, SkipAll)
   ASSERT_EQ(counters[2], 0);
   ASSERT_EQ(status, NodeStatus::SKIPPED);
 }
+
+
+TEST(SkippingLogic, SkipSubtree)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 3> counters;
+  RegisterTestTick(factory, "Test", counters);
+
+  const std::string xml_text = R"(
+
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="main">
+            <Sequence>
+                <TestA/>
+                <Script code=" data:=true "/>
+                <SubTree ID="sub" _skipIf="data"/>
+            </Sequence>
+        </BehaviorTree>
+
+        <BehaviorTree ID="sub">
+            <TestB/>
+        </BehaviorTree>
+    </root>)";
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("main");
+
+  tree.rootBlackboard()->set("A", 1);
+
+  const auto status = tree.tickWhileRunning();
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[1], 0);
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+

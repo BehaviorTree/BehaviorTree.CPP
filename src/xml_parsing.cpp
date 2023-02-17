@@ -538,11 +538,31 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   config.blackboard = blackboard;
 
   //---------------------------------------------
+  auto AddPrePostConditions = [&](auto& config) {
+    auto AddCondition = [&](auto& conditions, const char* attr_name, auto ID) {
+      if (auto script = element->Attribute(attr_name))
+      {
+        conditions.insert({ID, std::string(script)});
+      }
+    };
+    AddCondition(config.pre_conditions, "_successIf", PreCond::SUCCESS_IF);
+    AddCondition(config.pre_conditions, "_failureIf", PreCond::FAILURE_IF);
+    AddCondition(config.pre_conditions, "_skipIf", PreCond::SKIP_IF);
+    AddCondition(config.pre_conditions, "_while", PreCond::WHILE_TRUE);
+
+    AddCondition(config.post_conditions, "_onSuccess", PostCond::ON_SUCCESS);
+    AddCondition(config.post_conditions, "_onFailure", PostCond::ON_FAILURE);
+    AddCondition(config.post_conditions, "_onHalted", PostCond::ON_HALTED);
+    AddCondition(config.post_conditions, "_post", PostCond::ALWAYS);
+  };
+
+  //---------------------------------------------
   TreeNode::Ptr new_node;
 
   if (node_type == NodeType::SUBTREE)
   {
-    new_node = std::make_unique<SubTreeNode>(instance_name);
+    AddPrePostConditions(config);
+    new_node = factory.instantiateTreeNode(instance_name, toStr(NodeType::SUBTREE), config);
   }
   else
   {
@@ -638,23 +658,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
       }
     }
 
-    auto AddCondition = [&](auto& conditions, const char* attr_name, auto ID) {
-      if (auto script = element->Attribute(attr_name))
-      {
-        conditions.insert({ID, std::string(script)});
-      }
-    };
-
-    AddCondition(config.pre_conditions, "_successIf", PreCond::SUCCESS_IF);
-    AddCondition(config.pre_conditions, "_failureIf", PreCond::FAILURE_IF);
-    AddCondition(config.pre_conditions, "_skipIf", PreCond::SKIP_IF);
-    AddCondition(config.pre_conditions, "_while", PreCond::WHILE_TRUE);
-
-    AddCondition(config.post_conditions, "_onSuccess", PostCond::ON_SUCCESS);
-    AddCondition(config.post_conditions, "_onFailure", PostCond::ON_FAILURE);
-    AddCondition(config.post_conditions, "_onHalted", PostCond::ON_HALTED);
-    AddCondition(config.post_conditions, "_post", PostCond::ALWAYS);
-
+    AddPrePostConditions(config);
     new_node = factory.instantiateTreeNode(instance_name, type_ID, config);
   }
 
