@@ -114,18 +114,23 @@ class SimpleString {
     return std::strcmp(data(), other.data()) > 0;
   }
 
-  bool isSOO() const { return !(_storage.soo.capacity_left & IS_LONG_BIT); }
+  bool isSOO() const {
+    return !(_storage.soo.capacity_left & IS_LONG_BIT);
+  }
 
   private:
-  constexpr static std::size_t CAPACITY = sizeof(void *) * 2 - 1;
+
+  struct String {
+    char *data;
+    std::size_t size;
+  };
+
+  constexpr static std::size_t CAPACITY = std::max(size_t(15), sizeof(String) - 1);
   constexpr static std::size_t IS_LONG_BIT = 1 << 7;
-  constexpr static std::size_t LONG_MASK = ~(uint32_t(0));
+  constexpr static std::size_t LONG_MASK = (~std::size_t(0)) >> 1;
 
   union {
-    struct String {
-      char *data;
-      std::size_t size;
-    } str;
+    String str;
 
     struct SOO {
       char data[CAPACITY];
