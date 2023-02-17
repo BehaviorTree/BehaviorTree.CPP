@@ -2,6 +2,44 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue `#501 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/501>`_
+* fix issue `#505 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/505>`_
+* solve issue `#506 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/506>`_
+* prevent useless exception catcking
+* fix issue `#507 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/507>`_
+* adding the uid to the log to uniquely identify the nodes (`#502 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/502>`_)
+* fix in SharedLibrary and cosmetic changes to the code
+* using tinyxml ErrorStr() instead of ErrorName() to get more info about missing file (`#497 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/497>`_)
+* Fixed use of ros_pkg for ROS1 applications (`#483 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/483>`_)
+* Fix error message StdCoutLogger -> MinitraceLogger (`#495 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/495>`_)
+* Fix boost dependency in package.xml (`#493 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/493>`_)
+  Co-authored-by: Bart Keulen <b.keulen@avular.com>
+* support Enums in string conversion
+* fix issue 489
+* updated example. Demonstrate pass by reference
+* lexy updated
+* rename haltChildren to resetChildren
+* revert `#329 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/329>`_
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* Small improvements (`#479 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/479>`_)
+  * Make message for allowed port names more explicit
+  Also throw an exception for unknown port direction rather than using
+  `PortDirection::INOUT`.
+  * Small code improvements
+  * Remove code without effect
+* Fix some renaming for V4 (`#480 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/480>`_)
+* Define NodeConfiguration for BT3 compatibility (`#477 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/477>`_)
+* Implement `#404 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/404>`_ to solve `#435 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/435>`_ (gtest not found)
+* fix issue `#474 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/474>`_ Make libraries dependencies private
+* fix issue `#413 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/413>`_ (Delay logic)
+* change suggested in `#444 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/444>`_
+* add XML converter
+* Add CodeQL workflow (`#471 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/471>`_)
+* Update README.md
+* Contributors: Ana, Bart Keulen, Christian Henkel, Davide Faconti, Gaël Écorchard, Jorge, Mahmoud Farshbafdoustar, Norawit Nangsue
+
 4.0.1 (2022-11-19)
 ------------------
 * version 4.X
