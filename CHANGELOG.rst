@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.2 (2023-02-17)
+------------------
 * fix issue `#501 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/501>`_
 * fix issue `#505 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/505>`_
 * solve issue `#506 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/506>`_
