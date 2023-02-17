@@ -157,40 +157,49 @@ struct ExprBinaryArithmetic : ExprBase
                 return Any(lv / rv);
             default: {}
             }
-            try {
-                int64_t li = lhs_v.cast<int64_t>();
-                int64_t ri = rhs_v.cast<int64_t>();
-                switch (op)
-                {
-                case bit_and:
-                    return Any(static_cast<double>(li & ri));
-                case bit_or:
-                    return Any(static_cast<double>(li | ri));
-                case bit_xor:
-                    return Any(static_cast<double>(li ^ ri));
-                default: {}
-                }
-            }
-            catch(...)
+
+            if(op == bit_and || op == bit_or || op == bit_xor)
             {
-                throw std::runtime_error("Binary operators are not allowed if one of the operands is an integer");
+                try {
+                  int64_t li = lhs_v.cast<int64_t>();
+                  int64_t ri = rhs_v.cast<int64_t>();
+                  switch (op)
+                  {
+                  case bit_and:
+                    return Any(static_cast<double>(li & ri));
+                  case bit_or:
+                    return Any(static_cast<double>(li | ri));
+                  case bit_xor:
+                    return Any(static_cast<double>(li ^ ri));
+                  default: {}
+                  }
+                }
+                catch(...)
+                {
+                  throw std::runtime_error("Binary operators are not allowed if "
+                                           "one of the operands is not an integer");
+                }
             }
 
-            try {
-                auto lb = lhs_v.cast<bool>();
-                auto rb = rhs_v.cast<bool>();
-                switch (op)
-                {
-                case logic_or:
-                    return Any(static_cast<double>(lb || rb));
-                case logic_and:
-                    return Any(static_cast<double>(lb && rb));
-                default: {}
-                }
-            }
-            catch(...)
+            if(op == logic_or || op == logic_and)
             {
-                throw std::runtime_error("Logic operators are not allowed if one of the operands is not castable to bool");
+                try {
+                  auto lb = lhs_v.cast<bool>();
+                  auto rb = rhs_v.cast<bool>();
+                  switch (op)
+                  {
+                  case logic_or:
+                    return Any(static_cast<double>(lb || rb));
+                  case logic_and:
+                    return Any(static_cast<double>(lb && rb));
+                  default: {}
+                  }
+                }
+                catch(...)
+                {
+                  throw std::runtime_error("Logic operators are not allowed if "
+                                           "one of the operands is not castable to bool");
+                }
             }
         }
         else if(rhs_v.isType<SimpleString>() && lhs_v.isType<SimpleString>() && op == plus)
