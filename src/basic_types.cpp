@@ -356,7 +356,7 @@ const std::string& PortInfo::description() const
   return description_;
 }
 
-const std::string& PortInfo::defaultValue() const
+std::optional<std::string> PortInfo::defaultValue() const
 {
   return default_value_;
 }

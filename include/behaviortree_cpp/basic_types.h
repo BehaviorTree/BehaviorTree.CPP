@@ -265,7 +265,7 @@ public:
 
   const std::string& description() const;
 
-  const std::string& defaultValue() const;
+  std::optional<std::string> defaultValue() const;
 
   bool isStronglyTyped() const
   {
@@ -282,7 +282,7 @@ private:
   std::type_index _type_info;
   StringConverter _converter;
   std::string description_;
-  std::string default_value_;
+  std::optional<std::string> default_value_;
 };
 
 template <typename T = PortInfo::AnyTypeAllowed>
