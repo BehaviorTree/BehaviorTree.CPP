@@ -40,7 +40,8 @@ inline NodeBuilder CreateBuilder(Args... args)
 }
 
 template <typename T>
-inline TreeNodeManifest CreateManifest(const std::string& ID, PortsList portlist)
+inline TreeNodeManifest CreateManifest(const std::string& ID, 
+                                       PortsList portlist = getProvidedPorts<T>())
 {
   return {getType<T>(), ID, portlist, {}};
 }
