@@ -40,8 +40,7 @@ inline NodeBuilder CreateBuilder(Args... args)
 }
 
 template <typename T>
-inline TreeNodeManifest CreateManifest(const std::string& ID,
-                                       PortsList portlist = getProvidedPorts<T>())
+inline TreeNodeManifest CreateManifest(const std::string& ID, PortsList portlist)
 {
   return {getType<T>(), ID, portlist, {}};
 }
@@ -300,40 +299,53 @@ public:
                                                 const std::string& ID,
                                                 const NodeConfig& config) const;
 
-  /** registerNodeType is the method to use to register your custom TreeNode.
-     *
-     *  It accepts only classed derived from either ActionNodeBase, DecoratorNode,
-     *  ControlNode or ConditionNode.
-     */
+  /** registerNodeType where you explicitly pass the list of ports.
+   *  Doesn't require the implementation of static method providedPorts()
+  */
   template <typename T, typename... ExtraArgs>
-  void registerNodeType(const std::string& ID, ExtraArgs... args)
+  void registerNodeType(const std::string& ID, const PortsList& ports, ExtraArgs... args)
   {
     static_assert(std::is_base_of<ActionNodeBase, T>::value ||
-                      std::is_base_of<ControlNode, T>::value ||
-                      std::is_base_of<DecoratorNode, T>::value ||
-                      std::is_base_of<ConditionNode, T>::value,
+                  std::is_base_of<ControlNode, T>::value ||
+                  std::is_base_of<DecoratorNode, T>::value ||
+                  std::is_base_of<ConditionNode, T>::value,
                   "[registerNode]: accepts only classed derived from either "
                   "ActionNodeBase, "
                   "DecoratorNode, ControlNode or ConditionNode");
-
-    static_assert(!std::is_abstract<T>::value, "[registerNode]: Some methods are pure "
-                                               "virtual. "
-                                               "Did you override the methods tick() and "
-                                               "halt()?");
 
     constexpr bool default_constructable =
         std::is_constructible<T, const std::string&>::value;
     constexpr bool param_constructable =
         std::is_constructible<T, const std::string&, const NodeConfig&,
                               ExtraArgs...>::value;
-    constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
 
     // clang-format off
+    static_assert(!std::is_abstract<T>::value,
+                  "[registerNode]: Some methods are pure virtual. "
+                  "Did you override the methods tick() and halt()?");
+
     static_assert(default_constructable || param_constructable,
        "[registerNode]: the registered class must have at least one of these two constructors:\n"
        "  (const std::string&, const NodeConfig&) or (const std::string&)\n"
        "Check also if the constructor is public!)");
+    // clang-format on
 
+    registerBuilder(CreateManifest<T>(ID, ports), CreateBuilder<T>(args...));
+  }
+
+  /** registerNodeType is the method to use to register your custom TreeNode.
+  *
+  *  It accepts only classed derived from either ActionNodeBase, DecoratorNode,
+  *  ControlNode or ConditionNode.
+  */
+  template <typename T, typename... ExtraArgs>
+  void registerNodeType(const std::string& ID, ExtraArgs... args)
+  {
+    constexpr bool param_constructable =
+        std::is_constructible<T, const std::string&, const NodeConfig&, ExtraArgs...>::value;
+    constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
+
+    // clang-format off
     static_assert(!(param_constructable && !has_static_ports_list),
                   "[registerNode]: you MUST implement the static method:\n"
                   "  PortsList providedPorts();\n");
@@ -343,52 +355,7 @@ public:
                   "you MUST add a constructor with signature:\n"
                   "(const std::string&, const NodeParameters&)\n");
     // clang-format on
-
-    registerBuilder(CreateManifest<T>(ID), CreateBuilder<T>(args...));
-  }
-
-  template <typename T>
-  void registerNodeType(const std::string& ID, PortsList ports)
-  {
-    static_assert(std::is_base_of<ActionNodeBase, T>::value ||
-                      std::is_base_of<ControlNode, T>::value ||
-                      std::is_base_of<DecoratorNode, T>::value ||
-                      std::is_base_of<ConditionNode, T>::value,
-                  "[registerNode]: accepts only classed derived from either "
-                  "ActionNodeBase, "
-                  "DecoratorNode, ControlNode or ConditionNode");
-
-    static_assert(!std::is_abstract<T>::value, "[registerNode]: Some methods are pure "
-                                               "virtual. "
-                                               "Did you override the methods tick() and "
-                                               "halt()?");
-
-    constexpr bool default_constructable =
-        std::is_constructible<T, const std::string&>::value;
-    constexpr bool param_constructable =
-        std::is_constructible<T, const std::string&, const NodeConfig&>::value;
-    constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
-
-    static_assert(default_constructable || param_constructable, "[registerNode]: the "
-                                                                "registered class must "
-                                                                "have at "
-                                                                "least one of these two "
-                                                                "constructors: (const "
-                                                                "std::string&, const "
-                                                                "NodeConfig&) or (const "
-                                                                "std::string&).");
-
-    static_assert(!has_static_ports_list, "[registerNode]: ports are passed to this node "
-                                          "explicitly. The static method"
-                                          "providedPorts() should be removed to avoid "
-                                          "ambiguities\n");
-
-    static_assert(param_constructable, "[registerNode]: since this node has ports, "
-                                       "you MUST add a constructor sign signature (const "
-                                       "std::string&, const "
-                                       "NodeParameters&)\n");
-
-    registerBuilder(CreateManifest<T>(ID, ports), CreateBuilder<T>());
+    registerNodeType<T>(ID, getProvidedPorts<T>(), args...);
   }
 
   /// All the builders. Made available mostly for debug purposes.

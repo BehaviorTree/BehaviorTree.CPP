@@ -1,9 +1,21 @@
 #include "behaviortree_cpp/decorators/subtree_node.h"
 
-BT::SubTreeNode::SubTreeNode(const std::string& instance_name) :
-  DecoratorNode(instance_name, {})
+BT::SubTreeNode::SubTreeNode(const std::string& name,
+                             const NodeConfig &config) :
+  DecoratorNode(name, config)
 {
   setRegistrationID("SubTree");
+}
+
+BT::PortsList BT::SubTreeNode::providedPorts()
+{
+  auto port = PortInfo(PortDirection::INPUT, typeid(bool),
+                       GetAnyFromStringFunctor<bool>());
+  port.setDefaultValue("false");
+  port.setDescription("If true, all the ports with the same name "
+                      "will be remapped");
+
+  return {{"_autoremap", port}};
 }
 
 BT::NodeStatus BT::SubTreeNode::tick()

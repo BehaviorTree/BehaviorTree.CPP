@@ -142,7 +142,11 @@ void convertNumber( const SRC& source, DST& target )
     // casting to/from floating points might cause truncation.
     else if constexpr( std::is_floating_point<SRC>::value || std::is_floating_point<DST>::value )
     {
-        checkTruncation<SRC,DST>(source);
+        bool both_float = std::is_floating_point<SRC>::value && std::is_floating_point<DST>::value;
+        // to avoid being too pedantic, let's accept casting between double and float
+        if(!both_float){
+            checkTruncation<SRC,DST>(source);
+        }
         target = static_cast<DST>(source);
     }
 }
