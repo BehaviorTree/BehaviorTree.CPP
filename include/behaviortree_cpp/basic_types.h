@@ -12,6 +12,7 @@
 #include <memory>
 #include <string_view>
 #include <variant>
+#include <optional>
 
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
