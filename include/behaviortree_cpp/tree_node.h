@@ -377,9 +377,8 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     }
 
     return nonstd::make_unexpected(StrCat("getInput() failed because it was unable to "
-                                          "find the "
-                                          "key [",
-                                          key, "] remapped to [", remapped_key, "]"));
+                                          "find the key [", key, "] remapped to [",
+                                          remapped_key, "]"));
   }
   catch (std::exception& err)
   {
