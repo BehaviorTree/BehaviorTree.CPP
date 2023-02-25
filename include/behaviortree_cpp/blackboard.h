@@ -1,5 +1,4 @@
-#ifndef BLACKBOARD_H
-#define BLACKBOARD_H
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -113,8 +112,8 @@ public:
   template <typename T>
   void set(const std::string& key, const T& value)
   {
-    std::unique_lock<std::mutex> lock_entry(entry_mutex_);
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock lock_entry(entry_mutex_);
+    std::unique_lock lock(mutex_);
 
     // search first if this port was remapped.
     // Change the parent_bb_ in that case
@@ -216,7 +215,7 @@ public:
 
   // Lock this mutex before using get() and getAny() and unlock it while you have
   // done using the value.
-  std::mutex& entryMutex()
+  std::recursive_mutex& entryMutex() const
   {
     return entry_mutex_;
   }
@@ -236,7 +235,7 @@ private:
   };
 
   mutable std::mutex mutex_;
-  mutable std::mutex entry_mutex_;
+  mutable std::recursive_mutex entry_mutex_;
   std::unordered_map<std::string, Entry> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
@@ -244,4 +243,3 @@ private:
 
 }   // namespace BT
 
-#endif   // BLACKBOARD_H

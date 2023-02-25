@@ -49,27 +49,7 @@ void to_json(json& j, const Pose3D& p)
 
 using namespace BT;
 
-TEST(JsonTest, Basic)
-{
-  JsonExporter exporter;
-
-  nlohmann::json json;
-  exporter.toJson(69, json["plain_int"]);
-  exporter.toJson(BT::Any(71), json["any_int"]);
-
-  exporter.toJson(M_PI, json["plain_real"]);
-  exporter.toJson(BT::Any(M_PI_2), json["any_real"]);
-
-  nlohmann::json json_expected;
-  json_expected["any_int"] = 71;
-  json_expected["any_real"] = M_PI_2;
-  json_expected["plain_int"] = 69;
-  json_expected["plain_real"] = M_PI;
-
-  ASSERT_EQ(json_expected, json);
-}
-
-TEST(JsonTest, AnyConversion)
+TEST(JsonTest, Exporter)
 {
   JsonExporter exporter;
 
@@ -81,7 +61,7 @@ TEST(JsonTest, AnyConversion)
   exporter.toJson(BT::Any(M_PI), json["real"]);
 
   // expected to throw, because we haven't called addConverter()
-  ASSERT_THROW( exporter.toJson(BT::Any(pose), json["pose"]), std::logic_error );
+  ASSERT_FALSE( exporter.toJson(BT::Any(pose), json["pose"]) );
 
   // now it should work
   exporter.addConverter<Pose3D>();

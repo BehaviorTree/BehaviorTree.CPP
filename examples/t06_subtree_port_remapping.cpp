@@ -1,4 +1,5 @@
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
+
+#include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/bt_factory.h"
 
 #include "movebase_node.h"
@@ -64,15 +65,14 @@ int main()
   tree.tickWhileRunning();
 
   // let's visualize some information about the current state of the blackboards.
-  for(const auto& subtree: tree.subtrees) {
-    std::cout << "\n------ Subtree ["
-              << subtree->instance_name
-              << "] ------\n";
+  for(const auto& subtree: tree.subtrees)
+  {
+    std::cout << "\n------ Subtree [" << subtree->instance_name << "]:\n";
 
     subtree->blackboard->debugMessage();
-    std::cout << "--- as JSON ---\n"
-//              << subtree->blackboard->toJson().dump(2)
-              << std::endl;
+
+    nlohmann::json json = ExportBlackboardToJSON(*subtree->blackboard);
+    std::cout << "------ To JSON:\n" << json.dump(2) << std::endl;
   }
   return 0;
 }

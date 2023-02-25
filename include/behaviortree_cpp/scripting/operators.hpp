@@ -68,6 +68,7 @@ struct ExprName : ExprBase
             }
         }
         // search now in the variables table
+        std::unique_lock entry_lock(env.vars->entryMutex());
         auto any_ptr = env.vars->getAny(name);
         if( !any_ptr )
         {
@@ -358,6 +359,8 @@ struct ExprAssignment : ExprBase
             throw std::runtime_error("Assignment left operand not an lvalue");
         }
         const auto& key = varname->name;
+
+        std::unique_lock entry_lock(env.vars->entryMutex());
         auto any_ptr = env.vars->getAny(key);
         if( !any_ptr )
         {

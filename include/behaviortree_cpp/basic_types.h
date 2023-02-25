@@ -1,5 +1,4 @@
-#ifndef BT_BASIC_TYPES_H
-#define BT_BASIC_TYPES_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -393,4 +392,3 @@ typedef std::chrono::high_resolution_clock::duration Duration;
 
 }   // namespace BT
 
-#endif   // BT_BASIC_TYPES_H

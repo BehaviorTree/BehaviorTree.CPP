@@ -380,7 +380,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
       return nonstd::make_unexpected("getInput(): trying to access an invalid Blackboard");
     }
 
-    std::unique_lock<std::mutex> entry_lock(config_.blackboard->entryMutex());
+    std::unique_lock entry_lock(config_.blackboard->entryMutex());
     const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
     if (val && !val->empty())
     {

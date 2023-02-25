@@ -28,7 +28,7 @@ class Groot2Publisher : public StatusChangeLogger
 
   void updateStatusBuffer();
 
-  std::vector<uint8_t> generateBlackBoardsDump(const std::string& bb_list);
+  std::vector<uint8_t> generateBlackboardsDump(const std::string& bb_list);
 
   unsigned server_port_ = 0;
   std::string server_address_;

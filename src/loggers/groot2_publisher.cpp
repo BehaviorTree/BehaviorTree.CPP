@@ -1,5 +1,5 @@
 #include <future>
-#include "nlohmann/json.hpp"
+#include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/loggers/groot2_protocol.h"
 #include "behaviortree_cpp/xml_parsing.h"
@@ -182,7 +182,7 @@ void Groot2Publisher::threadLoop()
           break;
         }
         std::string const bb_names_str = requestMsg.get(1);
-        auto msg = generateBlackBoardsDump(bb_names_str);
+        auto msg = generateBlackboardsDump(bb_names_str);
         repMsg.add_raw(msg.data(), msg.size());
       } break;
 
@@ -197,7 +197,8 @@ void Groot2Publisher::threadLoop()
   }
 }
 
-std::vector<uint8_t> Groot2Publisher::generateBlackBoardsDump(const std::string &bb_list)
+std::vector<uint8_t>
+Groot2Publisher::generateBlackboardsDump(const std::string &bb_list)
 {
   auto json = nlohmann::json();
   auto const bb_names = BT::splitString(bb_list, ';');
@@ -206,12 +207,11 @@ std::vector<uint8_t> Groot2Publisher::generateBlackBoardsDump(const std::string 
     std::string const bb_name(name);
     auto it = subtrees_.find(bb_name);
 
-    // TODO: reply with an error if not found
-
-    if(it != subtrees_.end()) {
+    if(it != subtrees_.end())
+    {
       // lock the weak pointer
       if(auto subtree = it->second.lock()) {
-//        json[bb_name] = subtree->blackboard->toJson();
+        json[bb_name] = ExportBlackboardToJSON(*subtree->blackboard);
       }
     }
   }

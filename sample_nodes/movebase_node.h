@@ -1,6 +1,8 @@
 #ifndef MOVEBASE_BT_NODES_H
 #define MOVEBASE_BT_NODES_H
 
+
+#include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/behavior_tree.h"
 
 // Custom type
@@ -35,7 +37,21 @@ Pose2D convertFromString(StringView key)
         return output;
     }
 }
+
 } // end namespace BT
+
+namespace nlohmann
+{
+// Use this to register this function into JsonExporter:
+//
+// BT::JsonExporter::get().addConverter<Pose2D>();
+inline void to_json(nlohmann::json& dest, const Pose2D& pose) {
+    dest["x"] = pose.x;
+    dest["y"] = pose.y;
+    dest["theta"] = pose.theta;
+}
+
+}
 
 namespace chr = std::chrono;
 

@@ -85,19 +85,20 @@ void Blackboard::debugMessage() const
 
 std::vector<StringView> Blackboard::getKeys(bool include_remapped) const
 {
-  if (storage_.empty())
+  const size_t N = storage_.size() + (include_remapped ? internal_to_external_.size() : 0 );
+  if (N == 0)
   {
     return {};
   }
   std::vector<StringView> out;
-  out.reserve(storage_.size() + (include_remapped ? internal_to_external_.size() : 0 ));
+  out.reserve(N);
   for (const auto& entry_it : storage_)
   {
     out.push_back(entry_it.first);
   }
   if(include_remapped)
   {
-    for (const auto& [key, rempped] : internal_to_external_)
+    for (const auto& [key, remapped] : internal_to_external_)
     {
       out.push_back(key);
     }
