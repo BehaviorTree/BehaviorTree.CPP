@@ -205,7 +205,7 @@ public:
 
   void debugMessage() const;
 
-  std::vector<StringView> getKeys() const;
+  std::vector<StringView> getKeys(bool include_remapped = true) const;
 
   void clear()
   {

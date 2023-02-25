@@ -132,42 +132,7 @@ class Any
     }
 
     // copy the value (casting into dst). We preserve the destination type.
-    void copyInto(Any& dst)
-    {
-        if(dst.empty())
-        {
-            dst = *this;
-            return;
-        }
-
-        const auto& dst_type = dst.castedType();
-
-        if ((type() == dst_type) || (isString() && dst.isString()) )
-        {
-            dst._any = _any;
-        }
-        else if(isNumber() && dst.isNumber())
-        {
-            if (dst_type == typeid(int64_t))
-            {
-                dst._any = cast<int64_t>();
-            }
-            else if (dst_type == typeid(uint64_t))
-            {
-                dst._any = cast<uint64_t>();
-            }
-            else if (dst_type == typeid(double))
-            {
-                dst._any = cast<double>();
-            }
-            else{
-                throw std::runtime_error("Any::copyInto fails");
-            }
-        }
-        else{
-            throw std::runtime_error("Any::copyInto fails");
-        }
-    }
+    void copyInto(Any& dst);
 
     // this is different from any_cast, because if allows safe
     // conversions between arithmetic values.
@@ -301,6 +266,43 @@ class Any
                       demangle( _any.type() ), "] and [", demangle( typeid(T) ),"]");
     }
 };
+
+inline void Any::copyInto(Any &dst)
+{
+    if(dst.empty())
+    {
+        dst = *this;
+        return;
+    }
+
+    const auto& dst_type = dst.castedType();
+
+    if ((type() == dst_type) || (isString() && dst.isString()) )
+    {
+        dst._any = _any;
+    }
+    else if(isNumber() && dst.isNumber())
+    {
+        if (dst_type == typeid(int64_t))
+        {
+            dst._any = cast<int64_t>();
+        }
+        else if (dst_type == typeid(uint64_t))
+        {
+            dst._any = cast<uint64_t>();
+        }
+        else if (dst_type == typeid(double))
+        {
+            dst._any = cast<double>();
+        }
+        else{
+            throw std::runtime_error("Any::copyInto fails");
+        }
+    }
+    else{
+        throw std::runtime_error("Any::copyInto fails");
+    }
+}
 
 }   // end namespace BT
 

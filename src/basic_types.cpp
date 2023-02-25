@@ -25,7 +25,7 @@ std::string toStr<NodeStatus>(NodeStatus status)
   return "";
 }
 
-std::string toStr(std::string value)
+std::string toStr(const std::string &value)
 {
   return value;
 }
