@@ -1,4 +1,5 @@
 #include <future>
+#include "nlohmann/json.hpp"
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/loggers/groot2_protocol.h"
 #include "behaviortree_cpp/xml_parsing.h"
@@ -48,13 +49,20 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
 {
   {
     std::unique_lock<std::mutex> lk(Groot2Publisher::used_ports_mutex);
-    if(Groot2Publisher::used_ports.count(server_port) != 0)
+    if(Groot2Publisher::used_ports.count(server_port) != 0 ||
+       Groot2Publisher::used_ports.count(server_port+1 != 0))
     {
       auto msg = StrCat("Another instance of Groot2Publisher is using port ",
                         std::to_string(server_port));
       throw LogicError(msg);
     }
     Groot2Publisher::used_ports.insert(server_port);
+    Groot2Publisher::used_ports.insert(server_port+1);
+  }
+
+  // copy of the subtrees
+  for(auto& subtree: tree.subtrees) {
+    subtrees_.insert( {subtree->instance_name, subtree} );
   }
 
   tree_xml_ = WriteTreeToXML(tree, true);
@@ -168,7 +176,14 @@ void Groot2Publisher::threadLoop()
       } break;
 
       case Monitor::RequestType::BLACKBOARD: {
-        // TODO
+        if(requestMsg.parts() == 2) {
+          zmqpp::message errorMsg("must be 2 parts message");
+          socket.send(errorMsg);
+          break;
+        }
+        std::string const bb_names_str = requestMsg.get(1);
+        auto msg = generateBlackBoardsDump(bb_names_str);
+        repMsg.add_raw(msg.data(), msg.size());
       } break;
 
       default: {
@@ -180,6 +195,27 @@ void Groot2Publisher::threadLoop()
     // send the reply
     socket.send(repMsg);
   }
+}
+
+std::vector<uint8_t> Groot2Publisher::generateBlackBoardsDump(const std::string &bb_list)
+{
+  auto json = nlohmann::json();
+  auto const bb_names = BT::splitString(bb_list, ';');
+  for(auto name: bb_names)
+  {
+    std::string const bb_name(name);
+    auto it = subtrees_.find(bb_name);
+
+    // TODO: reply with an error if not found
+
+    if(it != subtrees_.end()) {
+      // lock the weak pointer
+      if(auto subtree = it->second.lock()) {
+//        json[bb_name] = subtree->blackboard->toJson();
+      }
+    }
+  }
+  return nlohmann::json::to_msgpack(json);
 }
 
 }   // namespace BT

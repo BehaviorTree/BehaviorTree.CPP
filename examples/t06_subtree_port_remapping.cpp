@@ -64,11 +64,16 @@ int main()
   tree.tickWhileRunning();
 
   // let's visualize some information about the current state of the blackboards.
-  std::cout << "\n------ First BB ------" << std::endl;
-  tree.subtrees[0]->blackboard->debugMessage();
-  std::cout << "\n------ Second BB------" << std::endl;
-  tree.subtrees[1]->blackboard->debugMessage();
+  for(const auto& subtree: tree.subtrees) {
+    std::cout << "\n------ Subtree ["
+              << subtree->instance_name
+              << "] ------\n";
 
+    subtree->blackboard->debugMessage();
+    std::cout << "--- as JSON ---\n"
+//              << subtree->blackboard->toJson().dump(2)
+              << std::endl;
+  }
   return 0;
 }
 

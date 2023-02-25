@@ -143,6 +143,7 @@ list(APPEND BT_SOURCE
     src/shared_library.cpp
     src/tree_node.cpp
     src/script_parser.cpp
+    src/json_export.cpp
     src/xml_parsing.cpp
 
     src/actions/test_node.cpp

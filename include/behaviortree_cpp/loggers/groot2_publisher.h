@@ -26,6 +26,10 @@ class Groot2Publisher : public StatusChangeLogger
 
   void threadLoop();
 
+  void updateStatusBuffer();
+
+  std::vector<uint8_t> generateBlackBoardsDump(const std::string& bb_list);
+
   unsigned server_port_ = 0;
   std::string server_address_;
 
@@ -34,12 +38,13 @@ class Groot2Publisher : public StatusChangeLogger
   std::atomic_bool active_server_;
   std::thread thread_;
 
-  void updateStatusBuffer();
-
   std::mutex status_mutex_;
 
   std::unordered_map<uint16_t, char*> buffer_ptr_;
   std::string status_buffer_;
+
+  // weak reference to the tree.
+  std::unordered_map<std::string, std::weak_ptr<BT::Tree::Subtree>> subtrees_;
 
   struct Pimpl;
   Pimpl* zmq_;
