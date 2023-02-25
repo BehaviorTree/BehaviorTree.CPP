@@ -3,7 +3,8 @@
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/loggers/groot2_protocol.h"
 #include "behaviortree_cpp/xml_parsing.h"
-#include "zmqpp/zmqpp.hpp"
+#include "cppzmq/zmq.hpp"
+#include "cppzmq/zmq_addon.hpp"
 
 namespace BT
 {
@@ -34,11 +35,11 @@ std::array<char,16> CreateRandomUUID()
 
 struct Groot2Publisher::Pimpl
 {
-  Pimpl() : context(), server(context, zmqpp::socket_type::rep)
+  Pimpl() : context(), server(context, ZMQ_REP)
   {}
 
-  zmqpp::context context;
-  zmqpp::socket server;
+  zmq::context_t context;
+  zmq::socket_t server;
 };
 
 Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
@@ -93,13 +94,13 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
   server_address_ = StrCat("tcp://*:", std::to_string(server_port));
   zmq_->server.bind(server_address_.c_str());
 
-  zmq_->server.set(zmqpp::socket_option::linger, 0);
+  zmq_->server.set(zmq::sockopt::linger, 0);
 
   int timeout_rcv = 100;
-  zmq_->server.set(zmqpp::socket_option::receive_timeout, timeout_rcv);
+  zmq_->server.set(zmq::sockopt::rcvtimeo, timeout_rcv);
 
-  int timeout_snd = 1000;
-  zmq_->server.set(zmqpp::socket_option::send_timeout, timeout_snd);
+  int timeout_ms = 1000;
+  zmq_->server.set(zmq::sockopt::sndtimeo, timeout_ms);
 
   thread_ = std::thread(&Groot2Publisher::threadLoop, this);
 }
@@ -141,16 +142,16 @@ void Groot2Publisher::threadLoop()
   auto& socket = zmq_->server;
   while (active_server_)
   {
-    zmqpp::message requestMsg;
-    if( !socket.receive(requestMsg))
+    zmq::multipart_t requestMsg;
+    if( !requestMsg.recv(socket) || requestMsg.size() == 0)
     {
       continue;
     }
-    std::string const request_str = requestMsg.get(0);
+    std::string const request_str = requestMsg[0].to_string();
     if(request_str.size() != 6)
     {
-      zmqpp::message repMsg("error");
-      socket.send(repMsg);
+      zmq::message_t error_msg(std::string("error"));
+      socket.send(error_msg, zmq::send_flags::none);
       std::cout << "Groot2Publisher: Wrong request size" << std::endl;
       continue;
     }
@@ -161,39 +162,39 @@ void Groot2Publisher::threadLoop()
     reply_header.request = request_header;
     reply_header.tree_id = serialized_uuid;
 
-    zmqpp::message repMsg;
-    repMsg << Monitor::SerializeHeader(reply_header);
+    zmq::multipart_t reply_msg;
+    reply_msg.addstr( Monitor::SerializeHeader(reply_header) );
 
     switch(request_header.type)
     {
       case Monitor::RequestType::FULLTREE: {
-        repMsg << tree_xml_;
+        reply_msg.addstr( tree_xml_ );
       } break;
 
       case Monitor::RequestType::STATUS: {
         std::unique_lock<std::mutex> lk(status_mutex_);
-        repMsg << status_buffer_;
+        reply_msg.addstr( status_buffer_ );
       } break;
 
       case Monitor::RequestType::BLACKBOARD: {
-        if(requestMsg.parts() == 2) {
-          zmqpp::message errorMsg("must be 2 parts message");
-          socket.send(errorMsg);
+        if(requestMsg.size() != 2) {
+          zmq::message_t error_msg(std::string("must be 2 parts message"));
+          socket.send(error_msg, zmq::send_flags::none);
           break;
         }
-        std::string const bb_names_str = requestMsg.get(1);
+        std::string const bb_names_str = requestMsg[1].to_string();
         auto msg = generateBlackboardsDump(bb_names_str);
-        repMsg.add_raw(msg.data(), msg.size());
+        reply_msg.addmem(msg.data(), msg.size());
       } break;
 
       default: {
-        zmqpp::message errorMsg("error");
-        socket.send(errorMsg);
+        zmq::message_t error_msg(std::string("error"));
+        socket.send(error_msg, zmq::send_flags::none);
         continue;
       }
     }
     // send the reply
-    socket.send(repMsg);
+    reply_msg.send(socket);
   }
 }
 

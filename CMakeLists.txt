@@ -68,8 +68,6 @@ if( ZMQ_FOUND )
     add_definitions( -DZMQ_FOUND )
     list(APPEND BT_SOURCE
         src/loggers/groot2_publisher.cpp )
-
-    add_subdirectory(3rdparty/zmqpp-4.2.0)
 else()
     message(WARNING "ZeroMQ NOT found. Skipping the build of [PublisherZMQ] and [Groot2Publisher].")
 endif()
@@ -222,7 +220,7 @@ target_include_directories(${BEHAVIOR_TREE_LIBRARY}
 
 if(ZMQ_FOUND)
     target_link_libraries(${BEHAVIOR_TREE_LIBRARY} PRIVATE
-        ${ZMQ_LIBRARIES} zmqpp-static )
+        ${ZMQ_LIBRARIES})
     target_include_directories(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         ${ZMQ_INCLUDE_DIRS} )
     target_compile_definitions(${BEHAVIOR_TREE_LIBRARY} PRIVATE ZMQ_FOUND)
