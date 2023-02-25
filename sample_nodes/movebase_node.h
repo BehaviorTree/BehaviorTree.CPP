@@ -9,6 +9,16 @@ struct Pose2D
     double x, y, theta;
 };
 
+// Use this to register this function into JsonExporter:
+//
+// BT::JsonExporter::get().addConverter<Pose2D>();
+inline void to_json(nlohmann::json& dest, const Pose2D& pose) {
+    dest["x"] = pose.x;
+    dest["y"] = pose.y;
+    dest["theta"] = pose.theta;
+}
+
+
 namespace BT
 {
 // This template specialization is needed only if you want
@@ -38,18 +48,6 @@ Pose2D convertFromString(StringView key)
 
 } // end namespace BT
 
-namespace nlohmann
-{
-// Use this to register this function into JsonExporter:
-//
-// BT::JsonExporter::get().addConverter<Pose2D>();
-inline void to_json(nlohmann::json& dest, const Pose2D& pose) {
-    dest["x"] = pose.x;
-    dest["y"] = pose.y;
-    dest["theta"] = pose.theta;
-}
-
-}
 
 namespace chr = std::chrono;
 

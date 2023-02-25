@@ -15,6 +15,7 @@ set(BT_TESTS
   gtest_blackboard.cpp
   gtest_preconditions.cpp
   gtest_postconditions.cpp
+  gtest_match.cpp
   gtest_ports.cpp
   gtest_json.cpp
   gtest_skipping.cpp

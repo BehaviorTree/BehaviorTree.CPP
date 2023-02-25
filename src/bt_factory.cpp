@@ -15,7 +15,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/xml_parsing.h"
-#include "behaviortree_cpp/utils/globmatch.hpp"
+#include "behaviortree_cpp/utils/wildcards.hpp"
 
 #ifdef USING_ROS
 #include <ros/package.h>
@@ -269,7 +269,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   bool substituted = false;
   for(const auto& [filter, rule]: substitution_rules_)
   {
-    if( filter == name || filter == ID || glob::match(config.path, filter))
+    if( filter == name || filter == ID || wildcards::match(config.path, filter))
     {
       // first case: the rule is simply a string with the name of the
       // node to create instead

@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/json_export.h"
 
 //----------- Custom types ----------
@@ -23,15 +22,14 @@ struct Pose3D {
 };
 
 //----------- JSON specialization ----------
-namespace nlohmann
-{
-void to_json(json& j, const Vector3D& v)
+
+void to_json(nlohmann::json& j, const Vector3D& v)
 {
   // compact syntax
   j = {{"x", v.x}, {"y", v.y}, {"z", v.z}};
 }
 
-void to_json(json& j, const Quaternion3D& q)
+void to_json(nlohmann::json& j, const Quaternion3D& q)
 {
   // verbose syntax
   j["w"] = q.w;
@@ -40,11 +38,10 @@ void to_json(json& j, const Quaternion3D& q)
   j["z"] = q.z;
 }
 
-void to_json(json& j, const Pose3D& p)
+void to_json(nlohmann::json& j, const Pose3D& p)
 {
   j = {{"pos", p.pos}, {"rot", p.rot}};
 }
-} // end namespace nlohmann
 
 
 using namespace BT;
@@ -54,11 +51,11 @@ TEST(JsonTest, Exporter)
   JsonExporter exporter;
 
   Pose3D pose = { {1,2,3},
-                  {4,5,6,7} };
+                               {4,5,6,7} };
 
   nlohmann::json json;
   exporter.toJson(BT::Any(69), json["int"]);
-  exporter.toJson(BT::Any(M_PI), json["real"]);
+  exporter.toJson(BT::Any(3.14), json["real"]);
 
   // expected to throw, because we haven't called addConverter()
   ASSERT_FALSE( exporter.toJson(BT::Any(pose), json["pose"]) );
@@ -69,7 +66,7 @@ TEST(JsonTest, Exporter)
 
   nlohmann::json json_expected;
   json_expected["int"] = 69;
-  json_expected["real"] = M_PI;
+  json_expected["real"] = 3.14;
 
   json_expected["pose"]["pos"]["x"] = 1;
   json_expected["pose"]["pos"]["y"] = 2;
@@ -82,6 +79,7 @@ TEST(JsonTest, Exporter)
 
   ASSERT_EQ(json_expected, json);
 
+  std::cout << json.dump(2) << std::endl;
 }
 
 
