@@ -21,9 +21,20 @@ namespace BT::Monitor {
 
 enum RequestType : uint8_t
 {
+  // Request the entire tree defintion as XML
   FULLTREE = 'T',
+  // Request the staus of all the nodes
   STATUS = 'S',
+  // retrieve the valus in a set of blackboards
   BLACKBOARD = 'B',
+
+  // Groot requests the insertion of a breakpoint
+  BREAKPOINT_INSERT = 'I',
+  // Groot requests to remove a breakpoint
+  BREAKPOINT_REMOVE = 'R',
+  // Application asks Groot what to do when breakpoint reached
+  BREAKPOINT_QUERY = 'Q',
+
   UNDEFINED = 0,
 };
 
@@ -34,6 +45,11 @@ inline const char* ToString(const RequestType& type)
   case RequestType::FULLTREE: return "FullTree";
   case RequestType::STATUS: return "Status";
   case RequestType::BLACKBOARD: return "BlackBoard";
+
+  case RequestType::BREAKPOINT_INSERT: return "BreakpointInsert";
+  case RequestType::BREAKPOINT_REMOVE: return "BreakpointRemove";
+  case RequestType::BREAKPOINT_QUERY: return "BreakpointQuery";
+
   case RequestType::UNDEFINED: return "UNDEFINED";
   }
   return "Undefined";

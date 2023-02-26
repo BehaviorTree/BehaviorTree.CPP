@@ -155,10 +155,10 @@ public:
   using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
   using StatusChangeCallback = StatusChangeSignal::CallableFunction;
 
-  using PreTickOverrideCallback =
-      std::function<Expected<NodeStatus>(TreeNode&, NodeStatus)>;
-  using PostTickOverrideCallback =
-      std::function<Expected<NodeStatus>(TreeNode&, NodeStatus, NodeStatus)>;
+  using PreTickCallback =
+      std::function<NodeStatus(TreeNode&)>;
+  using PostTickCallback =
+      std::function<NodeStatus(TreeNode&, NodeStatus)>;
 
   /**
      * @brief subscribeToStatusChange is used to attach a callback to a status change.
@@ -173,24 +173,24 @@ public:
 
   /** This method attaches to the TreeNode a callback with signature:
      *
-     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus current_status)
+     *     Optional<NodeStatus> myCallback(TreeNode& node)
      *
      * This callback is executed BEFORE the tick() and, if it returns a valid Optional<NodeStatus>,
      * the actual tick() will NOT be executed and this result will be returned instead.
      *
      * This is useful to inject a "dummy" implementation of the TreeNode at run-time
      */
-  void setPreTickOverrideFunction(PreTickOverrideCallback callback);
+  void setPreTickFunction(PreTickCallback callback);
 
   /**
      * This method attaches to the TreeNode a callback with signature:
      *
-     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus prev_status, NodeStatus tick_status)
+     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus new_status)
      *
      * This callback is executed AFTER the tick() and, if it returns a valid Optional<NodeStatus>,
      * the value returned by the actual tick() is overriden with this one.
      */
-  void setPostTickOverrideFunction(PostTickOverrideCallback callback);
+  void setPostTickFunction(PostTickCallback callback);
 
   /// The unique identifier of this instance of treeNode.
   /// It is assigneld by the factory
@@ -313,9 +313,11 @@ private:
 
   std::string registration_ID_;
 
-  PreTickOverrideCallback pre_condition_callback_;
+  PreTickCallback pre_condition_callback_;
 
-  PostTickOverrideCallback post_condition_callback_;
+  PostTickCallback post_condition_callback_;
+
+  std::mutex callback_injection_mutex_;
 
   std::shared_ptr<WakeUpSignal> wake_up_;
 

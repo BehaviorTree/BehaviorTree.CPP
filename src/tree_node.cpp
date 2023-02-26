@@ -26,9 +26,29 @@ TreeNode::TreeNode(std::string name, NodeConfig config) :
 NodeStatus TreeNode::executeTick()
 {
   auto new_status = status_;
+
+  // injected callback
+  {
+    std::unique_lock lk(callback_injection_mutex_);
+
+    if(status_ == NodeStatus::IDLE)
+    {
+      if(pre_condition_callback_)
+      {
+        auto override_status = pre_condition_callback_(*this);
+        if(isStatusCompleted(override_status))
+        {
+          // return immediately and don't execute the actual tick()
+          new_status = override_status;
+          setStatus(new_status);
+          return new_status;
+        }
+      }
+    }
+  }
+
   // a pre-condition may return the new status.
   // In this case it override the actual tick()
-
   if (auto precond = checkPreConditions())
   {
     new_status = precond.value();
@@ -41,19 +61,20 @@ NodeStatus TreeNode::executeTick()
 
   checkPostConditions(new_status);
 
-  // a post-condition may overwrite the result of the tick
-  // with its own result.
-  if (post_condition_callback_)
+  // injected callback
   {
-    // may overwrite the status
-    if (auto post = post_condition_callback_(*this, status_, new_status))
+    std::unique_lock lk(callback_injection_mutex_);
+    if(post_condition_callback_ && isStatusCompleted(new_status))
     {
-      new_status = post.value();
+      auto override_status = post_condition_callback_(*this, new_status);
+      if(isStatusCompleted(override_status))
+      {
+        new_status = override_status;
+      }
     }
   }
 
   setStatus(new_status);
-
   return new_status;
 }
 
@@ -210,6 +231,18 @@ TreeNode::StatusChangeSubscriber
 TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 {
   return state_change_signal_.subscribe(std::move(callback));
+}
+
+void TreeNode::setPreTickFunction(PreTickCallback callback)
+{
+  std::unique_lock lk(callback_injection_mutex_);
+  pre_condition_callback_ = callback;
+}
+
+void TreeNode::setPostTickFunction(PostTickCallback callback)
+{
+  std::unique_lock lk(callback_injection_mutex_);
+  post_condition_callback_ = callback;
 }
 
 uint16_t TreeNode::UID() const

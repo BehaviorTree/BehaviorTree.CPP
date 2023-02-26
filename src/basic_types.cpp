@@ -242,6 +242,9 @@ NodeStatus convertFromString<NodeStatus>(StringView str)
     return NodeStatus::SUCCESS;
   if (str == "FAILURE")
     return NodeStatus::FAILURE;
+  if (str == "SKIPPED")
+    return NodeStatus::SKIPPED;
+
   throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") +
                      static_cast<std::string>(str));
 }
