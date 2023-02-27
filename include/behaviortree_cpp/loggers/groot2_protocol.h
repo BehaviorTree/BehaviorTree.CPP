@@ -32,8 +32,13 @@ enum RequestType : uint8_t
   BREAKPOINT_INSERT = 'I',
   // Groot requests to remove a breakpoint
   BREAKPOINT_REMOVE = 'R',
-  // Application asks Groot what to do when breakpoint reached
-  BREAKPOINT_QUERY = 'Q',
+  // Notify Groot that we reached a breakpoint
+  BREAKPOINT_NOTIFY = 'N',
+  // Groot will unlock a breakpoint
+  BREAKPOINT_UNLOCK = 'U',
+
+  // Remove all breakpoints. To be done before disconnecting Groot
+  REMOVE_ALL_BREAKPOINTS = 'A',
 
   UNDEFINED = 0,
 };
@@ -48,7 +53,9 @@ inline const char* ToString(const RequestType& type)
 
   case RequestType::BREAKPOINT_INSERT: return "BreakpointInsert";
   case RequestType::BREAKPOINT_REMOVE: return "BreakpointRemove";
-  case RequestType::BREAKPOINT_QUERY: return "BreakpointQuery";
+  case RequestType::BREAKPOINT_NOTIFY: return "BreakpointNotify";
+  case RequestType::BREAKPOINT_UNLOCK: return "BreakpointUnlock";
+  case RequestType::REMOVE_ALL_BREAKPOINTS: return "BreakpointRemoveAll";
 
   case RequestType::UNDEFINED: return "UNDEFINED";
   }

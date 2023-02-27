@@ -35,25 +35,23 @@ std::array<char,16> CreateRandomUUID()
 
 struct Groot2Publisher::Pimpl
 {
-  Pimpl() : context(), server(context, ZMQ_REP)
+  Pimpl() : context(), server(context, ZMQ_REP), publisher(context, ZMQ_PUB)
   {
-  }
-
-  void createClient(const std::string& address)
-  {
-    client = std::make_unique<zmq::socket_t>(context, ZMQ_REQ);
-    client->set(zmq::sockopt::linger, 0);
+    server.set(zmq::sockopt::linger, 0);
+    publisher.set(zmq::sockopt::linger, 0);
 
     int timeout_rcv = 100;
-    client->set(zmq::sockopt::rcvtimeo, timeout_rcv);
+    server.set(zmq::sockopt::rcvtimeo, timeout_rcv);
+    publisher.set(zmq::sockopt::rcvtimeo, timeout_rcv);
+
     int timeout_ms = 1000;
-    client->set(zmq::sockopt::sndtimeo, timeout_ms);
-    client->connect(address.c_str());
+    server.set(zmq::sockopt::sndtimeo, timeout_ms);
+    publisher.set(zmq::sockopt::rcvtimeo, timeout_rcv);
   }
 
   zmq::context_t context;
   zmq::socket_t server;
-  std::unique_ptr<zmq::socket_t> client;
+  zmq::socket_t publisher;
 };
 
 Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
@@ -106,32 +104,28 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
   }
   //-------------------------------
   server_address_ = StrCat("tcp://*:", std::to_string(server_port));
-  client_address_ = StrCat("tcp://*:", std::to_string(server_port+1));
+  publisher_address_ = StrCat("tcp://*:", std::to_string(server_port+1));
 
   zmq_->server.bind(server_address_.c_str());
-  zmq_->server.set(zmq::sockopt::linger, 0);
-  int timeout_rcv = 100;
-  zmq_->server.set(zmq::sockopt::rcvtimeo, timeout_rcv);
-  int timeout_ms = 1000;
-  zmq_->server.set(zmq::sockopt::sndtimeo, timeout_ms);
-
-  zmq_->createClient(client_address_);
+  zmq_->publisher.bind(publisher_address_.c_str());
 
   server_thread_ = std::thread(&Groot2Publisher::serverLoop, this);
-  breakpoints_thread_ = std::thread(&Groot2Publisher::breakpointsLoop, this);
+  heartbeat_thread_ = std::thread(&Groot2Publisher::heartbeatLoop, this);
 }
 
 Groot2Publisher::~Groot2Publisher()
 {
+  removeAllBreakpoints();
+
   active_server_ = false;
   if (server_thread_.joinable())
   {
     server_thread_.join();
   }
 
-  if (breakpoints_thread_.joinable())
+  if (heartbeat_thread_.joinable())
   {
-    breakpoints_thread_.join();
+    heartbeat_thread_.join();
   }
 
   flush();
@@ -232,6 +226,36 @@ void Groot2Publisher::serverLoop()
         }
       } break;
 
+      case Monitor::RequestType::BREAKPOINT_UNLOCK: {
+        if(requestMsg.size() != 2) {
+          sendErrorReply("must be 2 parts message");
+          break;
+        }
+        auto str_parts = splitString(requestMsg[1].to_string_view(), ';');
+        int node_uid = std::stoi( std::string(str_parts[0]) );
+        bool remove = str_parts.size() >= 2 && str_parts[1] == "remove";
+
+        NodeStatus desired_status = NodeStatus::SKIPPED;
+        if( str_parts[0] == "SUCCESS")
+        {
+          desired_status = NodeStatus::SUCCESS;
+        }
+        else if( str_parts[0] == "FAILURE")
+        {
+          desired_status = NodeStatus::FAILURE;
+        }
+
+        if(!unlockBreakpoint(uint16_t(node_uid), desired_status, remove))
+        {
+          sendErrorReply("Node ID not found");
+          break;
+        }
+      } break;
+
+      case Monitor::RequestType::REMOVE_ALL_BREAKPOINTS: {
+        removeAllBreakpoints();
+      } break;
+
       case Monitor::RequestType::BREAKPOINT_REMOVE: {
         if(requestMsg.size() != 2) {
           sendErrorReply("must be 2 parts message");
@@ -256,83 +280,16 @@ void Groot2Publisher::serverLoop()
   }
 }
 
-void Groot2Publisher::breakpointsLoop()
+void Groot2Publisher::heartbeatLoop()
 {
-  auto& groot_socket = *zmq_->client;
   while (active_server_)
   {
-    std::shared_ptr<Breakpoint> breakpoint;
-    // pop the pending breakpoint request from breakpoints_queue_
-    {
-      std::unique_lock lk(breakpoints_mutex_);
-      // wait for something to be available on
-      breakpoints_cv_.wait_for(lk, std::chrono::milliseconds(100),
-                               [this](){ return !breakpoints_queue_.empty(); } );
-      breakpoint = breakpoints_queue_.front();
-      breakpoints_queue_.pop_front();
-    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    if(!breakpoint)
+    auto now = std::chrono::system_clock::now();
+    if( now - last_heartbeat_ > std::chrono::milliseconds(8000))
     {
-      // empty queue
-      continue;
-    }
-
-    auto unlockBreakpoint = [breakpoint]()
-    {
-      {
-        std::scoped_lock lk(breakpoint->mutex);
-        breakpoint->ready = true;
-        breakpoint->desired_result = NodeStatus::SKIPPED;
-      }
-      breakpoint->wakeup.notify_all();
-    };
-
-    // send a request to Groot and wait for reply.
-    Monitor::RequestHeader breakpoint_request(Monitor::BREAKPOINT_QUERY);
-    zmq::multipart_t request_msg;
-    request_msg.addstr( Monitor::SerializeHeader(breakpoint_request) );
-    request_msg.addstr(std::to_string(breakpoint->node_uid));
-    request_msg.send(groot_socket);
-
-    // wait for the reply, but in case of missing heartbeat, unlock
-    // and destroy the breakpoint.
-    zmq::multipart_t reply_msg;
-    while( !reply_msg.recv(groot_socket) || reply_msg.size() == 0)
-    {
-      auto const now = std::chrono::system_clock::now();
-      if(now - last_heartbeat_ > std::chrono::milliseconds(15000))
-      {
-        // timeout!!! Destroy the breakpoint and reset the socket
-        breakpoint->remove_when_done = true;
-        breakpoint->desired_result = NodeStatus::SKIPPED;
-        unlockBreakpoint();
-        // this is needed to cleanup the internal state of the socket
-        zmq_->createClient(client_address_);
-        break;
-      }
-    }
-    // valid replies have 2 parts
-    if(reply_msg.size() == 2)
-    {
-      auto str_parts = splitString(reply_msg[1].to_string_view(), ';');
-
-      if( str_parts[0] == "SUCCESS")
-      {
-        breakpoint->desired_result = NodeStatus::SUCCESS;
-      }
-      else if( str_parts[0] == "FAILURE")
-      {
-        breakpoint->desired_result = NodeStatus::FAILURE;
-      }
-      else {
-        breakpoint->desired_result = NodeStatus::SKIPPED;
-      }
-      if(str_parts.size()>=2 && str_parts[1] == "remove" )
-      {
-        breakpoint->remove_when_done = true;
-      }
-      unlockBreakpoint();
+      removeAllBreakpoints();
     }
   }
 }
@@ -379,13 +336,14 @@ bool Groot2Publisher::insertBreakpoint(uint16_t node_uid, bool once)
   node->setPreTickFunction(
       [breakpoint, this](TreeNode& node) -> NodeStatus
       {
-        // push the breakpoint pointer into the breakpoints_queue_
+        // Notify that a breakpoint was reached, using the zmq_->publisher
         {
-          std::scoped_lock lk(breakpoints_mutex_);
-          breakpoints_queue_.push_back(breakpoint);
+          Monitor::RequestHeader breakpoint_request(Monitor::BREAKPOINT_NOTIFY);
+          zmq::multipart_t request_msg;
+          request_msg.addstr( Monitor::SerializeHeader(breakpoint_request) );
+          request_msg.addstr(std::to_string(breakpoint->node_uid));
+          request_msg.send(zmq_->publisher);
         }
-        // notify to thread in breakpointsLoop() that something was pushed into the queue
-        breakpoints_cv_.notify_all();
 
         // wait until someone wake us up
         std::unique_lock lk(breakpoint->mutex);
@@ -401,6 +359,36 @@ bool Groot2Publisher::insertBreakpoint(uint16_t node_uid, bool once)
         return breakpoint->desired_result;
       });
 
+  return true;
+}
+
+bool Groot2Publisher::unlockBreakpoint(uint16_t node_uid, NodeStatus result, bool remove)
+{
+  auto it = nodes_by_uid_.find(node_uid);
+  if( it == nodes_by_uid_.end())
+  {
+    return false;
+  }
+  TreeNode::Ptr node = it->second.lock();
+  if(!node)
+  {
+    return false;
+  }
+  auto bk_it = pre_breakpoints_.find(node_uid);
+  if( bk_it == pre_breakpoints_.end())
+  {
+    return false;
+  }
+
+  auto breakpoint = bk_it->second;
+
+  {
+    std::scoped_lock lk(breakpoint->mutex);
+    breakpoint->desired_result = result;
+    breakpoint->ready = true;
+    breakpoint->remove_when_done = remove;
+  }
+  breakpoint->wakeup.notify_all();
   return true;
 }
 
@@ -432,11 +420,39 @@ bool Groot2Publisher::removeBreakpoint(uint16_t node_uid)
     breakpoint->ready = true;
     breakpoint->remove_when_done = true;
   }
-  breakpoint->wakeup.notify_all();
   node->setPreTickFunction({});
+  breakpoint->wakeup.notify_all();
   pre_breakpoints_.erase(bk_it);
 
   return true;
+}
+
+void Groot2Publisher::removeAllBreakpoints()
+{
+  for(auto [node_uid, breakpoint]: pre_breakpoints_)
+  {
+    auto it = nodes_by_uid_.find(node_uid);
+    if( it == nodes_by_uid_.end())
+    {
+      continue;
+    }
+    TreeNode::Ptr node = it->second.lock();
+    if(!node)
+    {
+      continue;
+    }
+
+    // Unlock breakpoint, just in case
+    {
+      std::scoped_lock lk(breakpoint->mutex);
+      breakpoint->desired_result = NodeStatus::SKIPPED;
+      breakpoint->ready = true;
+      breakpoint->remove_when_done = true;
+    }
+    node->setPreTickFunction({});
+    breakpoint->wakeup.notify_all();
+  }
+  pre_breakpoints_.clear();
 }
 
 }   // namespace BT

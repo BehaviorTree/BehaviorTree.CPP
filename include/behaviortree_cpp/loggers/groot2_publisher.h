@@ -26,7 +26,7 @@ class Groot2Publisher : public StatusChangeLogger
 
   void serverLoop();
 
-  void breakpointsLoop();
+  void heartbeatLoop();
 
   void updateStatusBuffer();
 
@@ -34,11 +34,15 @@ class Groot2Publisher : public StatusChangeLogger
 
   bool insertBreakpoint(uint16_t node_uid, bool once);
 
+  bool unlockBreakpoint(uint16_t node_uid, NodeStatus result, bool remove);
+
   bool removeBreakpoint(uint16_t node_uid);
+
+  void removeAllBreakpoints();
 
   unsigned server_port_ = 0;
   std::string server_address_;
-  std::string client_address_;
+  std::string publisher_address_;
 
   std::string tree_xml_;
 
@@ -64,14 +68,11 @@ class Groot2Publisher : public StatusChangeLogger
     NodeStatus desired_result = NodeStatus::SKIPPED;
   };
 
-  std::unordered_map<int, std::shared_ptr<Breakpoint>> pre_breakpoints_;
+  std::unordered_map<uint16_t, std::shared_ptr<Breakpoint>> pre_breakpoints_;
 
   std::chrono::system_clock::time_point last_heartbeat_;
 
-  std::thread breakpoints_thread_;
-  std::deque<std::shared_ptr<Breakpoint>> breakpoints_queue_;
-  std::condition_variable breakpoints_cv_;
-  std::mutex breakpoints_mutex_;
+  std::thread heartbeat_thread_;
 
   struct Pimpl;
   Pimpl* zmq_;
