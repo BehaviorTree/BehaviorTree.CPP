@@ -185,8 +185,10 @@ void Groot2Publisher::serverLoop()
 
     auto sendErrorReply = [this, &socket](const std::string& msg)
     {
-      zmq::message_t error_msg(msg);
-      socket.send(error_msg, zmq::send_flags::none);
+      zmq::multipart_t error_msg;
+      error_msg.addstr("error");
+      error_msg.addstr(msg);
+      error_msg.send(socket);
     };
 
     switch(request_header.type)
@@ -232,15 +234,22 @@ void Groot2Publisher::serverLoop()
           break;
         }
         auto str_parts = splitString(requestMsg[1].to_string_view(), ';');
+
+        if(str_parts.size() < 2) {
+          sendErrorReply("String must have at least 2 parts");
+          break;
+        }
+
         int node_uid = std::stoi( std::string(str_parts[0]) );
-        bool remove = str_parts.size() >= 2 && str_parts[1] == "remove";
+        const auto status_str = str_parts[1];
+        bool remove = str_parts.size() >= 3 && str_parts[2] == "remove";
 
         NodeStatus desired_status = NodeStatus::SKIPPED;
-        if( str_parts[0] == "SUCCESS")
+        if( status_str == "SUCCESS")
         {
           desired_status = NodeStatus::SUCCESS;
         }
-        else if( str_parts[0] == "FAILURE")
+        else if( status_str == "FAILURE")
         {
           desired_status = NodeStatus::FAILURE;
         }
@@ -386,7 +395,7 @@ bool Groot2Publisher::unlockBreakpoint(uint16_t node_uid, NodeStatus result, boo
     std::scoped_lock lk(breakpoint->mutex);
     breakpoint->desired_result = result;
     breakpoint->ready = true;
-    breakpoint->remove_when_done = remove;
+    breakpoint->remove_when_done |= remove;
   }
   breakpoint->wakeup.notify_all();
   return true;
