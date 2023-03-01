@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.8.3 (2023-03-01)
+------------------
 * fix and warnings added
 * fix in SharedLibrary and cosmetic changes to the code
 * Contributors: Davide Faconti
