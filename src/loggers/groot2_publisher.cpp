@@ -155,6 +155,9 @@ void Groot2Publisher::serverLoop()
 
   active_server_ = true;
   auto& socket = zmq_->server;
+  // this heartbeat will help establishing if Groot is connected or not
+  last_heartbeat_ = std::chrono::system_clock::now();
+
   while (active_server_)
   {
     zmq::multipart_t requestMsg;
@@ -298,7 +301,9 @@ void Groot2Publisher::heartbeatLoop()
     auto now = std::chrono::system_clock::now();
     if( now - last_heartbeat_ > std::chrono::milliseconds(8000))
     {
+        std::cout << "Groot2Publisher: dead" << std::endl;
       removeAllBreakpoints();
+      std::cout << "Groot2Publisher: revived" << std::endl;
     }
   }
 }
