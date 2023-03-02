@@ -205,7 +205,7 @@ void Groot2Publisher::serverLoop()
       case Monitor::RequestType::BLACKBOARD: {
         if(requestMsg.size() != 2) {
           sendErrorReply("must be 2 parts message");
-          break;
+          continue;
         }
         std::string const bb_names_str = requestMsg[1].to_string();
         auto msg = generateBlackboardsDump(bb_names_str);
@@ -215,7 +215,7 @@ void Groot2Publisher::serverLoop()
       case Monitor::RequestType::BREAKPOINT_INSERT: {
         if(requestMsg.size() != 2) {
           sendErrorReply("must be 2 parts message");
-          break;
+          continue;
         }
         auto str_parts = splitString(requestMsg[1].to_string_view(), ';');
         int node_uid = std::stoi( std::string(str_parts[0]) );
@@ -224,20 +224,20 @@ void Groot2Publisher::serverLoop()
         if(!insertBreakpoint(uint16_t(node_uid), once))
         {
           sendErrorReply("Node ID not found");
-          break;
+          continue;
         }
       } break;
 
       case Monitor::RequestType::BREAKPOINT_UNLOCK: {
         if(requestMsg.size() != 2) {
           sendErrorReply("must be 2 parts message");
-          break;
+          continue;
         }
         auto str_parts = splitString(requestMsg[1].to_string_view(), ';');
 
         if(str_parts.size() < 2) {
           sendErrorReply("String must have at least 2 parts");
-          break;
+          continue;
         }
 
         int node_uid = std::stoi( std::string(str_parts[0]) );
@@ -257,7 +257,7 @@ void Groot2Publisher::serverLoop()
         if(!unlockBreakpoint(uint16_t(node_uid), desired_status, remove))
         {
           sendErrorReply("Node ID not found");
-          break;
+          continue;
         }
       } break;
 
@@ -268,13 +268,13 @@ void Groot2Publisher::serverLoop()
       case Monitor::RequestType::BREAKPOINT_REMOVE: {
         if(requestMsg.size() != 2) {
           sendErrorReply("must be 2 parts message");
-          break;
+          continue;
         }
         int node_uid = std::stoi( requestMsg[1].to_string() );
         if(!removeBreakpoint(uint16_t(node_uid)))
         {
           sendErrorReply("Node ID not found");
-          break;
+          continue;
         }
       } break;
 
@@ -345,6 +345,7 @@ bool Groot2Publisher::insertBreakpoint(uint16_t node_uid, bool once)
   node->setPreTickFunction(
       [breakpoint, this](TreeNode& node) -> NodeStatus
       {
+      std::cout << "otify that a breakpoint was reached" << std::endl;
         // Notify that a breakpoint was reached, using the zmq_->publisher
         {
           Monitor::RequestHeader breakpoint_request(Monitor::BREAKPOINT_NOTIFY);
@@ -353,18 +354,23 @@ bool Groot2Publisher::insertBreakpoint(uint16_t node_uid, bool once)
           request_msg.addstr(std::to_string(breakpoint->node_uid));
           request_msg.send(zmq_->publisher);
         }
-
+//
+      std::cout << "sent that a breakpoint was reached" << std::endl;
         // wait until someone wake us up
         std::unique_lock lk(breakpoint->mutex);
         breakpoint->wakeup.wait(lk, [breakpoint]() { return breakpoint->ready; } );
         breakpoint->ready = false;
 
+        std::cout << "wake that a breakpoint was reached" << std::endl;
+
         // self-destruction at the end of this lambda function
         if(breakpoint->remove_when_done)
         {
           pre_breakpoints_.erase(breakpoint->node_uid);
+          std::cout << "erased the break point from list" << std::endl;
           node.setPreTickFunction({});
         }
+        std::cout << "returning" << std::endl;
         return breakpoint->desired_result;
       });
 
@@ -422,6 +428,7 @@ bool Groot2Publisher::removeBreakpoint(uint16_t node_uid)
 
   auto breakpoint = bk_it->second;
 
+  std::cout << "unlocking!" << std::endl;
   // Unlock breakpoint, just in case
   {
     std::scoped_lock lk(breakpoint->mutex);
@@ -429,9 +436,17 @@ bool Groot2Publisher::removeBreakpoint(uint16_t node_uid)
     breakpoint->ready = true;
     breakpoint->remove_when_done = true;
   }
+  std::cout << "unlocked!" << std::endl;
+  // what if the pre tick is waited, we should finish it first!
+  // it has the same lock mutex in the execute tick with this function!
   node->setPreTickFunction({});
+
+  std::cout << "pretick removed!" << std::endl;
+
   breakpoint->wakeup.notify_all();
+  std::cout << "notified all!" << std::endl;
   pre_breakpoints_.erase(bk_it);
+  std::cout << "erased!" << std::endl;
 
   return true;
 }
