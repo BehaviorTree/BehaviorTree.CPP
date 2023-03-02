@@ -29,7 +29,7 @@ NodeStatus TreeNode::executeTick()
 
   // injected callback
   {
-    std::unique_lock lk(callback_injection_mutex_);
+//    std::unique_lock lk(callback_injection_mutex_);
 
     if(status_ == NodeStatus::IDLE)
     {
@@ -63,7 +63,7 @@ NodeStatus TreeNode::executeTick()
 
   // injected callback
   {
-    std::unique_lock lk(callback_injection_mutex_);
+//    std::unique_lock lk(callback_injection_mutex_);
     if(post_condition_callback_ && isStatusCompleted(new_status))
     {
       auto override_status = post_condition_callback_(*this, new_status);
@@ -235,13 +235,13 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 
 void TreeNode::setPreTickFunction(PreTickCallback callback)
 {
-  std::unique_lock lk(callback_injection_mutex_);
+//  std::unique_lock lk(callback_injection_mutex_);
   pre_condition_callback_ = callback;
 }
 
 void TreeNode::setPostTickFunction(PostTickCallback callback)
 {
-  std::unique_lock lk(callback_injection_mutex_);
+//  std::unique_lock lk(callback_injection_mutex_);
   post_condition_callback_ = callback;
 }
 
