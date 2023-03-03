@@ -66,7 +66,8 @@ NodeStatus TreeNode::executeTick()
 
   // injected callback
   {
-//    std::unique_lock lk(callback_injection_mutex_);
+    // should be the same as above? 
+    std::unique_lock lk(callback_injection_mutex_);
     if(post_condition_callback_ && isStatusCompleted(new_status))
     {
       auto override_status = post_condition_callback_(*this, new_status);
