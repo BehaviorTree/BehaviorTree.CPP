@@ -144,6 +144,8 @@ public:
     //but, just in case.... this should be no-op
     auto visitor = [](BT::TreeNode* node) { node->haltNode(); };
     BT::applyRecursiveVisitor(rootNode(), visitor);
+
+    rootNode()->resetStatus();
   }
 
   TreeNode* rootNode() const;
