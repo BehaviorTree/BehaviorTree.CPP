@@ -196,10 +196,9 @@ else()
 endif()
 
 target_link_libraries(${BEHAVIOR_TREE_LIBRARY}
-    PUBLIC
+    PRIVATE
         Threads::Threads
         ${CMAKE_DL_LIBS}
-    PRIVATE
         $<BUILD_INTERFACE:foonathan::lexy>
 )
 
