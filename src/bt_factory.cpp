@@ -375,9 +375,14 @@ Tree::~Tree()
   haltTree();
 }
 
+NodeStatus Tree::tickExactlyOnce()
+{
+  return tickRoot(EXACTLY_ONCE, {});
+}
+
 NodeStatus Tree::tickOnce()
 {
-  return tickRoot(ONCE, {});
+  return tickRoot(ONCE_UNLESS_WOKEN_UP, {});
 }
 
 NodeStatus Tree::tickWhileRunning(std::chrono::milliseconds sleep_time)
@@ -416,19 +421,30 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
 {
   NodeStatus status = NodeStatus::IDLE;
 
+  if (!wake_up_)
+  {
+    initialize();
+  }
+
+  if (!rootNode())
+  {
+    throw RuntimeError("Empty Tree");
+  }
+
   while (status == NodeStatus::IDLE ||
          (opt == TickOption::WHILE_RUNNING && status == NodeStatus::RUNNING))
   {
-    if (!wake_up_)
+    status = rootNode()->executeTick();
+
+    // Inner loop. The previous tick might have triggered the wake-up
+    // in this case, unless TickOption::EXACTLY_ONCE, we tick again
+    while( opt != TickOption::EXACTLY_ONCE &&
+           status == NodeStatus::RUNNING &&
+           wake_up_->waitFor(std::chrono::milliseconds(0)) )
     {
-      initialize();
+      status = rootNode()->executeTick();
     }
 
-    if (!rootNode())
-    {
-      throw RuntimeError("Empty Tree");
-    }
-    status = rootNode()->executeTick();
     if (status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE)
     {
       rootNode()->resetStatus();
