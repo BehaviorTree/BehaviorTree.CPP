@@ -17,7 +17,6 @@ namespace BT
 NodeStatus ReactiveSequence::tick()
 {
   size_t success_count = 0;
-  size_t running_count = 0;
 
   for (size_t index = 0; index < childrenCount(); index++)
   {
@@ -33,8 +32,8 @@ NodeStatus ReactiveSequence::tick()
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
-        running_count++;
-
+        // just in case, make sure that following children are not
+        // in RUNNING state too
         for (size_t i = index + 1; i < childrenCount(); i++)
         {
           haltChild(i);
@@ -65,11 +64,9 @@ NodeStatus ReactiveSequence::tick()
   if (success_count == childrenCount())
   {
     resetChildren();
-
-    // Skip if ALL the nodes have been skipped
-    return status() == (NodeStatus::RUNNING) ? NodeStatus::SUCCESS : NodeStatus::SKIPPED;
   }
-  throw LogicError("ReactiveSequence is not supposed to reach this point");
+  // Skip if ALL the nodes have been skipped
+  return status() == (NodeStatus::RUNNING) ? NodeStatus::SUCCESS : NodeStatus::SKIPPED;
 }
 
 }   // namespace BT

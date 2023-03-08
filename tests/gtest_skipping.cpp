@@ -93,3 +93,24 @@ TEST(SkippingLogic, SkipSubtree)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
+TEST(SkippingLogic, ReactiveSingleChild)
+{
+
+  static const char* xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="Untitled">
+        <ReactiveSequence>
+          <AlwaysSuccess _skipIf="flag"/>
+        </ReactiveSequence>
+      </BehaviorTree>
+    </root>
+ )";
+
+  BT::BehaviorTreeFactory factory;
+  auto root_blackboard = BT::Blackboard::create();
+  root_blackboard->set<bool>("flag", true);
+
+  auto tree = factory.createTreeFromText(xml_text, root_blackboard);
+
+  tree.tickWhileRunning();
+}
