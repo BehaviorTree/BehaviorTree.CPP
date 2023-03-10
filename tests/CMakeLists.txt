@@ -50,6 +50,7 @@ elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
         ${BEHAVIOR_TREE_LIBRARY}
         bt_sample_nodes
         foonathan::lexy
+        Threads::Threads
         ${catkin_LIBRARIES})
 
     target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
