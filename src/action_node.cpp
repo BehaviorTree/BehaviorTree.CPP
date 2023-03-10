@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2023 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,6 +11,8 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#define MINICORO_IMPL
+#include "minicoro/minicoro.h"
 #include "behaviortree_cpp/action_node.h"
 
 using namespace BT;
@@ -62,64 +64,86 @@ NodeStatus SyncActionNode::executeTick()
 }
 
 //-------------------------------------
-#ifndef BT_NO_COROUTINES
-
-#ifdef BT_BOOST_COROUTINE2
-#include <boost/coroutine2/all.hpp>
-using namespace boost::coroutines2;
-#endif
-
-#ifdef BT_BOOST_COROUTINE
-#include <boost/coroutine/all.hpp>
-using namespace boost::coroutines;
-#endif
 
 struct CoroActionNode::Pimpl
 {
-  std::unique_ptr<coroutine<void>::pull_type> coro;
-  std::function<void(coroutine<void>::push_type& yield)> func;
-  coroutine<void>::push_type* yield_ptr;
+  mco_coro* coro = nullptr;
+  mco_desc desc;
 };
+
+void CoroEntry(mco_coro* co) {
+  static_cast<CoroActionNode*>(co->user_data)->tickImpl();
+}
 
 CoroActionNode::CoroActionNode(const std::string& name, const NodeConfig& config) :
   ActionNodeBase(name, config), _p(new Pimpl)
 {
-  _p->func = [this](coroutine<void>::push_type& yield) {
-    _p->yield_ptr = &yield;
-    setStatus(tick());
-  };
 }
 
 CoroActionNode::~CoroActionNode()
-{}
+{
+  destroyCoroutine();
+}
 
 void CoroActionNode::setStatusRunningAndYield()
 {
   setStatus(NodeStatus::RUNNING);
-  (*_p->yield_ptr)();
+  mco_yield(_p->coro);
 }
 
 NodeStatus CoroActionNode::executeTick()
 {
-  if (!(_p->coro) || !(*_p->coro))
+  // create a new coroutine, if necessary
+  if(_p->coro == nullptr)
   {
-    _p->coro.reset(new coroutine<void>::pull_type(_p->func));
-    return status();
+    // First initialize a `desc` object through `mco_desc_init`.
+    _p->desc = mco_desc_init(CoroEntry, 0);
+    _p->desc.user_data = this;
+
+    mco_result res = mco_create(&_p->coro, &_p->desc);
+    if(res != MCO_SUCCESS)
+    {
+      throw RuntimeError("Can't create coroutine");
+    }
   }
 
-  if (status() == NodeStatus::RUNNING && bool(_p->coro))
+  //------------------------
+  // execute the coroutine
+  mco_resume(_p->coro);
+  //------------------------
+
+  // check if the coroutine finished. In this case, destroy it
+  if(mco_status(_p->coro) == MCO_DEAD)
   {
-    (*_p->coro)();
+    destroyCoroutine();
   }
 
   return status();
 }
 
+void CoroActionNode::tickImpl()
+{
+  setStatus(tick());
+}
+
 void CoroActionNode::halt()
 {
-  _p->coro.reset();
+  destroyCoroutine();
 }
-#endif
+
+void CoroActionNode::destroyCoroutine()
+{
+  if(_p->coro)
+  {
+    mco_result res = mco_destroy(_p->coro);
+    if(res != MCO_SUCCESS)
+    {
+      throw RuntimeError("Can't destroy coroutine");
+    }
+    _p->coro = nullptr;
+  }
+}
+
 
 bool StatefulActionNode::isHaltRequested() const
 {

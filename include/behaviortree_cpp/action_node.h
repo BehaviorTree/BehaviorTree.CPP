@@ -185,8 +185,6 @@ private:
   std::atomic_bool halt_requested_;
 };
 
-#ifndef BT_NO_COROUTINES
-
 /**
  * @brief The CoroActionNode class is an a good candidate for asynchronous actions
  * which need to communicate with an external service using an async request/reply interface.
@@ -206,6 +204,8 @@ public:
   // This method triggers the TickEngine. Do NOT remove the "final" keyword.
   virtual NodeStatus executeTick() override final;
 
+  void tickImpl();
+
   /** You may want to override this method. But still, remember to call this
     * implementation too.
     *
@@ -222,8 +222,10 @@ public:
 protected:
   struct Pimpl;   // The Pimpl idiom
   std::unique_ptr<Pimpl> _p;
+
+  void destroyCoroutine();
 };
-#endif
+
 
 }   // namespace BT
 
