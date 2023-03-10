@@ -53,7 +53,7 @@ class SimpleString {
   ~SimpleString()
   {
     if (!isSOO()) {
-      delete _storage.str.data;
+      delete[] _storage.str.data;
     }
     _storage.soo.capacity_left = CAPACITY;
   }
