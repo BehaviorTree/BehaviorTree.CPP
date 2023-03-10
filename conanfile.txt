@@ -1,0 +1,9 @@
+[requires]
+gtest/1.12.1
+zeromq/4.3.4
+sqlite3/3.40.1
+
+[generators]
+cmake_find_package
+cmake_paths
+cmake
