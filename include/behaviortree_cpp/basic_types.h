@@ -1,5 +1,4 @@
-#ifndef BT_BASIC_TYPES_H
-#define BT_BASIC_TYPES_H
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -70,7 +69,7 @@ using StringView = std::string_view;
  *
  * If you have a custom type, you need to implement the corresponding template specialization.
  */
-template <typename T>
+template <typename T> [[nodiscard]]
 inline T convertFromString(StringView /*str*/)
 {
   auto type_name = BT::demangle(typeid(T));
@@ -145,13 +144,13 @@ inline StringConverter GetAnyFromStringFunctor<void>()
 
 //------------------------------------------------------------------
 
-template <typename T>
+template <typename T> [[nodiscard]]
 std::string toStr(T value)
 {
   return std::to_string(value);
 }
 
-std::string toStr(std::string value);
+std::string toStr(const std::string& value);
 
 template <>
 std::string toStr<BT::NodeStatus>(BT::NodeStatus status);
@@ -166,17 +165,18 @@ std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
 /**
  * @brief toStr converts NodeType to string.
  */
-template <>
+template <> [[nodiscard]]
 std::string toStr<BT::NodeType>(BT::NodeType type);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
-template <>
+template <> [[nodiscard]]
 std::string toStr<BT::PortDirection>(BT::PortDirection direction);
 
 std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
 
 // Small utility, unless you want to use <boost/algorithm/string.hpp>
+[[nodiscard]]
 std::vector<StringView> splitString(const StringView& strToSplit, char delimeter);
 
 template <typename Predicate>
@@ -228,6 +228,7 @@ using Optional = nonstd::expected<T, std::string>;
  * */
 using Result = Expected<std::monostate>;
 
+[[nodiscard]]
 bool IsAllowedPortName(StringView str);
 
 class PortInfo
@@ -245,15 +246,15 @@ public:
     _type(direction), _type_info(type_info), _converter(conv)
   {}
 
-  PortDirection direction() const;
+  [[nodiscard]] PortDirection direction() const;
 
-  const std::type_index& type() const;
+  [[nodiscard]] const std::type_index& type() const;
 
-  Any parseString(const char* str) const;
+  [[nodiscard]] Any parseString(const char* str) const;
 
-  Any parseString(const std::string& str) const;
+  [[nodiscard]] Any parseString(const std::string& str) const;
 
-  template <typename T>
+  template <typename T> [[nodiscard]]
   Any parseString(const T&) const
   {
     // avoid compilation errors
@@ -264,16 +265,16 @@ public:
 
   void setDefaultValue(StringView default_value_as_string);
 
-  const std::string& description() const;
+  [[nodiscard]] const std::string& description() const;
 
-  std::optional<std::string> defaultValue() const;
+  [[nodiscard]] std::optional<std::string> defaultValue() const;
 
-  bool isStronglyTyped() const
+  [[nodiscard]] bool isStronglyTyped() const
   {
     return _type_info != typeid(AnyTypeAllowed);
   }
 
-  const StringConverter& converter() const
+  [[nodiscard]] const StringConverter& converter() const
   {
     return _converter;
   }
@@ -286,8 +287,9 @@ private:
   std::optional<std::string> default_value_;
 };
 
-template <typename T = PortInfo::AnyTypeAllowed>
-std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView name,
+template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
+std::pair<std::string, PortInfo> CreatePort(PortDirection direction,
+                                            StringView name,
                                             StringView description = {})
 {
   auto sname = static_cast<std::string>(name);
@@ -316,28 +318,28 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView 
 }
 
 //----------
-template <typename T = void>
+template <typename T = void> [[nodiscard]]
 inline std::pair<std::string, PortInfo> InputPort(StringView name,
                                                   StringView description = {})
 {
   return CreatePort<T>(PortDirection::INPUT, name, description);
 }
 
-template <typename T = void>
+template <typename T = void> [[nodiscard]]
 inline std::pair<std::string, PortInfo> OutputPort(StringView name,
                                                    StringView description = {})
 {
   return CreatePort<T>(PortDirection::OUTPUT, name, description);
 }
 
-template <typename T = void>
+template <typename T = void> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           StringView description = {})
 {
   return CreatePort<T>(PortDirection::INOUT, name, description);
 }
 //----------
-template <typename T = void>
+template <typename T = void> [[nodiscard]]
 inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& default_value,
                                                   StringView description)
 {
@@ -346,7 +348,7 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& defa
   return out;
 }
 
-template <typename T = void>
+template <typename T = void> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           const T& default_value,
                                                           StringView description)
@@ -372,13 +374,13 @@ struct has_static_method_providedPorts<
 {
 };
 
-template <typename T>
+template <typename T> [[nodiscard]]
 inline PortsList getProvidedPorts(enable_if<has_static_method_providedPorts<T>> = nullptr)
 {
   return T::providedPorts();
 }
 
-template <typename T>
+template <typename T> [[nodiscard]]
 inline PortsList
     getProvidedPorts(enable_if_not<has_static_method_providedPorts<T>> = nullptr)
 {
@@ -390,4 +392,3 @@ typedef std::chrono::high_resolution_clock::duration Duration;
 
 }   // namespace BT
 
-#endif   // BT_BASIC_TYPES_H

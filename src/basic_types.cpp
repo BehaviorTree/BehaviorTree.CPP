@@ -25,7 +25,7 @@ std::string toStr<NodeStatus>(NodeStatus status)
   return "";
 }
 
-std::string toStr(std::string value)
+std::string toStr(const std::string &value)
 {
   return value;
 }
@@ -242,6 +242,9 @@ NodeStatus convertFromString<NodeStatus>(StringView str)
     return NodeStatus::SUCCESS;
   if (str == "FAILURE")
     return NodeStatus::FAILURE;
+  if (str == "SKIPPED")
+    return NodeStatus::SKIPPED;
+
   throw RuntimeError(std::string("Cannot convert this to NodeStatus: ") +
                      static_cast<std::string>(str));
 }
@@ -363,6 +366,10 @@ std::optional<std::string> PortInfo::defaultValue() const
 
 bool IsAllowedPortName(StringView str)
 {
+  if( str == "_autoremap")
+  {
+    return true;
+  }
   if (str.empty())
   {
     return false;
