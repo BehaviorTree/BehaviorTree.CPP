@@ -50,6 +50,7 @@ public:
 private:
   int num_cycles_;
   int repeat_count_;
+  bool all_skipped_ = true;
 
   bool read_parameter_from_ports_;
   static constexpr const char* NUM_CYCLES = "num_cycles";

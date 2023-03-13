@@ -49,7 +49,7 @@ private:
   virtual BT::NodeStatus tick() override;
 
   bool delay_started_;
-  bool delay_complete_;
+  std::atomic_bool delay_complete_;
   bool delay_aborted_;
   unsigned msec_;
   bool read_parameter_from_ports_;

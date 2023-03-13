@@ -22,6 +22,7 @@ InverterNode::InverterNode(const std::string& name) : DecoratorNode(name, {})
 
 NodeStatus InverterNode::tick()
 {
+  setStatus(NodeStatus::RUNNING);
   const NodeStatus child_status = child_node_->executeTick();
 
   switch (child_status)

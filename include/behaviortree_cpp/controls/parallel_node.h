@@ -67,6 +67,7 @@ private:
   int failure_threshold_;
 
   std::set<size_t> skip_list_;
+  bool all_skipped_ = true;
 
   bool read_parameter_from_ports_;
   static constexpr const char* THRESHOLD_SUCCESS = "success_count";

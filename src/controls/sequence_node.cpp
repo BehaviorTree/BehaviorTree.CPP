@@ -16,7 +16,7 @@
 namespace BT
 {
 SequenceNode::SequenceNode(const std::string& name) :
-  ControlNode::ControlNode(name, {}), current_child_idx_(0)
+  ControlNode::ControlNode(name, {}), current_child_idx_(0), all_skipped_(true)
 {
   setRegistrationID("Sequence");
 }
@@ -31,6 +31,13 @@ NodeStatus SequenceNode::tick()
 {
   const size_t children_count = children_nodes_.size();
 
+  if(status() == NodeStatus::IDLE)
+  {
+    all_skipped_ = true;
+  }
+
+  setStatus(NodeStatus::RUNNING);
+
   while (current_child_idx_ < children_count)
   {
     TreeNode* current_child_node = children_nodes_[current_child_idx_];
@@ -39,10 +46,7 @@ NodeStatus SequenceNode::tick()
     const NodeStatus child_status = current_child_node->executeTick();
 
     // switch to RUNNING state as soon as you find an active child
-    if (child_status != NodeStatus::SKIPPED)
-    {
-      setStatus(NodeStatus::RUNNING);
-    }
+    all_skipped_ &= (child_status == NodeStatus::SKIPPED);
 
     switch (child_status)
     {
@@ -87,7 +91,7 @@ NodeStatus SequenceNode::tick()
     current_child_idx_ = 0;
   }
   // Skip if ALL the nodes have been skipped
-  return status() == (NodeStatus::RUNNING) ? NodeStatus::SUCCESS : NodeStatus::SKIPPED;
+  return all_skipped_ ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
 }
 
 }   // namespace BT
