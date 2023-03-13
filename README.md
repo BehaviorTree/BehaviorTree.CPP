@@ -79,35 +79,28 @@ If you are looking for a more fancy graphical user interface (and I know you do)
 
 ![Groot screenshot](docs/groot-screenshot.png)
 
-# How to compile (Ubuntu)
+# How to compile
 
-Please note that **Ubuntu 18.04 is not supported anymore in version 4.X**. Ubuntu 20.04 or later is required.
+**BT.CPP** requires a compile that supports c++17.
 
-First, install the following dependencies (optional, but recommended):
+Three build systems are supported:
 
-     sudo apt-get install libzmq3-dev libboost-coroutine-dev libncurses5-dev libncursesw5-dev
+- **catkin**, if you use ROS
+- **colcon (ament)**, if you use ROS2
+- **conan** otherwise (Linux/Windows).
 
-To compile and install the library, from the BehaviorTree.CPP folder, execute:
+Compiling with [conan](https://conan.io/):
 
-     mkdir build; cd build
-     cmake ..
-     make
-     sudo make install
+Assuming that you build "in-source" (in the **parent** directory of `BehaviorTree.CPP`):
 
-If you want to use BT.CPP in your application a typical **CMakeLists.txt** file
-will look like this:
+    mkdir build; cu build
+    conan install ../BehaviorTree.CPP --output-folder=. --build=missing
+    cmake ../BehaviorTree.CPP
+    cmake --build . --parallel
 
-```cmake
-cmake_minimum_required(VERSION 3.10.2)
-project(hello_BT)
+If you want to use BT.CPP in your application, please refer to the
+example here: https://github.com/BehaviorTree/btcpp_sample .
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-find_package(behaviortree_cpp)
-
-add_executable(${PROJECT_NAME} "hello_BT.cpp")
-target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp)
-```
 
 # License
 

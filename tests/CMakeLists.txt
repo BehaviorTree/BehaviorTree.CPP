@@ -1,8 +1,6 @@
 ######################################################
 # TESTS
 
-include_directories(include ${PROJECT_SOURCE_DIR}/3rdparty)
-
 set(BT_TESTS
   src/action_test_node.cpp
   src/condition_test_node.cpp
@@ -22,68 +20,43 @@ set(BT_TESTS
   gtest_wakeup.cpp
   test_helper.hpp
   script_parser_test.cpp
+  gtest_coroutines.cpp
 )
 
-if( BTCPP_ENABLE_COROUTINES AND BT_COROUTINES_FOUND )
-    LIST( APPEND BT_TESTS gtest_coroutines.cpp)
-endif()
-
+set(TEST_DEPENDECIES
+    ${BTCPP_LIBRARY}
+    foonathan::lexy
+    bt_sample_nodes)
 
 if(ament_cmake_FOUND AND BUILD_TESTING)
 
     find_package(ament_cmake_gtest REQUIRED)
 
-    ament_add_gtest_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
-    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test
-        ${BEHAVIOR_TREE_LIBRARY}
-        foonathan::lexy
-        bt_sample_nodes
+    ament_add_gtest_executable(${BTCPP_LIBRARY}_test ${BT_TESTS})
+    target_link_libraries(${BTCPP_LIBRARY}_test
+        ${TEST_DEPENDECIES}
         ${ament_LIBRARIES})
-
-    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
-    include_directories($<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>)
 
 elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
-    catkin_add_gtest(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
-    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test
-        ${BEHAVIOR_TREE_LIBRARY}
-        bt_sample_nodes
-        foonathan::lexy
+    catkin_add_gtest(${BTCPP_LIBRARY}_test ${BT_TESTS})
+    target_link_libraries(${BTCPP_LIBRARY}_test
+        ${TEST_DEPENDECIES}
         Threads::Threads
         ${catkin_LIBRARIES})
 
-    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include)
+else()
 
-elseif(BTCPP_UNIT_TESTS)
-
+    find_package(GTest)
     enable_testing()
 
-    add_executable(${BEHAVIOR_TREE_LIBRARY}_test ${BT_TESTS})
+    add_executable(${BTCPP_LIBRARY}_test ${BT_TESTS})
     target_link_libraries(${PROJECT_NAME}_test
-        ${BEHAVIOR_TREE_LIBRARY}
-        foonathan::lexy
-        bt_sample_nodes gtest gtest_main)
-
-    target_include_directories(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE gtest/include ${GTEST_INCLUDE_DIRS})
-
-    add_custom_command(TARGET ${BEHAVIOR_TREE_LIBRARY}_test POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/tests/trees
-            trees)
-
-    add_test(BehaviorTreeCoreTest ${BEHAVIOR_TREE_LIBRARY}_test)
+        ${TEST_DEPENDECIES}
+        Threads::Threads
+        GTest::gtest)
 
 endif()
 
-# if(BUILD_TESTING AND (ament_cmake_FOUND OR catkin_FOUND))
-#    # This test requires gmock. Since we don't have a uniform way to include
-#    # gmock for non-users, it is turned of when build without ros.
-#    list(APPEND BT_TESTS gtest_async_action_node.cpp)
-#    target_link_libraries(${BEHAVIOR_TREE_LIBRARY}_test
-#         ${BEHAVIOR_TREE_LIBRARY}
-#         gmock
-#     )
-# endif()
-
-target_compile_definitions(${BEHAVIOR_TREE_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(${BTCPP_LIBRARY}_test PRIVATE include ${PROJECT_SOURCE_DIR}/3rdparty)
+target_compile_definitions(${BTCPP_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
