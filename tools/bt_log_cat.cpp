@@ -24,7 +24,8 @@ int main(int argc, char* argv[])
     const size_t length = static_cast<size_t>(ftell(file));
     fseek(file, 0L, SEEK_SET);
     std::vector<char> buffer(length);
-    fread(buffer.data(), sizeof(char), length, file);
+    auto ret = fread(buffer.data(), sizeof(char), length, file);
+    (void)ret;
     fclose(file);
 
     const auto bt_header_size = flatbuffers::ReadScalar<uint32_t>(&buffer[0]);
