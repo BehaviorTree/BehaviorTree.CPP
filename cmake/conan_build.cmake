@@ -1,17 +1,7 @@
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+find_package(ZeroMQ REQUIRED)
 
-include(${PROJECT_SOURCE_DIR}/cmake/conan.cmake)
-
-conan_cmake_autodetect(CONAN_SETTINGS)
-conan_cmake_install(PATH_OR_REFERENCE ${PROJECT_SOURCE_DIR}/conanfile.txt
-    BUILD missing
-    REMOTE conancenter
-    SETTINGS ${CONAN_SETTINGS})
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
-
-
-set( BTCPP_EXTRA_LIBRARIES ${CONAN_LIBS})
+set( BTCPP_EXTRA_LIBRARIES ${ZeroMQ_LIBRARIES})
 
 set( BTCPP_LIB_DESTINATION     lib )
 set( BTCPP_INCLUDE_DESTINATION include )
