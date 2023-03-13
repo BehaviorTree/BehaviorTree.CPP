@@ -157,7 +157,15 @@ public:
 
   ~Tree();
 
-  /// Tick the root of the tree once.
+  /// Tick the root of the tree once, even if a node invoked
+  /// emitWakeUpSignal()
+  NodeStatus tickExactlyOnce();
+
+  /**
+   * @brief by default, tickOnce() sends a single tick, BUT
+   * as long as there is at least one node of the tree
+   * invoking TreeNode::emitWakeUpSignal(), it will be ticked again.
+   */
   NodeStatus tickOnce();
 
   /// Call tickOnce until the status is different from RUNNING.
@@ -179,7 +187,8 @@ private:
 
   enum TickOption
   {
-    ONCE,
+    EXACTLY_ONCE,
+    ONCE_UNLESS_WOKEN_UP,
     WHILE_RUNNING
   };
 

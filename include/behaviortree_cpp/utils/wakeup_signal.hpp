@@ -11,7 +11,8 @@ namespace BT
 class WakeUpSignal
 {
 public:
-    /// Return true if the
+    /// Return true if the timeout was NOT reached and the
+    /// signal was received.
     bool waitFor(std::chrono::system_clock::duration tm)
     {
         std::unique_lock<std::mutex> lk(mutex_);
