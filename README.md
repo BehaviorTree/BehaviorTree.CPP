@@ -75,7 +75,7 @@ not need to read nor to modify the C++ source code..
 Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
 
 If you are looking for a more fancy graphical user interface (and I know you do) check
-[Groot](https://github.com/BehaviorTree/Groot) out.
+[Groot2](https://www.behaviortree.dev/groot) out.
 
 ![Groot screenshot](docs/groot-screenshot.png)
 
