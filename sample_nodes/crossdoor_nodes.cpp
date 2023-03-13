@@ -36,15 +36,13 @@ NodeStatus CrossDoor::openDoor()
 NodeStatus CrossDoor::pickLock()
 {
   SleepMS(500);
-  _pick_attempts++;
   // succeed at 3rd attempt
-  if (_door_locked && _pick_attempts < 3)
+  if (_pick_attempts++ > 3)
   {
     _door_locked = false;
     _door_open = true;
-    return NodeStatus::FAILURE;
   }
-  return NodeStatus::SUCCESS;
+  return _door_open ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
 }
 
 NodeStatus CrossDoor::smashDoor()
@@ -71,4 +69,11 @@ void CrossDoor::registerNodes(BT::BehaviorTreeFactory &factory)
 
   factory.registerSimpleCondition(
       "SmashDoor", std::bind(&CrossDoor::smashDoor, this));
+}
+
+void CrossDoor::reset()
+{
+  _door_open   = false;
+  _door_locked = true;
+  _pick_attempts = 0;
 }

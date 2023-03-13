@@ -1,5 +1,4 @@
-#ifndef MOVEBASE_BT_NODES_H
-#define MOVEBASE_BT_NODES_H
+#pragma once
 
 #include "behaviortree_cpp/behavior_tree.h"
 
@@ -69,4 +68,3 @@ class MoveBaseAction : public BT::StatefulActionNode
       chr::system_clock::time_point _completion_time;
 };
 
-#endif   // MOVEBASE_BT_NODES_H
