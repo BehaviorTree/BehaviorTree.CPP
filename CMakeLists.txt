@@ -92,7 +92,10 @@ list(APPEND BT_SOURCE
     src/shared_library.cpp
     src/tree_node.cpp
     src/script_parser.cpp
+    src/json_export.cpp
     src/xml_parsing.cpp
+
+    src/actions/test_node.cpp
 
     src/decorators/inverter_node.cpp
     src/decorators/repeat_node.cpp
@@ -113,6 +116,7 @@ list(APPEND BT_SOURCE
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_minitrace_logger.cpp
+    src/loggers/bt_observer.cpp
 
     3rdparty/tinyxml2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp

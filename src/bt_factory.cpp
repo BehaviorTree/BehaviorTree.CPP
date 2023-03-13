@@ -15,6 +15,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/xml_parsing.h"
+#include "wildcards/wildcards.hpp"
 
 #ifdef USING_ROS
 #include <ros/package.h>
@@ -246,8 +247,7 @@ void BehaviorTreeFactory::clearRegisteredBehaviorTrees()
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     const std::string& name, const std::string& ID, const NodeConfig& config) const
 {
-  auto it = builders_.find(ID);
-  if (it == builders_.end())
+  auto idNotFound = [this, ID]
   {
     std::cerr << ID << " not included in this list:" << std::endl;
     for (const auto& builder_it : builders_)
@@ -255,9 +255,63 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
       std::cerr << builder_it.first << std::endl;
     }
     throw RuntimeError("BehaviorTreeFactory: ID [", ID, "] not registered");
+  };
+
+  auto it_manifest = manifests_.find(ID);
+  if (it_manifest == manifests_.end())
+  {
+    idNotFound();
   }
 
-  std::unique_ptr<TreeNode> node = it->second(name, config);
+
+  std::unique_ptr<TreeNode> node;
+
+  bool substituted = false;
+  for(const auto& [filter, rule]: substitution_rules_)
+  {
+    if( filter == name || filter == ID || wildcards::match(config.path, filter))
+    {
+      // first case: the rule is simply a string with the name of the
+      // node to create instead
+      if(const auto substituted_ID = std::get_if<std::string>(&rule) )
+      {
+        auto it_builder = builders_.find(*substituted_ID);
+        if (it_builder != builders_.end())
+        {
+          auto& builder = it_builder->second;
+          node = builder(name, config);
+        }
+        else{
+          throw RuntimeError("Substituted Node ID not found");
+        }
+        substituted = true;
+        break;
+      }
+      else if(const auto test_config = std::get_if<TestNodeConfig>(&rule) )
+      {
+        // second case, the varian is a TestNodeConfig
+        auto test_node = new TestNode(name, config);
+        test_node->setConfig(*test_config);
+
+        node.reset(test_node);
+        substituted = true;
+        break;
+      }
+    }
+  }
+
+  // No substitution rule applied: default behavior
+  if(!substituted)
+  {
+    auto it_builder = builders_.find(ID);
+    if (it_builder == builders_.end())
+    {
+      idNotFound();
+    }
+    auto& builder = it_builder->second;
+    node = builder(name, config);
+  }
+
   node->setRegistrationID(ID);
   node->config_.enums = scripting_enums_;
 
@@ -355,6 +409,29 @@ void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
   (*scripting_enums_)[std::string(name)] = value;
 }
 
+void BehaviorTreeFactory::clearSubstitutionRules()
+{
+  substitution_rules_.clear();
+}
+
+void BehaviorTreeFactory::addSubstitutionRule(StringView filter, SubstitutionRule rule)
+{
+  substitution_rules_[std::string(filter)] = rule;
+}
+
+
+void Tree::initialize()
+{
+  wake_up_ = std::make_shared<WakeUpSignal>();
+  for (auto& subtree : subtrees)
+  {
+    for (auto& node : subtree->nodes)
+    {
+      node->setWakeUpInstance(wake_up_);
+    }
+  }
+}
+
 TreeNode* Tree::rootNode() const
 {
   if (subtrees.empty())
@@ -415,6 +492,11 @@ void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
     BT::applyRecursiveVisitor(static_cast<TreeNode*>(subtree->nodes.front().get()),
                               visitor);
   }
+}
+
+uint16_t Tree::getUID() {
+  auto uid =  ++uid_counter_;
+  return uid;
 }
 
 NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)

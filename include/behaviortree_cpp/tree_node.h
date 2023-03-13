@@ -84,6 +84,14 @@ struct NodeConfig
   // output ports
   PortsRemapping output_ports;
 
+  // Numberic unique identifier
+  uint16_t uid = 0;
+  // Unique human-readable name, that encapsulate the subtree
+  // hierarchy, for instance, given 2 nested trees, it should be:
+  //
+  //   main_tree/nested_tree/my_action
+  std::string path;
+
   std::map<PreCond, std::string> pre_conditions;
   std::map<PostCond, std::string> post_conditions;
 };
@@ -147,10 +155,10 @@ public:
   using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
   using StatusChangeCallback = StatusChangeSignal::CallableFunction;
 
-  using PreTickOverrideCallback =
-      std::function<Expected<NodeStatus>(TreeNode&, NodeStatus)>;
-  using PostTickOverrideCallback =
-      std::function<Expected<NodeStatus>(TreeNode&, NodeStatus, NodeStatus)>;
+  using PreTickCallback =
+      std::function<NodeStatus(TreeNode&)>;
+  using PostTickCallback =
+      std::function<NodeStatus(TreeNode&, NodeStatus)>;
 
   /**
      * @brief subscribeToStatusChange is used to attach a callback to a status change.
@@ -165,27 +173,32 @@ public:
 
   /** This method attaches to the TreeNode a callback with signature:
      *
-     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus current_status)
+     *     Optional<NodeStatus> myCallback(TreeNode& node)
      *
      * This callback is executed BEFORE the tick() and, if it returns a valid Optional<NodeStatus>,
      * the actual tick() will NOT be executed and this result will be returned instead.
      *
      * This is useful to inject a "dummy" implementation of the TreeNode at run-time
      */
-  void setPreTickOverrideFunction(PreTickOverrideCallback callback);
+  void setPreTickFunction(PreTickCallback callback);
 
   /**
      * This method attaches to the TreeNode a callback with signature:
      *
-     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus prev_status, NodeStatus tick_status)
+     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus new_status)
      *
      * This callback is executed AFTER the tick() and, if it returns a valid Optional<NodeStatus>,
      * the value returned by the actual tick() is overriden with this one.
      */
-  void setPostTickOverrideFunction(PostTickOverrideCallback callback);
+  void setPostTickFunction(PostTickCallback callback);
 
-  // get an unique identifier of this instance of treeNode
+  /// The unique identifier of this instance of treeNode.
+  /// It is assigneld by the factory
   uint16_t UID() const;
+
+  /// Human readable identifier, that includes the hierarchy of Subtrees
+  /// See tutorial 10 as an example.
+  const std::string& fullPath() const;
 
   /// registrationName is the ID used by BehaviorTreeFactory to create an instance.
   const std::string& registrationName() const;
@@ -296,15 +309,15 @@ private:
 
   StatusChangeSignal state_change_signal_;
 
-  const uint16_t uid_;
-
   NodeConfig config_;
 
   std::string registration_ID_;
 
-  PreTickOverrideCallback pre_condition_callback_;
+  PreTickCallback pre_condition_callback_;
 
-  PostTickOverrideCallback post_condition_callback_;
+  PostTickCallback post_condition_callback_;
+
+  std::mutex callback_injection_mutex_;
 
   std::shared_ptr<WakeUpSignal> wake_up_;
 
