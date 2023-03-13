@@ -62,6 +62,12 @@ enum class PostCond
   COUNT_
 };
 
+template <>
+std::string toStr<BT::PostCond>(BT::PostCond status);
+
+template <>
+std::string toStr<BT::PreCond>(BT::PreCond status);
+
 using ScriptingEnumsRegistry = std::unordered_map<std::string, int>;
 
 struct NodeConfig
@@ -69,19 +75,22 @@ struct NodeConfig
   NodeConfig()
   {}
 
+  // Pointer to the blackboard used by this node
   Blackboard::Ptr blackboard;
+  // List of enums available for scripting
   std::shared_ptr<ScriptingEnumsRegistry> enums;
+  // input ports
   PortsRemapping input_ports;
+  // output ports
   PortsRemapping output_ports;
 
   std::map<PreCond, std::string> pre_conditions;
   std::map<PostCond, std::string> post_conditions;
 };
 
-#ifdef USE_BTCPP3_OLD_NAMES
 // back compatibility
 using NodeConfiguration = NodeConfig;
-#endif
+
 
 template <typename T>
 inline constexpr bool hasNodeNameCtor()
@@ -360,7 +369,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
       return nonstd::make_unexpected("getInput(): trying to access an invalid Blackboard");
     }
 
-    std::unique_lock<std::mutex> entry_lock(config_.blackboard->entryMutex());
+    std::unique_lock entry_lock(config_.blackboard->entryMutex());
     const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
     if (val && !val->empty())
     {

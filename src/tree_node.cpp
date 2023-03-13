@@ -170,8 +170,19 @@ void TreeNode::checkPostConditions(NodeStatus status)
 
 void TreeNode::resetStatus()
 {
-  std::unique_lock<std::mutex> lock(state_mutex_);
-  status_ = NodeStatus::IDLE;
+  NodeStatus prev_status;
+  {
+    std::unique_lock<std::mutex> lock(state_mutex_);
+    prev_status = status_;
+    status_ = NodeStatus::IDLE;
+  }
+
+  if (prev_status != NodeStatus::IDLE)
+  {
+    state_condition_variable_.notify_all();
+    state_change_signal_.notify(std::chrono::high_resolution_clock::now(), *this,
+                                prev_status, NodeStatus::IDLE);
+  }
 }
 
 NodeStatus TreeNode::status() const
@@ -320,6 +331,42 @@ void TreeNode::modifyPortsRemapping(const PortsRemapping& new_remapping)
     {
       it->second = new_it.second;
     }
+  }
+}
+
+template <>
+std::string toStr<PreCond>(PreCond pre)
+{
+  switch (pre)
+  {
+    case PreCond::SUCCESS_IF:
+      return "_successIf";
+    case PreCond::FAILURE_IF:
+      return "_failureIf";
+    case PreCond::SKIP_IF:
+      return "_skipIf";
+    case PreCond::WHILE_TRUE:
+      return "_while";
+    default:
+      return "Undefined";
+  }
+}
+
+template <>
+std::string toStr<PostCond>(PostCond pre)
+{
+  switch (pre)
+  {
+    case PostCond::ON_SUCCESS:
+      return "_onSuccess";
+    case PostCond::ON_FAILURE:
+      return "_onFailure";
+    case PostCond::ALWAYS:
+      return "_post";
+    case PostCond::ON_HALTED:
+      return "_onHalted";
+    default:
+      return "Undefined";
   }
 }
 
