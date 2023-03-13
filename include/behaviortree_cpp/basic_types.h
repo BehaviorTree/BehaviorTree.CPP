@@ -42,12 +42,12 @@ enum class NodeStatus
   SKIPPED = 4,
 };
 
-inline bool StatusActive(const NodeStatus& status)
+inline bool isStatusActive(const NodeStatus& status)
 {
   return status != NodeStatus::IDLE && status != NodeStatus::SKIPPED;
 }
 
-inline bool StatusCompleted(const NodeStatus& status)
+inline bool isStatusCompleted(const NodeStatus& status)
 {
   return status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE;
 }
