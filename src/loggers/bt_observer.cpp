@@ -51,20 +51,28 @@ void TreeObserver::callback(Duration timestamp, const TreeNode& node,
                             NodeStatus /*prev_status*/, NodeStatus status)
 {
   auto& statistics = _statistics[node.UID()];
-
-  statistics.tick_count++;
   statistics.current_status = status;
   statistics.last_timestamp = timestamp;
 
+  if(status == NodeStatus::IDLE) {
+    return;
+  }
+
+  statistics.transitions_count++;
+
   if(status == NodeStatus::SUCCESS)
   {
-    statistics.last_result = NodeStatus::SUCCESS;
+    statistics.last_result = status;
     statistics.success_count++;
   }
   else if(status == NodeStatus::FAILURE)
   {
-    statistics.last_result = NodeStatus::FAILURE;
+    statistics.last_result = status;
     statistics.failure_count++;
+  }
+  else if(status == NodeStatus::SKIPPED)
+  {
+    statistics.skip_count++;
   }
 }
 

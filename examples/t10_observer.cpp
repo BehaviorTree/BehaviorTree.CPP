@@ -63,12 +63,12 @@ int main()
     std::cout << uid << " -> " << name << std::endl;
   }
 
-  // Tick the tree multiple times, until action_B is finally ticked.
-  // Since we use const reference, we can check this statistic periodically.
-  const auto& action_B_stats = observer.getStatistics("last_action");
 
-  tree.tickOnce();
+  tree.tickWhileRunning();
 
+  // You can access a specific statistic, using is full path or the UID
+  const auto& last_action_stats = observer.getStatistics("last_action");
+  assert(last_action_stats.transitions_count > 0);
 
   std::cout << "----------------" << std::endl;
   // print all the statistics
@@ -76,7 +76,7 @@ int main()
     const auto& stats = observer.getStatistics(uid);
 
     std::cout << "[" << name
-              << "] \tT/S/F:  " << stats.tick_count
+              << "] \tT/S/F:  " << stats.transitions_count
               << "/" << stats.success_count
               << "/" << stats.failure_count
               << std::endl;

@@ -22,11 +22,20 @@ public:
 
   struct NodeStatistics
   {
+    // Last __valid__ result, either SUCCESS or FAILURE
     NodeStatus last_result = NodeStatus::IDLE;
+    // Last status. Can be any status, including IDLE or SKIPPED
     NodeStatus current_status = NodeStatus::IDLE;
+
+    // count status transitions, excluding transition to IDLE
+    unsigned transitions_count = 0;
+    // count number of transitions to SUCCESS
     unsigned success_count = 0;
+    // count number of transitions to FAILURE
     unsigned failure_count = 0;
-    unsigned tick_count = 0;
+    // count number of transitions to SKIPPED
+    unsigned skip_count = 0;
+
     Duration last_timestamp = {};
   };
 
