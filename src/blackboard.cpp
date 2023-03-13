@@ -64,15 +64,15 @@ void Blackboard::addSubtreeRemapping(StringView internal, StringView external)
 
 void Blackboard::debugMessage() const
 {
-  for (const auto& entry_it : storage_)
+  for (const auto& [key, entry] : storage_)
   {
-    auto port_type = entry_it.second.port_info.type();
+    auto port_type = entry.port_info.type();
     if (port_type == typeid(void))
     {
-      port_type = entry_it.second.value.type();
+      port_type = entry.value.type();
     }
 
-    std::cout << entry_it.first << " (" << BT::demangle(port_type) << ")" << std::endl;
+    std::cout << key << " (" << BT::demangle(port_type) << ")" << std::endl;
   }
 
   for (const auto& [from, to] : internal_to_external_)
@@ -83,17 +83,25 @@ void Blackboard::debugMessage() const
   }
 }
 
-std::vector<StringView> Blackboard::getKeys() const
+std::vector<StringView> Blackboard::getKeys(bool include_remapped) const
 {
-  if (storage_.empty())
+  const size_t N = storage_.size() + (include_remapped ? internal_to_external_.size() : 0 );
+  if (N == 0)
   {
     return {};
   }
   std::vector<StringView> out;
-  out.reserve(storage_.size());
+  out.reserve(N);
   for (const auto& entry_it : storage_)
   {
     out.push_back(entry_it.first);
+  }
+  if(include_remapped)
+  {
+    for (const auto& [key, remapped] : internal_to_external_)
+    {
+      out.push_back(key);
+    }
   }
   return out;
 }
