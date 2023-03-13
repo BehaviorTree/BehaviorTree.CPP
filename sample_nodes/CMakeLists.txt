@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5.1)
-
 include_directories( ../include )
 
 # compile as static libraries

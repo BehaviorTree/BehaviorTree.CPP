@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2) # version on Ubuntu Bionic
+cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 project(behaviortree_cpp)
 
 set(BTCPP_LIBRARY ${PROJECT_NAME})
@@ -164,7 +164,7 @@ target_include_directories(${BTCPP_LIBRARY}
     PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
-        $<BUILD_INTERFACE:${BTCPP_EXTRA_INCLUDE_DIRS}>
+        ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
 
 if(CURSES_FOUND)
