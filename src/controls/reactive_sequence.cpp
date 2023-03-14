@@ -43,9 +43,13 @@ NodeStatus ReactiveSequence::tick()
         resetChildren();
         return NodeStatus::FAILURE;
       }
-      // do nothing if SUCCESS or SKIPPED
-      case NodeStatus::SUCCESS:
-      case NodeStatus::SKIPPED:
+      // do nothing if SUCCESS
+      case NodeStatus::SUCCESS: break;
+
+      case NodeStatus::SKIPPED:{
+        // to allow it to be skipped again, we must reset the node
+        haltChild(index);
+      }
       break;
 
       case NodeStatus::IDLE: {

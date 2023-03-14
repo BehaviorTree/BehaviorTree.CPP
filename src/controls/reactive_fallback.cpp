@@ -50,7 +50,8 @@ NodeStatus ReactiveFallback::tick()
       }
 
       case NodeStatus::SKIPPED: {
-        // node skipped
+        // to allow it to be skipped again, we must reset the node
+        haltChild(index);
       }
       break;
 

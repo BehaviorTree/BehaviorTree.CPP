@@ -11,7 +11,7 @@ inline BT::NodeStatus TestTick(int* tick_counter)
 
 template <size_t N> inline
 void RegisterTestTick(BT::BehaviorTreeFactory& factory, const std::string& name_prefix,
-                   std::array<int, N>& tick_counters)
+                      std::array<int, N>& tick_counters)
 {
     for(size_t i=0; i<tick_counters.size(); i++)
     {

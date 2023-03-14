@@ -3,6 +3,7 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "test_helper.hpp"
+#include "action_test_node.h"
 
 using namespace BT;
 
@@ -121,39 +122,56 @@ TEST(SkippingLogic, SkippingReactiveSequence)
   std::array<int, 2> counters;
   RegisterTestTick(factory, "Test", counters);
 
-  const std::string xml_text = R"(
+  const std::string xml_text_noskip = R"(
     <root BTCPP_format="4" >
        <BehaviorTree>
-          <Sequence>
-            <ReactiveSequence>
-              <Script code=" value:=50 "/>
-              <TestA _skipIf="value < 25"/>
-            </ReactiveSequence>
-
-            <ReactiveSequence>
-              <Script code=" value:=10 "/>
-              <TestB _skipIf="value < 25"/>
-            </ReactiveSequence>
-         </Sequence>
+          <ReactiveSequence>
+            <Script code=" value:=50 "/>
+            <TestA _skipIf="value < 25"/>
+            <AsyncActionTest/>
+          </ReactiveSequence>
        </BehaviorTree>
     </root>)";
 
-  auto tree = factory.createTreeFromText(xml_text);
+  const std::string xml_text_skip = R"(
+    <root BTCPP_format="4" >
+       <BehaviorTree>
+          <ReactiveSequence>
+            <Script code=" value:=10 "/>
+            <TestB _skipIf="value < 25"/>
+            <AsyncActionTest/>
+          </ReactiveSequence>
+       </BehaviorTree>
+    </root>)";
 
-  BT::NodeStatus status;
-  try {
-    int runs = 0;
-    while(runs < 5)
+  factory.registerNodeType<AsyncActionTest>("AsyncActionTest");
+
+  int expected_test_A_ticks = 0;
+
+  for(auto const* xml_text: {&xml_text_noskip, &xml_text_skip})
+  {
+    auto tree = factory.createTreeFromText(*xml_text);
+
+    for(int repeat=0; repeat<3; repeat++)
     {
-      status = tree.tickOnce();
-      tree.sleep(std::chrono::milliseconds(10));
-      runs++;
-    }
-  } catch (BT::LogicError err) {
-    std::cout << err.what() << std::endl;
-  }
+      NodeStatus status = NodeStatus::IDLE;
+      while(!StatusCompleted(status))
+      {
+        status = tree.tickOnce();
 
-  ASSERT_EQ(status, NodeStatus::SUCCESS);
-  ASSERT_EQ(counters[0], 5);
+        if(xml_text == &xml_text_noskip)
+        {
+          expected_test_A_ticks++;
+        }
+
+        tree.sleep(std::chrono::milliseconds{15});
+      }
+      ASSERT_EQ(status, NodeStatus::SUCCESS);
+    }
+  }
+  // counters[0] contains the number ot times TestA was ticked
+  ASSERT_EQ(counters[0], expected_test_A_ticks);
+
+  // counters[1] contains the number ot times TestB was ticked
   ASSERT_EQ(counters[1], 0);
 }

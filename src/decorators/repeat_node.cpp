@@ -86,9 +86,11 @@ NodeStatus RepeatNode::tick()
       }
 
       case NodeStatus::SKIPPED: {
+        // to allow it to be skipped again, we must reset the node
+        resetChild();
         // the child has been skipped. Skip the decorator too.
         // Don't reset the counter, though !
-        return NodeStatus::IDLE;
+        return NodeStatus::SKIPPED;
       }
       case NodeStatus::IDLE: {
         throw LogicError("[", name(), "]: A children should not return IDLE");

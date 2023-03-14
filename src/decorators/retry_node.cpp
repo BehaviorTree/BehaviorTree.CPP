@@ -94,6 +94,8 @@ NodeStatus RetryNode::tick()
       }
 
       case NodeStatus::SKIPPED: {
+        // to allow it to be skipped again, we must reset the node
+        resetChild();
         // the child has been skipped. Slip this too
         return NodeStatus::SKIPPED;
       }
