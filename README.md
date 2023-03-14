@@ -89,9 +89,9 @@ Three build systems are supported:
 
 Compiling with [conan](https://conan.io/):
 
-Assuming that you build "in-source" (in the **parent** directory of `BehaviorTree.CPP`):
+Assuming that you are in the **parent** directory of `BehaviorTree.CPP`:
 
-    mkdir build; cu build
+    mkdir build; cd build
     conan install ../BehaviorTree.CPP --output-folder=. --build=missing
     cmake ../BehaviorTree.CPP
     cmake --build . --parallel
