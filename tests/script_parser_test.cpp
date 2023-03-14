@@ -247,3 +247,51 @@ TEST(ParserTest, Enums)
   ASSERT_EQ(blackboard->get<int>("color2"), BLUE);
   ASSERT_EQ(blackboard->get<int>("color3"), GREEN);
 }
+
+enum DeviceType { BATT=1, CONTROLLER=2 };
+
+
+BT::NodeStatus checkLevel(BT::TreeNode &self)
+{
+  double percent = self.getInput<double>("percentage").value();
+  DeviceType devType = self.getInput<DeviceType>("deviceType").value();
+
+  if(devType == DeviceType::BATT)
+  {
+    self.setOutput("isLowBattery", (percent < 25));
+  }
+  std::cout << "Device: " << devType << " Level: " << percent << std::endl;
+  return BT::NodeStatus::SUCCESS;
+}
+
+TEST(ParserTest, Enums_Issue_523)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="PowerManagerT">
+      <Sequence>
+        <Script code=" deviceA:=BATT; deviceB:=CONTROLLER; LOW_BATT:=20 "/>
+        <CheckLevel deviceType="{deviceA}" percentage="{LOW_BATT}" isLowBattery="{isLowBattery}"/>
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerSimpleCondition("CheckLevel", std::bind(checkLevel, std::placeholders::_1),
+                                  { BT::InputPort("percentage"),
+                                   BT::InputPort("deviceType"),
+                                   BT::OutputPort("isLowBattery")});
+
+  factory.registerScriptingEnums<DeviceType>();
+
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+
+  const auto& blackboard = tree.subtrees.front()->blackboard;
+  ASSERT_EQ(blackboard->get<int>("deviceA"), BATT);
+  ASSERT_EQ(blackboard->get<int>("deviceB"), CONTROLLER);
+  ASSERT_EQ(blackboard->get<bool>("isLowBattery"), true);
+}
+

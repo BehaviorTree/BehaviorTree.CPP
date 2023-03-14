@@ -120,6 +120,12 @@ class Any
                _any.type() == typeid(double);
     }
 
+    bool isIntegral() const
+    {
+        return _any.type() == typeid(int64_t) ||
+               _any.type() == typeid(uint64_t);
+    }
+
     bool isString() const
     {
         return _any.type() == typeid(SafeAny::SimpleString);
@@ -175,6 +181,16 @@ class Any
     T cast() const
     {
         static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, can not cast to reference");
+
+        if constexpr(std::is_enum_v<T>)
+        {
+            if(!isNumber())
+            {
+                std::cout  <<  demangle( _any.type() ) << std::endl;
+                throw std::runtime_error("Any::cast failed to cast to enum type");
+            }
+            return static_cast<T>( convert<int>().value() );
+        }
 
         if( _any.empty() )
         {
