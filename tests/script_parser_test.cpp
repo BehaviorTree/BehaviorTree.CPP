@@ -2,6 +2,8 @@
 
 #include "behaviortree_cpp/scripting/operators.hpp"
 #include "behaviortree_cpp/bt_factory.h"
+#include "../sample_nodes/dummy_nodes.h"
+
 #include <lexy/input/string_input.hpp>
 
 TEST(ParserTest, AnyTypes)
@@ -254,7 +256,11 @@ enum DeviceType { BATT=1, CONTROLLER=2 };
 BT::NodeStatus checkLevel(BT::TreeNode &self)
 {
   double percent = self.getInput<double>("percentage").value();
-  DeviceType devType = self.getInput<DeviceType>("deviceType").value();
+  DeviceType devType;
+  auto res = self.getInput("deviceType", devType);
+  if(!res) {
+    throw std::runtime_error(res.error());
+  }
 
   if(devType == DeviceType::BATT)
   {
@@ -271,13 +277,19 @@ TEST(ParserTest, Enums_Issue_523)
   const std::string xml_text = R"(
   <root BTCPP_format="4" >
     <BehaviorTree ID="PowerManagerT">
-      <Sequence>
-        <Script code=" deviceA:=BATT; deviceB:=CONTROLLER; LOW_BATT:=20 "/>
-        <CheckLevel deviceType="{deviceA}" percentage="{LOW_BATT}" isLowBattery="{isLowBattery}"/>
-      </Sequence>
+      <ReactiveSequence>
+        <Script code=" deviceA:=BATT; deviceB:=CONTROLLER; battery_level:=30 "/>
+        <CheckLevel deviceType="{deviceA}" percentage="{battery_level}" isLowBattery="{isLowBattery}"/>
+        <SaySomething message="FIRST low batteries!" _skipIf="!isLowBattery" />
+
+        <Script code=" battery_level:=20 "/>
+        <CheckLevel deviceType="{deviceA}" percentage="{battery_level}" isLowBattery="{isLowBattery}"/>
+        <SaySomething message="SECOND low batteries!" _skipIf="!isLowBattery" />
+      </ReactiveSequence>
     </BehaviorTree>
   </root> )";
 
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
   factory.registerSimpleCondition("CheckLevel", std::bind(checkLevel, std::placeholders::_1),
                                   { BT::InputPort("percentage"),
                                    BT::InputPort("deviceType"),
