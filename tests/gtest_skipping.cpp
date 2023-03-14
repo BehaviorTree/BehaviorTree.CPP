@@ -114,3 +114,46 @@ TEST(SkippingLogic, ReactiveSingleChild)
 
   tree.tickWhileRunning();
 }
+
+TEST(SkippingLogic, SkippingReactiveSequence)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 2> counters;
+  RegisterTestTick(factory, "Test", counters);
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+       <BehaviorTree>
+          <Sequence>
+            <ReactiveSequence>
+              <Script code=" value:=50 "/>
+              <TestA _skipIf="value < 25"/>
+            </ReactiveSequence>
+
+            <ReactiveSequence>
+              <Script code=" value:=10 "/>
+              <TestB _skipIf="value < 25"/>
+            </ReactiveSequence>
+         </Sequence>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+
+  BT::NodeStatus status;
+  try {
+    int runs = 0;
+    while(runs < 5)
+    {
+      status = tree.tickOnce();
+      tree.sleep(std::chrono::milliseconds(10));
+      runs++;
+    }
+  } catch (BT::LogicError err) {
+    std::cout << err.what() << std::endl;
+  }
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 5);
+  ASSERT_EQ(counters[1], 0);
+}
