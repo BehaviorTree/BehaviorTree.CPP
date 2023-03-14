@@ -60,7 +60,7 @@ NodeStatus ReactiveSequence::tick()
     }   // end switch
   }     //end for
 
-  if (success_count == childrenCount())
+  //if (success_count == childrenCount())
   {
     resetChildren();
   }

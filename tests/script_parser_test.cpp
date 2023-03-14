@@ -5,6 +5,7 @@
 #include "../sample_nodes/dummy_nodes.h"
 
 #include <lexy/input/string_input.hpp>
+#include "test_helper.hpp"
 
 TEST(ParserTest, AnyTypes)
 {
