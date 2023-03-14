@@ -7,7 +7,8 @@
 
 namespace BT
 {
-class PublisherZMQ : public StatusChangeLogger
+class [[deprecated("Please use Groot2Publisher instead")]]
+PublisherZMQ : public StatusChangeLogger
 {
   static std::atomic<bool> ref_count;
 
