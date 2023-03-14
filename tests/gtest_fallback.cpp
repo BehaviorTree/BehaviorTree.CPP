@@ -14,6 +14,7 @@
 #include "action_test_node.h"
 #include "condition_test_node.h"
 #include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;
@@ -310,3 +311,53 @@ TEST_F(ComplexFallbackWithMemoryTest, Action1Failed)
   ASSERT_EQ(NodeStatus::FAILURE, action_1.status());
   ASSERT_EQ(NodeStatus::RUNNING, action_2.status());
 }
+
+
+TEST(FallbackAndRetry, FallbackAndRetry)
+{
+  using namespace BT;
+  static const char* xml_text = R"(
+
+  <root main_tree_to_execute="BehaviorTree">
+    <BehaviorTree ID="BehaviorTree">
+      <RetryUntilSuccessful num_attempts="2">
+        <Fallback>
+          <AsyncActionTest name="first"/>
+          <ForceFailure>
+            <AsyncActionTest name="second"/>
+          </ForceFailure>
+        </Fallback>
+      </RetryUntilSuccessful>
+    </BehaviorTree>
+  </root>
+ )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<AsyncActionTest>("AsyncActionTest");
+
+  auto tree = factory.createTreeFromText(xml_text);
+
+  std::vector<AsyncActionTest*> async;
+
+  for(auto node: tree.nodes) {
+    if(auto async_node = dynamic_cast<AsyncActionTest*>(node.get()) )
+    {
+      async.push_back(async_node);
+    }
+  }
+
+  ASSERT_EQ(async.size(), 2);
+  async[0]->setExpectedResult(NodeStatus::FAILURE);
+  async[1]->setExpectedResult(NodeStatus::SUCCESS);
+
+  auto res = tree.tickRootWhileRunning();
+
+  ASSERT_EQ(async[0]->failureCount(), 2);
+  ASSERT_EQ(async[0]->successCount(), 0);
+
+  ASSERT_EQ(async[1]->failureCount(), 0);
+  ASSERT_EQ(async[1]->successCount(), 2);
+
+  ASSERT_EQ(NodeStatus::FAILURE, res);
+}
+
