@@ -33,21 +33,21 @@ enum RequestType : uint8_t
   // retrieve the valus in a set of blackboards
   BLACKBOARD = 'B',
 
-  // Groot requests the insertion of a breakpoint
-  BREAKPOINT_INSERT = 'I',
-  // Groot requests to remove a breakpoint
-  BREAKPOINT_REMOVE = 'R',
+  // Groot requests the insertion of a hook
+  HOOK_INSERT = 'I',
+  // Groot requests to remove a hook
+  HOOK_REMOVE = 'R',
   // Notify Groot that we reached a breakpoint
   BREAKPOINT_REACHED = 'N',
   // Groot will unlock a breakpoint
   BREAKPOINT_UNLOCK = 'U',
-  // receive the existing breakpoints in JSON format
-  BREAKPOINTS_DUMP = 'D',
+  // receive the existing hooks in JSON format
+  HOOKS_DUMP = 'D',
 
-  // Remove all breakpoints. To be done before disconnecting Groot
-  REMOVE_ALL_BREAKPOINTS = 'A',
+  // Remove all hooks. To be done before disconnecting Groot
+  REMOVE_ALL_HOOKS = 'A',
 
-  DISABLE_ALL_BREAKPOINTS = 'X',
+  DISABLE_ALL_HOOKS = 'X',
 
   UNDEFINED = 0,
 };
@@ -60,13 +60,13 @@ inline const char* ToString(const RequestType& type)
   case RequestType::STATUS: return "status";
   case RequestType::BLACKBOARD: return "blackboard";
 
-  case RequestType::BREAKPOINT_INSERT: return "breakpoint_insert";
-  case RequestType::BREAKPOINT_REMOVE: return "breakpoint_remove";
+  case RequestType::HOOK_INSERT: return "hook_insert";
+  case RequestType::HOOK_REMOVE: return "hook_remove";
   case RequestType::BREAKPOINT_REACHED: return "breakpoint_reached";
   case RequestType::BREAKPOINT_UNLOCK: return "breakpoint_unlock";
-  case RequestType::REMOVE_ALL_BREAKPOINTS: return "breakpoint_remove_all";
-  case RequestType::BREAKPOINTS_DUMP: return "breakpoints_dump";
-  case RequestType::DISABLE_ALL_BREAKPOINTS: return "disable_breakpoints";
+  case RequestType::REMOVE_ALL_HOOKS: return "hooks_remove_all";
+  case RequestType::HOOKS_DUMP: return "hooks_dump";
+  case RequestType::DISABLE_ALL_HOOKS: return "disable_hooks";
 
   case RequestType::UNDEFINED: return "undefined";
   }
@@ -182,12 +182,19 @@ inline ReplyHeader DeserializeReplyHeader(const std::string& buffer)
   return header;
 }
 
-struct Breakpoint
+struct Hook
 {
-  using Ptr = std::shared_ptr<Breakpoint>;
+  using Ptr = std::shared_ptr<Hook>;
 
   // used to enable/disable the breakpoint
   bool enabled = true;
+
+  enum class Position {
+    PRE = 0,
+    POST = 1
+  };
+
+  Position position = Position::PRE;
 
   uint16_t node_uid = 0;
 
@@ -210,21 +217,23 @@ struct Breakpoint
 };
 
 
-void to_json(nlohmann::json& js, const Breakpoint& bp) {
+void to_json(nlohmann::json& js, const Hook& bp) {
   js = nlohmann::json {
       {"enabled", bp.enabled},
       {"uid", bp.node_uid},
       {"interactive", bp.is_interactive},
       {"once", bp.remove_when_done},
-      {"desired_status", toStr(bp.desired_status)}
+      {"desired_status", toStr(bp.desired_status)},
+      {"position", int(bp.position)}
   };
 }
 
-void from_json(const nlohmann::json& js, Breakpoint& bp) {
+void from_json(const nlohmann::json& js, Hook& bp) {
   js.at("enabled").get_to(bp.enabled);
   js.at("uid").get_to(bp.node_uid);
   js.at("interactive").get_to(bp.is_interactive);
   js.at("once").get_to(bp.remove_when_done);
+  bp.position = static_cast<Hook::Position>(js.at("position").get<int>());
   const std::string desired_value = js.at("desired_status").get<std::string>();
   bp.desired_status = convertFromString<NodeStatus>(desired_value);
 }

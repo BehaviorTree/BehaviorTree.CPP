@@ -13,6 +13,8 @@ class Groot2Publisher : public StatusChangeLogger
   static std::mutex used_ports_mutex;
   static std::set<unsigned> used_ports;
 
+  using Position = Monitor::Hook::Position;
+
   public:
   Groot2Publisher(const BT::Tree& tree, unsigned server_port = 1667);
 
@@ -35,15 +37,15 @@ class Groot2Publisher : public StatusChangeLogger
 
   std::vector<uint8_t> generateBlackboardsDump(const std::string& bb_list);
 
-  bool insertBreakpoint(Monitor::Breakpoint::Ptr breakpoint);
+  bool insertHook(Monitor::Hook::Ptr breakpoint);
 
-  bool unlockBreakpoint(uint16_t node_uid, NodeStatus result, bool remove);
+  bool unlockBreakpoint(Position pos, uint16_t node_uid, NodeStatus result, bool remove);
 
-  bool removeBreakpoint(uint16_t node_uid);
+  bool removeHook(Position pos, uint16_t node_uid);
 
-  void removeAllBreakpoints();
+  void removeAllHooks();
 
-  Monitor::Breakpoint::Ptr getBreakpoint(uint16_t node_uid);
+  Monitor::Hook::Ptr getHook(Position pos, uint16_t node_uid);
 
   unsigned server_port_ = 0;
   std::string server_address_;
@@ -63,9 +65,9 @@ class Groot2Publisher : public StatusChangeLogger
   std::unordered_map<std::string, std::weak_ptr<BT::Tree::Subtree>> subtrees_;
   std::unordered_map<uint16_t, std::weak_ptr<BT::TreeNode>> nodes_by_uid_;
 
-  std::mutex breakpoints_map_mutex_;
-  std::unordered_map<uint16_t, Monitor::Breakpoint::Ptr> pre_breakpoints_;
-
+  std::mutex hooks_map_mutex_;
+  std::unordered_map<uint16_t, Monitor::Hook::Ptr> pre_hooks_;
+  std::unordered_map<uint16_t, Monitor::Hook::Ptr> post_hooks_;
 
   std::chrono::system_clock::time_point last_heartbeat_;
 
@@ -73,7 +75,7 @@ class Groot2Publisher : public StatusChangeLogger
 
   struct Pimpl;
   Pimpl* zmq_;
-  void enableAllBreakpoints(bool enable);
+  void enableAllHooks(bool enable);
 };
 }   // namespace BT
 
