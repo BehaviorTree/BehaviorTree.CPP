@@ -9,7 +9,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "behaviortree_cpp/basic_types.h"
-#include "behaviortree_cpp/utils/json.hpp"
+#include "behaviortree_cpp/contrib/json.hpp"
 
 namespace BT::Monitor {
 

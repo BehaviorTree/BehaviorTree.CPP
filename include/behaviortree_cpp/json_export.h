@@ -4,7 +4,7 @@
 #include "behaviortree_cpp/blackboard.h"
 
 // Use the version nlohmann::json embedded in BT.CPP
-#include "behaviortree_cpp/utils/json.hpp"
+#include "behaviortree_cpp/contrib/json.hpp"
 
 namespace BT
 {
