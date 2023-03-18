@@ -155,7 +155,7 @@ TEST(SkippingLogic, SkippingReactiveSequence)
     for(int repeat=0; repeat<3; repeat++)
     {
       NodeStatus status = NodeStatus::IDLE;
-      while(!StatusCompleted(status))
+      while(!isStatusCompleted(status))
       {
         status = tree.tickOnce();
 

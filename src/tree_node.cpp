@@ -16,25 +16,40 @@
 
 namespace BT
 {
-static uint16_t getUID()
-{
-  static uint16_t uid = 1;
-  return uid++;
-}
 
 TreeNode::TreeNode(std::string name, NodeConfig config) :
   name_(std::move(name)),
   status_(NodeStatus::IDLE),
-  uid_(getUID()),
   config_(std::move(config))
 {}
 
 NodeStatus TreeNode::executeTick()
 {
   auto new_status = status_;
+
+  // injected pre-callback
+  if(status_ == NodeStatus::IDLE)
+  {
+    PreTickCallback  callback;
+    {
+      std::unique_lock lk(callback_injection_mutex_);
+      callback = pre_condition_callback_;
+    }
+    if(callback)
+    {
+      auto override_status = callback(*this);
+      if(isStatusCompleted(override_status))
+      {
+        // return immediately and don't execute the actual tick()
+        new_status = override_status;
+        setStatus(new_status);
+        return new_status;
+      }
+    }
+  }
+
   // a pre-condition may return the new status.
   // In this case it override the actual tick()
-
   if (auto precond = checkPreConditions())
   {
     new_status = precond.value();
@@ -47,19 +62,25 @@ NodeStatus TreeNode::executeTick()
 
   checkPostConditions(new_status);
 
-  // a post-condition may overwrite the result of the tick
-  // with its own result.
-  if (post_condition_callback_)
+  // injected post callback
+  if(isStatusCompleted(new_status))
   {
-    // may overwrite the status
-    if (auto post = post_condition_callback_(*this, status_, new_status))
+    PostTickCallback  callback;
     {
-      new_status = post.value();
+      std::unique_lock lk(callback_injection_mutex_);
+      callback = post_condition_callback_;
+    }
+    if(callback)
+    {
+      auto override_status = callback(*this, new_status);
+      if(isStatusCompleted(override_status))
+      {
+        new_status = override_status;
+      }
     }
   }
 
   setStatus(new_status);
-
   return new_status;
 }
 
@@ -218,9 +239,26 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
   return state_change_signal_.subscribe(std::move(callback));
 }
 
+void TreeNode::setPreTickFunction(PreTickCallback callback)
+{
+  std::unique_lock lk(callback_injection_mutex_);
+  pre_condition_callback_ = callback;
+}
+
+void TreeNode::setPostTickFunction(PostTickCallback callback)
+{
+  std::unique_lock lk(callback_injection_mutex_);
+  post_condition_callback_ = callback;
+}
+
 uint16_t TreeNode::UID() const
 {
-  return uid_;
+  return config_.uid;
+}
+
+const std::string &TreeNode::fullPath() const
+{
+  return config_.path;
 }
 
 const std::string& TreeNode::registrationName() const

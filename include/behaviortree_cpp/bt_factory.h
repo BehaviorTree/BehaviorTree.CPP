@@ -40,7 +40,7 @@ inline NodeBuilder CreateBuilder(Args... args)
 }
 
 template <typename T>
-inline TreeNodeManifest CreateManifest(const std::string& ID, 
+inline TreeNodeManifest CreateManifest(const std::string& ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
   return {getType<T>(), ID, portlist, {}};
@@ -90,9 +90,10 @@ public:
   struct Subtree
   {
     using Ptr = std::shared_ptr<Subtree>;
-    uint16_t uid;
     std::vector<TreeNode::Ptr> nodes;
     Blackboard::Ptr blackboard;
+    std::string instance_name;
+    std::string tree_ID;
   };
 
   std::vector<Subtree::Ptr> subtrees;
@@ -119,17 +120,7 @@ public:
     return *this;
   }
 
-  void initialize()
-  {
-    wake_up_ = std::make_shared<WakeUpSignal>();
-    for (auto& subtree : subtrees)
-    {
-      for (auto& node : subtree->nodes)
-      {
-        node->setWakeUpInstance(wake_up_);
-      }
-    }
-  }
+  void initialize();
 
   void haltTree()
   {
@@ -182,6 +173,9 @@ public:
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(TreeNode*)>& visitor);
 
+  uint16_t getUID();
+
+
 private:
   std::shared_ptr<WakeUpSignal> wake_up_;
 
@@ -193,6 +187,8 @@ private:
   };
 
   NodeStatus tickRoot(TickOption opt, std::chrono::milliseconds sleep_time);
+
+  uint16_t uid_counter_ = 0;
 };
 
 class Parser;
@@ -426,6 +422,23 @@ public:
     }
   }
 
+  void clearSubstitutionRules();
+
+  using SubstitutionRule = std::variant<std::string, TestNodeConfig>;
+
+  /**
+   * @brief addSubstitutionRule replace a node with another one when the tree is
+   * created.
+   * If the rule ia a string, we will use a diferent node type (already registered)
+   * instead.
+   * If the rule is a TestNodeConfig, a test node with that configuration will be created instead.
+   *
+   * @param filter   filter used to select the node to sobstitute. The node path is used.
+   *                 You may use wildcard matching.
+   * @param rule     pass either a string or a TestNodeConfig
+   */
+  void addSubstitutionRule(StringView filter, SubstitutionRule rule);
+
 private:
   std::unordered_map<std::string, NodeBuilder> builders_;
   std::unordered_map<std::string, TreeNodeManifest> manifests_;
@@ -435,7 +448,9 @@ private:
   std::shared_ptr<std::unordered_map<std::string, int>> scripting_enums_;
 
   std::shared_ptr<BT::Parser> parser_;
-  // clang-format on
+
+  std::unordered_map<std::string, SubstitutionRule> substitution_rules_;
+
 };
 
 }   // namespace BT
