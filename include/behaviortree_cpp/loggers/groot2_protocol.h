@@ -198,8 +198,13 @@ struct Hook
 
   uint16_t node_uid = 0;
 
-  // interactive breakpoints are unblucked using unlockBreakpoint()
-  bool is_interactive = true;
+  enum class Mode {
+    BREAKPOINT = 0,
+    REPLACE = 1
+  };
+
+  // interactive breakpoints are unblocked using unlockBreakpoint()
+  Mode mode = Mode::BREAKPOINT;
 
   // used by interactive breakpoints to wait for unlocking
   std::condition_variable wakeup;
@@ -221,7 +226,7 @@ void to_json(nlohmann::json& js, const Hook& bp) {
   js = nlohmann::json {
       {"enabled", bp.enabled},
       {"uid", bp.node_uid},
-      {"interactive", bp.is_interactive},
+      {"mode", int(bp.mode)},
       {"once", bp.remove_when_done},
       {"desired_status", toStr(bp.desired_status)},
       {"position", int(bp.position)}
@@ -231,9 +236,10 @@ void to_json(nlohmann::json& js, const Hook& bp) {
 void from_json(const nlohmann::json& js, Hook& bp) {
   js.at("enabled").get_to(bp.enabled);
   js.at("uid").get_to(bp.node_uid);
-  js.at("interactive").get_to(bp.is_interactive);
   js.at("once").get_to(bp.remove_when_done);
+  bp. mode = static_cast<Hook::Mode>(js.at("mode").get<int>());
   bp.position = static_cast<Hook::Position>(js.at("position").get<int>());
+
   const std::string desired_value = js.at("desired_status").get<std::string>();
   bp.desired_status = convertFromString<NodeStatus>(desired_value);
 }

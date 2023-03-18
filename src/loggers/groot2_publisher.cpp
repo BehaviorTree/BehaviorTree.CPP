@@ -231,11 +231,11 @@ void Groot2Publisher::serverLoop()
           if(auto hook = getHook(pos, node_uid))
           {
             std::unique_lock<std::mutex> lk(hook->mutex);
-            bool was_interactive = hook->is_interactive;
+            bool was_interactive = (hook->mode == Monitor::Hook::Mode::BREAKPOINT);
             BT::Monitor::from_json(json, *hook);
 
             // if it WAS interactive and it is not anymore, unlock it
-            if(was_interactive && !hook->is_interactive)
+            if(was_interactive && (hook->mode == Monitor::Hook::Mode::REPLACE))
             {
               hook->ready = true;
               lk.unlock();
@@ -275,7 +275,7 @@ void Groot2Publisher::serverLoop()
         uint16_t node_uid = json.at("uid").get<uint16_t>();
         std::string status_str = json.at("desired_status").get<std::string>();
         auto position = static_cast<Position>(json.at("position").get<int>());
-        bool remove = json.at("desired_status").get<bool>();
+        bool remove = json.at("remove_when_done").get<bool>();
 
         NodeStatus desired_status = NodeStatus::SKIPPED;
         if( status_str == "SUCCESS")
@@ -350,7 +350,7 @@ void BT::Groot2Publisher::enableAllHooks(bool enable)
     std::unique_lock<std::mutex> lk(hook->mutex);
     hook->enabled = enable;
     // when disabling, remember to wake up blocked ones
-    if(!hook->enabled && hook->is_interactive)
+    if(!hook->enabled && hook->mode == Monitor::Hook::Mode::BREAKPOINT)
     {
       lk.unlock();
       hook->wakeup.notify_all();
@@ -430,7 +430,7 @@ bool Groot2Publisher::insertHook(std::shared_ptr<Monitor::Hook> hook)
     request_msg.send(zmq_->publisher);
 
     // wait until someone wake us up
-    if(hook->is_interactive)
+    if(hook->mode == Monitor::Hook::Mode::BREAKPOINT)
     {
       hook->wakeup.wait(lk, [hook]() {
         return hook->ready || !hook->enabled;  } );
@@ -473,21 +473,21 @@ bool Groot2Publisher::unlockBreakpoint(Position pos, uint16_t node_uid, NodeStat
     return false;
   }
 
-  auto breakpoint = getHook(pos, node_uid);
-  if(!breakpoint)
+  auto hook = getHook(pos, node_uid);
+  if(!hook)
   {
     return false;
   }
 
   {
-    std::unique_lock<std::mutex> lk(breakpoint->mutex);
-    breakpoint->desired_status = result;
-    breakpoint->remove_when_done |= remove;
-    if(breakpoint->is_interactive)
+    std::unique_lock<std::mutex> lk(hook->mutex);
+    hook->desired_status = result;
+    hook->remove_when_done |= remove;
+    if(hook->mode == Monitor::Hook::Mode::BREAKPOINT)
     {
-      breakpoint->ready = true;
+      hook->ready = true;
       lk.unlock();
-      breakpoint->wakeup.notify_all();
+      hook->wakeup.notify_all();
     }
   }
   return true;
@@ -521,12 +521,11 @@ bool Groot2Publisher::removeHook(Position pos, uint16_t node_uid)
   // Disable breakpoint, if it was interactive and blocked
   {
     std::unique_lock<std::mutex> lk(hook->mutex);
-    if(hook->is_interactive)
+    if(hook->mode == Monitor::Hook::Mode::BREAKPOINT)
     {
       hook->enabled = false;
       lk.unlock();
       hook->wakeup.notify_all();
-      std::cout << "disable " << node_uid << std::endl;
     }
   }
   return true;
