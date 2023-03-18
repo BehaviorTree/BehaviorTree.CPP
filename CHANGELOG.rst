@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.1.0 (2023-03-18)
+------------------
 * temporary disable codeql
 * Groot2 interface (`#528 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/528>`_)
   * refactored groot2 interface
