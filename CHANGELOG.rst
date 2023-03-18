@@ -2,6 +2,50 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* temporary disable codeql
+* Groot2 interface (`#528 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/528>`_)
+  * refactored groot2 interface
+  * protocol updated
+* merging groot2 publisher
+* add observer
+* prepare 4.1
+* Update README.md
+* fix issue `#525 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/525>`_ when ReactiveSequence contains skipped children
+* fix reactive sequence (issue `#526 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/526>`_ and `#525 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/525>`_)
+* better test
+* add cast to ENUMS in ports
+* changes ported from 4.1
+* fix samples
+* better include paths
+* Control node and Decorators RUNNING before first child
+* blackboard: update getKeys and add mutex to scripting
+* add [[nodiscard]] and some othe minor changes
+* add screenshot
+* change the behavior of tickOnce to actually loop is wake up signal is… (`#522 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/522>`_)
+  * change the behavior of tickOnce to actually loop is wake up signal is received
+  * fix warning
+* Cmake conan (`#521 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/521>`_)
+  * boost coroutine substituted with minicoro. 3rd party updates
+  * cmake refactoring + conan
+  * fix cmake
+  * fix build with conan and change CI
+* fix CI in ROS1 (`#519 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/519>`_)
+* fix alloc-dealloc-mismatch for _storage.str.data (`#518 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/518>`_)
+* Fix issue `#515 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/515>`_: reactive sequence not skipped correctly
+* Fix issue `#517 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/517>`_
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* fix issue `#492 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/492>`_ (Threads::Threads)
+* Fix boost dependency in package.xml (`#512 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/512>`_)
+  `libboost-coroutine-dev` has been merged into rosdistro on February 21st
+  2023. Link to merge request: https://github.com/ros/rosdistro/pull/35789/.
+* fix compilation
+* revert breaking change
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* make default value of port optional, to allow empty strings
+* Contributors: Alberto Soragna, Bart Keulen, Davide Faconti
+
 4.0.2 (2023-02-17)
 ------------------
 * fix issue `#501 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/501>`_
