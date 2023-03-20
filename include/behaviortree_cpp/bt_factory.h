@@ -439,6 +439,21 @@ public:
    */
   void addSubstitutionRule(StringView filter, SubstitutionRule rule);
 
+  /**
+   * @brief loadSubstitutionRuleFromJSON will parse a JSON file to
+   * create a set of substitution rules. See Tutorial 11
+   * for an example of the syntax.
+   *
+   * @param json_text  the JSON file as text (BOT the path of the file)
+   */
+  void loadSubstitutionRuleFromJSON(const std::string& json_text);
+
+  /**
+   * @brief substitutionRules return the current substitution rules.
+   */
+  const std::unordered_map<std::string, SubstitutionRule>&
+  substitutionRules() const;
+
 private:
   std::unordered_map<std::string, NodeBuilder> builders_;
   std::unordered_map<std::string, TreeNodeManifest> manifests_;

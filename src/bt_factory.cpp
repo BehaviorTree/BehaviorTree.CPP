@@ -14,6 +14,7 @@
 #include <fstream>
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "wildcards/wildcards.hpp"
 
@@ -417,6 +418,51 @@ void BehaviorTreeFactory::clearSubstitutionRules()
 void BehaviorTreeFactory::addSubstitutionRule(StringView filter, SubstitutionRule rule)
 {
   substitution_rules_[std::string(filter)] = rule;
+}
+
+void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string &json_text)
+{
+  auto const json = nlohmann::json::parse(json_text);
+
+  std::unordered_map<std::string, TestNodeConfig> configs;
+
+  auto test_configs = json.at("TestNodeConfigs");
+  for(auto const& [name, test_config]: test_configs.items())
+  {
+    auto& config = configs[name];
+
+    auto status = test_config.at("return_status").get<std::string>();
+    config.return_status = convertFromString<NodeStatus>(status);
+    if(test_config.contains("async_delay"))
+    {
+      config.async_delay =
+          std::chrono::milliseconds(test_config["async_delay"].get<int>());
+    }
+    if(test_config.contains("post_script"))
+    {
+      config.post_script = test_config["post_script"].get<std::string>();
+    }
+  }
+
+  auto substitutions = json.at("SubstitutionRules");
+  for(auto const& [node_name, test]: substitutions.items())
+  {
+    auto test_name = test.get<std::string>();
+    auto it = configs.find(test_name);
+    if(it == configs.end())
+    {
+      addSubstitutionRule(node_name, test_name);
+    }
+    else {
+      addSubstitutionRule(node_name, it->second);
+    }
+  }
+}
+
+const std::unordered_map<std::string, BehaviorTreeFactory::SubstitutionRule> &
+BehaviorTreeFactory::substitutionRules() const
+{
+  return substitution_rules_;
 }
 
 

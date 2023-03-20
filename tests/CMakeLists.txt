@@ -4,25 +4,28 @@
 set(BT_TESTS
   src/action_test_node.cpp
   src/condition_test_node.cpp
-  gtest_tree.cpp
-  gtest_sequence.cpp
-  gtest_parallel.cpp
-  gtest_fallback.cpp
-  gtest_factory.cpp
-  gtest_decorator.cpp
+
   gtest_blackboard.cpp
+  gtest_coroutines.cpp
+  gtest_decorator.cpp
+  gtest_factory.cpp
+  gtest_fallback.cpp
+  gtest_parallel.cpp
   gtest_preconditions.cpp
   gtest_postconditions.cpp
   gtest_match.cpp
   gtest_ports.cpp
   gtest_json.cpp
+  gtest_sequence.cpp
   gtest_skipping.cpp
+  gtest_substitution.cpp
   gtest_subtree.cpp
   gtest_switch.cpp
+  gtest_tree.cpp
   gtest_wakeup.cpp
-  test_helper.hpp
+
   script_parser_test.cpp
-  gtest_coroutines.cpp
+  test_helper.hpp
 )
 
 set(TEST_DEPENDECIES
