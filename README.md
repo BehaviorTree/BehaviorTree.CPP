@@ -1,7 +1,7 @@
 ![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
 ![Version](https://img.shields.io/badge/version-4.1-blue.svg)
-[![cmake Ubuntu](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml)
-[![cmake Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
+[![conan Ubuntu](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml)
+[![conan Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 
@@ -15,11 +15,11 @@ It was designed to be flexible, easy to use, reactive and fast.
 Even if our main use-case is __robotics__, you can use this library to build
 __AI for games__, or to replace Finite State Machines.
 
-There are few features that make __BehaviorTree.CPP__ unique, when compared to other implementations:
+There are few features which make __BehaviorTree.CPP__ unique, when compared to other implementations:
 
 - It makes __asynchronous Actions__, i.e. non-blocking, a first-class citizen.
 
-- You can build __reactive__ behaviors that execute multiple Actions concurrently.
+- You can build __reactive__ behaviors that execute multiple Actions concurrently (orthogonality).
 
 - Trees are defined using a Domain Specific __scripting language__ (based on XML), and can be loaded at run-time; in other words, even if written in C++, the morphology of the Trees is _not_ hard-coded.
 
@@ -46,27 +46,6 @@ Version 3.8 of the software can be found in the branch
 
 That branch might receive bug fixes, but the new features will be implemented
 only in the master branch.
-
-## Commercial support
-
-Are you using BT.CPP in your commercial product and you need technical support / consulting?
-You can contact the main author dfaconti@aurynrobotics.com to discuss your use case and needs.
-
-# Design principles
-
-The main goal of this project is to create a Behavior Tree implementation
-that uses the principles of Model Driven Development to separate the role
-of the __Component Developer__ from the __Behavior Designer__.
-
-In practice, this means that:
-
-- Custom TreeNodes must be reusable building blocks.
- You should be able to implement them once and reuse them to build many behaviors.
-
-- To build a Behavior Tree out of TreeNodes, the Behavior Designer must
-not need to read nor to modify the C++ source code..
-
-- Complex Behaviours must be composable using Subtrees.
 
 # GUI Editor
 
@@ -99,6 +78,10 @@ Assuming that you are in the **parent** directory of `BehaviorTree.CPP`:
 If you want to use BT.CPP in your application, please refer to the
 example here: https://github.com/BehaviorTree/btcpp_sample .
 
+# Commercial support
+
+Are you using BT.CPP in your commercial product and you need technical support / consulting?
+You can contact the main author dfaconti@aurynrobotics.com to discuss your use case and needs.
 
 # License
 
