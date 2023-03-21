@@ -530,19 +530,15 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   std::string instance_name = attr_name ? attr_name : type_ID;
 
   PortsRemapping port_remap;
-
-  if (node_type != NodeType::SUBTREE)
+  for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
   {
-    // do this only if it NOT a Subtree
-    for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
+    if (IsAllowedPortName(att->Name()))
     {
-      if (IsAllowedPortName(att->Name()))
-      {
-        const std::string attribute_name = att->Name();
-        port_remap[attribute_name] = att->Value();
-      }
+      const std::string attribute_name = att->Name();
+      port_remap[attribute_name] = att->Value();
     }
   }
+
   NodeConfig config;
   config.blackboard = blackboard;
   config.path = prefix_path + instance_name;
@@ -576,6 +572,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
 
   if (node_type == NodeType::SUBTREE)
   {
+    config.input_ports = port_remap;
     new_node = factory.instantiateTreeNode(instance_name,
                                            toStr(NodeType::SUBTREE),
                                            config);
