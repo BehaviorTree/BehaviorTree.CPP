@@ -15,7 +15,7 @@
 
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
-#include "behaviortree_cpp/utils/expected.hpp"
+#include "behaviortree_cpp/contrib/expected.hpp"
 
 namespace BT
 {

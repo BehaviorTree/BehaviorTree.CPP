@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <set>
 
-#include "behaviortree_cpp/utils/magic_enum.hpp"
+#include "behaviortree_cpp/contrib/magic_enum.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
 
 namespace BT
