@@ -1,6 +1,7 @@
 ﻿#include <gtest/gtest.h>
 #include "behaviortree_cpp/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
+#include "../sample_nodes/movebase_node.h"
 
 using namespace BT;
 
@@ -282,4 +283,46 @@ TEST(SubTree, ScriptRemap)
 
   ASSERT_EQ(tree.subtrees[1]->blackboard->get<int>("value"), 1);
   ASSERT_EQ(tree.subtrees[0]->blackboard->get<int>("value"), 1);
+}
+
+class ModifyPose : public BT::SyncActionNode
+{
+public:
+  // Any TreeNode with ports must have a constructor with this signature
+  ModifyPose(const std::string& name, const BT::NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  static BT::PortsList providedPorts() {
+    return{ BT::BidirectionalPort<Pose2D>("pose") };
+  }
+
+  BT::NodeStatus tick() override {
+    Pose2D pose;
+    getInput("pose", pose);
+    pose.theta *= 2;
+    setOutput("pose", pose);
+    return NodeStatus::SUCCESS;
+  }
+};
+
+TEST(SubTree, StringConversions_Issue530)
+{
+  const char* xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Script code=" pose:='1;2;3' "/>
+      <ModifyPose pose="{pose}"/>
+      <Script code=" pose:='1;2;3' "/>
+    </Sequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<ModifyPose>("ModifyPose");
+  factory.registerBehaviorTreeFromText(xml_text);
+  Tree tree = factory.createTree("MainTree");
+  tree.tickOnce();
 }

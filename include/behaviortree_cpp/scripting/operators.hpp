@@ -361,7 +361,7 @@ struct ExprAssignment : ExprBase
         const auto& key = varname->name;
 
         std::unique_lock entry_lock(env.vars->entryMutex());
-        auto any_ptr = env.vars->getAny(key);
+        Any* any_ptr = env.vars->getAny(key);
         if( !any_ptr )
         {
             // variable doesn't exist, create it if using operator assign_create
@@ -379,7 +379,33 @@ struct ExprAssignment : ExprBase
 
         if( op == assign_create || op == assign_existing )
         {
-            value.copyInto(*any_ptr);
+            // special case first: string to other type
+            // check if we can use the StringConverter
+            if(value.isString() && !any_ptr->isString())
+            {
+                auto const str = value.cast<std::string>();
+                if(auto converter = env.vars->portInfo(key)->converter())
+                {
+                    *any_ptr = converter(str);
+                }
+                else {
+                    auto msg = StrCat("Type mismatch in scripting:",
+                                      " can't convert the string '", str,
+                                      "' to the type expected by that port.\n"
+                                      "Have you implemented the relevant "
+                                      "convertFromString<T>() ?");
+                    throw RuntimeError(msg);
+                }
+            }
+            else {
+                try {
+                    value.copyInto(*any_ptr);
+                }
+                catch (std::runtime_error) {
+                    throw RuntimeError("A script failed to convert the given type "
+                                       "to the one expected by that port.");
+                }
+            }
             return *any_ptr;
         }
 
