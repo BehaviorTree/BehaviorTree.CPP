@@ -2,7 +2,7 @@
 
 namespace BT
 {
-void Blackboard::setPortInfo(std::string key, const PortInfo& info)
+void Blackboard::setPortInfo(const std::string& key, const PortInfo& info)
 {
   std::unique_lock<std::mutex> lock(mutex_);
 

@@ -49,12 +49,15 @@ public:
   {
     std::unique_lock<std::mutex> lock(mutex_);
     // search first if this port was remapped
-    if (auto parent = parent_bb_.lock())
+    if(!internal_to_external_.empty())
     {
-      auto remapping_it = internal_to_external_.find(key);
-      if (remapping_it != internal_to_external_.end())
+      if (auto parent = parent_bb_.lock())
       {
-        return parent->getAny(remapping_it->second);
+        auto remapping_it = internal_to_external_.find(key);
+        if (remapping_it != internal_to_external_.end())
+        {
+          return parent->getAny(remapping_it->second);
+        }
       }
     }
     auto it = storage_.find(key);
@@ -63,18 +66,9 @@ public:
 
   Any* getAny(const std::string& key)
   {
-    std::unique_lock<std::mutex> lock(mutex_);
-    // search first if this port was remapped
-    if (auto parent = parent_bb_.lock())
-    {
-      auto remapping_it = internal_to_external_.find(key);
-      if (remapping_it != internal_to_external_.end())
-      {
-        return parent->getAny(remapping_it->second);
-      }
-    }
-    auto it = storage_.find(key);
-    return (it == storage_.end()) ? nullptr : &(it->second.value);
+    // "Avoid Duplication in const and Non-const Member Function,"
+    // on p. 23, in Item 3 "Use const whenever possible," in Effective C++, 3d ed
+    return const_cast<Any*>( static_cast<const Blackboard &>(*this).getAny(key));
   }
 
   /** Return true if the entry with the given key was found.
@@ -117,14 +111,17 @@ public:
 
     // search first if this port was remapped.
     // Change the parent_bb_ in that case
-    auto remapping_it = internal_to_external_.find(key);
-    if (remapping_it != internal_to_external_.end())
+    if(!internal_to_external_.empty())
     {
-      const auto& remapped_key = remapping_it->second;
-      if (auto parent = parent_bb_.lock())
+      auto remapping_it = internal_to_external_.find(key);
+      if (remapping_it != internal_to_external_.end())
       {
-        parent->set(remapped_key, value);
-        return;
+        const auto& remapped_key = remapping_it->second;
+        if (auto parent = parent_bb_.lock())
+        {
+          parent->set(remapped_key, value);
+          return;
+        }
       }
     }
 
@@ -196,7 +193,7 @@ public:
     }
   }
 
-  void setPortInfo(std::string key, const PortInfo& info);
+  void setPortInfo(const std::string &key, const PortInfo& info);
 
   const PortInfo* portInfo(const std::string& key);
 
@@ -210,7 +207,6 @@ public:
   {
     std::unique_lock<std::mutex> lock(mutex_);
     storage_.clear();
-    internal_to_external_.clear();
   }
 
   // Lock this mutex before using get() and getAny() and unlock it while you have
@@ -239,6 +235,7 @@ private:
   std::unordered_map<std::string, Entry> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
+
 };
 
 }   // namespace BT
