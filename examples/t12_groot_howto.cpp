@@ -12,27 +12,28 @@
 static const char* xml_text = R"(
 <root BTCPP_format="4">
 
-    <BehaviorTree ID="MainTree">
-        <Sequence>
-            <Fallback>
-                <Inverter>
-                    <IsDoorClosed/>
-                </Inverter>
-                <SubTree ID="DoorClosed"/>
-            </Fallback>
-            <PassThroughDoor/>
-        </Sequence>
-    </BehaviorTree>
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Script code="door_open:=false" />
+      <Fallback>
+        <Inverter>
+          <IsDoorClosed/>
+        </Inverter>
+        <SubTree ID="DoorClosed" _autoremap="true" door_open="{door_open}"/>
+      </Fallback>
+      <PassThroughDoor/>
+    </Sequence>
+  </BehaviorTree>
 
-    <BehaviorTree ID="DoorClosed">
-        <Fallback>
-            <OpenDoor/>
-            <RetryUntilSuccessful num_attempts="5">
-                <PickLock/>
-            </RetryUntilSuccessful>
-            <SmashDoor/>
-        </Fallback>
-    </BehaviorTree>
+  <BehaviorTree ID="DoorClosed">
+    <Fallback name="tryOpen" _onSuccess="door_open:=true">
+      <OpenDoor/>
+        <RetryUntilSuccessful num_attempts="5">
+          <PickLock/>
+        </RetryUntilSuccessful>
+      <SmashDoor/>
+    </Fallback>
+  </BehaviorTree>
 
 </root>
  )";
@@ -51,12 +52,13 @@ int main()
   // generated using this command and imported.
 
   std::string xml_models = BT::writeTreeNodesModelXML(factory);
-  std::cout << " ---------- XML file containing models ----------\n"
-            << xml_models
-            << "-------------------------------------------------\n";
 
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
+
+  std::cout << " ---------- XML file  ----------\n"
+            << BT::WriteTreeToXML(tree, false)
+            << "--------------------------------\n";
 
   // Connect the Groot2Publisher. This will allow Groot2 to
   // get the tree and poll status updates.

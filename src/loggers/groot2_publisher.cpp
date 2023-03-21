@@ -89,7 +89,8 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
 
   for(const auto& subtree: tree.subtrees)
   {
-    subtrees_.insert( {subtree->instance_name, subtree} );
+    auto name = subtree->instance_name.empty() ? subtree->tree_ID : subtree->instance_name;
+    subtrees_.insert( {name, subtree} );
 
     for(const auto& node: subtree->nodes)
     {
