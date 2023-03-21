@@ -137,3 +137,41 @@ TEST(Preconditions, Basic)
   ASSERT_EQ(counters[2], 0);   // skipped
   ASSERT_EQ(counters[3], 1);   // executed
 }
+
+
+TEST(Preconditions, Issue533)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 3> counters;
+  RegisterTestTick(factory, "Test", counters);
+
+  const std::string xml_text = R"(
+
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <TestA _skipIf="A!=1" />
+                <TestB _skipIf="A!=2" _onSuccess="A=1"/>
+                <TestC _skipIf="A!=3" _onSuccess="A=2"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.subtrees.front()->blackboard->set("A", 3);
+
+  tree.tickOnce();
+  ASSERT_EQ(counters[0], 0);
+  ASSERT_EQ(counters[1], 0);
+  ASSERT_EQ(counters[2], 1);
+
+  tree.tickOnce();
+  ASSERT_EQ(counters[0], 0);
+  ASSERT_EQ(counters[1], 1);
+  ASSERT_EQ(counters[2], 1);
+
+  tree.tickOnce();
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[1], 1);
+  ASSERT_EQ(counters[2], 1);
+}
