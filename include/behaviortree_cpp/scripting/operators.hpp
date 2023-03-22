@@ -381,7 +381,7 @@ struct ExprAssignment : ExprBase
         {
             // special case first: string to other type
             // check if we can use the StringConverter
-            if(value.isString() && !any_ptr->isString())
+            if(value.isString() && !any_ptr->empty() && !any_ptr->isString())
             {
                 auto const str = value.cast<std::string>();
                 if(auto converter = env.vars->portInfo(key)->converter())
