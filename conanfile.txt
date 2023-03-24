@@ -5,3 +5,4 @@ sqlite3/3.40.1
 
 [generators]
 CMakeDeps
+CMakeToolchain

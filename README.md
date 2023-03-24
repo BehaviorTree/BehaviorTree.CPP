@@ -65,15 +65,27 @@ Three build systems are supported:
 - **catkin**, if you use ROS
 - **colcon (ament)**, if you use ROS2
 - **conan** otherwise (Linux/Windows).
+- **straight cmake** if you want to be personal responsible for depndencies :)
 
 Compiling with [conan](https://conan.io/):
 
 Assuming that you are in the **parent** directory of `BehaviorTree.CPP`:
 
-    mkdir build; cd build
-    conan install ../BehaviorTree.CPP --output-folder=. --build=missing
-    cmake ../BehaviorTree.CPP
-    cmake --build . --parallel
+```
+mkdir build; cd build
+conan install ../BehaviorTree.CPP --output-folder=. --build=missing
+cmake ../BehaviorTree.CPP -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+cmake --build . --parallel
+```
+
+If you have dependencies such as ZeroMQ and SQlite already installed and you don't want to
+use conan, simply type:
+
+```
+mkdir build; cd build
+cmake ../BehaviorTree.CPP
+cmake --build . --parallel
+```
 
 If you want to use BT.CPP in your application, please refer to the
 example here: https://github.com/BehaviorTree/btcpp_sample .

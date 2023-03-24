@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 project(behaviortree_cpp)
 
+set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
+
 set(BTCPP_LIBRARY ${PROJECT_NAME})
 
 #---- Enable C++17 ----
@@ -29,6 +32,7 @@ option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
 option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
 option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
 option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
+option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
@@ -116,11 +120,16 @@ list(APPEND BT_SOURCE
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
-    src/loggers/groot2_publisher.cpp
 
     3rdparty/tinyxml2/tinyxml2.cpp
     3rdparty/minitrace/minitrace.cpp
     )
+
+
+if(BTCPP_GROOT_INTERFACE)
+    # should be found already, at this stage
+    list(APPEND BT_SOURCE  src/loggers/groot2_publisher.cpp )
+endif()
 
 
 ######################################################
