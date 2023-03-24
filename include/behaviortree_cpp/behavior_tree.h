@@ -20,7 +20,6 @@
 #include "behaviortree_cpp/controls/sequence_node.h"
 #include "behaviortree_cpp/controls/sequence_star_node.h"
 #include "behaviortree_cpp/controls/switch_node.h"
-#include "behaviortree_cpp/controls/manual_node.h"
 #include "behaviortree_cpp/controls/if_then_else_node.h"
 #include "behaviortree_cpp/controls/while_do_else_node.h"
 

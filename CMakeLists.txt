@@ -26,7 +26,6 @@ endif()
 
 #---- project configuration ----
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
-option(BTCPP_MANUAL_SELECTOR "Build manual selector node" OFF)
 option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
 option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
 option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
@@ -123,16 +122,6 @@ list(APPEND BT_SOURCE
     3rdparty/minitrace/minitrace.cpp
     )
 
-if(BTCPP_MANUAL_SELECTOR)
-    find_package(Curses QUIET)
-    if(CURSES_FOUND)
-        message(STATUS "NCurses: found.")
-        list(APPEND BT_SOURCE src/controls/manual_node.cpp )
-    else()
-        message(WARNING "NCurses NOT found. Skipping the build of manual selector node.")
-    endif()
-endif()
-
 
 ######################################################
 
@@ -171,15 +160,6 @@ target_include_directories(${BTCPP_LIBRARY}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
-
-if(CURSES_FOUND)
-    target_link_libraries(${BTCPP_LIBRARY} PRIVATE
-        ${CURSES_LIBRARIES} )
-    target_include_directories(${BTCPP_LIBRARY} PRIVATE
-        ${CURSES_INCLUDE_DIRS} )
-    target_compile_definitions(${BTCPP_LIBRARY} PRIVATE NCURSES_FOUND)
-endif()
-
 
 target_compile_definitions(${BTCPP_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 

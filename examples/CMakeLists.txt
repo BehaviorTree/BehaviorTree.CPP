@@ -31,9 +31,4 @@ CompileExample("t12_groot_howto")
 
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
-
-if(BTCPP_MANUAL_SELECTOR)
-    CompileExample("ex03_ncurses_manual_selector")
-endif()
-
 CompileExample("ex04_waypoints")
