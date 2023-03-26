@@ -401,7 +401,7 @@ struct ExprAssignment : ExprBase
                 try {
                     value.copyInto(*any_ptr);
                 }
-                catch (std::runtime_error) {
+                catch (std::runtime_error&) {
                     throw RuntimeError("A script failed to convert the given type "
                                        "to the one expected by that port.");
                 }
