@@ -1,6 +1,7 @@
 #include "crossdoor_nodes.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
+#include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
 /** We are using the same example in Tutorial 5,
@@ -63,6 +64,7 @@ int main()
   // Connect the Groot2Publisher. This will allow Groot2 to
   // get the tree and poll status updates.
   BT::Groot2Publisher publisher(tree);
+  BT::SqliteLogger logger(tree, "test_sqlite.db3", true);
 
   while(1)
   {

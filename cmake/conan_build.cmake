@@ -6,6 +6,13 @@ if(BTCPP_GROOT_INTERFACE)
     message(STATUS "ZeroMQ_LIBRARIES: ${ZeroMQ_LIBRARIES}")
 endif()
 
+if(BTCPP_SQLITE_LOGGING)
+    find_package(SQLite3 REQUIRED)
+    list(APPEND BTCPP_EXTRA_LIBRARIES ${SQLite3_LIBRARIES})
+    message(STATUS "SQLite3_LIBRARIES: ${SQLite3_LIBRARIES}")
+endif()
+
+
 set( BTCPP_LIB_DESTINATION     lib )
 set( BTCPP_INCLUDE_DESTINATION include )
 set( BTCPP_BIN_DESTINATION     bin )

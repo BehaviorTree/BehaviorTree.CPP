@@ -6,11 +6,16 @@ if(BTCPP_GROOT_INTERFACE)
     find_package(ZeroMQ REQUIRED)
 endif()
 
+if(BTCPP_SQLITE_LOGGING)
+    find_package(SQLite3 REQUIRED)
+endif()
+
 find_package(ament_index_cpp REQUIRED)
 
 set( BTCPP_EXTRA_LIBRARIES
     $<BUILD_INTERFACE:ament_index_cpp::ament_index_cpp>
     $<BUILD_INTERFACE:${ZeroMQ_LIBRARIES}>
+    $<BUILD_INTERFACE:${${SQLite3_LIBRARIES}>
 )
 
 ament_export_dependencies(ament_index_cpp)

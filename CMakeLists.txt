@@ -33,6 +33,7 @@ option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
 option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
 option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
 option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
+option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
@@ -131,6 +132,9 @@ if(BTCPP_GROOT_INTERFACE)
     list(APPEND BT_SOURCE  src/loggers/groot2_publisher.cpp )
 endif()
 
+if(BTCPP_SQLITE_LOGGING)
+    list(APPEND BT_SOURCE  src/loggers/bt_sqlite_logger.cpp )
+endif()
 
 ######################################################
 
