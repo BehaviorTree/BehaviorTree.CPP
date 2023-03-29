@@ -222,7 +222,7 @@ struct Hook
 };
 
 
-void to_json(nlohmann::json& js, const Hook& bp) {
+inline void to_json(nlohmann::json& js, const Hook& bp) {
   js = nlohmann::json {
       {"enabled", bp.enabled},
       {"uid", bp.node_uid},
@@ -233,7 +233,7 @@ void to_json(nlohmann::json& js, const Hook& bp) {
   };
 }
 
-void from_json(const nlohmann::json& js, Hook& bp) {
+inline void from_json(const nlohmann::json& js, Hook& bp) {
   js.at("enabled").get_to(bp.enabled);
   js.at("uid").get_to(bp.node_uid);
   js.at("once").get_to(bp.remove_when_done);
