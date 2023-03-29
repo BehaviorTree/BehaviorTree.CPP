@@ -13,6 +13,10 @@ SqliteLogger::SqliteLogger(const Tree &tree,
 
   db_ = std::make_unique<sqlite::Connection>(file.string());
 
+  sqlite::Statement(*db_, "PRAGMA journal_mode=WAL;");
+  sqlite::Statement(*db_, "PRAGMA synchronous = normal;");
+  sqlite::Statement(*db_, "PRAGMA temp_store = memory;");
+
   sqlite::Statement(*db_,
                     "CREATE TABLE IF NOT EXISTS Transitions ("
                     "timestamp  INTEGER PRIMARY KEY NOT NULL, "
@@ -26,8 +30,6 @@ SqliteLogger::SqliteLogger(const Tree &tree,
                     "session_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                     "date       TEXT NOT NULL,"
                     "xml_tree   TEXT NOT NULL);");
-
-  sqlite::Statement(*db_, "PRAGMA journal_mode=WAL;");
 
   if( !append )
   {
@@ -56,6 +58,7 @@ SqliteLogger::~SqliteLogger()
   loop_ = false;
   queue_push_cv_.notify_one();
   queue_thread_.join();
+  sqlite::Statement(*db_, "PRAGMA optimize;");
 }
 
 void SqliteLogger::callback(Duration timestamp,
