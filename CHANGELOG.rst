@@ -2,6 +2,23 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* adding sqlite logger
+* fix warning
+* better cmake
+* ManualSelector removed
+* magic_enum updated
+* fix issue `#530 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/530>`_: use convertFromString in scripting assignments
+* added unit test
+* files moved
+* fix groot2 publisher
+* minor fixes in blackboard
+* fix XML: Subtree should remember the remapped ports
+* add the ability to load substitution rules from JSON
+* Update README.md
+* Contributors: Davide Faconti
+
 4.1.0 (2023-03-18)
 ------------------
 * temporary disable codeql
