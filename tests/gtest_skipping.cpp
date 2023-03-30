@@ -175,3 +175,50 @@ TEST(SkippingLogic, SkippingReactiveSequence)
   // counters[1] contains the number ot times TestB was ticked
   ASSERT_EQ(counters[1], 0);
 }
+
+
+
+TEST(SkippingLogic, WhileSkip)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 2> counters;
+  RegisterTestTick(factory, "Test", counters);
+
+  const std::string xml_text_noskip = R"(
+    <root BTCPP_format="4" >
+       <BehaviorTree>
+          <Sequence>
+            <Script code=" doit:=true "/>
+            <Sequence>
+              <TestA _while="doit"/>
+            </Sequence>
+          </Sequence>
+       </BehaviorTree>
+    </root>)";
+
+  const std::string xml_text_skip = R"(
+    <root BTCPP_format="4" >
+       <BehaviorTree>
+          <Sequence>
+            <Script code=" doit:=false "/>
+            <Sequence>
+              <TestB _while="doit"/>
+            </Sequence>
+          </Sequence>
+       </BehaviorTree>
+    </root>)";
+
+
+  for(auto const* xml_text: {&xml_text_noskip, &xml_text_skip})
+  {
+    auto tree = factory.createTreeFromText(*xml_text);
+    NodeStatus status = tree.tickWhileRunning();
+    ASSERT_EQ(status, NodeStatus::SUCCESS);
+  }
+  // counters[0] contains the number ot times TestA was ticked
+  ASSERT_EQ(counters[0], 1);
+
+  // counters[1] contains the number ot times TestB was ticked
+  ASSERT_EQ(counters[1], 0);
+}
+

@@ -29,6 +29,7 @@
 #include "behaviortree_cpp/decorators/inverter_node.h"
 #include "behaviortree_cpp/decorators/retry_node.h"
 #include "behaviortree_cpp/decorators/repeat_node.h"
+#include "behaviortree_cpp/decorators/run_once_node.h"
 #include "behaviortree_cpp/decorators/subtree_node.h"
 
 #include "behaviortree_cpp/actions/always_success_node.h"
