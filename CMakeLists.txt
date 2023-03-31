@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
-project(behaviortree_cpp)
+
+project(behaviortree_cpp VERSION 4.1.1)
 
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
@@ -175,6 +176,7 @@ target_include_directories(${BTCPP_LIBRARY}
     )
 
 target_compile_definitions(${BTCPP_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
+target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAKE_PROJECT_VERSION}")
 
 if(MSVC)
 else()

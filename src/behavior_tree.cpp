@@ -111,4 +111,15 @@ void buildSerializedStatusSnapshot(TreeNode* root_node,
   applyRecursiveVisitor(root_node, visitor);
 }
 
+int LibraryVersionNumber() {
+  static int number = -1;
+  if(number == -1) {
+    auto const parts = splitString(BTCPP_LIBRARY_VERSION, '.');
+    number = std::stoi( std::string(parts[0]) ) * 10000 +
+             std::stoi( std::string(parts[1]) ) * 100 +
+             std::stoi( std::string(parts[2]));
+  }
+  return number;
+}
+
 }   // namespace BT

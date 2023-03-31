@@ -90,4 +90,11 @@ inline NodeType getType()
   // clang-format on
 }
 
+
+inline const char* LibraryVersionString() {
+  return BTCPP_LIBRARY_VERSION;
+}
+
+int LibraryVersionNumber();
+
 }   // namespace BT
