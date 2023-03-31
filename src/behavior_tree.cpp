@@ -122,4 +122,8 @@ int LibraryVersionNumber() {
   return number;
 }
 
+const char *LibraryVersionString() {
+  return BTCPP_LIBRARY_VERSION;
+}
+
 }   // namespace BT

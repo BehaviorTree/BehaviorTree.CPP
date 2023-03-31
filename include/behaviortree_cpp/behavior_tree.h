@@ -91,9 +91,7 @@ inline NodeType getType()
 }
 
 
-inline const char* LibraryVersionString() {
-  return BTCPP_LIBRARY_VERSION;
-}
+const char* LibraryVersionString();
 
 int LibraryVersionNumber();
 
