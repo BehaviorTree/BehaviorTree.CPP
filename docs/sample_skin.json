@@ -1,0 +1,38 @@
+{
+    "BehaviorTrees": [
+        {
+            "filter": "SubTreeA; SubTreeB::the_subtree_name",
+            "Nodes": [
+                {
+                    "filter": "ActionA",
+                    "substitute": "AlwaysSuccess"
+                },
+                {
+                    "filter": "ActionB::action_name",
+                    "substitute": "AlwaysFailure"
+                },
+                {
+                    "filter": "ActionC",
+                    "substitute": "AlwaysRunning"
+                },
+                {
+                    "filter": "ActionD",
+                    "substitute": "FaultInjection(9,1)"
+                }
+            ]
+        },
+        {
+            "filter": "*",
+            "Nodes": [
+                {
+                    "filter": "ActionE::*",
+                    "pre_script": "successIf(count > 5)"
+                },
+                {
+                    "filter": "ActionC",
+                    "substitute": "AlwaysRunning"
+                },
+            ]
+        }
+    ]
+}

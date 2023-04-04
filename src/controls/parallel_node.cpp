@@ -54,15 +54,18 @@ NodeStatus ParallelNode::tick()
 
   size_t success_children_num = 0;
   size_t failure_children_num = 0;
+  size_t log_children_num = std::count_if(children_nodes_.begin(), children_nodes_.end(), [](const auto child_node) {
+    return child_node->registrationName() == "Log";
+  });
 
   const size_t children_count = children_nodes_.size();
 
-  if (children_count < successThreshold())
+  if (children_count - log_children_num < successThreshold())
   {
     throw LogicError("Number of children is less than threshold. Can never succeed.");
   }
 
-  if (children_count < failureThreshold())
+  if (children_count - log_children_num < failureThreshold())
   {
     throw LogicError("Number of children is less than threshold. Can never fail.");
   }
@@ -87,6 +90,16 @@ NodeStatus ParallelNode::tick()
     // switch to RUNNING state as soon as you find an active child
     all_skipped_ &= (child_status == NodeStatus::SKIPPED);
 
+    if (child_node->registrationName() == "Log")
+    {
+      if(!in_skip_list)
+      {
+        skip_list_.insert(i);
+      }
+
+      continue;
+    }
+
     switch (child_status)
     {
       case NodeStatus::SUCCESS: {
@@ -108,7 +121,7 @@ NodeStatus ParallelNode::tick()
 
         // It fails if it is not possible to succeed anymore or if
         // number of failures are equal to failure_threshold_
-        if ((failure_children_num > children_count - successThreshold()) ||
+        if ((failure_children_num > children_count - log_children_num - successThreshold()) ||
             (failure_children_num == failureThreshold()))
         {
           skip_list_.clear();
@@ -145,26 +158,24 @@ void ParallelNode::halt()
 
 size_t ParallelNode::successThreshold() const
 {
-  if (success_threshold_ < 0)
-  {
-    return size_t(std::max(int(children_nodes_.size()) + success_threshold_ + 1, 0));
-  }
-  else
-  {
-    return size_t(success_threshold_);
-  }
+  const size_t children_count = std::count_if(children_nodes_.begin(), children_nodes_.end(), [](const auto child_node) {
+    return child_node->registrationName() != "Log";
+  });
+
+  return success_threshold_ < 0 ?
+             std::max(children_count + success_threshold_ + 1, size_t(0)) :
+             success_threshold_;
 }
 
 size_t ParallelNode::failureThreshold() const
 {
-  if (failure_threshold_ < 0)
-  {
-    return size_t(std::max(int(children_nodes_.size()) + failure_threshold_ + 1, 0));
-  }
-  else
-  {
-    return size_t(failure_threshold_);
-  }
+  const size_t children_count = std::count_if(children_nodes_.begin(), children_nodes_.end(), [](const auto child_node) {
+    return child_node->registrationName() != "Log";
+  });
+
+  return failure_threshold_ < 0 ?
+             std::max(children_count + failure_threshold_ + 1, size_t(0)) :
+             failure_threshold_;
 }
 
 void ParallelNode::setSuccessThreshold(int threshold)
