@@ -27,9 +27,6 @@ static const char* xml_text = R"(
 
 int main()
 {
-  // Simple tree: a sequence of two asycnhronous actions,
-  // but the second will be halted because of the timeout.
-
   BehaviorTreeFactory factory;
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
 
