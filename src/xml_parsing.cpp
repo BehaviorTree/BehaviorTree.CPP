@@ -29,6 +29,7 @@
 
 #ifdef USING_ROS
 #include <ros/package.h>
+#include <ros/ros.h>
 #endif
 
 #ifdef USING_ROS2
@@ -724,7 +725,11 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
     else   // special case: SubTreeNode
     {
       auto new_bb = Blackboard::create(blackboard);
-
+#ifdef USING_ROS      
+      std::shared_ptr<ros::NodeHandle> nh;
+      blackboard->get("nh", nh);
+      new_bb->set("nh", nh);
+#endif
       std::set<StringView> mapped_keys;
 
       bool do_autoremap = false;
