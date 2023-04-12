@@ -223,7 +223,7 @@ private:
 
   std::shared_ptr<WakeUpSignal> wake_up_;
 
-  /// Set the status to IDLE
+  /// Equivalent to setStatus(NodeStatus::IDLE)
   void resetStatus();
 };
 

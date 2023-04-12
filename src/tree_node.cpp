@@ -78,8 +78,7 @@ void TreeNode::setStatus(NodeStatus new_status)
 
 void TreeNode::resetStatus()
 {
-  std::unique_lock<std::mutex> lock(state_mutex_);
-  status_ = NodeStatus::IDLE;
+  setStatus(NodeStatus::IDLE);
 }
 
 NodeStatus TreeNode::status() const
