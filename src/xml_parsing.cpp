@@ -165,6 +165,7 @@ void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
         std::string ros_pkg_path;
 #ifdef USING_ROS
         ros_pkg_path = ros::package::getPath(ros_pkg_relative_path);
+        file_path = filesystem::path(ros_pkg_path) / file_path;
 #elif defined USING_ROS2
         ros_pkg_path =
             ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
