@@ -225,7 +225,9 @@ private:
 
       lk.unlock();
       if (item.handler)
+      {
         item.handler(item.id == 0);
+      }
       lk.lock();
     }
   }
