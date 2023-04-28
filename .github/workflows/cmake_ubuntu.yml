@@ -55,3 +55,6 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ./tests/behaviortree_cpp_test
       
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      
