@@ -450,10 +450,12 @@ inline void assignDefaultRemapping(NodeConfig& config)
     const auto direction = it.second.direction();
     if (direction != PortDirection::OUTPUT)
     {
+      // PortDirection::{INPUT,INOUT}
       config.input_ports[port_name] = "=";
     }
     if (direction != PortDirection::INPUT)
     {
+      // PortDirection::{OUTPUT,INOUT}
       config.output_ports[port_name] = "=";
     }
   }
