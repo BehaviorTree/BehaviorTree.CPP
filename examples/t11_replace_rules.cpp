@@ -57,12 +57,12 @@ int main(int argc, char** argv)
 
   factory.registerNodeType<SaySomething>("SaySomething");
 
-  // We use lambdasand registerSimpleAction, to create
+  // We use lambdas and registerSimpleAction, to create
   // a "dummy" node, that we want to create instead of a given one.
 
   // Simple node that just prints its name and return SUCCESS
-  factory.registerSimpleAction("TestAction", [](BT::TreeNode& self){
-    std::cout << "TestAction substituting: "<< self.name() << std::endl;
+  factory.registerSimpleAction("DummyAction", [](BT::TreeNode& self){
+    std::cout << "DummyAction substituting: "<< self.name() << std::endl;
     return BT::NodeStatus::SUCCESS;
   });
 
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
   if(!skip_substitution)
   {
-    // we can use a JSOn file to configure the substitution rules
+    // we can use a JSON file to configure the substitution rules
     // or do it manually
     bool const USE_JSON = true;
 

@@ -49,22 +49,20 @@ int main()
   cross_door.registerNodes(factory);
 
   // Groot2 editor requires a model of your registered Nodes.
-  // You don't need to write that by hand, if can be automatically
-  // generated using this command and imported.
-
+  // You don't need to write that by hand, it can be automatically
+  // generated using the following command.
   std::string xml_models = BT::writeTreeNodesModelXML(factory);
 
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
 
-  std::cout << " ---------- XML file  ----------\n"
+  std::cout << "----------- XML file  ----------\n"
             << BT::WriteTreeToXML(tree, false)
             << "--------------------------------\n";
 
   // Connect the Groot2Publisher. This will allow Groot2 to
   // get the tree and poll status updates.
   BT::Groot2Publisher publisher(tree);
-  BT::SqliteLogger logger(tree, "test_sqlite.db3", true);
 
   while(1)
   {
