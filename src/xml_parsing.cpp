@@ -886,7 +886,7 @@ void addNodeModelToXML(const TreeNodeManifest& model,
     {
       port_element->SetAttribute("type", BT::demangle(port_info.type()).c_str());
     }
-    if (!port_info.defaultValue())
+    if (port_info.defaultValue().has_value())
     {
       port_element->SetAttribute("default", port_info.defaultValue()->c_str());
     }
