@@ -941,7 +941,7 @@ void addTreeToXML(const Tree& tree,
     for(const auto& [name, value]: node.config().output_ports)
     {
       // avoid duplicates, in the case of INOUT ports
-      if(node.config().input_ports.count(name))
+      if(node.config().input_ports.count(name) == 0)
       {
         elem->SetAttribute(name.c_str(), value.c_str());
       }
