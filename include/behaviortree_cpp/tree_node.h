@@ -31,6 +31,7 @@
 
 namespace BT
 {
+
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
 {
@@ -183,13 +184,13 @@ public:
   void setPreTickFunction(PreTickCallback callback);
 
   /**
-     * This method attaches to the TreeNode a callback with signature:
-     *
-     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus new_status)
-     *
-     * This callback is executed AFTER the tick() and, if it returns a valid Optional<NodeStatus>,
-     * the value returned by the actual tick() is overriden with this one.
-     */
+   * This method attaches to the TreeNode a callback with signature:
+   *
+   *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus new_status)
+   *
+   * This callback is executed AFTER the tick() and, if it returns a valid Optional<NodeStatus>,
+   * the value returned by the actual tick() is overriden with this one.
+   */
   void setPostTickFunction(PostTickCallback callback);
 
   /// The unique identifier of this instance of treeNode.
@@ -208,18 +209,20 @@ public:
   const NodeConfig& config() const;
 
   /** Read an input port, which, in practice, is an entry in the blackboard.
-     * If the blackboard contains a std::string and T is not a string,
-     * convertFromString<T>() is used automatically to parse the text.
-     *
-     * @param key   the identifier (before remapping) of the port.
-     * @return      false if an error occurs.
-     */
+   * If the blackboard contains a std::string and T is not a string,
+   * convertFromString<T>() is used automatically to parse the text.
+   *
+   * @param key   the name of the port.
+   * @return      false if an error occurs.
+   */
   template <typename T>
   Result getInput(const std::string& key, T& destination) const;
 
   /** Same as bool getInput(const std::string& key, T& destination)
-     * but using optional.
-     */
+   * but using optional.
+   *
+   * @param key   the name of the port.
+   */
   template <typename T>
   Expected<T> getInput(const std::string& key) const
   {
@@ -228,10 +231,44 @@ public:
     return (res) ? Expected<T>(out) : nonstd::make_unexpected(res.error());
   }
 
+  /**
+   * @brief setOutput modifies the content of an Output port
+   * @param key    the name of the port.
+   * @param value  new value
+   * @return       valid Result, is succesfull.
+   */
   template <typename T>
   Result setOutput(const std::string& key, const T& value);
 
-  // function provide mostly for debugging purpose to see the raw value
+  /**
+   * @brief getPortAny should be used when:
+   *
+   * - your port contains an object with reference semantic (raw or smart pointer)
+   * - you want to modify the object we are pointing to.
+   * - you are concerned about thread-safety.
+   *
+   * For example, if your port has type std::shared_ptr<Foo>,
+   * the code below is NOT thread safe:
+   *
+   *    auto foo_ptr = getInput<std::shared_ptr<Foo>>("port_name");
+   *    // modifying the content of foo_ptr is NOT thread-safe
+   *
+   * What you must do, instead, to guaranty thread-safety, is:
+   *
+   *    if(auto any_ref = getPortMutableAny("port_name")) {
+   *      auto foo_ptr = any_ref->cast<std::shared_ptr<Foo>>();
+   *      // modifying the content of foo_ptr __inside this scope__ IS thread-safe
+   *    }
+   *
+   * It is important to destroy the object AnyWriteRef, to release the lock.
+   *
+   * @param key  the identifier of the port.
+   * @return     empty AnyWriteRef is the port doesn't exist, reference to the content
+   *             of the port instead
+   */
+  AnyWriteRef getPortAny(const std::string& key);
+
+  // function provided mostly for debugging purpose to see the raw value
   // in the port (no remapping and no conversion to a type)
   StringView getRawPortValue(const std::string& key) const;
 
@@ -357,7 +394,6 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     }
   };
 
-
   auto remap_it = config_.input_ports.find(key);
   if (remap_it == config_.input_ports.end())
   {
@@ -382,20 +418,22 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
       return nonstd::make_unexpected("getInput(): trying to access an invalid Blackboard");
     }
 
-    std::unique_lock entry_lock(config_.blackboard->entryMutex());
-    const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
-    if (val && !val->empty())
+    if (auto any_ref = config_.blackboard->getAnyRead(std::string(remapped_key)))
     {
-      if (!std::is_same_v<T, std::string> &&
-          val->type() == typeid(std::string))
-      {
-        destination = ParseString(val->cast<std::string>());
+      auto val = any_ref.get();
+        if(!val->empty())
+        {
+        if (!std::is_same_v<T, std::string> &&
+            val->type() == typeid(std::string))
+        {
+          destination = ParseString(val->cast<std::string>());
+        }
+        else
+        {
+          destination = val->cast<T>();
+        }
+        return {};
       }
-      else
-      {
-        destination = val->cast<T>();
-      }
-      return {};
     }
 
     return nonstd::make_unexpected(StrCat("getInput() failed because it was unable to "
@@ -422,8 +460,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   {
     return nonstd::make_unexpected(StrCat("setOutput() failed: "
                                           "NodeConfig::output_ports "
-                                          "does not "
-                                          "contain the key: [",
+                                          "does not contain the key: [",
                                           key, "]"));
   }
   StringView remapped_key = remap_it->second;

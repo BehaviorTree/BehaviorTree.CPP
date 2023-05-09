@@ -408,4 +408,22 @@ std::string toStr<PostCond>(PostCond pre)
   }
 }
 
+AnyWriteRef BT::TreeNode::getPortAny(const std::string &key)
+{
+    auto remap_it = config_.input_ports.find(key);
+    if (remap_it == config_.input_ports.end())
+    {
+      remap_it = config_.output_ports.find(key);
+      if (remap_it == config_.output_ports.end())
+      {
+      return {};
+      }
+    }
+    if( auto remapped_key = getRemappedKey(key, remap_it->second) )
+    {
+      return config_.blackboard->getAnyWrite(std::string(*remapped_key));
+    }
+    return {};
+}
+
 }   // namespace BT

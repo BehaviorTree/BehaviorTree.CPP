@@ -68,13 +68,12 @@ struct ExprName : ExprBase
             }
         }
         // search now in the variables table
-        std::unique_lock entry_lock(env.vars->entryMutex());
-        auto any_ptr = env.vars->getAny(name);
-        if( !any_ptr )
+        auto any_ref = env.vars->getAnyRead(name);
+        if( !any_ref )
         {
-            throw std::runtime_error("Variable not found");
+          throw std::runtime_error("Variable not found");
         }
-        return *any_ptr;
+        return *any_ref.get();
     }
 };
 
@@ -360,15 +359,14 @@ struct ExprAssignment : ExprBase
         }
         const auto& key = varname->name;
 
-        std::unique_lock entry_lock(env.vars->entryMutex());
-        Any* any_ptr = env.vars->getAny(key);
-        if( !any_ptr )
+        Blackboard::Entry* entry = env.vars->getEntry(key);
+        if( !entry )
         {
             // variable doesn't exist, create it if using operator assign_create
             if(op == assign_create)
             {
                 env.vars->setPortInfo(key, PortInfo());
-                any_ptr = env.vars->getAny(key);
+                entry = env.vars->getEntry(key);
             }
             else {
                 // fail otherwise
@@ -376,6 +374,9 @@ struct ExprAssignment : ExprBase
             }
         }
         auto value = rhs->evaluate(env);
+
+        std::scoped_lock lock(entry->entry_mutex);
+        auto any_ptr = &entry->value;
 
         if( op == assign_create || op == assign_existing )
         {

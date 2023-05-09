@@ -6,20 +6,27 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <mutex>
+#include <shared_mutex>
 #include <sstream>
 
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
+#include "behaviortree_cpp/utils/locked_reference.hpp"
 
 namespace BT
 {
+
+using AnyReadRef = LockedConstRef<Any>;
+using AnyWriteRef = LockedRef<Any>;
+
 /**
  * @brief The Blackboard is the mechanism used by BehaviorTrees to exchange
  * typed data.
  */
 class Blackboard
 {
+
 public:
   typedef std::shared_ptr<Blackboard> Ptr;
 
@@ -29,6 +36,21 @@ protected:
   {}
 
 public:
+
+  struct Entry
+  {
+    Any value;
+    PortInfo port_info;
+    std::shared_mutex entry_mutex;
+
+    Entry(const PortInfo& info) : port_info(info)
+    {}
+
+    Entry(Any&& other_any, const PortInfo& info) :
+          value(std::move(other_any)), port_info(info)
+    {}
+  };
+
   /** Use this static method to create an instance of the BlackBoard
     *   to share among all your NodeTrees.
     */
@@ -39,13 +61,7 @@ public:
 
   virtual ~Blackboard() = default;
 
-  /**
-     * @brief The method getAny allow the user to access directly the type
-     * erased value.
-     *
-     * @return the pointer or nullptr if it fails.
-     */
-  const Any* getAny(const std::string& key) const
+  const Entry* getEntry(const std::string& key) const
   {
     std::unique_lock<std::mutex> lock(mutex_);
     // search first if this port was remapped
@@ -56,19 +72,49 @@ public:
         auto remapping_it = internal_to_external_.find(key);
         if (remapping_it != internal_to_external_.end())
         {
-          return parent->getAny(remapping_it->second);
+          return parent->getEntry(remapping_it->second);
         }
       }
     }
     auto it = storage_.find(key);
-    return (it == storage_.end()) ? nullptr : &(it->second.value);
+    return (it == storage_.end()) ? nullptr : it->second.get();
   }
 
-  Any* getAny(const std::string& key)
+  Entry* getEntry(const std::string& key)
   {
     // "Avoid Duplication in const and Non-const Member Function,"
     // on p. 23, in Item 3 "Use const whenever possible," in Effective C++, 3d ed
-    return const_cast<Any*>( static_cast<const Blackboard &>(*this).getAny(key));
+    return const_cast<Entry*>( static_cast<const Blackboard &>(*this).getEntry(key));
+  }
+
+  AnyReadRef getAnyRead(const std::string& key) const
+  {
+    if(auto entry = getEntry(key))
+    {
+      return AnyReadRef(&entry->value, const_cast<std::shared_mutex*>(&entry->entry_mutex));
+    }
+    return {};
+  }
+
+  AnyWriteRef getAnyWrite(const std::string& key)
+  {
+    if(auto entry = getEntry(key))
+    {
+      return AnyWriteRef(&entry->value, &entry->entry_mutex);
+    }
+    return {};
+  }
+
+  [[deprecated("Use getAnyRead instead")]]
+  const Any* getAny(const std::string& key) const
+  {
+    return getAnyRead(key).get();
+  }
+
+  [[deprecated("Use getAnyWrite instead")]]
+  Any* getAny(const std::string& key)
+  {
+    return getAnyWrite(key).get();
   }
 
   /** Return true if the entry with the given key was found.
@@ -77,12 +123,12 @@ public:
   template <typename T>
   bool get(const std::string& key, T& value) const
   {
-    const Any* val = getAny(key);
-    if (val)
+    if (auto any_ref = getAnyRead(key))
     {
-      value = val->cast<T>();
+      value = any_ref.get()->cast<T>();
+      return true;
     }
-    return (bool)val;
+    return false;
   }
 
   /**
@@ -91,10 +137,9 @@ public:
   template <typename T>
   T get(const std::string& key) const
   {
-    const Any* val = getAny(key);
-    if (val)
+    if (auto any_ref = getAnyRead(key))
     {
-      return val->cast<T>();
+      return any_ref.get()->cast<T>();
     }
     else
     {
@@ -106,7 +151,6 @@ public:
   template <typename T>
   void set(const std::string& key, const T& value)
   {
-    std::unique_lock lock_entry(entry_mutex_);
     std::unique_lock lock(mutex_);
 
     // search first if this port was remapped.
@@ -133,19 +177,21 @@ public:
       if (std::is_constructible<StringView, T>::value)
       {
         PortInfo new_port(PortDirection::INOUT, typeid(std::string), {});
-        storage_.emplace(key, Entry(Any(value), new_port));
+        storage_.emplace(key, std::make_unique<Entry>(Any(value), new_port));
       }
       else
       {
         PortInfo new_port(PortDirection::INOUT, typeid(T), {});
-        storage_.emplace(key, Entry(Any(value), new_port));
+        storage_.emplace(key, std::make_unique<Entry>(Any(value), new_port));
       }
     }
     else
     {
       // this is not the first time we set this entry, we need to check
       // if the type is the same or not.
-      Entry& entry = it->second;
+      Entry& entry = *it->second;
+      std::scoped_lock lock(entry.entry_mutex);
+
       Any& previous_any = entry.value;
       const PortInfo& port_info = entry.port_info;
 
@@ -209,30 +255,9 @@ public:
     storage_.clear();
   }
 
-  // Lock this mutex before using get() and getAny() and unlock it while you have
-  // done using the value.
-  std::recursive_mutex& entryMutex() const
-  {
-    return entry_mutex_;
-  }
-
 private:
-  struct Entry
-  {
-    Any value;
-    PortInfo port_info;
-
-    Entry(const PortInfo& info) : port_info(info)
-    {}
-
-    Entry(Any&& other_any, const PortInfo& info) :
-      value(std::move(other_any)), port_info(info)
-    {}
-  };
-
   mutable std::mutex mutex_;
-  mutable std::recursive_mutex entry_mutex_;
-  std::unordered_map<std::string, Entry> storage_;
+  std::unordered_map<std::string, std::unique_ptr<Entry>> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
 
