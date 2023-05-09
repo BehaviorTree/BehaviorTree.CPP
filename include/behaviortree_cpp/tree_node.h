@@ -255,16 +255,20 @@ public:
    *
    * What you must do, instead, to guaranty thread-safety, is:
    *
-   *    if(auto any_ref = getPortMutableAny("port_name")) {
-   *      auto foo_ptr = any_ref->cast<std::shared_ptr<Foo>>();
-   *      // modifying the content of foo_ptr __inside this scope__ IS thread-safe
+   *    if(auto any_ref = getPortAny("port_name")) {
+   *      Any* any = any_ref.get();
+   *      auto foo_ptr = any->cast<std::shared_ptr<Foo>>();
+   *      // modifying the content of foo_ptr inside this scope IS thread-safe
    *    }
    *
    * It is important to destroy the object AnyWriteRef, to release the lock.
    *
+   * NOTE: this method doesn't work if the port contains a static string, instead
+   * of a blackboard pointer.
+   *
    * @param key  the identifier of the port.
-   * @return     empty AnyWriteRef is the port doesn't exist, reference to the content
-   *             of the port instead
+   * @return     empty AnyWriteRef if the blackboard entry doesn't exist or the content
+   *             of the port was a static string.
    */
   AnyWriteRef getPortAny(const std::string& key);
 

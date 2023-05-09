@@ -46,6 +46,7 @@ class LockedRef {
   const T* get() const{
     return ref_;
   }
+
   T* get() {
     return ref_;
   }
