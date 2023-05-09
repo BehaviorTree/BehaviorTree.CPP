@@ -30,10 +30,12 @@ namespace BT
  *   Restart the loop only if (reset_on_failure == true)
  *
  */
+
 class SequenceNode : public ControlNode
 {
 public:
-  SequenceNode(const std::string& name);
+  SequenceNode(const std::string& name,
+               bool make_async = false);
 
   virtual ~SequenceNode() override = default;
 
@@ -42,6 +44,7 @@ public:
 private:
   size_t current_child_idx_;
   bool all_skipped_ = true;
+  bool asynch_ = false;
 
   virtual BT::NodeStatus tick() override;
 };

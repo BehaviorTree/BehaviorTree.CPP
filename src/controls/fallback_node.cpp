@@ -15,10 +15,16 @@
 
 namespace BT
 {
-FallbackNode::FallbackNode(const std::string& name) :
-  ControlNode::ControlNode(name, {}), current_child_idx_(0), all_skipped_(true)
+FallbackNode::FallbackNode(const std::string& name, bool make_aynch) :
+  ControlNode::ControlNode(name, {}),
+  current_child_idx_(0),
+  all_skipped_(true),
+  asynch_(make_aynch)
 {
-  setRegistrationID("Fallback");
+  if(asynch_)
+    setRegistrationID("AsyncFallback");
+  else
+    setRegistrationID("Fallback");
 }
 
 NodeStatus FallbackNode::tick()
@@ -56,7 +62,8 @@ NodeStatus FallbackNode::tick()
         current_child_idx_++;
         // Return the execution flow if the child is async,
         // to make this interruptable.
-        if (requiresWakeUp() && prev_status == NodeStatus::IDLE &&
+        if (asynch_ && requiresWakeUp() &&
+            prev_status == NodeStatus::IDLE &&
             current_child_idx_ < children_count)
         {
           emitWakeUpSignal();

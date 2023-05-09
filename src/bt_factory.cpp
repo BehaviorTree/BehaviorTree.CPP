@@ -28,7 +28,9 @@ BehaviorTreeFactory::BehaviorTreeFactory()
 {
   parser_ = std::make_shared<XMLParser>(*this);
   registerNodeType<FallbackNode>("Fallback");
+  registerNodeType<FallbackNode>("AsyncFallback", true);
   registerNodeType<SequenceNode>("Sequence");
+  registerNodeType<SequenceNode>("AsyncSequence", true);
   registerNodeType<SequenceWithMemory>("SequenceWithMemory");
 
 #ifdef USE_BTCPP3_OLD_NAMES

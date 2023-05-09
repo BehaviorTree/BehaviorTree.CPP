@@ -16,6 +16,7 @@ set(BT_TESTS
   gtest_match.cpp
   gtest_ports.cpp
   gtest_json.cpp
+  gtest_reactive.cpp
   gtest_sequence.cpp
   gtest_skipping.cpp
   gtest_substitution.cpp

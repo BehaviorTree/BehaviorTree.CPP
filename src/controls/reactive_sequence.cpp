@@ -14,6 +14,14 @@
 
 namespace BT
 {
+
+bool ReactiveSequence::throw_if_multiple_running = true;
+
+void ReactiveSequence::EnableException(bool enable)
+{
+  ReactiveSequence::throw_if_multiple_running = enable;
+}
+
 NodeStatus ReactiveSequence::tick()
 {
   bool all_skipped = true;
@@ -35,6 +43,14 @@ NodeStatus ReactiveSequence::tick()
         for (size_t i = index + 1; i < childrenCount(); i++)
         {
           haltChild(i);
+        }
+        if(running_child_ == -1)
+        {
+          running_child_ = int(index);
+        }
+        else if(throw_if_multiple_running && running_child_ != int(index))
+        {
+          throw LogicError("[ReactiveSequence]: only a single child can return RUNNING");
         }
         return NodeStatus::RUNNING;
       }

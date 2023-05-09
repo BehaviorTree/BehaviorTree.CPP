@@ -266,7 +266,7 @@ public:
     }
     else if constexpr (hasNodeNameCtor<DerivedT>())
     {
-      auto node_ptr = new DerivedT(name);
+      auto node_ptr = new DerivedT(name, args...);
       node_ptr->config_ = config;
       return std::unique_ptr<DerivedT>(node_ptr);
     }
