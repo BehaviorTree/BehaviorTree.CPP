@@ -354,7 +354,7 @@ private:
 
   std::string registration_ID_;
 
-  PreTickCallback pre_condition_callback_;
+  PreTickCallback substitution_callback_;
 
   PostTickCallback post_condition_callback_;
 
