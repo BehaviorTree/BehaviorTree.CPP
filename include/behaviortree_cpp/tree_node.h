@@ -243,7 +243,7 @@ public:
   /**
    * @brief getPortAny should be used when:
    *
-   * - your port contains an object with reference semantic (raw or smart pointer)
+   * - your port contains an object with reference semantic (usually a smart pointer)
    * - you want to modify the object we are pointing to.
    * - you are concerned about thread-safety.
    *
@@ -263,7 +263,7 @@ public:
    *
    * It is important to destroy the object AnyWriteRef, to release the lock.
    *
-   * NOTE: this method doesn't work if the port contains a static string, instead
+   * NOTE: this method doesn't work, if the port contains a static string, instead
    * of a blackboard pointer.
    *
    * @param key  the identifier of the port.
@@ -425,8 +425,8 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     if (auto any_ref = config_.blackboard->getAnyRead(std::string(remapped_key)))
     {
       auto val = any_ref.get();
-        if(!val->empty())
-        {
+      if(!val->empty())
+      {
         if (!std::is_same_v<T, std::string> &&
             val->type() == typeid(std::string))
         {

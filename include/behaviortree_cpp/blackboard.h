@@ -255,8 +255,15 @@ public:
     storage_.clear();
   }
 
+  [[deprecated("Use getAnyRead or getAnyWrite to access safely an Entry")]]
+  std::recursive_mutex& entryMutex() const
+  {
+    return entry_mutex_;
+  }
+
 private:
   mutable std::mutex mutex_;
+  mutable std::recursive_mutex entry_mutex_;
   std::unordered_map<std::string, std::unique_ptr<Entry>> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
