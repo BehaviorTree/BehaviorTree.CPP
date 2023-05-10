@@ -125,7 +125,7 @@ class SimpleString {
     std::size_t size;
   };
 
-  constexpr static std::size_t CAPACITY = std::max(size_t(15), sizeof(String) - 1);
+  constexpr static std::size_t CAPACITY = 15; // sizeof(String) - 1);
   constexpr static std::size_t IS_LONG_BIT = 1 << 7;
   constexpr static std::size_t LONG_MASK = (~std::size_t(0)) >> 1;
 
