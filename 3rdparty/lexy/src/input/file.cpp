@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/input/file.hpp>
@@ -20,7 +20,7 @@ class raii_fd
 public:
     explicit raii_fd(int file) noexcept : _file(file) {}
 
-    raii_fd(const raii_fd&) = delete;
+    raii_fd(const raii_fd&)            = delete;
     raii_fd& operator=(const raii_fd&) = delete;
 
     ~raii_fd() noexcept
@@ -116,7 +116,7 @@ class raii_file
 public:
     explicit raii_file(std::FILE* file) noexcept : _file(file) {}
 
-    raii_file(const raii_file&) = delete;
+    raii_file(const raii_file&)            = delete;
     raii_file& operator=(const raii_file&) = delete;
 
     ~raii_file() noexcept

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_BUFFER_BUILDER_HPP_INCLUDED
@@ -38,7 +38,7 @@ public:
             ::operator delete(_data);
     }
 
-    buffer_builder(const buffer_builder&) = delete;
+    buffer_builder(const buffer_builder&)            = delete;
     buffer_builder& operator=(const buffer_builder&) = delete;
 
     // The total capacity: read + write.

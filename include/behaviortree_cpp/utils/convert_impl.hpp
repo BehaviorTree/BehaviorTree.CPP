@@ -16,6 +16,9 @@
 #include <exception>
 #include "simple_string.hpp"
 
+#undef max
+#undef min
+
 namespace SafeAny{
 
 namespace details{

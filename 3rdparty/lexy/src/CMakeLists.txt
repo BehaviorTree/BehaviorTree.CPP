@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 get_filename_component(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include/lexy ABSOLUTE)
@@ -149,9 +149,16 @@ if (LEXY_USER_CONFIG_HEADER)
     endif()
 endif()
 
+function(add_alias name target)
+    add_library(foonathan::${name} ALIAS ${target})
+    set_target_properties(${target} PROPERTIES EXPORT_NAME ${name})
+endfunction()
+
+include(GNUInstallDirs)
+
 # Core library.
 add_library(lexy_core INTERFACE)
-add_library(foonathan::lexy::core ALIAS lexy_core)
+add_alias(lexy::core lexy_core)
 target_link_libraries(lexy_core INTERFACE _lexy_base)
 target_include_directories(lexy_core SYSTEM INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
@@ -160,7 +167,7 @@ target_include_directories(lexy_core SYSTEM INTERFACE
 
 # Core library with warnings; for development only.
 add_library(lexy_dev INTERFACE)
-add_library(foonathan::lexy::dev ALIAS lexy_dev)
+add_alias(lexy::dev lexy_dev)
 target_link_libraries(lexy_dev INTERFACE _lexy_base)
 target_include_directories(lexy_dev INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
@@ -189,22 +196,21 @@ endif()
 
 # Link to have FILE I/O.
 add_library(lexy_file STATIC)
-add_library(foonathan::lexy::file ALIAS lexy_file)
+add_alias(lexy::file lexy_file)
 target_link_libraries(lexy_file PRIVATE foonathan::lexy::dev)
 target_sources(lexy_file PRIVATE input/file.cpp)
 
 # Link to enable unicode database.
 add_library(lexy_unicode INTERFACE)
-add_library(foonathan::lexy::unicode ALIAS lexy_unicode)
+add_alias(lexy::unicode lexy_unicode)
 target_compile_definitions(lexy_unicode INTERFACE LEXY_HAS_UNICODE_DATABASE=1)
 
 # Link to have extension headers.
 add_library(lexy_ext INTERFACE)
-add_library(foonathan::lexy::ext ALIAS lexy_ext)
+add_alias(lexy::ext lexy_ext)
 target_sources(lexy_ext INTERFACE ${ext_headers_files})
 
 # Umbrella target with all components.
 add_library(lexy INTERFACE)
-add_library(foonathan::lexy ALIAS lexy)
+add_alias(lexy lexy)
 target_link_libraries(lexy INTERFACE foonathan::lexy::core foonathan::lexy::file foonathan::lexy::unicode foonathan::lexy::ext)
-

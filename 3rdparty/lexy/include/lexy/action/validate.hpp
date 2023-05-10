@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_VALIDATE_HPP_INCLUDED
@@ -180,34 +180,45 @@ public:
     public:
         constexpr event_handler(production_info info) : _begin(), _info(info) {}
 
-        constexpr void on(_vh&, parse_events::production_start, iterator pos)
+        constexpr void on(_vh& handler, parse_events::production_start, iterator pos)
         {
             _begin = pos;
+
+            _prev        = handler._top;
+            handler._top = this;
+        }
+        constexpr void on(_vh& handler, parse_events::production_finish, iterator)
+        {
+            handler._top = _prev;
+        }
+        constexpr void on(_vh& handler, parse_events::production_cancel, iterator)
+        {
+            handler._top = _prev;
         }
 
         template <typename Tag>
         constexpr void on(_vh& handler, parse_events::error, const error<Reader, Tag>& error)
         {
-            handler._cb.generic(handler._cb.sink, _info, handler._cb.input, _begin, error);
+            handler._cb.generic(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
         constexpr void on(_vh& handler, parse_events::error, const error<Reader, void>& error)
         {
-            handler._cb.generic(handler._cb.sink, _info, handler._cb.input, _begin, error);
+            handler._cb.generic(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
         constexpr void on(_vh&                                   handler, parse_events::error,
                           const error<Reader, expected_literal>& error)
         {
-            handler._cb.literal(handler._cb.sink, _info, handler._cb.input, _begin, error);
+            handler._cb.literal(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
         constexpr void on(_vh&                                   handler, parse_events::error,
                           const error<Reader, expected_keyword>& error)
         {
-            handler._cb.keyword(handler._cb.sink, _info, handler._cb.input, _begin, error);
+            handler._cb.keyword(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
         constexpr void on(_vh&                                      handler, parse_events::error,
                           const error<Reader, expected_char_class>& error)
         {
-            handler._cb.char_class(handler._cb.sink, _info, handler._cb.input, _begin, error);
+            handler._cb.char_class(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
 
         template <typename Event, typename... Args>
@@ -223,12 +234,16 @@ public:
 
         constexpr production_info get_info() const
         {
-            return _info;
+            auto cur = this;
+            while (cur->_info.is_transparent && cur->_prev != nullptr)
+                cur = cur->_prev;
+            return cur->_info;
         }
 
     private:
         iterator        _begin;
         production_info _info;
+        event_handler*  _prev = nullptr;
     };
 
     template <typename Production, typename State>
@@ -243,6 +258,7 @@ public:
 
 private:
     _validate_callbacks<Reader> _cb;
+    event_handler*              _top = nullptr;
 };
 
 template <typename State, typename Input, typename ErrorCallback>

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_STRING_VIEW_HPP_INCLUDED
@@ -197,7 +197,7 @@ struct _string_view_holder<FnPtr, index_sequence<Indices...>>
 };
 
 template <auto FnPtr>
-constexpr const auto* make_cstr = _string_view_holder<FnPtr>::value;
+inline constexpr const auto* make_cstr = _string_view_holder<FnPtr>::value;
 } // namespace lexy::_detail
 
 #endif // LEXY_DETAIL_STRING_VIEW_HPP_INCLUDED

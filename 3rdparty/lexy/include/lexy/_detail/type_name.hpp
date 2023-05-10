@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_TYPE_NAME_HPP_INCLUDED
@@ -79,8 +79,8 @@ template <typename T, int NsCount>
 constexpr string_view _type_name()
 {
     auto name = _full_type_name<T>();
-    LEXY_ASSERT(name.find('<') == string_view::npos || NsCount == 0,
-                "cannot strip namespaces from template instantiations");
+    if (name.find('<') != string_view::npos && NsCount != 0)
+        return name;
 
     for (auto namespace_count = NsCount; namespace_count > 0; --namespace_count)
     {
@@ -105,20 +105,25 @@ constexpr const char* type_name()
         return "unknown-type";
 }
 
-template <typename T>
-constexpr const void* type_id()
+template <typename T, int NsCount>
+inline constexpr const char* _type_id_holder = type_name<T, NsCount>();
+
+// Returns a unique address for each type.
+// For implementation reasons, it also doubles as the pointer to the name.
+template <typename T, int NsCount = 1>
+constexpr const char* const* type_id()
 {
-    // As different types have different type names, the compiler can't merge them,
-    // and we necessarily have different addresses.
-    if constexpr (_detail::is_detected<_detect_name_f, T>)
-        return T::name();
-    else if constexpr (_detail::is_detected<_detect_name_v, T>)
-        return T::name;
+    if constexpr (_detail::is_detected<_detect_name_v, T> //
+                  && !_detail::is_detected<_detect_name_f, T>)
+    {
+        // We can use the address of the static constexpr directly.
+        return &T::name;
+    }
     else
     {
-        static_assert(LEXY_HAS_AUTOMATIC_TYPE_NAME,
-                      "you need to manuall add a ::name() or ::name to your type");
-        return _full_type_name<T>().data();
+        // We instantiate a variable template with a function unique by type.
+        // As the variable is inline, there should be a single address only.
+        return &_type_id_holder<T, NsCount>;
     }
 }
 } // namespace lexy::_detail

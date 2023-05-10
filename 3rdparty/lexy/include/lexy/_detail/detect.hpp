@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Müller <jonathanmueller.dev@gmail.com>
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_DETECT_HPP_INCLUDED
