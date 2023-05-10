@@ -37,3 +37,28 @@ TEST(PostConditions, BasicTest)
   ASSERT_EQ(tree.rootBlackboard()->get<int>("C"), 42);
   ASSERT_EQ(tree.rootBlackboard()->get<int>("D"), 42);
 }
+
+TEST(PostConditions, Issue539)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="MainTree">
+        <Sequence>
+          <Script code = "x:=0; y:=0" />
+          <RetryUntilSuccessful num_attempts="5">
+            <AlwaysFailure _onFailure="x  += 1"  _post="y  += 1" />
+          </RetryUntilSuccessful>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("x"), 5);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("y"), 5);
+}
+
+

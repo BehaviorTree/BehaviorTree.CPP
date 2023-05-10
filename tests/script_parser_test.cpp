@@ -120,7 +120,13 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(GetResult("x+=1").cast<double>(), 4.0);
   EXPECT_EQ(variables->get<double>("x"), 4.0);
 
-  EXPECT_EQ(GetResult("x-=1").cast<double>(), 3.0);
+  EXPECT_EQ(GetResult("x += 1").cast<double>(), 5.0);
+  EXPECT_EQ(variables->get<double>("x"), 5.0);
+
+  EXPECT_EQ(GetResult("x-=1").cast<double>(), 4.0);
+  EXPECT_EQ(variables->get<double>("x"), 4.0);
+
+  EXPECT_EQ(GetResult("x -= 1").cast<double>(), 3.0);
   EXPECT_EQ(variables->get<double>("x"), 3.0);
 
   EXPECT_EQ(GetResult("x*=2").cast<double>(), 6.0);
