@@ -241,7 +241,7 @@ public:
   Result setOutput(const std::string& key, const T& value);
 
   /**
-   * @brief getPortAny should be used when:
+   * @brief getLockedPortContent should be used when:
    *
    * - your port contains an object with reference semantic (usually a smart pointer)
    * - you want to modify the object we are pointing to.
@@ -255,7 +255,7 @@ public:
    *
    * What you must do, instead, to guaranty thread-safety, is:
    *
-   *    if(auto any_ref = getPortAny("port_name")) {
+   *    if(auto any_ref = getLockedPortContent("port_name")) {
    *      Any* any = any_ref.get();
    *      auto foo_ptr = any->cast<std::shared_ptr<Foo>>();
    *      // modifying the content of foo_ptr inside this scope IS thread-safe
@@ -270,7 +270,7 @@ public:
    * @return     empty AnyWriteRef if the blackboard entry doesn't exist or the content
    *             of the port was a static string.
    */
-  AnyWriteRef getPortAny(const std::string& key);
+  AnyWriteRef getLockedPortContent(const std::string& key);
 
   // function provided mostly for debugging purpose to see the raw value
   // in the port (no remapping and no conversion to a type)

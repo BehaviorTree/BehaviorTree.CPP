@@ -71,7 +71,9 @@ public:
     {
       // if the port is static, any_ref is empty, otherwise it will keep access to
       // port locked for thread-safety
-      AnyWriteRef any_ref = static_queue_ ? AnyWriteRef() : getPortAny("queue");
+      AnyWriteRef any_ref = static_queue_ ?
+                                AnyWriteRef() :
+                                getLockedPortContent("queue");
       if(any_ref)
       {
         current_queue_ = any_ref.get()->cast<SharedQueue<T>>();
@@ -97,6 +99,11 @@ public:
 
     NodeStatus child_state = child_node_->executeTick();
     child_running_ = (child_state == NodeStatus::RUNNING);
+
+    if(isStatusCompleted(child_state))
+    {
+      resetChild();
+    }
 
     if(child_state == NodeStatus::FAILURE)
     {
