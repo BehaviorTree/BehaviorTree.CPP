@@ -47,6 +47,24 @@ NodeStatus SimpleActionNode::tick()
   return status;
 }
 
+SimpleThreadedActionNode::SimpleThreadedActionNode(const std::string& name,
+                                   SimpleThreadedActionNode::ThreadedActionFunctor threaded_action_functor,
+                                   const NodeConfig& config) :
+  ThreadedAction(name, config), threaded_action_functor_(std::move(threaded_action_functor))
+{}
+
+NodeStatus SimpleThreadedActionNode::tick()
+{
+  NodeStatus prev_status = status();
+
+  NodeStatus status = threaded_action_functor_(*this);
+  if (status != prev_status)
+  {
+    setStatus(status);
+  }
+  return status;
+}
+
 //-------------------------------------------------------
 
 SyncActionNode::SyncActionNode(const std::string& name, const NodeConfig& config) :

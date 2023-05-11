@@ -141,6 +141,40 @@ using AsyncActionNode = ThreadedAction;
 #endif
 
 /**
+ * @brief The SimpleThreadedActionNode provides an easy to use ThreadedActionNode.
+ * The user should simply provide a callback with this signature
+ *
+ *    BT::NodeStatus functionName(ThreadedAction&)
+ *
+ * This avoids the hassle of inheriting from a ThreadedAction.
+ *
+ * Using lambdas or std::bind it is easy to pass a pointer to a method.
+ * 
+ * SimpleThreadedActionNode is executed asynchronously in a new thread, the node
+ * returns BT::NodeStatus::RUNNING while the thread is doing its work.
+ * If you want halting support, you must periodically check the result of the method
+ * isHaltRequested() and stop execution when it returns true.
+ * 
+ * NodeParameters aren't supported.
+ */
+class SimpleThreadedActionNode : public ThreadedAction
+{
+public:
+  typedef std::function<NodeStatus(ThreadedAction&)> ThreadedActionFunctor;
+
+  // You must provide the function to call in a new thread when onStart() is invoked
+  SimpleThreadedActionNode(const std::string& name, ThreadedActionFunctor threaded_action_functor,
+                   const NodeConfig& config);
+
+  ~SimpleThreadedActionNode() override = default;
+
+protected:
+  virtual NodeStatus tick() override final;
+
+  ThreadedActionFunctor threaded_action_functor_;
+};
+
+/**
  * @brief The StatefulActionNode is the preferred way to implement asynchronous Actions.
  * It is actually easier to use correctly, when compared with ThreadedAction
  *
