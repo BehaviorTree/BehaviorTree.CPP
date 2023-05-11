@@ -77,8 +77,15 @@ private:
       if (msec_ > 0)
       {
         timer_id_ = timer_.add(std::chrono::milliseconds(msec_), [this](bool aborted) {
+          // Return immediately if the timer was aborted.
+          // This function could be invoked during destruction of this object and
+          // we don't want to access member variables if not needed.
+          if (aborted)
+          {
+            return;
+          }
           std::unique_lock<std::mutex> lk(timeout_mutex_);
-          if (!aborted && child()->status() == NodeStatus::RUNNING)
+          if (child()->status() == NodeStatus::RUNNING)
           {
             child_halted_ = true;
             haltChild();
@@ -97,13 +104,14 @@ private:
     }
     else
     {
-      auto child_status = child()->executeTick();
-      if (child_status != NodeStatus::RUNNING)
+      const NodeStatus child_status = child()->executeTick();
+      if(StatusCompleted(child_status))
       {
         timeout_started_ = false;
         timeout_mutex_.unlock();
         timer_.cancel(timer_id_);
         timeout_mutex_.lock();
+        resetChild();
       }
       return child_status;
     }

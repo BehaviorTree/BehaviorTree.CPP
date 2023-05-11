@@ -23,10 +23,9 @@ InverterNode::InverterNode(const std::string& name) : DecoratorNode(name, {})
 NodeStatus InverterNode::tick()
 {
   setStatus(NodeStatus::RUNNING);
+  const NodeStatus child_status = child_node_->executeTick();
 
-  const NodeStatus child_state = child_node_->executeTick();
-
-  switch (child_state)
+  switch (child_status)
   {
     case NodeStatus::SUCCESS: {
       resetChild();
@@ -46,7 +45,7 @@ NodeStatus InverterNode::tick()
       throw LogicError("A child node must never return IDLE");
     }
   }
-  //return status();
+  return status();
 }
 
 }   // namespace BT

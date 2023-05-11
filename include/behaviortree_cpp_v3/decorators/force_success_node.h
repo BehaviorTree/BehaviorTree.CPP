@@ -37,23 +37,15 @@ inline NodeStatus ForceSuccessNode::tick()
 {
   setStatus(NodeStatus::RUNNING);
 
-  const NodeStatus child_state = child_node_->executeTick();
+  const NodeStatus child_status = child_node_->executeTick();
 
-  switch (child_state)
+  if(StatusCompleted(child_status))
   {
-    case NodeStatus::FAILURE:
-    case NodeStatus::SUCCESS: {
-      return NodeStatus::SUCCESS;
-    }
-
-    case NodeStatus::RUNNING: {
-      return NodeStatus::RUNNING;
-    }
-
-    default: {
-      // TODO throw?
-    }
+    resetChild();
+    return NodeStatus::SUCCESS;
   }
-  return status();
+
+  // RUNNING
+  return child_status;
 }
 }   // namespace BT
