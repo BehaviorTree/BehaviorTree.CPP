@@ -131,6 +131,19 @@ void BehaviorTreeFactory::registerSimpleAction(
   registerBuilder(manifest, builder);
 }
 
+void BehaviorTreeFactory::registerSimpleThreadedAction(
+    const std::string& ID, const SimpleThreadedActionNode::ThreadedActionFunctor& threaded_action_functor,
+    PortsList ports)
+{
+  NodeBuilder builder = [threaded_action_functor, ID](const std::string& name,
+                                           const NodeConfig& config) {
+    return std::make_unique<SimpleThreadedActionNode>(name, threaded_action_functor, config);
+  };
+
+  TreeNodeManifest manifest = {NodeType::ACTION, ID, std::move(ports), {}};
+  registerBuilder(manifest, builder);
+}
+
 void BehaviorTreeFactory::registerSimpleDecorator(
     const std::string& ID, const SimpleDecoratorNode::TickFunctor& tick_functor,
     PortsList ports)

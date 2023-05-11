@@ -234,6 +234,19 @@ public:
                             const SimpleActionNode::TickFunctor& tick_functor,
                             PortsList ports = {});
   /**
+    * @brief registerSimpleThreadedAction help you register nodes of type SimpleThreadedActionNode,
+    *        which will execute provided callback in a new thread, and return BT::NodeStatus::RUNNING
+    *        until the callback returns.
+    *
+    * @param ID            registration ID
+    * @param tick_functor  the callback to be invoked in a new thread.
+    * @param ports         if your SimpleNode requires ports, provide the list here.
+    *
+    * */
+  void registerSimpleThreadedAction(const std::string& ID,
+                            const SimpleThreadedActionNode::ThreadedActionFunctor& threaded_action_functor,
+                            PortsList ports = {});
+  /**
     * @brief registerSimpleCondition help you register nodes of type SimpleConditionNode.
     *
     * @param ID            registration ID
