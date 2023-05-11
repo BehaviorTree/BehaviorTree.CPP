@@ -43,9 +43,13 @@ inline NodeStatus KeepRunningUntilFailureNode::tick()
   switch (child_state)
   {
     case NodeStatus::FAILURE: {
+      resetChild();
       return NodeStatus::FAILURE;
     }
-    case NodeStatus::SUCCESS:
+    case NodeStatus::SUCCESS: {
+      resetChild();
+      return NodeStatus::RUNNING;
+    }
     case NodeStatus::RUNNING: {
       return NodeStatus::RUNNING;
     }

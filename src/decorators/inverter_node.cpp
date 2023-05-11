@@ -37,13 +37,11 @@ NodeStatus InverterNode::tick()
       return NodeStatus::SUCCESS;
     }
 
-    case NodeStatus::RUNNING: {
-      return NodeStatus::RUNNING;
+    case NodeStatus::RUNNING:
+    case NodeStatus::SKIPPED: {
+      return child_status;
     }
 
-    case NodeStatus::SKIPPED: {
-      return NodeStatus::SKIPPED;
-    }
     case NodeStatus::IDLE: {
       throw LogicError("[", name(), "]: A children should not return IDLE");
     }

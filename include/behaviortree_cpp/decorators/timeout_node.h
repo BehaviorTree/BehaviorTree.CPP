@@ -104,13 +104,14 @@ private:
     }
     else
     {
-      auto child_status = child()->executeTick();
-      if (child_status != NodeStatus::RUNNING)
+      const NodeStatus child_status = child()->executeTick();
+      if(isStatusCompleted(child_status))
       {
         timeout_started_ = false;
         timeout_mutex_.unlock();
         timer_.cancel(timer_id_);
         timeout_mutex_.lock();
+        resetChild();
       }
       return child_status;
     }

@@ -49,8 +49,18 @@ private:
     }
 
     Ast::Environment env = {config().blackboard, config().enums};
-    Any res = _executor(env);
-    return (res.cast<bool>()) ? child_node_->executeTick() : else_return;
+    if(_executor(env).cast<bool>())
+    {
+      auto const child_status = child_node_->executeTick();
+      if(isStatusCompleted(child_status))
+      {
+        resetChild();
+      }
+      return child_status;
+    }
+    else {
+      return else_return;
+    }
   }
 
   void loadExecutor()
