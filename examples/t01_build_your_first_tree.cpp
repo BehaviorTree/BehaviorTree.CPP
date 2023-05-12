@@ -71,7 +71,7 @@ int main()
 #else
   // Load dynamically a plugin and register the TreeNodes it contains
   // it automated the registering step.
-  factory.registerFromPlugin("./libdummy_nodes_dyn.so");
+  factory.registerFromPlugin("../sample_nodes/bin/libdummy_nodes_dyn.so");
 #endif
 
   // Trees are created at deployment-time (i.e. at run-time, but only once at the beginning).
