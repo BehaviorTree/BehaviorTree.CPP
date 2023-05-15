@@ -119,7 +119,7 @@ list(APPEND BT_SOURCE
     src/controls/while_do_else_node.cpp
 
     src/loggers/bt_cout_logger.cpp
-    src/loggers/bt_file_logger.cpp
+    src/loggers/bt_file_logger_v2.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
 

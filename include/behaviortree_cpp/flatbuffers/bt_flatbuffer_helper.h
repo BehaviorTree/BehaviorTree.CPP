@@ -1,8 +1,7 @@
-#ifndef BT_FLATBUFFER_HELPER_H
-#define BT_FLATBUFFER_HELPER_H
+#pragma once
 
 #include "behaviortree_cpp/bt_factory.h"
-#include "BT_logger_generated.h"
+#include "behaviortree_cpp/flatbuffers/BT_logger_generated.h"
 
 namespace BT
 {
@@ -160,4 +159,3 @@ inline SerializedTransition SerializeTransition(uint16_t UID, Duration timestamp
 
 }   // namespace BT
 
-#endif   // BT_FLATBUFFER_HELPER_H
