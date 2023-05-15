@@ -79,6 +79,8 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
 
 constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 
+bool WildcardMatch(const std::string &str, StringView filter);
+
 /**
  * @brief Struct used to store a tree.
  * If this object goes out of scope, the tree is destroyed.
@@ -174,6 +176,26 @@ public:
   void applyVisitor(const std::function<void(TreeNode*)>& visitor);
 
   uint16_t getUID();
+
+  /// Get a list of nodes which fullPath() match a wildcard filter and
+  /// a given path. Example:
+  ///
+  /// move_nodes = tree.getNodesByPath<MoveBaseNode>("move_*");
+  ///
+  template <typename NodeType = BT::TreeNode>
+  std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) {
+    std::vector<const TreeNode*> nodes;
+    for (auto const& subtree : subtrees) {
+      for (auto const& node : subtree->nodes) {
+        if(auto node_recast = dynamic_cast<const NodeType*>(node.get())) {
+          if(WildcardMatch(node->fullPath(), wildcard_filter)) {
+            nodes.push_back(node.get());
+          }
+        }
+      }
+    }
+    return nodes;
+  }
 
 
 private:

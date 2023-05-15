@@ -24,6 +24,12 @@
 
 namespace BT
 {
+
+bool WildcardMatch(std::string const& str, StringView filter)
+{
+  return wildcards::match(str, filter);
+}
+
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
   parser_ = std::make_shared<XMLParser>(*this);

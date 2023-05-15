@@ -73,7 +73,7 @@ int main()
   BT::FileLogger2 logger2(tree, "t12_logger2.btlog");
   // SQLite logger can save multiple sessions into the same database
   bool append_to_database = true;
-  BT::SqliteLogger sqlite_logger(tree, "t12_logger2.btsql", append_to_database);
+  BT::SqliteLogger sqlite_logger(tree, "t12_sqlitelog.btsql", append_to_database);
 
   while(1)
   {
