@@ -371,6 +371,9 @@ public:
   template <typename T, typename... ExtraArgs>
   void registerNodeType(const std::string& ID, ExtraArgs... args)
   {
+    // check first if the given class is abstract
+    static_assert(!std::is_abstract_v<T>, "The given type can't be abstract");
+
     constexpr bool param_constructable =
         std::is_constructible<T, const std::string&, const NodeConfig&, ExtraArgs...>::value;
     constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
