@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <mutex>
-#include <shared_mutex>
 #include <sstream>
 
 #include "behaviortree_cpp/basic_types.h"
@@ -16,13 +15,10 @@
 
 namespace BT
 {
-/// This type contains pointer to Any.
-/// Protected with a read-only lock as long as the object is in scope
-using AnyPtrReadLock = LockedPtrConst<Any>;
 
-/// This type contains pointer to Any.
-/// Protected with a read-write lock as long as the object is in scope
-using AnyPtrWriteLock = LockedPtr<Any>;
+/// This type contains a pointer to Any, protected
+/// with a locked mutex as long as the object is in scope
+using AnyPtrLocked = LockedPtr<Any>;
 
 /**
  * @brief The Blackboard is the mechanism used by BehaviorTrees to exchange
@@ -45,7 +41,7 @@ public:
   {
     Any value;
     PortInfo port_info;
-    std::shared_mutex entry_mutex;
+    mutable std::mutex entry_mutex;
 
     Entry(const PortInfo& info) : port_info(info)
     {}
@@ -91,43 +87,43 @@ public:
     return const_cast<Entry*>( static_cast<const Blackboard &>(*this).getEntry(key));
   }
 
-  [[nodiscard]] AnyPtrReadLock getAnyRead(const std::string& key) const
+  [[nodiscard]] AnyPtrLocked getAnyLocked(const std::string& key)
   {
     if(auto entry = getEntry(key))
     {
-      return AnyPtrReadLock(&entry->value, const_cast<std::shared_mutex*>(&entry->entry_mutex));
+      return AnyPtrLocked(&entry->value, &entry->entry_mutex);
     }
     return {};
   }
 
-  [[nodiscard]] AnyPtrWriteLock getAnyWrite(const std::string& key)
+  [[nodiscard]] AnyPtrLocked getAnyLocked(const std::string& key) const
   {
     if(auto entry = getEntry(key))
     {
-      return AnyPtrWriteLock(&entry->value, &entry->entry_mutex);
+      return AnyPtrLocked(&entry->value,  const_cast<std::mutex*>(&entry->entry_mutex));
     }
     return {};
   }
 
-  [[deprecated("Use getAnyRead instead")]]
+  [[deprecated("Use getAnyLocked instead")]]
   const Any* getAny(const std::string& key) const
   {
-    return getAnyRead(key).get();
+    return getAnyLocked(key).get();
   }
 
-  [[deprecated("Use getAnyWrite instead")]]
+  [[deprecated("Use getAnyLocked instead")]]
   Any* getAny(const std::string& key)
   {
-    return getAnyWrite(key).get();
+    return const_cast<Any*>(getAnyLocked(key).get());
   }
 
   /** Return true if the entry with the given key was found.
-     *  Note that this method may throw an exception if the cast to T failed.
-     */
+   *  Note that this method may throw an exception if the cast to T failed.
+   */
   template <typename T> [[nodiscard]]
   bool get(const std::string& key, T& value) const
   {
-    if (auto any_ref = getAnyRead(key))
+    if (auto any_ref = getAnyLocked(key))
     {
       value = any_ref.get()->cast<T>();
       return true;
@@ -136,12 +132,12 @@ public:
   }
 
   /**
-     * Version of get() that throws if it fails.
-    */
+   * Version of get() that throws if it fails.
+   */
   template <typename T> [[nodiscard]]
   T get(const std::string& key) const
   {
-    if (auto any_ref = getAnyRead(key))
+    if (auto any_ref = getAnyLocked(key))
     {
       return any_ref.get()->cast<T>();
     }

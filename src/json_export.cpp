@@ -44,7 +44,7 @@ nlohmann::json ExportBlackboardToJSON(Blackboard &blackboard)
   for(auto entry_name: blackboard.getKeys())
   {
     std::string name(entry_name);
-    if(auto any_ref = blackboard.getAnyRead(name))
+    if(auto any_ref = blackboard.getAnyLocked(name))
     {
       if(auto any_ptr = any_ref.get())
       {

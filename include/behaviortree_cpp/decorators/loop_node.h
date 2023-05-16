@@ -13,7 +13,6 @@
 #pragma once
 
 #include <deque>
-#include <shared_mutex>
 #include "behaviortree_cpp/decorator_node.h"
 
 namespace BT
@@ -70,9 +69,9 @@ public:
     {
       // if the port is static, any_ref is empty, otherwise it will keep access to
       // port locked for thread-safety
-      AnyPtrWriteLock any_ref = static_queue_ ?
-                                    AnyPtrWriteLock() :
-                                getLockedPortContent("queue");
+      AnyPtrLocked any_ref = static_queue_ ?
+                                 AnyPtrLocked() :
+                                 getLockedPortContent("queue");
       if(any_ref)
       {
         current_queue_ = any_ref.get()->cast<SharedQueue<T>>();

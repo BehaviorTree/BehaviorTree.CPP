@@ -2,15 +2,15 @@
 
 #include <memory>
 #include <mutex>
-#include <shared_mutex>
 
 namespace BT
 {
 /**
  * @brief The LockedPtr class is used to share a pointer to an object
- * and a mutex that protects the write access to that object.
+ * and a mutex that protects the read/write access to that object.
  *
- * As long as the object remains in scope, the mutex is locked
+ * As long as the object remains in scope, the mutex is locked, therefore
+ * you must destroy this object as soon as the pointer was used.
  */
 template <typename T>
 class LockedPtr {
@@ -18,15 +18,28 @@ class LockedPtr {
 
   LockedPtr() = default;
 
-      LockedPtr(T* obj, std::shared_mutex* obj_mutex):
+  LockedPtr(const T* obj, std::mutex* obj_mutex):
         ref_(obj), mutex_(obj_mutex) {
     mutex_->lock();
   }
 
-      ~LockedPtr() {
+  ~LockedPtr() {
     if(mutex_) {
       mutex_->unlock();
     }
+  }
+
+  LockedPtr(LockedPtr const&) = delete;
+  LockedPtr& operator=(LockedPtr const&) = delete;
+
+  LockedPtr(LockedPtr && other) {
+    std::swap(ref_, other.ref_);
+    std::swap(mutex_, other.mutex_);
+  }
+
+  LockedPtr& operator=(LockedPtr&& other) {
+    std::swap(ref_, other.ref_);
+    std::swap(mutex_, other.mutex_);
   }
 
   operator bool() const {
@@ -53,60 +66,10 @@ class LockedPtr {
     return ref_;
   }
 
-  T* get() {
-    return ref_;
-  }
-
-  private:
-  T* ref_ = nullptr;
-  std::shared_mutex* mutex_ = nullptr;
-};
-
-/**
- * @brief The LockedPtrConst class is used to share a pointer to an object
- * and a mutex that protects the access to that object.
- * It has a read-only interface, the object can not be modified.
- * Multiple instances of LockedPtrConst can exist without a dead-lock.
- *
- * As long as the object remains in scope, the shared mutex is locked
- */
-template <typename T>
-class LockedPtrConst {
-  public:
-
-  LockedPtrConst() = default;
-
-      LockedPtrConst(LockedPtrConst const&) = delete;
-  LockedPtrConst& operator=(LockedPtrConst const&) = delete;
-
-      LockedPtrConst(const T* obj, std::shared_mutex* obj_mutex):
-        ref_(obj), mutex_(obj_mutex) {
-    mutex_->lock_shared();
-  }
-
-      ~LockedPtrConst() {
-    if(mutex_) {
-      mutex_->unlock_shared();
-    }
-  }
-
-  operator bool() const {
-    return ref_ != nullptr;
-  }
-
-  bool empty() const {
-    return ref_ == nullptr;
-  }
-
-  const T * get() const {
-    return ref_;
-  }
-
   private:
   const T* ref_ = nullptr;
-  std::shared_mutex* mutex_ = nullptr;
+  std::mutex* mutex_ = nullptr;
 };
-
 
 
 }

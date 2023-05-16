@@ -68,7 +68,7 @@ struct ExprName : ExprBase
             }
         }
         // search now in the variables table
-        auto any_ref = env.vars->getAnyRead(name);
+        auto any_ref = env.vars->getAnyLocked(name);
         if( !any_ref )
         {
           throw std::runtime_error("Variable not found");

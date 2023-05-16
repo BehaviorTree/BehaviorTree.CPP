@@ -270,7 +270,7 @@ public:
    * @return     empty AnyWriteRef if the blackboard entry doesn't exist or the content
    *             of the port was a static string.
    */
-  [[nodiscard]] AnyPtrWriteLock getLockedPortContent(const std::string& key);
+  [[nodiscard]] AnyPtrLocked getLockedPortContent(const std::string& key);
 
   // function provided mostly for debugging purpose to see the raw value
   // in the port (no remapping and no conversion to a type)
@@ -426,7 +426,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
       return nonstd::make_unexpected("getInput(): trying to access an invalid Blackboard");
     }
 
-    if (auto any_ref = config_.blackboard->getAnyRead(std::string(remapped_key)))
+    if (auto any_ref = config_.blackboard->getAnyLocked(std::string(remapped_key)))
     {
       auto val = any_ref.get();
       if(!val->empty())

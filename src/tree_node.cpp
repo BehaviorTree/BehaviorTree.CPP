@@ -411,11 +411,11 @@ std::string toStr<PostCond>(PostCond pre)
   }
 }
 
-AnyPtrWriteLock BT::TreeNode::getLockedPortContent(const std::string &key)
+AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string &key)
 {
   if(auto remapped_key = getRemappedKey(key, getRawPortValue(key)))
   {
-    return config_.blackboard->getAnyWrite(std::string(*remapped_key));
+    return config_.blackboard->getAnyLocked(std::string(*remapped_key));
   }
   return {};
 }
