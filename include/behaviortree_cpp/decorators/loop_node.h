@@ -35,21 +35,20 @@ using SharedQueue = std::shared_ptr<std::deque<T>>;
  * the factory.
  */
 template <typename T = Any>
-class LoopPopNode : public DecoratorNode
+class LoopNode : public DecoratorNode
 {
   bool child_running_ = false;
   SharedQueue<T> static_queue_;
   SharedQueue<T> current_queue_;
-  std::string static_string_;
 
 public:
-  LoopPopNode(const std::string& name, const NodeConfig& config) :
+  LoopNode(const std::string& name, const NodeConfig& config) :
     DecoratorNode(name, config)
   {
     auto raw_port = getRawPortValue("queue");
     if(!isBlackboardPointer(raw_port))
     {
-      static_queue_ = convertFromString<SharedQueue<T>>(static_string_);
+      static_queue_ = convertFromString<SharedQueue<T>>(raw_port);
     }
   }
 
@@ -71,8 +70,8 @@ public:
     {
       // if the port is static, any_ref is empty, otherwise it will keep access to
       // port locked for thread-safety
-      AnyWriteRef any_ref = static_queue_ ?
-                                AnyWriteRef() :
+      AnyPtrWriteLock any_ref = static_queue_ ?
+                                    AnyPtrWriteLock() :
                                 getLockedPortContent("queue");
       if(any_ref)
       {

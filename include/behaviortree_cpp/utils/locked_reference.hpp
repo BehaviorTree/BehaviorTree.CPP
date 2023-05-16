@@ -6,18 +6,24 @@
 
 namespace BT
 {
+/**
+ * @brief The LockedPtr class is used to share a pointer to an object
+ * and a mutex that protects the write access to that object.
+ *
+ * As long as the object remains in scope, the mutex is locked
+ */
 template <typename T>
-class LockedRef {
+class LockedPtr {
   public:
 
-  LockedRef() = default;
+  LockedPtr() = default;
 
-  LockedRef(T* obj, std::shared_mutex* obj_mutex):
+      LockedPtr(T* obj, std::shared_mutex* obj_mutex):
         ref_(obj), mutex_(obj_mutex) {
     mutex_->lock();
   }
 
-  ~LockedRef() {
+      ~LockedPtr() {
     if(mutex_) {
       mutex_->unlock();
     }
@@ -56,22 +62,29 @@ class LockedRef {
   std::shared_mutex* mutex_ = nullptr;
 };
 
-
+/**
+ * @brief The LockedPtrConst class is used to share a pointer to an object
+ * and a mutex that protects the access to that object.
+ * It has a read-only interface, the object can not be modified.
+ * Multiple instances of LockedPtrConst can exist without a dead-lock.
+ *
+ * As long as the object remains in scope, the shared mutex is locked
+ */
 template <typename T>
-class LockedConstRef {
+class LockedPtrConst {
   public:
 
-  LockedConstRef() = default;
+  LockedPtrConst() = default;
 
-  LockedConstRef(LockedConstRef const&) = delete;
-  LockedConstRef& operator=(LockedConstRef const&) = delete;
+      LockedPtrConst(LockedPtrConst const&) = delete;
+  LockedPtrConst& operator=(LockedPtrConst const&) = delete;
 
-  LockedConstRef(const T* obj, std::shared_mutex* obj_mutex):
+      LockedPtrConst(const T* obj, std::shared_mutex* obj_mutex):
         ref_(obj), mutex_(obj_mutex) {
     mutex_->lock_shared();
   }
 
-  ~LockedConstRef() {
+      ~LockedPtrConst() {
     if(mutex_) {
       mutex_->unlock_shared();
     }
@@ -85,7 +98,7 @@ class LockedConstRef {
     return ref_ == nullptr;
   }
 
-  const T* get() const {
+  const T * get() const {
     return ref_;
   }
 

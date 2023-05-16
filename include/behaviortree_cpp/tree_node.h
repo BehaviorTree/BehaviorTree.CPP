@@ -139,16 +139,16 @@ public:
 
   void haltNode();
 
-  bool isHalted() const;
+  [[nodiscard]] bool isHalted() const;
 
-  NodeStatus status() const;
+  [[nodiscard]] NodeStatus status() const;
 
   /// Name of the instance, not the type
-  const std::string& name() const;
+  [[nodiscard]] const std::string& name() const;
 
   /// Blocking function that will sleep until the setStatus() is called with
   /// either RUNNING, FAILURE or SUCCESS.
-  BT::NodeStatus waitValidStatus();
+  [[nodiscard]] BT::NodeStatus waitValidStatus();
 
   virtual NodeType type() const = 0;
 
@@ -170,7 +170,7 @@ public:
      *
      * @return the subscriber handle.
      */
-  StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
+  [[nodiscard]] StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
 
   /** This method attaches to the TreeNode a callback with signature:
      *
@@ -195,18 +195,18 @@ public:
 
   /// The unique identifier of this instance of treeNode.
   /// It is assigneld by the factory
-  uint16_t UID() const;
+  [[nodiscard]] uint16_t UID() const;
 
   /// Human readable identifier, that includes the hierarchy of Subtrees
   /// See tutorial 10 as an example.
-  const std::string& fullPath() const;
+  [[nodiscard]] const std::string& fullPath() const;
 
   /// registrationName is the ID used by BehaviorTreeFactory to create an instance.
-  const std::string& registrationName() const;
+  [[nodiscard]] const std::string& registrationName() const;
 
   /// Configuration passed at construction time. Can never change after the
   /// creation of the TreeNode instance.
-  const NodeConfig& config() const;
+  [[nodiscard]] const NodeConfig& config() const;
 
   /** Read an input port, which, in practice, is an entry in the blackboard.
    * If the blackboard contains a std::string and T is not a string,
@@ -223,7 +223,7 @@ public:
    *
    * @param key   the name of the port.
    */
-  template <typename T>
+  template <typename T> [[nodiscard]]
   Expected<T> getInput(const std::string& key) const
   {
     T out;
@@ -270,24 +270,28 @@ public:
    * @return     empty AnyWriteRef if the blackboard entry doesn't exist or the content
    *             of the port was a static string.
    */
-  AnyWriteRef getLockedPortContent(const std::string& key);
+  [[nodiscard]] AnyPtrWriteLock getLockedPortContent(const std::string& key);
 
   // function provided mostly for debugging purpose to see the raw value
   // in the port (no remapping and no conversion to a type)
-  StringView getRawPortValue(const std::string& key) const;
+  [[nodiscard]] StringView getRawPortValue(const std::string& key) const;
 
   /// Check a string and return true if it matches either one of these
   /// two patterns:  {...} or ${...}
+  [[nodiscard]]
   static bool isBlackboardPointer(StringView str);
 
+  [[nodiscard]]
   static StringView stripBlackboardPointer(StringView str);
 
+  [[nodiscard]]
   static Expected<StringView> getRemappedKey(StringView port_name,
                                              StringView remapped_port);
 
   /// Notify that the tree should be ticked again()
   void emitWakeUpSignal();
 
+  [[nodiscard]]
   bool requiresWakeUp() const;
 
   /** Used to inject config into a node, even if it doesn't have the proper

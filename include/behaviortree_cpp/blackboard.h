@@ -16,9 +16,13 @@
 
 namespace BT
 {
+/// This type contains pointer to Any.
+/// Protected with a read-only lock as long as the object is in scope
+using AnyPtrReadLock = LockedPtrConst<Any>;
 
-using AnyReadRef = LockedConstRef<Any>;
-using AnyWriteRef = LockedRef<Any>;
+/// This type contains pointer to Any.
+/// Protected with a read-write lock as long as the object is in scope
+using AnyPtrWriteLock = LockedPtr<Any>;
 
 /**
  * @brief The Blackboard is the mechanism used by BehaviorTrees to exchange
@@ -61,7 +65,7 @@ public:
 
   virtual ~Blackboard() = default;
 
-  const Entry* getEntry(const std::string& key) const
+  [[nodiscard]] const Entry* getEntry(const std::string& key) const
   {
     std::unique_lock<std::mutex> lock(mutex_);
     // search first if this port was remapped
@@ -80,27 +84,27 @@ public:
     return (it == storage_.end()) ? nullptr : it->second.get();
   }
 
-  Entry* getEntry(const std::string& key)
+  [[nodiscard]] Entry* getEntry(const std::string& key)
   {
     // "Avoid Duplication in const and Non-const Member Function,"
     // on p. 23, in Item 3 "Use const whenever possible," in Effective C++, 3d ed
     return const_cast<Entry*>( static_cast<const Blackboard &>(*this).getEntry(key));
   }
 
-  AnyReadRef getAnyRead(const std::string& key) const
+  [[nodiscard]] AnyPtrReadLock getAnyRead(const std::string& key) const
   {
     if(auto entry = getEntry(key))
     {
-      return AnyReadRef(&entry->value, const_cast<std::shared_mutex*>(&entry->entry_mutex));
+      return AnyPtrReadLock(&entry->value, const_cast<std::shared_mutex*>(&entry->entry_mutex));
     }
     return {};
   }
 
-  AnyWriteRef getAnyWrite(const std::string& key)
+  [[nodiscard]] AnyPtrWriteLock getAnyWrite(const std::string& key)
   {
     if(auto entry = getEntry(key))
     {
-      return AnyWriteRef(&entry->value, &entry->entry_mutex);
+      return AnyPtrWriteLock(&entry->value, &entry->entry_mutex);
     }
     return {};
   }
@@ -120,7 +124,7 @@ public:
   /** Return true if the entry with the given key was found.
      *  Note that this method may throw an exception if the cast to T failed.
      */
-  template <typename T>
+  template <typename T> [[nodiscard]]
   bool get(const std::string& key, T& value) const
   {
     if (auto any_ref = getAnyRead(key))
@@ -134,7 +138,7 @@ public:
   /**
      * Version of get() that throws if it fails.
     */
-  template <typename T>
+  template <typename T> [[nodiscard]]
   T get(const std::string& key) const
   {
     if (auto any_ref = getAnyRead(key))
@@ -241,13 +245,13 @@ public:
 
   void setPortInfo(const std::string &key, const PortInfo& info);
 
-  const PortInfo* portInfo(const std::string& key);
+  [[nodiscard]] const PortInfo* portInfo(const std::string& key);
 
   void addSubtreeRemapping(StringView internal, StringView external);
 
   void debugMessage() const;
 
-  std::vector<StringView> getKeys(bool include_remapped = true) const;
+  [[nodiscard]] std::vector<StringView> getKeys(bool include_remapped = true) const;
 
   void clear()
   {

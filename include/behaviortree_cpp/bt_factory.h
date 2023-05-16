@@ -141,7 +141,7 @@ public:
     rootNode()->resetStatus();
   }
 
-  TreeNode* rootNode() const;
+  [[nodiscard]] TreeNode* rootNode() const;
 
   /// Sleep for a certain amount of time.
   /// This sleep could be interrupted by the method
@@ -167,7 +167,7 @@ public:
   NodeStatus
   tickWhileRunning(std::chrono::milliseconds sleep_time = std::chrono::milliseconds(10));
 
-  Blackboard::Ptr rootBlackboard();
+  [[nodiscard]] Blackboard::Ptr rootBlackboard();
 
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(const TreeNode*)>& visitor);
@@ -175,14 +175,14 @@ public:
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(TreeNode*)>& visitor);
 
-  uint16_t getUID();
+  [[nodiscard]] uint16_t getUID();
 
   /// Get a list of nodes which fullPath() match a wildcard filter and
   /// a given path. Example:
   ///
   /// move_nodes = tree.getNodesByPath<MoveBaseNode>("move_*");
   ///
-  template <typename NodeType = BT::TreeNode>
+  template <typename NodeType = BT::TreeNode> [[nodiscard]]
   std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) {
     std::vector<const TreeNode*> nodes;
     for (auto const& subtree : subtrees) {

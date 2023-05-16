@@ -295,3 +295,29 @@ TEST(BlackboardTest, CheckTypeSafety)
   is = std::is_constructible<BT::StringView, std::string>::value;
   ASSERT_TRUE(is);
 }
+
+TEST(BlackboardTest, AnyPtr)
+{
+  auto blackboard = Blackboard::create();
+  auto test_obj = std::make_shared<int>(42);
+
+  blackboard->set("testmove", test_obj);
+
+  // no deadlock if both are read-only
+  {
+    auto r1 = blackboard->getAnyRead("testmove");
+    auto r2 = blackboard->getAnyRead("testmove");
+  }
+
+  auto double_write = [&]() {
+    auto w1 = blackboard->getAnyWrite("testmove");
+    auto w2 = blackboard->getAnyWrite("testmove");
+  };
+  EXPECT_ANY_THROW(double_write());
+
+  auto write_read = [&]() {
+    auto w1 = blackboard->getAnyWrite("testmove");
+    auto r1 = blackboard->getAnyRead("testmove");
+  };
+  EXPECT_ANY_THROW(write_read());
+}

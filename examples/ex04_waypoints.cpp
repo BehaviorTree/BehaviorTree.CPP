@@ -106,14 +106,14 @@ static const char* xml_tree = R"(
  <root BTCPP_format="4" >
      <BehaviorTree ID="TreeA">
         <Sequence>
-            <LoopPopDouble queue="1;2;3"  value="{number}">
+            <LoopDouble queue="1;2;3"  value="{number}">
               <PrintNumber value="{number}" />
-            </LoopPopDouble>
+            </LoopDouble>
 
             <GenerateWaypoints waypoints="{waypoints}" />
-            <LoopPopPose queue="{waypoints}"  value="{wp}">
+            <LoopPose queue="{waypoints}"  value="{wp}">
               <UseWaypoint waypoint="{wp}" />
-            </LoopPopPose>
+            </LoopPose>
         </Sequence>
      </BehaviorTree>
  </root>
@@ -124,8 +124,8 @@ static const char* xml_tree = R"(
 int main()
 {
   BehaviorTreeFactory factory;
-
-  factory.registerNodeType<LoopPopNode<Pose2D>>("LoopPopPose");
+  
+  factory.registerNodeType<LoopNode<Pose2D>>("LoopPose");
 
   factory.registerNodeType<UseWaypoint>("UseWaypoint");
   factory.registerNodeType<PrintNumber>("PrintNumber");

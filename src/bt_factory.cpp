@@ -75,9 +75,9 @@ BehaviorTreeFactory::BehaviorTreeFactory()
   registerNodeType<SwitchNode<4>>("Switch4");
   registerNodeType<SwitchNode<5>>("Switch5");
   registerNodeType<SwitchNode<6>>("Switch6");
-
-  registerNodeType<LoopPopNode<double>>("LoopPopDouble");
-  registerNodeType<LoopPopNode<std::string>>("LoopPopString");
+  
+  registerNodeType<LoopNode<double>>("LoopDouble");
+  registerNodeType<LoopNode<std::string>>("LoopString");
 
   for (const auto& it : builders_)
   {
