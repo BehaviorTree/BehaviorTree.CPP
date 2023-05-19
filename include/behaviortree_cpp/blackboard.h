@@ -255,7 +255,7 @@ public:
     storage_.clear();
   }
 
-  [[deprecated("Use getAnyRead or getAnyWrite to access safely an Entry")]]
+  [[deprecated("Use getAnyLocked to access safely an Entry")]]
   std::recursive_mutex& entryMutex() const
   {
     return entry_mutex_;

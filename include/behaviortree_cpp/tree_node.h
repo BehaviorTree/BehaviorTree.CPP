@@ -261,13 +261,13 @@ public:
    *      // modifying the content of foo_ptr inside this scope IS thread-safe
    *    }
    *
-   * It is important to destroy the object AnyWriteRef, to release the lock.
+   * It is important to destroy the object AnyPtrLocked, to release the lock.
    *
    * NOTE: this method doesn't work, if the port contains a static string, instead
    * of a blackboard pointer.
    *
    * @param key  the identifier of the port.
-   * @return     empty AnyWriteRef if the blackboard entry doesn't exist or the content
+   * @return     empty AnyPtrLocked if the blackboard entry doesn't exist or the content
    *             of the port was a static string.
    */
   [[nodiscard]] AnyPtrLocked getLockedPortContent(const std::string& key);
