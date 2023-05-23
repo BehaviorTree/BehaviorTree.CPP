@@ -2,6 +2,32 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add more informative IDLE status
+* more informative error message when trying to register virtual classes
+* fixes and simpler getAnyLocked
+* add Tree::getNodesByPath
+* add FileLogger2
+* change getPortAny name and fic loop_node
+* Lexy updated to release 2022.12.1
+* do not skip pre-post condition in substituted tick
+* added Loop node
+* deprecating getAny
+* revert new behavior of Sequence and Fallback
+* add resetChild to all the decorators that missed it
+* Add test related to issue `#539 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/539>`_
+* related to `#555 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/555>`_
+* Critical bug fix in XML exporting
+* Fix writeTreeNodesModelXML
+* fix ament not registering executables as tests
+* fix std::system_error in TimeoutNode
+* minor changes, mostly comments
+* add version string
+* old ZMQ publisher removed
+* Add RunOnce, based on `#472 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/472>`_
+* Contributors: Alberto Soragna, Davide Faconti, Gaël Écorchard, Mithun Kinarullathil, Sergei Molchanov
+
 4.1.1 (2023-03-29)
 ------------------
 * adding sqlite logger
