@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ERROR_HPP_INCLUDED
@@ -38,8 +38,7 @@ public:
     template <typename Tag>
     constexpr bool is(Tag = {}) const noexcept
     {
-        // Just like production_info::operator==, we can safely compare strings.
-        return _msg == _detail::type_name<Tag>();
+        return _detail::string_view(_msg) == _detail::type_name<Tag>();
     }
 
     constexpr auto begin() const noexcept

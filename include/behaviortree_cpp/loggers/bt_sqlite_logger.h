@@ -52,15 +52,14 @@ private:
     NodeStatus status;
   };
 
-  std::deque<Transition> write_queue_;
-  std::condition_variable queue_push_cv_;
-  std::condition_variable queue_pop_cv_;
+  std::deque<Transition> transitions_queue_;
+  std::condition_variable queue_cv_;
   std::mutex queue_mutex_;
 
-  std::thread queue_thread_;
+  std::thread writer_thread_;
   std::atomic_bool loop_ = true;
 
-  void threadLoop();
+  void writerLoop();
 
 };
 

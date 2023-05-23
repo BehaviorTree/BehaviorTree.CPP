@@ -31,6 +31,7 @@
 
 namespace BT
 {
+
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
 {
@@ -138,16 +139,16 @@ public:
 
   void haltNode();
 
-  bool isHalted() const;
+  [[nodiscard]] bool isHalted() const;
 
-  NodeStatus status() const;
+  [[nodiscard]] NodeStatus status() const;
 
   /// Name of the instance, not the type
-  const std::string& name() const;
+  [[nodiscard]] const std::string& name() const;
 
   /// Blocking function that will sleep until the setStatus() is called with
   /// either RUNNING, FAILURE or SUCCESS.
-  BT::NodeStatus waitValidStatus();
+  [[nodiscard]] BT::NodeStatus waitValidStatus();
 
   virtual NodeType type() const = 0;
 
@@ -169,7 +170,7 @@ public:
      *
      * @return the subscriber handle.
      */
-  StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
+  [[nodiscard]] StatusChangeSubscriber subscribeToStatusChange(StatusChangeCallback callback);
 
   /** This method attaches to the TreeNode a callback with signature:
      *
@@ -183,44 +184,46 @@ public:
   void setPreTickFunction(PreTickCallback callback);
 
   /**
-     * This method attaches to the TreeNode a callback with signature:
-     *
-     *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus new_status)
-     *
-     * This callback is executed AFTER the tick() and, if it returns a valid Optional<NodeStatus>,
-     * the value returned by the actual tick() is overriden with this one.
-     */
+   * This method attaches to the TreeNode a callback with signature:
+   *
+   *     Optional<NodeStatus> myCallback(TreeNode& node, NodeStatus new_status)
+   *
+   * This callback is executed AFTER the tick() and, if it returns a valid Optional<NodeStatus>,
+   * the value returned by the actual tick() is overriden with this one.
+   */
   void setPostTickFunction(PostTickCallback callback);
 
   /// The unique identifier of this instance of treeNode.
   /// It is assigneld by the factory
-  uint16_t UID() const;
+  [[nodiscard]] uint16_t UID() const;
 
   /// Human readable identifier, that includes the hierarchy of Subtrees
   /// See tutorial 10 as an example.
-  const std::string& fullPath() const;
+  [[nodiscard]] const std::string& fullPath() const;
 
   /// registrationName is the ID used by BehaviorTreeFactory to create an instance.
-  const std::string& registrationName() const;
+  [[nodiscard]] const std::string& registrationName() const;
 
   /// Configuration passed at construction time. Can never change after the
   /// creation of the TreeNode instance.
-  const NodeConfig& config() const;
+  [[nodiscard]] const NodeConfig& config() const;
 
   /** Read an input port, which, in practice, is an entry in the blackboard.
-     * If the blackboard contains a std::string and T is not a string,
-     * convertFromString<T>() is used automatically to parse the text.
-     *
-     * @param key   the identifier (before remapping) of the port.
-     * @return      false if an error occurs.
-     */
+   * If the blackboard contains a std::string and T is not a string,
+   * convertFromString<T>() is used automatically to parse the text.
+   *
+   * @param key   the name of the port.
+   * @return      false if an error occurs.
+   */
   template <typename T>
   Result getInput(const std::string& key, T& destination) const;
 
   /** Same as bool getInput(const std::string& key, T& destination)
-     * but using optional.
-     */
-  template <typename T>
+   * but using optional.
+   *
+   * @param key   the name of the port.
+   */
+  template <typename T> [[nodiscard]]
   Expected<T> getInput(const std::string& key) const
   {
     T out;
@@ -228,25 +231,67 @@ public:
     return (res) ? Expected<T>(out) : nonstd::make_unexpected(res.error());
   }
 
+  /**
+   * @brief setOutput modifies the content of an Output port
+   * @param key    the name of the port.
+   * @param value  new value
+   * @return       valid Result, is succesfull.
+   */
   template <typename T>
   Result setOutput(const std::string& key, const T& value);
 
-  // function provide mostly for debugging purpose to see the raw value
+  /**
+   * @brief getLockedPortContent should be used when:
+   *
+   * - your port contains an object with reference semantic (usually a smart pointer)
+   * - you want to modify the object we are pointing to.
+   * - you are concerned about thread-safety.
+   *
+   * For example, if your port has type std::shared_ptr<Foo>,
+   * the code below is NOT thread safe:
+   *
+   *    auto foo_ptr = getInput<std::shared_ptr<Foo>>("port_name");
+   *    // modifying the content of foo_ptr is NOT thread-safe
+   *
+   * What you must do, instead, to guaranty thread-safety, is:
+   *
+   *    if(auto any_ref = getLockedPortContent("port_name")) {
+   *      Any* any = any_ref.get();
+   *      auto foo_ptr = any->cast<std::shared_ptr<Foo>>();
+   *      // modifying the content of foo_ptr inside this scope IS thread-safe
+   *    }
+   *
+   * It is important to destroy the object AnyPtrLocked, to release the lock.
+   *
+   * NOTE: this method doesn't work, if the port contains a static string, instead
+   * of a blackboard pointer.
+   *
+   * @param key  the identifier of the port.
+   * @return     empty AnyPtrLocked if the blackboard entry doesn't exist or the content
+   *             of the port was a static string.
+   */
+  [[nodiscard]] AnyPtrLocked getLockedPortContent(const std::string& key);
+
+  // function provided mostly for debugging purpose to see the raw value
   // in the port (no remapping and no conversion to a type)
-  StringView getRawPortValue(const std::string& key) const;
+  [[nodiscard]] StringView getRawPortValue(const std::string& key) const;
 
   /// Check a string and return true if it matches either one of these
   /// two patterns:  {...} or ${...}
+  [[nodiscard]]
   static bool isBlackboardPointer(StringView str);
 
+  [[nodiscard]]
   static StringView stripBlackboardPointer(StringView str);
 
+  [[nodiscard]]
   static Expected<StringView> getRemappedKey(StringView port_name,
                                              StringView remapped_port);
 
   /// Notify that the tree should be ticked again()
   void emitWakeUpSignal();
 
+  [[nodiscard]]
   bool requiresWakeUp() const;
 
   /** Used to inject config into a node, even if it doesn't have the proper
@@ -266,7 +311,7 @@ public:
     }
     else if constexpr (hasNodeNameCtor<DerivedT>())
     {
-      auto node_ptr = new DerivedT(name);
+      auto node_ptr = new DerivedT(name, args...);
       node_ptr->config_ = config;
       return std::unique_ptr<DerivedT>(node_ptr);
     }
@@ -313,7 +358,7 @@ private:
 
   std::string registration_ID_;
 
-  PreTickCallback pre_condition_callback_;
+  PreTickCallback substitution_callback_;
 
   PostTickCallback post_condition_callback_;
 
@@ -357,7 +402,6 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     }
   };
 
-
   auto remap_it = config_.input_ports.find(key);
   if (remap_it == config_.input_ports.end())
   {
@@ -382,20 +426,22 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
       return nonstd::make_unexpected("getInput(): trying to access an invalid Blackboard");
     }
 
-    std::unique_lock entry_lock(config_.blackboard->entryMutex());
-    const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
-    if (val && !val->empty())
+    if (auto any_ref = config_.blackboard->getAnyLocked(std::string(remapped_key)))
     {
-      if (!std::is_same_v<T, std::string> &&
-          val->type() == typeid(std::string))
+      auto val = any_ref.get();
+      if(!val->empty())
       {
-        destination = ParseString(val->cast<std::string>());
+        if (!std::is_same_v<T, std::string> &&
+            val->type() == typeid(std::string))
+        {
+          destination = ParseString(val->cast<std::string>());
+        }
+        else
+        {
+          destination = val->cast<T>();
+        }
+        return {};
       }
-      else
-      {
-        destination = val->cast<T>();
-      }
-      return {};
     }
 
     return nonstd::make_unexpected(StrCat("getInput() failed because it was unable to "
@@ -422,8 +468,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   {
     return nonstd::make_unexpected(StrCat("setOutput() failed: "
                                           "NodeConfig::output_ports "
-                                          "does not "
-                                          "contain the key: [",
+                                          "does not contain the key: [",
                                           key, "]"));
   }
   StringView remapped_key = remap_it->second;

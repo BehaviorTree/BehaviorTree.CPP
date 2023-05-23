@@ -98,7 +98,7 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
 
       ptr_offset += Monitor::Serialize(buffer_ptr, ptr_offset,
                                        node->UID());
-      buffer_ptr_.insert( {node->UID(), buffer_ptr + ptr_offset} );
+      status_buffer_map_.insert( {node->UID(), buffer_ptr + ptr_offset} );
       ptr_offset += Monitor::Serialize(buffer_ptr, ptr_offset,
                                        uint8_t(NodeStatus::IDLE));
     }
@@ -139,10 +139,15 @@ Groot2Publisher::~Groot2Publisher()
 }
 
 void Groot2Publisher::callback(Duration, const TreeNode& node,
-                               NodeStatus, NodeStatus status)
+                               NodeStatus prev_status, NodeStatus new_status)
 {
   std::unique_lock<std::mutex> lk(status_mutex_);
-  *(buffer_ptr_.at(node.UID())) = static_cast<char>(status);
+  auto status = static_cast<char>(new_status);
+
+  if( new_status == NodeStatus::IDLE) {
+    status = 10 + static_cast<char>(prev_status);
+  }
+  *(status_buffer_map_.at(node.UID())) = status;
 }
 
 void Groot2Publisher::flush()

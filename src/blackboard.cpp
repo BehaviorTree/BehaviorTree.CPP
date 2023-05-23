@@ -19,16 +19,15 @@ void Blackboard::setPortInfo(const std::string& key, const PortInfo& info)
   auto it = storage_.find(key);
   if (it == storage_.end())
   {
-    storage_.emplace(key, Entry(info));
+    storage_.emplace(key, std::make_unique<Entry>(info));
   }
   else
   {
-    auto old_type = it->second.port_info.type();
+    auto old_type = it->second->port_info.type();
     if (old_type != info.type())
     {
       throw LogicError("Blackboard::set() failed: once declared, the type of a port "
-                       "shall not change. "
-                       "Declared type [",
+                       "shall not change. Declared type [",
                        BT::demangle(old_type), "] != current type [",
                        BT::demangle(info.type()), "]");
     }
@@ -53,7 +52,7 @@ const PortInfo* Blackboard::portInfo(const std::string& key)
   {
     return nullptr;
   }
-  return &(it->second.port_info);
+  return &(it->second->port_info);
 }
 
 void Blackboard::addSubtreeRemapping(StringView internal, StringView external)
@@ -66,10 +65,10 @@ void Blackboard::debugMessage() const
 {
   for (const auto& [key, entry] : storage_)
   {
-    auto port_type = entry.port_info.type();
+    auto port_type = entry->port_info.type();
     if (port_type == typeid(void))
     {
-      port_type = entry.value.type();
+      port_type = entry->value.type();
     }
 
     std::cout << key << " (" << BT::demangle(port_type) << ")" << std::endl;

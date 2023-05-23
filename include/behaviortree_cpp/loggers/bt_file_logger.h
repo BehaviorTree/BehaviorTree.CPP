@@ -8,7 +8,9 @@
 
 namespace BT
 {
-class FileLogger : public StatusChangeLogger
+
+class [[deprecated("Use FileLogger2 instead")]]
+FileLogger : public StatusChangeLogger
 {
 public:
   FileLogger(const Tree& tree, const char* filename, uint16_t buffer_size = 10);

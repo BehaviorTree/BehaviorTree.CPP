@@ -1,3 +1,4 @@
+#include "behaviortree_cpp/loggers/bt_file_logger_v2.h"
 #include "crossdoor_nodes.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
@@ -56,6 +57,7 @@ int main()
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
 
+
   std::cout << "----------- XML file  ----------\n"
             << BT::WriteTreeToXML(tree, false)
             << "--------------------------------\n";
@@ -64,12 +66,21 @@ int main()
   // get the tree and poll status updates.
   BT::Groot2Publisher publisher(tree);
 
+  // Add also two logger which save the transitions into a file.
+  // Both formats are compatible with Groot2
+
+  // Lightweight serialization
+  BT::FileLogger2 logger2(tree, "t12_logger2.btlog");
+  // SQLite logger can save multiple sessions into the same database
+  bool append_to_database = true;
+  BT::SqliteLogger sqlite_logger(tree, "t12_sqlitelog.btsql", append_to_database);
+
   while(1)
   {
     std::cout << "Start" << std::endl;
     cross_door.reset();
     tree.tickWhileRunning();
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
 
   return 0;

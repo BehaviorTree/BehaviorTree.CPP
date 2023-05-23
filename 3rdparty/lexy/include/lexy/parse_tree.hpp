@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_PARSE_TREE_HPP_INCLUDED
@@ -145,13 +145,13 @@ struct pt_node_production : pt_node<Reader>
 {
     static constexpr std::size_t child_count_bits = sizeof(std::size_t) * CHAR_BIT - 2;
 
-    const char* name;
-    std::size_t child_count : child_count_bits;
-    std::size_t token_production : 1;
-    std::size_t first_child_adjacent : 1;
+    const char* const* id;
+    std::size_t        child_count : child_count_bits;
+    std::size_t        token_production : 1;
+    std::size_t        first_child_adjacent : 1;
 
     explicit pt_node_production(production_info info) noexcept
-    : pt_node<Reader>(pt_node<Reader>::type_production), name(info.name), child_count(0),
+    : pt_node<Reader>(pt_node<Reader>::type_production), id(info.id), child_count(0),
       token_production(info.is_token), first_child_adjacent(true)
     {
         static_assert(sizeof(pt_node_production) == 3 * sizeof(void*));
@@ -743,7 +743,7 @@ public:
     const char* name() const noexcept
     {
         if (auto prod = _ptr->as_production())
-            return prod->name;
+            return *prod->id;
         else if (auto token = _ptr->as_token())
             return token_kind<TokenKind>::from_raw(token->kind).name();
         else
@@ -758,8 +758,7 @@ public:
         if (lhs.is_token() && rhs.is_token())
             return lhs._ptr->as_token()->kind == rhs._ptr->as_token()->kind;
         else
-            // Just like `production_info::operator==`, we can compare strings.
-            return lhs._ptr->as_production()->name == rhs._ptr->as_production()->name;
+            return lhs._ptr->as_production()->id == rhs._ptr->as_production()->id;
     }
     friend bool operator!=(node_kind lhs, node_kind rhs)
     {
@@ -788,8 +787,7 @@ public:
 
     friend bool operator==(node_kind nk, production_info info)
     {
-        // Just like `production_info::operator==`, we can compare strings.
-        return nk.is_production() && nk._ptr->as_production()->name == info.name;
+        return nk.is_production() && nk._ptr->as_production()->id == info.id;
     }
     friend bool operator==(production_info info, node_kind nk)
     {

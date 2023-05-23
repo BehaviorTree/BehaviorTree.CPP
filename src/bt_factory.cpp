@@ -24,11 +24,19 @@
 
 namespace BT
 {
+
+bool WildcardMatch(std::string const& str, StringView filter)
+{
+  return wildcards::match(str, filter);
+}
+
 BehaviorTreeFactory::BehaviorTreeFactory()
 {
   parser_ = std::make_shared<XMLParser>(*this);
   registerNodeType<FallbackNode>("Fallback");
+  registerNodeType<FallbackNode>("AsyncFallback", true);
   registerNodeType<SequenceNode>("Sequence");
+  registerNodeType<SequenceNode>("AsyncSequence", true);
   registerNodeType<SequenceWithMemory>("SequenceWithMemory");
 
 #ifdef USE_BTCPP3_OLD_NAMES
@@ -67,6 +75,9 @@ BehaviorTreeFactory::BehaviorTreeFactory()
   registerNodeType<SwitchNode<4>>("Switch4");
   registerNodeType<SwitchNode<5>>("Switch5");
   registerNodeType<SwitchNode<6>>("Switch6");
+  
+  registerNodeType<LoopNode<double>>("LoopDouble");
+  registerNodeType<LoopNode<std::string>>("LoopString");
 
   for (const auto& it : builders_)
   {

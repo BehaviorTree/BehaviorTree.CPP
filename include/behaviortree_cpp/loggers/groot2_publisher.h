@@ -58,8 +58,9 @@ class Groot2Publisher : public StatusChangeLogger
 
   std::mutex status_mutex_;
 
-  std::unordered_map<uint16_t, char*> buffer_ptr_;
   std::string status_buffer_;
+  // each element of this map points to a character in status_buffer_
+  std::unordered_map<uint16_t, char*> status_buffer_map_;
 
   // weak reference to the tree.
   std::unordered_map<std::string, std::weak_ptr<BT::Tree::Subtree>> subtrees_;
@@ -72,6 +73,12 @@ class Groot2Publisher : public StatusChangeLogger
   std::chrono::system_clock::time_point last_heartbeat_;
 
   std::thread heartbeat_thread_;
+
+  enum {
+    IDLE_FROM_SUCCESS = 10 + static_cast<int>(NodeStatus::SUCCESS),
+    IDLE_FROM_FAILURE = 10 + static_cast<int>(NodeStatus::FAILURE),
+    IDLE_FROM_RUNNING = 10 + static_cast<int>(NodeStatus::RUNNING)
+  };
 
   struct Pimpl;
   Pimpl* zmq_;

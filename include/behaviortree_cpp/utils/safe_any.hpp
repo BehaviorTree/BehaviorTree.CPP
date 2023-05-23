@@ -181,8 +181,8 @@ class Any
     template <typename T>
     T cast() const
     {
-        static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, can not cast to reference");
-
+        static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, "
+                                                    "can not cast to reference");
         if constexpr(std::is_enum_v<T>)
         {
             if(!isNumber())
@@ -192,23 +192,26 @@ class Any
             }
             return static_cast<T>( convert<int>().value() );
         }
-
-        if( _any.empty() )
-        {
-            throw std::runtime_error("Any::cast failed because it is empty");
-        }
-        if (_any.type() == typeid(T))
-        {
-            return linb::any_cast<T>(_any);
-        }
         else
         {
-            auto res = convert<T>();
-            if( !res )
-            {
+          if( _any.empty() )
+          {
+              throw std::runtime_error("Any::cast failed because it is empty");
+          }
+          if (_any.type() == typeid(T))
+          {
+              return linb::any_cast<T>(_any);
+          }
+          else
+          {
+              if(auto res = convert<T>())
+              {
+                return res.value();
+              }
+              else {
                 throw std::runtime_error( res.error() );
-            }
-            return res.value();
+              }
+          }
         }
     }
 

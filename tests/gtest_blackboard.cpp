@@ -295,3 +295,58 @@ TEST(BlackboardTest, CheckTypeSafety)
   is = std::is_constructible<BT::StringView, std::string>::value;
   ASSERT_TRUE(is);
 }
+
+TEST(BlackboardTest, AnyPtrLocked)
+{
+  auto blackboard = Blackboard::create();
+  long value = 0;
+  long* test_obj = &value;
+
+  blackboard->set("testmove", test_obj);
+
+  auto const timeout = std::chrono::milliseconds(250);
+
+  // Safe way to access a pointer
+  {
+    std::atomic_llong cycles = 0;
+    auto func = [&]()
+    {
+      auto start = std::chrono::system_clock::now();
+      while( (std::chrono::system_clock::now() - start) < timeout)
+      {
+        auto r1 = blackboard->getAnyLocked("testmove");
+        auto value_ptr = (r1.get()->cast<long*>());
+        (*value_ptr)++;
+        cycles++;
+      }
+    };
+
+    auto t1 = std::thread(func); // other thread
+    func(); // this thread
+    t1.join();
+
+    // number of increments and cycles is expected to be the same
+    ASSERT_EQ(cycles, value);
+  }
+  //------------------
+  // UNSAFE way to access a pointer
+  {
+    std::atomic_llong cycles = 0;
+    auto func = [&]()
+    {
+      auto start = std::chrono::system_clock::now();
+      while( (std::chrono::system_clock::now() - start) < timeout)
+      {
+        auto value_ptr = blackboard->get<long*>("testmove");
+        (*value_ptr)++;
+        cycles++;
+      }
+    };
+
+    auto t1 = std::thread(func);
+    func();
+    t1.join();
+    // since the operation value_ptr++ is not thread safe, cycle and value will unlikely be the same
+    ASSERT_NE(cycles, value);
+  }
+}

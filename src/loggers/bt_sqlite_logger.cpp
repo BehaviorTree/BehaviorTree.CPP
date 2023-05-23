@@ -49,15 +49,15 @@ SqliteLogger::SqliteLogger(const Tree &tree,
   {
     session_id_ = res.Get(0);
   }
-  queue_thread_ = std::thread(&SqliteLogger::threadLoop, this);
+  writer_thread_ = std::thread(&SqliteLogger::writerLoop, this);
 }
 
 SqliteLogger::~SqliteLogger()
 {
-  flush();
   loop_ = false;
-  queue_push_cv_.notify_one();
-  queue_thread_.join();
+  queue_cv_.notify_one();
+  writer_thread_.join();
+  flush();
   sqlite::Statement(*db_, "PRAGMA optimize;");
 }
 
@@ -96,46 +96,46 @@ void SqliteLogger::callback(Duration timestamp,
 
   {
     std::scoped_lock lk(queue_mutex_);
-    write_queue_.push_back(trans);
+    transitions_queue_.push_back(trans);
   }
-  queue_push_cv_.notify_one();
+  queue_cv_.notify_one();
 }
 
-void SqliteLogger::threadLoop()
+void SqliteLogger::writerLoop()
 {
+  std::deque<Transition> transitions;
+
   while(loop_)
   {
-    std::unique_lock lk(queue_mutex_);
-    queue_push_cv_.wait(lk, [this]() {
-      return !write_queue_.empty() || !loop_;
-    });
-
-    if(!loop_) {
-      break;
+    transitions.clear();
+    {
+      std::unique_lock lk(queue_mutex_);
+      queue_cv_.wait(lk, [this]() {
+        return !transitions_queue_.empty() || !loop_;
+      });
+      std::swap(transitions, transitions_queue_);
     }
 
-    auto const trans = write_queue_.front();
-    write_queue_.pop_front();
-    lk.unlock();
-    queue_pop_cv_.notify_all();
+    while(!transitions.empty())
+    {
+      auto const trans = transitions.front();
+      transitions.pop_front();
 
-    sqlite::Statement(
-        *db_,
-        "INSERT INTO Transitions VALUES (?, ?, ?, ?, ?)",
-        trans.timestamp,
-        session_id_,
-        trans.node_uid,
-        trans.duration,
-        static_cast<int>(trans.status));
+      sqlite::Statement(
+          *db_,
+          "INSERT INTO Transitions VALUES (?, ?, ?, ?, ?)",
+          trans.timestamp,
+          session_id_,
+          trans.node_uid,
+          trans.duration,
+          static_cast<int>(trans.status));
+    }
   }
 }
 
 void BT::SqliteLogger::flush()
 {
-  std::unique_lock lk(queue_mutex_);
-  queue_pop_cv_.wait(lk, [&]() {
-    return write_queue_.empty();
-  });
+  sqlite3_db_cacheflush(db_->GetPtr());
 }
 
 }

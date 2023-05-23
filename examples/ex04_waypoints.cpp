@@ -1,6 +1,6 @@
 #include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/actions/pop_from_queue.hpp"
-#include "behaviortree_cpp/decorators/consume_queue.h"
+#include "behaviortree_cpp/decorators/loop_node.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include <list>
 
 using namespace BT;
@@ -30,67 +30,45 @@ public:
 
   NodeStatus tick() override
   {
-    auto queue = std::make_shared<ProtectedQueue<Pose2D>>();
-    for (int i = 0; i < 10; i++)
+    auto shared_queue = std::make_shared<std::deque<Pose2D>>();
+    for (int i = 0; i < 5; i++)
     {
-      queue->items.push_back(Pose2D{double(i), double(i), 0});
+      shared_queue->push_back(Pose2D{double(i), double(i), 0});
     }
-    setOutput("waypoints", queue);
+    setOutput("waypoints", shared_queue);
     return NodeStatus::SUCCESS;
   }
 
   static PortsList providedPorts()
   {
-    return {OutputPort<std::shared_ptr<ProtectedQueue<Pose2D>>>("waypoints")};
+    return {OutputPort<SharedQueue<Pose2D>>("waypoints")};
   }
 };
 //--------------------------------------------------------------
-class UseWaypointQueue : public ThreadedAction
+class PrintNumber : public SyncActionNode
 {
-public:
-  UseWaypointQueue(const std::string& name, const NodeConfig& config) :
-    ThreadedAction(name, config)
+  public:
+  PrintNumber(const std::string& name, const NodeConfig& config) :
+        SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
-    std::shared_ptr<ProtectedQueue<Pose2D>> queue;
-    if (getInput("waypoints", queue) && queue)
-    {
-      Pose2D wp;
-      {
-        // Since we are using reference semantic (the queue is wrapped in
-        // a shared_ptr) to modify the queue inside the blackboard,
-        // we are effectively bypassing the thread safety of the BB.
-        // This is the reason why we need to use a mutex explicitly.
-        std::unique_lock<std::mutex> lk(queue->mtx);
-
-        auto& waypoints = queue->items;
-        if (waypoints.empty())
-        {
-          return NodeStatus::FAILURE;
-        }
-        wp = waypoints.front();
-        waypoints.pop_front();
-
-      }   // end mutex lock
-
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      std::cout << "Using waypoint: " << wp.x << "/" << wp.y << std::endl;
-
+    double value;
+    if (getInput("value", value)) {
+      std::cout << "PrintNumber: " << value << "\n";
       return NodeStatus::SUCCESS;
     }
-    else
-    {
-      return NodeStatus::FAILURE;
-    }
+    return NodeStatus::FAILURE;
   }
 
   static PortsList providedPorts()
   {
-    return {InputPort<std::shared_ptr<ProtectedQueue<Pose2D>>>("waypoints")};
+    return {InputPort<double>("value")};
   }
 };
+
+//--------------------------------------------------------------
 
 /**
  * @brief Simple Action that uses the output of PopFromQueue<Pose2D> or ConsumeQueue<Pose2D>
@@ -124,46 +102,18 @@ public:
 };
 
 // clang-format off
-
-static const char* xml_implicit = R"(
- <root BTCPP_format="4" >
-     <BehaviorTree ID="TreeImplicit">
-        <Sequence>
-            <GenerateWaypoints waypoints="{waypoints}" />
-            <KeepRunningUntilFailure>
-                <UseWaypointQueue waypoints="{waypoints}" />
-            </KeepRunningUntilFailure>
-        </Sequence>
-     </BehaviorTree>
- </root>
- )";
-
-
-static const char* xml_A = R"(
+static const char* xml_tree = R"(
  <root BTCPP_format="4" >
      <BehaviorTree ID="TreeA">
         <Sequence>
-            <GenerateWaypoints waypoints="{waypoints}" />
-            <QueueSize queue="{waypoints}" size="{wp_size}" />
-            <Repeat num_cycles="{wp_size}" >
-                <Sequence>
-                    <PopFromQueue  queue="{waypoints}" popped_item="{wp}" />
-                    <UseWaypoint waypoint="{wp}" />
-                </Sequence>
-            </Repeat>
-        </Sequence>
-     </BehaviorTree>
- </root>
- )";
+            <LoopDouble queue="1;2;3"  value="{number}">
+              <PrintNumber value="{number}" />
+            </LoopDouble>
 
-static const char* xml_B = R"(
- <root BTCPP_format="4" >
-     <BehaviorTree ID="TreeB">
-        <Sequence>
             <GenerateWaypoints waypoints="{waypoints}" />
-            <ConsumeQueue queue="{waypoints}" popped_item="{wp}">
-                <UseWaypoint waypoint="{wp}" />
-            </ConsumeQueue>
+            <LoopPose queue="{waypoints}"  value="{wp}">
+              <UseWaypoint waypoint="{wp}" />
+            </LoopPose>
         </Sequence>
      </BehaviorTree>
  </root>
@@ -174,21 +124,19 @@ static const char* xml_B = R"(
 int main()
 {
   BehaviorTreeFactory factory;
-
-  factory.registerNodeType<PopFromQueue<Pose2D>>("PopFromQueue");
-  factory.registerNodeType<QueueSize<Pose2D>>("QueueSize");
-  factory.registerNodeType<ConsumeQueue<Pose2D>>("ConsumeQueue");
+  
+  factory.registerNodeType<LoopNode<Pose2D>>("LoopPose");
 
   factory.registerNodeType<UseWaypoint>("UseWaypoint");
-  factory.registerNodeType<UseWaypointQueue>("UseWaypointQueue");
+  factory.registerNodeType<PrintNumber>("PrintNumber");
   factory.registerNodeType<GenerateWaypoints>("GenerateWaypoints");
 
-  for (const auto& xml_text : {xml_implicit, xml_A, xml_B})
-  {
-    auto tree = factory.createTreeFromText(xml_text);
-    tree.tickWhileRunning();
-    std::cout << "--------------" << std::endl;
-  }
+  auto tree = factory.createTreeFromText(xml_tree);
+
+  StdCoutLogger logger(tree);
+  logger.enableTransitionToIdle(false);
+
+  tree.tickWhileRunning();
 
   return 0;
 }

@@ -253,9 +253,9 @@ TEST(BehaviorTreeFactory, SubTreeWithRemapping)
   ASSERT_EQ(main_bb->get<std::string>("talk_out"), "done!");
 
   // these ports should not be present in the subtree TalkToMe
-  ASSERT_FALSE(talk_bb->getAny("talk_hello"));
-  ASSERT_FALSE(talk_bb->getAny("talk_bye"));
-  ASSERT_FALSE(talk_bb->getAny("talk_out"));
+  ASSERT_FALSE(talk_bb->getAnyLocked("talk_hello"));
+  ASSERT_FALSE(talk_bb->getAnyLocked("talk_bye"));
+  ASSERT_FALSE(talk_bb->getAnyLocked("talk_out"));
 }
 
 std::string FilePath(const std::filesystem::path& relative_path)

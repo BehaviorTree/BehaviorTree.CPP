@@ -27,27 +27,6 @@ NodeStatus TreeNode::executeTick()
 {
   auto new_status = status_;
 
-  // injected pre-callback
-  if(status_ == NodeStatus::IDLE)
-  {
-    PreTickCallback  callback;
-    {
-      std::unique_lock lk(callback_injection_mutex_);
-      callback = pre_condition_callback_;
-    }
-    if(callback)
-    {
-      auto override_status = callback(*this);
-      if(isStatusCompleted(override_status))
-      {
-        // return immediately and don't execute the actual tick()
-        new_status = override_status;
-        setStatus(new_status);
-        return new_status;
-      }
-    }
-  }
-
   // a pre-condition may return the new status.
   // In this case it override the actual tick()
   if (auto precond = checkPreConditions())
@@ -56,8 +35,31 @@ NodeStatus TreeNode::executeTick()
   }
   else
   {
-    //Call the actual tick
-    new_status = tick();
+    // injected pre-callback
+    bool substituted = false;
+    if(status_ == NodeStatus::IDLE)
+    {
+      PreTickCallback  callback;
+      {
+        std::unique_lock lk(callback_injection_mutex_);
+        callback = substitution_callback_;
+      }
+      if(callback)
+      {
+        auto override_status = callback(*this);
+        if(isStatusCompleted(override_status))
+        {
+          // don't execute the actual tick()
+          substituted = true;
+          new_status = override_status;
+        }
+      }
+    }
+
+    // Call the ACTUAL tick
+    if(!substituted){
+      new_status = tick();
+    }
   }
 
   checkPostConditions(new_status);
@@ -242,7 +244,7 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 void TreeNode::setPreTickFunction(PreTickCallback callback)
 {
   std::unique_lock lk(callback_injection_mutex_);
-  pre_condition_callback_ = callback;
+  substitution_callback_ = callback;
 }
 
 void TreeNode::setPostTickFunction(PostTickCallback callback)
@@ -276,10 +278,11 @@ StringView TreeNode::getRawPortValue(const std::string& key) const
   auto remap_it = config_.input_ports.find(key);
   if (remap_it == config_.input_ports.end())
   {
-    throw std::logic_error(StrCat("getInput() failed because "
-                                  "NodeConfig::input_ports "
-                                  "does not contain the key: [",
-                                  key, "]"));
+    remap_it = config_.output_ports.find(key);
+    if (remap_it == config_.output_ports.end())
+    {
+      throw std::logic_error(StrCat("[", key, "] not found"));
+    }
   }
   return remap_it->second;
 }
@@ -406,6 +409,15 @@ std::string toStr<PostCond>(PostCond pre)
     default:
       return "Undefined";
   }
+}
+
+AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string &key)
+{
+  if(auto remapped_key = getRemappedKey(key, getRawPortValue(key)))
+  {
+    return config_.blackboard->getAnyLocked(std::string(*remapped_key));
+  }
+  return {};
 }
 
 }   // namespace BT

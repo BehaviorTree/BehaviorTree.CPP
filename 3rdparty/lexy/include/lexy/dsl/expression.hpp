@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_EXPRESSION_HPP_INCLUDED
@@ -520,7 +520,7 @@ struct _expr : rule_base
             return result;
         }
 
-//        return false; // unreachable
+        return false; // unreachable
     }
 
     template <typename NextParser>

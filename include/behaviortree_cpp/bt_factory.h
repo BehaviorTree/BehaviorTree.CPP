@@ -79,6 +79,8 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
 
 constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 
+bool WildcardMatch(const std::string &str, StringView filter);
+
 /**
  * @brief Struct used to store a tree.
  * If this object goes out of scope, the tree is destroyed.
@@ -139,7 +141,7 @@ public:
     rootNode()->resetStatus();
   }
 
-  TreeNode* rootNode() const;
+  [[nodiscard]] TreeNode* rootNode() const;
 
   /// Sleep for a certain amount of time.
   /// This sleep could be interrupted by the method
@@ -165,7 +167,7 @@ public:
   NodeStatus
   tickWhileRunning(std::chrono::milliseconds sleep_time = std::chrono::milliseconds(10));
 
-  Blackboard::Ptr rootBlackboard();
+  [[nodiscard]] Blackboard::Ptr rootBlackboard();
 
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(const TreeNode*)>& visitor);
@@ -173,7 +175,27 @@ public:
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(TreeNode*)>& visitor);
 
-  uint16_t getUID();
+  [[nodiscard]] uint16_t getUID();
+
+  /// Get a list of nodes which fullPath() match a wildcard filter and
+  /// a given path. Example:
+  ///
+  /// move_nodes = tree.getNodesByPath<MoveBaseNode>("move_*");
+  ///
+  template <typename NodeType = BT::TreeNode> [[nodiscard]]
+  std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) {
+    std::vector<const TreeNode*> nodes;
+    for (auto const& subtree : subtrees) {
+      for (auto const& node : subtree->nodes) {
+        if(auto node_recast = dynamic_cast<const NodeType*>(node.get())) {
+          if(WildcardMatch(node->fullPath(), wildcard_filter)) {
+            nodes.push_back(node.get());
+          }
+        }
+      }
+    }
+    return nodes;
+  }
 
 
 private:
@@ -349,6 +371,9 @@ public:
   template <typename T, typename... ExtraArgs>
   void registerNodeType(const std::string& ID, ExtraArgs... args)
   {
+    // check first if the given class is abstract
+    static_assert(!std::is_abstract_v<T>, "The given type can't be abstract");
+
     constexpr bool param_constructable =
         std::is_constructible<T, const std::string&, const NodeConfig&, ExtraArgs...>::value;
     constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;

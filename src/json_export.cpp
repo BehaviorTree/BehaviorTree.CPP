@@ -44,10 +44,12 @@ nlohmann::json ExportBlackboardToJSON(Blackboard &blackboard)
   for(auto entry_name: blackboard.getKeys())
   {
     std::string name(entry_name);
-    std::unique_lock lk(blackboard.entryMutex());
-    if(auto any_ptr = blackboard.getAny(name))
+    if(auto any_ref = blackboard.getAnyLocked(name))
     {
-      JsonExporter::get().toJson(*any_ptr, dest[name]);
+      if(auto any_ptr = any_ref.get())
+      {
+        JsonExporter::get().toJson(*any_ptr, dest[name]);
+      }
     }
   }
   return dest;

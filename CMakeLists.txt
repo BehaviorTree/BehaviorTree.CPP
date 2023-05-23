@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.1.1)
+project(behaviortree_cpp VERSION 4.2.0 LANGUAGES C CXX)
 
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
@@ -119,7 +119,7 @@ list(APPEND BT_SOURCE
     src/controls/while_do_else_node.cpp
 
     src/loggers/bt_cout_logger.cpp
-    src/loggers/bt_file_logger.cpp
+    src/loggers/bt_file_logger_v2.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
 

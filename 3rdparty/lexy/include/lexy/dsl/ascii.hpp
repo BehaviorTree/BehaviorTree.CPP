@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_ASCII_HPP_INCLUDED
@@ -395,9 +395,9 @@ struct _graph : char_class_base<_graph>
         // If we subtract one we turn 0x21-0x01 into column 0 and 0x00 to a value definitely not in
         // column 0, so need to check both.
         constexpr auto mask       = lexy::_detail::swar_fill_compl(char_type(0b11111));
-        constexpr auto unexpected = lexy::_detail::swar_fill(char_type(0b00'00000));
         constexpr auto offset_low = lexy::_detail::swar_fill(char_type(1));
-        return (c & mask) != unexpected && ((c - offset_low) & mask) != unexpected;
+        return !lexy::_detail::swar_has_zero<char_type>(c & mask)
+               && !lexy::_detail::swar_has_zero<char_type>((c - offset_low) & mask);
     }
 };
 inline constexpr auto graph = _graph{};
@@ -437,9 +437,8 @@ struct _print : char_class_base<_print>
         }
 
         // Then we must not have a character in column 0.
-        constexpr auto mask       = lexy::_detail::swar_fill_compl(char_type(0b11111));
-        constexpr auto unexpected = lexy::_detail::swar_fill(char_type(0b00'00000));
-        return (c & mask) != unexpected;
+        constexpr auto mask = lexy::_detail::swar_fill_compl(char_type(0b11111));
+        return !lexy::_detail::swar_has_zero<char_type>(c & mask);
     }
 };
 inline constexpr auto print = _print{};
