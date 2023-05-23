@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.0 (2023-05-23)
+------------------
 * add more informative IDLE status
 * more informative error message when trying to register virtual classes
 * fixes and simpler getAnyLocked
