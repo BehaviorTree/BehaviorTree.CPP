@@ -12,8 +12,9 @@
 
 #include <gtest/gtest.h>
 #include "action_test_node.h"
+#include "behaviortree_cpp/loggers/bt_observer.h"
 #include "condition_test_node.h"
-#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;
@@ -392,4 +393,39 @@ TEST_F(ComplexParallelTest, ConditionRightFalseAction1Done)
   ASSERT_EQ(NodeStatus::IDLE, action_R.status());
 
   ASSERT_EQ(NodeStatus::SUCCESS, state);
+}
+
+TEST(FailingParallel, FailingParallel)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <Parallel name="parallel" success_count="1" failure_count="3">
+      <GoodTest name="first"/>
+      <BadTest name="second"/>
+      <GoodTest name="third"/>
+    </Parallel>
+  </BehaviorTree>
+</root>  )";
+  using namespace BT;
+
+  BehaviorTreeFactory factory;
+
+  BT::TestNodeConfig good_config;
+  good_config.async_delay = std::chrono::milliseconds(300);
+  good_config.return_status = NodeStatus::SUCCESS;
+  factory.registerNodeType<BT::TestNode>("GoodTest", good_config);
+
+  BT::TestNodeConfig bad_config;
+  bad_config.async_delay = std::chrono::milliseconds(100);
+  bad_config.return_status = NodeStatus::FAILURE;
+  factory.registerNodeType<BT::TestNode>("BadTest", bad_config);
+
+  auto tree = factory.createTreeFromText(xml_text);
+  BT::TreeObserver observer(tree);
+
+  auto state = tree.tickWhileRunning();
+  // since at least one succeeded.
+  ASSERT_EQ(NodeStatus::SUCCESS, state);
+  ASSERT_EQ( 1, observer.getStatistics("second").failure_count);
 }
