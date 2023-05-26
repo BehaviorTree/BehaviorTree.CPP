@@ -198,6 +198,7 @@ public:
       Any new_value(value);
 
       // special case: entry exists but it is not strongly typed... yet
+      // std::string_view entries are the only entries that are strongly-typed from the beginning.
       if (!port_info.isStronglyTyped())
       {
         // Use the new type to create a new entry that is strongly typed.
@@ -214,10 +215,10 @@ public:
           previous_type != new_value.type())
       {
         bool mismatching = true;
-        if (std::is_constructible<StringView, T>::value)
+        if constexpr (std::is_constructible<StringView, T>::value)
         {
-          Any any_from_string = port_info.parseString(value);
-          if (any_from_string.empty() == false)
+          Any any_from_string = Any(std::string(value));
+          if (!any_from_string.empty())
           {
             mismatching = false;
             new_value = std::move(any_from_string);
