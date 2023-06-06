@@ -1008,7 +1008,8 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
 {
   XMLDocument doc;
 
-  XMLElement* rootXML = doc.NewElement("root BTCPP_format=\"4\"");
+  XMLElement* rootXML = doc.NewElement("root");
+  rootXML->SetAttribute("BTCPP_format", "4");
   doc.InsertFirstChild(rootXML);
 
   XMLElement* model_root = doc.NewElement("TreeNodesModel");
