@@ -94,6 +94,10 @@ class Any
     {
     }
 
+    explicit Any(const std::string_view& str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
+    {
+    }
+
     // all the other integrals are casted to int64_t
     template <typename T>
     explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( typeid(T) )

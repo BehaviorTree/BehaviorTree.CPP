@@ -350,3 +350,13 @@ TEST(BlackboardTest, AnyPtrLocked)
     ASSERT_NE(cycles, value);
   }
 }
+
+TEST(BlackboardTest, SetStringView)
+{
+  auto bb = Blackboard::create();
+
+  constexpr BT::StringView string_view_const = "BehaviorTreeCpp";
+  bb->set("string_view", string_view_const);
+
+  ASSERT_NO_THROW(bb->set("string_view", string_view_const));
+}

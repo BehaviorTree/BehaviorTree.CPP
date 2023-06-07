@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <limits>
 #include <cstdint>
+#include <string_view>
 
 namespace SafeAny{
 
@@ -17,6 +18,9 @@ class SimpleString {
   public:
 
   SimpleString(const std::string &str): SimpleString(str.data(), str.size())
+  {}
+
+  SimpleString(const std::string_view &str): SimpleString(str.data(), str.size())
   {}
 
   SimpleString(const SimpleString& other): SimpleString(other.data(), other.size())

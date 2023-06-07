@@ -173,17 +173,10 @@ public:
     auto it = storage_.find(key);
     if (it == storage_.end())
     {
-      // Not defined before. Let's create an entry with a generic PortInfo
-      if (std::is_constructible<StringView, T>::value)
-      {
-        PortInfo new_port(PortDirection::INOUT, typeid(std::string), {});
-        storage_.emplace(key, std::make_unique<Entry>(Any(value), new_port));
-      }
-      else
-      {
-        PortInfo new_port(PortDirection::INOUT, typeid(T), {});
-        storage_.emplace(key, std::make_unique<Entry>(Any(value), new_port));
-      }
+      // create a new entry
+      Any new_value(value);
+      PortInfo new_port(PortDirection::INOUT, new_value.type(), {});
+      storage_.emplace(key, std::make_unique<Entry>(std::move(new_value), new_port));
     }
     else
     {
@@ -229,8 +222,7 @@ public:
           debugMessage();
 
           throw LogicError("Blackboard::set() failed: once declared, the type of a port "
-                           "shall not change. "
-                           "Declared type [",
+                           "shall not change. Declared type [",
                            BT::demangle(previous_type), "] != current type [",
                            BT::demangle(typeid(T)), "]");
         }
