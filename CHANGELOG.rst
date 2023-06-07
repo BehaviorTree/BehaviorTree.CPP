@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.2.1 (2023-06-07)
+------------------
 * Fix `#570 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/570>`_: string_view set in blackboard
 * Fix missing attribute in generated XML (writeTreeNodesModelXML)
 * Allow registration of TestNode
