@@ -139,6 +139,11 @@ public:
   {
     if (auto any_ref = getAnyLocked(key))
     {
+      const auto& any = any_ref.get();
+      if(any->empty())
+      {
+        throw RuntimeError("Blackboard::get() error. Entry [", key, "] hasn't been initialized, yet");
+      }
       return any_ref.get()->cast<T>();
     }
     else
