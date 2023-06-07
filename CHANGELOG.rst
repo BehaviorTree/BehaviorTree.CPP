@@ -2,6 +2,13 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix `#570 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/570>`_: string_view set in blackboard
+* Fix missing attribute in generated XML (writeTreeNodesModelXML)
+* Allow registration of TestNode
+* Contributors: Davide Faconti, Oleksandr Perepadia
+
 4.2.0 (2023-05-23)
 ------------------
 * add more informative IDLE status
