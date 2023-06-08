@@ -18,7 +18,7 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
   //-------------------------------------
   file_stream_.open(filepath, std::ofstream::binary | std::ofstream::out);
 
-  std::string const xml = WriteTreeToXML(tree, true);
+  std::string const xml = WriteTreeToXML(tree, true, true);
 
   // serialize the length of the buffer in the first 4 bytes
   char write_buffer[8];

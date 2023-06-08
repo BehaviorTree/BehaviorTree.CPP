@@ -59,7 +59,7 @@ int main()
 
 
   std::cout << "----------- XML file  ----------\n"
-            << BT::WriteTreeToXML(tree, false)
+            << BT::WriteTreeToXML(tree, false, false)
             << "--------------------------------\n";
 
   // Connect the Groot2Publisher. This will allow Groot2 to

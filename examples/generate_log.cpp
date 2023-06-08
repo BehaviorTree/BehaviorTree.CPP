@@ -2,6 +2,7 @@
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/loggers/bt_file_logger_v2.h"
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
 
 // clang-format on
 
@@ -26,6 +27,7 @@ int main(int argc, char** argv)
     tree = factory.createTreeFromFile(file);
   }
 
+  BT::StdCoutLogger cout_logger(tree);
   BT::Groot2Publisher publisher(tree);
   BT::FileLogger2 file_logger(tree, "./generated_log.btlog");
   BT::SqliteLogger sqlite_logger(tree, "./generated_log.db3");

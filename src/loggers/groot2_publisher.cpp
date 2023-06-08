@@ -73,7 +73,7 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
     Groot2Publisher::used_ports.insert(server_port+1);
   }
 
-  tree_xml_ = WriteTreeToXML(tree, true);
+  tree_xml_ = WriteTreeToXML(tree, true, true);
 
   //-------------------------------
   // Prepare the status buffer

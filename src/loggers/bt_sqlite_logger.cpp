@@ -13,10 +13,6 @@ SqliteLogger::SqliteLogger(const Tree &tree,
 
   db_ = std::make_unique<sqlite::Connection>(file.string());
 
-  sqlite::Statement(*db_, "PRAGMA journal_mode=WAL;");
-  sqlite::Statement(*db_, "PRAGMA synchronous = normal;");
-  sqlite::Statement(*db_, "PRAGMA temp_store = memory;");
-
   sqlite::Statement(*db_,
                     "CREATE TABLE IF NOT EXISTS Transitions ("
                     "timestamp  INTEGER PRIMARY KEY NOT NULL, "
@@ -37,7 +33,7 @@ SqliteLogger::SqliteLogger(const Tree &tree,
     sqlite::Statement(*db_, "DELETE from Definitions;");
   }
 
-  auto tree_xml = WriteTreeToXML(tree, true);
+  auto tree_xml = WriteTreeToXML(tree, true, true);
   sqlite::Statement(*db_,
                     "INSERT into Definitions (date, xml_tree) "
                     "VALUES (datetime('now','localtime'),?);",

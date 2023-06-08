@@ -909,7 +909,8 @@ void addNodeModelToXML(const TreeNodeManifest& model,
 void addTreeToXML(const Tree& tree,
                   XMLDocument& doc,
                   XMLElement* rootXML,
-                  bool add_metadata)
+                  bool add_metadata,
+                  bool add_builtin_models)
 {  
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node,
@@ -991,7 +992,7 @@ void addTreeToXML(const Tree& tree,
   std::map<std::string, const TreeNodeManifest*> ordered_models;
   for (const auto& [registration_ID, model] : tree.manifests)
   {
-    if(temp_factory.builtinNodes().count(registration_ID) == 0)
+    if(add_builtin_models || !temp_factory.builtinNodes().count(registration_ID))
     {
       ordered_models.insert( {registration_ID, &model} );
     }
@@ -1052,7 +1053,7 @@ Tree buildTreeFromFile(const BehaviorTreeFactory& factory,
   return parser.instantiateTree(blackboard);
 }
 
-std::string WriteTreeToXML(const Tree &tree, bool add_metadata)
+std::string WriteTreeToXML(const Tree &tree, bool add_metadata, bool add_builtin_models)
 {
   XMLDocument doc;
 
@@ -1060,7 +1061,7 @@ std::string WriteTreeToXML(const Tree &tree, bool add_metadata)
   rootXML->SetAttribute("BTCPP_format", 4);
   doc.InsertFirstChild(rootXML);
 
-  addTreeToXML(tree, doc, rootXML, add_metadata);
+  addTreeToXML(tree, doc, rootXML, add_metadata, add_builtin_models);
 
   XMLPrinter printer;
   doc.Print(&printer);
