@@ -182,9 +182,6 @@ public:
   // Notify the tree should be ticked again()
   void emitStateChanged();
 
-  /// Equivalent to setStatus(NodeStatus::IDLE)
-  void resetStatus();
-
 protected:
   /// Method to be implemented by the user
   virtual BT::NodeStatus tick() = 0;
@@ -202,6 +199,9 @@ protected:
   void modifyPortsRemapping(const PortsRemapping& new_remapping);
 
   void setStatus(NodeStatus new_status);
+
+  /// Equivalent to setStatus(NodeStatus::IDLE)
+  void resetStatus();
 
 private:
   const std::string name_;
