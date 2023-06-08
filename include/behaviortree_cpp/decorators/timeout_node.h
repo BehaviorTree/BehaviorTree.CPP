@@ -1,8 +1,8 @@
 #pragma once
 
 #include "behaviortree_cpp/decorator_node.h"
+#include "behaviortree_cpp/utils/timer_queue.h"
 #include <atomic>
-#include "behaviortree_cpp/decorators/timer_queue.h"
 
 namespace BT
 {

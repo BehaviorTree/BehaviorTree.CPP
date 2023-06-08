@@ -14,7 +14,7 @@
 #pragma once
 
 #include "behaviortree_cpp/action_node.h"
-#include "behaviortree_cpp/decorators/timer_queue.h"
+#include "behaviortree_cpp/utils/timer_queue.h"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 
 namespace BT

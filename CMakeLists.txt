@@ -101,6 +101,7 @@ list(APPEND BT_SOURCE
     src/xml_parsing.cpp
 
     src/actions/test_node.cpp
+    src/actions/sleep_node.cpp
 
     src/decorators/inverter_node.cpp
     src/decorators/repeat_node.cpp
