@@ -30,6 +30,7 @@ CompileExample("t11_replace_rules")
 
 if(BTCPP_GROOT_INTERFACE AND BTCPP_SQLITE_LOGGING)
 CompileExample("t12_groot_howto")
+CompileExample("generate_log")
 endif()
 
 CompileExample("ex01_wrap_legacy")
