@@ -64,10 +64,10 @@ enum class PostCond
 };
 
 template <>
-std::string toStr<BT::PostCond>(BT::PostCond status);
+std::string toStr<BT::PostCond>(const BT::PostCond& status);
 
 template <>
-std::string toStr<BT::PreCond>(BT::PreCond status);
+std::string toStr<BT::PreCond>(const BT::PreCond& status);
 
 using ScriptingEnumsRegistry = std::unordered_map<std::string, int>;
 

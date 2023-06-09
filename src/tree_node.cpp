@@ -376,7 +376,7 @@ void TreeNode::modifyPortsRemapping(const PortsRemapping& new_remapping)
 }
 
 template <>
-std::string toStr<PreCond>(PreCond pre)
+std::string toStr<PreCond>(const PreCond& pre)
 {
   switch (pre)
   {
@@ -394,7 +394,7 @@ std::string toStr<PreCond>(PreCond pre)
 }
 
 template <>
-std::string toStr<PostCond>(PostCond pre)
+std::string toStr<PostCond>(const PostCond& pre)
 {
   switch (pre)
   {

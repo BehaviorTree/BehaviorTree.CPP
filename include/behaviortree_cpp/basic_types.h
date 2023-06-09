@@ -144,20 +144,30 @@ inline StringConverter GetAnyFromStringFunctor<void>()
 
 //------------------------------------------------------------------
 
-template <typename T> [[nodiscard]]
-std::string toStr(T value)
+template<typename T> [[nodiscard]]
+std::string toStr(const T& value)
 {
+  static_assert(std::is_arithmetic_v<T>,
+                "You need a template specialization of BT::toStr() and "
+                "it must be consistent with the implementation of BT::convertFromString");
   return std::to_string(value);
 }
 
-std::string toStr(const std::string& value);
+template <> [[nodiscard]] inline
+std::string toStr<bool>(const bool& value) {
+  return value ? "true" : "false";
+}
 
-template <>
-std::string toStr<BT::NodeStatus>(BT::NodeStatus status);
+template <> [[nodiscard]]
+std::string toStr<std::string>(const std::string& value);
+
+template <> [[nodiscard]]
+std::string toStr<BT::NodeStatus>(const BT::NodeStatus& status);
 
 /**
  * @brief toStr converts NodeStatus to string. Optionally colored.
  */
+[[nodiscard]]
 std::string toStr(BT::NodeStatus status, bool colored);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
@@ -166,12 +176,12 @@ std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
  * @brief toStr converts NodeType to string.
  */
 template <> [[nodiscard]]
-std::string toStr<BT::NodeType>(BT::NodeType type);
+std::string toStr<BT::NodeType>(const BT::NodeType& type);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
 
 template <> [[nodiscard]]
-std::string toStr<BT::PortDirection>(BT::PortDirection direction);
+std::string toStr<BT::PortDirection>(const BT::PortDirection& direction);
 
 std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
 
@@ -203,6 +213,7 @@ using enable_if_not = typename std::enable_if<!Predicate::value>::type*;
  * */
 template <typename T>
 using Expected = nonstd::expected<T, std::string>;
+
 #ifdef USE_BTCPP3_OLD_NAMES
 // note: we also use the name Optional instead of expected because it is more intuitive
 // for users that are not up to date with "modern" C++

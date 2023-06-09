@@ -7,7 +7,7 @@
 namespace BT
 {
 template <>
-std::string toStr<NodeStatus>(NodeStatus status)
+std::string toStr<NodeStatus>(const NodeStatus& status)
 {
   switch (status)
   {
@@ -63,7 +63,7 @@ std::string toStr(NodeStatus status, bool colored)
 }
 
 template <>
-std::string toStr<PortDirection>(PortDirection direction)
+std::string toStr<PortDirection>(const PortDirection& direction)
 {
   switch (direction)
   {
@@ -78,7 +78,7 @@ std::string toStr<PortDirection>(PortDirection direction)
 }
 
 template <>
-std::string toStr<NodeType>(NodeType type)
+std::string toStr<NodeType>(const NodeType& type)
 {
   switch (type)
   {
