@@ -200,6 +200,9 @@ protected:
 
   void setStatus(NodeStatus new_status);
 
+  /// Equivalent to setStatus(NodeStatus::IDLE)
+  void resetStatus();
+
 private:
   const std::string name_;
 
@@ -222,9 +225,6 @@ private:
   PostTickOverrideCallback post_condition_callback_;
 
   std::shared_ptr<WakeUpSignal> wake_up_;
-
-  /// Equivalent to setStatus(NodeStatus::IDLE)
-  void resetStatus();
 };
 
 //-------------------------------------------------------
