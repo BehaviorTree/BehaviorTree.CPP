@@ -25,7 +25,13 @@ std::string toStr<NodeStatus>(const NodeStatus& status)
   return "";
 }
 
-std::string toStr(const std::string &value)
+template <> [[nodiscard]]
+std::string toStr<bool>(const bool& value) {
+  return value ? "true" : "false";
+}
+
+template <>
+std::string toStr<std::string>(const std::string &value)
 {
   return value;
 }

@@ -83,46 +83,51 @@ inline T convertFromString(StringView /*str*/)
                    type_name);
 }
 
-template <>
+template <> [[nodiscard]]
 std::string convertFromString<std::string>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 const char* convertFromString<const char*>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 int convertFromString<int>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 unsigned convertFromString<unsigned>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 long convertFromString<long>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 unsigned long convertFromString<unsigned long>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 float convertFromString<float>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 double convertFromString<double>(StringView str);
 
-template <>   // Integer numbers separated by the character ";"
+// Integer numbers separated by the character ";"
+template <> [[nodiscard]]
 std::vector<int> convertFromString<std::vector<int>>(StringView str);
 
-template <>   // Real numbers separated by the character ";"
+// Real numbers separated by the character ";"
+template <> [[nodiscard]]
 std::vector<double> convertFromString<std::vector<double>>(StringView str);
 
-template <>   // This recognizes either 0/1, true/false, TRUE/FALSE
+// This recognizes either 0/1, true/false, TRUE/FALSE
+template <> [[nodiscard]]
 bool convertFromString<bool>(StringView str);
 
-template <>   // Names with all capital letters
+// Names with all capital letters
+template <> [[nodiscard]]
 NodeStatus convertFromString<NodeStatus>(StringView str);
 
-template <>   // Names with all capital letters
+// Names with all capital letters
+template <> [[nodiscard]]
 NodeType convertFromString<NodeType>(StringView str);
 
-template <>
+template <> [[nodiscard]]
 PortDirection convertFromString<PortDirection>(StringView str);
 
 typedef std::function<Any(StringView)> StringConverter;
@@ -130,13 +135,13 @@ typedef std::function<Any(StringView)> StringConverter;
 typedef std::unordered_map<const std::type_info*, StringConverter> StringConvertersMap;
 
 // helper function
-template <typename T>
+template <typename T> [[nodiscard]]
 inline StringConverter GetAnyFromStringFunctor()
 {
   return [](StringView str) { return Any(convertFromString<T>(str)); };
 }
 
-template <>
+template <> [[nodiscard]]
 inline StringConverter GetAnyFromStringFunctor<void>()
 {
   return {};
@@ -153,10 +158,8 @@ std::string toStr(const T& value)
   return std::to_string(value);
 }
 
-template <> [[nodiscard]] inline
-std::string toStr<bool>(const bool& value) {
-  return value ? "true" : "false";
-}
+template <> [[nodiscard]]
+std::string toStr<bool>(const bool& value);
 
 template <> [[nodiscard]]
 std::string toStr<std::string>(const std::string& value);
@@ -172,9 +175,6 @@ std::string toStr(BT::NodeStatus status, bool colored);
 
 std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
 
-/**
- * @brief toStr converts NodeType to string.
- */
 template <> [[nodiscard]]
 std::string toStr<BT::NodeType>(const BT::NodeType& type);
 
