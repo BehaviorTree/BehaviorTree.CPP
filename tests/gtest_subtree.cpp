@@ -315,11 +315,10 @@ TEST(SubTree, SubtreeIssue563)
 {
   static const char* xml_text = R"(
 <root main_tree_to_execute="Tree1">
-<include path="./navigation_tree.xml"/>
 
 <BehaviorTree ID="Tree1">
   <Sequence>
-    <Action ID="SetBlackboard" output_key="the_message" value="hello"/>
+    <SetBlackboard output_key="the_message" value="hello"/>
     <SubTreePlus ID="Tree2" __autoremap="true"/>
   </Sequence>
 </BehaviorTree>
@@ -329,7 +328,7 @@ TEST(SubTree, SubtreeIssue563)
 </BehaviorTree>
 
 <BehaviorTree ID="Tree3">
-    <SubTreePlus ID="NavigateTree" __autoremap="true"/>
+    <SubTreePlus ID="Talker" __autoremap="true"/>
 </BehaviorTree>
 
 <BehaviorTree ID="Talker">
