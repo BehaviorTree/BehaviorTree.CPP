@@ -310,3 +310,39 @@ TEST(SubTree, SubtreeIssue433)
 
   ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
 }
+
+TEST(SubTree, SubtreeIssue563)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="Tree1">
+<include path="./navigation_tree.xml"/>
+
+<BehaviorTree ID="Tree1">
+  <Sequence>
+    <Action ID="SetBlackboard" output_key="the_message" value="hello"/>
+    <SubTreePlus ID="Tree2" __autoremap="true"/>
+  </Sequence>
+</BehaviorTree>
+
+<BehaviorTree ID="Tree2">
+    <SubTreePlus ID="Tree3" __autoremap="true"/>
+</BehaviorTree>
+
+<BehaviorTree ID="Tree3">
+    <SubTreePlus ID="NavigateTree" __autoremap="true"/>
+</BehaviorTree>
+
+<BehaviorTree ID="Talker">
+    <SaySomething message="{the_message}" />
+</BehaviorTree>
+
+</root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+
+  Tree tree = factory.createTreeFromText(xml_text);
+  auto ret = tree.tickRoot();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+
+}
