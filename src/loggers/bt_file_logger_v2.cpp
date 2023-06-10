@@ -18,6 +18,12 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
   //-------------------------------------
   file_stream_.open(filepath, std::ofstream::binary | std::ofstream::out);
 
+  if(!file_stream_.is_open()) {
+    throw RuntimeError("problem opening file in FileLogger2");
+  }
+
+  file_stream_ << "BTCPP4-FileLogger2";
+
   std::string const xml = WriteTreeToXML(tree, true, true);
 
   // serialize the length of the buffer in the first 4 bytes
