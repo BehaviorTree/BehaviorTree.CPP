@@ -529,6 +529,14 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   const char* attr_name = element->Attribute("name");
   std::string instance_name = attr_name ? attr_name : type_ID;
 
+  const TreeNodeManifest* manifest = nullptr;
+
+  auto manifest_it =  factory.manifests().find(type_ID);
+  if(manifest_it != factory.manifests().end())
+  {
+    manifest = &manifest_it->second;
+  }
+
   PortsRemapping port_remap;
   for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
   {
@@ -543,6 +551,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   config.blackboard = blackboard;
   config.path = prefix_path + instance_name;
   config.uid = output_tree.getUID();
+  config.manifest = manifest;
 
   if(type_ID == instance_name)
   {
@@ -581,12 +590,15 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   }
   else
   {
-    const auto& manifest = factory.manifests().at(type_ID);
+    if(!manifest)
+    {
+      throw RuntimeError("Missing manifest. It shouldn't happen. Please report this issue");
+    }
 
     //Check that name in remapping can be found in the manifest
     for (const auto& remap_it : port_remap)
     {
-      if (manifest.ports.count(remap_it.first) == 0)
+      if (manifest->ports.count(remap_it.first) == 0)
       {
         throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
                            remap_it.first, "\" in node [", type_ID, " / ", instance_name,
@@ -596,7 +608,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     }
 
     // Initialize the ports in the BB to set the type
-    for (const auto& [port_name, port_info] : manifest.ports)
+    for (const auto& [port_name, port_info] : manifest->ports)
     {
       auto remap_it = port_remap.find(port_name);
       if (remap_it == port_remap.end())
@@ -643,8 +655,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     for (const auto& remap_it : port_remap)
     {
       const auto& port_name = remap_it.first;
-      auto port_it = manifest.ports.find(port_name);
-      if (port_it != manifest.ports.end())
+      auto port_it = manifest->ports.find(port_name);
+      if (port_it != manifest->ports.end())
       {
         auto direction = port_it->second.direction();
         if (direction != PortDirection::OUTPUT)
@@ -659,17 +671,21 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     }
 
     // use default value if available for empty ports. Only inputs
-    for (const auto& port_it : manifest.ports)
+    for (const auto& port_it : manifest->ports)
     {
       const std::string& port_name = port_it.first;
       const PortInfo& port_info = port_it.second;
 
       auto direction = port_info.direction();
+
       if (direction != PortDirection::OUTPUT &&
           config.input_ports.count(port_name) == 0 &&
-          port_info.defaultValue())
+          !port_info.defaultValue().empty())
       {
-        config.input_ports.insert({port_name, *port_info.defaultValue()});
+        try {
+          config.input_ports.insert({port_name, port_info.defaultValueString()});
+        }
+        catch(LogicError&) {}
       }
     }
 
@@ -886,9 +902,9 @@ void addNodeModelToXML(const TreeNodeManifest& model,
     {
       port_element->SetAttribute("type", BT::demangle(port_info.type()).c_str());
     }
-    if (port_info.defaultValue().has_value())
+    if (!port_info.defaultValue().empty())
     {
-      port_element->SetAttribute("default", port_info.defaultValue()->c_str());
+      port_element->SetAttribute("default", port_info.defaultValueString().c_str());
     }
 
     if (!port_info.description().empty())

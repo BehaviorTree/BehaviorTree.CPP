@@ -41,7 +41,7 @@ struct TreeNodeManifest
   std::string description;
 };
 
-typedef std::unordered_map<std::string, std::string> PortsRemapping;
+using PortsRemapping = std::unordered_map<std::string, std::string>;
 
 enum class PreCond
 {
@@ -84,6 +84,8 @@ struct NodeConfig
   PortsRemapping input_ports;
   // output ports
   PortsRemapping output_ports;
+
+  const TreeNodeManifest* manifest = nullptr;
 
   // Numberic unique identifier
   uint16_t uid = 0;
@@ -339,7 +341,7 @@ protected:
   /**
      * @brief setStatus changes the status of the node.
      * it will throw if you try to change the status to IDLE, because
-     * your parent node should do that, not the user!.
+     * your parent node should do that, not the user!
      */
   void setStatus(NodeStatus new_status);
 
@@ -410,13 +412,30 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
                                           "does not contain the key: [",
                                           key, "]"));
   }
-  auto remapped_res = getRemappedKey(key, remap_it->second);
+
+  // special case. Empty port value, we should use the default value,
+  // if available in the model.
+  // BUT, it the port type is a string, then an empty string might be
+  // a valid value
+  const std::string& port_value_str = remap_it->second;
+  if(port_value_str.empty() && config_.manifest)
+  {
+    const auto& port_manifest = config_.manifest->ports.at(key);
+    const auto& default_value = port_manifest.defaultValue();
+    if(!default_value.empty() && !default_value.isString())
+    {
+      destination = default_value.cast<T>();
+      return {};
+    }
+  }
+
+  auto remapped_res = getRemappedKey(key, port_value_str);
   try
   {
     // pure string, not a blackboard key
     if (!remapped_res)
     {
-      destination = ParseString(remap_it->second);
+      destination = ParseString(port_value_str);
       return {};
     }
     const auto& remapped_key = remapped_res.value();

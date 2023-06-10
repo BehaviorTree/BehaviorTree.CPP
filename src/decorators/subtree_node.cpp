@@ -11,7 +11,7 @@ BT::PortsList BT::SubTreeNode::providedPorts()
 {
   auto port = PortInfo(PortDirection::INPUT, typeid(bool),
                        GetAnyFromStringFunctor<bool>());
-  port.setDefaultValue("false");
+  port.setDefaultValue(false);
   port.setDescription("If true, all the ports with the same name "
                       "will be remapped");
 
