@@ -49,7 +49,7 @@ public:
 class SimpleConditionNode : public ConditionNode
 {
 public:
-  typedef std::function<NodeStatus(TreeNode&)> TickFunctor;
+  using TickFunctor = std::function<NodeStatus(TreeNode&)>;
 
   // You must provide the function to call when tick() is invoked
   SimpleConditionNode(const std::string& name, TickFunctor tick_functor,

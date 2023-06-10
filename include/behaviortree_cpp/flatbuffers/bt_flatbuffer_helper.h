@@ -5,7 +5,8 @@
 
 namespace BT
 {
-typedef std::array<uint8_t, 12> SerializedTransition;
+
+using SerializedTransition = std::array<uint8_t, 12>;
 
 inline Serialization::NodeType convertToFlatbuffers(BT::NodeType type)
 {

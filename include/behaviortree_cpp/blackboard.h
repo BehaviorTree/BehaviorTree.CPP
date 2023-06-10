@@ -28,7 +28,7 @@ class Blackboard
 {
 
 public:
-  typedef std::shared_ptr<Blackboard> Ptr;
+  using Ptr = std::shared_ptr<Blackboard>;
 
 protected:
   // This is intentionally protected. Use Blackboard::create instead
