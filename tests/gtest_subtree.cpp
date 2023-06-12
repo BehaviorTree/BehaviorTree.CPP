@@ -20,7 +20,7 @@ TEST(SubTree, SiblingPorts_Issue_72)
     </BehaviorTree>
 
     <BehaviorTree ID="mySubtree">
-            <SaySomething ID="AlwaysSuccess" message="{param}" />
+            <SaySomething message="{param}" />
     </BehaviorTree>
 </root> )";
 
@@ -146,16 +146,13 @@ TEST(SubTree, SubtreePlusA)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="Hello" output_key="myParam" />
-            <SubTreePlus ID="mySubtree" param="{myParam}" />
-            <SubTreePlus ID="mySubtree" param="World" />
             <SetBlackboard value="Auto remapped" output_key="param" />
             <SubTreePlus ID="mySubtree" __autoremap="1"  />
         </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="mySubtree">
-            <SaySomething message="{param}" />
+        <SaySomething message="{param}" />
     </BehaviorTree>
 </root> )";
 
@@ -318,8 +315,9 @@ TEST(SubTree, SubtreeIssue563)
 
 <BehaviorTree ID="Tree1">
   <Sequence>
-    <SetBlackboard output_key="the_message" value="hello"/>
+    <SetBlackboard output_key="the_message" value="hello world"/>
     <SubTreePlus ID="Tree2" __autoremap="true"/>
+    <SaySomething message="{reply}" />
   </Sequence>
 </BehaviorTree>
 
@@ -332,7 +330,10 @@ TEST(SubTree, SubtreeIssue563)
 </BehaviorTree>
 
 <BehaviorTree ID="Talker">
+  <Sequence>
     <SaySomething message="{the_message}" />
+    <SetBlackboard output_key="reply" value="done"/>
+  </Sequence>
 </BehaviorTree>
 
 </root>)";
