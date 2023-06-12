@@ -134,7 +134,13 @@ public:
      */
   TreeNode(std::string name, NodeConfig config);
 
-  virtual ~TreeNode() = default;
+  TreeNode(const TreeNode& other) = delete;
+  TreeNode& operator=(const TreeNode& other) = delete;
+
+  TreeNode(TreeNode&& other);
+  TreeNode& operator=(TreeNode&& other);
+
+  virtual ~TreeNode();
 
   /// The method that should be used to invoke tick() and setStatus();
   virtual BT::NodeStatus executeTick();
@@ -314,7 +320,7 @@ public:
     else if constexpr (hasNodeNameCtor<DerivedT>())
     {
       auto node_ptr = new DerivedT(name, args...);
-      node_ptr->config_ = config;
+      node_ptr->config() = config;
       return std::unique_ptr<DerivedT>(node_ptr);
     }
   }
@@ -324,6 +330,8 @@ protected:
   friend class DecoratorNode;
   friend class ControlNode;
   friend class Tree;
+
+  [[nodiscard]] NodeConfig& config();
 
   /// Method to be implemented by the user
   virtual BT::NodeStatus tick() = 0;
@@ -345,31 +353,16 @@ protected:
      */
   void setStatus(NodeStatus new_status);
 
+  using PreScripts = std::array<ScriptFunction, size_t(PreCond::COUNT_)>;
+  using PostScripts = std::array<ScriptFunction, size_t(PostCond::COUNT_)>;
+
+  PreScripts& preConditionsScripts();
+  PostScripts& postConditionsScripts();
+
 private:
-  const std::string name_;
 
-  NodeStatus status_;
-
-  std::condition_variable state_condition_variable_;
-
-  mutable std::mutex state_mutex_;
-
-  StatusChangeSignal state_change_signal_;
-
-  NodeConfig config_;
-
-  std::string registration_ID_;
-
-  PreTickCallback substitution_callback_;
-
-  PostTickCallback post_condition_callback_;
-
-  std::mutex callback_injection_mutex_;
-
-  std::shared_ptr<WakeUpSignal> wake_up_;
-
-  std::array<ScriptFunction, size_t(PreCond::COUNT_)> pre_parsed_;
-  std::array<ScriptFunction, size_t(PostCond::COUNT_)> post_parsed_;
+  struct PImpl;
+  PImpl* p = nullptr;
 
   Expected<NodeStatus> checkPreConditions();
   void checkPostConditions(NodeStatus status);
@@ -388,9 +381,9 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
   {
     if constexpr (std::is_enum_v<T> && !std::is_same_v<T, NodeStatus>)
     {
-      auto it = config_.enums->find(str);
+      auto it = config().enums->find(str);
       // conversion available
-      if( it != config_.enums->end() )
+      if( it != config().enums->end() )
       {
         return static_cast<T>(it->second);
       }
@@ -404,8 +397,8 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     }
   };
 
-  auto remap_it = config_.input_ports.find(key);
-  if (remap_it == config_.input_ports.end())
+  auto remap_it = config().input_ports.find(key);
+  if (remap_it == config().input_ports.end())
   {
     return nonstd::make_unexpected(StrCat("getInput() failed because "
                                           "NodeConfig::input_ports "
@@ -418,9 +411,9 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
   // BUT, it the port type is a string, then an empty string might be
   // a valid value
   const std::string& port_value_str = remap_it->second;
-  if(port_value_str.empty() && config_.manifest)
+  if(port_value_str.empty() && config().manifest)
   {
-    const auto& port_manifest = config_.manifest->ports.at(key);
+    const auto& port_manifest = config().manifest->ports.at(key);
     const auto& default_value = port_manifest.defaultValue();
     if(!default_value.empty() && !default_value.isString())
     {
@@ -440,12 +433,12 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     }
     const auto& remapped_key = remapped_res.value();
 
-    if (!config_.blackboard)
+    if (!config().blackboard)
     {
       return nonstd::make_unexpected("getInput(): trying to access an invalid Blackboard");
     }
 
-    if (auto any_ref = config_.blackboard->getAnyLocked(std::string(remapped_key)))
+    if (auto any_ref = config().blackboard->getAnyLocked(std::string(remapped_key)))
     {
       auto val = any_ref.get();
       if(!val->empty())
@@ -476,14 +469,14 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
 template <typename T>
 inline Result TreeNode::setOutput(const std::string& key, const T& value)
 {
-  if (!config_.blackboard)
+  if (!config().blackboard)
   {
     return nonstd::make_unexpected("setOutput() failed: trying to access a "
                                    "Blackboard(BB) entry, but BB is invalid");
   }
 
-  auto remap_it = config_.output_ports.find(key);
-  if (remap_it == config_.output_ports.end())
+  auto remap_it = config().output_ports.find(key);
+  if (remap_it == config().output_ports.end())
   {
     return nonstd::make_unexpected(StrCat("setOutput() failed: "
                                           "NodeConfig::output_ports "
@@ -499,7 +492,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   {
     remapped_key = stripBlackboardPointer(remapped_key);
   }
-  config_.blackboard->set(static_cast<std::string>(remapped_key), value);
+  config().blackboard->set(static_cast<std::string>(remapped_key), value);
 
   return {};
 }

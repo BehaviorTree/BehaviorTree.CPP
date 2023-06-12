@@ -324,7 +324,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   }
 
   node->setRegistrationID(ID);
-  node->config_.enums = scripting_enums_;
+  node->config().enums = scripting_enums_;
 
   auto AssignConditions = [](auto& conditions, auto& executors) {
     for (const auto& [cond_id, script] : conditions)
@@ -339,8 +339,8 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
       }
     }
   };
-  AssignConditions(config.pre_conditions, node->pre_parsed_);
-  AssignConditions(config.post_conditions, node->post_parsed_);
+  AssignConditions(config.pre_conditions, node->preConditionsScripts());
+  AssignConditions(config.post_conditions, node->postConditionsScripts());
 
   return node;
 }
