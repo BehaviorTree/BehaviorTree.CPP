@@ -138,7 +138,13 @@ using StringConvertersMap = std::unordered_map<const std::type_info*, StringConv
 template <typename T> [[nodiscard]]
 inline StringConverter GetAnyFromStringFunctor()
 {
-  return [](StringView str) { return Any(convertFromString<T>(str)); };
+  if constexpr(std::is_constructible_v<StringView, T>)
+  {
+    return [](StringView str) { return Any(str); };
+  }
+  else {
+    return [](StringView str) { return Any(convertFromString<T>(str)); };
+  }
 }
 
 template <> [[nodiscard]]

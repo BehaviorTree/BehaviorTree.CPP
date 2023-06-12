@@ -81,10 +81,11 @@ Blackboard::createEntryImpl(const std::string& key, const PortInfo& info)
         old_type != typeid(BT::PortInfo::AnyTypeAllowed) &&
         info.type() != typeid(BT::PortInfo::AnyTypeAllowed))
     {
-      throw LogicError("Blackboard: once declared, the type of a port "
-                       "shall not change. Previously declared type [",
-                       BT::demangle(old_type), "] != new type [",
-                       BT::demangle(info.type()), "]");
+      auto msg = StrCat("Blackboard entry [", key, "]: once declared, the type of a port"
+                        " shall not change. Previously declared type [", BT::demangle(old_type),
+                        "], current type [", BT::demangle(typeid(info.type())), "]");
+
+      throw LogicError(msg);
     }
     return storage_it->second;
   }

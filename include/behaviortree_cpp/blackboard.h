@@ -149,7 +149,8 @@ public:
     {
       // create a new entry
       Any new_value(value);
-      PortInfo new_port(PortDirection::INOUT, new_value.type(), {});
+      PortInfo new_port(PortDirection::INOUT, new_value.type(),
+                        GetAnyFromStringFunctor<T>());
       lock.unlock();
       auto entry = createEntryImpl(key, new_port);
       lock.lock();
@@ -199,10 +200,10 @@ public:
         {
           debugMessage();
 
-          throw LogicError("Blackboard::set() failed: once declared, the type of a port "
-                           "shall not change. Declared type [",
-                           BT::demangle(previous_type), "] != current type [",
-                           BT::demangle(typeid(T)), "]");
+          auto msg = StrCat("Blackboard entry [", key, "]: once declared, the type of a port"
+                            " shall not change. Previously declared type [", BT::demangle(previous_type),
+                            "], current type [", BT::demangle(typeid(T)), "]");
+          throw LogicError(msg);
         }
       }
       previous_any = std::move(new_value);

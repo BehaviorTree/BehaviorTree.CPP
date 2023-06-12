@@ -351,7 +351,7 @@ TEST(SubTree, SubtreeIssue563)
 <BehaviorTree ID="Talker">
   <Sequence>
     <SaySomething message="{the_message}" />
-    <SetBlackboard output_key="reply" value="done"/>
+    <Script code=" reply:='done' "/>
   </Sequence>
 </BehaviorTree>
 
