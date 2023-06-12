@@ -5,13 +5,18 @@
 namespace BT {
 
 SqliteLogger::SqliteLogger(const Tree &tree,
-                           std::filesystem::path const& file,
+                           std::filesystem::path const& filepath,
                            bool append):
   StatusChangeLogger(tree.rootNode())
 {
+  if(filepath.filename().extension() != ".db3")
+  {
+    throw RuntimeError("SqliteLogger: the file extension must be [.db3]");
+  }
+
   enableTransitionToIdle(true);
 
-  db_ = std::make_unique<sqlite::Connection>(file.string());
+  db_ = std::make_unique<sqlite::Connection>(filepath.string());
 
   sqlite::Statement(*db_,
                     "CREATE TABLE IF NOT EXISTS Transitions ("

@@ -23,6 +23,13 @@ namespace BT
 class FileLogger2 : public StatusChangeLogger
 {
   public:
+  /**
+   * @brief To correctly read this log with Groot2, you must use the suffix ".btlog".
+   * Constructor will throw otherwise.
+   *
+   * @param tree      the tree to log
+   * @param filepath  path of the file where info will be stored
+   */
   FileLogger2(const Tree& tree, std::filesystem::path const& filepath);
 
   virtual ~FileLogger2() override;
@@ -32,12 +39,11 @@ class FileLogger2 : public StatusChangeLogger
 
   struct Transition
   {
-    // 45 bits are enough for 35 million seconds (more than 1 year) relative to the first timestamp
-    uint64_t timestamp_usec : 45;
+    uint64_t timestamp_usec;
     // if you have more than 64.000 nodes, you are doing something wrong :)
-    uint64_t node_uid : 16;
+    uint16_t node_uid;
     // enough bits to contain NodeStatus
-    uint64_t status : 3;
+    uint8_t status;
   };
 
   void flush() override;

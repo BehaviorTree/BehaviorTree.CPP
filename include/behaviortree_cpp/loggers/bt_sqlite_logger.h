@@ -24,6 +24,14 @@ namespace BT
 class SqliteLogger : public StatusChangeLogger
 {
 public:
+  /**
+   * @brief To correctly read this log with Groot2, you must use the suffix ".db3".
+   * Constructor will throw otherwise.
+   *
+   * @param tree      the tree to log
+   * @param filepath  path of the file where info will be stored
+   * @param append    if true, add this recording to the database
+   */
   SqliteLogger(const Tree &tree,
                std::filesystem::path const& file,
                bool append = false);

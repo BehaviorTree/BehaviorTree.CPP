@@ -13,6 +13,11 @@ int64_t ToUsec(Duration ts)
 FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& filepath) :
   StatusChangeLogger(tree.rootNode())
 {
+  if(filepath.filename().extension() != ".btlog")
+  {
+    throw RuntimeError("FileLogger2: the file extension must be [.btlog]");
+  }
+
   enableTransitionToIdle(true);
 
   //-------------------------------------
@@ -23,6 +28,10 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
   }
 
   file_stream_ << "BTCPP4-FileLogger2";
+
+  const uint8_t protocol = 1;
+
+  file_stream_ << protocol;
 
   std::string const xml = WriteTreeToXML(tree, true, true);
 
@@ -88,9 +97,13 @@ void FileLogger2::writerLoop()
     }
     while(!transitions.empty())
     {
-      char write_buffer[8];
-      flatbuffers::WriteScalar(write_buffer, transitions.front());
-      file_stream_.write(write_buffer, 8);
+      const auto trans = transitions.front();
+      std::array<char, 9> write_buffer;
+      std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6 );
+      std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2 );
+      std::memcpy(write_buffer.data() + 8, &trans.status, 1 );
+
+      file_stream_.write(write_buffer.data(), 9);
       transitions.pop_front();
     }
     file_stream_.flush();
