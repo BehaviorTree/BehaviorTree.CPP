@@ -646,7 +646,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
         else
         {
           // not found, insert for the first time.
-          blackboard->setPortInfo(port_key, port_info);
+          blackboard->createEntry(port_key, port_info);
         }
       }
     }
@@ -743,8 +743,6 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
 
       std::set<StringView> mapped_keys;
 
-      bool do_autoremap = false;
-
       for (auto attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
       {
         const char* attr_name = attr->Name();
@@ -752,7 +750,8 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
 
         if (StrEqual(attr_name, "_autoremap"))
         {
-          do_autoremap = convertFromString<bool>(attr_value);
+          const bool do_autoremap = convertFromString<bool>(attr_value);
+          new_bb->enableAutoRemapping(do_autoremap);
           continue;
         }
         if (!IsAllowedPortName(attr->Name()))
@@ -775,20 +774,6 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
         }
       }
 
-      if (do_autoremap)
-      {
-        std::vector<std::string> remapped_ports;
-        auto new_root_element = tree_roots[node->name()]->FirstChildElement();
-
-        getPortsRecursively(new_root_element, remapped_ports);
-        for (const auto& port : remapped_ports)
-        {
-          if (mapped_keys.count(port) == 0)
-          {
-            new_bb->addSubtreeRemapping(port, port);
-          }
-        }
-      }
       std::string subtree_ID = element->Attribute("ID");
       std::string subtree_name = subtree->instance_name;
       if(!subtree_name.empty()) {

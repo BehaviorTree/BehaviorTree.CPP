@@ -330,22 +330,22 @@ TEST(SubTree, StringConversions_Issue530)
 TEST(SubTree, SubtreeIssue563)
 {
   static const char* xml_text = R"(
-<root main_tree_to_execute="Tree1">
+<root BTCPP_format="4" >
 
 <BehaviorTree ID="Tree1">
   <Sequence>
     <SetBlackboard output_key="the_message" value="hello world"/>
-    <SubTreePlus ID="Tree2" __autoremap="true"/>
+    <SubTree ID="Tree2" _autoremap="true"/>
     <SaySomething message="{reply}" />
   </Sequence>
 </BehaviorTree>
 
 <BehaviorTree ID="Tree2">
-    <SubTreePlus ID="Tree3" __autoremap="true"/>
+    <SubTree ID="Tree3" _autoremap="true"/>
 </BehaviorTree>
 
 <BehaviorTree ID="Tree3">
-    <SubTreePlus ID="Talker" __autoremap="true"/>
+    <SubTree ID="Talker" _autoremap="true"/>
 </BehaviorTree>
 
 <BehaviorTree ID="Talker">
@@ -359,8 +359,9 @@ TEST(SubTree, SubtreeIssue563)
 
   BehaviorTreeFactory factory;
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  factory.registerBehaviorTreeFromText(xml_text);
+  Tree tree = factory.createTree("Tree1");
 
-  Tree tree = factory.createTreeFromText(xml_text);
   auto ret = tree.tickOnce();
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
 

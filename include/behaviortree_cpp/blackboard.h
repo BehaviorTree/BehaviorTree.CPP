@@ -61,24 +61,9 @@ public:
 
   virtual ~Blackboard() = default;
 
-  [[nodiscard]] const Entry* getEntry(const std::string& key) const
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    // search first if this port was remapped
-    if(!internal_to_external_.empty())
-    {
-      if (auto parent = parent_bb_.lock())
-      {
-        auto remapping_it = internal_to_external_.find(key);
-        if (remapping_it != internal_to_external_.end())
-        {
-          return parent->getEntry(remapping_it->second);
-        }
-      }
-    }
-    auto it = storage_.find(key);
-    return (it == storage_.end()) ? nullptr : it->second.get();
-  }
+  void enableAutoRemapping(bool remapping);
+
+  [[nodiscard]] const Entry* getEntry(const std::string& key) const;
 
   [[nodiscard]] Entry* getEntry(const std::string& key)
   {
@@ -158,22 +143,6 @@ public:
   {
     std::unique_lock lock(mutex_);
 
-    // search first if this port was remapped.
-    // Change the parent_bb_ in that case
-    if(!internal_to_external_.empty())
-    {
-      auto remapping_it = internal_to_external_.find(key);
-      if (remapping_it != internal_to_external_.end())
-      {
-        const auto& remapped_key = remapping_it->second;
-        if (auto parent = parent_bb_.lock())
-        {
-          parent->set(remapped_key, value);
-          return;
-        }
-      }
-    }
-
     // check local storage
     auto it = storage_.find(key);
     if (it == storage_.end())
@@ -181,7 +150,11 @@ public:
       // create a new entry
       Any new_value(value);
       PortInfo new_port(PortDirection::INOUT, new_value.type(), {});
-      storage_.emplace(key, std::make_unique<Entry>(std::move(new_value), new_port));
+      lock.unlock();
+      auto entry = createEntryImpl(key, new_port);
+      lock.lock();
+      storage_.insert( {key, entry} );
+      entry->value = new_value;
     }
     else
     {
@@ -236,15 +209,13 @@ public:
     }
   }
 
-  void setPortInfo(const std::string &key, const PortInfo& info);
-
-  [[nodiscard]] const PortInfo* portInfo(const std::string& key);
+   [[nodiscard]] const PortInfo* portInfo(const std::string& key);
 
   void addSubtreeRemapping(StringView internal, StringView external);
 
   void debugMessage() const;
 
-  [[nodiscard]] std::vector<StringView> getKeys(bool include_remapped = true) const;
+  [[nodiscard]] std::vector<StringView> getKeys() const;
 
   void clear()
   {
@@ -258,13 +229,21 @@ public:
     return entry_mutex_;
   }
 
+  void createEntry(const std::string& key, const PortInfo& info)
+  {
+    createEntryImpl(key, info);
+  }
+
 private:
   mutable std::mutex mutex_;
   mutable std::recursive_mutex entry_mutex_;
-  std::unordered_map<std::string, std::unique_ptr<Entry>> storage_;
+  std::unordered_map<std::string, std::shared_ptr<Entry>> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
 
+  std::shared_ptr<Entry> createEntryImpl(const std::string &key, const PortInfo& info);
+
+  bool autoremapping_ = false;
 };
 
 }   // namespace BT

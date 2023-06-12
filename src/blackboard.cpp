@@ -2,57 +2,25 @@
 
 namespace BT
 {
-void Blackboard::setPortInfo(const std::string& key, const PortInfo& info)
+
+void Blackboard::enableAutoRemapping(bool remapping)
+{
+  autoremapping_ = remapping;
+}
+
+const Blackboard::Entry *Blackboard::getEntry(const std::string &key) const
 {
   std::unique_lock<std::mutex> lock(mutex_);
-
-  if (auto parent = parent_bb_.lock())
-  {
-    auto remapping_it = internal_to_external_.find(key);
-    if (remapping_it != internal_to_external_.end())
-    {
-      parent->setPortInfo(remapping_it->second, info);
-      return;
-    }
-  }
-
   auto it = storage_.find(key);
-  if (it == storage_.end())
-  {
-    storage_.emplace(key, std::make_unique<Entry>(info));
-  }
-  else
-  {
-    auto old_type = it->second->port_info.type();
-    if (old_type != info.type())
-    {
-      throw LogicError("Blackboard::set() failed: once declared, the type of a port "
-                       "shall not change. Declared type [",
-                       BT::demangle(old_type), "] != current type [",
-                       BT::demangle(info.type()), "]");
-    }
-  }
+  return (it == storage_.end()) ? nullptr : it->second.get();
 }
 
 const PortInfo* Blackboard::portInfo(const std::string& key)
 {
   std::unique_lock<std::mutex> lock(mutex_);
 
-  if (auto parent = parent_bb_.lock())
-  {
-    auto remapping_it = internal_to_external_.find(key);
-    if (remapping_it != internal_to_external_.end())
-    {
-      return parent->portInfo(remapping_it->second);
-    }
-  }
-
   auto it = storage_.find(key);
-  if (it == storage_.end())
-  {
-    return nullptr;
-  }
-  return &(it->second->port_info);
+  return (it == storage_.end()) ? nullptr : &(it->second->port_info);
 }
 
 void Blackboard::addSubtreeRemapping(StringView internal, StringView external)
@@ -82,27 +50,70 @@ void Blackboard::debugMessage() const
   }
 }
 
-std::vector<StringView> Blackboard::getKeys(bool include_remapped) const
+std::vector<StringView> Blackboard::getKeys() const
 {
-  const size_t N = storage_.size() + (include_remapped ? internal_to_external_.size() : 0 );
-  if (N == 0)
+  if (storage_.empty())
   {
     return {};
   }
   std::vector<StringView> out;
-  out.reserve(N);
+  out.reserve(storage_.size());
   for (const auto& entry_it : storage_)
   {
     out.push_back(entry_it.first);
   }
-  if(include_remapped)
+  return out;
+}
+
+std::shared_ptr<Blackboard::Entry>
+Blackboard::createEntryImpl(const std::string& key, const PortInfo& info)
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+  // This function might be called recursively, when we do remapping, because we move
+  // to the top scope to find already existing  entries
+
+  // search if exists already
+  auto storage_it = storage_.find(key);
+  if(storage_it != storage_.end())
   {
-    for (const auto& [key, remapped] : internal_to_external_)
+    const auto old_type = storage_it->second->port_info.type();
+    if (old_type != info.type() &&
+        old_type != typeid(BT::PortInfo::AnyTypeAllowed) &&
+        info.type() != typeid(BT::PortInfo::AnyTypeAllowed))
     {
-      out.push_back(key);
+      throw LogicError("Blackboard: once declared, the type of a port "
+                       "shall not change. Previously declared type [",
+                       BT::demangle(old_type), "] != new type [",
+                       BT::demangle(info.type()), "]");
+    }
+    return storage_it->second;
+  }
+
+  std::shared_ptr<Entry> entry;
+
+  // manual remapping first
+  auto remapping_it = internal_to_external_.find(key);
+  if (remapping_it != internal_to_external_.end())
+  {
+    const auto& remapped_key = remapping_it->second;
+    if (auto parent = parent_bb_.lock())
+    {
+      entry = parent->createEntryImpl(remapped_key, info);
     }
   }
-  return out;
+  else if(autoremapping_)
+  {
+    if (auto parent = parent_bb_.lock())
+    {
+      entry = parent->createEntryImpl(key, info);
+    }
+  }
+  else // not remapped, nor found. Create locally.
+  {
+    entry = std::make_shared<Entry>(info);
+  }
+  storage_.insert( {key, entry} );
+  return entry;
 }
 
 }   // namespace BT

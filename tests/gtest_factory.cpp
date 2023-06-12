@@ -189,7 +189,7 @@ static const char* xml_ports_subtree = R"(
     <Sequence>
       <SaySomething message="{hello_msg}" />
       <SaySomething message="{bye_msg}" />
-      <Script code=" output='done!' " />
+      <Script code=" output:='done!' " />
     </Sequence>
   </BehaviorTree>
 

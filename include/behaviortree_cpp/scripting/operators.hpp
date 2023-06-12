@@ -365,12 +365,17 @@ struct ExprAssignment : ExprBase
             // variable doesn't exist, create it if using operator assign_create
             if(op == assign_create)
             {
-                env.vars->setPortInfo(key, PortInfo());
+                env.vars->createEntry(key, PortInfo());
                 entry = env.vars->getEntry(key);
             }
             else {
                 // fail otherwise
-                throw std::runtime_error("Can't create a new variable");
+                char buffer[1014];
+                sprintf(buffer,
+                        "The blackboard entry [%s] doesn't exist, yet.\n"
+                        "If you want to create a new one, use the operator "
+                        "[:=] instead of [=]", key.c_str());
+                throw std::runtime_error(buffer);
             }
         }
         auto value = rhs->evaluate(env);
