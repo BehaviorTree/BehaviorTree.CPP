@@ -75,6 +75,14 @@ Blackboard::createEntryImpl(const std::string &key, const PortInfo& info)
   auto storage_it = storage_.find(key);
   if(storage_it != storage_.end())
   {
+    const auto old_type = storage_it->second->port_info.type();
+    if (old_type && info.type() && old_type != info.type())
+    {
+      throw LogicError("Blackboard: once declared, the type of a port "
+                       "shall not change. Previously declared type [",
+                       BT::demangle(old_type), "] != new type [",
+                       BT::demangle(info.type()), "]");
+    }
     return storage_it->second;
   }
 
