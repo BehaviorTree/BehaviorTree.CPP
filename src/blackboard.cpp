@@ -8,6 +8,41 @@ void Blackboard::enableAutoRemapping(bool remapping)
   autoremapping_ = remapping;
 }
 
+Blackboard::Entry *Blackboard::getEntry(const std::string &key)
+{
+  // "Avoid Duplication in const and Non-const Member Function,"
+  // on p. 23, in Item 3 "Use const whenever possible," in Effective C++, 3d ed
+  return const_cast<Entry*>( static_cast<const Blackboard &>(*this).getEntry(key));
+}
+
+AnyPtrLocked Blackboard::getAnyLocked(const std::string &key)
+{
+  if(auto entry = getEntry(key))
+  {
+    return AnyPtrLocked(&entry->value, &entry->entry_mutex);
+  }
+  return {};
+}
+
+AnyPtrLocked Blackboard::getAnyLocked(const std::string &key) const
+{
+  if(auto entry = getEntry(key))
+  {
+    return AnyPtrLocked(&entry->value,  const_cast<std::mutex*>(&entry->entry_mutex));
+  }
+  return {};
+}
+
+const Any *Blackboard::getAny(const std::string &key) const
+{
+  return getAnyLocked(key).get();
+}
+
+Any *Blackboard::getAny(const std::string &key)
+{
+  return const_cast<Any*>(getAnyLocked(key).get());
+}
+
 const Blackboard::Entry *Blackboard::getEntry(const std::string &key) const
 {
   std::unique_lock<std::mutex> lock(mutex_);
@@ -63,6 +98,22 @@ std::vector<StringView> Blackboard::getKeys() const
     out.push_back(entry_it.first);
   }
   return out;
+}
+
+void Blackboard::clear()
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+  storage_.clear();
+}
+
+std::recursive_mutex &Blackboard::entryMutex() const
+{
+  return entry_mutex_;
+}
+
+void Blackboard::createEntry(const std::string &key, const PortInfo &info)
+{
+  createEntryImpl(key, info);
 }
 
 std::shared_ptr<Blackboard::Entry>

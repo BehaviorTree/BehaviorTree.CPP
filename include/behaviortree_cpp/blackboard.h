@@ -65,42 +65,17 @@ public:
 
   [[nodiscard]] const Entry* getEntry(const std::string& key) const;
 
-  [[nodiscard]] Entry* getEntry(const std::string& key)
-  {
-    // "Avoid Duplication in const and Non-const Member Function,"
-    // on p. 23, in Item 3 "Use const whenever possible," in Effective C++, 3d ed
-    return const_cast<Entry*>( static_cast<const Blackboard &>(*this).getEntry(key));
-  }
+  [[nodiscard]] Entry* getEntry(const std::string& key);
 
-  [[nodiscard]] AnyPtrLocked getAnyLocked(const std::string& key)
-  {
-    if(auto entry = getEntry(key))
-    {
-      return AnyPtrLocked(&entry->value, &entry->entry_mutex);
-    }
-    return {};
-  }
+  [[nodiscard]] AnyPtrLocked getAnyLocked(const std::string& key);
 
-  [[nodiscard]] AnyPtrLocked getAnyLocked(const std::string& key) const
-  {
-    if(auto entry = getEntry(key))
-    {
-      return AnyPtrLocked(&entry->value,  const_cast<std::mutex*>(&entry->entry_mutex));
-    }
-    return {};
-  }
+  [[nodiscard]] AnyPtrLocked getAnyLocked(const std::string& key) const;
 
   [[deprecated("Use getAnyLocked instead")]]
-  const Any* getAny(const std::string& key) const
-  {
-    return getAnyLocked(key).get();
-  }
+  const Any* getAny(const std::string& key) const;
 
   [[deprecated("Use getAnyLocked instead")]]
-  Any* getAny(const std::string& key)
-  {
-    return const_cast<Any*>(getAnyLocked(key).get());
-  }
+  Any* getAny(const std::string& key);
 
   /** Return true if the entry with the given key was found.
    *  Note that this method may throw an exception if the cast to T failed.
@@ -218,22 +193,12 @@ public:
 
   [[nodiscard]] std::vector<StringView> getKeys() const;
 
-  void clear()
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    storage_.clear();
-  }
+  void clear();
 
   [[deprecated("Use getAnyLocked to access safely an Entry")]]
-  std::recursive_mutex& entryMutex() const
-  {
-    return entry_mutex_;
-  }
+  std::recursive_mutex& entryMutex() const;
 
-  void createEntry(const std::string& key, const PortInfo& info)
-  {
-    createEntryImpl(key, info);
-  }
+  void createEntry(const std::string& key, const PortInfo& info);
 
 private:
   mutable std::mutex mutex_;
