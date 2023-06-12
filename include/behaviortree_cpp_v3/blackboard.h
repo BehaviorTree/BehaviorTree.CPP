@@ -109,9 +109,10 @@ public:
     }
     else
     {
+      Any new_value(value);
       lock.unlock();
-      entry = createEntryImpl(key, PortInfo());
-      entry->value = Any(value);
+      entry = createEntryImpl(key, PortInfo(PortDirection::INOUT, new_value.type(), {}));
+      entry->value = new_value;
       return;
     }
 
