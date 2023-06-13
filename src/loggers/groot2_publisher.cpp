@@ -80,6 +80,7 @@ struct Groot2Publisher::PImpl
   std::unordered_map<uint16_t, Monitor::Hook::Ptr> post_hooks;
 
   std::chrono::system_clock::time_point last_heartbeat;
+  std::chrono::milliseconds max_heartbeat_delay = std::chrono::milliseconds(5000);
 
   std::thread heartbeat_thread;
 
@@ -147,6 +148,16 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
 
   _p->server_thread = std::thread(&Groot2Publisher::serverLoop, this);
   _p->heartbeat_thread = std::thread(&Groot2Publisher::heartbeatLoop, this);
+}
+
+void Groot2Publisher::setMaxHeartbeatDelay(std::chrono::milliseconds delay)
+{
+  _p->max_heartbeat_delay = delay;
+}
+
+std::chrono::milliseconds Groot2Publisher::maxHeartbeatDelay() const
+{
+  return _p->max_heartbeat_delay;
 }
 
 Groot2Publisher::~Groot2Publisher()
@@ -404,12 +415,12 @@ void Groot2Publisher::heartbeatLoop()
 
   while (_p->active_server)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     auto now = std::chrono::system_clock::now();
     bool prev_heartbeat = has_heartbeat;
 
-    has_heartbeat = ( now - _p->last_heartbeat < std::chrono::milliseconds(5000));
+    has_heartbeat = ( now - _p->last_heartbeat < _p->max_heartbeat_delay);
 
     // if we loose or gain heartbeat, disable/enable all breakpoints
     if(has_heartbeat != prev_heartbeat)

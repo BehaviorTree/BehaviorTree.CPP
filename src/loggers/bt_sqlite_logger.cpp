@@ -9,9 +9,10 @@ SqliteLogger::SqliteLogger(const Tree &tree,
                            bool append):
   StatusChangeLogger(tree.rootNode())
 {
-  if(filepath.filename().extension() != ".db3")
+  const auto extension = filepath.filename().extension();
+  if( extension!= ".db3" && extension != ".btdb")
   {
-    throw RuntimeError("SqliteLogger: the file extension must be [.db3]");
+    throw RuntimeError("SqliteLogger: the file extension must be [.db3] or [.btdb]");
   }
 
   enableTransitionToIdle(true);

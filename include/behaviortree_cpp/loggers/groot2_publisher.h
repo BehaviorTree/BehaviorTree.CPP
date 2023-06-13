@@ -34,6 +34,17 @@ class Groot2Publisher : public StatusChangeLogger
   Groot2Publisher(Groot2Publisher&& other) = default;
   Groot2Publisher& operator=(Groot2Publisher&& other)  = default;
 
+  /**
+   * @brief setMaxHeartbeatDelay is used to tell the publisher
+   * when a connection with Groot2 should be cancelled, if no
+   * hearbeat is received.
+   *
+   * Default is 5000 ms
+   */
+  void setMaxHeartbeatDelay( std::chrono::milliseconds delay);
+
+  std::chrono::milliseconds maxHeartbeatDelay() const;
+
   private:
 
   void callback(Duration timestamp,
