@@ -99,15 +99,14 @@ XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new PImpl(factory)
 XMLParser::~XMLParser()
 {}
 
-void XMLParser::loadFromFile(const std::filesystem::path& filename, bool add_includes)
+void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_includes)
 {
   _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
 
   tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
-  doc->LoadFile(filename.c_str());
+  doc->LoadFile(filepath.string().c_str());
 
-  std::filesystem::path file_path(filename);
-  _p->current_path = std::filesystem::absolute(file_path.parent_path());
+  _p->current_path = std::filesystem::absolute(filepath.parent_path());
 
   _p->loadDocImpl(doc, add_includes);
 }
