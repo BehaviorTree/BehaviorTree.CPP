@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.0 (2023-06-13)
+------------------
 * use PImpl in multiple classes
 * updated FileLogger2
 * better error messages
