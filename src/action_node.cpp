@@ -123,7 +123,7 @@ NodeStatus CoroActionNode::executeTick()
 
 void CoroActionNode::tickImpl()
 {
-  setStatus(tick());
+  setStatus(TreeNode::executeTick());
 }
 
 void CoroActionNode::halt()

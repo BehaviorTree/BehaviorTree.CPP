@@ -175,3 +175,53 @@ TEST(Preconditions, Issue533)
   ASSERT_EQ(counters[1], 1);
   ASSERT_EQ(counters[2], 1);
 }
+
+
+class CoroTestNode: public BT::CoroActionNode
+{
+public:
+  CoroTestNode(const std::string& node_name,
+               const BT::NodeConfig& config) :
+    BT::CoroActionNode(node_name, config)
+  {}
+
+  virtual BT::NodeStatus tick() override
+  {
+    for(int i=0; i<10; i++) {
+      times_ticked++;
+      setStatusRunningAndYield();
+    }
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {};
+  }
+
+  int times_ticked = 0;
+};
+
+
+TEST(Preconditions, Issue585)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<CoroTestNode>("CoroTest");
+
+  const std::string xml_text = R"(
+
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <Script    code="A:=1" />
+                <CoroTest _skipIf="A==1" />
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+
+  auto coro = dynamic_cast<CoroTestNode*>(tree.subtrees.front()->nodes.back().get());
+  ASSERT_EQ(coro->times_ticked, 0);
+}

@@ -204,6 +204,7 @@ public:
   // This method triggers the TickEngine. Do NOT remove the "final" keyword.
   virtual NodeStatus executeTick() override final;
 
+  // Used internally, but it needs to be public
   void tickImpl();
 
   /** You may want to override this method. But still, remember to call this
