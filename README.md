@@ -100,7 +100,9 @@ You can contact the main author dfaconti@aurynrobotics.com to discuss your use c
 The MIT License (MIT)
 
 Copyright (c) 2019-2023 Davide Faconti
+
 Copyright (c) 2018-2019 Davide Faconti, Eurecat
+
 Copyright (c) 2014-2018 Michele Colledanchise
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
