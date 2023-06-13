@@ -71,7 +71,7 @@ struct ExprName : ExprBase
         auto any_ref = env.vars->getAnyLocked(name);
         if( !any_ref )
         {
-          throw std::runtime_error("Variable not found");
+          throw RuntimeError(StrCat("Variable not found: ", name));
         }
         return *any_ref.get();
     }
