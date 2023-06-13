@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
-*  Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+*  Copyright (C) 2018-2023 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -137,8 +137,8 @@ public:
   TreeNode(const TreeNode& other) = delete;
   TreeNode& operator=(const TreeNode& other) = delete;
 
-  TreeNode(TreeNode&& other);
-  TreeNode& operator=(TreeNode&& other);
+  TreeNode(TreeNode&& other) = default;
+  TreeNode& operator=(TreeNode&& other) = default;
 
   virtual ~TreeNode();
 
@@ -362,7 +362,7 @@ protected:
 private:
 
   struct PImpl;
-  PImpl* p = nullptr;
+  std::unique_ptr<PImpl> _p;
 
   Expected<NodeStatus> checkPreConditions();
   void checkPostConditions(NodeStatus status);

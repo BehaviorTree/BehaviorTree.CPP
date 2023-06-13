@@ -30,9 +30,21 @@ bool WildcardMatch(std::string const& str, StringView filter)
   return wildcards::match(str, filter);
 }
 
-BehaviorTreeFactory::BehaviorTreeFactory()
+struct BehaviorTreeFactory::PImpl
 {
-  parser_ = std::make_shared<XMLParser>(*this);
+  std::unordered_map<std::string, NodeBuilder> builders;
+  std::unordered_map<std::string, TreeNodeManifest> manifests;
+  std::set<std::string> builtin_IDs;
+  std::unordered_map<std::string, Any> behavior_tree_definitions;
+  std::shared_ptr<std::unordered_map<std::string, int>> scripting_enums;
+  std::shared_ptr<BT::Parser> parser;
+  std::unordered_map<std::string, SubstitutionRule> substitution_rules;
+};
+
+BehaviorTreeFactory::BehaviorTreeFactory():
+  _p(new PImpl)
+{
+  _p->parser = std::make_shared<XMLParser>(*this);
   registerNodeType<FallbackNode>("Fallback");
   registerNodeType<FallbackNode>("AsyncFallback", true);
   registerNodeType<SequenceNode>("Sequence");
@@ -80,13 +92,16 @@ BehaviorTreeFactory::BehaviorTreeFactory()
   registerNodeType<LoopNode<double>>("LoopDouble");
   registerNodeType<LoopNode<std::string>>("LoopString");
 
-  for (const auto& it : builders_)
+  for (const auto& it : _p->builders)
   {
-    builtin_IDs_.insert(it.first);
+    _p->builtin_IDs.insert(it.first);
   }
 
-  scripting_enums_ = std::make_shared<std::unordered_map<std::string, int>>();
+  _p->scripting_enums = std::make_shared<std::unordered_map<std::string, int>>();
 }
+
+BehaviorTreeFactory::~BehaviorTreeFactory()
+{}
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
 {
@@ -94,27 +109,27 @@ bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
   {
     throw LogicError("You can not remove the builtin registration ID [", ID, "]");
   }
-  auto it = builders_.find(ID);
-  if (it == builders_.end())
+  auto it = _p->builders.find(ID);
+  if (it == _p->builders.end())
   {
     return false;
   }
-  builders_.erase(ID);
-  manifests_.erase(ID);
+  _p->builders.erase(ID);
+  _p->manifests.erase(ID);
   return true;
 }
 
 void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest,
                                           const NodeBuilder& builder)
 {
-  auto it = builders_.find(manifest.registration_ID);
-  if (it != builders_.end())
+  auto it = _p->builders.find(manifest.registration_ID);
+  if (it != _p->builders.end())
   {
     throw BehaviorTreeException("ID [", manifest.registration_ID, "] already registered");
   }
 
-  builders_.insert({manifest.registration_ID, builder});
-  manifests_.insert({manifest.registration_ID, manifest});
+  _p->builders.insert({manifest.registration_ID, builder});
+  _p->manifests.insert({manifest.registration_ID, manifest});
 }
 
 void BehaviorTreeFactory::registerSimpleCondition(
@@ -235,24 +250,24 @@ void BehaviorTreeFactory::registerFromROSPlugins()
 }
 #endif
 
-void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::string& filename)
+void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::filesystem::path &filename)
 {
-  parser_->loadFromFile(filename);
+  _p->parser->loadFromFile(filename);
 }
 
 void BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string& xml_text)
 {
-  parser_->loadFromText(xml_text);
+  _p->parser->loadFromText(xml_text);
 }
 
 std::vector<std::string> BehaviorTreeFactory::registeredBehaviorTrees() const
 {
-  return parser_->registeredBehaviorTrees();
+  return _p->parser->registeredBehaviorTrees();
 }
 
 void BehaviorTreeFactory::clearRegisteredBehaviorTrees()
 {
-  parser_->clearInternalState();
+  _p->parser->clearInternalState();
 }
 
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
@@ -261,15 +276,15 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   auto idNotFound = [this, ID]
   {
     std::cerr << ID << " not included in this list:" << std::endl;
-    for (const auto& builder_it : builders_)
+    for (const auto& builder_it : _p->builders)
     {
       std::cerr << builder_it.first << std::endl;
     }
     throw RuntimeError("BehaviorTreeFactory: ID [", ID, "] not registered");
   };
 
-  auto it_manifest = manifests_.find(ID);
-  if (it_manifest == manifests_.end())
+  auto it_manifest = _p->manifests.find(ID);
+  if (it_manifest == _p->manifests.end())
   {
     idNotFound();
   }
@@ -278,7 +293,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   std::unique_ptr<TreeNode> node;
 
   bool substituted = false;
-  for(const auto& [filter, rule]: substitution_rules_)
+  for(const auto& [filter, rule]: _p->substitution_rules)
   {
     if( filter == name || filter == ID || wildcards::match(config.path, filter))
     {
@@ -286,8 +301,8 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
       // node to create instead
       if(const auto substituted_ID = std::get_if<std::string>(&rule) )
       {
-        auto it_builder = builders_.find(*substituted_ID);
-        if (it_builder != builders_.end())
+        auto it_builder = _p->builders.find(*substituted_ID);
+        if (it_builder != _p->builders.end())
         {
           auto& builder = it_builder->second;
           node = builder(name, config);
@@ -314,8 +329,8 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   // No substitution rule applied: default behavior
   if(!substituted)
   {
-    auto it_builder = builders_.find(ID);
-    if (it_builder == builders_.end())
+    auto it_builder = _p->builders.find(ID);
+    if (it_builder == _p->builders.end())
     {
       idNotFound();
     }
@@ -324,7 +339,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   }
 
   node->setRegistrationID(ID);
-  node->config().enums = scripting_enums_;
+  node->config().enums = _p->scripting_enums;
 
   auto AssignConditions = [](auto& conditions, auto& executors) {
     for (const auto& [cond_id, script] : conditions)
@@ -347,24 +362,24 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
 
 const std::unordered_map<std::string, NodeBuilder>& BehaviorTreeFactory::builders() const
 {
-  return builders_;
+  return _p->builders;
 }
 
 const std::unordered_map<std::string, TreeNodeManifest>&
 BehaviorTreeFactory::manifests() const
 {
-  return manifests_;
+  return _p->manifests;
 }
 
 const std::set<std::string>& BehaviorTreeFactory::builtinNodes() const
 {
-  return builtin_IDs_;
+  return _p->builtin_IDs;
 }
 
 Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
                                              Blackboard::Ptr blackboard)
 {
-  if(!parser_->registeredBehaviorTrees().empty()) {
+  if(!_p->parser->registeredBehaviorTrees().empty()) {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromText "
                  "after registerBehaviorTreeFrom[File/Text].\n"
                  "This is NOTm probably, what you want to do.\n"
@@ -378,10 +393,10 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
   return tree;
 }
 
-Tree BehaviorTreeFactory::createTreeFromFile(const std::string& file_path,
+Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path &file_path,
                                              Blackboard::Ptr blackboard)
 {
-  if(!parser_->registeredBehaviorTrees().empty()) {
+  if(!_p->parser->registeredBehaviorTrees().empty()) {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromFile "
                  "after registerBehaviorTreeFrom[File/Text].\n"
                  "This is NOTm probably, what you want to do.\n"
@@ -399,7 +414,7 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::string& file_path,
 Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
                                      Blackboard::Ptr blackboard)
 {
-  auto tree = parser_->instantiateTree(blackboard, tree_name);
+  auto tree = _p->parser->instantiateTree(blackboard, tree_name);
   tree.manifests = this->manifests();
   return tree;
 }
@@ -407,8 +422,8 @@ Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
 void BehaviorTreeFactory::addDescriptionToManifest(const std::string& node_id,
                                                    const std::string& description)
 {
-  auto it = manifests_.find(node_id);
-  if (it == manifests_.end())
+  auto it = _p->manifests.find(node_id);
+  if (it == _p->manifests.end())
   {
     throw std::runtime_error("addDescriptionToManifest: wrong ID");
   }
@@ -417,17 +432,17 @@ void BehaviorTreeFactory::addDescriptionToManifest(const std::string& node_id,
 
 void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
 {
-  (*scripting_enums_)[std::string(name)] = value;
+  (*_p->scripting_enums)[std::string(name)] = value;
 }
 
 void BehaviorTreeFactory::clearSubstitutionRules()
 {
-  substitution_rules_.clear();
+  _p->substitution_rules.clear();
 }
 
 void BehaviorTreeFactory::addSubstitutionRule(StringView filter, SubstitutionRule rule)
 {
-  substitution_rules_[std::string(filter)] = rule;
+  _p->substitution_rules[std::string(filter)] = rule;
 }
 
 void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string &json_text)
@@ -472,9 +487,25 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string &json_t
 const std::unordered_map<std::string, BehaviorTreeFactory::SubstitutionRule> &
 BehaviorTreeFactory::substitutionRules() const
 {
-  return substitution_rules_;
+  return _p->substitution_rules;
 }
 
+
+Tree &Tree::operator=(Tree &&other)
+{
+  subtrees = std::move(other.subtrees);
+  manifests = std::move(other.manifests);
+  wake_up_ = other.wake_up_;
+  return *this;
+}
+
+Tree::Tree()
+{}
+
+Tree::Tree(Tree &&other)
+{
+  (*this) = std::move(other);
+}
 
 void Tree::initialize()
 {
@@ -486,6 +517,23 @@ void Tree::initialize()
       node->setWakeUpInstance(wake_up_);
     }
   }
+}
+
+void Tree::haltTree()
+{
+  if (!rootNode())
+  {
+    return;
+  }
+  // the halt should propagate to all the node if the nodes
+  // have been implemented correctly
+  rootNode()->haltNode();
+
+  //but, just in case.... this should be no-op
+  auto visitor = [](BT::TreeNode* node) { node->haltNode(); };
+  BT::applyRecursiveVisitor(rootNode(), visitor);
+
+  rootNode()->resetStatus();
 }
 
 TreeNode* Tree::rootNode() const

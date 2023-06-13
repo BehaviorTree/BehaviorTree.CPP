@@ -10,8 +10,23 @@ int64_t ToUsec(Duration ts)
   return std::chrono::duration_cast<std::chrono::microseconds>(ts).count();
 }
 
+struct FileLogger2::PImpl
+{
+  std::ofstream file_stream;
+
+  Duration first_timestamp = {};
+
+  std::deque<Transition> transitions_queue;
+  std::condition_variable queue_cv;
+  std::mutex queue_mutex;
+
+  std::thread writer_thread;
+  std::atomic_bool loop = true;
+};
+
 FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& filepath) :
-  StatusChangeLogger(tree.rootNode())
+  StatusChangeLogger(tree.rootNode()),
+  _p(new PImpl)
 {
   if(filepath.filename().extension() != ".btlog")
   {
@@ -21,63 +36,63 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
   enableTransitionToIdle(true);
 
   //-------------------------------------
-  file_stream_.open(filepath, std::ofstream::binary | std::ofstream::out);
+  _p->file_stream.open(filepath, std::ofstream::binary | std::ofstream::out);
 
-  if(!file_stream_.is_open()) {
+  if(!_p->file_stream.is_open()) {
     throw RuntimeError("problem opening file in FileLogger2");
   }
 
-  file_stream_ << "BTCPP4-FileLogger2";
+  _p->file_stream << "BTCPP4-FileLogger2";
 
   const uint8_t protocol = 1;
 
-  file_stream_ << protocol;
+  _p->file_stream << protocol;
 
   std::string const xml = WriteTreeToXML(tree, true, true);
 
   // serialize the length of the buffer in the first 4 bytes
   char write_buffer[8];
   flatbuffers::WriteScalar(write_buffer, static_cast<int32_t>(xml.size()));
-  file_stream_.write(write_buffer, 4);
+  _p->file_stream.write(write_buffer, 4);
 
   // write the XML definition
-  file_stream_.write(xml.data(), int(xml.size()));
+  _p->file_stream.write(xml.data(), int(xml.size()));
 
-  first_timestamp_ = std::chrono::system_clock::now().time_since_epoch();
+  _p->first_timestamp = std::chrono::system_clock::now().time_since_epoch();
 
   // save the first timestamp in the next 8 bytes (microseconds)
-  int64_t timestamp_usec = ToUsec(first_timestamp_);
+  int64_t timestamp_usec = ToUsec(_p->first_timestamp);
   flatbuffers::WriteScalar(write_buffer, timestamp_usec);
-  file_stream_.write(write_buffer, 8);
+  _p->file_stream.write(write_buffer, 8);
 
-  writer_thread_ = std::thread(&FileLogger2::writerLoop, this);
+  _p->writer_thread = std::thread(&FileLogger2::writerLoop, this);
 }
 
 FileLogger2::~FileLogger2()
 {
-  loop_ = false;
-  queue_cv_.notify_one();
-  writer_thread_.join();
-  file_stream_.close();
+  _p->loop = false;
+  _p->queue_cv.notify_one();
+  _p->writer_thread.join();
+  _p->file_stream.close();
 }
 
 void FileLogger2::callback(Duration timestamp, const TreeNode& node,
                           NodeStatus /*prev_status*/, NodeStatus status)
 {
   Transition trans;
-  trans.timestamp_usec = uint64_t(ToUsec(timestamp - first_timestamp_));
+  trans.timestamp_usec = uint64_t(ToUsec(timestamp - _p->first_timestamp));
   trans.node_uid = node.UID();
   trans.status = static_cast<uint64_t>(status);
   {
-    std::scoped_lock lock(queue_mutex_);
-    transitions_queue_.push_back(trans);
+    std::scoped_lock lock(_p->queue_mutex);
+    _p->transitions_queue.push_back(trans);
   }
-  queue_cv_.notify_one();
+  _p->queue_cv.notify_one();
 }
 
 void FileLogger2::flush()
 {
-  file_stream_.flush();
+  _p->file_stream.flush();
 }
 
 void FileLogger2::writerLoop()
@@ -85,15 +100,15 @@ void FileLogger2::writerLoop()
   // local buffer in this thread
   std::deque<Transition> transitions;
 
-  while(loop_)
+  while(_p->loop)
   {
     transitions.clear();
     {
-      std::unique_lock lock(queue_mutex_);
-      queue_cv_.wait_for(lock, std::chrono::milliseconds(10),
-                         [this]() {return !transitions_queue_.empty() && loop_; } );
-      // simple way to pop all the transitions from transitions_queue_ into transitions
-      std::swap(transitions, transitions_queue_);
+      std::unique_lock lock(_p->queue_mutex);
+      _p->queue_cv.wait_for(lock, std::chrono::milliseconds(10),
+                         [this]() {return !_p->transitions_queue.empty() && _p->loop; } );
+      // simple way to pop all the transitions from _p->transitions_queue into transitions
+      std::swap(transitions, _p->transitions_queue);
     }
     while(!transitions.empty())
     {
@@ -103,10 +118,10 @@ void FileLogger2::writerLoop()
       std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2 );
       std::memcpy(write_buffer.data() + 8, &trans.status, 1 );
 
-      file_stream_.write(write_buffer.data(), 9);
+      _p->file_stream.write(write_buffer.data(), 9);
       transitions.pop_front();
     }
-    file_stream_.flush();
+    _p->file_stream.flush();
   }
 }
 

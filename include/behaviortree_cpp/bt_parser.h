@@ -1,4 +1,4 @@
-/* Copyright (C) 2022 Davide Faconti -  All Rights Reserved
+/* Copyright (C) 2023 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/blackboard.h"
 
@@ -32,7 +33,10 @@ public:
   Parser(const Parser& other) = delete;
   Parser& operator=(const Parser& other) = delete;
 
-  virtual void loadFromFile(const std::string& filename, bool add_includes = true) = 0;
+  Parser(Parser&& other) = default;
+  Parser& operator=(Parser&& other) = default;
+
+  virtual void loadFromFile(const std::filesystem::path& filename, bool add_includes = true) = 0;
 
   virtual void loadFromText(const std::string& xml_text, bool add_includes = true) = 0;
 

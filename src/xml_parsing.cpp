@@ -47,7 +47,7 @@ auto StrEqual = [](const char* str1, const char* str2) -> bool {
   return strcmp(str1, str2) == 0;
 };
 
-struct XMLParser::Pimpl
+struct XMLParser::PImpl
 {
   TreeNode::Ptr createNodeFromXML(const XMLElement* element,
                                   const Blackboard::Ptr& blackboard,
@@ -75,8 +75,8 @@ struct XMLParser::Pimpl
   std::filesystem::path current_path;
 
   int suffix_count;
-
-  explicit Pimpl(const BehaviorTreeFactory& fact) :
+  
+  explicit PImpl(const BehaviorTreeFactory& fact) :
     factory(fact), current_path(std::filesystem::current_path()), suffix_count(0)
   {}
 
@@ -93,15 +93,13 @@ struct XMLParser::Pimpl
 #pragma GCC diagnostic pop
 #endif
 
-XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new Pimpl(factory))
+XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new PImpl(factory))
 {}
 
 XMLParser::~XMLParser()
-{
-  delete _p;
-}
+{}
 
-void XMLParser::loadFromFile(const std::string& filename, bool add_includes)
+void XMLParser::loadFromFile(const std::filesystem::path& filename, bool add_includes)
 {
   _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
 
@@ -134,7 +132,7 @@ std::vector<std::string> XMLParser::registeredBehaviorTrees() const
   return out;
 }
 
-void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
+void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
 {
   if (doc->Error())
   {
@@ -486,7 +484,7 @@ void XMLParser::clearInternalState()
   _p->clear();
 }
 
-TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
+TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
                                                   const Blackboard::Ptr& blackboard,
                                                   const TreeNode::Ptr& node_parent,
                                                   const std::string& prefix_path,
@@ -708,7 +706,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   return new_node;
 }
 
-void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
+void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     const std::string& tree_ID,
     const std::string& tree_name,
     const std::string& prefix_path,
@@ -813,7 +811,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
   recursiveStep(root_node, new_tree, prefix_path, root_element);
 }
 
-void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,
+void XMLParser::PImpl::getPortsRecursively(const XMLElement* element,
                                            std::vector<std::string>& output_ports)
 {
   for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
