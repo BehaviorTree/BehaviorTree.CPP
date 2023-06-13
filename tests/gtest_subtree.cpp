@@ -20,7 +20,7 @@ TEST(SubTree, SiblingPorts_Issue_72)
     </BehaviorTree>
 
     <BehaviorTree ID="mySubtree">
-            <SaySomething ID="AlwaysSuccess" message="{param}" />
+            <SaySomething message="{param}" />
     </BehaviorTree>
 </root> )";
 
@@ -146,16 +146,13 @@ TEST(SubTree, SubtreePlusA)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SetBlackboard value="Hello" output_key="myParam" />
-            <SubTreePlus ID="mySubtree" param="{myParam}" />
-            <SubTreePlus ID="mySubtree" param="World" />
             <SetBlackboard value="Auto remapped" output_key="param" />
             <SubTreePlus ID="mySubtree" __autoremap="1"  />
         </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="mySubtree">
-            <SaySomething message="{param}" />
+        <SaySomething message="{param}" />
     </BehaviorTree>
 </root> )";
 
@@ -309,4 +306,43 @@ TEST(SubTree, SubtreeIssue433)
   auto ret = tree.tickRoot();
 
   ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
+}
+
+TEST(SubTree, SubtreeIssue563)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="Tree1">
+
+<BehaviorTree ID="Tree1">
+  <Sequence>
+    <SetBlackboard output_key="the_message" value="hello world"/>
+    <SubTreePlus ID="Tree2" __autoremap="true"/>
+    <SaySomething message="{reply}" />
+  </Sequence>
+</BehaviorTree>
+
+<BehaviorTree ID="Tree2">
+    <SubTreePlus ID="Tree3" __autoremap="true"/>
+</BehaviorTree>
+
+<BehaviorTree ID="Tree3">
+    <SubTreePlus ID="Talker" __autoremap="true"/>
+</BehaviorTree>
+
+<BehaviorTree ID="Talker">
+  <Sequence>
+    <SaySomething message="{the_message}" />
+    <SetBlackboard output_key="reply" value="done"/>
+  </Sequence>
+</BehaviorTree>
+
+</root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+
+  Tree tree = factory.createTreeFromText(xml_text);
+  auto ret = tree.tickRoot();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+
 }

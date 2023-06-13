@@ -258,24 +258,30 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
 
     std::unique_lock<std::mutex> entry_lock(config_.blackboard->entryMutex());
     const Any* val = config_.blackboard->getAny(static_cast<std::string>(remapped_key));
-    if (val && val->empty() == false)
+
+    if(!val)
     {
-      if (std::is_same<T, std::string>::value == false &&
-          val->type() == typeid(std::string))
-      {
-        destination = convertFromString<T>(val->cast<std::string>());
-      }
-      else
-      {
-        destination = val->cast<T>();
-      }
-      return {};
+      return nonstd::make_unexpected(StrCat("getInput() failed because it was unable to "
+                                     "find the port [", key,
+                                     "] remapped to BB [", remapped_key, "]"));
     }
 
-    return nonstd::make_unexpected(StrCat("getInput() failed because it was unable to "
-                                          "find the "
-                                          "key [",
-                                          key, "] remapped to [", remapped_key, "]"));
+    if(val->empty())
+    {
+      return nonstd::make_unexpected(StrCat("getInput() failed because the port [", key,
+                                            "] remapped to BB [", remapped_key, "] was found,"
+                                            "but its content was not initialized correctly"));
+    }
+
+    if (!std::is_same<T, std::string>::value && val->type() == typeid(std::string))
+    {
+      destination = convertFromString<T>(val->cast<std::string>());
+    }
+    else
+    {
+      destination = val->cast<T>();
+    }
+    return {};
   }
   catch (std::exception& err)
   {
