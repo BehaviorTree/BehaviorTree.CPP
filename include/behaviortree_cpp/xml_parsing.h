@@ -3,6 +3,7 @@
 
 #include "behaviortree_cpp/bt_parser.h"
 
+#include <filesystem>
 #include <unordered_map>
 
 namespace BT
@@ -22,7 +23,10 @@ public:
   XMLParser(const XMLParser& other) = delete;
   XMLParser& operator=(const XMLParser& other) = delete;
 
-  void loadFromFile(const std::string& filename, bool add_includes = true) override;
+  XMLParser(XMLParser&& other) = default;
+  XMLParser& operator=(XMLParser&& other) = default;
+
+  void loadFromFile(const std::filesystem::path &filename, bool add_includes = true) override;
 
   void loadFromText(const std::string& xml_text, bool add_includes = true) override;
 
@@ -36,8 +40,8 @@ public:
   void clearInternalState() override;
 
 private:
-  struct Pimpl;
-  Pimpl* _p;
+  struct PImpl;
+  std::unique_ptr<PImpl> _p;
 };
 
 void VerifyXML(const std::string& xml_text,

@@ -326,3 +326,43 @@ TEST(SubTree, StringConversions_Issue530)
   Tree tree = factory.createTree("MainTree");
   tree.tickOnce();
 }
+
+TEST(SubTree, SubtreeIssue563)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" >
+
+<BehaviorTree ID="Tree1">
+  <Sequence>
+    <SetBlackboard output_key="the_message" value="hello world"/>
+    <SubTree ID="Tree2" _autoremap="true"/>
+    <SaySomething message="{reply}" />
+  </Sequence>
+</BehaviorTree>
+
+<BehaviorTree ID="Tree2">
+    <SubTree ID="Tree3" _autoremap="true"/>
+</BehaviorTree>
+
+<BehaviorTree ID="Tree3">
+    <SubTree ID="Talker" _autoremap="true"/>
+</BehaviorTree>
+
+<BehaviorTree ID="Talker">
+  <Sequence>
+    <SaySomething message="{the_message}" />
+    <Script code=" reply:='done' "/>
+  </Sequence>
+</BehaviorTree>
+
+</root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  factory.registerBehaviorTreeFromText(xml_text);
+  Tree tree = factory.createTree("Tree1");
+
+  auto ret = tree.tickOnce();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+
+}

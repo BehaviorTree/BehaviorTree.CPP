@@ -2,6 +2,22 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* use PImpl in multiple classes
+* updated FileLogger2
+* better error messages
+* blackboard refactoring to fix buggy _autoremap
+* improved support for default values
+* fix error and add nodiscard
+* Fix `#580 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/580>`_ : more informative error when not specializing BT::toStr
+* add builtin models to WriteTreeToXML
+* add simple example to generate logs
+* add Sleep Node
+* Fix `#271 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/271>`_: better error message
+* remove EOL ros2 from CI
+* Contributors: Davide Faconti
+
 4.2.1 (2023-06-07)
 ------------------
 * Fix `#570 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/570>`_: string_view set in blackboard

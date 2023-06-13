@@ -8,6 +8,14 @@
 namespace BT
 {
 
+/**
+ * @brief The Groot2Publisher is used tt create an interface between
+ * your BT.CPP executor and Groot2.
+ *
+ * An inter-process communication mechanism allow the two processes
+ * to communicate throught a TCP port. The user should provide the
+ * port to be used in the constructor.
+ */
 class Groot2Publisher : public StatusChangeLogger
 {
   static std::mutex used_ports_mutex;
@@ -19,6 +27,23 @@ class Groot2Publisher : public StatusChangeLogger
   Groot2Publisher(const BT::Tree& tree, unsigned server_port = 1667);
 
   ~Groot2Publisher() override;
+
+  Groot2Publisher(const Groot2Publisher& other) = delete;
+  Groot2Publisher& operator=(const Groot2Publisher& other) = delete;
+
+  Groot2Publisher(Groot2Publisher&& other) = default;
+  Groot2Publisher& operator=(Groot2Publisher&& other)  = default;
+
+  /**
+   * @brief setMaxHeartbeatDelay is used to tell the publisher
+   * when a connection with Groot2 should be cancelled, if no
+   * hearbeat is received.
+   *
+   * Default is 5000 ms
+   */
+  void setMaxHeartbeatDelay( std::chrono::milliseconds delay);
+
+  std::chrono::milliseconds maxHeartbeatDelay() const;
 
   private:
 
@@ -47,41 +72,9 @@ class Groot2Publisher : public StatusChangeLogger
 
   Monitor::Hook::Ptr getHook(Position pos, uint16_t node_uid);
 
-  unsigned server_port_ = 0;
-  std::string server_address_;
-  std::string publisher_address_;
+  struct PImpl;
+  std::unique_ptr<PImpl> _p;
 
-  std::string tree_xml_;
-
-  std::atomic_bool active_server_;
-  std::thread server_thread_;
-
-  std::mutex status_mutex_;
-
-  std::string status_buffer_;
-  // each element of this map points to a character in status_buffer_
-  std::unordered_map<uint16_t, char*> status_buffer_map_;
-
-  // weak reference to the tree.
-  std::unordered_map<std::string, std::weak_ptr<BT::Tree::Subtree>> subtrees_;
-  std::unordered_map<uint16_t, std::weak_ptr<BT::TreeNode>> nodes_by_uid_;
-
-  std::mutex hooks_map_mutex_;
-  std::unordered_map<uint16_t, Monitor::Hook::Ptr> pre_hooks_;
-  std::unordered_map<uint16_t, Monitor::Hook::Ptr> post_hooks_;
-
-  std::chrono::system_clock::time_point last_heartbeat_;
-
-  std::thread heartbeat_thread_;
-
-  enum {
-    IDLE_FROM_SUCCESS = 10 + static_cast<int>(NodeStatus::SUCCESS),
-    IDLE_FROM_FAILURE = 10 + static_cast<int>(NodeStatus::FAILURE),
-    IDLE_FROM_RUNNING = 10 + static_cast<int>(NodeStatus::RUNNING)
-  };
-
-  struct Pimpl;
-  Pimpl* zmq_;
   void enableAllHooks(bool enable);
 };
 }   // namespace BT

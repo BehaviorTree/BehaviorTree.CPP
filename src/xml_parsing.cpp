@@ -47,7 +47,7 @@ auto StrEqual = [](const char* str1, const char* str2) -> bool {
   return strcmp(str1, str2) == 0;
 };
 
-struct XMLParser::Pimpl
+struct XMLParser::PImpl
 {
   TreeNode::Ptr createNodeFromXML(const XMLElement* element,
                                   const Blackboard::Ptr& blackboard,
@@ -75,8 +75,8 @@ struct XMLParser::Pimpl
   std::filesystem::path current_path;
 
   int suffix_count;
-
-  explicit Pimpl(const BehaviorTreeFactory& fact) :
+  
+  explicit PImpl(const BehaviorTreeFactory& fact) :
     factory(fact), current_path(std::filesystem::current_path()), suffix_count(0)
   {}
 
@@ -93,23 +93,20 @@ struct XMLParser::Pimpl
 #pragma GCC diagnostic pop
 #endif
 
-XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new Pimpl(factory))
+XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new PImpl(factory))
 {}
 
 XMLParser::~XMLParser()
-{
-  delete _p;
-}
+{}
 
-void XMLParser::loadFromFile(const std::string& filename, bool add_includes)
+void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_includes)
 {
   _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
 
   tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
-  doc->LoadFile(filename.c_str());
+  doc->LoadFile(filepath.string().c_str());
 
-  std::filesystem::path file_path(filename);
-  _p->current_path = std::filesystem::absolute(file_path.parent_path());
+  _p->current_path = std::filesystem::absolute(filepath.parent_path());
 
   _p->loadDocImpl(doc, add_includes);
 }
@@ -134,7 +131,7 @@ std::vector<std::string> XMLParser::registeredBehaviorTrees() const
   return out;
 }
 
-void XMLParser::Pimpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
+void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
 {
   if (doc->Error())
   {
@@ -486,7 +483,7 @@ void XMLParser::clearInternalState()
   _p->clear();
 }
 
-TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
+TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
                                                   const Blackboard::Ptr& blackboard,
                                                   const TreeNode::Ptr& node_parent,
                                                   const std::string& prefix_path,
@@ -529,6 +526,14 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   const char* attr_name = element->Attribute("name");
   std::string instance_name = attr_name ? attr_name : type_ID;
 
+  const TreeNodeManifest* manifest = nullptr;
+
+  auto manifest_it =  factory.manifests().find(type_ID);
+  if(manifest_it != factory.manifests().end())
+  {
+    manifest = &manifest_it->second;
+  }
+
   PortsRemapping port_remap;
   for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
   {
@@ -543,6 +548,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   config.blackboard = blackboard;
   config.path = prefix_path + instance_name;
   config.uid = output_tree.getUID();
+  config.manifest = manifest;
 
   if(type_ID == instance_name)
   {
@@ -581,12 +587,15 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   }
   else
   {
-    const auto& manifest = factory.manifests().at(type_ID);
+    if(!manifest)
+    {
+      throw RuntimeError("Missing manifest. It shouldn't happen. Please report this issue");
+    }
 
     //Check that name in remapping can be found in the manifest
     for (const auto& remap_it : port_remap)
     {
-      if (manifest.ports.count(remap_it.first) == 0)
+      if (manifest->ports.count(remap_it.first) == 0)
       {
         throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
                            remap_it.first, "\" in node [", type_ID, " / ", instance_name,
@@ -596,7 +605,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     }
 
     // Initialize the ports in the BB to set the type
-    for (const auto& [port_name, port_info] : manifest.ports)
+    for (const auto& [port_name, port_info] : manifest->ports)
     {
       auto remap_it = port_remap.find(port_name);
       if (remap_it == port_remap.end())
@@ -634,7 +643,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
         else
         {
           // not found, insert for the first time.
-          blackboard->setPortInfo(port_key, port_info);
+          blackboard->createEntry(port_key, port_info);
         }
       }
     }
@@ -643,8 +652,8 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     for (const auto& remap_it : port_remap)
     {
       const auto& port_name = remap_it.first;
-      auto port_it = manifest.ports.find(port_name);
-      if (port_it != manifest.ports.end())
+      auto port_it = manifest->ports.find(port_name);
+      if (port_it != manifest->ports.end())
       {
         auto direction = port_it->second.direction();
         if (direction != PortDirection::OUTPUT)
@@ -659,17 +668,21 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     }
 
     // use default value if available for empty ports. Only inputs
-    for (const auto& port_it : manifest.ports)
+    for (const auto& port_it : manifest->ports)
     {
       const std::string& port_name = port_it.first;
       const PortInfo& port_info = port_it.second;
 
       auto direction = port_info.direction();
+
       if (direction != PortDirection::OUTPUT &&
           config.input_ports.count(port_name) == 0 &&
-          port_info.defaultValue())
+          !port_info.defaultValue().empty())
       {
-        config.input_ports.insert({port_name, *port_info.defaultValue()});
+        try {
+          config.input_ports.insert({port_name, port_info.defaultValueString()});
+        }
+        catch(LogicError&) {}
       }
     }
 
@@ -692,7 +705,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
   return new_node;
 }
 
-void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
+void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     const std::string& tree_ID,
     const std::string& tree_name,
     const std::string& prefix_path,
@@ -727,8 +740,6 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
 
       std::set<StringView> mapped_keys;
 
-      bool do_autoremap = false;
-
       for (auto attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
       {
         const char* attr_name = attr->Name();
@@ -736,7 +747,8 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
 
         if (StrEqual(attr_name, "_autoremap"))
         {
-          do_autoremap = convertFromString<bool>(attr_value);
+          const bool do_autoremap = convertFromString<bool>(attr_value);
+          new_bb->enableAutoRemapping(do_autoremap);
           continue;
         }
         if (!IsAllowedPortName(attr->Name()))
@@ -759,20 +771,6 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
         }
       }
 
-      if (do_autoremap)
-      {
-        std::vector<std::string> remapped_ports;
-        auto new_root_element = tree_roots[node->name()]->FirstChildElement();
-
-        getPortsRecursively(new_root_element, remapped_ports);
-        for (const auto& port : remapped_ports)
-        {
-          if (mapped_keys.count(port) == 0)
-          {
-            new_bb->addSubtreeRemapping(port, port);
-          }
-        }
-      }
       std::string subtree_ID = element->Attribute("ID");
       std::string subtree_name = subtree->instance_name;
       if(!subtree_name.empty()) {
@@ -812,7 +810,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateSubtree(
   recursiveStep(root_node, new_tree, prefix_path, root_element);
 }
 
-void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,
+void XMLParser::PImpl::getPortsRecursively(const XMLElement* element,
                                            std::vector<std::string>& output_ports)
 {
   for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
@@ -886,9 +884,9 @@ void addNodeModelToXML(const TreeNodeManifest& model,
     {
       port_element->SetAttribute("type", BT::demangle(port_info.type()).c_str());
     }
-    if (port_info.defaultValue().has_value())
+    if (!port_info.defaultValue().empty())
     {
-      port_element->SetAttribute("default", port_info.defaultValue()->c_str());
+      port_element->SetAttribute("default", port_info.defaultValueString().c_str());
     }
 
     if (!port_info.description().empty())

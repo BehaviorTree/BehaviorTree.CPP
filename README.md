@@ -1,11 +1,11 @@
 ![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
-![Version](https://img.shields.io/badge/version-4.2-blue.svg)
+![Version](https://img.shields.io/badge/version-4.3-blue.svg)
 [![conan Ubuntu](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml)
 [![conan Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 
-# BehaviorTree.CPP 4.2
+# BehaviorTree.CPP 4.3
 
 <p align="center"><img width=350 src="animated.svg"></p>
 
@@ -99,11 +99,9 @@ You can contact the main author dfaconti@aurynrobotics.com to discuss your use c
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2018 Michele Colledanchise
-
-Copyright (c) 2018-2019 Davide Faconti, Eurecat
-
 Copyright (c) 2019-2023 Davide Faconti
+Copyright (c) 2018-2019 Davide Faconti, Eurecat
+Copyright (c) 2014-2018 Michele Colledanchise
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

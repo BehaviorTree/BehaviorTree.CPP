@@ -12,13 +12,17 @@ enum class TimestampType
   relative
 };
 
-typedef std::array<uint8_t, 12> SerializedTransition;
-
 class StatusChangeLogger
 {
 public:
   StatusChangeLogger(TreeNode* root_node);
   virtual ~StatusChangeLogger() = default;
+
+  StatusChangeLogger(const StatusChangeLogger& other) = delete;
+  StatusChangeLogger& operator=(const StatusChangeLogger& other) = delete;
+
+  StatusChangeLogger(StatusChangeLogger&& other)  = default;
+  StatusChangeLogger& operator=(StatusChangeLogger&& other) = default;
 
   virtual void callback(BT::Duration timestamp, const TreeNode& node,
                         NodeStatus prev_status, NodeStatus status) = 0;
@@ -56,7 +60,7 @@ private:
   bool show_transition_to_idle_;
   std::vector<TreeNode::StatusChangeSubscriber> subscribers_;
   TimestampType type_;
-  BT::TimePoint first_timestamp_;
+  BT::TimePoint first_timestamp_ = {};
 };
 
 //--------------------------------------------

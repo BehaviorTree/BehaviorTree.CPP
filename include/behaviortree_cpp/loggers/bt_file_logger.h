@@ -5,6 +5,7 @@
 #include <deque>
 #include <array>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
+#include "behaviortree_cpp/flatbuffers/bt_flatbuffer_helper.h"
 
 namespace BT
 {

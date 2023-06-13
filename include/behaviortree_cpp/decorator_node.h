@@ -53,7 +53,7 @@ public:
 class SimpleDecoratorNode : public DecoratorNode
 {
 public:
-  typedef std::function<NodeStatus(NodeStatus, TreeNode&)> TickFunctor;
+  using TickFunctor = std::function<NodeStatus(NodeStatus, TreeNode&)>;
 
   // You must provide the function to call when tick() is invoked
   SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,

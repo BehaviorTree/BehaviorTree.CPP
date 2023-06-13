@@ -324,28 +324,28 @@ std::vector<StringView> splitString(const StringView& strToSplit, char delimeter
 
 PortDirection PortInfo::direction() const
 {
-  return _type;
+  return type_;
 }
 
 const std::type_index& PortInfo::type() const
 {
-  return _type_info;
+  return type_info_;
 }
 
 Any PortInfo::parseString(const char* str) const
 {
-  if (_converter)
+  if (converter_)
   {
-    return _converter(str);
+    return converter_(str);
   }
   return {};
 }
 
 Any PortInfo::parseString(const std::string& str) const
 {
-  if (_converter)
+  if (converter_)
   {
-    return _converter(str);
+    return converter_(str);
   }
   return {};
 }
@@ -355,19 +355,19 @@ void PortInfo::setDescription(StringView description)
   description_ = static_cast<std::string>(description);
 }
 
-void PortInfo::setDefaultValue(StringView default_value_as_string)
-{
-  default_value_ = static_cast<std::string>(default_value_as_string);
-}
-
 const std::string& PortInfo::description() const
 {
   return description_;
 }
 
-std::optional<std::string> PortInfo::defaultValue() const
+const Any& PortInfo::defaultValue() const
 {
   return default_value_;
+}
+
+const std::string& PortInfo::defaultValueString() const
+{
+  return default_value_str_;
 }
 
 bool IsAllowedPortName(StringView str)

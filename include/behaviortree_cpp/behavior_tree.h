@@ -64,7 +64,7 @@ void applyRecursiveVisitor(TreeNode* root_node,
  */
 void printTreeRecursively(const TreeNode* root_node, std::ostream& stream = std::cout);
 
-typedef std::vector<std::pair<uint16_t, uint8_t>> SerializedTreeStatus;
+using SerializedTreeStatus = std::vector<std::pair<uint16_t, uint8_t>>;
 
 /**
  * @brief buildSerializedStatusSnapshot can be used to create a buffer that can be stored

@@ -130,15 +130,21 @@ NodeType convertFromString<NodeType>(StringView str);
 template <> [[nodiscard]]
 PortDirection convertFromString<PortDirection>(StringView str);
 
-typedef std::function<Any(StringView)> StringConverter;
+using StringConverter = std::function<Any(StringView)>;
 
-typedef std::unordered_map<const std::type_info*, StringConverter> StringConvertersMap;
+using StringConvertersMap = std::unordered_map<const std::type_info*, StringConverter>;
 
 // helper function
 template <typename T> [[nodiscard]]
 inline StringConverter GetAnyFromStringFunctor()
 {
-  return [](StringView str) { return Any(convertFromString<T>(str)); };
+  if constexpr(std::is_constructible_v<StringView, T>)
+  {
+    return [](StringView str) { return Any(str); };
+  }
+  else {
+    return [](StringView str) { return Any(convertFromString<T>(str)); };
+  }
 }
 
 template <> [[nodiscard]]
@@ -152,10 +158,17 @@ inline StringConverter GetAnyFromStringFunctor<void>()
 template<typename T> [[nodiscard]]
 std::string toStr(const T& value)
 {
-  static_assert(std::is_arithmetic_v<T>,
-                "You need a template specialization of BT::toStr() and "
-                "it must be consistent with the implementation of BT::convertFromString");
-  return std::to_string(value);
+  if constexpr(!std::is_arithmetic_v<T>)
+  {
+    throw LogicError(
+        StrCat("Function BT::toStr<T>() not specialized for type [",
+               BT::demangle(typeid(T)), "],",
+               "Implement it consistently with BT::convertFromString<T>(), "
+               "or provide at dummy version that returns an empty string.")
+      );
+  } else {
+    return std::to_string(value);
+  }
 }
 
 template <> [[nodiscard]]
@@ -250,11 +263,11 @@ public:
   };
 
   PortInfo(PortDirection direction = PortDirection::INOUT) :
-    _type(direction), _type_info(typeid(AnyTypeAllowed))
+    type_(direction), type_info_(typeid(AnyTypeAllowed))
   {}
 
   PortInfo(PortDirection direction, std::type_index type_info, StringConverter conv) :
-    _type(direction), _type_info(type_info), _converter(conv)
+    type_(direction), type_info_(type_info), converter_(conv)
   {}
 
   [[nodiscard]] PortDirection direction() const;
@@ -274,28 +287,38 @@ public:
 
   void setDescription(StringView description);
 
-  void setDefaultValue(StringView default_value_as_string);
+  template <typename T>
+  void setDefaultValue(const T& default_value) {
+    default_value_ = Any(default_value);
+    try{
+      default_value_str_ = BT::toStr(default_value);
+    }
+    catch(LogicError&) {}
+  }
 
   [[nodiscard]] const std::string& description() const;
 
-  [[nodiscard]] std::optional<std::string> defaultValue() const;
+  [[nodiscard]] const Any& defaultValue() const;
+
+  [[nodiscard]] const std::string& defaultValueString() const;
 
   [[nodiscard]] bool isStronglyTyped() const
   {
-    return _type_info != typeid(AnyTypeAllowed);
+    return type_info_ != typeid(AnyTypeAllowed);
   }
 
   [[nodiscard]] const StringConverter& converter() const
   {
-    return _converter;
+    return converter_;
   }
 
 private:
-  PortDirection _type;
-  std::type_index _type_info;
-  StringConverter _converter;
+  PortDirection type_;
+  std::type_index type_info_;
+  StringConverter converter_;
   std::string description_;
-  std::optional<std::string> default_value_;
+  Any default_value_;
+  std::string default_value_str_;
 };
 
 template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
@@ -355,7 +378,7 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& defa
                                                   StringView description)
 {
   auto out = CreatePort<T>(PortDirection::INPUT, name, description);
-  out.second.setDefaultValue(BT::toStr(default_value));
+  out.second.setDefaultValue(default_value);
   return out;
 }
 
@@ -365,12 +388,12 @@ inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           StringView description)
 {
   auto out = CreatePort<T>(PortDirection::INOUT, name, description);
-  out.second.setDefaultValue(BT::toStr(default_value));
+  out.second.setDefaultValue(default_value);
   return out;
 }
 //----------
 
-typedef std::unordered_map<std::string, PortInfo> PortsList;
+using PortsList = std::unordered_map<std::string, PortInfo>;
 
 template <typename T, typename = void>
 struct has_static_method_providedPorts : std::false_type
@@ -398,8 +421,8 @@ inline PortsList
   return {};
 }
 
-typedef std::chrono::high_resolution_clock::time_point TimePoint;
-typedef std::chrono::high_resolution_clock::duration Duration;
+using TimePoint = std::chrono::high_resolution_clock::time_point;
+using Duration = std::chrono::high_resolution_clock::duration;
 
 }   // namespace BT
 

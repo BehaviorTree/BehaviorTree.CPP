@@ -12,7 +12,7 @@ public:
     std::cout << "ctor" << std::endl;
   }
 
-  NodeStatus tick()
+  NodeStatus tick() override
   {
     int val_A = 0;
     int val_B = 0;
@@ -95,7 +95,7 @@ public:
     SyncActionNode(name, config)
   {}
 
-  NodeStatus tick()
+  NodeStatus tick() override
   {
     int val_A = 0;
     MyType val_B;
@@ -119,7 +119,7 @@ public:
     SyncActionNode(name, config)
   {}
 
-  NodeStatus tick()
+  NodeStatus tick() override
   {
     return NodeStatus::SUCCESS;
   }
@@ -160,7 +160,7 @@ public:
     SyncActionNode(name, config)
   {}
 
-  NodeStatus tick()
+  NodeStatus tick() override
   {
     return NodeStatus::SUCCESS;
   }
@@ -289,5 +289,63 @@ TEST(PortTest, StrintToEnum)
   ASSERT_EQ(Color::Green, second_node->color);
 }
 
+
+class DefaultTestAction : public SyncActionNode
+{
+public:
+  struct Point2D {
+    int x;
+    int y;
+  };
+
+  DefaultTestAction(const std::string& name, const NodeConfig& config) :
+    SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    const int answer = getInput<int>("answer").value();
+    if(answer != 42) {
+      return NodeStatus::FAILURE;
+    }
+
+    const std::string greet = getInput<std::string>("greeting").value();
+    if(greet != "hello") {
+      return NodeStatus::FAILURE;
+    }
+
+    const Point2D point = getInput<Point2D>("pos").value();
+    if(point.x != 1 || point.y != 2) {
+      return NodeStatus::FAILURE;
+    }
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::InputPort<int>("answer", 42, "the answer"),
+            BT::InputPort<std::string>("greeting", "hello", "be polite"),
+            BT::InputPort<Point2D>("pos", {1,2}, "where")};
+  }
+
+  Color color = Color::Undefined;
+};
+
+TEST(PortTest, DefaultInput)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <DefaultTestAction/>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DefaultTestAction>("DefaultTestAction");
+  auto tree = factory.createTreeFromText(xml_txt);
+  auto status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
 
 

@@ -1,5 +1,5 @@
 /* Copyright (C) 2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2023 Davide Faconti - All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -14,12 +14,13 @@
 #ifndef BT_FACTORY_H
 #define BT_FACTORY_H
 
+#include <algorithm>
+#include <cstring>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-#include <cstring>
-#include <algorithm>
 #include <set>
 
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
@@ -99,47 +100,19 @@ public:
   };
 
   std::vector<Subtree::Ptr> subtrees;
-
   std::unordered_map<std::string, TreeNodeManifest> manifests;
 
-  Tree()
-  {}
+  Tree();
 
-  // non-copyable. Only movable
   Tree(const Tree&) = delete;
   Tree& operator=(const Tree&) = delete;
 
-  Tree(Tree&& other)
-  {
-    (*this) = std::move(other);
-  }
-
-  Tree& operator=(Tree&& other)
-  {
-    subtrees = std::move(other.subtrees);
-    manifests = std::move(other.manifests);
-    wake_up_ = other.wake_up_;
-    return *this;
-  }
+  Tree(Tree&& other);
+  Tree& operator=(Tree&& other);
 
   void initialize();
 
-  void haltTree()
-  {
-    if (!rootNode())
-    {
-      return;
-    }
-    // the halt should propagate to all the node if the nodes
-    // have been implemented correctly
-    rootNode()->haltNode();
-
-    //but, just in case.... this should be no-op
-    auto visitor = [](BT::TreeNode* node) { node->haltNode(); };
-    BT::applyRecursiveVisitor(rootNode(), visitor);
-
-    rootNode()->resetStatus();
-  }
+  void haltTree();
 
   [[nodiscard]] TreeNode* rootNode() const;
 
@@ -226,6 +199,13 @@ class BehaviorTreeFactory
 {
 public:
   BehaviorTreeFactory();
+  ~BehaviorTreeFactory();
+
+  BehaviorTreeFactory(const BehaviorTreeFactory& other) = delete;
+  BehaviorTreeFactory& operator=(const BehaviorTreeFactory& other) = delete;
+
+  BehaviorTreeFactory(BehaviorTreeFactory&& other) = default;
+  BehaviorTreeFactory& operator=(BehaviorTreeFactory&& other)  = default;
 
   /// Remove a registered ID.
   bool unregisterBuilder(const std::string& ID);
@@ -302,7 +282,7 @@ public:
      * where "tree_id" come from the XML attribute <BehaviorTree ID="tree_id">
      *
      */
-  void registerBehaviorTreeFromFile(const std::string& filename);
+  void registerBehaviorTreeFromFile(const std::filesystem::path& filename);
 
   /// Same of registerBehaviorTreeFromFile, but passing the XML text,
   /// instead of the filename.
@@ -310,6 +290,7 @@ public:
 
   /// Returns the ID of the trees registered either with
   /// registerBehaviorTreeFromFile or registerBehaviorTreeFromText.
+  [[nodiscard]]
   std::vector<std::string> registeredBehaviorTrees() const;
 
   /**
@@ -325,6 +306,7 @@ public:
      * @param config   configuration that is passed to the constructor of the TreeNode.
      * @return         new node.
      */
+  [[nodiscard]]
   std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& name,
                                                 const std::string& ID,
                                                 const NodeConfig& config) const;
@@ -392,20 +374,48 @@ public:
   }
 
   /// All the builders. Made available mostly for debug purposes.
+  [[nodiscard]]
   const std::unordered_map<std::string, NodeBuilder>& builders() const;
 
   /// Manifests of all the registered TreeNodes.
+  [[nodiscard]]
   const std::unordered_map<std::string, TreeNodeManifest>& manifests() const;
 
   /// List of builtin IDs.
+  [[nodiscard]]
   const std::set<std::string>& builtinNodes() const;
 
+  /**
+   * @brief createTreeFromText will parse the XML directly from string.
+   * The XML needs to contain either a single <BehaviorTree> or specify
+   * the attribute [main_tree_to_execute].
+   *
+   * Consider using instead registerBehaviorTreeFromText() and createTree().
+   *
+   * @param text        string containing the XML
+   * @param blackboard  blackboard of the root tree
+   * @return the newly created tree
+   */
+  [[nodiscard]]
   Tree createTreeFromText(const std::string& text,
                           Blackboard::Ptr blackboard = Blackboard::create());
 
-  Tree createTreeFromFile(const std::string& file_path,
+  /**
+   * @brief createTreeFromFile will parse the XML from a given file.
+   * The XML needs to contain either a single <BehaviorTree> or specify
+   * the attribute [main_tree_to_execute].
+   *
+   * Consider using instead registerBehaviorTreeFromFile() and createTree().
+   *
+   * @param file_path   location of the file to load
+   * @param blackboard  blackboard of the root tree
+   * @return the newly created tree
+   */
+  [[nodiscard]]
+  Tree createTreeFromFile(const std::filesystem::path& file_path,
                           Blackboard::Ptr blackboard = Blackboard::create());
 
+  [[nodiscard]]
   Tree createTree(const std::string& tree_name,
                   Blackboard::Ptr blackboard = Blackboard::create());
 
@@ -476,20 +486,14 @@ public:
   /**
    * @brief substitutionRules return the current substitution rules.
    */
+  [[nodiscard]]
   const std::unordered_map<std::string, SubstitutionRule>&
   substitutionRules() const;
 
 private:
-  std::unordered_map<std::string, NodeBuilder> builders_;
-  std::unordered_map<std::string, TreeNodeManifest> manifests_;
-  std::set<std::string> builtin_IDs_;
-  std::unordered_map<std::string, Any> behavior_tree_definitions_;
 
-  std::shared_ptr<std::unordered_map<std::string, int>> scripting_enums_;
-
-  std::shared_ptr<BT::Parser> parser_;
-
-  std::unordered_map<std::string, SubstitutionRule> substitution_rules_;
+  struct PImpl;
+  std::unique_ptr<PImpl> _p;
 
 };
 
