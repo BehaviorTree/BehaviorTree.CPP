@@ -59,6 +59,9 @@ std::string toStr(NodeStatus status, bool colored)
                "RUNNING"
                "\x1b[0m";   // YELLOW
       case NodeStatus::SKIPPED:
+        return "\x1b[34m"
+               "SKIPPED"
+               "\x1b[0m";   // BLUE
       case NodeStatus::IDLE:
         return "\x1b[36m"
                "IDLE"

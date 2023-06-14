@@ -38,9 +38,9 @@ NodeStatus ReactiveSequence::tick()
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
-        // just in case, make sure that following children are not
-        // in RUNNING state too
-        for (size_t i = index + 1; i < childrenCount(); i++)
+        // reset the previous children, to make sure that they are in IDLE state
+        // the next time we tick them
+        for (size_t i = 0; i < index; i++)
         {
           haltChild(i);
         }
