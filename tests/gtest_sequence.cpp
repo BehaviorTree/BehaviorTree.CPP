@@ -227,7 +227,8 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
   BT::NodeStatus state = root.executeTick();
 
   ASSERT_EQ(NodeStatus::RUNNING, state);
-  ASSERT_EQ(NodeStatus::SUCCESS, seq_conditions.status());
+  // reactive node already reset seq_conditions
+  ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
   ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
   ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
   ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
