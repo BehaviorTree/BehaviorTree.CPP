@@ -1,14 +1,12 @@
 #include <gtest/gtest.h>
 #include "behaviortree_cpp/bt_factory.h"
 #include "test_helper.hpp"
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;
 
 TEST(Reactive, RunningChildren)
 {
-
   static const char* reactive_xml_text = R"(
 <root BTCPP_format="4" >
   <BehaviorTree ID="MainTree">
@@ -84,12 +82,7 @@ TEST(Reactive, Issue587)
   RegisterTestTick(factory, "Test", counters);
 
   auto tree = factory.createTreeFromText(reactive_xml_text);
-  BT::StdCoutLogger logger(tree);
-
- // for(int i=0; i<5; i++)
-  {
-    tree.tickWhileRunning();
-  }
+  tree.tickWhileRunning();
 
   ASSERT_EQ(counters[0], 1);
 }
