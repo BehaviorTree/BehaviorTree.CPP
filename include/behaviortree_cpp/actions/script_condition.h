@@ -1,4 +1,4 @@
-/*  Copyright (C) 2022 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2023 Davide Faconti -  All Rights Reserved
  *
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
@@ -13,37 +13,39 @@
 
 #pragma once
 
-#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp/condition_node.h"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 
 namespace BT
 {
-class ScriptNode : public SyncActionNode
+/**
+ * @brief Execute a script, and if the result is true, return
+ * SUCCESS, FAILURE otherwise.
+ */
+class ScriptCondition : public ConditionNode
 {
 public:
-  ScriptNode(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  ScriptCondition(const std::string& name, const NodeConfig& config) :
+    ConditionNode(name, config)
   {
-    setRegistrationID("ScriptNode");
-
+    setRegistrationID("ScriptCondition");
     loadExecutor();
   }
 
   static PortsList providedPorts()
   {
-    return {InputPort("code", "Piece of code that can be parsed")};
+    return {InputPort("code", "Piece of code that can be parsed. Must return false or true")};
   }
 
 private:
   virtual BT::NodeStatus tick() override
   {
     loadExecutor();
-    if (_executor)
-    {
-      Ast::Environment env = {config().blackboard, config().enums};
-      _executor(env);
-    }
-    return NodeStatus::SUCCESS;
+
+    Ast::Environment env = {config().blackboard, config().enums};
+    auto result = _executor(env);
+    return (result.cast<bool>()) ?
+        NodeStatus::SUCCESS : NodeStatus::FAILURE;
   }
 
   void loadExecutor()
@@ -51,7 +53,7 @@ private:
     std::string script;
     if (!getInput("code", script))
     {
-      throw RuntimeError("Missing port [code] in Script");
+      throw RuntimeError("Missing port [code] in ScriptCondition");
     }
     if (script == _script)
     {
