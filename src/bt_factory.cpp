@@ -56,6 +56,7 @@ BehaviorTreeFactory::BehaviorTreeFactory():
 #endif
 
   registerNodeType<ParallelNode>("Parallel");
+  registerNodeType<ParallelAllNode>("ParallelAll");
   registerNodeType<ReactiveSequence>("ReactiveSequence");
   registerNodeType<ReactiveFallback>("ReactiveFallback");
   registerNodeType<IfThenElseNode>("IfThenElse");
