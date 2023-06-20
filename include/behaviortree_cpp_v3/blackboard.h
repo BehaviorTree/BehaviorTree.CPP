@@ -89,6 +89,14 @@ public:
     }
     else
     {
+      // Try with autoremapping. This should work recursively
+      if(autoremapping_)
+      {
+        if(auto parent = parent_bb_.lock()) {
+          return parent->get<T>(key);
+        }
+      }
+
       throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
     }
   }
