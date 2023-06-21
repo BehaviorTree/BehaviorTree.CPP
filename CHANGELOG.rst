@@ -2,6 +2,16 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue `#592 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/592>`_
+* use lambda in tutorial
+* add script condition
+* "fix" issue `#587 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/587>`_: ReactiveSequence should set conditions to IDLE
+* better error message
+* Fix issue `#585 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/585>`_
+* Contributors: Davide Faconti
+
 4.3.0 (2023-06-13)
 ------------------
 * use PImpl in multiple classes
