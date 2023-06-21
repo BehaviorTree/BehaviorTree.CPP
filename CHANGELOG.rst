@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.1 (2023-06-21)
+------------------
 * fix issue `#592 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/592>`_
 * use lambda in tutorial
 * add script condition
