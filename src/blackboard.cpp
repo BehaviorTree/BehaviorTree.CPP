@@ -8,13 +8,6 @@ void Blackboard::enableAutoRemapping(bool remapping)
   autoremapping_ = remapping;
 }
 
-Blackboard::Entry *Blackboard::getEntry(const std::string &key)
-{
-  // "Avoid Duplication in const and Non-const Member Function,"
-  // on p. 23, in Item 3 "Use const whenever possible," in Effective C++, 3d ed
-  return const_cast<Entry*>( static_cast<const Blackboard &>(*this).getEntry(key));
-}
-
 AnyPtrLocked Blackboard::getAnyLocked(const std::string &key)
 {
   if(auto entry = getEntry(key))
@@ -43,12 +36,66 @@ Any *Blackboard::getAny(const std::string &key)
   return const_cast<Any*>(getAnyLocked(key).get());
 }
 
-const Blackboard::Entry *Blackboard::getEntry(const std::string &key) const
+const std::shared_ptr<Blackboard::Entry> Blackboard::getEntry(const std::string &key) const
 {
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = storage_.find(key);
-  return (it == storage_.end()) ? nullptr : it->second.get();
+  if(it != storage_.end()) {
+    return it->second;
+  }
+  // not found. Try autoremapping
+  if (auto parent = parent_bb_.lock())
+  {
+    auto remap_it = internal_to_external_.find(key);
+    if (remap_it != internal_to_external_.cend())
+    {
+      auto const& new_key = remap_it->second;
+      return parent->getEntry(new_key);
+    }
+    if(autoremapping_)
+    {
+      return parent->getEntry(key);
+    }
+  }
+  return {};
 }
+
+
+std::shared_ptr<Blackboard::Entry> Blackboard::getEntry(const std::string &key)
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+  auto it = storage_.find(key);
+  if(it != storage_.end()) {
+    return it->second;
+  }
+
+  // not found. Try autoremapping
+  if (auto parent = parent_bb_.lock())
+  {
+    auto remap_it = internal_to_external_.find(key);
+    if (remap_it != internal_to_external_.cend())
+    {
+      auto const& new_key = remap_it->second;
+      auto entry = parent->getEntry(new_key);
+      if(entry)
+      {
+        storage_.insert({key, entry});
+      }
+      return entry;
+    }
+    if(autoremapping_)
+    {
+      auto entry = parent->getEntry(key);
+      if(entry)
+      {
+        storage_.insert({key, entry});
+      }
+      return entry;
+    }
+  }
+  return {};
+}
+
 
 const PortInfo* Blackboard::portInfo(const std::string& key)
 {

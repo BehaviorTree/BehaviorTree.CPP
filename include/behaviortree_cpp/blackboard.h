@@ -63,9 +63,9 @@ public:
 
   void enableAutoRemapping(bool remapping);
 
-  [[nodiscard]] const Entry* getEntry(const std::string& key) const;
+  [[nodiscard]] const std::shared_ptr<Entry> getEntry(const std::string& key) const;
 
-  [[nodiscard]] Entry* getEntry(const std::string& key);
+  [[nodiscard]] std::shared_ptr<Blackboard::Entry> getEntry(const std::string& key);
 
   [[nodiscard]] AnyPtrLocked getAnyLocked(const std::string& key);
 

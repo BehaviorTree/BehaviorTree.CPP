@@ -359,7 +359,7 @@ struct ExprAssignment : ExprBase
         }
         const auto& key = varname->name;
 
-        Blackboard::Entry* entry = env.vars->getEntry(key);
+        auto entry = env.vars->getEntry(key);
         if( !entry )
         {
             // variable doesn't exist, create it if using operator assign_create
