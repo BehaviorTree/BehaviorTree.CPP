@@ -404,9 +404,9 @@ TEST(SubTree, SubtreeIssue592)
   <BehaviorTree ID="Outer_Tree">
     <Sequence>
       <Script code="variable := 'test'"/>
-      <SubTree ID="Inner_Tree"
-               variable="{variable}"
-               _autoremap="false"/>
+      <Script code="var := 'test'"/>
+      <SubTree ID="Inner_Tree" _autoremap="false" variable="{var}" />
+      <SubTree ID="Inner_Tree" _autoremap="true"/>
     </Sequence>
   </BehaviorTree>
 
@@ -428,5 +428,5 @@ TEST(SubTree, SubtreeIssue592)
 
   auto ret = tree.tickWhileRunning();
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
-  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[0], 2);
 }
