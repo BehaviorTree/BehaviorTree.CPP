@@ -1,4 +1,5 @@
 /* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
+*  Copyright (C) 2018-2023 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -15,6 +16,7 @@
 #include "behaviortree_cpp/loggers/bt_observer.h"
 #include "condition_test_node.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "test_helper.hpp"
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;
@@ -494,4 +496,31 @@ TEST(Parallel, ParallelAll)
     ASSERT_EQ( 1, observer.getStatistics("second").success_count);
     ASSERT_EQ( 1, observer.getStatistics("third").success_count);
   }
+}
+
+TEST(Parallel, Issue593)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="TestTree">
+    <Sequence>
+      <Script code="test := true"/>
+      <Parallel failure_count="1" success_count="-1">
+        <TestA _skipIf="test == true"/>
+        <Sleep msec="100"/>
+      </Parallel>
+    </Sequence>
+  </BehaviorTree>
+</root>
+)";
+  using namespace BT;
+
+  BehaviorTreeFactory factory;
+  std::array<int, 1> counters;
+  RegisterTestTick(factory, "Test", counters);
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+
+  ASSERT_EQ(0, counters[0]);
 }

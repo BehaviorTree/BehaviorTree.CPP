@@ -72,7 +72,7 @@ NodeStatus TreeNode::executeTick()
   {
     // injected pre-callback
     bool substituted = false;
-    if(_p->status == NodeStatus::IDLE)
+    if(!isStatusCompleted(_p->status))
     {
       PreTickCallback  callback;
       {
@@ -181,7 +181,7 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     if (result.cast<bool>())
     {
       // Some preconditions are applied only when the node is started
-      if (_p->status == NodeStatus::IDLE)
+      if (!isStatusCompleted(_p->status))
       {
         if (preID == PreCond::FAILURE_IF)
         {
