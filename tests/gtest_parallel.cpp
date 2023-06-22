@@ -395,7 +395,7 @@ TEST_F(ComplexParallelTest, ConditionRightFalseAction1Done)
   ASSERT_EQ(NodeStatus::SUCCESS, state);
 }
 
-TEST(FailingParallel, FailingParallel)
+TEST(Parallel, FailingParallel)
 {
   static const char* xml_text = R"(
 <root BTCPP_format="4">
@@ -403,10 +403,42 @@ TEST(FailingParallel, FailingParallel)
     <Parallel name="parallel" success_count="1" failure_count="3">
       <GoodTest name="first"/>
       <BadTest name="second"/>
-      <GoodTest name="third"/>
+      <SlowTest name="third"/>
     </Parallel>
   </BehaviorTree>
 </root>  )";
+  using namespace BT;
+
+  BehaviorTreeFactory factory;
+
+  BT::TestNodeConfig good_config;
+  good_config.async_delay = std::chrono::milliseconds(200);
+  good_config.return_status = NodeStatus::SUCCESS;
+  factory.registerNodeType<BT::TestNode>("GoodTest", good_config);
+
+  BT::TestNodeConfig bad_config;
+  bad_config.async_delay = std::chrono::milliseconds(100);
+  bad_config.return_status = NodeStatus::FAILURE;
+  factory.registerNodeType<BT::TestNode>("BadTest", bad_config);
+
+  BT::TestNodeConfig slow_config;
+  slow_config.async_delay = std::chrono::milliseconds(300);
+  slow_config.return_status = NodeStatus::SUCCESS;
+  factory.registerNodeType<BT::TestNode>("SlowTest", slow_config);
+
+  auto tree = factory.createTreeFromText(xml_text);
+  BT::TreeObserver observer(tree);
+
+  auto state = tree.tickWhileRunning();
+  // since at least one succeeded.
+  ASSERT_EQ(NodeStatus::SUCCESS, state);
+  ASSERT_EQ( 1, observer.getStatistics("first").success_count);
+  ASSERT_EQ( 1, observer.getStatistics("second").failure_count);
+  ASSERT_EQ( 0, observer.getStatistics("third").failure_count);
+}
+
+TEST(Parallel, ParallelAll)
+{
   using namespace BT;
 
   BehaviorTreeFactory factory;
@@ -421,11 +453,45 @@ TEST(FailingParallel, FailingParallel)
   bad_config.return_status = NodeStatus::FAILURE;
   factory.registerNodeType<BT::TestNode>("BadTest", bad_config);
 
-  auto tree = factory.createTreeFromText(xml_text);
-  BT::TreeObserver observer(tree);
+  {
+    const char* xml_text = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <ParallelAll max_failures="1">
+      <BadTest name="first"/>
+      <GoodTest name="second"/>
+      <GoodTest name="third"/>
+    </ParallelAll>
+  </BehaviorTree>
+</root>  )";
+    auto tree = factory.createTreeFromText(xml_text);
+    BT::TreeObserver observer(tree);
 
-  auto state = tree.tickWhileRunning();
-  // since at least one succeeded.
-  ASSERT_EQ(NodeStatus::SUCCESS, state);
-  ASSERT_EQ( 1, observer.getStatistics("second").failure_count);
+    auto state = tree.tickWhileRunning();
+    ASSERT_EQ(NodeStatus::FAILURE, state);
+    ASSERT_EQ( 1, observer.getStatistics("first").failure_count);
+    ASSERT_EQ( 1, observer.getStatistics("second").success_count);
+    ASSERT_EQ( 1, observer.getStatistics("third").success_count);
+  }
+
+  {
+    const char* xml_text = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <ParallelAll max_failures="2">
+      <BadTest name="first"/>
+      <GoodTest name="second"/>
+      <GoodTest name="third"/>
+    </ParallelAll>
+  </BehaviorTree>
+</root>  )";
+    auto tree = factory.createTreeFromText(xml_text);
+    BT::TreeObserver observer(tree);
+
+    auto state = tree.tickWhileRunning();
+    ASSERT_EQ(NodeStatus::SUCCESS, state);
+    ASSERT_EQ( 1, observer.getStatistics("first").failure_count);
+    ASSERT_EQ( 1, observer.getStatistics("second").success_count);
+    ASSERT_EQ( 1, observer.getStatistics("third").success_count);
+  }
 }
