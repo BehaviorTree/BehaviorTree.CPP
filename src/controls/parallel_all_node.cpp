@@ -93,9 +93,10 @@ NodeStatus ParallelAllNode::tick()
     // DONE
     haltChildren();
     completed_list_.clear();
+    auto const status = (failure_count_ >= failure_threshold_) ?
+                            NodeStatus::FAILURE : NodeStatus::SUCCESS;
     failure_count_ = 0;
-    return (failure_count_ >= failure_threshold_) ? NodeStatus::FAILURE :
-                                                    NodeStatus::SUCCESS;
+    return status;
   }
 
   // Some children haven't finished, yet.

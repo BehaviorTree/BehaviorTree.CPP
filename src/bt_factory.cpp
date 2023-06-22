@@ -633,7 +633,7 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
       status = rootNode()->executeTick();
     }
 
-    if (status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE)
+    if (isStatusCompleted(status))
     {
       rootNode()->resetStatus();
     }
