@@ -157,7 +157,7 @@ public:
       std::type_index previous_type = port_info.type();
 
       // check type mismatch
-      if (previous_type != (typeid(T)) &&
+      if (previous_type != std::type_index(typeid(T)) &&
           previous_type != new_value.type())
       {
         bool mismatching = true;

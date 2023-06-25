@@ -347,36 +347,36 @@ bool isCastingSafe(const std::type_index& type, const T& val)
         return true;
     }
 
-    if(typeid(uint8_t) == type) {
+    if(std::type_index(typeid(uint8_t)) == type) {
         return ValidCast<T, uint8_t>(val);
     }
-    if(typeid(uint16_t) == type) {
+    if(std::type_index(typeid(uint16_t)) == type) {
         return ValidCast<T, uint16_t>(val);
     }
-    if(typeid(uint32_t) == type) {
+    if(std::type_index(typeid(uint32_t)) == type) {
         return ValidCast<T, uint32_t>(val);
     }
-    if(typeid(uint64_t) == type) {
+    if(std::type_index(typeid(uint64_t)) == type) {
         return ValidCast<T, uint64_t>(val);
     }
     //------------
-    if(typeid(int8_t) == type) {
+    if(std::type_index(typeid(int8_t)) == type) {
         return ValidCast<T, int8_t>(val);
     }
-    if(typeid(int16_t) == type) {
+    if(std::type_index(typeid(int16_t)) == type) {
         return ValidCast<T, int16_t>(val);
     }
-    if(typeid(int32_t) == type) {
+    if(std::type_index(typeid(int32_t)) == type) {
         return ValidCast<T, int32_t>(val);
     }
-    if(typeid(int64_t) == type) {
+    if(std::type_index(typeid(int64_t)) == type) {
         return ValidCast<T, int64_t>(val);
     }
     //------------
-    if(typeid(float) == type) {
+    if(std::type_index(typeid(float)) == type) {
         return ValidCast<T, float>(val);
     }
-    if(typeid(double) == type) {
+    if(std::type_index(typeid(double)) == type) {
         return ValidCast<T, double>(val);
     }
     return false;
