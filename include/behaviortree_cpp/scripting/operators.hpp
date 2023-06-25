@@ -283,7 +283,7 @@ struct ExprComparison : ExprBase
 
             const Any False(0.0);
 
-            if( lhs_v.isNumber() && lhs_v.isNumber())
+            if( lhs_v.isNumber() && rhs_v.isNumber())
             {
                 auto lv = lhs_v.cast<double>();
                 auto rv = rhs_v.cast<double>();
@@ -292,7 +292,7 @@ struct ExprComparison : ExprBase
                     return False;
                 }
             }
-            else if( lhs_v.isString() && lhs_v.isString())
+            else if( lhs_v.isString() && rhs_v.isString())
             {
                 auto lv = lhs_v.cast<SimpleString>();
                 auto rv = rhs_v.cast<SimpleString>();
@@ -303,7 +303,11 @@ struct ExprComparison : ExprBase
             }
             else
             {
-                throw std::runtime_error("Can't mix different types in ExprComparison");
+                throw std::runtime_error(
+                    StrCat("Can't mix different types in ExprComparison. "
+                           "Left operand [", BT::demangle(lhs_v.type()), "] "
+                           "right operand [", BT::demangle(rhs_v.type()), "]")
+                    );
             }
             lhs_v = rhs_v;
         }
@@ -370,63 +374,79 @@ struct ExprAssignment : ExprBase
             }
             else {
                 // fail otherwise
-                char buffer[1014];
-                sprintf(buffer,
-                        "The blackboard entry [%s] doesn't exist, yet.\n"
-                        "If you want to create a new one, use the operator "
-                        "[:=] instead of [=]", key.c_str());
-                throw std::runtime_error(buffer);
+                auto msg = StrCat(
+                    "The blackboard entry [", key ,"] doesn't exist, yet.\n"
+                    "If you want to create a new one, use the operator "
+                    "[:=] instead of [=]");
+                throw std::runtime_error(msg);
             }
         }
         auto value = rhs->evaluate(env);
 
         std::scoped_lock lock(entry->entry_mutex);
-        auto any_ptr = &entry->value;
+        auto dst_ptr = &entry->value;
+
+        auto errorPrefix = [dst_ptr, &key]() {
+          return StrCat("Error assigning a value to entry [", key,
+                        "] with type [", BT::demangle(dst_ptr->type()),"]. ");
+        };
 
         if( op == assign_create || op == assign_existing )
         {
-            // special case first: string to other type
-            // check if we can use the StringConverter
-            if(value.isString() && !any_ptr->empty() && !any_ptr->isString())
+            // the very fist assignment can come from any type.
+            // In the future, type check will be done by Any::copyInto
+            if(dst_ptr->empty() &&
+               entry->port_info.type() == typeid(PortInfo::AnyTypeAllowed) )
             {
+                *dst_ptr = value;
+            }
+            else if(value.isString() && !dst_ptr->isString())
+            {
+                // special case: string to other type.
+                // Check if we can use the StringConverter
                 auto const str = value.cast<std::string>();
-                if(auto converter = env.vars->portInfo(key)->converter())
+                const auto& port_info = env.vars->portInfo(key);
+                if(auto converter = port_info->converter())
                 {
-                    *any_ptr = converter(str);
+                    *dst_ptr = converter(str);
                 }
                 else {
-                    auto msg = StrCat("Type mismatch in scripting:",
-                                      " can't convert the string '", str,
-                                      "' to the type expected by that port.\n"
-                                      "Have you implemented the relevant "
-                                      "convertFromString<T>() ?");
+                    auto msg = StrCat(errorPrefix(),
+                                      "\nThe right operand is a string but"
+                                      "can't find the corresponding "
+                                      "convertFromString<T>().");
                     throw RuntimeError(msg);
                 }
             }
             else {
                 try {
-                    value.copyInto(*any_ptr);
+                    value.copyInto(*dst_ptr);
                 }
                 catch (std::runtime_error&) {
-                    throw RuntimeError("A script failed to convert the given type "
-                                       "to the one expected by that port.");
+                    auto msg = StrCat(errorPrefix(),
+                                      "\nThe right operand has type [",
+                                      BT::demangle(value.type()), "] "
+                                      "and can't be converted");
+                    throw RuntimeError(msg);
                 }
             }
-            return *any_ptr;
+            return *dst_ptr;
         }
 
-        if( any_ptr->empty() )
+        if( dst_ptr->empty() )
         {
-            throw std::runtime_error("This assignment operator can't be used with an empty variable");
+            throw RuntimeError("The assignment operator can't be used "
+                               "with an empty variable");
         }
 
         // temporary use
-        Any temp_variable = *any_ptr;
+        Any temp_variable = *dst_ptr;
         if( value.isNumber() )
         {
             if( !temp_variable.isNumber() )
             {
-                throw std::runtime_error("Assignment operator can't be used with an empty variable");
+                throw RuntimeError("This Assignment operator can't be used "
+                                   "with a non-numeric type");
             }
 
             auto lv = temp_variable.cast<double>();
@@ -453,8 +473,8 @@ struct ExprAssignment : ExprBase
             }
         }
 
-        temp_variable.copyInto(*any_ptr);
-        return *any_ptr;
+        temp_variable.copyInto(*dst_ptr);
+        return *dst_ptr;
     }
 };
 } // namespace BT::Ast

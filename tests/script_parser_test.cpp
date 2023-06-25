@@ -3,6 +3,7 @@
 #include "behaviortree_cpp/scripting/operators.hpp"
 #include "behaviortree_cpp/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
+#include "test_helper.hpp"
 
 #include <lexy/input/string_input.hpp>
 
@@ -313,3 +314,45 @@ TEST(ParserTest, Enums_Issue_523)
   ASSERT_EQ(blackboard->get<bool>("isLowBattery"), true);
 }
 
+class SampleNode595 : public BT::SyncActionNode
+{
+public:
+  SampleNode595(const std::string& name, const BT::NodeConfiguration& config) :
+    BT::SyncActionNode(name, config)
+  {}
+
+  BT::NodeStatus tick() override
+  {
+    setOutput("find_enemy", 0);
+    return BT::NodeStatus::SUCCESS;
+  }
+  static BT::PortsList providedPorts()
+  {
+    return {BT::OutputPort<std::uint8_t>("find_enemy")};
+  }
+};
+
+TEST(ParserTest, Issue595)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="PowerManagerT">
+      <Sequence>
+        <SampleNode595 find_enemy="{find_enemy}" />
+        <TestA _skipIf="find_enemy==0"/>
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  std::array<int, 1> counters;
+  RegisterTestTick(factory, "Test", counters);
+  factory.registerNodeType<SampleNode595>("SampleNode595");
+
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(0, counters[0]);
+}
