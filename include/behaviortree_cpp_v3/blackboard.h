@@ -52,7 +52,19 @@ public:
   {
     std::unique_lock<std::mutex> lock(mutex_);
     auto it = storage_.find(key);
-    return (it != storage_.end()) ? &(it->second->value) : nullptr;
+
+    if(it == storage_.end())
+    {
+      // Try with autoremapping. This should work recursively
+      if(autoremapping_)
+      {
+        if(auto parent = parent_bb_.lock()) {
+          return parent->getAny(key);
+        }
+      }
+      return nullptr;
+    }
+    return &(it->second->value);
   }
 
   Any* getAny(const std::string& key)

@@ -308,6 +308,27 @@ TEST(SubTree, SubtreeIssue433)
   ASSERT_EQ(ret, BT::NodeStatus::SUCCESS);
 }
 
+
+class NaughtyNav2Node : public BT::SyncActionNode
+{
+public:
+  NaughtyNav2Node(const std::string& name, const BT::NodeConfiguration& config) :
+    BT::SyncActionNode(name, config)
+  {
+    std::cout << "CTOR:" << config.blackboard->get<std::string>("ros_node") << std::endl;
+  }
+
+  BT::NodeStatus tick() override
+  {
+    std::cout << "tick:" << config().blackboard->get<std::string>("ros_node") << std::endl;
+    return BT::NodeStatus::SUCCESS;
+  }
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+};
+
 TEST(SubTree, SubtreeIssue563)
 {
   static const char* xml_text = R"(
@@ -333,6 +354,7 @@ TEST(SubTree, SubtreeIssue563)
   <Sequence>
     <SaySomething message="{the_message}" />
     <SetBlackboard output_key="reply" value="done"/>
+    <NaughtyNav2Node/>
   </Sequence>
 </BehaviorTree>
 
@@ -340,9 +362,13 @@ TEST(SubTree, SubtreeIssue563)
 
   BehaviorTreeFactory factory;
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  factory.registerNodeType<NaughtyNav2Node>("NaughtyNav2Node");
 
-  Tree tree = factory.createTreeFromText(xml_text);
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set<std::string>("ros_node", "nav2_shouldnt_do_this");
+
+  Tree tree = factory.createTreeFromText(xml_text, blackboard);
+
   auto ret = tree.tickRoot();
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
-
 }
