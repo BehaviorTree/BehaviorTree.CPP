@@ -27,6 +27,8 @@ struct Transition
   uint16_t node_uid;
   // enough bits to contain NodeStatus
   uint8_t status;
+
+  uint8_t padding[5];
 };
 
 std::array<char,16> CreateRandomUUID()
@@ -94,6 +96,7 @@ struct Groot2Publisher::PImpl
 
   std::atomic_bool recording = false;
   std::deque<Transition> transitions_buffer;
+  std::chrono::microseconds recording_fist_time;
 
   std::thread heartbeat_thread;
 
@@ -206,13 +209,15 @@ void Groot2Publisher::callback(Duration ts, const TreeNode& node,
     status = 10 + static_cast<char>(prev_status);
   }
   *(_p->status_buffermap.at(node.UID())) = status;
+
   if(_p->recording)
   {
     Transition trans;
     trans.node_uid = node.UID();
     trans.status = static_cast<uint8_t>(new_status);
+    auto timestamp = ts -_p->recording_fist_time;
     trans.timestamp_usec =
-        std::chrono::duration_cast<std::chrono::microseconds>(ts).count();
+        std::chrono::duration_cast<std::chrono::microseconds>(timestamp).count();
     _p->transitions_buffer.push_back(trans);
     while(_p->transitions_buffer.size() > 1000) {
       _p->transitions_buffer.pop_front();
@@ -417,9 +422,16 @@ void Groot2Publisher::serverLoop()
         }
 
         auto const cmd = (requestMsg[1].to_string());
+        std::cout <<  cmd << std::endl;
+
         if(cmd == "start")
         {
           _p->recording = true;
+          auto now = std::chrono::system_clock::now();
+
+          _p->recording_fist_time = std::chrono::duration_cast<std::chrono::microseconds>
+                                   (now.time_since_epoch());
+
           std::unique_lock<std::mutex> lk(_p->status_mutex);
           _p->transitions_buffer.clear();
         }
@@ -432,17 +444,23 @@ void Groot2Publisher::serverLoop()
       case Monitor::RequestType::GET_TRANSITIONS:
       {
         thread_local std::string trans_buffer;
-        const size_t N = sizeof(Transition);
-        trans_buffer.resize(N * _p->transitions_buffer.size());
+        trans_buffer.resize(9 * _p->transitions_buffer.size());
 
         std::unique_lock<std::mutex> lk(_p->status_mutex);
         size_t offset = 0;
         for(const auto& trans: _p->transitions_buffer)
         {
-          std::memcpy(&trans_buffer[offset], &trans, N);
-          offset += N;
+          std::memcpy(&trans_buffer[offset], &trans.timestamp_usec, 6);
+          offset += 6;
+          std::memcpy(&trans_buffer[offset], &trans.node_uid, 2);
+          offset += 2;
+          std::memcpy(&trans_buffer[offset], &trans.status, 1);
+          offset += 1;
         }
+        std::cout << "GET_TRANSITIONS " << _p->transitions_buffer.size() << "\n";
         _p->transitions_buffer.clear();
+        trans_buffer.resize(offset);
+        reply_msg.addstr(trans_buffer);
       } break;
 
       default: {
