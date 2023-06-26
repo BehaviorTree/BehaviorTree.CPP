@@ -7,6 +7,26 @@
 
 #include <lexy/input/string_input.hpp>
 
+BT::Any GetScriptResult(BT::Ast::Environment& environment, const char* text)
+{
+  auto input = lexy::zstring_input<lexy::utf8_encoding>(text);
+  auto result = lexy::parse<BT::Grammar::stmt>(input, lexy_ext::report_error);
+
+  if (result.has_value())
+  {
+    auto exprs = LEXY_MOV(result).value();
+    for (auto i = 0u; i < exprs.size() - 1; ++i)
+    {
+      exprs[i]->evaluate(environment);
+    }
+    return exprs.back()->evaluate(environment);
+  }
+  else
+  {
+    return {};
+  }
+};
+
 TEST(ParserTest, AnyTypes)
 {
   auto Parse = [](const char* str) {
@@ -93,23 +113,8 @@ TEST(ParserTest, Equations)
 {
   BT::Ast::Environment environment = {BT::Blackboard::create(), {}};
 
-  auto GetResult = [&](const char* text) -> BT::Any {
-    auto input = lexy::zstring_input<lexy::utf8_encoding>(text);
-    auto result = lexy::parse<BT::Grammar::stmt>(input, lexy_ext::report_error);
-
-    if (result.has_value())
-    {
-      auto exprs = LEXY_MOV(result).value();
-      for (auto i = 0u; i < exprs.size() - 1; ++i)
-      {
-        exprs[i]->evaluate(environment);
-      }
-      return exprs.back()->evaluate(environment);
-    }
-    else
-    {
-      return {};
-    }
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
   };
   //-------------------
   const auto& variables = environment.vars;
@@ -224,6 +229,26 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(GetResult(" y == x  ||  x == 3 ").cast<int>(), 1);
 }
 
+
+TEST(ParserTest, NotInitializedComparison)
+{
+  BT::Ast::Environment environment = {BT::Blackboard::create(), {}};
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+
+  auto port_info = BT::PortInfo(BT::PortDirection::INOUT, typeid(uint8_t), {});
+  environment.vars->createEntry("x", port_info);
+
+  EXPECT_ANY_THROW(GetResult("x < 0"));
+  EXPECT_ANY_THROW(GetResult("x == 0"));
+  EXPECT_ANY_THROW(GetResult("x > 0"));
+
+  EXPECT_ANY_THROW(GetResult("x + 1"));
+  EXPECT_ANY_THROW(GetResult("x += 1"));
+}
+
 TEST(ParserTest, Enums)
 {
   BT::BehaviorTreeFactory factory;
@@ -328,7 +353,7 @@ public:
   }
   static BT::PortsList providedPorts()
   {
-    return {BT::OutputPort<std::uint8_t>("find_enemy")};
+    return {BT::OutputPort<uint8_t>("find_enemy")};
   }
 };
 

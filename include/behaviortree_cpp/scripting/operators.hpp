@@ -38,6 +38,12 @@ struct ExprBase
     virtual Any evaluate(Environment& env) const = 0;
 };
 
+std::string ErrorNotInit(const char* side, const char* op_str)
+{
+    return StrCat("The ", side, " operand of the operator [", op_str,
+                  "] is not initialized");
+}
+
 struct ExprLiteral : ExprBase
 {
     Any value;
@@ -129,6 +135,22 @@ struct ExprBinaryArithmetic : ExprBase
         logic_or
     } op;
 
+    const char* opStr() const
+    {
+        switch(op)
+        {
+            case plus: return "+";
+            case minus: return "-";
+            case times: return "*";
+            case div: return "/";
+            case bit_and: return "&";
+            case bit_or: return "|";
+            case bit_xor: return "^";
+            case logic_and: return "&&";
+            case logic_or: return "||";
+        }
+    }
+
     expr_ptr lhs, rhs;
 
     explicit ExprBinaryArithmetic(expr_ptr lhs, op_t op, expr_ptr rhs)
@@ -139,6 +161,15 @@ struct ExprBinaryArithmetic : ExprBase
     {
         auto lhs_v = lhs->evaluate(env);
         auto rhs_v = rhs->evaluate(env);
+
+        if(lhs_v.empty())
+        {
+            throw RuntimeError(ErrorNotInit("left", opStr()));
+        }
+        if(rhs_v.empty())
+        {
+            throw RuntimeError(ErrorNotInit("left", opStr()));
+        }
 
         if(rhs_v.isNumber() && lhs_v.isNumber())
         {
@@ -238,6 +269,20 @@ struct ExprComparison : ExprBase
         less_equal,
         greater_equal
     };
+
+    const char* opStr(op_t op) const
+    {
+        switch(op)
+        {
+            case equal: return "==";
+            case not_equal: return "!=";
+            case less: return "<";
+            case greater: return ">";
+            case less_equal: return "<=";
+            case greater_equal: return ">=";
+        }
+    }
+
     std::vector<op_t>     ops;
     std::vector<expr_ptr> operands;
 
@@ -281,16 +326,15 @@ struct ExprComparison : ExprBase
         {
             auto rhs_v = operands[i + 1]->evaluate(env);
 
-            const Any False(0.0);
-
             if(lhs_v.empty())
             {
-                throw RuntimeError("The left operand in the Comparison is not initialized");
+                throw RuntimeError(ErrorNotInit("left", opStr(ops[i])));
             }
             if(rhs_v.empty())
             {
-                throw RuntimeError("The right operand in the Comparison is not initialized");
+                throw RuntimeError(ErrorNotInit("right", opStr(ops[i])));
             }
+            const Any False(0.0);
 
             if( lhs_v.isNumber() && rhs_v.isNumber())
             {
@@ -358,6 +402,19 @@ struct ExprAssignment : ExprBase
         assign_div
     } op;
 
+    const char* opStr() const
+    {
+        switch(op)
+        {
+            case assign_create: return ":=";
+            case assign_existing: return "=";
+            case assign_plus: return "+=";
+            case assign_minus: return "-=";
+            case assign_times: return "*=";
+            case assign_div: return "/=";
+        }
+    }
+
     expr_ptr lhs, rhs;
 
     explicit ExprAssignment(expr_ptr _lhs, op_t op, expr_ptr _rhs) :
@@ -402,6 +459,11 @@ struct ExprAssignment : ExprBase
 
         if( op == assign_create || op == assign_existing )
         {
+            if(value.empty())
+            {
+                throw RuntimeError(ErrorNotInit("right", opStr()));
+            }
+
             // the very fist assignment can come from any type.
             // In the future, type check will be done by Any::copyInto
             if(dst_ptr->empty() &&
@@ -450,6 +512,16 @@ struct ExprAssignment : ExprBase
 
         // temporary use
         Any temp_variable = *dst_ptr;
+
+        if(value.empty())
+        {
+            throw RuntimeError(ErrorNotInit("right", opStr()));
+        }
+        if(temp_variable.empty())
+        {
+            throw RuntimeError(ErrorNotInit("left", opStr()));
+        }
+
         if( value.isNumber() )
         {
             if( !temp_variable.isNumber() )
