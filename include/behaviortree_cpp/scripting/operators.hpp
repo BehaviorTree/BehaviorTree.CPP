@@ -283,6 +283,15 @@ struct ExprComparison : ExprBase
 
             const Any False(0.0);
 
+            if(lhs_v.empty())
+            {
+                throw RuntimeError("The left operand in the Comparison is not initialized");
+            }
+            if(rhs_v.empty())
+            {
+                throw RuntimeError("The right operand in the Comparison is not initialized");
+            }
+
             if( lhs_v.isNumber() && rhs_v.isNumber())
             {
                 auto lv = lhs_v.cast<double>();
