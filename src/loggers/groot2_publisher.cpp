@@ -269,6 +269,7 @@ void Groot2Publisher::serverLoop()
 
     Monitor::ReplyHeader reply_header;
     reply_header.request = request_header;
+    reply_header.request.protocol = Monitor::kProtocolID;
     reply_header.tree_id = serialized_uuid;
 
     zmq::multipart_t reply_msg;

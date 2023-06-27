@@ -107,7 +107,6 @@ struct RequestHeader
   bool operator==(const RequestHeader& other) const
   {
     return type == other.type &&
-           protocol == other.protocol &&
            unique_id == other.unique_id;
   }
   bool operator!=(const RequestHeader& other) const
