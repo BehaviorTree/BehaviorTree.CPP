@@ -25,7 +25,7 @@ BT::Any GetScriptResult(BT::Ast::Environment& environment, const char* text)
   {
     return {};
   }
-};
+}
 
 TEST(ParserTest, AnyTypes)
 {

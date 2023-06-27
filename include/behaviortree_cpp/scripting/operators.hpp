@@ -162,6 +162,7 @@ struct ExprBinaryArithmetic : ExprBase
       case logic_or:
         return "||";
     }
+    return "";
   }
 
   expr_ptr lhs, rhs;
@@ -307,6 +308,7 @@ struct ExprComparison : ExprBase
       case greater_equal:
         return ">=";
     }
+    return "";
   }
 
   std::vector<op_t> ops;
@@ -445,6 +447,7 @@ struct ExprAssignment : ExprBase
       case assign_div:
         return "/=";
     }
+    return "";
   }
 
   expr_ptr lhs, rhs;
