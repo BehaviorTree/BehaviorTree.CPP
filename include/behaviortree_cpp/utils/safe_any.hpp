@@ -29,6 +29,9 @@
 
 namespace BT
 {
+
+static std::type_index UndefinedAnyType = typeid(nullptr);
+
 // Rational: since type erased numbers will always use at least 8 bytes
 // it is faster to cast everything to either double, uint64_t or int64_t.
 class Any
@@ -56,7 +59,8 @@ class Any
                                 !std::is_same<T, std::string>::value>::type*;
 
   public:
-    Any(): _original_type(typeid(nullptr))
+
+    Any(): _original_type(UndefinedAnyType)
     {
     }
 
@@ -101,6 +105,10 @@ class Any
     // all the other integrals are casted to int64_t
     template <typename T>
     explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( typeid(T) )
+    {
+    }
+
+    Any(const std::type_index& type): _original_type(type)
     {
     }
 
@@ -325,6 +333,54 @@ class Any
                       demangle( _any.type() ), "] and [", demangle( typeid(T) ),"]");
     }
 };
+
+template <typename SRC, typename TO> inline
+bool ValidCast(const SRC& val)
+{
+    return( val == static_cast<SRC>(static_cast<TO>(val)) );
+}
+
+template <typename T> inline
+bool isCastingSafe(const std::type_index& type, const T& val)
+{
+    if(type == typeid(T)) {
+        return true;
+    }
+
+    if(std::type_index(typeid(uint8_t)) == type) {
+        return ValidCast<T, uint8_t>(val);
+    }
+    if(std::type_index(typeid(uint16_t)) == type) {
+        return ValidCast<T, uint16_t>(val);
+    }
+    if(std::type_index(typeid(uint32_t)) == type) {
+        return ValidCast<T, uint32_t>(val);
+    }
+    if(std::type_index(typeid(uint64_t)) == type) {
+        return ValidCast<T, uint64_t>(val);
+    }
+    //------------
+    if(std::type_index(typeid(int8_t)) == type) {
+        return ValidCast<T, int8_t>(val);
+    }
+    if(std::type_index(typeid(int16_t)) == type) {
+        return ValidCast<T, int16_t>(val);
+    }
+    if(std::type_index(typeid(int32_t)) == type) {
+        return ValidCast<T, int32_t>(val);
+    }
+    if(std::type_index(typeid(int64_t)) == type) {
+        return ValidCast<T, int64_t>(val);
+    }
+    //------------
+    if(std::type_index(typeid(float)) == type) {
+        return ValidCast<T, float>(val);
+    }
+    if(std::type_index(typeid(double)) == type) {
+        return ValidCast<T, double>(val);
+    }
+    return false;
+}
 
 }   // end namespace BT
 

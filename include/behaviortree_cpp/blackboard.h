@@ -170,18 +170,29 @@ public:
             new_value = std::move(any_from_string);
           }
         }
+        // check if we are doing a safe cast between numbers
+        // for instance, it is safe to use int(100) to set
+        // a uint8_t port, but not int(-42) or int(300)
+        if constexpr(std::is_arithmetic_v<T>)
+        {
+          if(mismatching && isCastingSafe(previous_type, value))
+          {
+            mismatching = false;
+          }
+        }
 
         if (mismatching)
         {
           debugMessage();
 
-          auto msg = StrCat("Blackboard entry [", key, "]: once declared, the type of a port"
-                            " shall not change. Previously declared type [", BT::demangle(previous_type),
+          auto msg = StrCat("Blackboard::set(", key, "): once declared, "
+                            "the type of a port shall not change. "
+                            "Previously declared type [", BT::demangle(previous_type),
                             "], current type [", BT::demangle(typeid(T)), "]");
           throw LogicError(msg);
         }
       }
-      previous_any = std::move(new_value);
+      new_value.copyInto(previous_any);
     }
   }
 

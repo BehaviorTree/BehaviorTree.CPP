@@ -3,8 +3,29 @@
 #include "behaviortree_cpp/scripting/operators.hpp"
 #include "behaviortree_cpp/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
+#include "test_helper.hpp"
 
 #include <lexy/input/string_input.hpp>
+
+BT::Any GetScriptResult(BT::Ast::Environment& environment, const char* text)
+{
+  auto input = lexy::zstring_input<lexy::utf8_encoding>(text);
+  auto result = lexy::parse<BT::Grammar::stmt>(input, lexy_ext::report_error);
+
+  if (result.has_value())
+  {
+    auto exprs = LEXY_MOV(result).value();
+    for (auto i = 0u; i < exprs.size() - 1; ++i)
+    {
+      exprs[i]->evaluate(environment);
+    }
+    return exprs.back()->evaluate(environment);
+  }
+  else
+  {
+    return {};
+  }
+};
 
 TEST(ParserTest, AnyTypes)
 {
@@ -92,23 +113,8 @@ TEST(ParserTest, Equations)
 {
   BT::Ast::Environment environment = {BT::Blackboard::create(), {}};
 
-  auto GetResult = [&](const char* text) -> BT::Any {
-    auto input = lexy::zstring_input<lexy::utf8_encoding>(text);
-    auto result = lexy::parse<BT::Grammar::stmt>(input, lexy_ext::report_error);
-
-    if (result.has_value())
-    {
-      auto exprs = LEXY_MOV(result).value();
-      for (auto i = 0u; i < exprs.size() - 1; ++i)
-      {
-        exprs[i]->evaluate(environment);
-      }
-      return exprs.back()->evaluate(environment);
-    }
-    else
-    {
-      return {};
-    }
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
   };
   //-------------------
   const auto& variables = environment.vars;
@@ -223,6 +229,26 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(GetResult(" y == x  ||  x == 3 ").cast<int>(), 1);
 }
 
+
+TEST(ParserTest, NotInitializedComparison)
+{
+  BT::Ast::Environment environment = {BT::Blackboard::create(), {}};
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+
+  auto port_info = BT::PortInfo(BT::PortDirection::INOUT, typeid(uint8_t), {});
+  environment.vars->createEntry("x", port_info);
+
+  EXPECT_ANY_THROW(GetResult("x < 0"));
+  EXPECT_ANY_THROW(GetResult("x == 0"));
+  EXPECT_ANY_THROW(GetResult("x > 0"));
+
+  EXPECT_ANY_THROW(GetResult("x + 1"));
+  EXPECT_ANY_THROW(GetResult("x += 1"));
+}
+
 TEST(ParserTest, Enums)
 {
   BT::BehaviorTreeFactory factory;
@@ -313,3 +339,45 @@ TEST(ParserTest, Enums_Issue_523)
   ASSERT_EQ(blackboard->get<bool>("isLowBattery"), true);
 }
 
+class SampleNode595 : public BT::SyncActionNode
+{
+public:
+  SampleNode595(const std::string& name, const BT::NodeConfiguration& config) :
+    BT::SyncActionNode(name, config)
+  {}
+
+  BT::NodeStatus tick() override
+  {
+    setOutput("find_enemy", 0);
+    return BT::NodeStatus::SUCCESS;
+  }
+  static BT::PortsList providedPorts()
+  {
+    return {BT::OutputPort<uint8_t>("find_enemy")};
+  }
+};
+
+TEST(ParserTest, Issue595)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="PowerManagerT">
+      <Sequence>
+        <SampleNode595 find_enemy="{find_enemy}" />
+        <TestA _skipIf="find_enemy==0"/>
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  std::array<int, 1> counters;
+  RegisterTestTick(factory, "Test", counters);
+  factory.registerNodeType<SampleNode595>("SampleNode595");
+
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(0, counters[0]);
+}

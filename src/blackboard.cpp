@@ -207,9 +207,11 @@ Blackboard::createEntryImpl(const std::string& key, const PortInfo& info)
       entry = parent->createEntryImpl(key, info);
     }
   }
-  else // not remapped, nor found. Create locally.
+  else // not remapped, not found. Create locally.
   {
     entry = std::make_shared<Entry>(info);
+    // even if empty, let's assign to it a default type
+    entry->value = Any(info.type());
   }
   storage_.insert( {key, entry} );
   return entry;
