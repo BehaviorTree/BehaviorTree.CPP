@@ -2,6 +2,13 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix `#595 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/595>`_ : improvement in blackboard/scripting types (`#597 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/597>`_)
+* Fix Issue 593 (`#594 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/594>`_): support skipping in Parallel node
+* adding ParallelAll
+* Contributors: Davide Faconti
+
 4.3.1 (2023-06-21)
 ------------------
 * fix issue `#592 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/592>`_
