@@ -28,12 +28,19 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
         return nonstd::make_unexpected("Empty Script");
       }
 
-      return [exprs](Ast::Environment& env) -> Any {
-        for (auto i = 0u; i < exprs.size() - 1; ++i)
+      return [exprs, script](Ast::Environment& env) -> Any {
+        try
         {
-          exprs[i]->evaluate(env);
+          for (auto i = 0u; i < exprs.size() - 1; ++i)
+          {
+            exprs[i]->evaluate(env);
+          }
+          return exprs.back()->evaluate(env);
         }
-        return exprs.back()->evaluate(env);
+        catch (RuntimeError& err)
+        {
+          throw RuntimeError(StrCat("Error in script [",script,"]\n", err.what()));
+        }
       };
     }
     catch (std::runtime_error& err)
