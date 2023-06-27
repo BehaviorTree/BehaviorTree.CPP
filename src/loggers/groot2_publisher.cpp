@@ -433,6 +433,7 @@ void Groot2Publisher::serverLoop()
           _p->recording_fist_time = std::chrono::duration_cast<std::chrono::microseconds>
                                    (now.time_since_epoch());
 
+          reply_msg.addstr(std::to_string(_p->recording_fist_time.count()));
           std::unique_lock<std::mutex> lk(_p->status_mutex);
           _p->transitions_buffer.clear();
         }
