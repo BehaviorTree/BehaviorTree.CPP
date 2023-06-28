@@ -423,8 +423,6 @@ void Groot2Publisher::serverLoop()
         }
 
         auto const cmd = (requestMsg[1].to_string());
-        std::cout <<  cmd << std::endl;
-
         if(cmd == "start")
         {
           _p->recording = true;
@@ -459,7 +457,6 @@ void Groot2Publisher::serverLoop()
           std::memcpy(&trans_buffer[offset], &trans.status, 1);
           offset += 1;
         }
-        std::cout << "GET_TRANSITIONS " << _p->transitions_buffer.size() << "\n";
         _p->transitions_buffer.clear();
         trans_buffer.resize(offset);
         reply_msg.addstr(trans_buffer);
