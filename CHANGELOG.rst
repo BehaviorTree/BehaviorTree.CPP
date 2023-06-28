@@ -2,6 +2,35 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update ros2.yaml
+* Update ros1.yaml
+* Issue 563 (`#596 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/596>`_)
+  * failing test
+  * fix issue 563 (?)
+  * better solution
+* use lambda in tutorial
+* Merge pull request `#583 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/583>`_ from BehaviorTree/issue563
+  Issue563
+* better default port
+* restore type check
+* fix issue `#563 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/563>`_
+* fix test
+* Issue563
+* Merge pull request `#579 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/579>`_ from open-navigation/hi
+  changing resetStatus to public
+* Update tree_node.h
+* changing resetStatus to public
+* Merge branch 'v3.8' of github.com:BehaviorTree/BehaviorTree.CPP into v3.8
+* backporting fixes from branch 4.x
+* Merge pull request `#546 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/546>`_ from divbyzerofordummies/fix_ROS_include
+  Fix issue `#545 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/545>`_
+* Fix issue `#545 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/545>`_
+* bug fix: halting a Node must invoke the Loggers
+* unit test added
+* Contributors: Daniel Muschick, Davide Faconti, Steve Macenski, stevemacenski
+
 3.8.3 (2023-03-01)
 ------------------
 * fix and warnings added
