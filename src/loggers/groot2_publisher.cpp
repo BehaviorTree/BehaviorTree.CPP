@@ -18,6 +18,18 @@ enum {
   IDLE_FROM_RUNNING = 10 + static_cast<int>(NodeStatus::RUNNING)
 };
 
+struct Transition
+{
+  // when serializing, we will remove the initial time and serialize only
+  // 6 bytes, instead of 8
+  uint64_t timestamp_usec;
+  // if you have more than 64.000 nodes, you are doing something wrong :)
+  uint16_t node_uid;
+  // enough bits to contain NodeStatus
+  uint8_t status;
+
+  uint8_t padding[5];
+};
 
 std::array<char,16> CreateRandomUUID()
 {
@@ -81,6 +93,10 @@ struct Groot2Publisher::PImpl
 
   std::chrono::system_clock::time_point last_heartbeat;
   std::chrono::milliseconds max_heartbeat_delay = std::chrono::milliseconds(5000);
+
+  std::atomic_bool recording = false;
+  std::deque<Transition> transitions_buffer;
+  std::chrono::microseconds recording_fist_time;
 
   std::thread heartbeat_thread;
 
@@ -183,7 +199,7 @@ Groot2Publisher::~Groot2Publisher()
   }
 }
 
-void Groot2Publisher::callback(Duration, const TreeNode& node,
+void Groot2Publisher::callback(Duration ts, const TreeNode& node,
                                NodeStatus prev_status, NodeStatus new_status)
 {
   std::unique_lock<std::mutex> lk(_p->status_mutex);
@@ -193,6 +209,20 @@ void Groot2Publisher::callback(Duration, const TreeNode& node,
     status = 10 + static_cast<char>(prev_status);
   }
   *(_p->status_buffermap.at(node.UID())) = status;
+
+  if(_p->recording)
+  {
+    Transition trans;
+    trans.node_uid = node.UID();
+    trans.status = static_cast<uint8_t>(new_status);
+    auto timestamp = ts -_p->recording_fist_time;
+    trans.timestamp_usec =
+        std::chrono::duration_cast<std::chrono::microseconds>(timestamp).count();
+    _p->transitions_buffer.push_back(trans);
+    while(_p->transitions_buffer.size() > 1000) {
+      _p->transitions_buffer.pop_front();
+    }
+  }
 }
 
 void Groot2Publisher::flush()
@@ -239,6 +269,7 @@ void Groot2Publisher::serverLoop()
 
     Monitor::ReplyHeader reply_header;
     reply_header.request = request_header;
+    reply_header.request.protocol = Monitor::kProtocolID;
     reply_header.tree_id = serialized_uuid;
 
     zmq::multipart_t reply_msg;
@@ -383,6 +414,54 @@ void Groot2Publisher::serverLoop()
         }
         reply_msg.addstr( json_out.dump() );
       } break;
+
+      case Monitor::RequestType::TOGGLE_RECORDING:
+      {
+        if(requestMsg.size() != 2) {
+          sendErrorReply("must be 2 parts message");
+          continue;
+        }
+
+        auto const cmd = (requestMsg[1].to_string());
+        if(cmd == "start")
+        {
+          _p->recording = true;
+          auto now = std::chrono::system_clock::now();
+
+          _p->recording_fist_time = std::chrono::duration_cast<std::chrono::microseconds>
+                                   (now.time_since_epoch());
+
+          reply_msg.addstr(std::to_string(_p->recording_fist_time.count()));
+          std::unique_lock<std::mutex> lk(_p->status_mutex);
+          _p->transitions_buffer.clear();
+        }
+        else if(cmd == "stop")
+        {
+          _p->recording = false;
+        }
+      } break;
+
+      case Monitor::RequestType::GET_TRANSITIONS:
+      {
+        thread_local std::string trans_buffer;
+        trans_buffer.resize(9 * _p->transitions_buffer.size());
+
+        std::unique_lock<std::mutex> lk(_p->status_mutex);
+        size_t offset = 0;
+        for(const auto& trans: _p->transitions_buffer)
+        {
+          std::memcpy(&trans_buffer[offset], &trans.timestamp_usec, 6);
+          offset += 6;
+          std::memcpy(&trans_buffer[offset], &trans.node_uid, 2);
+          offset += 2;
+          std::memcpy(&trans_buffer[offset], &trans.status, 1);
+          offset += 1;
+        }
+        _p->transitions_buffer.clear();
+        trans_buffer.resize(offset);
+        reply_msg.addstr(trans_buffer);
+      } break;
+
       default: {
         sendErrorReply("Request not recognized");
         continue;

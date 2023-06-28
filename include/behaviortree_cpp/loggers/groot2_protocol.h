@@ -49,6 +49,11 @@ enum RequestType : uint8_t
 
   DISABLE_ALL_HOOKS = 'X',
 
+  // start/stop recordong
+  TOGGLE_RECORDING = 'r',
+  // get all transitions when recording
+  GET_TRANSITIONS = 't',
+
   UNDEFINED = 0,
 };
 
@@ -67,13 +72,15 @@ inline const char* ToString(const RequestType& type)
   case RequestType::REMOVE_ALL_HOOKS: return "hooks_remove_all";
   case RequestType::HOOKS_DUMP: return "hooks_dump";
   case RequestType::DISABLE_ALL_HOOKS: return "disable_hooks";
+  case RequestType::TOGGLE_RECORDING: return "toggle_recording";
+  case RequestType::GET_TRANSITIONS: return "get_transitions";
 
   case RequestType::UNDEFINED: return "undefined";
   }
   return "undefined";
 }
 
-constexpr uint8_t kProtocolID = 1;
+constexpr uint8_t kProtocolID = 2;
 using TreeUniqueUUID = std::array<char, 16>;
 
 struct RequestHeader
@@ -100,7 +107,6 @@ struct RequestHeader
   bool operator==(const RequestHeader& other) const
   {
     return type == other.type &&
-           protocol == other.protocol &&
            unique_id == other.unique_id;
   }
   bool operator!=(const RequestHeader& other) const
