@@ -38,7 +38,7 @@ struct ExprBase
   virtual Any evaluate(Environment& env) const = 0;
 };
 
-std::string ErrorNotInit(const char* side, const char* op_str)
+inline std::string ErrorNotInit(const char* side, const char* op_str)
 {
   return StrCat("The ", side, " operand of the operator [", op_str,
                 "] is not initialized");
