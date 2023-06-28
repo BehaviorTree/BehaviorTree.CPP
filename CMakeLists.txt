@@ -26,8 +26,6 @@ else()
     add_definitions(-Wpedantic)
 endif()
 
-#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 #---- project configuration ----
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
 option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
@@ -154,6 +152,7 @@ if (BTCPP_SHARED_LIBS)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE})
 else()
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_library(${BTCPP_LIBRARY} STATIC ${BT_SOURCE})
 endif()
 
