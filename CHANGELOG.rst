@@ -9,6 +9,27 @@ Changelog for package behaviortree_cpp
 * adding ParallelAll
 * Contributors: Davide Faconti
 
+Forthcoming
+-----------
+* bug fix `#601 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/601>`_: onHalted not called correctly in Control Nodes
+* Groot recording (`#598 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/598>`_)
+  * add recording to groot publisher
+  * fixed
+  * protocols compatibility
+  * reply with first timestamp
+  * remove prints
+* Fix error when building static library (`#599 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/599>`_)
+* fix warnings
+* 4.3.2
+* prepare release
+* fix `#595 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/595>`_ : improvement in blackboard/scripting types (`#597 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/597>`_)
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* Merge branch 'parallel_all'
+* Fix Issue 593 (`#594 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/594>`_): support skipping in Parallel node
+* fix ParallelAll
+* adding ParallelAll, WIP
+* Contributors: Davide Faconti, Oleksandr Perepadia
+
 4.3.1 (2023-06-21)
 ------------------
 * fix issue `#592 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/592>`_
