@@ -40,7 +40,7 @@ void ControlNode::resetChildren()
   {
     if (child->status() == NodeStatus::RUNNING)
     {
-      child->halt();
+      child->haltNode();
     }
     child->resetStatus();
   }

@@ -61,4 +61,29 @@ TEST(PostConditions, Issue539)
   ASSERT_EQ(tree.rootBlackboard()->get<int>("y"), 5);
 }
 
+TEST(PostConditions, Issue601)
+{
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="test_tree">
+      <Sequence>
+        <Script code="test := 'start'"/>
+          <Parallel failure_count="1"
+                    success_count="-1">
+            <Sleep msec="1000"
+                   _onHalted="test = 'halted'"
+                   _post="test = 'post'"/>
+            <AlwaysFailure/>
+          </Parallel>
+      </Sequence>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(tree.rootBlackboard()->get<std::string>("test"), "halted");
+}
+
 
