@@ -102,6 +102,17 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   _p->scripting_enums = std::make_shared<std::unordered_map<std::string, int>>();
 }
 
+BehaviorTreeFactory::BehaviorTreeFactory(BehaviorTreeFactory &&other) noexcept
+{
+  this->_p = std::move(other._p);
+}
+
+BehaviorTreeFactory &BehaviorTreeFactory::operator=(BehaviorTreeFactory &&other) noexcept
+{
+  this->_p = std::move(other._p);
+  return *this;
+}
+
 BehaviorTreeFactory::~BehaviorTreeFactory()
 {}
 

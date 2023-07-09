@@ -96,6 +96,17 @@ struct XMLParser::PImpl
 XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new PImpl(factory))
 {}
 
+XMLParser::XMLParser(XMLParser &&other) noexcept
+{
+  this->_p = std::move(other._p);
+}
+
+XMLParser &XMLParser::operator=(XMLParser &&other) noexcept
+{
+  this->_p = std::move(other._p);
+  return *this;
+}
+
 XMLParser::~XMLParser()
 {}
 

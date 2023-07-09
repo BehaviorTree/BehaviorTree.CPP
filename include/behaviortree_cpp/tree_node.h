@@ -137,8 +137,8 @@ public:
   TreeNode(const TreeNode& other) = delete;
   TreeNode& operator=(const TreeNode& other) = delete;
 
-  TreeNode(TreeNode&& other) = default;
-  TreeNode& operator=(TreeNode&& other) = default;
+  TreeNode(TreeNode&& other) noexcept;
+  TreeNode& operator=(TreeNode&& other) noexcept;
 
   virtual ~TreeNode();
 

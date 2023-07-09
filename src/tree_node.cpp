@@ -56,6 +56,17 @@ TreeNode::TreeNode(std::string name, NodeConfig config) :
 {
 }
 
+TreeNode::TreeNode(TreeNode &&other) noexcept
+{
+  this->_p = std::move(other._p);
+}
+
+TreeNode &TreeNode::operator=(TreeNode &&other) noexcept
+{
+  this->_p = std::move(other._p);
+  return *this;
+}
+
 TreeNode::~TreeNode() {}
 
 NodeStatus TreeNode::executeTick()

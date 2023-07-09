@@ -23,8 +23,8 @@ public:
   XMLParser(const XMLParser& other) = delete;
   XMLParser& operator=(const XMLParser& other) = delete;
 
-  XMLParser(XMLParser&& other) = default;
-  XMLParser& operator=(XMLParser&& other) = default;
+  XMLParser(XMLParser&& other) noexcept;
+  XMLParser& operator=(XMLParser&& other) noexcept;
 
   void loadFromFile(const std::filesystem::path &filename, bool add_includes = true) override;
 

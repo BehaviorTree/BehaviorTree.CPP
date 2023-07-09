@@ -204,8 +204,8 @@ public:
   BehaviorTreeFactory(const BehaviorTreeFactory& other) = delete;
   BehaviorTreeFactory& operator=(const BehaviorTreeFactory& other) = delete;
 
-  BehaviorTreeFactory(BehaviorTreeFactory&& other) = default;
-  BehaviorTreeFactory& operator=(BehaviorTreeFactory&& other)  = default;
+  BehaviorTreeFactory(BehaviorTreeFactory&& other) noexcept;
+  BehaviorTreeFactory& operator=(BehaviorTreeFactory&& other) noexcept;
 
   /// Remove a registered ID.
   bool unregisterBuilder(const std::string& ID);
