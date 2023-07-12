@@ -7,10 +7,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
 
 set(BTCPP_LIBRARY ${PROJECT_NAME})
 
-#---- Enable C++17 ----
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE "Release" CACHE
@@ -178,6 +174,8 @@ target_include_directories(${BTCPP_LIBRARY}
 
 target_compile_definitions(${BTCPP_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAKE_PROJECT_VERSION}")
+
+target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
 if(MSVC)
 else()
