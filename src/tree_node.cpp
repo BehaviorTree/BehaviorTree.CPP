@@ -346,36 +346,38 @@ StringView TreeNode::getRawPortValue(const std::string& key) const
   return remap_it->second;
 }
 
-bool TreeNode::isBlackboardPointer(StringView str)
+bool TreeNode::isBlackboardPointer(StringView str, StringView* stripped_pointer)
 {
-  const auto size = str.size();
-  if (size >= 3 && str.back() == '}')
+  if (str.size() < 3)
   {
-    if (str[0] == '{')
-    {
-      return true;
-    }
-    if (size >= 4 && str[0] == '$' && str[1] == '{')
-    {
-      return true;
-    }
+    return false;
   }
-  return false;
+  // strip leading and following spaces
+  size_t front_index = 0;
+  size_t last_index = str.size()-1;
+  while(str[front_index] == ' ' && front_index <= last_index)
+  {
+    front_index++;
+  }
+  while(str[last_index] == ' ' && front_index <= last_index)
+  {
+    last_index--;
+  }
+  const auto size = (last_index-front_index) + 1;
+  auto valid = size >= 3 && str[front_index] == '{' && str[last_index] == '}';
+  if(valid && stripped_pointer)
+  {
+    *stripped_pointer = StringView( &str[front_index+1], size-2);
+  }
+  return valid;
 }
 
 StringView TreeNode::stripBlackboardPointer(StringView str)
 {
-  const auto size = str.size();
-  if (size >= 3 && str.back() == '}')
+  StringView out;
+  if(isBlackboardPointer(str, &out))
   {
-    if (str[0] == '{')
-    {
-      return str.substr(1, size - 2);
-    }
-    if (str[0] == '$' && str[1] == '{')
-    {
-      return str.substr(2, size - 3);
-    }
+    return out;
   }
   return {};
 }
@@ -387,9 +389,10 @@ Expected<StringView> TreeNode::getRemappedKey(StringView port_name,
   {
     return {port_name};
   }
-  if (isBlackboardPointer(remapped_port))
+  StringView stripped;
+  if (isBlackboardPointer(remapped_port, &stripped))
   {
-    return {stripBlackboardPointer(remapped_port)};
+    return {stripped};
   }
   return nonstd::make_unexpected("Not a blackboard pointer");
 }

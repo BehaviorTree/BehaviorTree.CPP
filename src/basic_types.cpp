@@ -335,6 +335,11 @@ const std::type_index& PortInfo::type() const
   return type_info_;
 }
 
+const std::string &PortInfo::typeName() const
+{
+  return type_str_;
+}
+
 Any PortInfo::parseString(const char* str) const
 {
   if (converter_)

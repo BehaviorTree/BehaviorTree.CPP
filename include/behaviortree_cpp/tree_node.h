@@ -284,10 +284,9 @@ public:
   // in the port (no remapping and no conversion to a type)
   [[nodiscard]] StringView getRawPortValue(const std::string& key) const;
 
-  /// Check a string and return true if it matches either one of these
-  /// two patterns:  {...} or ${...}
+  /// Check a string and return true if it matches the pattern:  {...}
   [[nodiscard]]
-  static bool isBlackboardPointer(StringView str);
+  static bool isBlackboardPointer(StringView str, StringView* stripped_pointer = nullptr);
 
   [[nodiscard]]
   static StringView stripBlackboardPointer(StringView str);

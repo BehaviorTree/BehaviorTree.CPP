@@ -263,16 +263,20 @@ public:
   };
 
   PortInfo(PortDirection direction = PortDirection::INOUT) :
-    type_(direction), type_info_(typeid(AnyTypeAllowed))
+    type_(direction), type_info_(typeid(AnyTypeAllowed)),
+    type_str_("AnyTypeAllowed")
   {}
 
   PortInfo(PortDirection direction, std::type_index type_info, StringConverter conv) :
-    type_(direction), type_info_(type_info), converter_(conv)
+    type_(direction), type_info_(type_info), converter_(conv), 
+    type_str_(BT::demangle(type_info))
   {}
 
   [[nodiscard]] PortDirection direction() const;
 
   [[nodiscard]] const std::type_index& type() const;
+
+  [[nodiscard]] const std::string& typeName() const;
 
   [[nodiscard]] Any parseString(const char* str) const;
 
@@ -319,6 +323,7 @@ private:
   std::string description_;
   Any default_value_;
   std::string default_value_str_;
+  std::string type_str_;
 };
 
 template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]

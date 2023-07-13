@@ -360,3 +360,34 @@ TEST(BlackboardTest, SetStringView)
 
   ASSERT_NO_THROW(bb->set("string_view", string_view_const));
 }
+
+TEST(ParserTest, Issue605_whitespaces)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="MySubtree">
+      <Script code=" sub_value:=false " />
+    </BehaviorTree>
+
+    <BehaviorTree ID="MyMainTree">
+      <Sequence>
+        <Script code=" my_value:=true " />
+        <SubTree ID="MySubtree" sub_value="{my_value}  "/>
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MyMainTree");
+  const auto status = tree.tickWhileRunning();
+
+  for(auto const& subtree: tree.subtrees)
+  {
+    subtree->blackboard->debugMessage();
+  }
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(false, tree.rootBlackboard()->get<bool>("my_value"));
+}

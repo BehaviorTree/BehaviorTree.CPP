@@ -479,7 +479,8 @@ struct ExprAssignment : ExprBase
         // fail otherwise
         auto msg = StrCat("The blackboard entry [", key,
                           "] doesn't exist, yet.\n"
-                          "If you want to create a new one, use the operator "
+                          "If you want to create a new one, "
+                          "use the operator "
                           "[:=] instead of [=]");
         throw RuntimeError(msg);
       }
@@ -531,11 +532,12 @@ struct ExprAssignment : ExprBase
         {
           value.copyInto(*dst_ptr);
         }
-        catch (RuntimeError&)
+        catch (std::exception&)
         {
           auto msg = StrCat(errorPrefix(), "\nThe right operand has type [",
                             BT::demangle(value.type()),
-                            "] and can't be converted");
+                            "] and can't be converted to [",
+                            BT::demangle(dst_ptr->type()), "]");
           throw RuntimeError(msg);
         }
       }
