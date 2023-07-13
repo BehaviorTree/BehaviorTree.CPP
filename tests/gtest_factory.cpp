@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 #include <filesystem>
-#include "action_test_node.h"
-#include "condition_test_node.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
 #include "../sample_nodes/dummy_nodes.h"
@@ -371,4 +369,37 @@ TEST(BehaviorTreeReload, ReloadSameTree)
     auto tree = factory.createTree("MainTree");
     ASSERT_EQ(NodeStatus::FAILURE, tree.tickWhileRunning());
   }
+}
+
+class DescriptiveAction : public SyncActionNode
+{
+public:
+  DescriptiveAction(const std::string& name, const NodeConfig& config):
+    SyncActionNode(name, config) {}
+
+  BT::NodeStatus tick() override {
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts() {
+    return {};
+  }
+
+  static std::string description() {
+    return "THE DESCRIPTION";
+  }
+};
+
+TEST(BehaviorTreeFactory, DescriptionMethod)
+{
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DescriptiveAction>("DescriptiveAction");
+  const auto& manifest = factory.manifests().at("DescriptiveAction");
+  ASSERT_EQ(manifest.description, "THE DESCRIPTION");
+
+  auto xml = writeTreeNodesModelXML(factory, false);
+  std::cout << xml << std::endl;
+
+  ASSERT_NE(xml.find( "<description>THE DESCRIPTION</description>"), std::string::npos);
 }

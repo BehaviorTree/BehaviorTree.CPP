@@ -909,7 +909,9 @@ void addNodeModelToXML(const TreeNodeManifest& model,
 
   if (!model.description.empty())
   {
-    element->SetAttribute("description", model.registration_ID.c_str());
+    auto description_element = doc.NewElement("description");
+    description_element->SetText(model.description.c_str());
+    element->InsertEndChild(description_element);
   }
 
   model_root->InsertEndChild(element);

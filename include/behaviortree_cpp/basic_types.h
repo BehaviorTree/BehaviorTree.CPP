@@ -413,6 +413,19 @@ struct has_static_method_providedPorts<
 {
 };
 
+template <typename T, typename = void>
+struct has_static_method_description : std::false_type
+{
+};
+
+template <typename T>
+struct has_static_method_description<
+    T, typename std::enable_if<
+           std::is_same<decltype(T::description()), std::string>::value>::type>
+  : std::true_type
+{
+};
+
 template <typename T> [[nodiscard]]
 inline PortsList getProvidedPorts(enable_if<has_static_method_providedPorts<T>> = nullptr)
 {
