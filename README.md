@@ -95,6 +95,21 @@ example here: https://github.com/BehaviorTree/btcpp_sample .
 Are you using BT.CPP in your commercial product and you need technical support / consulting?
 You can contact the main author dfaconti@aurynrobotics.com to discuss your use case and needs.
 
+**Using BT.CPP in ROS2**
+
+If you want to use BT.CPP in your ROS2 application, a typical **CMakeLists.txt** file
+might look like this:
+
+```cmake
+...
+find_package(behaviortree_cpp REQUIRED)
+find_package(Threads REQUIRED)
+
+add_executable(${PROJECT_NAME} "hello_BT.cpp")
+target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp Threads::Threads)
+...
+```
+
 # License
 
 The MIT License (MIT)
