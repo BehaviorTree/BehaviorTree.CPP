@@ -45,14 +45,14 @@ class Groot2Publisher : public StatusChangeLogger
 
   std::chrono::milliseconds maxHeartbeatDelay() const;
 
+  void flush() override;
+
   private:
 
   void callback(Duration timestamp,
                 const TreeNode& node,
                 NodeStatus prev_status,
                 NodeStatus status) override;
-
-  void flush() override;
 
   void serverLoop();
 
