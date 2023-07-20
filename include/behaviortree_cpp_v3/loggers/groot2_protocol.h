@@ -11,7 +11,8 @@
 
 #include "behaviortree_cpp_v3/basic_types.h"
 
-namespace BT::Monitor {
+namespace BT {
+namespace Monitor {
 
 /*
  * All the messages exchange with the BT executor are multipart ZMQ request-replies.
@@ -183,4 +184,5 @@ inline ReplyHeader DeserializeReplyHeader(const std::string& buffer)
   return header;
 }
 
+}
 }
