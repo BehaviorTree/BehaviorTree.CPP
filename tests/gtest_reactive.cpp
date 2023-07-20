@@ -87,4 +87,40 @@ TEST(Reactive, Issue587)
   ASSERT_EQ(counters[0], 1);
 }
 
+TEST(Reactive, PreTickHooks)
+{
+  using namespace BT;
+
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="Main">
+    <ReactiveSequence>
+      <AlwaysFailure name="failureA"/>
+      <AlwaysFailure name="failureB"/>
+      <Sleep msec="100"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BehaviorTreeFactory factory;
+
+  auto tree = factory.createTreeFromText(reactive_xml_text);
+
+  TreeNode::PreTickCallback callback =
+      [](TreeNode& node) -> NodeStatus {
+    std::cout << node.name() << " callback" << std::endl;
+    return NodeStatus::SUCCESS;
+  };
+
+  tree.applyVisitor([&](TreeNode* node) -> void {
+    if(auto dd = dynamic_cast<BT::AlwaysFailureNode*>(node)) {
+      dd->setPreTickFunction(callback);
+    }
+  });
+
+  auto ret = tree.tickWhileRunning();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+}
+
 
