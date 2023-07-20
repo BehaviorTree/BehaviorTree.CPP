@@ -30,29 +30,23 @@ enum RequestType : uint8_t
   FULLTREE = 'T',
   // Request the staus of all the nodes
   STATUS = 'S',
-  // retrieve the valus in a set of blackboards
-  BLACKBOARD = 'B',
-
-  // Groot requests the insertion of a hook
-  HOOK_INSERT = 'I',
-  // Groot requests to remove a hook
-  HOOK_REMOVE = 'R',
-  // Notify Groot that we reached a breakpoint
-  BREAKPOINT_REACHED = 'N',
-  // Groot will unlock a breakpoint
-  BREAKPOINT_UNLOCK = 'U',
-  // receive the existing hooks in JSON format
-  HOOKS_DUMP = 'D',
-
-  // Remove all hooks. To be done before disconnecting Groot
-  REMOVE_ALL_HOOKS = 'A',
-
-  DISABLE_ALL_HOOKS = 'X',
 
   // start/stop recordong
   TOGGLE_RECORDING = 'r',
   // get all transitions when recording
   GET_TRANSITIONS = 't',
+
+  // The following requests are mentioned for protocol compatibility,
+  // but not supported yet
+
+  BLACKBOARD = 'B',
+  HOOK_INSERT = 'I',
+  HOOK_REMOVE = 'R',
+  BREAKPOINT_REACHED = 'N',
+  BREAKPOINT_UNLOCK = 'U',
+  HOOKS_DUMP = 'D',
+  REMOVE_ALL_HOOKS = 'A',
+  DISABLE_ALL_HOOKS = 'X',
 
   UNDEFINED = 0,
 };
@@ -188,44 +182,5 @@ inline ReplyHeader DeserializeReplyHeader(const std::string& buffer)
   Deserialize(buffer.data(), offset, header.tree_id);
   return header;
 }
-
-struct Hook
-{
-  using Ptr = std::shared_ptr<Hook>;
-
-  // used to enable/disable the breakpoint
-  bool enabled = true;
-
-  enum class Position {
-    PRE = 0,
-    POST = 1
-  };
-
-  Position position = Position::PRE;
-
-  uint16_t node_uid = 0;
-
-  enum class Mode {
-    BREAKPOINT = 0,
-    REPLACE = 1
-  };
-
-  // interactive breakpoints are unblocked using unlockBreakpoint()
-  Mode mode = Mode::BREAKPOINT;
-
-  // used by interactive breakpoints to wait for unlocking
-  std::condition_variable wakeup;
-
-  std::mutex mutex;
-
-  // set to true to unlock an interactive breakpoint
-  bool ready = false;
-
-  // once finished self-destroy
-  bool remove_when_done = false;
-
-  // result to be returned
-  NodeStatus desired_status = NodeStatus::IDLE;
-};
 
 }
