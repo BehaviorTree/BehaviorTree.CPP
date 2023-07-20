@@ -21,8 +21,6 @@ class Groot2Publisher : public StatusChangeLogger
   static std::mutex used_ports_mutex;
   static std::set<unsigned> used_ports;
 
-  using Position = Monitor::Hook::Position;
-
   public:
   Groot2Publisher(const BT::Tree& tree, unsigned server_port = 1667);
 

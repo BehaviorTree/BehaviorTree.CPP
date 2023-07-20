@@ -85,13 +85,6 @@ struct Groot2Publisher::PImpl
 
   std::unordered_map<uint16_t, std::weak_ptr<BT::TreeNode>> nodes_by_uid;
 
-  std::mutex hooks_map_mutex;
-  std::unordered_map<uint16_t, Monitor::Hook::Ptr> pre_hooks;
-  std::unordered_map<uint16_t, Monitor::Hook::Ptr> post_hooks;
-
-  std::chrono::system_clock::time_point last_heartbeat;
-  std::chrono::milliseconds max_heartbeat_delay = std::chrono::milliseconds(5000);
-
   std::atomic_bool recording;
   std::deque<Transition> transitions_buffer;
   std::chrono::microseconds recording_fist_time;
@@ -212,9 +205,6 @@ void Groot2Publisher::serverLoop()
     error_msg.send(socket);
   };
 
-  // initialize _p->last_heartbeat
-  _p->last_heartbeat = std::chrono::system_clock::now();
-
   while (_p->active_server)
   {
     zmq::multipart_t requestMsg;
@@ -222,8 +212,6 @@ void Groot2Publisher::serverLoop()
     {
       continue;
     }
-    // this heartbeat will help establishing if Groot is connected or not
-    _p->last_heartbeat = std::chrono::system_clock::now();
 
     std::string const request_str = requestMsg[0].to_string();
     if(request_str.size() != Monitor::RequestHeader::size())
