@@ -864,21 +864,20 @@ void addTreeToXML(const Tree& tree,
                   bool add_metadata,
                   bool add_builtin_models)
 {
+
+  std::set<std::string> subtree_names;
+
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node,
                 XMLElement* parent_elem)
   {
     XMLElement* elem = nullptr;
 
-    if (auto subtree = dynamic_cast<const SubtreeNode*>(&node))
+    if (node.type() == BT::NodeType::SUBTREE)
     {
-      elem = doc.NewElement(node.registrationName().c_str());
-      elem->SetAttribute("ID", subtree->name().c_str());
-    }
-    else if (auto subtree = dynamic_cast<const SubtreePlusNode*>(&node))
-    {
-      elem = doc.NewElement(node.registrationName().c_str());
-      elem->SetAttribute("ID", subtree->name().c_str());
+      elem = doc.NewElement(node.name().c_str());
+      elem->SetAttribute("name", (node.name() + "::" + std::to_string(node.UID())).c_str());
+      subtree_names.insert(node.name());
     }
     else {
       elem = doc.NewElement(node.registrationName().c_str());
@@ -941,6 +940,14 @@ void addTreeToXML(const Tree& tree,
   for (const auto& [registration_ID, model] : ordered_models)
   {
     addNodeModelToXML(*model, doc, model_root);
+  }
+
+  // This must be added as decorator, because
+  for(const auto& subtree: subtree_names)
+  {
+    XMLElement* element = doc.NewElement("Decorator");
+    element->SetAttribute("ID", subtree.c_str());
+    model_root->InsertEndChild(element);
   }
 }
 
