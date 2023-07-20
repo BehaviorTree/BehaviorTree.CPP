@@ -41,8 +41,30 @@ private:
 void VerifyXML(const std::string& xml_text,
                const std::unordered_map<std::string, NodeType>& registered_nodes);
 
+/**
+ * @brief writeTreeNodesModelXML generates an XMl that contains the manifests in the
+ * <TreeNodesModel>
+ *
+ * @param factory          the factory with the registered types
+ * @param include_builtin  if true, include the builtin Nodes
+ *
+ * @return  string containing the XML.
+ */
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
                                    bool include_builtin = false);
+
+/**
+ * @brief WriteTreeToXML create a string that contains the XML that corresponds to a given tree.
+ * When using this function with a logger, you should probably set both add_metadata and
+ * add_builtin_models to true.
+ *
+ * @param tree               the input tree
+ * @param add_metadata       if true, the attributes "_uid" and "_fullPath" will be added to the nodes
+ * @param add_builtin_models if true, include the builtin Nodes into the <TreeNodesModel>
+ *
+ * @return string containing the XML.
+ */
+std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin_models);
 
 }   // namespace BT
 

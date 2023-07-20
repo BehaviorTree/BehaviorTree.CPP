@@ -22,4 +22,6 @@ BT::NodeStatus OpenDoor();
 BT::NodeStatus CloseDoor();
 
 void RegisterNodes(BT::BehaviorTreeFactory& factory);
+
+void ResetVariables();
 }

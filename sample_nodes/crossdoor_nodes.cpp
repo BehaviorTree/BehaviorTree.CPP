@@ -17,6 +17,12 @@ inline void SleepMS(int ms)
 static bool _door_open   = false;
 static bool _door_locked = true;
 
+void CrossDoor::ResetVariables()
+{
+    _door_open = false;
+    _door_locked = true;
+}
+
 NodeStatus CrossDoor::IsDoorOpen()
 {
     SleepMS(500);
