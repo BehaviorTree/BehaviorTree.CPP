@@ -37,7 +37,7 @@ to visualize, record, replay and analyze state transitions.
 You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
 
 If the documentation doesn't answer your questions and/or you want to
-connect with the other **BT.CPP** users, visit https://discourse.behaviortree.dev/
+connect with the other **BT.CPP** users, visit [our forum](https://github.com/BehaviorTree/BehaviorTree.CPP/discussions)
 
 ## Previous version
 
@@ -49,7 +49,7 @@ only in the master branch.
 
 # GUI Editor
 
-Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
+Editing a BehaviorTree is as simple as editing an XML file in your favorite text editor.
 
 If you are looking for a more fancy graphical user interface (and I know you do) check
 [Groot2](https://www.behaviortree.dev/groot) out.
@@ -65,7 +65,7 @@ Three build systems are supported:
 - **catkin**, if you use ROS
 - **colcon (ament)**, if you use ROS2
 - **conan** otherwise (Linux/Windows).
-- **straight cmake** if you want to be personal responsible for depndencies :)
+- **straight cmake** if you want to be personally responsible for dependencies :)
 
 Compiling with [conan](https://conan.io/):
 
@@ -92,8 +92,8 @@ example here: https://github.com/BehaviorTree/btcpp_sample .
 
 # Commercial support
 
-Are you using BT.CPP in your commercial product and you need technical support / consulting?
-You can contact the main author dfaconti@aurynrobotics.com to discuss your use case and needs.
+Are you using BT.CPP in your commercial product and do you need technical support / consulting?
+You can contact the primary author, **dfaconti@aurynrobotics.com**, to discuss your use case and needs.
 
 # License
 
