@@ -1,5 +1,7 @@
 
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
+
+#define MTR_ENABLED true
 #include "minitrace/minitrace.h"
 
 namespace BT
@@ -15,15 +17,15 @@ MinitraceLogger::MinitraceLogger(const Tree& tree, const char* filename_json) :
     throw LogicError("Only one instance of MinitraceLogger shall be created");
   }
 
-  minitrace::mtr_register_sigint_handler();
-  minitrace::mtr_init(filename_json);
+  mtr_register_sigint_handler();
+  mtr_init(filename_json);
   this->enableTransitionToIdle(true);
 }
 
 MinitraceLogger::~MinitraceLogger()
 {
-  minitrace::mtr_flush();
-  minitrace::mtr_shutdown();
+  mtr_flush();
+  mtr_shutdown();
   ref_count = false;
 }
 
@@ -49,10 +51,7 @@ const char* toConstStr(NodeType type)
 void MinitraceLogger::callback(Duration /*timestamp*/, const TreeNode& node,
                                NodeStatus prev_status, NodeStatus status)
 {
-  using namespace minitrace;
-
-  const bool statusCompleted =
-      (status == NodeStatus::SUCCESS || status == NodeStatus::FAILURE);
+  const bool statusCompleted = isStatusCompleted(status);
 
   const char* category = toConstStr(node.type());
   const char* name = node.name().c_str();
@@ -73,6 +72,6 @@ void MinitraceLogger::callback(Duration /*timestamp*/, const TreeNode& node,
 
 void MinitraceLogger::flush()
 {
-  minitrace::mtr_flush();
+  mtr_flush();
 }
 }   // namespace BT
