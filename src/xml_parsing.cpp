@@ -929,16 +929,19 @@ void addTreeToXML(const Tree& tree,
   static const BehaviorTreeFactory temp_factory;
 
   std::map<std::string, const TreeNodeManifest*> ordered_models;
-  for (const auto& [registration_ID, model] : tree.manifests)
+  for (const auto& it : tree.manifests)
   {
+    auto const& registration_ID = it.first;
+    auto const& model = it.second;
     if(add_builtin_models || !temp_factory.builtinNodes().count(registration_ID))
     {
       ordered_models.insert( {registration_ID, &model} );
     }
   }
 
-  for (const auto& [registration_ID, model] : ordered_models)
+  for (const auto& it : ordered_models)
   {
+    auto const& model = it.second;
     addNodeModelToXML(*model, doc, model_root);
   }
 
