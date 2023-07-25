@@ -225,3 +225,76 @@ TEST(Preconditions, Issue585)
   auto coro = dynamic_cast<CoroTestNode*>(tree.subtrees.front()->nodes.back().get());
   ASSERT_EQ(coro->times_ticked, 0);
 }
+
+TEST(Preconditions, Issue615_NoSkipWhenRunning_A)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <KeepRunningUntilFailure _skipIf="check == true">
+      <AlwaysSuccess/>
+    </KeepRunningUntilFailure>
+  </BehaviorTree>
+  </root> )";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  tree.rootBlackboard()->set("check", false);
+  ASSERT_EQ( tree.tickOnce(), NodeStatus::RUNNING );
+
+  // the precondition should NOT be called, because
+  // KeepRunningUntilFailure is in RUNNING state
+  tree.rootBlackboard()->set("check", true);
+  ASSERT_EQ( tree.tickOnce(), NodeStatus::RUNNING );
+}
+
+class KeepRunning : public BT::StatefulActionNode
+{
+public:
+  KeepRunning(const std::string& name, const BT::NodeConfig& config) :
+    BT::StatefulActionNode(name, config){}
+
+  static BT::PortsList providedPorts() {
+    return {};
+  }
+
+  BT::NodeStatus onStart() override {
+    return BT::NodeStatus::RUNNING;
+  }
+
+  BT::NodeStatus onRunning() override
+  {
+    return BT::NodeStatus::RUNNING;
+  }
+
+  void onHalted() override {
+    std::cout << "Node halted\n";
+  }
+};
+
+TEST(Preconditions, Issue615_NoSkipWhenRunning_B)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <KeepRunning _skipIf="check==false"/>
+  </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  auto tree = factory.createTreeFromText(xml_text);
+
+  tree.rootBlackboard()->set("check", false);
+  ASSERT_EQ( tree.tickOnce(), NodeStatus::SKIPPED );
+
+  // Should not be skipped anymore
+  tree.rootBlackboard()->set("check", true);
+  ASSERT_EQ( tree.tickOnce(), NodeStatus::RUNNING );
+
+  // skipIf should be ignored, because KeepRunning is RUNNING and not IDLE
+  tree.rootBlackboard()->set("check", false);
+  ASSERT_EQ( tree.tickOnce(), NodeStatus::RUNNING );
+}

@@ -128,7 +128,10 @@ NodeStatus TreeNode::executeTick()
     }
   }
 
-  setStatus(new_status);
+  // preserve the IDLE state if skipped, but communicate SKIPPED to parent
+  if(new_status != NodeStatus::SKIPPED) {
+    setStatus(new_status);
+  }
   return new_status;
 }
 
@@ -192,7 +195,7 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     if (result.cast<bool>())
     {
       // Some preconditions are applied only when the node is started
-      if (!isStatusCompleted(_p->status))
+      if (_p->status == NodeStatus::IDLE)
       {
         if (preID == PreCond::FAILURE_IF)
         {
@@ -212,7 +215,7 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     {
       if (preID == PreCond::WHILE_TRUE)
       {
-        if (_p->status == NodeStatus::RUNNING)
+        if (!isStatusCompleted(_p->status))
         {
           halt();
         }
