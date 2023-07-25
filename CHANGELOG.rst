@@ -2,12 +2,17 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-4.3.2 (2023-06-27)
-------------------
-* fix `#595 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/595>`_ : improvement in blackboard/scripting types (`#597 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/597>`_)
-* Fix Issue 593 (`#594 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/594>`_): support skipping in Parallel node
-* adding ParallelAll
-* Contributors: Davide Faconti
+Forthcoming
+-----------
+* Fix error #617 in TestNode
+* minitrace updated
+* fix issue #615 : don't execute preconditions if state is RUNNING
+* README.md
+* fix issue `#605 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/605>`_: strip whitespaces and better error message
+* Export cxx-standard with target. (`#604 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/604>`_)
+* feature `#603 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/603>`_: add static method [std::string description()] to manifest
+* fix issue with move semantic
+* Contributors: Davide Faconti, Sebastian Kasperski
 
 4.3.3 (2023-07-05)
 ------------------
@@ -29,6 +34,13 @@ Changelog for package behaviortree_cpp
 * fix ParallelAll
 * adding ParallelAll, WIP
 * Contributors: Davide Faconti, Oleksandr Perepadia
+
+4.3.2 (2023-06-27)
+------------------
+* fix `#595 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/595>`_ : improvement in blackboard/scripting types (`#597 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/597>`_)
+* Fix Issue 593 (`#594 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/594>`_): support skipping in Parallel node
+* adding ParallelAll
+* Contributors: Davide Faconti
 
 4.3.1 (2023-06-21)
 ------------------
