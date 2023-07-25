@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.4 (2023-07-25)
+------------------
 * Fix error #617 in TestNode
 * minitrace updated
 * fix issue #615 : don't execute preconditions if state is RUNNING
