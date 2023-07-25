@@ -69,7 +69,7 @@ BT::NodeStatus BT::TestNode::onCompleted()
   }
   if(_test_config.post_func)
   {
-    _test_config.pre_func();
+    _test_config.post_func();
   }
   return _test_config.return_status;
 }
