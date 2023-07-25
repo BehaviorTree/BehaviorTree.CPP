@@ -426,12 +426,13 @@ void Groot2Publisher::serverLoop()
         if(cmd == "start")
         {
           _p->recording = true;
-          auto now = std::chrono::system_clock::now();
-
-          _p->recording_fist_time = std::chrono::duration_cast<std::chrono::microseconds>
-                                   (now.time_since_epoch());
-
-          reply_msg.addstr(std::to_string(_p->recording_fist_time.count()));
+          // to keep the first time for callback
+          _p->recording_fist_time = std::chrono::duration_cast<std::chrono::microseconds>(
+              std::chrono::high_resolution_clock::now().time_since_epoch());
+          // to send consistent time for client
+          auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+              std::chrono::system_clock::now().time_since_epoch());
+          reply_msg.addstr(std::to_string(now.count()));
           std::unique_lock<std::mutex> lk(_p->status_mutex);
           _p->transitions_buffer.clear();
         }
