@@ -29,9 +29,9 @@ NodeStatus WhileDoElseNode::tick()
 {
   const size_t children_count = children_nodes_.size();
 
-  if (children_count != 3)
+  if (children_count != 2 && children_count != 3)
   {
-    throw std::logic_error("WhileDoElse must have 3 children");
+    throw std::logic_error("WhileDoElseNode must have either 2 or 3 children");
   }
 
   setStatus(NodeStatus::RUNNING);
@@ -47,13 +47,23 @@ NodeStatus WhileDoElseNode::tick()
 
   if (condition_status == NodeStatus::SUCCESS)
   {
-    haltChild(2);
+    if (children_count == 3)
+    {
+      haltChild(2);
+    }
     status = children_nodes_[1]->executeTick();
   }
   else if (condition_status == NodeStatus::FAILURE)
   {
-    haltChild(1);
-    status = children_nodes_[2]->executeTick();
+    if (children_count == 3)
+    {
+      haltChild(1);
+      status = children_nodes_[2]->executeTick();
+    }
+    else if (children_count == 2)
+    {
+      status = NodeStatus::FAILURE;
+    }
   }
 
   if (status == NodeStatus::RUNNING)
