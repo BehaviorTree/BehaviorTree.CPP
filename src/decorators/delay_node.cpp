@@ -1,7 +1,7 @@
 /*  Contributed by Indraneel on 26/04/2020
 */
+
 #include "behaviortree_cpp/decorators/delay_node.h"
-#include "behaviortree_cpp/action_node.h"
 
 namespace BT
 {
@@ -22,6 +22,13 @@ DelayNode::DelayNode(const std::string& name, const NodeConfig& config) :
   msec_(0),
   read_parameter_from_ports_(true)
 {}
+
+void DelayNode::halt()
+{
+  delay_started_ = false;
+  timer_.cancelAll();
+  DecoratorNode::halt();
+}
 
 NodeStatus DelayNode::tick()
 {

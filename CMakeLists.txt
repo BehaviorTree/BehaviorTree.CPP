@@ -97,11 +97,12 @@ list(APPEND BT_SOURCE
     src/actions/test_node.cpp
     src/actions/sleep_node.cpp
 
+    src/decorators/delay_node.cpp
     src/decorators/inverter_node.cpp
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
+    src/decorators/timeout_node.cpp
     src/decorators/subtree_node.cpp
-    src/decorators/delay_node.cpp
 
     src/controls/if_then_else_node.cpp
     src/controls/fallback_node.cpp
