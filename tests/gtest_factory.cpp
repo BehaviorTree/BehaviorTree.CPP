@@ -340,6 +340,23 @@ TEST(
   ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
+TEST(
+    BehaviorTreeFactory,
+    WrongTreeName)
+{
+  const char* xmlA = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="MainTree">
+      <AlwaysSuccess/>
+    </BehaviorTree>
+  </root> )";
+
+  BehaviorTreeFactory factory;
+
+  factory.registerBehaviorTreeFromText(xmlA);
+  EXPECT_ANY_THROW(factory.createTree("Wrong Name"));
+}
+
 TEST(BehaviorTreeReload, ReloadSameTree)
 {
   const char* xmlA = R"(
