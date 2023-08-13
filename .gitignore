@@ -4,6 +4,7 @@ build*
 site/*
 /.vscode/
 .vs/
+__pycache__
 
 # clangd cache
 /.cache/*
