@@ -23,9 +23,6 @@ xml_text = """
 
      <BehaviorTree ID="MainTree">
         <Sequence>
-            <!-- Initialize the interpolated position -->
-            <SetBlackboard output_key="interpolated" value="None" />
-
             <!-- Interpolate from the initial position to the final one printing
                  at each step. -->
             <ReactiveSequence name="root">
@@ -63,7 +60,9 @@ class Interpolate(StatefulActionNode):
 @ports(inputs=["value"])
 class Print(SyncActionNode):
     def tick(self):
-        print(self.get_input("value"))
+        value = self.get_input("value")
+        if value is not None:
+            print(value)
         return NodeStatus.SUCCESS
 
 

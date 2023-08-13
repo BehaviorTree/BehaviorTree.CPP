@@ -58,7 +58,10 @@ public:
 py::object Py_getInput(const TreeNode& node, const std::string& name)
 {
   py::object obj;
-  node.getInput(name, obj);
+  if (!node.getInput(name, obj).has_value())
+  {
+    return py::none();
+  }
   return obj;
 }
 

@@ -64,7 +64,9 @@ class Translate(SyncActionNode):
 @ports(inputs=["value"])
 class Print(SyncActionNode):
     def tick(self):
-        print(self.get_input("value"))
+        value = self.get_input("value")
+        if value is not None:
+            print(value)
         return NodeStatus.SUCCESS
 
 
