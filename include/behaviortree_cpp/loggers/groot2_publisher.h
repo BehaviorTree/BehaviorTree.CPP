@@ -9,11 +9,11 @@ namespace BT
 {
 
 /**
- * @brief The Groot2Publisher is used tt create an interface between
+ * @brief The Groot2Publisher is used to create an interface between
  * your BT.CPP executor and Groot2.
  *
- * An inter-process communication mechanism allow the two processes
- * to communicate throught a TCP port. The user should provide the
+ * An inter-process communication mechanism allows the two processes
+ * to communicate through a TCP port. The user should provide the
  * port to be used in the constructor.
  */
 class Groot2Publisher : public StatusChangeLogger
@@ -37,7 +37,7 @@ class Groot2Publisher : public StatusChangeLogger
   /**
    * @brief setMaxHeartbeatDelay is used to tell the publisher
    * when a connection with Groot2 should be cancelled, if no
-   * hearbeat is received.
+   * heartbeat is received.
    *
    * Default is 5000 ms
    */
