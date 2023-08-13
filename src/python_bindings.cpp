@@ -30,18 +30,6 @@ public:
     py::gil_scoped_acquire gil;
     return py::get_overload(this, "tick")().cast<NodeStatus>();
   }
-
-  py::object Py_getInput(const std::string& name)
-  {
-    py::object obj;
-    getInput(name, obj);
-    return obj;
-  }
-
-  void Py_setOutput(const std::string& name, const py::object& value)
-  {
-    setOutput(name, value);
-  }
 };
 
 class Py_StatefulActionNode final : public StatefulActionNode
@@ -68,21 +56,21 @@ public:
     py::gil_scoped_acquire gil;
     py::get_overload(this, "on_halted")();
   }
-
-  // TODO: Share these duplicated methods with other node types.
-  py::object Py_getInput(const std::string& name)
-  {
-    py::object obj;
-    getInput(name, obj);
-    return obj;
-  }
-
-  // TODO: Share these duplicated methods with other node types.
-  void Py_setOutput(const std::string& name, const py::object& value)
-  {
-    setOutput(name, value);
-  }
 };
+
+template <typename T>
+py::object Py_getInput(const T& node, const std::string& name)
+{
+  py::object obj;
+  node.getInput(name, obj);
+  return obj;
+}
+
+template <typename T>
+void Py_setOutput(T& node, const std::string& name, const py::object& value)
+{
+  node.setOutput(name, value);
+}
 
 // Add a conversion specialization from string values into general py::objects
 // by evaluating as a Python expression.
@@ -190,17 +178,17 @@ PYBIND11_MODULE(btpy_cpp, m)
 
   py::class_<Py_SyncActionNode>(m, "SyncActionNode")
       .def(py::init<const std::string&, const NodeConfig&>())
-      .def("tick", &Py_SyncActionNode::tick)
-      .def("get_input", &Py_SyncActionNode::Py_getInput)
-      .def("set_output", &Py_SyncActionNode::Py_setOutput);
+      .def("get_input", &Py_getInput<Py_SyncActionNode>)
+      .def("set_output", &Py_setOutput<Py_SyncActionNode>)
+      .def("tick", &Py_SyncActionNode::tick);
 
   py::class_<Py_StatefulActionNode>(m, "StatefulActionNode")
       .def(py::init<const std::string&, const NodeConfig&>())
+      .def("get_input", &Py_getInput<Py_StatefulActionNode>)
+      .def("set_output", &Py_setOutput<Py_StatefulActionNode>)
       .def("on_start", &Py_StatefulActionNode::onStart)
       .def("on_running", &Py_StatefulActionNode::onRunning)
-      .def("on_halted", &Py_StatefulActionNode::onHalted)
-      .def("get_input", &Py_StatefulActionNode::Py_getInput)
-      .def("set_output", &Py_StatefulActionNode::Py_setOutput);
+      .def("on_halted", &Py_StatefulActionNode::onHalted);
 }
 
 }   // namespace BT
