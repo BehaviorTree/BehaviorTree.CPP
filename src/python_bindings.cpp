@@ -164,10 +164,10 @@ PYBIND11_MODULE(btpy_cpp, m)
            py::arg("sleep_time") = std::chrono::milliseconds(10));
 
   py::enum_<NodeStatus>(m, "NodeStatus")
-      .value("SUCCESS", NodeStatus::SUCCESS)
-      .value("FAILURE", NodeStatus::FAILURE)
       .value("IDLE", NodeStatus::IDLE)
       .value("RUNNING", NodeStatus::RUNNING)
+      .value("SUCCESS", NodeStatus::SUCCESS)
+      .value("FAILURE", NodeStatus::FAILURE)
       .value("SKIPPED", NodeStatus::SKIPPED)
       .export_values();
 
