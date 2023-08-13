@@ -71,7 +71,7 @@ class Print(SyncActionNode):
 
 
 rclpy.init()
-node = Node("ex04_ros_interopt")
+node = Node("ex04_ros_interop")
 
 factory = BehaviorTreeFactory()
 factory.register(GetRosTransform, node)
