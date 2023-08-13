@@ -58,6 +58,9 @@ public:
 py::object Py_getInput(const TreeNode& node, const std::string& name)
 {
   py::object obj;
+
+  // The input could not exist on the blackboard, in which case we return Python
+  // `None` instead of an invalid object.
   if (!node.getInput(name, obj).has_value())
   {
     return py::none();
