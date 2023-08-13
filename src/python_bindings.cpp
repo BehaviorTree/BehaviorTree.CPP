@@ -55,16 +55,14 @@ public:
   }
 };
 
-template <typename T>
-py::object Py_getInput(const T& node, const std::string& name)
+py::object Py_getInput(const TreeNode& node, const std::string& name)
 {
   py::object obj;
   node.getInput(name, obj);
   return obj;
 }
 
-template <typename T>
-void Py_setOutput(T& node, const std::string& name, const py::object& value)
+void Py_setOutput(TreeNode& node, const std::string& name, const py::object& value)
 {
   node.setOutput(name, value);
 }
@@ -88,21 +86,49 @@ inline py::object convertFromString(StringView str)
   }
 }
 
+PortsList extractPortsList(const py::type& type)
+{
+  PortsList ports;
+
+  const auto input_ports = type.attr("input_ports").cast<py::list>();
+  for (const auto& name : input_ports)
+  {
+    ports.insert(InputPort<py::object>(name.cast<std::string>()));
+  }
+
+  const auto output_ports = type.attr("output_ports").cast<py::list>();
+  for (const auto& name : output_ports)
+  {
+    ports.insert(OutputPort<py::object>(name.cast<std::string>()));
+  }
+
+  return ports;
+}
+
+NodeBuilder makeTreeNodeBuilderFn(const py::type& type)
+{
+  return [type](const auto& name, const auto& config) -> auto {
+    py::object obj = type(name, config);
+
+    // TODO: Increment the object's reference count or else it
+    // will be GC'd at the end of this scope. The downside is
+    // that, unless we can decrement the ref when the unique_ptr
+    // is destroyed, then the object will live forever.
+    obj.inc_ref();
+
+    if (py::isinstance<ActionNodeBase>(obj))
+    {
+      return std::unique_ptr<TreeNode>(obj.cast<ActionNodeBase*>());
+    }
+    else
+    {
+      throw std::runtime_error("invalid node type of " + name);
+    }
+  };
+}
+
 PYBIND11_MODULE(btpy_cpp, m)
 {
-  py::class_<PortInfo>(m, "PortInfo");
-  m.def("input_port",
-        [](const std::string& name) { return InputPort<py::object>(name); });
-  m.def("output_port",
-        [](const std::string& name) { return OutputPort<py::object>(name); });
-
-  m.def(
-      "ports2",
-      [](const py::list& inputs, const py::list& outputs) -> auto {
-        return [](py::type type) -> auto { return type; };
-      },
-      py::kw_only(), py::arg("inputs") = py::none(), py::arg("outputs") = py::none());
-
   py::class_<BehaviorTreeFactory>(m, "BehaviorTreeFactory")
       .def(py::init())
       .def("register",
@@ -112,45 +138,10 @@ PYBIND11_MODULE(btpy_cpp, m)
              TreeNodeManifest manifest;
              manifest.type = NodeType::ACTION;
              manifest.registration_ID = name;
-             manifest.ports = {};
+             manifest.ports = extractPortsList(type);
              manifest.description = "";
 
-             const auto input_ports = type.attr("input_ports").cast<py::list>();
-             for (const auto& name : input_ports)
-             {
-               manifest.ports.insert(InputPort<py::object>(name.cast<std::string>()));
-             }
-
-             const auto output_ports = type.attr("output_ports").cast<py::list>();
-             for (const auto& name : output_ports)
-             {
-               manifest.ports.insert(OutputPort<py::object>(name.cast<std::string>()));
-             }
-
-             factory.registerBuilder(
-                 manifest,
-                 [type](const std::string& name,
-                        const NodeConfig& config) -> std::unique_ptr<TreeNode> {
-                   py::object obj = type(name, config);
-                   // TODO: Increment the object's reference count or else it
-                   // will be GC'd at the end of this scope. The downside is
-                   // that, unless we can decrement the ref when the unique_ptr
-                   // is destroyed, then the object will live forever.
-                   obj.inc_ref();
-
-                   if (py::isinstance<Py_SyncActionNode>(obj))
-                   {
-                     return std::unique_ptr<TreeNode>(obj.cast<Py_SyncActionNode*>());
-                   }
-                   else if (py::isinstance<Py_StatefulActionNode>(obj))
-                   {
-                     return std::unique_ptr<TreeNode>(obj.cast<Py_StatefulActionNode*>());
-                   }
-                   else
-                   {
-                     throw std::runtime_error("invalid node type of " + name);
-                   }
-                 });
+             factory.registerBuilder(manifest, makeTreeNodeBuilderFn(type));
            })
       .def("create_tree_from_text",
            [](BehaviorTreeFactory& factory, const std::string& text) -> Tree {
@@ -173,16 +164,23 @@ PYBIND11_MODULE(btpy_cpp, m)
 
   py::class_<NodeConfig>(m, "NodeConfig");
 
-  py::class_<Py_SyncActionNode>(m, "SyncActionNode")
+  // Register the C++ type hierarchy so that we can refer to Python subclasses
+  // by their superclass ptr types in generic C++ code.
+  py::class_<TreeNode>(m, "_TreeNode");
+  py::class_<ActionNodeBase, TreeNode>(m, "_ActionNodeBase");
+  py::class_<SyncActionNode, ActionNodeBase>(m, "_SyncActionNode");
+  py::class_<StatefulActionNode, ActionNodeBase>(m, "_StatefulActionNode");
+
+  py::class_<Py_SyncActionNode, SyncActionNode>(m, "SyncActionNode")
       .def(py::init<const std::string&, const NodeConfig&>())
-      .def("get_input", &Py_getInput<Py_SyncActionNode>)
-      .def("set_output", &Py_setOutput<Py_SyncActionNode>)
+      .def("get_input", &Py_getInput)
+      .def("set_output", &Py_setOutput)
       .def("tick", &Py_SyncActionNode::tick);
 
-  py::class_<Py_StatefulActionNode>(m, "StatefulActionNode")
+  py::class_<Py_StatefulActionNode, StatefulActionNode>(m, "StatefulActionNode")
       .def(py::init<const std::string&, const NodeConfig&>())
-      .def("get_input", &Py_getInput<Py_StatefulActionNode>)
-      .def("set_output", &Py_setOutput<Py_StatefulActionNode>)
+      .def("get_input", &Py_getInput)
+      .def("set_output", &Py_setOutput)
       .def("on_start", &Py_StatefulActionNode::onStart)
       .def("on_running", &Py_StatefulActionNode::onRunning)
       .def("on_halted", &Py_StatefulActionNode::onHalted);
