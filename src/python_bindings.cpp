@@ -1,4 +1,5 @@
 #include <memory>
+#include <stdexcept>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/gil.h>
@@ -37,6 +38,46 @@ public:
     return obj;
   }
 
+  void Py_setOutput(const std::string& name, const py::object& value)
+  {
+    setOutput(name, value);
+  }
+};
+
+class Py_StatefulActionNode final : public StatefulActionNode
+{
+public:
+  Py_StatefulActionNode(const std::string& name, const NodeConfig& config) :
+    StatefulActionNode(name, config)
+  {}
+
+  NodeStatus onStart() override
+  {
+    py::gil_scoped_acquire gil;
+    return py::get_overload(this, "on_start")().cast<NodeStatus>();
+  }
+
+  NodeStatus onRunning() override
+  {
+    py::gil_scoped_acquire gil;
+    return py::get_overload(this, "on_running")().cast<NodeStatus>();
+  }
+
+  void onHalted() override
+  {
+    py::gil_scoped_acquire gil;
+    py::get_overload(this, "on_halted")();
+  }
+
+  // TODO: Share these duplicated methods with other node types.
+  py::object Py_getInput(const std::string& name)
+  {
+    py::object obj;
+    getInput(name, obj);
+    return obj;
+  }
+
+  // TODO: Share these duplicated methods with other node types.
   void Py_setOutput(const std::string& name, const py::object& value)
   {
     setOutput(name, value);
@@ -112,8 +153,18 @@ PYBIND11_MODULE(btpy_cpp, m)
                    // is destroyed, then the object will live forever.
                    obj.inc_ref();
 
-                   return std::unique_ptr<Py_SyncActionNode>(
-                       obj.cast<Py_SyncActionNode*>());
+                   if (py::isinstance<Py_SyncActionNode>(obj))
+                   {
+                     return std::unique_ptr<TreeNode>(obj.cast<Py_SyncActionNode*>());
+                   }
+                   else if (py::isinstance<Py_StatefulActionNode>(obj))
+                   {
+                     return std::unique_ptr<TreeNode>(obj.cast<Py_StatefulActionNode*>());
+                   }
+                   else
+                   {
+                     throw std::runtime_error("invalid node type of " + name);
+                   }
                  });
            })
       .def("create_tree_from_text",
@@ -142,6 +193,14 @@ PYBIND11_MODULE(btpy_cpp, m)
       .def("tick", &Py_SyncActionNode::tick)
       .def("get_input", &Py_SyncActionNode::Py_getInput)
       .def("set_output", &Py_SyncActionNode::Py_setOutput);
+
+  py::class_<Py_StatefulActionNode>(m, "StatefulActionNode")
+      .def(py::init<const std::string&, const NodeConfig&>())
+      .def("on_start", &Py_StatefulActionNode::onStart)
+      .def("on_running", &Py_StatefulActionNode::onRunning)
+      .def("on_halted", &Py_StatefulActionNode::onHalted)
+      .def("get_input", &Py_StatefulActionNode::Py_getInput)
+      .def("set_output", &Py_StatefulActionNode::Py_setOutput);
 }
 
 }   // namespace BT
