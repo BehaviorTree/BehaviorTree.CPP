@@ -2,6 +2,12 @@
 
 """
 Demonstrates interop of BehaviorTree.CPP Python bindings and ROS2 via rclpy.
+
+You can publish the transform expected in the tree below using this command:
+
+    ros2 run tf2_ros static_transform_publisher \
+        --frame-id odom --child-frame-id base_link \
+        --x 1.0 --y 2.0
 """
 
 import rclpy
