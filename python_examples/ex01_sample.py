@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Demo adapted from [1].
-
-To run, ensure that the `btpy_cpp` Python extension is on your `PYTHONPATH`
-variable. It is probably located in your build directory if you're building from
-source.
-
-[1]: https://github.com/BehaviorTree/btcpp_sample
+Demo adapted from [btcpp_sample](https://github.com/BehaviorTree/btcpp_sample).
 """
 
 from btpy import BehaviorTreeFactory, SyncActionNode, NodeStatus, ports

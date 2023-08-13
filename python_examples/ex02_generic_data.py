@@ -2,10 +2,6 @@
 
 """
 Demonstration of passing generic data between nodes.
-
-To run, ensure that the `btpy_cpp` Python extension is on your `PYTHONPATH`
-variable. It is probably located in your build directory if you're building from
-source.
 """
 
 import numpy as np

@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Demonstration of stateful action nodes.
-
-To run, ensure that the `btpy_cpp` Python extension is on your `PYTHONPATH`
-variable. It is probably located in your build directory if you're building from
-source.
+Demonstrates interop of BehaviorTree.CPP Python bindings and ROS2 via rclpy.
 """
 
 import rclpy
