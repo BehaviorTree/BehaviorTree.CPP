@@ -27,8 +27,7 @@ public:
 
   NodeStatus tick() override
   {
-    py::gil_scoped_acquire gil;
-    return py::get_overload(this, "tick")().cast<NodeStatus>();
+    PYBIND11_OVERRIDE_PURE_NAME(NodeStatus, Py_SyncActionNode, "tick", tick);
   }
 };
 
@@ -41,20 +40,18 @@ public:
 
   NodeStatus onStart() override
   {
-    py::gil_scoped_acquire gil;
-    return py::get_overload(this, "on_start")().cast<NodeStatus>();
+    PYBIND11_OVERRIDE_PURE_NAME(NodeStatus, Py_StatefulActionNode, "on_start", onStart);
   }
 
   NodeStatus onRunning() override
   {
-    py::gil_scoped_acquire gil;
-    return py::get_overload(this, "on_running")().cast<NodeStatus>();
+    PYBIND11_OVERRIDE_PURE_NAME(NodeStatus, Py_StatefulActionNode, "on_running",
+                                onRunning);
   }
 
   void onHalted() override
   {
-    py::gil_scoped_acquire gil;
-    py::get_overload(this, "on_halted")();
+    PYBIND11_OVERRIDE_PURE_NAME(void, Py_StatefulActionNode, "on_running", onRunning);
   }
 };
 
