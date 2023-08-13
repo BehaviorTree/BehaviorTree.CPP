@@ -108,10 +108,12 @@ PortsList extractPortsList(const py::type& type)
   return ports;
 }
 
-NodeBuilder makeTreeNodeBuilderFn(const py::type& type)
+NodeBuilder makeTreeNodeBuilderFn(const py::type& type, const py::args& args,
+                                  const py::kwargs& kwargs)
 {
-  return [type](const auto& name, const auto& config) -> auto {
-    py::object obj = type(name, config);
+  return [=](const auto& name, const auto& config) -> auto {
+    py::object obj;
+    obj = type(name, config, *args, **kwargs);
 
     // TODO: Increment the object's reference count or else it
     // will be GC'd at the end of this scope. The downside is
@@ -135,7 +137,8 @@ PYBIND11_MODULE(btpy_cpp, m)
   py::class_<BehaviorTreeFactory>(m, "BehaviorTreeFactory")
       .def(py::init())
       .def("register",
-           [](BehaviorTreeFactory& factory, const py::type type) {
+           [](BehaviorTreeFactory& factory, const py::type type, const py::args& args,
+              const py::kwargs& kwargs) {
              const std::string name = type.attr("__name__").cast<std::string>();
 
              TreeNodeManifest manifest;
@@ -144,7 +147,7 @@ PYBIND11_MODULE(btpy_cpp, m)
              manifest.ports = extractPortsList(type);
              manifest.description = "";
 
-             factory.registerBuilder(manifest, makeTreeNodeBuilderFn(type));
+             factory.registerBuilder(manifest, makeTreeNodeBuilderFn(type, args, kwargs));
            })
       .def("create_tree_from_text",
            [](BehaviorTreeFactory& factory, const std::string& text) -> Tree {
