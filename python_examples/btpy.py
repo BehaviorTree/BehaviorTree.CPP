@@ -4,7 +4,14 @@
 Top-level module of the BehaviorTree.CPP Python bindings.
 """
 
-from btpy_cpp import *  # re-export
+# re-export
+from btpy_cpp import (
+    BehaviorTreeFactory,
+    NodeStatus,
+    StatefulActionNode,
+    SyncActionNode,
+    Tree,
+)
 
 
 def ports(inputs=[], outputs=[]):
