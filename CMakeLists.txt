@@ -29,6 +29,7 @@ option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
 option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
 option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
+option(BTCPP_PYTHON "Add Python bindings" ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
@@ -132,6 +133,13 @@ endif()
 
 if(BTCPP_SQLITE_LOGGING)
     list(APPEND BT_SOURCE  src/loggers/bt_sqlite_logger.cpp )
+endif()
+
+if(BTCPP_PYTHON)
+    find_package(Python COMPONENTS Interpreter Development)
+    find_package(pybind11 CONFIG)
+    pybind11_add_module(btpy_cpp src/python_bindings.cpp)
+    target_link_libraries(btpy_cpp PRIVATE ${BTCPP_LIBRARY})
 endif()
 
 ######################################################
