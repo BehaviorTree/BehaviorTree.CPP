@@ -166,21 +166,19 @@ PYBIND11_MODULE(btpy_cpp, m)
 
   // Register the C++ type hierarchy so that we can refer to Python subclasses
   // by their superclass ptr types in generic C++ code.
-  py::class_<TreeNode>(m, "_TreeNode");
+  py::class_<TreeNode>(m, "_TreeNode")
+      .def("get_input", &Py_getInput)
+      .def("set_output", &Py_setOutput);
   py::class_<ActionNodeBase, TreeNode>(m, "_ActionNodeBase");
   py::class_<SyncActionNode, ActionNodeBase>(m, "_SyncActionNode");
   py::class_<StatefulActionNode, ActionNodeBase>(m, "_StatefulActionNode");
 
   py::class_<Py_SyncActionNode, SyncActionNode>(m, "SyncActionNode")
       .def(py::init<const std::string&, const NodeConfig&>())
-      .def("get_input", &Py_getInput)
-      .def("set_output", &Py_setOutput)
       .def("tick", &Py_SyncActionNode::tick);
 
   py::class_<Py_StatefulActionNode, StatefulActionNode>(m, "StatefulActionNode")
       .def(py::init<const std::string&, const NodeConfig&>())
-      .def("get_input", &Py_getInput)
-      .def("set_output", &Py_setOutput)
       .def("on_start", &Py_StatefulActionNode::onStart)
       .def("on_running", &Py_StatefulActionNode::onRunning)
       .def("on_halted", &Py_StatefulActionNode::onHalted);
