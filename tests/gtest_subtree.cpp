@@ -430,3 +430,32 @@ TEST(SubTree, SubtreeIssue592)
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
   ASSERT_EQ(counters[0], 2);
 }
+
+TEST(SubTree, Issue623_String_to_Pose2d)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute="Test" BTCPP_format="4">
+
+  <BehaviorTree ID="Test">
+    <ReactiveSequence name="MainSequence">
+      <SubTree name="Visit2" ID="Visit2" tl1="1;2;3"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Visit2">
+    <Sequence name="Visit2MainSequence">
+      <Action name="MoveBase" ID="MoveBase" goal="{tl1}"/>
+    </Sequence>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<MoveBaseAction>("MoveBase");
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+}
