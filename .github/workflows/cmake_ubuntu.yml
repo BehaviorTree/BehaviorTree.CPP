@@ -2,10 +2,6 @@ name: cmake Ubuntu
 
 on: [push, pull_request]
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
@@ -19,6 +15,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+      token: ${{ secrets.CODECOV_TOKEN }}
       
     - name: Install Conan
       id: conan
@@ -39,17 +37,17 @@ jobs:
 
     - name: Install conan dependencies
       working-directory: ${{github.workspace}}/build
-      run: conan install ${{github.workspace}}/conanfile.txt -s build_type=${{env.BUILD_TYPE}} --build=missing
+      run: conan install ${{github.workspace}}/conanfile.txt -s build_type=Debug --build=missing
 
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+      run: cmake $GITHUB_WORKSPACE -DENABLE_TEST_COVERAGE=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
 
     - name: Build
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{env.BUILD_TYPE}}
+      run: cmake --build . --config Debug
       
     - name: run test (Linux)
       working-directory: ${{github.workspace}}/build
@@ -57,4 +55,6 @@ jobs:
       
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
-      
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
