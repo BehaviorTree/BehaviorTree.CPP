@@ -91,6 +91,8 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<SwitchNode<5>>("Switch5");
   registerNodeType<SwitchNode<6>>("Switch6");
   
+  registerNodeType<LoopNode<int>>("LoopInt");
+  registerNodeType<LoopNode<bool>>("LoopBool");
   registerNodeType<LoopNode<double>>("LoopDouble");
   registerNodeType<LoopNode<std::string>>("LoopString");
 

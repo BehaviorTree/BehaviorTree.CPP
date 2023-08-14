@@ -122,6 +122,30 @@ public:
 };
 
 template <> inline
+SharedQueue<int> convertFromString<SharedQueue<int>>(StringView str)
+{
+  auto parts = splitString(str, ';');
+  SharedQueue<int> output = std::make_shared<std::deque<int>>();
+  for (const StringView& part : parts)
+  {
+    output->push_back(convertFromString<int>(part));
+  }
+  return output;
+}
+
+template <> inline
+SharedQueue<bool> convertFromString<SharedQueue<bool>>(StringView str)
+{
+  auto parts = splitString(str, ';');
+  SharedQueue<bool> output = std::make_shared<std::deque<bool>>();
+  for (const StringView& part : parts)
+  {
+    output->push_back(convertFromString<bool>(part));
+  }
+  return output;
+}
+
+template <> inline
 SharedQueue<double> convertFromString<SharedQueue<double>>(StringView str)
 {
   auto parts = splitString(str, ';');
@@ -129,6 +153,18 @@ SharedQueue<double> convertFromString<SharedQueue<double>>(StringView str)
   for (const StringView& part : parts)
   {
     output->push_back(convertFromString<double>(part));
+  }
+  return output;
+}
+
+template <> inline
+SharedQueue<std::string> convertFromString<SharedQueue<std::string>>(StringView str)
+{
+  auto parts = splitString(str, ';');
+  SharedQueue<std::string> output = std::make_shared<std::deque<std::string>>();
+  for (const StringView& part : parts)
+  {
+    output->push_back(convertFromString<std::string>(part));
   }
   return output;
 }
