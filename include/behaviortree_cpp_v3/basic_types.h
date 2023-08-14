@@ -253,6 +253,11 @@ public:
 
   const std::string& defaultValue() const;
 
+  bool isStronglyTyped() const
+  {
+    return _info != nullptr;
+  }
+
 private:
   PortDirection _type;
   const std::type_info* _info;

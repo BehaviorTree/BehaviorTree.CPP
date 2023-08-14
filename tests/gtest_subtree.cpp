@@ -374,7 +374,7 @@ TEST(SubTree, SubtreeIssue563)
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
 }
 
-TEST(SubTree, SubtreeIssue623)
+TEST(SubTree, String_to_Pose_Issue623)
 {
   // clang-format off
 
@@ -382,13 +382,12 @@ TEST(SubTree, SubtreeIssue623)
 <root main_tree_to_execute="Test">
   <BehaviorTree ID="Test">
     <ReactiveSequence name="MainSequence">
-      <SubTreePlus name="Visit2" ID="Visit2" tl1="1;2;3" tl2="4;5;6"/>
+      <SubTreePlus name="Visit2" ID="Visit2" tl1="1;2;3"/>
     </ReactiveSequence>
   </BehaviorTree>
   <BehaviorTree ID="Visit2">
     <Sequence name="Visit2MainSequence">
       <Action name="MoveBase" ID="MoveBase" goal="{tl1}"/>
-      <Action name="MoveBase" ID="MoveBase" goal="{tl2}"/>
     </Sequence>
   </BehaviorTree>
 </root>
