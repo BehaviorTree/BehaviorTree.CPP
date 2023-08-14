@@ -2,6 +2,18 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue `#621 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/621>`_: ConsumeQueue
+* feat: add template specialization for convertFromString deque (`#628 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/628>`_)
+* unit test added
+* Update groot2_publisher.h (`#630 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/630>`_)
+* unit test issue `#629 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/629>`_
+* WhileDoElseNode can have 2 or 3 children (`#625 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/625>`_)
+* fix issue `#624 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/624>`_ : add TimeoutNode::halt()
+* fix recording_fist_time issue on windows (`#618 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/618>`_)
+* Contributors: Aglargil, Davide Faconti, Michael Terzer, benyamin saedi, muritane
+
 4.3.4 (2023-07-25)
 ------------------
 * Fix error #617 in TestNode
