@@ -2,6 +2,9 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.8.4 (2023-06-28)
 ------------------
 * Update ros2.yaml
