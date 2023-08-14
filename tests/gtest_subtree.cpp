@@ -1,6 +1,7 @@
 ﻿#include <gtest/gtest.h>
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
+#include "../sample_nodes/movebase_node.h"
 
 using namespace BT;
 
@@ -371,4 +372,31 @@ TEST(SubTree, SubtreeIssue563)
 
   auto ret = tree.tickRoot();
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
+}
+
+TEST(SubTree, String_to_Pose_Issue623)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute="Test">
+  <BehaviorTree ID="Test">
+    <ReactiveSequence name="MainSequence">
+      <SubTreePlus name="Visit2" ID="Visit2" tl1="1;2;3"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+  <BehaviorTree ID="Visit2">
+    <Sequence name="Visit2MainSequence">
+      <Action name="MoveBase" ID="MoveBase" goal="{tl1}"/>
+    </Sequence>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<MoveBaseAction>("MoveBase");
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickRootWhileRunning();
 }

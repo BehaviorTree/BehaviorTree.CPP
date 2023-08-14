@@ -565,23 +565,24 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
         continue;
       }
       StringView param_value = remap_it->second;
-      auto param_res = TreeNode::getRemappedKey(port_name, param_value);
-      if (param_res)
+
+      if (auto param_res = TreeNode::getRemappedKey(port_name, param_value))
       {
+        // port_key will contain the key to find the entry in the blackboard
         const auto port_key = static_cast<std::string>(param_res.value());
 
-        auto prev_info = blackboard->portInfo(port_key);
-        if (!prev_info)
+        // if the entry already exists, check that the type is the same
+        if (auto prev_info = blackboard->portInfo(port_key))
         {
-          // not found, insert for the first time.
-          blackboard->createEntry(port_key, port_info);
-        }
-        else
-        {
-          // found. check consistency
-          if (prev_info->type() &&
-              port_info.type() &&   // null type means that everything is valid
-              *prev_info->type() != *port_info.type())
+          bool const port_type_mismatch = (prev_info->isStronglyTyped() &&
+                                           port_info.isStronglyTyped() &&
+                                           *prev_info->type() != *port_info.type());
+
+          // special case related to convertFromString
+          bool const string_input = ( prev_info->type() &&
+              *prev_info->type() == typeid(std::string));
+
+          if (port_type_mismatch && !string_input)
           {
             blackboard->debugMessage();
 
@@ -590,6 +591,11 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
                                demangle(prev_info->type()), "] and, later type [",
                                demangle(port_info.type()), "] was used somewhere else.");
           }
+        }
+        else
+        {
+          // not found, insert for the first time.
+          blackboard->createEntry(port_key, port_info);
         }
       }
     }
