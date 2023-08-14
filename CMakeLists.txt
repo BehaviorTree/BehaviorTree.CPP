@@ -183,6 +183,11 @@ else()
     target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
 endif()
 
+if(ENABLE_TEST_COVERAGE)
+  target_compile_options(${BTCPP_LIBRARY} PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
+  target_link_options(${BTCPP_LIBRARY} PUBLIC -fprofile-arcs -ftest-coverage)
+endif()
+
 #############################################################
 message( STATUS "BTCPP_LIB_DESTINATION:   ${BTCPP_LIB_DESTINATION} " )
 message( STATUS "BTCPP_INCLUDE_DESTINATION: ${BTCPP_INCLUDE_DESTINATION} " )
