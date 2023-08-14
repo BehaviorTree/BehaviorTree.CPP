@@ -25,8 +25,11 @@ namespace BT
  *
  * An empty queue will return SUCCESS
  */
+
+
 template <typename T>
-class ConsumeQueue : public DecoratorNode
+class [[deprecated("You are encouraged to use the LoopNode instead")]]
+ConsumeQueue : public DecoratorNode
 {
 public:
   ConsumeQueue(const std::string& name, const NodeConfig& config) :
@@ -35,6 +38,9 @@ public:
 
   NodeStatus tick() override
   {
+    // by default, return SUCCESS, even if queue is empty
+    NodeStatus status_to_be_returned = NodeStatus::SUCCESS;
+
     if (running_child_)
     {
       NodeStatus child_state = child_node_->executeTick();
@@ -46,6 +52,7 @@ public:
       else
       {
         haltChild();
+        status_to_be_returned = child_state;
       }
     }
 
@@ -79,18 +86,18 @@ public:
           {
             return NodeStatus::FAILURE;
           }
+          status_to_be_returned = child_state;
         }
       }
     }
 
-    return NodeStatus::SUCCESS;
+    return status_to_be_returned;
   }
 
   static PortsList providedPorts()
   {
-    return {InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"), OutputPort<T>("popped"
-                                                                                  "_ite"
-                                                                                  "m")};
+    return {InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"),
+            OutputPort<T>("popped_item")};
   }
 
 private:
