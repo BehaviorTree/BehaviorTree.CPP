@@ -524,3 +524,69 @@ TEST(Parallel, Issue593)
 
   ASSERT_EQ(0, counters[0]);
 }
+
+TEST(Parallel, PauseWithRetry)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="TestTree">
+    <Parallel>
+      <Sequence>
+        <Sleep msec="100"/>
+        <Script code="paused := false"/>
+        <Sleep msec="100"/>
+      </Sequence>
+
+      <Sequence>
+        <Script code="paused := true; done := false"/>
+        <RetryUntilSuccessful _while="paused" num_attempts="-1" _onHalted="done = true">
+          <AlwaysFailure/>
+        </RetryUntilSuccessful>
+      </Sequence>
+    </Parallel>
+  </BehaviorTree>
+</root>
+)";
+  using namespace BT;
+
+  BehaviorTreeFactory factory;
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto t1 = std::chrono::system_clock::now();
+  std::chrono::system_clock::time_point done_time;
+  bool done_detected = false;
+
+  auto status = tree.tickExactlyOnce();
+
+  while (!isStatusCompleted(status))
+  {
+    tree.sleep(std::chrono::milliseconds(1));
+    if(!done_detected)
+    {
+      if(tree.subtrees.front()->blackboard->get<bool>("done"))
+      {
+        done_detected = true;
+        done_time = std::chrono::system_clock::now();
+      }
+    }
+    status = tree.tickExactlyOnce();
+  }
+  auto t2 = std::chrono::system_clock::now();
+
+  auto toMsec = [](const auto& t)
+  {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(t).count();
+  };
+
+  ASSERT_EQ(NodeStatus::SUCCESS, status);
+
+  // tolerate an error in time measurement within this margin
+  const int margin_msec = 5;
+
+  // the whole process should take about 200 milliseconds
+  ASSERT_LE( std::abs(toMsec(t2-t1) - 200), margin_msec );
+  // the second branch with the RetryUntilSuccessful should take about 100 ms
+  ASSERT_LE( std::abs(toMsec(done_time-t1) - 100), margin_msec );
+}
+
+
