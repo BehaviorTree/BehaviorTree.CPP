@@ -51,7 +51,7 @@ public:
 
   void onHalted() override
   {
-    PYBIND11_OVERRIDE_PURE_NAME(void, Py_StatefulActionNode, "on_running", onRunning);
+    PYBIND11_OVERRIDE_PURE_NAME(void, Py_StatefulActionNode, "on_halted", onHalted);
   }
 };
 
