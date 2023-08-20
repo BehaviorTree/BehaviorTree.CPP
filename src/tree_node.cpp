@@ -180,22 +180,25 @@ TreeNode::PostScripts &TreeNode::postConditionsScripts() {
 
 Expected<NodeStatus> TreeNode::checkPreConditions()
 {
+  Ast::Environment env = {config().blackboard, config().enums};
+
   // check the pre-conditions
   for (size_t index = 0; index < size_t(PreCond::COUNT_); index++)
   {
-    PreCond preID = PreCond(index);
     const auto& parse_executor = _p->pre_parsed[index];
     if (!parse_executor)
     {
       continue;
     }
-    Ast::Environment env = {config().blackboard, config().enums};
-    auto result = parse_executor(env);
-    // what to do if the condition is true
-    if (result.cast<bool>())
+
+    const PreCond preID = PreCond(index);
+
+    // Some preconditions are applied only when the node state is IDLE or SKIPPED
+    if (_p->status == NodeStatus::IDLE ||
+        _p->status == NodeStatus::SKIPPED)
     {
-      // Some preconditions are applied only when the node is started
-      if (_p->status == NodeStatus::IDLE)
+      // what to do if the condition is true
+      if (parse_executor(env).cast<bool>())
       {
         if (preID == PreCond::FAILURE_IF)
         {
@@ -210,15 +213,19 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
           return NodeStatus::SKIPPED;
         }
       }
-    }
-    else   // condition is false
-    {
-      if (preID == PreCond::WHILE_TRUE)
+      // if the conditions is false
+      else if(preID == PreCond::WHILE_TRUE)
       {
-        if (!isStatusCompleted(_p->status))
-        {
-          halt();
-        }
+        return NodeStatus::SKIPPED;
+      }
+    }
+    else if(_p->status == NodeStatus::RUNNING && preID == PreCond::WHILE_TRUE)
+    {
+      // what to do if the condition is false
+      if (!parse_executor(env).cast<bool>())
+      {
+        haltNode();
+        resetStatus();
         return NodeStatus::SKIPPED;
       }
     }
