@@ -225,7 +225,6 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
       if (!parse_executor(env).cast<bool>())
       {
         haltNode();
-        resetStatus();
         return NodeStatus::SKIPPED;
       }
     }
