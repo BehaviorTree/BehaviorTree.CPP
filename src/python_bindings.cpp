@@ -152,6 +152,7 @@ PYBIND11_MODULE(btpy_cpp, m)
 
              factory.registerBuilder(manifest, makeTreeNodeBuilderFn(type, args, kwargs));
            })
+      .def("register_from_plugin", &BehaviorTreeFactory::registerFromPlugin)
       .def("create_tree_from_text",
            [](BehaviorTreeFactory& factory, const std::string& text) -> Tree {
              return factory.createTreeFromText(text);
