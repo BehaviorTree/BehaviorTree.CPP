@@ -136,11 +136,7 @@ if(BTCPP_SQLITE_LOGGING)
 endif()
 
 if(BTCPP_PYTHON)
-    find_package(Python COMPONENTS Interpreter Development)
-    find_package(pybind11 CONFIG)
-    pybind11_add_module(btpy_cpp src/python_bindings.cpp)
-    target_compile_options(btpy_cpp PRIVATE -Wno-gnu-zero-variadic-macro-arguments)
-    target_link_libraries(btpy_cpp PRIVATE ${BTCPP_LIBRARY})
+    list(APPEND BT_SOURCE  src/python_types.cpp)
 endif()
 
 ######################################################
@@ -171,6 +167,18 @@ target_link_libraries(${BTCPP_LIBRARY}
         $<BUILD_INTERFACE:foonathan::lexy>
         ${BTCPP_EXTRA_LIBRARIES}
 )
+
+if(BTCPP_PYTHON)
+    find_package(Python COMPONENTS Interpreter Development)
+    find_package(pybind11 CONFIG)
+
+    pybind11_add_module(btpy_cpp src/python_types.cpp src/python_bindings.cpp)
+    target_compile_options(btpy_cpp PRIVATE -Wno-gnu-zero-variadic-macro-arguments)
+    target_link_libraries(btpy_cpp PRIVATE ${BTCPP_LIBRARY})
+
+    target_link_libraries(${BTCPP_LIBRARY} PUBLIC Python::Python pybind11::pybind11)
+    target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_PYTHON)
+endif()
 
 target_include_directories(${BTCPP_LIBRARY}
     PUBLIC

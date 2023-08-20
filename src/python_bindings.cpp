@@ -99,13 +99,13 @@ PortsList extractPortsList(const py::type& type)
   const auto input_ports = type.attr("input_ports").cast<py::list>();
   for (const auto& name : input_ports)
   {
-    ports.insert(InputPort<py::object>(name.cast<std::string>()));
+    ports.insert(InputPort<PortInfo::AnyTypeAllowed>(name.cast<std::string>()));
   }
 
   const auto output_ports = type.attr("output_ports").cast<py::list>();
   for (const auto& name : output_ports)
   {
-    ports.insert(OutputPort<py::object>(name.cast<std::string>()));
+    ports.insert(OutputPort<PortInfo::AnyTypeAllowed>(name.cast<std::string>()));
   }
 
   return ports;
