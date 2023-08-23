@@ -17,7 +17,6 @@ namespace BT
 NodeStatus ReactiveSequence::tick()
 {
   size_t success_count = 0;
-  size_t running_count = 0;
 
   for (size_t index = 0; index < childrenCount(); index++)
   {
@@ -27,9 +26,9 @@ NodeStatus ReactiveSequence::tick()
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
-        running_count++;
-
-        for (size_t i = index + 1; i < childrenCount(); i++)
+        // reset the previous children, to make sure that they are in IDLE state
+        // the next time we tick them
+        for (size_t i = 0; i < index; i++)
         {
           haltChild(i);
         }
@@ -50,6 +49,7 @@ NodeStatus ReactiveSequence::tick()
       }
     }   // end switch
   }     //end for
+
 
   if (success_count == childrenCount())
   {
