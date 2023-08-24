@@ -354,7 +354,7 @@ TEST(
   BehaviorTreeFactory factory;
 
   factory.registerBehaviorTreeFromText(xmlA);
-  EXPECT_ANY_THROW(factory.createTree("Wrong Name"));
+  EXPECT_ANY_THROW(auto tree = factory.createTree("Wrong Name"));
 }
 
 TEST(BehaviorTreeReload, ReloadSameTree)
