@@ -196,7 +196,7 @@ TEST(BlackboardTest, TypoInPortName)
         </BehaviorTree>
     </root>)";
 
-  ASSERT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
+  ASSERT_THROW(auto tree = factory.createTreeFromText(xml_text), RuntimeError);
 }
 
 TEST(BlackboardTest, CheckPortType)
@@ -228,7 +228,7 @@ TEST(BlackboardTest, CheckPortType)
         </BehaviorTree>
     </root>)";
 
-  ASSERT_THROW(factory.createTreeFromText(bad_one), RuntimeError);
+  ASSERT_THROW(auto tree = factory.createTreeFromText(bad_one), RuntimeError);
 }
 
 class RefCountClass

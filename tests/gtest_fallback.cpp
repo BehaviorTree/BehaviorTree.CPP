@@ -148,8 +148,8 @@ TEST_F(ReactiveFallbackTest, Condition1ToTrue)
   BT::NodeStatus state = root.executeTick();
 
   ASSERT_EQ(NodeStatus::RUNNING, state);
-  ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
-  ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
   ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
   condition_1.setExpectedResult(NodeStatus::SUCCESS);
@@ -170,8 +170,8 @@ TEST_F(ReactiveFallbackTest, Condition2ToTrue)
   BT::NodeStatus state = root.executeTick();
 
   ASSERT_EQ(NodeStatus::RUNNING, state);
-  ASSERT_EQ(NodeStatus::FAILURE, condition_1.status());
-  ASSERT_EQ(NodeStatus::FAILURE, condition_2.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
   ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 
   condition_2.setExpectedResult(NodeStatus::SUCCESS);
