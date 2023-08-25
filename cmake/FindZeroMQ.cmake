@@ -38,6 +38,7 @@ else (ZeroMQ_LIBRARIES AND ZeroMQ_INCLUDE_DIRS)
   find_library(ZeroMQ_LIBRARY
     NAMES
       zmq
+      libzmq
     PATHS
       /usr/lib
       /usr/local/lib
