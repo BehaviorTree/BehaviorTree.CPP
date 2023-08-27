@@ -37,13 +37,13 @@ class MyAsyncNode(AsyncActionNode):
         start = np.asarray(self.get_input("start"))
         goal = np.asarray(self.get_input("goal"))
 
-        for t in np.linspace(0.0, 1.0, num=10):
+        t0 = time.time()
+        while (t := time.time() - t0) < 1.0:
             command = (1.0 - t) * start + t * goal
             self.set_output("command", command)
             yield
 
         print("Trajectory finished!")
-
         return NodeStatus.SUCCESS
 
     def on_halted(self):
