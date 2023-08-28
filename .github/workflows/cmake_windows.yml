@@ -50,5 +50,5 @@ jobs:
       
     - name: run test (Windows)
       working-directory: ${{github.workspace}}/build
-      run: ctest -C $BUILD_TYPE
+      run: $env:PATH+=";${{env.BUILD_TYPE}}"; tests/${{env.BUILD_TYPE}}/behaviortree_cpp_test.exe
       
