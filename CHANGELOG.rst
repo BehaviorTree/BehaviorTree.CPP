@@ -2,6 +2,16 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Simplify the visualization of custom type in Groot2 and improved tutorial 12
+* fix compilation warnings
+* Apply changes in ReactiveSequence to ReactiveFallback too
+* test that logging works correctly with ReactiveSequence `#643 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/643>`_
+* reduce the number of times preconditions scripts are executed
+* PauseWithRetry test added
+* Contributors: Davide Faconti
+
 4.3.5 (2023-08-14)
 ------------------
 * fix issue `#621 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/621>`_: ConsumeQueue
