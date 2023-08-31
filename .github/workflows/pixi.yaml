@@ -21,7 +21,7 @@ jobs:
           shell: "bash -el {0}"
           pixi_install: "curl -fsSL https://pixi.sh/install.sh | bash"
           build_depend: "gxx=12.2.*"
-          tests_command: ".build/tests/behaviortree_cpp_test"
+          tests_command: "./build/tests/behaviortree_cpp_test"
     runs-on: ${{ matrix.os }}
     defaults:
       run:
