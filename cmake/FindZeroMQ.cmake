@@ -29,6 +29,8 @@ else (ZeroMQ_LIBRARIES AND ZeroMQ_INCLUDE_DIRS)
   find_path(ZeroMQ_INCLUDE_DIR
     NAMES
       zmq.h
+    HINTS
+    "$ENV{CONDA_PREFIX}/include"
     PATHS
       /usr/include
       /usr/local/include
