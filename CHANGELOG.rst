@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.6 (2023-08-31)
+------------------
 * Simplify the visualization of custom type in Groot2 and improved tutorial 12
 * fix compilation warnings
 * Apply changes in ReactiveSequence to ReactiveFallback too
