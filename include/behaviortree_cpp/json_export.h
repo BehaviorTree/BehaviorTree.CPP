@@ -19,7 +19,7 @@ namespace BT
 *
 *  Later, you MUST register this calling:
 *
-*   JsonExporter::get().addConverter<Foo>();
+*   RegisterJsonDefinition<Foo>();
 */
 
 class JsonExporter{
@@ -55,6 +55,14 @@ class JsonExporter{
     type_converters_.insert( {typeid(T), std::move(converter)} );
   }
 
+  template <typename T> void addConverter(std::function<void(nlohmann::json&, const T&)> func)
+  {
+    auto converter = [func](const BT::Any& entry, nlohmann::json& dst) {
+      func(dst, entry.cast<T>());
+    };
+    type_converters_.insert( {typeid(T), std::move(converter)} );
+  }
+
   /// Register directly your own converter.
   template <typename T>
   void addConverter(std::function<void(const T&, nlohmann::json&)> to_json)
@@ -69,8 +77,44 @@ class JsonExporter{
 
   using ToJonConverter = std::function<void(const BT::Any&, nlohmann::json&)>;
   std::unordered_map<std::type_index, ToJonConverter> type_converters_;
-
 };
+
+/* Function to use to register a specific implementation of nlohmann::to_json
+
+  Example:
+
+  namespace nlohmann {
+    void to_json(nlohmann::json& j, const Position2D& p)
+    {
+      j["x"] = p.x;
+      j["y"] = p.y;
+    }
+  } // namespace nlohmann
+
+  // In you main function
+  RegisterJsonDefinition<Position2D>()
+*/
+template <typename T> inline void RegisterJsonDefinition()
+{
+  JsonExporter::get().addConverter<T>();
+}
+
+/* Function to use to register a specific implementation of "to_json"
+
+  Example:
+
+  RegisterJsonDefinition([](nlohmann::json& j, const Position2D& p)
+    {
+      j["x"] = p.x;
+      j["y"] = p.y;
+    } );
+*/
+
+template <typename T> inline
+void RegisterJsonDefinition(std::function<void(nlohmann::json&, const T&)> func)
+{
+  JsonExporter::get().addConverter<T>(func);
+}
 
 nlohmann::json ExportBlackboardToJSON(BT::Blackboard& blackboard);
 
