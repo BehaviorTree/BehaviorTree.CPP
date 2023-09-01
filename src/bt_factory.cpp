@@ -563,7 +563,7 @@ TreeNode* Tree::rootNode() const
 
 void Tree::sleep(std::chrono::system_clock::duration timeout)
 {
-  wake_up_->waitFor(timeout);
+  wake_up_->waitFor(std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
 }
 
 Tree::~Tree()
@@ -573,12 +573,12 @@ Tree::~Tree()
 
 NodeStatus Tree::tickExactlyOnce()
 {
-  return tickRoot(EXACTLY_ONCE, {});
+  return tickRoot(EXACTLY_ONCE, std::chrono::milliseconds(0));
 }
 
 NodeStatus Tree::tickOnce()
 {
-  return tickRoot(ONCE_UNLESS_WOKEN_UP, {});
+  return tickRoot(ONCE_UNLESS_WOKEN_UP, std::chrono::milliseconds(0));
 }
 
 NodeStatus Tree::tickWhileRunning(std::chrono::milliseconds sleep_time)
@@ -650,7 +650,7 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
     {
       rootNode()->resetStatus();
     }
-    if (status == NodeStatus::RUNNING)
+    if (status == NodeStatus::RUNNING && sleep_time.count() > 0)
     {
       sleep(std::chrono::milliseconds(sleep_time));
     }

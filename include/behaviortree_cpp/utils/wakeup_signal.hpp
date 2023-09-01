@@ -13,14 +13,16 @@ class WakeUpSignal
 public:
     /// Return true if the timeout was NOT reached and the
     /// signal was received.
-    bool waitFor(std::chrono::system_clock::duration tm)
+    bool waitFor(std::chrono::microseconds usec)
     {
+      if(usec.count() > 0) {
         std::unique_lock<std::mutex> lk(mutex_);
-        auto res = cv_.wait_for(lk, tm, [this]{
+        auto res = cv_.wait_for(lk, usec, [this]{
           return ready_;
         });
         ready_ = false;
         return res;
+      }
     }
 
     void emitSignal()

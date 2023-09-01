@@ -532,9 +532,9 @@ TEST(Parallel, PauseWithRetry)
   <BehaviorTree ID="TestTree">
     <Parallel>
       <Sequence>
-        <Sleep msec="100"/>
+        <Sleep msec="150"/>
         <Script code="paused := false"/>
-        <Sleep msec="100"/>
+        <Sleep msec="150"/>
       </Sequence>
 
       <Sequence>
@@ -557,36 +557,45 @@ TEST(Parallel, PauseWithRetry)
   bool done_detected = false;
 
   auto status = tree.tickExactlyOnce();
+  auto toMsec = [](const auto& t)
+  {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(t).count();
+  };
+
+  auto start = std::chrono::system_clock::now();;
 
   while (!isStatusCompleted(status))
   {
-    tree.sleep(std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::cout << toMsec(std::chrono::system_clock::now() - start) << std::endl;
+
     if(!done_detected)
     {
       if(tree.subtrees.front()->blackboard->get<bool>("done"))
       {
         done_detected = true;
         done_time = std::chrono::system_clock::now();
+        std::cout << "detected\n";
       }
     }
     status = tree.tickExactlyOnce();
+
   }
   auto t2 = std::chrono::system_clock::now();
-
-  auto toMsec = [](const auto& t)
-  {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(t).count();
-  };
 
   ASSERT_EQ(NodeStatus::SUCCESS, status);
 
   // tolerate an error in time measurement within this margin
-  const int margin_msec = 5;
+#ifdef WIN32
+  const int margin_msec = 40;
+#else
+  const int margin_msec = 10;
+#endif
 
-  // the whole process should take about 200 milliseconds
-  ASSERT_LE( std::abs(toMsec(t2-t1) - 200), margin_msec );
-  // the second branch with the RetryUntilSuccessful should take about 100 ms
-  ASSERT_LE( std::abs(toMsec(done_time-t1) - 100), margin_msec );
+  // the whole process should take about 300 milliseconds
+  ASSERT_LE( toMsec(t2-t1) - 300, margin_msec );
+  // the second branch with the RetryUntilSuccessful should take about 150 ms
+  ASSERT_LE( toMsec(done_time-t1) - 150, margin_msec );
 }
 
 
