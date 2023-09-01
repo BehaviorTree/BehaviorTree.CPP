@@ -239,7 +239,14 @@ TEST_F(SequenceTripleActionTest, TripleAction)
 {
   using namespace BT;
   using namespace std::chrono;
-  const auto timeout = system_clock::now() + milliseconds(650);
+
+#ifdef WIN32
+  const int margin_msec = 60;
+#else
+  const int margin_msec = 20;
+#endif
+
+  const auto timeout = system_clock::now() + milliseconds(600 + margin_msec);
 
   action_1.setTime(milliseconds(300));
   action_3.setTime(milliseconds(300));
@@ -256,7 +263,7 @@ TEST_F(SequenceTripleActionTest, TripleAction)
   // continue until successful
   while (state != NodeStatus::SUCCESS && system_clock::now() < timeout)
   {
-    std::this_thread::sleep_for(milliseconds(10));
+    std::this_thread::sleep_for(milliseconds(1));
     state = root.executeTick();
   }
 

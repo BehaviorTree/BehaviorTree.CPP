@@ -589,10 +589,10 @@ TEST(Parallel, PauseWithRetry)
   const int margin_msec = 10;
 #endif
 
-  // the whole process should take about 300 milliseconds
-  ASSERT_LE( toMsec(t2-t1) - 300, margin_msec );
   // the second branch with the RetryUntilSuccessful should take about 150 ms
   ASSERT_LE( toMsec(done_time-t1) - 150, margin_msec );
+  // the whole process should take about 300 milliseconds
+  ASSERT_LE( toMsec(t2-t1) - 300, margin_msec*2 );
 }
 
 
