@@ -16,7 +16,7 @@ jobs:
           shell: "pwsh -Login {0}"
           pixi_install: "iwr -useb https://pixi.sh/install.ps1 | iex"
           build_depend: vs2022_win-64=19.*
-          tests_command: 'PATH=\"$PATH;build/Release}\" build/tests/Release/behaviortree_cpp_test.exe'
+          tests_command: "'PATH=\\\"$PATH;build/Release\\\" build/tests/Release/behaviortree_cpp_test.exe'"
         - os: ubuntu-latest
           shell: "bash -el {0}"
           pixi_install: "curl -fsSL https://pixi.sh/install.sh | bash"
