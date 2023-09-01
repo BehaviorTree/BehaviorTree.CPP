@@ -1,0 +1,64 @@
+name: Pixi (conda)
+
+on: [push, pull_request]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  # Note if this value is changed, has to be manually updated in the `windows-latest` tests_command
+  BUILD_TYPE: Release
+
+jobs:
+  pixi_conda_build:
+    strategy:
+      matrix:
+        include:
+        - os: windows-latest
+          shell: "pwsh -Login {0}"
+          pixi_install: "iwr -useb https://pixi.sh/install.ps1 | iex"
+          build_depend: vs2022_win-64=19.*
+          tests_command: "'PATH=\\\"$PATH;build/Release\\\" build/tests/Release/behaviortree_cpp_test.exe'"
+        - os: ubuntu-latest
+          shell: "bash -el {0}"
+          pixi_install: "curl -fsSL https://pixi.sh/install.sh | bash"
+          build_depend: "gxx=12.2.*"
+          tests_command: "./build/tests/behaviortree_cpp_test"
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      # Pixi is the tool used to create/manage conda environment
+      - name: Set up pixi
+        run: |
+          ${{ matrix.pixi_install }}
+      - name: Setup windows path
+        if: "startsWith(runner.os, 'windows')"
+        run: echo "C:\Users\runneradmin\AppData\Local\pixi\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Make pixi workspace
+        run: |
+          pixi init build-env
+      - name: Install dependencies
+        working-directory: ${{github.workspace}}/build-env
+        run: |
+          pixi add cmake zeromq=4.3.4 gtest=1.12.* gmock=1.12.* sqlite=3.40.* ${{ matrix.build-depend }}
+          pixi install
+      - name: Create Build Directory
+        working-directory: ${{github.workspace}}/build-env
+        run: mkdir build
+      - uses: actions/checkout@v3
+        with:
+          path: build-env/BehaviorTree.CPP
+      - name: Build
+        working-directory: ${{github.workspace}}/build-env
+        run: |
+          pixi task add build "cd build; cmake ../BehaviorTree.CPP -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}; cmake --build . --parallel --config ${{env.BUILD_TYPE}}"
+          pixi run build
+      - name: Run tests
+        working-directory: ${{github.workspace}}/build-env
+        run: |
+          pixi task add tests ${{ matrix.tests_command }}
+          pixi run tests 
+          
+
+    
+          

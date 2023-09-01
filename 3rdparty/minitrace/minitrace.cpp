@@ -27,6 +27,9 @@
 #include <unistd.h>
 #endif
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include "minitrace.h"
 
 #ifdef __GNUC__
