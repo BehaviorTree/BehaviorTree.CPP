@@ -23,6 +23,7 @@ public:
         ready_ = false;
         return res;
       }
+      return ready_;
     }
 
     void emitSignal()

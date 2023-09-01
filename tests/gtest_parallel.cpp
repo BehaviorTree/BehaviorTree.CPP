@@ -562,12 +562,9 @@ TEST(Parallel, PauseWithRetry)
     return std::chrono::duration_cast<std::chrono::milliseconds>(t).count();
   };
 
-  auto start = std::chrono::system_clock::now();;
-
   while (!isStatusCompleted(status))
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    std::cout << toMsec(std::chrono::system_clock::now() - start) << std::endl;
 
     if(!done_detected)
     {
