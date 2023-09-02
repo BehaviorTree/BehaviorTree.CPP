@@ -129,17 +129,9 @@ struct Vector3
   float z;
 };
 
-void to_json(nlohmann::json& j, const Vector3& p)
-{
-  j = nlohmann::json{{"x", p.x}, {"y", p.y}, {"z", p.z}};
-}
+void to_json(nlohmann::json& j, const Vector3& p);
 
-void from_json(const nlohmann::json& j, Vector3& p)
-{
-  j.at("x").get_to(p.x);
-  j.at("y").get_to(p.y);
-  j.at("z").get_to(p.z);
-}
+void from_json(const nlohmann::json& j, Vector3& p);
 
 class RandomVector : public BT::SyncActionNode
 {
