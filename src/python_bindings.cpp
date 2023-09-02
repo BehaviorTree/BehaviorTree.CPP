@@ -140,7 +140,7 @@ PYBIND11_MODULE(btpy_cpp, m)
   py::class_<BehaviorTreeFactory>(m, "BehaviorTreeFactory")
       .def(py::init())
       .def("register",
-           [](BehaviorTreeFactory& factory, const py::type type, const py::args& args,
+           [](BehaviorTreeFactory& factory, const py::object& type, const py::args& args,
               const py::kwargs& kwargs) {
              const std::string name = type.attr("__name__").cast<std::string>();
 
