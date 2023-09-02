@@ -150,6 +150,12 @@ PYBIND11_MODULE(btpy_cpp, m)
              manifest.ports = extractPortsList(type);
              manifest.description = "";
 
+             // Use the type's docstring as the node description, if it exists.
+             if (const auto doc = type.attr("__doc__"); !doc.is_none())
+             {
+               manifest.description = doc.cast<std::string>();
+             }
+
              factory.registerBuilder(manifest, makeTreeNodeBuilderFn(type, args, kwargs));
            })
       .def("register_from_plugin", &BehaviorTreeFactory::registerFromPlugin)
