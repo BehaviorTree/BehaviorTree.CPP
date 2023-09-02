@@ -23,6 +23,7 @@
 
   <depend>libsqlite3-dev</depend>
   <depend>libzmq3-dev</depend>
+  <depend>pybind11-dev</depend>
 
   <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
 
