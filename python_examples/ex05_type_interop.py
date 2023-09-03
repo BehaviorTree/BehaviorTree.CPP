@@ -11,19 +11,19 @@ xml_text = """
  <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
-        <Sequence name="root">
-            <!-- (C++ node) Put a C++ object on the blackboard -->
-            <RandomVector vector="{simple}" />
-            <!-- (Py node) Print it from Python -->
-            <Print        value="{simple}" />
+         <Sequence name="root">
+             <!-- (C++ node) Put a C++ object on the blackboard -->
+             <RandomVector vector="{simple}" />
+             <!-- (Py node) Print it from Python -->
+             <Print        value="{simple}" />
 
-            <!-- (Py node) Put a Python type onto the blackboard -->
-            <PutVector    output="{complex}" />
-            <!-- (C++ node) Print it from C++ using native C++ types -->
-            <PrintComplex input="{complex}" />
-            <!-- (Py node) Print it from Python -->
-            <Print        value="{complex}" />
-        </Sequence>
+             <!-- (Py node) Put a Python type onto the blackboard -->
+             <PutVector    output="{complex}" />
+             <!-- (C++ node) Print it from C++ using native C++ types -->
+             <PrintComplex input="{complex}" />
+             <!-- (Py node) Print it from Python -->
+             <Print        value="{complex}" />
+         </Sequence>
      </BehaviorTree>
 
  </root>

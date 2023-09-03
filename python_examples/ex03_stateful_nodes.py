@@ -18,14 +18,12 @@ xml_text = """
  <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
-        <Sequence>
-            <!-- Interpolate from the initial position to the final one printing
-                 at each step. -->
-            <ReactiveSequence name="root">
-                <Print value="{interpolated}" />
-                <Interpolate x0="[1.0, 0.0]" x1="[0.0, 1.0]" out="{interpolated}" />
-            </ReactiveSequence>
-        </Sequence>
+         <!-- Interpolate from the initial position to the final one printing at
+              each step. -->
+         <ReactiveSequence name="root">
+             <Print value="{interpolated}" />
+             <Interpolate x0="[1.0, 0.0]" x1="[0.0, 1.0]" out="{interpolated}" />
+         </ReactiveSequence>
      </BehaviorTree>
 
  </root>
