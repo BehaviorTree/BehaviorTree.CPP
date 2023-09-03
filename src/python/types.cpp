@@ -1,4 +1,4 @@
-#include "behaviortree_cpp/python_types.h"
+#include "behaviortree_cpp/python/types.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/detail/typeid.h>

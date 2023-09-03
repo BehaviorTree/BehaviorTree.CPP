@@ -29,7 +29,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/cast.h>
 
-#include "behaviortree_cpp/python_types.h"
+#include "behaviortree_cpp/python/types.h"
 #endif
 
 #ifdef _MSC_VER
