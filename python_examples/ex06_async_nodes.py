@@ -33,12 +33,20 @@ xml_text = """
 
 @ports(inputs=["start", "goal"], outputs=["command"])
 class MyAsyncNode(AsyncActionNode):
+    def __init__(self, name, config):
+        super().__init__(name, config)
+        self.halted = False
+
     def run(self):
         start = np.asarray(self.get_input("start"))
         goal = np.asarray(self.get_input("goal"))
 
+        # Here we write an imperative-looking loop, but we place a `yield` call
+        # at each iteration. This causes the coroutine to yield back to the
+        # caller until the next iteration of the tree, rather than block the
+        # main thread.
         t0 = time.time()
-        while (t := time.time() - t0) < 1.0:
+        while (t := time.time() - t0) < 1.0 and not self.halted:
             command = (1.0 - t) * start + t * goal
             self.set_output("command", command)
             yield
@@ -47,7 +55,8 @@ class MyAsyncNode(AsyncActionNode):
         return NodeStatus.SUCCESS
 
     def on_halted(self):
-        print("Aborted")
+        # This will be picked up in the main iteration above.
+        self.halted = True
 
 
 @ports(inputs=["value"])
