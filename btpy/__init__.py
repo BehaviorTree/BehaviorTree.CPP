@@ -14,7 +14,7 @@ from btpy_cpp import (
 )
 
 
-def ports(inputs=[], outputs=[]):
+def ports(inputs: list[str] = [], outputs: list[str] = []):
     """Decorator to specify input and outputs ports for an action node."""
 
     def specify_ports(cls):
@@ -41,11 +41,11 @@ class AsyncActionNode(StatefulActionNode):
     def __init__(self, name, config):
         super().__init__(name, config)
 
-    def on_start(self):
+    def on_start(self) -> NodeStatus:
         self.coroutine = self.run()
         return NodeStatus.RUNNING
 
-    def on_running(self):
+    def on_running(self) -> NodeStatus:
         # The library logic should never allow this to happen, but users can
         # still manually call `on_running` without an associated `on_start`
         # call. Make sure to print a useful error when this happens.
