@@ -73,12 +73,12 @@ private:
   void halt() override;
 
   TimerQueue<> timer_;
-  std::atomic<bool> child_halted_;
+  std::atomic_bool child_halted_;
   uint64_t timer_id_;
 
   unsigned msec_;
   bool read_parameter_from_ports_;
-  bool timeout_started_;
+  std::atomic_bool timeout_started_ = false;
   std::mutex timeout_mutex_;
 };
 

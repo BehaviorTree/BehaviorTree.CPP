@@ -38,7 +38,7 @@ private:
   TimerQueue<> timer_;
   uint64_t timer_id_;
 
-  bool timer_waiting_;
+  std::atomic_bool timer_waiting_;
   std::mutex delay_mutex_;
 };
 
