@@ -39,10 +39,18 @@ public:
     dst = val;
   }
 
+  /**
+   * @brief fromJson tries to convert arbitrary JSON data into the type T.
+   *
+   * Calls only compile if `nlohmann::from_json(const nlohmann::json&, T&)` is
+   * defined in T's namespace.
+   */
   template <typename T>
   T fromJson(const nlohmann::json& src) const
   {
-    // TODO: Implement a similar "converter" interface as toJson.
+    // We don't need to implement a similar `type_converters` interface as
+    // `toJson` here because the type T must be know statically. There is no
+    // opaque BT::Any wrapper here requiring RTTI.
     return src.template get<T>();
   }
 
