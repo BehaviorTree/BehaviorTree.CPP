@@ -32,6 +32,10 @@ class AsyncActionNode(StatefulActionNode):
     this method can return a final `NodeStatus` value to indicate its exit
     condition.
 
+    Optionally, subclasses can override the `on_halted()` method which is called
+    when the tree halts. The default implementation does nothing. The `run()`
+    method will never be called again after a halt.
+
     Note:
         It is the responsibility of the action author to not block the main
         behavior tree loop with long-running tasks. `yield` calls should be
@@ -64,3 +68,7 @@ class AsyncActionNode(StatefulActionNode):
             # Otherwise, just assume the action finished successfully.
             else:
                 return NodeStatus.SUCCESS
+
+    def on_halted(self):
+        # Default action: do nothing
+        pass
