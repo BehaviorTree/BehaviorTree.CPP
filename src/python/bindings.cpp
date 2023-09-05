@@ -114,7 +114,8 @@ PortsList extractPortsList(const py::type& type)
 NodeBuilder makeTreeNodeBuilderFn(const py::type& type, const py::args& args,
                                   const py::kwargs& kwargs)
 {
-  return [=](const auto& name, const auto& config) -> auto {
+  return [=](const auto& name, const auto& config) -> auto
+  {
     py::object obj;
     obj = type(name, config, *args, **kwargs);
 
