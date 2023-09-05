@@ -33,10 +33,6 @@ xml_text = """
 
 @ports(inputs=["start", "goal"], outputs=["command"])
 class MyAsyncNode(AsyncActionNode):
-    def __init__(self, name, config):
-        super().__init__(name, config)
-        self.halted = False
-
     def run(self):
         start = np.asarray(self.get_input("start"))
         goal = np.asarray(self.get_input("goal"))
@@ -46,7 +42,7 @@ class MyAsyncNode(AsyncActionNode):
         # caller until the next iteration of the tree, rather than block the
         # main thread.
         t0 = time.time()
-        while (t := time.time() - t0) < 1.0 and not self.halted:
+        while (t := time.time() - t0) < 1.0:
             command = (1.0 - t) * start + t * goal
             self.set_output("command", command)
             yield
@@ -55,8 +51,7 @@ class MyAsyncNode(AsyncActionNode):
         return NodeStatus.SUCCESS
 
     def on_halted(self):
-        # This will be picked up in the main iteration above.
-        self.halted = True
+        print("Trajectory halted!")
 
 
 @ports(inputs=["value"])
@@ -73,4 +68,8 @@ factory.register(MyAsyncNode)
 factory.register(Print)
 
 tree = factory.create_tree_from_text(xml_text)
-tree.tick_while_running()
+
+# Run for a bit, then halt early.
+for i in range(0, 10):
+    tree.tick_once()
+tree.halt_tree()

@@ -169,7 +169,8 @@ PYBIND11_MODULE(btpy_cpp, m)
       .def("tick_once", &Tree::tickOnce)
       .def("tick_exactly_once", &Tree::tickExactlyOnce)
       .def("tick_while_running", &Tree::tickWhileRunning,
-           py::arg("sleep_time") = std::chrono::milliseconds(10));
+           py::arg("sleep_time") = std::chrono::milliseconds(10))
+      .def("halt_tree", &Tree::haltTree);
 
   py::enum_<NodeStatus>(m, "NodeStatus")
       .value("IDLE", NodeStatus::IDLE)
