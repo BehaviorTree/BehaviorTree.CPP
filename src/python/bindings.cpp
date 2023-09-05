@@ -31,7 +31,7 @@ public:
   }
 };
 
-class Py_StatefulActionNode final : public StatefulActionNode
+class Py_StatefulActionNode : public StatefulActionNode
 {
 public:
   Py_StatefulActionNode(const std::string& name, const NodeConfig& config) :
