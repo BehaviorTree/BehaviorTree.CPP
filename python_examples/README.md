@@ -1,2 +1,3 @@
-1. Install the bindings by running `pip install .` from the project root.
-2. Run an example, e.g. `python3 ex01_sample.py`
+1. Create a Python virtualenv in the root directory: `python3 -m venv venv && source venv/bin/activate`
+2. Build and install the BehaviorTree Python package: `pip install -v .`
+3. Run an example, e.g. `python3 python_examples/ex01_sample.py`
