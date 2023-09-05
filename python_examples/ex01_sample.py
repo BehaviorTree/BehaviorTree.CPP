@@ -11,12 +11,12 @@ xml_text = """
  <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
-        <Sequence name="root">
-            <AlwaysSuccess/>
-            <SaySomething   message="this works too" />
-            <ThinkWhatToSay text="{the_answer}"/>
-            <SaySomething   message="{the_answer}" />
-        </Sequence>
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SaySomething   message="this works too" />
+             <ThinkWhatToSay text="{the_answer}"/>
+             <SaySomething   message="{the_answer}" />
+         </Sequence>
      </BehaviorTree>
 
  </root>

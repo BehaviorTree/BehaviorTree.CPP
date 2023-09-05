@@ -12,12 +12,12 @@ xml_text = """
  <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
-        <Sequence name="root">
-            <AlwaysSuccess/>
-            <Rotate    position="[1.0, 0.0]" theta="90."         out="{rotated}" />
-            <Translate position="{rotated}"  offset="[0.1, 0.1]" out="{translated}" />
-            <Print     value="{translated}" />
-        </Sequence>
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <Rotate    position="[1.0, 0.0]" theta="90."         out="{rotated}" />
+             <Translate position="{rotated}"  offset="[0.1, 0.1]" out="{translated}" />
+             <Print     value="{translated}" />
+         </Sequence>
      </BehaviorTree>
 
  </root>

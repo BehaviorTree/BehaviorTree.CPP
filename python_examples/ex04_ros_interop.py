@@ -28,10 +28,10 @@ xml_text = """
  <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
-        <ReactiveSequence name="root">
-            <Print value="{tf}" />
-            <GetRosTransform frame_id="odom" child_frame_id="base_link" tf="{tf}" />
-        </ReactiveSequence>
+         <ReactiveSequence name="root">
+             <Print value="{tf}" />
+             <GetRosTransform frame_id="odom" child_frame_id="base_link" tf="{tf}" />
+         </ReactiveSequence>
      </BehaviorTree>
 
  </root>

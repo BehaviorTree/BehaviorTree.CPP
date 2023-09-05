@@ -21,10 +21,10 @@ xml_text = """
  <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
-        <ReactiveSequence name="root">
-            <Print value="{command}" />
-            <MyAsyncNode start="[0.1, -0.2]" goal="[-0.6, 0.3]" command="{command}" />
-        </ReactiveSequence>
+         <ReactiveSequence name="root">
+             <Print value="{command}" />
+             <MyAsyncNode start="[0.1, -0.2]" goal="[-0.6, 0.3]" command="{command}" />
+         </ReactiveSequence>
      </BehaviorTree>
 
  </root>
