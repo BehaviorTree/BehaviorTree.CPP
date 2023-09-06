@@ -224,7 +224,7 @@ void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
 
   XMLPrinter printer;
   doc->Print(&printer);
-  auto xml_text = std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
+  auto xml_text = std::string(printer.CStr(), size_t(printer.CStrSize()));
 
   // Verify the validity of the XML before adding any behavior trees to the parser's list of registered trees
   VerifyXML(xml_text, registered_nodes);
@@ -254,14 +254,14 @@ void VerifyXML(const std::string& xml_text,
   auto xml_error = doc.Parse(xml_text.c_str(), xml_text.size());
   if (xml_error)
   {
-    char buffer[200];
+    char buffer[512];
     sprintf(buffer, "Error parsing the XML: %s", doc.ErrorName());
     throw RuntimeError(buffer);
   }
 
   //-------- Helper functions (lambdas) -----------------
   auto ThrowError = [&](int line_num, const std::string& text) {
-    char buffer[256];
+    char buffer[512];
     sprintf(buffer, "Error at line %d: -> %s", line_num, text.c_str());
     throw RuntimeError(buffer);
   };
@@ -300,10 +300,10 @@ void VerifyXML(const std::string& xml_text,
     for (auto node = xml_root->FirstChildElement(); node != nullptr;
          node = node->NextSiblingElement())
     {
-      const char* name = node->Name();
-      if (StrEqual(name, "Action") || StrEqual(name, "Decorator") ||
-          StrEqual(name, "SubTree") || StrEqual(name, "Condition") ||
-          StrEqual(name, "Control"))
+      const std::string name = node->Name();
+      if (name == "Action" || name == "Decorator" ||
+          name == "SubTree" || name == "Condition" ||
+          name == "Control")
       {
         const char* ID = node->Attribute("ID");
         if (!ID)
@@ -321,8 +321,8 @@ void VerifyXML(const std::string& xml_text,
 
   recursiveStep = [&](const XMLElement* node) {
     const int children_count = ChildrenCount(node);
-    const char* name = node->Name();
-    if (StrEqual(name, "Decorator"))
+    const std::string name = node->Name();
+    if (name == "Decorator")
     {
       if (children_count != 1)
       {
@@ -335,7 +335,7 @@ void VerifyXML(const std::string& xml_text,
                                        "attribute [ID]");
       }
     }
-    else if (StrEqual(name, "Action"))
+    else if (name == "Action")
     {
       if (children_count != 0)
       {
@@ -348,7 +348,7 @@ void VerifyXML(const std::string& xml_text,
                                        "attribute [ID]");
       }
     }
-    else if (StrEqual(name, "Condition"))
+    else if (name == "Condition")
     {
       if (children_count != 0)
       {
@@ -361,7 +361,7 @@ void VerifyXML(const std::string& xml_text,
                                        "attribute [ID]");
       }
     }
-    else if (StrEqual(name, "Control"))
+    else if (name == "Control")
     {
       if (children_count == 0)
       {
@@ -374,8 +374,8 @@ void VerifyXML(const std::string& xml_text,
                                        "attribute [ID]");
       }
     }
-    else if (StrEqual(name, "Sequence") || StrEqual(name, "SequenceStar") ||
-             StrEqual(name, "Fallback"))
+    else if (name == "Sequence" || name == "SequenceStar" ||
+             name == "Fallback")
     {
       if (children_count == 0)
       {
@@ -383,7 +383,7 @@ void VerifyXML(const std::string& xml_text,
                                        "child");
       }
     }
-    else if (StrEqual(name, "SubTree"))
+    else if (name == "SubTree")
     {
       auto child = node->FirstChildElement();
 
@@ -405,7 +405,7 @@ void VerifyXML(const std::string& xml_text,
                                        "attribute [ID]");
       }
     }
-    else if (StrEqual(name, "BehaviorTree"))
+    else if (name == "BehaviorTree")
     {
       if (children_count != 1)
       {
@@ -433,7 +433,7 @@ void VerifyXML(const std::string& xml_text,
       }
     }
     //recursion
-    if (StrEqual(name, "SubTree") == false)
+    if (name != "SubTree" )
     {
       for (auto child = node->FirstChildElement(); child != nullptr;
            child = child->NextSiblingElement())
@@ -730,7 +730,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
   recursiveStep = [&](TreeNode::Ptr parent_node,
                       Tree::Subtree::Ptr subtree,
                       std::string prefix,
-                      const XMLElement* element) 
+                      const XMLElement* element)
   {
     // create the node
     auto node = createNodeFromXML(element, blackboard, parent_node, prefix, output_tree);

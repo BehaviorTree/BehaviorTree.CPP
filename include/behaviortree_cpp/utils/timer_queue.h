@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
@@ -22,32 +23,39 @@ public:
 
   void notify()
   {
-    std::unique_lock<std::mutex> lock(m_mtx);
-    m_count++;
+    {
+      std::lock_guard<std::mutex> lock(m_mtx);
+      m_count++;
+    }
     m_cv.notify_one();
-  }
-
-  void wait()
-  {
-    std::unique_lock<std::mutex> lock(m_mtx);
-    m_cv.wait(lock, [this]() { return m_count > 0; });
-    m_count--;
   }
 
   template <class Clock, class Duration>
   bool waitUntil(const std::chrono::time_point<Clock, Duration>& point)
   {
     std::unique_lock<std::mutex> lock(m_mtx);
-    if (!m_cv.wait_until(lock, point, [this]() { return m_count > 0; }))
+    if (!m_cv.wait_until(lock, point, [this]() {
+          return m_count > 0 || m_unlock;
+        }))
+    {
       return false;
+    }
     m_count--;
+    m_unlock = false;
     return true;
+  }
+
+  void manualUnlock()
+  {
+    m_unlock = true;
+    m_cv.notify_one();
   }
 
 private:
   std::mutex m_mtx;
   std::condition_variable m_cv;
-  unsigned int m_count;
+  unsigned m_count = 0;
+  std::atomic_bool m_unlock = false;
 };
 }   // namespace details
 
@@ -73,9 +81,9 @@ public:
 
   ~TimerQueue()
   {
+    m_finish = true;
     cancelAll();
-    // Abusing the timer queue to trigger the shutdown.
-    add(std::chrono::milliseconds(0), [this](bool) { m_finish = true; });
+    m_checkWork.manualUnlock();
     m_th.join();
   }
 
@@ -179,8 +187,8 @@ private:
       }
       else
       {
-        // No timers exist, so wait forever until something changes
-        m_checkWork.wait();
+        // No timers exist, so wait an arbitrary amount of time
+        m_checkWork.waitUntil( _Clock::now() + std::chrono::milliseconds(10));
       }
 
       // Check and execute as much work as possible, such as, all expired
