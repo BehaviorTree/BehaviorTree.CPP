@@ -2,6 +2,11 @@
 
 """
 Demo of seamless conversion between C++ and Python types.
+
+NOTE: To run this example, make sure that the path
+`sample_nodes/bin/libdummy_nodes_dyn.so` is accessible from the current working
+directory. After building the project, this path will exist in your CMake build
+root.
 """
 
 from btpy import BehaviorTreeFactory, SyncActionNode, NodeStatus, ports
@@ -34,7 +39,7 @@ xml_text = """
 class PutVector(SyncActionNode):
     def tick(self):
         # Schema matching std::unordered_map<std::string, Vector3>
-        # (defined in dummy_nodes.h, input type of PrintComplex)
+        # (defined in dummy_nodes.h, input type of PrintMapOfVectors)
         self.set_output(
             "output",
             {
