@@ -13,16 +13,16 @@ xml_text = """
      <BehaviorTree ID="MainTree">
          <Sequence name="root">
              <!-- (C++ node) Put a C++ object on the blackboard -->
-             <RandomVector vector="{simple}" />
+             <RandomVector      vector="{simple}" />
              <!-- (Py node) Print it from Python -->
-             <Print        value="{simple}" />
+             <Print             value="{simple}" />
 
              <!-- (Py node) Put a Python type onto the blackboard -->
-             <PutVector    output="{complex}" />
+             <PutVector         output="{complex}" />
              <!-- (C++ node) Print it from C++ using native C++ types -->
-             <PrintComplex input="{complex}" />
+             <PrintMapOfVectors input="{complex}" />
              <!-- (Py node) Print it from Python -->
-             <Print        value="{complex}" />
+             <Print             value="{complex}" />
          </Sequence>
      </BehaviorTree>
 
