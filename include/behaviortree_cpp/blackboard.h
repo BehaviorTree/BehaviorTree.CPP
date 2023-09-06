@@ -124,11 +124,20 @@ public:
     {
       // create a new entry
       Any new_value(value);
-      PortInfo new_port(PortDirection::INOUT, new_value.type(),
-                        GetAnyFromStringFunctor<T>());
       lock.unlock();
-      auto entry = createEntryImpl(key, new_port);
+      std::shared_ptr<Blackboard::Entry> entry;
+      // if a new generic port is created with a string, it's type should be AnyTypeAllowed
+      if constexpr (std::is_same_v<std::string, T>)
+      {
+        entry = createEntryImpl(key, PortInfo(PortDirection::INOUT));
+      }
+      else {
+        PortInfo new_port(PortDirection::INOUT, new_value.type(),
+                          GetAnyFromStringFunctor<T>());
+        entry = createEntryImpl(key, new_port);
+      }
       lock.lock();
+
       storage_.insert( {key, entry} );
       entry->value = new_value;
     }

@@ -357,28 +357,28 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction,
 }
 
 //----------
-template <typename T = void> [[nodiscard]]
+template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> InputPort(StringView name,
                                                   StringView description = {})
 {
   return CreatePort<T>(PortDirection::INPUT, name, description);
 }
 
-template <typename T = void> [[nodiscard]]
+template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> OutputPort(StringView name,
                                                    StringView description = {})
 {
   return CreatePort<T>(PortDirection::OUTPUT, name, description);
 }
 
-template <typename T = void> [[nodiscard]]
+template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           StringView description = {})
 {
   return CreatePort<T>(PortDirection::INOUT, name, description);
 }
 //----------
-template <typename T = void> [[nodiscard]]
+template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& default_value,
                                                   StringView description)
 {
@@ -387,7 +387,7 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& defa
   return out;
 }
 
-template <typename T = void> [[nodiscard]]
+template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           const T& default_value,
                                                           StringView description)

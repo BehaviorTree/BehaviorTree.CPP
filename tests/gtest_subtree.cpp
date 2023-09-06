@@ -459,3 +459,52 @@ TEST(SubTree, Issue623_String_to_Pose2d)
   auto tree = factory.createTreeFromText(xml_text);
   tree.tickWhileRunning();
 }
+
+
+class Assert : public BT::SyncActionNode
+{
+public:
+  Assert(const std::string& name, const BT::NodeConfiguration& config)
+    : BT::SyncActionNode(name, config) {}
+
+  static BT::PortsList providedPorts() {
+    return {BT::InputPort<bool>("condition")};
+  }
+
+private:
+  virtual BT::NodeStatus tick() override {
+    if (getInput<bool>("condition").value())
+      return BT::NodeStatus::SUCCESS;
+    else
+      return BT::NodeStatus::FAILURE;
+  }
+};
+
+TEST(SubTree, Issue653_SetBlackboard)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute = "MainTree" BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SubTree ID="Init" test="{test}" />
+      <Assert condition="{test}" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="Init">
+    <SetBlackboard output_key="test" value="true"/>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<Assert>("Assert");
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+}
+
+

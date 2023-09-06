@@ -38,11 +38,9 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort("value", "Value represented as a string. convertFromString must be "
-                               "implemented."),
+    return {InputPort("value", "Value to be written int othe output_key"),
             BidirectionalPort("output_key", "Name of the blackboard entry where the "
-                                            "value "
-                                            "should be written")};
+                                            "value should be written")};
   }
 
 private:

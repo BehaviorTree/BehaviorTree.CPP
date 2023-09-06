@@ -174,14 +174,16 @@ Blackboard::createEntryImpl(const std::string& key, const PortInfo& info)
   auto storage_it = storage_.find(key);
   if(storage_it != storage_.end())
   {
-    const auto old_type = storage_it->second->port_info.type();
-    if (old_type != info.type() &&
-        old_type != typeid(BT::PortInfo::AnyTypeAllowed) &&
-        info.type() != typeid(BT::PortInfo::AnyTypeAllowed))
+    const auto& prev_info = storage_it->second->port_info;
+    if (prev_info.type() != info.type() &&
+        prev_info.isStronglyTyped() &&
+        info.isStronglyTyped())
     {
       auto msg = StrCat("Blackboard entry [", key, "]: once declared, the type of a port"
-                        " shall not change. Previously declared type [", BT::demangle(old_type),
-                        "], current type [", BT::demangle(typeid(info.type())), "]");
+                        " shall not change. Previously declared type [",
+                        BT::demangle(prev_info.type()),
+                        "], current type [",
+                        BT::demangle(info.type()), "]");
 
       throw LogicError(msg);
     }
