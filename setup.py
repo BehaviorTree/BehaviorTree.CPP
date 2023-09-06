@@ -127,11 +127,11 @@ class CMakeBuild(build_ext):
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
-    name="btcpp",
+    name="btpy",
     version="0.0.1",
-    author="Kyle Cesare",
-    author_email="kcesare@gmail.com",
-    description="Python bindings to the BehaviorTree.CPP project",
+    author="Davide Faconti",
+    author_email="davide.faconti@gmail.com",
+    description="Python bindings to the BehaviorTree.CPP library",
     long_description="",
     packages=["btpy"],
     ext_modules=[CMakeExtension("btcpp")],
