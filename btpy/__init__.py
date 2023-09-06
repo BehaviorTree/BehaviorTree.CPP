@@ -72,3 +72,18 @@ class AsyncActionNode(StatefulActionNode):
     def on_halted(self):
         # Default action: do nothing
         pass
+
+
+# Specify the symbols to be imported with `from btpy import *`, as described in
+# [1].
+#
+# [1]: https://docs.python.org/3/tutorial/modules.html#importing-from-a-package
+__all__ = [
+    "ports",
+    "AsyncActionNode",
+    "BehaviorTreeFactory",
+    "NodeStatus",
+    "StatefulActionNode",
+    "SyncActionNode",
+    "Tree",
+]
