@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.7 (2023-09-12)
+------------------
 * Test and fix issue `#653 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/653>`_: AnyTypeAllowed by default
 * more time margin for Windows tests
 * Add support for successful conda builds (`#650 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/650>`_)
