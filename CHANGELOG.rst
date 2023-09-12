@@ -2,6 +2,15 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Test and fix issue `#653 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/653>`_: AnyTypeAllowed by default
+* more time margin for Windows tests
+* Add support for successful conda builds (`#650 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/650>`_)
+* fix: Update how unit tests are executed in the github workflow so they are actually run on windows (`#647 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/647>`_)
+* Add unit test related to SequenceWithMemory `#636 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/636>`_
+* Contributors: Davide Faconti, tony-p
+
 4.3.6 (2023-08-31)
 ------------------
 * Simplify the visualization of custom type in Groot2 and improved tutorial 12
