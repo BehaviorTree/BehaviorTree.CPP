@@ -34,7 +34,7 @@ namespace BT
 class SequenceWithMemory : public ControlNode
 {
 public:
-  SequenceWithMemory(const std::string& name, const BT::NodeConfig& config);
+  SequenceWithMemory(const std::string& name, const BT::NodeConfig& config = {});
 
   virtual ~SequenceWithMemory() override = default;
   static PortsList providedPorts();

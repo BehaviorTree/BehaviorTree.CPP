@@ -16,7 +16,7 @@
 namespace BT
 {
 SequenceWithMemory::SequenceWithMemory(const std::string& name,
-                                       const BT::NodeConfig& config={}) :
+                                       const BT::NodeConfig& config) :
   ControlNode::ControlNode(name, config), current_child_idx_(0), start_idx_(0)
 {
   setRegistrationID("SequenceStar");
