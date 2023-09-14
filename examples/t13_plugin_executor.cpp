@@ -1,5 +1,5 @@
 #include "behaviortree_cpp/bt_factory.h"
-#include "t13_custom_type.hpp"
+#include "behaviortree_cpp/xml_parsing.h"
 
 static const char* xml_text = R"(
 
@@ -24,10 +24,19 @@ int main(int argc, char** argv)
 {
   using namespace BT;
   BehaviorTreeFactory factory;
-  factory.registerFromPlugin("t13_plugin_action.so");
 
-  // Not mandatory, since we don't have a Groot2 publisher
-  RegisterJsonDefinition<Vector4D>(ToJson);
+  std::string plugin_path = "t13_plugin_action.so";
+
+  // if you don't want to use the hardcoded path, pass it as an argument
+  if(argc == 2) {
+    plugin_path = argv[1];
+  }
+
+  // load the plugin. This will register the action "PrintVector"
+  factory.registerFromPlugin(plugin_path);
+
+  // print the registered model of PrintVector
+  std::cout << writeTreeNodesModelXML(factory, false) << std::endl;
 
   auto tree = factory.createTreeFromText(xml_text);
   tree.tickWhileRunning();
