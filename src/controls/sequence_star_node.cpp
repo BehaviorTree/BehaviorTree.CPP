@@ -15,17 +15,30 @@
 
 namespace BT
 {
-SequenceWithMemory::SequenceWithMemory(const std::string& name) :
-  ControlNode::ControlNode(name, {}), current_child_idx_(0)
+SequenceWithMemory::SequenceWithMemory(const std::string& name,
+                                       const BT::NodeConfig& config) :
+  ControlNode::ControlNode(name, config), current_child_idx_(0), start_idx_(0)
 {
   setRegistrationID("SequenceStar");
 }
 
+PortsList SequenceWithMemory::providedPorts()
+{
+  PortsList ports;
+  ports.insert(BT::InputPort<int>("Start"));
+  return ports;
+}
+
 NodeStatus SequenceWithMemory::tick()
 {
+  if (getInput("Start", start_idx_) && current_child_idx_ < start_idx_)
+  {
+    current_child_idx_ = start_idx_;
+  }
+
   const size_t children_count = children_nodes_.size();
 
-  if(status() == NodeStatus::IDLE)
+  if (status() == NodeStatus::IDLE)
   {
     all_skipped_ = true;
   }
@@ -84,7 +97,7 @@ NodeStatus SequenceWithMemory::tick()
   if (current_child_idx_ == children_count)
   {
     resetChildren();
-    current_child_idx_ = 0;
+    current_child_idx_ = start_idx_;
   }
   // Skip if ALL the nodes have been skipped
   return all_skipped_ ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
@@ -92,7 +105,7 @@ NodeStatus SequenceWithMemory::tick()
 
 void SequenceWithMemory::halt()
 {
-  current_child_idx_ = 0;
+  current_child_idx_ = start_idx_;
   ControlNode::halt();
 }
 

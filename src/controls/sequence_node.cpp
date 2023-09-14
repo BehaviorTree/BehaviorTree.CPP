@@ -15,13 +15,15 @@
 
 namespace BT
 {
-SequenceNode::SequenceNode(const std::string& name, bool make_async) :
-  ControlNode::ControlNode(name, {}),
+SequenceNode::SequenceNode(const std::string& name, const BT::NodeConfig& config,
+                           bool make_async) :
+  ControlNode::ControlNode(name, config),
   current_child_idx_(0),
+  start_idx_(0),
   all_skipped_(true),
   asynch_(make_async)
 {
-  if(asynch_)
+  if (asynch_)
     setRegistrationID("AsyncSequence");
   else
     setRegistrationID("Sequence");
@@ -29,15 +31,27 @@ SequenceNode::SequenceNode(const std::string& name, bool make_async) :
 
 void SequenceNode::halt()
 {
-  current_child_idx_ = 0;
+  current_child_idx_ = start_idx_;
   ControlNode::halt();
+}
+
+PortsList SequenceNode::providedPorts()
+{
+  PortsList ports;
+  ports.insert(BT::InputPort<int>("Start"));
+  return ports;
 }
 
 NodeStatus SequenceNode::tick()
 {
+  if (getInput("Start", start_idx_) && current_child_idx_ < start_idx_)
+  {
+    current_child_idx_ = start_idx_;
+  }
+
   const size_t children_count = children_nodes_.size();
 
-  if(status() == NodeStatus::IDLE)
+  if (status() == NodeStatus::IDLE)
   {
     all_skipped_ = true;
   }
@@ -62,15 +76,14 @@ NodeStatus SequenceNode::tick()
       case NodeStatus::FAILURE: {
         // Reset on failure
         resetChildren();
-        current_child_idx_ = 0;
+        current_child_idx_ = start_idx_;
         return child_status;
       }
       case NodeStatus::SUCCESS: {
         current_child_idx_++;
         // Return the execution flow if the child is async,
         // to make this interruptable.
-        if (asynch_ && requiresWakeUp() &&
-            prev_status == NodeStatus::IDLE &&
+        if (asynch_ && requiresWakeUp() && prev_status == NodeStatus::IDLE &&
             current_child_idx_ < children_count)
         {
           emitWakeUpSignal();
@@ -95,7 +108,7 @@ NodeStatus SequenceNode::tick()
   if (current_child_idx_ == children_count)
   {
     resetChildren();
-    current_child_idx_ = 0;
+    current_child_idx_ = start_idx_;
   }
   // Skip if ALL the nodes have been skipped
   return all_skipped_ ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;

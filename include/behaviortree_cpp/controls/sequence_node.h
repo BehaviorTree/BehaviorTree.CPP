@@ -34,15 +34,18 @@ namespace BT
 class SequenceNode : public ControlNode
 {
 public:
-  SequenceNode(const std::string& name,
+  SequenceNode(const std::string& name, const BT::NodeConfig& config,
                bool make_async = false);
 
   virtual ~SequenceNode() override = default;
+
+  static PortsList providedPorts();
 
   virtual void halt() override;
 
 private:
   size_t current_child_idx_;
+  size_t start_idx_;
   bool all_skipped_ = true;
   bool asynch_ = false;
 

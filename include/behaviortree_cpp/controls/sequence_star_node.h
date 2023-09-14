@@ -34,14 +34,16 @@ namespace BT
 class SequenceWithMemory : public ControlNode
 {
 public:
-  SequenceWithMemory(const std::string& name);
+  SequenceWithMemory(const std::string& name, const BT::NodeConfig& config);
 
   virtual ~SequenceWithMemory() override = default;
+  static PortsList providedPorts();
 
   virtual void halt() override;
 
 private:
   size_t current_child_idx_;
+  size_t start_idx_;
   bool all_skipped_ = true;
 
   virtual BT::NodeStatus tick() override;
