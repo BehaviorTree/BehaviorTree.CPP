@@ -1,10 +1,10 @@
 #include "t13_custom_type.hpp"
 #include "behaviortree_cpp/bt_factory.h"
 
-class ShowVector : public BT::SyncActionNode
+class PrintVector : public BT::SyncActionNode
 {
 public:
-  ShowVector(const std::string& name, const BT::NodeConfig& config)
+  PrintVector(const std::string& name, const BT::NodeConfig& config)
     : BT::SyncActionNode(name, config)
   {
   }
@@ -23,13 +23,13 @@ public:
   }
 };
 
-// Function used to register ShowVector automatically, when
+// Function used to register PrintVector automatically, when
 // loading the plugin.
-// Remember that is mandatory to add to toy CMakeLists.txtx file
-// this:
+// Remember that it is mandatory to add to the CMakeLists.txt file this:
+//
 //    target_compile_definitions(<target_name> PRIVATE  BT_PLUGIN_EXPORT)
 //
 BT_REGISTER_NODES(factory)
 {
-  factory.registerNodeType<ShowVector>("ShowVector");
+  factory.registerNodeType<PrintVector>("PrintVector");
 }

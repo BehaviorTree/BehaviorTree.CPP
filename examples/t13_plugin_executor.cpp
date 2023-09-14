@@ -8,13 +8,13 @@ static const char* xml_text = R"(
   <BehaviorTree ID="MainTree">
     <Sequence>
         <Script   code="vect:='1,2,3,4'"/>
-        <ShowVector value="{vect}"/>;
+        <PrintVector value="{vect}"/>;
         <SubTree ID="MySub" v4="{vect}"/>
     </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="MySub">
-    <ShowVector value="{v4}"/>;
+    <PrintVector value="{v4}"/>;
   </BehaviorTree>
  </root>
  )";
