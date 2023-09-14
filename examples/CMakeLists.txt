@@ -36,3 +36,15 @@ endif()
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
 CompileExample("ex04_waypoints")
+
+CompileExample("t13_plugin_executor")
+
+############ Create plugin for tutorial 13 ##########
+# library must be SHARED
+add_library(t13_plugin_action SHARED t13_plugin_action.cpp )
+# you must set the definition BT_PLUGIN_EXPORT
+target_compile_definitions(t13_plugin_action PRIVATE  BT_PLUGIN_EXPORT )
+# remove the "lib" prefix. Name of the file will be t13_plugin_action.so
+set_target_properties(t13_plugin_action PROPERTIES PREFIX "")
+# link dependencies as usual
+target_link_libraries(t13_plugin_action ${BTCPP_LIBRARY} )
