@@ -850,32 +850,8 @@ void addNodeModelToXML(const TreeNodeManifest& model,
   XMLElement* element = doc.NewElement(toStr(model.type).c_str());
   element->SetAttribute("ID", model.registration_ID.c_str());
 
-  std::vector<std::string> ordered_ports;
-  PortDirection const directions[3] = {PortDirection::INPUT,
-                                       PortDirection::OUTPUT,
-                                       PortDirection::INOUT};
-  for (PortDirection direction: directions)
+  for (const auto& [port_name, port_info] : model.ports)
   {
-    std::set<std::string> port_names;
-    for (auto& port : model.ports)
-    {
-      const auto& port_name = port.first;
-      const auto& port_info = port.second;
-      if (port_info.direction() == direction)
-      {
-        port_names.insert(port_name);
-      }
-    }
-    for (auto& port : port_names)
-    {
-      ordered_ports.push_back(port);
-    }
-  }
-
-  for (const auto& port_name : ordered_ports)
-  {
-    const auto& port_info = model.ports.at(port_name);
-
     XMLElement* port_element = nullptr;
     switch (port_info.direction())
     {
