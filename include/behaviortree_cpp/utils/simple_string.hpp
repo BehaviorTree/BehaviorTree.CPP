@@ -49,6 +49,7 @@ class SimpleString {
   SimpleString(const char *input_data)
       : SimpleString(input_data, strlen(input_data)) {}
 
+
   SimpleString(const char *input_data, std::size_t size)
   {
     createImpl(input_data, size);
@@ -132,6 +133,7 @@ class SimpleString {
   constexpr static std::size_t CAPACITY = 15; // sizeof(String) - 1);
   constexpr static std::size_t IS_LONG_BIT = 1 << 7;
   constexpr static std::size_t LONG_MASK = (~std::size_t(0)) >> 1;
+  constexpr static std::size_t MAX_SIZE = 100UL*1024UL*1024UL;
 
   union {
     String str;
@@ -146,6 +148,10 @@ class SimpleString {
 
   void createImpl(const char *input_data, std::size_t size)
   {
+    if (size > MAX_SIZE){
+      throw std::invalid_argument("size too large for a simple string");
+    }
+
     if (size > CAPACITY) {
       _storage.str.size = size;
       _storage.soo.capacity_left = IS_LONG_BIT;
