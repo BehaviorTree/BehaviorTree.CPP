@@ -40,14 +40,11 @@ public:
   struct Entry
   {
     Any value;
-    PortInfo port_info;
+    TypeInfo info;
+    StringConverter string_converter;
     mutable std::mutex entry_mutex;
-
-    Entry(const PortInfo& info) : port_info(info)
-    {}
-
-    Entry(Any&& other_any, const PortInfo& info) :
-          value(std::move(other_any)), port_info(info)
+    
+    Entry(const TypeInfo& _info) : info(_info)
     {}
   };
 
@@ -149,21 +146,19 @@ public:
       std::scoped_lock lock(entry.entry_mutex);
 
       Any& previous_any = entry.value;
-      const PortInfo& port_info = entry.port_info;
 
       Any new_value(value);
 
       // special case: entry exists but it is not strongly typed... yet
-      if (!port_info.isStronglyTyped())
+      if (!entry.info.isStronglyTyped())
       {
         // Use the new type to create a new entry that is strongly typed.
-        entry.port_info =
-            PortInfo(port_info.direction(), new_value.type(), port_info.converter());
+        entry.info = TypeInfo::Create<T>();
         previous_any = std::move(new_value);
         return;
       }
 
-      std::type_index previous_type = port_info.type();
+      std::type_index previous_type = entry.info.type();
 
       // check type mismatch
       if (previous_type != std::type_index(typeid(T)) &&
@@ -172,7 +167,7 @@ public:
         bool mismatching = true;
         if (std::is_constructible<StringView, T>::value)
         {
-          Any any_from_string = port_info.parseString(value);
+          Any any_from_string = entry.info.parseString(value);
           if (any_from_string.empty() == false)
           {
             mismatching = false;
@@ -204,8 +199,8 @@ public:
       new_value.copyInto(previous_any);
     }
   }
-
-   [[nodiscard]] const PortInfo* portInfo(const std::string& key);
+  
+  [[nodiscard]] const TypeInfo* entryInfo(const std::string& key);
 
   void addSubtreeRemapping(StringView internal, StringView external);
 
@@ -217,8 +212,8 @@ public:
 
   [[deprecated("Use getAnyLocked to access safely an Entry")]]
   std::recursive_mutex& entryMutex() const;
-
-  void createEntry(const std::string& key, const PortInfo& info);
+  
+  void createEntry(const std::string& key, const TypeInfo& info);
 
 private:
   mutable std::mutex mutex_;
@@ -226,8 +221,8 @@ private:
   std::unordered_map<std::string, std::shared_ptr<Entry>> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
-
-  std::shared_ptr<Entry> createEntryImpl(const std::string &key, const PortInfo& info);
+  
+  std::shared_ptr<Entry> createEntryImpl(const std::string &key, const TypeInfo& info);
 
   bool autoremapping_ = false;
 };

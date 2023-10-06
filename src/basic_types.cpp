@@ -327,20 +327,20 @@ std::vector<StringView> splitString(const StringView& strToSplit, char delimeter
 
 PortDirection PortInfo::direction() const
 {
-  return type_;
+  return direction_;
 }
 
-const std::type_index& PortInfo::type() const
+const std::type_index& TypeInfo::type() const
 {
   return type_info_;
 }
 
-const std::string &PortInfo::typeName() const
+const std::string &TypeInfo::typeName() const
 {
   return type_str_;
 }
 
-Any PortInfo::parseString(const char* str) const
+Any TypeInfo::parseString(const char* str) const
 {
   if (converter_)
   {
@@ -349,7 +349,7 @@ Any PortInfo::parseString(const char* str) const
   return {};
 }
 
-Any PortInfo::parseString(const std::string& str) const
+Any TypeInfo::parseString(const std::string& str) const
 {
   if (converter_)
   {

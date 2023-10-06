@@ -631,7 +631,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
         const auto port_key = static_cast<std::string>(param_res.value());
 
         // if the entry already exists, check that the type is the same
-        if (auto prev_info = blackboard->portInfo(port_key))
+        if (auto prev_info = blackboard->entryInfo(port_key))
         {
           // Check consistency of types.
           bool const port_type_mismatch = (prev_info->isStronglyTyped() &&
