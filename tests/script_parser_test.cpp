@@ -381,3 +381,23 @@ TEST(ParserTest, Issue595)
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
   ASSERT_EQ(0, counters[0]);
 }
+
+TEST(ParserTest, NewLine)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="Main">
+      <Script code="A:=5;&#10;B:=6"/>
+    </BehaviorTree>
+  </root> )";
+
+
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("A"), 5);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 6);
+}

@@ -806,7 +806,7 @@ struct stmt
   // This is because we can't easily know whether we need to request more input when seeing a
   // newline or not. Once we're having a e.g. parenthesized expression, we know that we need more
   // input until we've reached ), so then change the whitespace rule.
-  static constexpr auto whitespace = dsl::ascii::blank | escaped_newline;
+  static constexpr auto whitespace = dsl::ascii::blank | escaped_newline | dsl::newline;
 
   static constexpr auto rule = [] {
     // We can't use `dsl::eol` as our terminator directly,
