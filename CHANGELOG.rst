@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.3.8 (2023-10-09)
+------------------
 * ReactiveSequence and ReactiveFallback will behave more similarly to 3.8
 * bug fix in wakeUpSignal
 * ignore newlines in script
