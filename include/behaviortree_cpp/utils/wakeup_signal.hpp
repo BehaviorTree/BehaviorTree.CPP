@@ -16,9 +16,6 @@ public:
     /// signal was received.
     bool waitFor(std::chrono::microseconds usec)
     {
-      if(usec.count() <= 0) {
-        return ready_.load();
-      }
       std::unique_lock<std::mutex> lk(mutex_);
       auto res = cv_.wait_for(lk, usec, [this]{
         return ready_.load();
