@@ -2,6 +2,15 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* ReactiveSequence and ReactiveFallback will behave more similarly to 3.8
+* bug fix in wakeUpSignal
+* ignore newlines in script
+* stop ordering ports in TreeNodesModel
+* add a specific tutorial for plugins
+* Contributors: Davide Faconti
+
 4.3.7 (2023-09-12)
 ------------------
 * Test and fix issue `#653 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/653>`_: AnyTypeAllowed by default
