@@ -25,6 +25,10 @@ void ReactiveSequence::EnableException(bool enable)
 NodeStatus ReactiveSequence::tick()
 {
   bool all_skipped = true;
+  if(status() == NodeStatus::IDLE)
+  {
+    running_child_ = -1;
+  }
   setStatus(NodeStatus::RUNNING);
 
   for (size_t index = 0; index < childrenCount(); index++)
@@ -38,11 +42,14 @@ NodeStatus ReactiveSequence::tick()
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
-        // reset the previous children, to make sure that they are in IDLE state
-        // the next time we tick them
-        for (size_t i = 0; i < index; i++)
+        // reset the previous children, to make sure that they are
+        // in IDLE state the next time we tick them
+        for (size_t i = 0; i < childrenCount(); i++)
         {
-          haltChild(i);
+          if(i != index)
+          {
+            haltChild(i);
+          }
         }
         if(running_child_ == -1)
         {
@@ -50,7 +57,8 @@ NodeStatus ReactiveSequence::tick()
         }
         else if(throw_if_multiple_running && running_child_ != int(index))
         {
-          throw LogicError("[ReactiveSequence]: only a single child can return RUNNING");
+          throw LogicError("[ReactiveSequence]: only a single child can return RUNNING.\n"
+                           "This throw can be disabled with ReactiveSequence::EnableException(false)");
         }
         return NodeStatus::RUNNING;
       }
@@ -78,6 +86,12 @@ NodeStatus ReactiveSequence::tick()
 
   // Skip if ALL the nodes have been skipped
   return all_skipped ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
+}
+
+void ReactiveSequence::halt()
+{
+  running_child_ = -1;
+  ControlNode::halt();
 }
 
 }   // namespace BT
