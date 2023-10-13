@@ -380,6 +380,16 @@ struct ExprComparison : ExprBase
           return False;
         }
       }
+      else if ((lhs_v.isString() && rhs_v.isNumber()) ||
+               (lhs_v.isNumber() && rhs_v.isString()))
+      {
+        auto lv = lhs_v.cast<double>();
+        auto rv = lhs_v.cast<double>();
+        if (!SwitchImpl(lv, rv, ops[i]))
+        {
+          return False;
+        }
+      }
       else
       {
         throw RuntimeError(StrCat("Can't mix different types in Comparison. "

@@ -47,6 +47,13 @@ auto StrEqual = [](const char* str1, const char* str2) -> bool {
   return strcmp(str1, str2) == 0;
 };
 
+
+
+struct SubtreeModel
+{
+  std::unordered_map<std::string, BT::PortInfo> ports;
+};
+
 struct XMLParser::PImpl
 {
   TreeNode::Ptr createNodeFromXML(const XMLElement* element,
@@ -73,6 +80,7 @@ struct XMLParser::PImpl
   const BehaviorTreeFactory& factory;
 
   std::filesystem::path current_path;
+  std::map<std::string, SubtreeModel> subtree_models;
 
   int suffix_count;
   
@@ -87,6 +95,9 @@ struct XMLParser::PImpl
     opened_documents.clear();
     tree_roots.clear();
   }
+
+private:
+  void loadSubtreeModel(const XMLElement* xml_root);
 };
 
 #if defined(__linux) || defined(__linux__)
@@ -140,6 +151,51 @@ std::vector<std::string> XMLParser::registeredBehaviorTrees() const
     out.push_back(it.first);
   }
   return out;
+}
+
+void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
+{
+  for (auto models_node = xml_root->FirstChildElement("TreeNodesModel");
+       models_node != nullptr;
+       models_node = models_node->NextSiblingElement("TreeNodesModel"))
+  {
+    for (auto sub_node = models_node->FirstChildElement("SubTree");
+         sub_node != nullptr;
+         sub_node = sub_node->NextSiblingElement("SubTree"))
+    {
+      auto subtree_id = sub_node->Attribute("ID");
+      auto& subtree_model = subtree_models[subtree_id];
+
+      std::pair<const char*, BT::PortDirection>  port_types[3]=
+          { {"input_port", BT::PortDirection::INPUT},
+           {"output_port", BT::PortDirection::OUTPUT},
+           {"inout_port", BT::PortDirection::INOUT} };
+
+      for(const auto& [name, direction]: port_types)
+      {
+        for (auto port_node = sub_node->FirstChildElement(name);
+             port_node != nullptr;
+             port_node = port_node->NextSiblingElement(name))
+        {
+          BT::PortInfo port(direction);
+          auto name =  port_node->Attribute("name");
+          if(!name)
+          {
+            throw RuntimeError("Missing attribute [name] in port (SubTree model)");
+          }
+          if(auto default_value = port_node->Attribute("default"))
+          {
+            port.setDefaultValue(default_value);
+          }
+          if(auto description = port_node->Attribute("description"))
+          {
+            port.setDescription(description);
+          }
+          subtree_model.ports[name] = std::move(port);
+        }
+      }
+    }
+  }
 }
 
 void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
@@ -228,6 +284,8 @@ void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
 
   // Verify the validity of the XML before adding any behavior trees to the parser's list of registered trees
   VerifyXML(xml_text, registered_nodes);
+
+  loadSubtreeModel(xml_root);
 
   // Register each BehaviorTree within the XML
   for (auto bt_node = xml_root->FirstChildElement("BehaviorTree"); bt_node != nullptr;
@@ -749,6 +807,8 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     {
       auto new_bb = Blackboard::create(blackboard);
       const std::string subtree_ID = element->Attribute("ID");
+      std::unordered_map<std::string, std::string> remapping;
+      bool do_autoremap = false;
 
       for (auto attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
       {
@@ -757,7 +817,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
 
         if (StrEqual(attr_name, "_autoremap"))
         {
-          const bool do_autoremap = convertFromString<bool>(attr_value);
+          do_autoremap = convertFromString<bool>(attr_value);
           new_bb->enableAutoRemapping(do_autoremap);
           continue;
         }
@@ -765,7 +825,41 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
         {
           continue;
         }
+        remapping.insert( {attr_name, attr_value} );
+      }
+      // check if this subtree has a model. If it does,
+      // we want o check if all the mandatory ports were remapped and
+      // add default ones, if necessary
+      auto subtree_model_it = subtree_models.find(subtree_ID);
+      if(subtree_model_it != subtree_models.end())
+      {
+        const auto& subtree_model_ports = subtree_model_it->second.ports;
+        // check if:
+        // - remapping contains mondatory ports
+        // - if any of these has default value
+        for(const auto& [port_name, port_info]: subtree_model_ports)
+        {
+          auto it = remapping.find(port_name);
+          // don't override existing remapping
+          if( it == remapping.end() & !do_autoremap)
+          {
+            // remapping is not explicitly defined in the XML: use the model
+            if(port_info.defaultValueString().empty())
+            {
+              auto msg = StrCat("In the <TreeNodesModel> the <Subtree ID=\"", subtree_ID,
+                                "\"> is defining a mandatory port called [",
+                                port_name,"], but you are not remapping it");
+              throw RuntimeError(msg);
+            }
+            else {
+              remapping.insert({port_name, port_info.defaultValueString()});
+            }
+          }
+        }
+      }
 
+      for(const auto& [attr_name, attr_value]: remapping)
+      {
         if (TreeNode::isBlackboardPointer(attr_value))
         {
           // do remapping

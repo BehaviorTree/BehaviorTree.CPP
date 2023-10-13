@@ -67,6 +67,10 @@ class SimpleString {
   {
     return size() > 0 ? std::string(data(), size()) : std::string();
   }
+  std::string_view toStdStringView() const
+  {
+    return size() > 0 ? std::string_view(data(), size()) : std::string_view();
+  }
 
   const char *data() const
   {

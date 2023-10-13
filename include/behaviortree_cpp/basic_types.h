@@ -158,13 +158,16 @@ inline StringConverter GetAnyFromStringFunctor<void>()
 template<typename T> [[nodiscard]]
 std::string toStr(const T& value)
 {
-  if constexpr(!std::is_arithmetic_v<T>)
+  if constexpr (std::is_convertible_v<T, std::string> or
+                std::is_convertible_v<T, std::string_view>)
+  {
+    return value;
+  }
+  else if constexpr(!std::is_arithmetic_v<T>)
   {
     throw LogicError(
         StrCat("Function BT::toStr<T>() not specialized for type [",
-               BT::demangle(typeid(T)), "],",
-               "Implement it consistently with BT::convertFromString<T>(), "
-               "or provide at dummy version that returns an empty string.")
+               BT::demangle(typeid(T)), "]")
       );
   } else {
     return std::to_string(value);
