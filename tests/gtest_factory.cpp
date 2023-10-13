@@ -193,8 +193,8 @@ static const char* xml_ports_subtree = R"(
 
   <BehaviorTree ID="MainTree">
     <Sequence>
-      <Script code = " talk_hello='hello' " />
-      <Script code = " talk_bye='bye bye' " />
+      <Script code = " talk_hello:='hello' " />
+      <Script code = " talk_bye:='bye bye' " />
       <SubTree ID="TalkToMe" hello_msg="{talk_hello}"
                              bye_msg="{talk_bye}"
                              output="{talk_out}" />

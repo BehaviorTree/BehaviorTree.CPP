@@ -56,7 +56,7 @@ struct XMLParser::PImpl
                                   Tree& output_tree);
 
   void recursivelyCreateSubtree(const std::string& tree_ID,
-                                const std::string &tree_name,
+                                const std::string &tree_path,
                                 const std::string &prefix_path,
                                 Tree& output_tree,
                                 Blackboard::Ptr blackboard,
@@ -718,7 +718,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
 
 void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     const std::string& tree_ID,
-    const std::string& tree_name,
+    const std::string& tree_path,
     const std::string& prefix_path,
     Tree& output_tree,
     Blackboard::Ptr blackboard,
@@ -748,8 +748,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     else   // special case: SubTreeNode
     {
       auto new_bb = Blackboard::create(blackboard);
-
-      std::set<StringView> mapped_keys;
+      const std::string subtree_ID = element->Attribute("ID");
 
       for (auto attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
       {
@@ -772,31 +771,28 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
           // do remapping
           StringView port_name = TreeNode::stripBlackboardPointer(attr_value);
           new_bb->addSubtreeRemapping(attr_name, port_name);
-          mapped_keys.insert(attr_name);
         }
         else
         {
           // constant string: just set that constant value into the BB
           new_bb->set(attr_name, static_cast<std::string>(attr_value));
-          mapped_keys.insert(attr_name);
         }
       }
 
-      std::string subtree_ID = element->Attribute("ID");
-      std::string subtree_name = subtree->instance_name;
-      if(!subtree_name.empty()) {
-        subtree_name += "/";
+      std::string subtree_path = subtree->instance_name;
+      if(!subtree_path.empty()) {
+        subtree_path += "/";
       }
       if(auto name = element->Attribute("name") ) {
-        subtree_name +=  name;
+        subtree_path +=  name;
       }
       else {
-        subtree_name += subtree_ID + "::" + std::to_string(node->UID());
+        subtree_path += subtree_ID + "::" + std::to_string(node->UID());
       }
 
       recursivelyCreateSubtree(subtree_ID,
-                               subtree_name, // name
-                               subtree_name + "/",  //prefix
+                               subtree_path, // name
+                               subtree_path + "/",  //prefix
                                output_tree, new_bb, node);
     }
   };
@@ -814,7 +810,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
   // Append a new subtree to the list
   auto new_tree = std::make_shared<Tree::Subtree>();
   new_tree->blackboard = blackboard;
-  new_tree->instance_name = tree_name;
+  new_tree->instance_name = tree_path;
   new_tree->tree_ID = tree_ID;
   output_tree.subtrees.push_back(new_tree);
 
