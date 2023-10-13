@@ -158,7 +158,7 @@ inline StringConverter GetAnyFromStringFunctor<void>()
 template<typename T> [[nodiscard]]
 std::string toStr(const T& value)
 {
-  if constexpr (std::is_convertible_v<T, std::string> or
+  if constexpr (std::is_convertible_v<T, std::string> ||
                 std::is_convertible_v<T, std::string_view>)
   {
     return value;
