@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.4.0 (2023-10-16)
+------------------
 * Update ex05_subtree_model.cpp
 * added any::stringToNumber
 * added SubTree model example
