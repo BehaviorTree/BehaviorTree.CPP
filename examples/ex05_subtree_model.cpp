@@ -8,20 +8,17 @@ using namespace BT;
  */
 
 /**
- * You can optinally add a model to a SubTrees, in this case "MySub".
- * We are telling to the factory that the callee should remap
- * two mandatory inputs, called:
+ * You can optionally add a model to a SubTrees, in this case, "MySub".
+ * We are telling the factory that the callee should remap
+ * two mandatory inputs, and two outputs:
  *
  * - sub_in_value (that has the default value 42)
  * - sub_in_name (no default)
- *
- * Similarly, there are two output values:
- *
  * - sub_out_result (default remapping to port {output})
  * - sub_out_state (no default)
  *
- * The callee MUST specify those remapping that have
- * no default value.
+ * The callee (parent tree, including the subtree) MUST specify those 
+ * remapping which have no default value.
  */
 
 // clang-format off
@@ -47,8 +44,8 @@ static const char* xml_subtree = R"(
  )";
 
 /**
- * Here, when calling "MySub", only in_name and out_state are explicitly
- * remapped. Will we use the default values for the other two.
+ * Here, when calling "MySub", only `sub_in_name` and `sub_out_state` are explicitly
+ * remapped. We will use the default values for the other two.
  */
 
 static const char* xml_maintree = R"(
@@ -78,7 +75,7 @@ int main()
   StdCoutLogger logger(tree);
   tree.tickWhileRunning();
 
-  // We expect the sequence to be succesful.
+  // We expect the sequence to be successful.
 
   // The full remapping was:
   //
