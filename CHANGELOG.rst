@@ -2,6 +2,19 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update ex05_subtree_model.cpp
+* added any::stringToNumber
+* added SubTree model example
+* unit test for issue 660
+* adding SubTree model
+* minor changes
+* change blackboard entry
+* Update simple_string.hpp
+* SimpleString: fix warning by checking upper size limit (`#666 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/666>`_)
+* Contributors: Adam Boseley, Davide Faconti
+
 4.3.8 (2023-10-09)
 ------------------
 * ReactiveSequence and ReactiveFallback will behave more similarly to 3.8
