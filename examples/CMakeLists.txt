@@ -35,6 +35,7 @@ endif()
 
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
+CompileExample("ex03_subtree_model")
 CompileExample("ex04_waypoints")
 
 CompileExample("t13_plugin_executor")
