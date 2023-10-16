@@ -600,7 +600,8 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   {
     if(!manifest)
     {
-      throw RuntimeError("Missing manifest. It shouldn't happen. Please report this issue");
+      auto msg = StrCat("Missing manifest for element_ID: ", element_ID, ". It shouldn't happen. Please report this issue.");
+      throw RuntimeError(msg);
     }
 
     //Check that name in remapping can be found in the manifest
