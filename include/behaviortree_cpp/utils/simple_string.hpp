@@ -164,7 +164,9 @@ class SimpleString {
       if (size > 0) {
         std::memcpy(_storage.soo.data, input_data, size);
       }
-      _storage.soo.data[size] = '\0';
+      if(size < CAPACITY) {
+        _storage.soo.data[size] = '\0';
+      }
     }
   }
 };
