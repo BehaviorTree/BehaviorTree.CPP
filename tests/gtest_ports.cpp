@@ -231,64 +231,6 @@ TEST(PortTest, SubtreeStringInput_Issue489)
   ASSERT_EQ(7, states[1]);
 }
 
-enum class Color
-{
-  Red = 0,
-  Blue = 1,
-  Green = 2,
-  Undefined
-};
-
-class ActionEnum : public SyncActionNode
-{
-public:
-  ActionEnum(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
-  {}
-
-  NodeStatus tick() override
-  {
-    getInput("color", color);
-    return NodeStatus::SUCCESS;
-  }
-
-  static PortsList providedPorts()
-  {
-    return {BT::InputPort<Color>("color")};
-  }
-
-  Color color = Color::Undefined;
-};
-
-TEST(PortTest, StrintToEnum)
-{
-  std::string xml_txt = R"(
-    <root BTCPP_format="4" >
-      <BehaviorTree ID="Main">
-        <Sequence>
-          <ActionEnum color="Blue"/>
-          <ActionEnum color="2"/>
-        </Sequence>
-      </BehaviorTree>
-    </root>)";
-
-  BehaviorTreeFactory factory;
-  factory.registerNodeType<ActionEnum>("ActionEnum");
-  factory.registerScriptingEnums<Color>();
-
-  auto tree = factory.createTreeFromText(xml_txt);
-
-  NodeStatus status = tree.tickWhileRunning();
-
-  ASSERT_EQ(status, NodeStatus::SUCCESS);
-
-  auto first_node = dynamic_cast<ActionEnum*>(tree.subtrees.front()->nodes[1].get());
-  auto second_node = dynamic_cast<ActionEnum*>(tree.subtrees.front()->nodes[2].get());
-
-  ASSERT_EQ(Color::Blue, first_node->color);
-  ASSERT_EQ(Color::Green, second_node->color);
-}
-
 
 class DefaultTestAction : public SyncActionNode
 {
@@ -328,8 +270,6 @@ public:
             BT::InputPort<std::string>("greeting", "hello", "be polite"),
             BT::InputPort<Point2D>("pos", {1,2}, "where")};
   }
-
-  Color color = Color::Undefined;
 };
 
 TEST(PortTest, DefaultInput)

@@ -508,3 +508,43 @@ TEST(SubTree, Issue653_SetBlackboard)
 }
 
 
+TEST(SubTree, SubtreeModels)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute = "MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+      <input_port name="in_name"/>
+      <output_port name="out_result" default="{output}"/>
+      <output_port name="out_state"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Script code="my_name:= 'john' "/>
+      <SubTree ID="MySub" in_name="{my_name}"  out_state="{my_state}"/>
+      <ScriptCondition code=" output==69 && my_state=='ACTIVE' " />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <Sequence>
+      <ScriptCondition code="in_name=='john' && in_value==42" />
+      <Script code="out_result:=69; out_state:='ACTIVE'" />
+    </Sequence>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+}
+
+

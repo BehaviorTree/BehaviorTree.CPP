@@ -380,6 +380,16 @@ struct ExprComparison : ExprBase
           return False;
         }
       }
+      else if ((lhs_v.isString() && rhs_v.isNumber()) ||
+               (lhs_v.isNumber() && rhs_v.isString()))
+      {
+        auto lv = lhs_v.cast<double>();
+        auto rv = lhs_v.cast<double>();
+        if (!SwitchImpl(lv, rv, ops[i]))
+        {
+          return False;
+        }
+      }
       else
       {
         throw RuntimeError(StrCat("Can't mix different types in Comparison. "
@@ -504,7 +514,7 @@ struct ExprAssignment : ExprBase
     {
       // the very fist assignment can come from any type.
       // In the future, type check will be done by Any::copyInto
-      if (dst_ptr->empty() && entry->port_info.type() == typeid(PortInfo::AnyTypeAllowed))
+      if (dst_ptr->empty() && entry->info.type() == typeid(AnyTypeAllowed))
       {
         *dst_ptr = value;
       }
@@ -513,8 +523,8 @@ struct ExprAssignment : ExprBase
         // special case: string to other type.
         // Check if we can use the StringConverter
         auto const str = value.cast<std::string>();
-        const auto& port_info = env.vars->portInfo(key);
-        if (auto converter = port_info->converter())
+        const auto& entry_info = env.vars->entryInfo(key);
+        if (auto converter = entry_info->converter())
         {
           *dst_ptr = converter(str);
         }

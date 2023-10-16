@@ -158,13 +158,16 @@ inline StringConverter GetAnyFromStringFunctor<void>()
 template<typename T> [[nodiscard]]
 std::string toStr(const T& value)
 {
-  if constexpr(!std::is_arithmetic_v<T>)
+  if constexpr (std::is_convertible_v<T, std::string> ||
+                std::is_convertible_v<T, std::string_view>)
+  {
+    return value;
+  }
+  else if constexpr(!std::is_arithmetic_v<T>)
   {
     throw LogicError(
         StrCat("Function BT::toStr<T>() not specialized for type [",
-               BT::demangle(typeid(T)), "],",
-               "Implement it consistently with BT::convertFromString<T>(), "
-               "or provide at dummy version that returns an empty string.")
+               BT::demangle(typeid(T)), "]")
       );
   } else {
     return std::to_string(value);
@@ -255,24 +258,26 @@ using Result = Expected<std::monostate>;
 [[nodiscard]]
 bool IsAllowedPortName(StringView str);
 
-class PortInfo
+struct AnyTypeAllowed
+{};
+
+class TypeInfo
 {
 public:
-  struct AnyTypeAllowed
-  {
-  };
 
-  PortInfo(PortDirection direction = PortDirection::INOUT) :
-    type_(direction), type_info_(typeid(AnyTypeAllowed)),
+  template <typename T>
+  static TypeInfo Create() {
+    return TypeInfo{typeid(T), GetAnyFromStringFunctor<T>()};
+  }
+
+  TypeInfo(): type_info_(typeid(AnyTypeAllowed)),
     type_str_("AnyTypeAllowed")
   {}
 
-  PortInfo(PortDirection direction, std::type_index type_info, StringConverter conv) :
-    type_(direction), type_info_(type_info), converter_(conv), 
+  TypeInfo(std::type_index type_info, StringConverter conv) :
+    type_info_(type_info), converter_(conv),
     type_str_(BT::demangle(type_info))
   {}
-
-  [[nodiscard]] PortDirection direction() const;
 
   [[nodiscard]] const std::type_index& type() const;
 
@@ -288,6 +293,38 @@ public:
     // avoid compilation errors
     return {};
   }
+
+  [[nodiscard]] bool isStronglyTyped() const
+  {
+    return type_info_ != typeid(AnyTypeAllowed);
+  }
+
+  [[nodiscard]] const StringConverter& converter() const
+  {
+    return converter_;
+  }
+
+private:
+
+  std::type_index type_info_;
+  StringConverter converter_;
+  std::string type_str_;
+};
+
+
+class PortInfo: public TypeInfo
+{
+public:
+
+  PortInfo(PortDirection direction = PortDirection::INOUT) :
+    TypeInfo(), direction_(direction)
+  {}
+
+  PortInfo(PortDirection direction, std::type_index type_info, StringConverter conv) :
+    TypeInfo(type_info, conv), direction_(direction)
+  {}
+
+  [[nodiscard]] PortDirection direction() const;
 
   void setDescription(StringView description);
 
@@ -306,27 +343,14 @@ public:
 
   [[nodiscard]] const std::string& defaultValueString() const;
 
-  [[nodiscard]] bool isStronglyTyped() const
-  {
-    return type_info_ != typeid(AnyTypeAllowed);
-  }
-
-  [[nodiscard]] const StringConverter& converter() const
-  {
-    return converter_;
-  }
-
 private:
-  PortDirection type_;
-  std::type_index type_info_;
-  StringConverter converter_;
+  PortDirection direction_;
   std::string description_;
   Any default_value_;
   std::string default_value_str_;
-  std::string type_str_;
 };
 
-template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
+template <typename T = AnyTypeAllowed> [[nodiscard]]
 std::pair<std::string, PortInfo> CreatePort(PortDirection direction,
                                             StringView name,
                                             StringView description = {})
@@ -357,28 +381,28 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction,
 }
 
 //----------
-template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
+template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> InputPort(StringView name,
                                                   StringView description = {})
 {
   return CreatePort<T>(PortDirection::INPUT, name, description);
 }
 
-template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
+template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> OutputPort(StringView name,
                                                    StringView description = {})
 {
   return CreatePort<T>(PortDirection::OUTPUT, name, description);
 }
 
-template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
+template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           StringView description = {})
 {
   return CreatePort<T>(PortDirection::INOUT, name, description);
 }
 //----------
-template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
+template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& default_value,
                                                   StringView description)
 {
@@ -387,7 +411,7 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& defa
   return out;
 }
 
-template <typename T = PortInfo::AnyTypeAllowed> [[nodiscard]]
+template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           const T& default_value,
                                                           StringView description)

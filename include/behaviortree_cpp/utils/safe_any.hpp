@@ -12,6 +12,10 @@
 
 #pragma once
 
+#if __has_include(<charconv>)
+#include <charconv>
+#endif
+
 #include <exception>
 #include <algorithm>
 #include <iostream>
@@ -36,350 +40,449 @@ static std::type_index UndefinedAnyType = typeid(nullptr);
 // it is faster to cast everything to either double, uint64_t or int64_t.
 class Any
 {
-    template <typename T>
-    using EnableIntegral =
-        typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type*;
+  template <typename T>
+  using EnableIntegral =
+      typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type*;
 
-    template <typename T>
-    using EnableNonIntegral =
-        typename std::enable_if<!std::is_integral<T>::value && !std::is_enum<T>::value>::type*;
+  template <typename T>
+  using EnableNonIntegral =
+      typename std::enable_if<!std::is_integral<T>::value && !std::is_enum<T>::value>::type*;
 
-    template <typename T>
-    using EnableString = typename std::enable_if<std::is_same<T, std::string>::value>::type*;
+  template <typename T>
+  using EnableString = typename std::enable_if<std::is_same<T, std::string>::value>::type*;
 
-    template <typename T>
-    using EnableArithmetic = typename std::enable_if<std::is_arithmetic<T>::value>::type*;
+  template <typename T>
+  using EnableArithmetic = typename std::enable_if<std::is_arithmetic<T>::value>::type*;
 
-    template <typename T>
-    using EnableEnum = typename std::enable_if<std::is_enum<T>::value>::type*;
+  template <typename T>
+  using EnableEnum = typename std::enable_if<std::is_enum<T>::value>::type*;
 
-    template <typename T>
-    using EnableUnknownType =
-        typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_enum<T>::value &&
-                                !std::is_same<T, std::string>::value>::type*;
+  template <typename T>
+  using EnableUnknownType =
+      typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_enum<T>::value &&
+                              !std::is_same<T, std::string>::value>::type*;
 
-  public:
+  template <typename T>
+  nonstd::expected<T, std::string> stringToNumber() const;
 
-    Any(): _original_type(UndefinedAnyType)
+public:
+
+
+  Any(): _original_type(UndefinedAnyType)
+  {
+  }
+
+  ~Any() = default;
+
+  Any(const Any& other) : _any(other._any), _original_type( other._original_type )
+  {
+  }
+
+  Any(Any&& other) : _any( std::move(other._any) ), _original_type( other._original_type )
+  {
+  }
+
+  explicit Any(const double& value) : _any(value), _original_type( typeid(double) )
+  {
+  }
+
+  explicit Any(const uint64_t& value) : _any(value), _original_type( typeid(uint64_t) )
+  {
+  }
+
+  explicit Any(const float& value) : _any(double(value)), _original_type( typeid(float) )
+  {
+  }
+
+  explicit Any(const std::string& str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
+  {
+  }
+
+  explicit Any(const char* str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
+  {
+  }
+
+  explicit Any(const SafeAny::SimpleString& str) : _any(str), _original_type( typeid(std::string) )
+  {
+  }
+
+  explicit Any(const std::string_view& str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
+  {
+  }
+
+  // all the other integrals are casted to int64_t
+  template <typename T>
+  explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( typeid(T) )
+  {
+  }
+
+  Any(const std::type_index& type): _original_type(type)
+  {
+  }
+
+  // default for other custom types
+  template <typename T>
+  explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value), _original_type( typeid(T) )
+  {
+    static_assert(!std::is_reference<T>::value, "Any can not contain references");
+  }
+
+  Any& operator = (const Any& other);
+
+  bool isNumber() const;
+
+  bool isIntegral() const;
+
+  bool isString() const
+  {
+    return _any.type() == typeid(SafeAny::SimpleString);
+  }
+
+  template <typename T>
+  bool isType() const
+  {
+    return _any.type() == typeid(T);
+  }
+
+  // copy the value (casting into dst). We preserve the destination type.
+  void copyInto(Any& dst);
+
+  // this is different from any_cast, because if allows safe
+  // conversions between arithmetic values and from/to string.
+  template <typename T>
+  nonstd::expected<T, std::string> tryCast() const;
+
+  // same as tryCast, but throws if fails
+  template <typename T>
+  T cast() const {
+    if(auto res = tryCast<T>() )
     {
+      return res.value();
     }
-
-    ~Any() = default;
-
-    Any(const Any& other) : _any(other._any), _original_type( other._original_type )
-    {
+    else {
+      throw std::runtime_error(res.error());
     }
+  }
 
-    Any(Any&& other) : _any( std::move(other._any) ), _original_type( other._original_type )
-    {
-    }
+  const std::type_index& type() const noexcept
+  {
+    return _original_type;
+  }
 
-    explicit Any(const double& value) : _any(value), _original_type( typeid(double) )
-    {
-    }
+  const std::type_info& castedType() const noexcept
+  {
+    return _any.type();
+  }
 
-    explicit Any(const uint64_t& value) : _any(value), _original_type( typeid(uint64_t) )
-    {
-    }
+  bool empty() const noexcept
+  {
+    return _any.empty();
+  }
 
-    explicit Any(const float& value) : _any(double(value)), _original_type( typeid(float) )
-    {
-    }
+private:
+  linb::any _any;
+  std::type_index _original_type;
 
-    explicit Any(const std::string& str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
-    {
-    }
+  //----------------------------
 
-    explicit Any(const char* str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
-    {
-    }
+  template <typename DST>
+  nonstd::expected<DST,std::string> convert(EnableString<DST> = 0) const;
 
-    explicit Any(const SafeAny::SimpleString& str) : _any(str), _original_type( typeid(std::string) )
-    {
-    }
+  template <typename DST>
+  nonstd::expected<DST,std::string> convert(EnableArithmetic<DST> = nullptr) const;
 
-    explicit Any(const std::string_view& str) : _any(SafeAny::SimpleString(str)), _original_type( typeid(std::string) )
-    {
-    }
+  template <typename DST>
+  nonstd::expected<DST,std::string> convert(EnableEnum<DST> = 0) const;
 
-    // all the other integrals are casted to int64_t
-    template <typename T>
-    explicit Any(const T& value, EnableIntegral<T> = 0) : _any(int64_t(value)), _original_type( typeid(T) )
-    {
-    }
+  template <typename DST>
+  nonstd::expected<DST,std::string> convert(EnableUnknownType<DST> = 0) const
+  {
+    return nonstd::make_unexpected( errorMsg<DST>() );
+  }
 
-    Any(const std::type_index& type): _original_type(type)
-    {
-    }
-
-    // default for other custom types
-    template <typename T>
-    explicit Any(const T& value, EnableNonIntegral<T> = 0) : _any(value), _original_type( typeid(T) )
-    {
-        static_assert(!std::is_reference<T>::value, "Any can not contain references");
-    }
-
-    Any& operator = (const Any& other)
-    {
-        this->_any = other._any;
-        this->_original_type = other._original_type;
-        return *this;
-    }
-
-    bool isNumber() const
-    {
-        return _any.type() == typeid(int64_t) ||
-               _any.type() == typeid(uint64_t) ||
-               _any.type() == typeid(double);
-    }
-
-    bool isIntegral() const
-    {
-        return _any.type() == typeid(int64_t) ||
-               _any.type() == typeid(uint64_t);
-    }
-
-    bool isString() const
-    {
-        return _any.type() == typeid(SafeAny::SimpleString);
-    }
-
-    template <typename T>
-    bool isType() const
-    {
-      return _any.type() == typeid(T);
-    }
-
-    // copy the value (casting into dst). We preserve the destination type.
-    void copyInto(Any& dst)
-    {
-        if(dst.empty())
-        {
-            dst = *this;
-            return;
-        }
-
-        const auto& dst_type = dst.castedType();
-
-        if ((type() == dst_type) || (isString() && dst.isString()) )
-        {
-            dst._any = _any;
-        }
-        else if(isNumber() && dst.isNumber())
-        {
-            if (dst_type == typeid(int64_t))
-            {
-                dst._any = cast<int64_t>();
-            }
-            else if (dst_type == typeid(uint64_t))
-            {
-                dst._any = cast<uint64_t>();
-            }
-            else if (dst_type == typeid(double))
-            {
-                dst._any = cast<double>();
-            }
-            else{
-                throw std::runtime_error("Any::copyInto fails");
-            }
-        }
-        else{
-            throw std::runtime_error("Any::copyInto fails");
-        }
-    }
-
-    // this is different from any_cast, because if allows safe
-    // conversions between arithmetic values.
-    template <typename T>
-    T cast() const
-    {
-        static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, "
-                                                    "can not cast to reference");
-        if constexpr(std::is_enum_v<T>)
-        {
-            if(!isNumber())
-            {
-                std::cout  <<  demangle( _any.type() ) << std::endl;
-                throw std::runtime_error("Any::cast failed to cast to enum type");
-            }
-            return static_cast<T>( convert<int>().value() );
-        }
-        else
-        {
-          if( _any.empty() )
-          {
-              throw std::runtime_error("Any::cast failed because it is empty");
-          }
-          if (_any.type() == typeid(T))
-          {
-              return linb::any_cast<T>(_any);
-          }
-          else
-          {
-              if(auto res = convert<T>())
-              {
-                return res.value();
-              }
-              else {
-                throw std::runtime_error( res.error() );
-              }
-          }
-        }
-    }
-
-    const std::type_index& type() const noexcept
-    {
-        return _original_type;
-    }
-
-    const std::type_info& castedType() const noexcept
-    {
-        return _any.type();
-    }
-
-    bool empty() const noexcept
-    {
-        return _any.empty();
-    }
-
-  private:
-    linb::any _any;
-    std::type_index _original_type;
-
-    //----------------------------
-
-    template <typename DST>
-    nonstd::expected<DST,std::string> convert(EnableString<DST> = 0) const
-    {
-        const auto& type = _any.type();
-
-        if (type == typeid(SafeAny::SimpleString))
-        {
-            return linb::any_cast<SafeAny::SimpleString>(_any).toStdString();
-        }
-        else if (type == typeid(int64_t))
-        {
-            return std::to_string(linb::any_cast<int64_t>(_any));
-        }
-        else if (type == typeid(uint64_t))
-        {
-            return std::to_string(linb::any_cast<uint64_t>(_any));
-        }
-        else if (type == typeid(double))
-        {
-            return std::to_string(linb::any_cast<double>(_any));
-        }
-
-        return nonstd::make_unexpected( errorMsg<DST>() );
-    }
-
-    template <typename DST>
-    nonstd::expected<DST,std::string> convert(EnableArithmetic<DST> = nullptr) const
-    {
-        using SafeAny::details::convertNumber;
-        DST out;
-
-        const auto& type = _any.type();
-
-        if (type == typeid(int64_t))
-        {
-            convertNumber<int64_t, DST>(linb::any_cast<int64_t>(_any), out);
-        }
-        else if (type == typeid(uint64_t))
-        {
-            convertNumber<uint64_t, DST>(linb::any_cast<uint64_t>(_any), out);
-        }
-        else if (type == typeid(double))
-        {
-            convertNumber<double, DST>(linb::any_cast<double>(_any), out);
-        }
-        else{
-            return nonstd::make_unexpected( errorMsg<DST>() );
-        }
-        return out;
-    }
-
-    template <typename DST>
-    nonstd::expected<DST,std::string> convert(EnableEnum<DST> = 0) const
-    {
-        using SafeAny::details::convertNumber;
-
-        const auto& type = _any.type();
-
-        if (type == typeid(int64_t))
-        {
-            auto out = linb::any_cast<int64_t>(_any);
-            return static_cast<DST>(out);
-        }
-        else if (type == typeid(uint64_t))
-        {
-            auto out = linb::any_cast<uint64_t>(_any);
-            return static_cast<DST>(out);
-        }
-
-        return nonstd::make_unexpected( errorMsg<DST>() );
-    }
-
-    template <typename DST>
-    nonstd::expected<DST,std::string> convert(EnableUnknownType<DST> = 0) const
-    {
-        return nonstd::make_unexpected( errorMsg<DST>() );
-    }
-
-    template <typename T>
-    std::string errorMsg() const
-    {
-        return StrCat("[Any::convert]: no known safe conversion between [",
-                      demangle( _any.type() ), "] and [", demangle( typeid(T) ),"]");
-    }
+  template <typename T>
+  std::string errorMsg() const
+  {
+    return StrCat("[Any::convert]: no known safe conversion between [",
+                  demangle( _any.type() ), "] and [", demangle( typeid(T) ),"]");
+  }
 };
 
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+
 template <typename SRC, typename TO> inline
-bool ValidCast(const SRC& val)
+    bool ValidCast(const SRC& val)
 {
-    return( val == static_cast<SRC>(static_cast<TO>(val)) );
+  return( val == static_cast<SRC>(static_cast<TO>(val)) );
 }
 
 template <typename T> inline
-bool isCastingSafe(const std::type_index& type, const T& val)
+    bool isCastingSafe(const std::type_index& type, const T& val)
 {
-    if(type == typeid(T)) {
-        return true;
-    }
+  if(type == typeid(T)) {
+    return true;
+  }
 
-    if(std::type_index(typeid(uint8_t)) == type) {
-        return ValidCast<T, uint8_t>(val);
+  if(std::type_index(typeid(uint8_t)) == type) {
+    return ValidCast<T, uint8_t>(val);
+  }
+  if(std::type_index(typeid(uint16_t)) == type) {
+    return ValidCast<T, uint16_t>(val);
+  }
+  if(std::type_index(typeid(uint32_t)) == type) {
+    return ValidCast<T, uint32_t>(val);
+  }
+  if(std::type_index(typeid(uint64_t)) == type) {
+    return ValidCast<T, uint64_t>(val);
+  }
+  //------------
+  if(std::type_index(typeid(int8_t)) == type) {
+    return ValidCast<T, int8_t>(val);
+  }
+  if(std::type_index(typeid(int16_t)) == type) {
+    return ValidCast<T, int16_t>(val);
+  }
+  if(std::type_index(typeid(int32_t)) == type) {
+    return ValidCast<T, int32_t>(val);
+  }
+  if(std::type_index(typeid(int64_t)) == type) {
+    return ValidCast<T, int64_t>(val);
+  }
+  //------------
+  if(std::type_index(typeid(float)) == type) {
+    return ValidCast<T, float>(val);
+  }
+  if(std::type_index(typeid(double)) == type) {
+    return ValidCast<T, double>(val);
+  }
+  return false;
+}
+
+inline Any &Any::operator =(const Any &other)
+{
+  this->_any = other._any;
+  this->_original_type = other._original_type;
+  return *this;
+}
+
+inline bool Any::isNumber() const
+{
+  return _any.type() == typeid(int64_t) ||
+         _any.type() == typeid(uint64_t) ||
+         _any.type() == typeid(double);
+}
+
+inline bool Any::isIntegral() const
+{
+  return _any.type() == typeid(int64_t) ||
+         _any.type() == typeid(uint64_t);
+}
+
+inline void Any::copyInto(Any &dst)
+{
+  if(dst.empty())
+  {
+    dst = *this;
+    return;
+  }
+
+  const auto& dst_type = dst.castedType();
+
+  if ((type() == dst_type) || (isString() && dst.isString()) )
+  {
+    dst._any = _any;
+  }
+  else if(isNumber() && dst.isNumber())
+  {
+    if (dst_type == typeid(int64_t))
+    {
+      dst._any = cast<int64_t>();
     }
-    if(std::type_index(typeid(uint16_t)) == type) {
-        return ValidCast<T, uint16_t>(val);
+    else if (dst_type == typeid(uint64_t))
+    {
+      dst._any = cast<uint64_t>();
     }
-    if(std::type_index(typeid(uint32_t)) == type) {
-        return ValidCast<T, uint32_t>(val);
+    else if (dst_type == typeid(double))
+    {
+      dst._any = cast<double>();
     }
-    if(std::type_index(typeid(uint64_t)) == type) {
-        return ValidCast<T, uint64_t>(val);
+    else{
+      throw std::runtime_error("Any::copyInto fails");
     }
-    //------------
-    if(std::type_index(typeid(int8_t)) == type) {
-        return ValidCast<T, int8_t>(val);
+  }
+  else{
+    throw std::runtime_error("Any::copyInto fails");
+  }
+}
+
+template<typename DST> inline
+nonstd::expected<DST, std::string> Any::convert(EnableString<DST>) const
+{
+  const auto& type = _any.type();
+
+  if (type == typeid(SafeAny::SimpleString))
+  {
+    return linb::any_cast<SafeAny::SimpleString>(_any).toStdString();
+  }
+  else if (type == typeid(int64_t))
+  {
+    return std::to_string(linb::any_cast<int64_t>(_any));
+  }
+  else if (type == typeid(uint64_t))
+  {
+    return std::to_string(linb::any_cast<uint64_t>(_any));
+  }
+  else if (type == typeid(double))
+  {
+    return std::to_string(linb::any_cast<double>(_any));
+  }
+
+  return nonstd::make_unexpected( errorMsg<DST>() );
+}
+
+template<typename T> inline
+nonstd::expected<T, std::string> Any::stringToNumber() const
+{
+  static_assert(std::is_arithmetic_v<T> && !std::is_same_v<T, bool>, "Expecting a numeric type");
+
+  auto str = linb::any_cast<SafeAny::SimpleString>(_any);
+  T out;
+#if __has_include(<GL/gl.h>)
+  auto [ptr, err] = std::from_chars(str.data(), str.data() + str.size(), out);
+  if(err == std::errc())
+  {
+    return out;
+  }
+  else {
+    return nonstd::make_unexpected("Any failed string to number conversion");
+  }
+#else
+  try{
+    if constexpr (std::is_same_v<T, uint16_t>)
+    {
+      return std::stoul(str.toStdString());
     }
-    if(std::type_index(typeid(int16_t)) == type) {
-        return ValidCast<T, int16_t>(val);
+    if constexpr (std::is_integral_v<T>)
+    {
+      const int64_t val = std::stol(str.toStdString());
+      Any temp_any(val);
+      return temp_any.convert<T>();
     }
-    if(std::type_index(typeid(int32_t)) == type) {
-        return ValidCast<T, int32_t>(val);
+    if constexpr (std::is_floating_point_v<T>)
+    {
+      return std::stod(str.toStdString());
     }
-    if(std::type_index(typeid(int64_t)) == type) {
-        return ValidCast<T, int64_t>(val);
+  }
+  catch(...){
+    return nonstd::make_unexpected("Any failed string to number conversion");
+  }
+#endif
+  return nonstd::make_unexpected("Any conversion from string failed");
+}
+
+template<typename DST> inline
+nonstd::expected<DST, std::string> Any::convert(EnableEnum<DST>) const
+{
+  using SafeAny::details::convertNumber;
+
+  const auto& type = _any.type();
+
+  if (type == typeid(int64_t))
+  {
+    auto out = linb::any_cast<int64_t>(_any);
+    return static_cast<DST>(out);
+  }
+  else if (type == typeid(uint64_t))
+  {
+    auto out = linb::any_cast<uint64_t>(_any);
+    return static_cast<DST>(out);
+  }
+
+  return nonstd::make_unexpected( errorMsg<DST>() );
+}
+
+template<typename DST> inline
+nonstd::expected<DST, std::string> Any::convert(EnableArithmetic<DST>) const
+{
+  using SafeAny::details::convertNumber;
+  DST out;
+
+  const auto& type = _any.type();
+
+  if (type == typeid(int64_t))
+  {
+    convertNumber<int64_t, DST>(linb::any_cast<int64_t>(_any), out);
+  }
+  else if (type == typeid(uint64_t))
+  {
+    convertNumber<uint64_t, DST>(linb::any_cast<uint64_t>(_any), out);
+  }
+  else if (type == typeid(double))
+  {
+    convertNumber<double, DST>(linb::any_cast<double>(_any), out);
+  }
+  else{
+    return nonstd::make_unexpected( errorMsg<DST>() );
+  }
+  return out;
+}
+
+template<typename T> inline
+nonstd::expected<T, std::string> Any::tryCast() const
+{
+  static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, "
+                                              "can not cast to reference");
+
+  if( _any.empty() )
+  {
+    throw std::runtime_error("Any::cast failed because it is empty");
+  }
+
+  if (_any.type() == typeid(T))
+  {
+    return linb::any_cast<T>(_any);
+  }
+
+  // special case when the output is an enum.
+  // We will try first a int convertion
+  if constexpr(std::is_enum_v<T>)
+  {
+    if(isNumber())
+    {
+      return static_cast<T>( convert<int>().value() );
     }
-    //------------
-    if(std::type_index(typeid(float)) == type) {
-        return ValidCast<T, float>(val);
+    if(isString())
+    {
+      if(auto out = stringToNumber<int64_t>())
+      {
+        return static_cast<T>(out.value());
+      }
     }
-    if(std::type_index(typeid(double)) == type) {
-        return ValidCast<T, double>(val);
+    return nonstd::make_unexpected("Any::cast failed to cast to enum type");
+  }
+
+  if(isString())
+  {
+    if constexpr(std::is_arithmetic_v<T> && !std::is_same_v<T, bool>)
+    {
+      if(auto out = stringToNumber<T>())
+      {
+        return out.value();
+      } else {
+        return out;
+      }
     }
-    return false;
+  }
+
+  if(auto res = convert<T>())
+  {
+    return res.value();
+  }
+  else {
+    return res;
+  }
 }
 
 }   // end namespace BT
