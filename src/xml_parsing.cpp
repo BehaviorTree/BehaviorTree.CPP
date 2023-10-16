@@ -841,7 +841,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
         {
           auto it = remapping.find(port_name);
           // don't override existing remapping
-          if( it == remapping.end() & !do_autoremap)
+          if( it == remapping.end() && !do_autoremap)
           {
             // remapping is not explicitly defined in the XML: use the model
             if(port_info.defaultValueString().empty())
