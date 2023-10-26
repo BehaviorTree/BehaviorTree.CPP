@@ -378,6 +378,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
   // address the special case where T is an enum
   auto ParseString = [this](const std::string& str) -> T
   {
+    (void)this; // maybe unused
     if constexpr (std::is_enum_v<T> && !std::is_same_v<T, NodeStatus>)
     {
       auto it = config().enums->find(str);
