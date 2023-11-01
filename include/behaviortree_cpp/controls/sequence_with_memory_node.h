@@ -18,7 +18,7 @@
 namespace BT
 {
 /**
- * @brief The SequenceStarNode is used to tick children in an ordered sequence.
+ * @brief The SequenceWithMemory is used to tick children in an ordered sequence.
  * If any child returns RUNNING, previous children are not ticked again.
  *
  * - If all the children return SUCCESS, this node returns SUCCESS.

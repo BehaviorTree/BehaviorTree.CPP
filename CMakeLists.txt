@@ -111,7 +111,7 @@ list(APPEND BT_SOURCE
     src/controls/reactive_sequence.cpp
     src/controls/reactive_fallback.cpp
     src/controls/sequence_node.cpp
-    src/controls/sequence_star_node.cpp
+    src/controls/sequence_with_memory_node.cpp
     src/controls/switch_node.cpp
     src/controls/while_do_else_node.cpp
 
