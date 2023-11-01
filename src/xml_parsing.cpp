@@ -558,8 +558,8 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
                                                   const std::string& prefix_path,
                                                   Tree& output_tree)
 {
-  auto element_name = element->Name();
-  auto element_ID = element->Attribute("ID");
+  const auto element_name = element->Name();
+  const auto element_ID = element->Attribute("ID");
 
   auto node_type = convertFromString<NodeType>(element_name);
   // name used by the factory
@@ -593,7 +593,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   // By default, the instance name is equal to ID, unless the
   // attribute [name] is present.
   const char* attr_name = element->Attribute("name");
-  std::string instance_name = attr_name ? attr_name : type_ID;
+  const std::string instance_name = (attr_name != nullptr) ? attr_name : type_ID;
 
   const TreeNodeManifest* manifest = nullptr;
 
@@ -663,13 +663,13 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
     }
 
     //Check that name in remapping can be found in the manifest
-    for (const auto& remap_it : port_remap)
+    for (const auto& [name_in_subtree, _] : port_remap)
     {
-      if (manifest->ports.count(remap_it.first) == 0)
+      if (manifest->ports.count(name_in_subtree) == 0)
       {
         throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
-                           remap_it.first, "\" in node [", type_ID, " / ", instance_name,
-                           "], but the manifest of this node does not contain a port "
+                           name_in_subtree, "\" in node [", config.path, "(type ", type_ID,
+                           ")], but the manifest of this node does not contain a port "
                            "with this name.");
       }
     }
@@ -760,13 +760,13 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   }
 
   // add the pointer of this node to the parent
-  if (node_parent)
+  if (node_parent != nullptr)
   {
     if (auto control_parent = dynamic_cast<ControlNode*>(node_parent.get()))
     {
       control_parent->addChild(new_node.get());
     }
-    if (auto decorator_parent = dynamic_cast<DecoratorNode*>(node_parent.get()))
+    else if (auto decorator_parent = dynamic_cast<DecoratorNode*>(node_parent.get()))
     {
       decorator_parent->setChild(new_node.get());
     }
