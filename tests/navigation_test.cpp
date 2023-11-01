@@ -15,16 +15,16 @@ static const char* xml_text = R"(
                 <Inverter>
                     <Condition ID="IsStuck"/>
                 </Inverter>
-                <SequenceStar name="navigate">
+                <SequenceWithMemory name="navigate">
                     <Action ID="ComputePathToPose"/>
                     <Action ID="FollowPath"/>
-                </SequenceStar>
+                </SequenceWithMemory>
             </ReactiveSequence>
 
-            <SequenceStar name="stuck_recovery">
+            <SequenceWithMemory name="stuck_recovery">
                 <Condition ID="IsStuck"/>
                 <Action ID="BackUpAndSpin"/>
-            </SequenceStar>
+            </SequenceWithMemory>
 
         </Fallback>
     </BehaviorTree>
