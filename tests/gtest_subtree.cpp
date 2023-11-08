@@ -507,7 +507,6 @@ TEST(SubTree, Issue653_SetBlackboard)
   tree.tickWhileRunning();
 }
 
-
 TEST(SubTree, SubtreeModels)
 {
   // clang-format off
@@ -547,4 +546,72 @@ TEST(SubTree, SubtreeModels)
   tree.tickWhileRunning();
 }
 
+
+
+class PrintToConsole : public BT::SyncActionNode
+{
+public:
+  PrintToConsole(const std::string& name, const BT::NodeConfiguration& config,
+                 std::vector<std::string>* console)
+    : BT::SyncActionNode(name, config), console_(console) {}
+
+  static BT::PortsList providedPorts() {
+    return {BT::InputPort<std::string>("message")};
+  }
+
+private:
+  virtual BT::NodeStatus tick() override {
+    if (auto res = getInput<std::string>("message"))
+    {
+      console_->push_back(res.value());
+      return BT::NodeStatus::SUCCESS;
+    }
+    else
+      return BT::NodeStatus::FAILURE;
+  }
+  std::vector<std::string>* console_;
+};
+
+TEST(SubTree, RemappingIssue696)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Subtree1">\n"
+      <Sequence>
+        <PrintToConsole message="{msg1}"/>
+        <PrintToConsole message="{msg2}"/>
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Subtree2">
+      <Sequence>
+        <SubTree ID="Subtree1" msg1="foo1" _autoremap="true"/>
+        <SubTree ID="Subtree1" msg1="foo2" _autoremap="true"/>
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="MainTree">
+      <SubTree ID="Subtree2" msg2="bar"/>
+    </BehaviorTree>
+  </root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  std::vector<std::string> console;
+  factory.registerNodeType<PrintToConsole>("PrintToConsole", &console);
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+  tree.tickWhileRunning();
+
+  ASSERT_EQ(console.size(), 4);
+  ASSERT_EQ(console[0], "foo1");
+  ASSERT_EQ(console[1], "bar");
+  ASSERT_EQ(console[2], "foo2");
+  ASSERT_EQ(console[3], "bar");
+}
 

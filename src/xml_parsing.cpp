@@ -870,7 +870,10 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
         else
         {
           // constant string: just set that constant value into the BB
+          // IMPORTANT: this must not be autoremapped!!!
+          new_bb->enableAutoRemapping(false);
           new_bb->set(attr_name, static_cast<std::string>(attr_value));
+          new_bb->enableAutoRemapping(do_autoremap);
         }
       }
 
