@@ -432,8 +432,8 @@ void VerifyXML(const std::string& xml_text,
                                        "attribute [ID]");
       }
     }
-    else if (name == "Sequence" || name == "SequenceStar" ||
-             name == "Fallback")
+    else if (name == "Sequence" || name == "ReactiveSequence" ||
+        name == "SequenceWithMemory" || name == "Fallback")
     {
       if (children_count == 0)
       {

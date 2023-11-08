@@ -74,7 +74,7 @@ Assuming that you are in the **parent** directory of `BehaviorTree.CPP`:
 ```
 mkdir build; cd build
 conan install ../BehaviorTree.CPP --output-folder=. --build=missing
-cmake ../BehaviorTree.CPP -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+cmake ../BehaviorTree.CPP -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake"
 cmake --build . --parallel
 ```
 

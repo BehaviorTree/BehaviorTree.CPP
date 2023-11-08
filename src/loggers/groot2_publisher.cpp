@@ -65,7 +65,7 @@ struct Groot2Publisher::PImpl
 
     int timeout_ms = 1000;
     server.set(zmq::sockopt::sndtimeo, timeout_ms);
-    publisher.set(zmq::sockopt::rcvtimeo, timeout_rcv);
+    publisher.set(zmq::sockopt::sndtimeo, timeout_ms);
   }
 
   unsigned server_port = 0;
