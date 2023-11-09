@@ -27,7 +27,9 @@ public:
 
   //Do nothing
   virtual void halt() override final
-  {}
+  {
+    resetStatus();
+  }
 
   virtual NodeType type() const override final
   {

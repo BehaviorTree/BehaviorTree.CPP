@@ -60,7 +60,9 @@ public:
 
   /// You don't need to override this
   virtual void halt() override final
-  {}
+  {
+    resetStatus();
+  }
 };
 
 /**

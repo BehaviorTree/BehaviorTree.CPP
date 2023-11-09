@@ -129,6 +129,7 @@ void CoroActionNode::tickImpl()
 void CoroActionNode::halt()
 {
   destroyCoroutine();
+  resetStatus(); // might be redundant
 }
 
 void CoroActionNode::destroyCoroutine()
@@ -183,6 +184,7 @@ void StatefulActionNode::halt()
   {
     onHalted();
   }
+  resetStatus(); // might be redundant
 }
 
 NodeStatus BT::ThreadedAction::executeTick()
@@ -238,4 +240,5 @@ void ThreadedAction::halt()
     thread_handle_.wait();
   }
   thread_handle_ = {};
+  resetStatus(); // might be redundant
 }

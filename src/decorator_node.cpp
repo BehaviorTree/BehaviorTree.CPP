@@ -32,6 +32,7 @@ void DecoratorNode::setChild(TreeNode* child)
 void DecoratorNode::halt()
 {
   resetChild();
+  resetStatus(); // might be redundant
 }
 
 const TreeNode* DecoratorNode::child() const

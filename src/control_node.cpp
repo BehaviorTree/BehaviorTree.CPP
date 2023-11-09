@@ -32,6 +32,7 @@ size_t ControlNode::childrenCount() const
 void ControlNode::halt()
 {
   resetChildren();
+  resetStatus(); // might be redundant
 }
 
 void ControlNode::resetChildren()
