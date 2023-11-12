@@ -2,6 +2,19 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* erase server_port+1
+* add reset by default in base classes (fix `#694 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/694>`_)
+* fix issue `#696 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/696>`_ (wrong autoremapping)
+* Remove traces of SequenceStar
+* fix `#685 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/685>`_ (timeout in ZMP publisher)
+* clang: fix warning
+  fix warning: lambda capture 'this' is not used
+* Use feature test macro to check availability of `std::from_chars`
+* fix warning in older compilers
+* Contributors: Christoph Hertzberg, Davide Faconti, Gaël Écorchard, Shen Xingjian, Sid
+
 4.4.0 (2023-10-16)
 ------------------
 * Update ex05_subtree_model.cpp
