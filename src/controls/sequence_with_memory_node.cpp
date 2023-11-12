@@ -92,7 +92,8 @@ NodeStatus SequenceWithMemory::tick()
 
 void SequenceWithMemory::halt()
 {
-  current_child_idx_ = 0;
+  // should we add this line of code or not?
+  // current_child_idx_ = 0;
   ControlNode::halt();
 }
 
