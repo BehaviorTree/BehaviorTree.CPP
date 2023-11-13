@@ -12,6 +12,9 @@
 
 #include <functional>
 #include <list>
+#include <map>
+#include <sstream>
+#include <string>
 
 #if defined(__linux) || defined(__linux__)
 #pragma GCC diagnostic push
@@ -1115,6 +1118,149 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
   XMLPrinter printer;
   doc.Print(&printer);
   return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
+}
+
+std::string writeTreeDTD(const BehaviorTreeFactory& factory)
+{
+  /* Prepare the data. */
+  std::map<std::string, const TreeNodeManifest*> ordered_models;
+  std::ostringstream models_max_one;
+  std::size_t i = 0;
+  for (const auto& [registration_id, model] : factory.manifests())
+  {
+    ordered_models.insert({registration_id, &model});
+    models_max_one << registration_id;
+    if (i != factory.manifests().size() - 1)
+    {
+      models_max_one << "|";
+    }
+    i++;
+  }
+
+  /* For a TreeNodesModel entry. */
+  // PortsList ports;
+  // std::string description;
+  auto tree_nodes_model_dtd = [&models_max_one] (const TreeNodeManifest* manifest) -> std::string {
+    std::ostringstream dtd;
+    if ((manifest->type == NodeType::CONDITION) or (manifest->type == NodeType::ACTION))
+    {
+      /* No children. */
+      dtd << "<!ELEMENT " << manifest->registration_ID << " EMPTY>\n";
+    }
+    else if ((manifest->type == NodeType::DECORATOR)
+        or (manifest->type == NodeType::SUBTREE))
+    {
+      /* One child. */
+      dtd << "<!ELEMENT " << manifest->registration_ID << " (" << models_max_one.str() << ")>\n";
+    }
+    else
+    {
+      /* NodeType::CONTROL. */
+      // TODO: check the code, the doc says 1..N but why not 0..N?
+      dtd << "<!ELEMENT " << manifest->registration_ID << " (" << models_max_one.str() << ")*>\n";
+    }
+    dtd << "<!ATTLIST " << manifest->registration_ID << " name CDATA #IMPLIED>\n";
+    for (const auto& [port_name, port_info] : manifest->ports)
+    {
+      std::string type;
+      if (port_info.type() == typeid(std::string))
+      {
+        type = "CDATA";
+      }
+      else if (port_info.type() == typeid(int))
+      {
+        type = "CDATA";
+      }
+      else if (port_info.type() == typeid(double))
+      {
+        type = "CDATA";
+      }
+      else if (port_info.type() == typeid(bool))
+      {
+        type = "(true|false)";
+      }
+      else
+      {
+        type = "CDATA";
+      }
+      std::string attr_def;
+      if (port_info.defaultValue().empty())
+      {
+        attr_def = "#REQUIRED";
+      }
+      else
+      {
+        attr_def = "\"" + port_info.defaultValueString() + "\"";
+      }
+      dtd << "<!ATTLIST " << manifest->registration_ID << " " << port_name << " " << type << " " <<  attr_def << ">\n";
+    }
+    return dtd.str();
+  };
+
+  std::ostringstream dtd;
+
+  dtd << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
+  // dtd << "<!DOCTYPE root [\n";
+  dtd << "<!ELEMENT root (BehaviorTree|TreeNodesModel|include)*>\n";
+  dtd << "<!ATTLIST root BTCPP_format CDATA #REQUIRED>\n";
+  dtd << "<!ATTLIST root main_tree_to_execute CDATA #IMPLIED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT BehaviorTree (Action|Condition|Control|Decorator|SubTree|" << models_max_one.str() << ")>\n";
+  dtd << "<!ATTLIST BehaviorTree ID CDATA #REQUIRED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT TreeNodesModel (Action|Condition|Control|Decorator|include)*>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT include EMPTY>\n";
+  dtd << "<!ATTLIST include path CDATA #REQUIRED>\n";
+  dtd << "<!ATTLIST include ros_pkg CDATA #IMPLIED>\n";
+
+  dtd << "<!ELEMENT Action (input_port*,output_port*,description?)>\n";
+  dtd << "<!ATTLIST Action ID CDATA #REQUIRED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT Condition (input_port*,description?)*>\n";
+  dtd << "<!ATTLIST Condition ID CDATA #REQUIRED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT Control (input_port*,output_port*,description?)*>\n";
+  dtd << "<!ATTLIST Control ID CDATA #REQUIRED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT Decorator (input_port*,output_port*,description?)*>\n";
+  dtd << "<!ATTLIST Decorator ID CDATA #REQUIRED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT SubTree (#PCDATA)>\n";
+  dtd << "<!ATTLIST SubTree ID CDATA #REQUIRED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT description (#PCDATA)>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT input_port (#PCDATA)>\n";
+  dtd << "<!ATTLIST input_port name CDATA #REQUIRED\n";
+  dtd << "                    type CDATA #IMPLIED\n";
+  dtd << "                    default CDATA #IMPLIED>\n";
+  dtd << "\n";
+
+  dtd << "<!ELEMENT output_port (#PCDATA)>\n";
+  dtd << "<!ATTLIST output_port name CDATA #REQUIRED\n";
+  dtd << "                      type CDATA #REQUIRED>\n";
+  dtd << "\n";
+
+  for (const auto& [registration_id, model] : ordered_models)
+  {
+    dtd << tree_nodes_model_dtd(model);
+    dtd << "\n";
+  }
+
+  // dtd << "]>\n";
+
+  return dtd.str();
 }
 
 Tree buildTreeFromText(const BehaviorTreeFactory& factory, const std::string& text,
