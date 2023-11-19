@@ -80,13 +80,15 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
       children_uid.push_back(child->UID());
     }
 
+    // Const cast to ensure public access to config() overload
+    const auto& node_config = const_cast<BT::TreeNode const &>(*node).config();
     std::vector<flatbuffers::Offset<Serialization::PortConfig>> ports;
-    for (const auto& it : node->config().input_ports)
+    for (const auto& it : node_config.input_ports)
     {
       ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(),
                                                             it.second.c_str()));
     }
-    for (const auto& it : node->config().output_ports)
+    for (const auto& it : node_config.output_ports)
     {
       ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(),
                                                             it.second.c_str()));
