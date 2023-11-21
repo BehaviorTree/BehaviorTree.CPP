@@ -459,5 +459,22 @@ TEST(BlackboardTest, IssueSetBlackboard)
   ASSERT_EQ(42, tree.rootBlackboard()->get<int>("value"));
 }
 
+TEST(BlackboardTest, NullOutputRemapping)
+{
+  auto bb = Blackboard::create();
+
+  NodeConfig config;
+
+  config.blackboard = bb;
+  config.input_ports["in_port"] = "{my_input_port}";
+  config.output_ports["out_port"] = "";
+  bb->set("my_input_port", 11);
+
+  BB_TestNode node("good_one", config);
+
+  // This will throw because setOutput should fail in BB_TestNode::tick()
+  ASSERT_ANY_THROW(node.executeTick());
+}
+
 
 

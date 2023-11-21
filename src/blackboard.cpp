@@ -21,7 +21,7 @@ AnyPtrLocked Blackboard::getAnyLocked(const std::string &key) const
 {
   if(auto entry = getEntry(key))
   {
-    return AnyPtrLocked(&entry->value,  const_cast<std::mutex*>(&entry->entry_mutex));
+    return AnyPtrLocked(&entry->value, const_cast<std::mutex*>(&entry->entry_mutex));
   }
   return {};
 }

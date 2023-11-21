@@ -55,7 +55,9 @@ private:
     {
       throw RuntimeError("missing port [value]");
     }
-    setOutput("output_key", value);
+
+    config().blackboard->set(static_cast<std::string>(key), value);
+
     return NodeStatus::SUCCESS;
   }
 };

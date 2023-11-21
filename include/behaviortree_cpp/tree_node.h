@@ -486,12 +486,16 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   StringView remapped_key = remap_it->second;
   if (remapped_key == "=")
   {
-    remapped_key = key;
+    config().blackboard->set(static_cast<std::string>(key), value);
+    return {};
   }
-  if (isBlackboardPointer(remapped_key))
+
+  if (!isBlackboardPointer(remapped_key))
   {
-    remapped_key = stripBlackboardPointer(remapped_key);
+    return nonstd::make_unexpected("setOutput requires a blackboard pointer. Use {}");
   }
+
+  remapped_key = stripBlackboardPointer(remapped_key);
   config().blackboard->set(static_cast<std::string>(remapped_key), value);
 
   return {};
