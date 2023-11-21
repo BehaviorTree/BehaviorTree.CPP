@@ -47,10 +47,10 @@ public:
   static PortsList providedPorts()
   {
     return {InputPort<int>(THRESHOLD_SUCCESS, -1,
-                           "number of children which need to succeed to trigger a "
+                           "number of children that need to succeed to trigger a "
                            "SUCCESS"),
             InputPort<int>(THRESHOLD_FAILURE, 1,
-                           "number of children which need to fail to trigger a FAILURE")};
+                           "number of children that need to fail to trigger a FAILURE")};
   }
 
   ~ParallelNode() override = default;
