@@ -400,7 +400,8 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
   auto remap_it = config().input_ports.find(key);
   if (remap_it == config().input_ports.end())
   {
-    return nonstd::make_unexpected(StrCat("getInput() failed because "
+    return nonstd::make_unexpected(StrCat("getInput() of node `", fullPath(),
+                                          "` failed because "
                                           "NodeConfig::input_ports "
                                           "does not contain the key: [",
                                           key, "]"));

@@ -105,9 +105,9 @@ struct XMLParser::PImpl
   void getPortsRecursively(const XMLElement* element,
                            std::vector<std::string>& output_ports);
 
-  void loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes);
+  void loadDocImpl(XMLDocument* doc, bool add_includes);
 
-  std::list<std::unique_ptr<tinyxml2::XMLDocument> > opened_documents;
+  std::list<std::unique_ptr<XMLDocument> > opened_documents;
   std::map<std::string, const XMLElement*> tree_roots;
 
   const BehaviorTreeFactory& factory;
@@ -156,9 +156,9 @@ XMLParser::~XMLParser()
 
 void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_includes)
 {
-  _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
+  _p->opened_documents.emplace_back(new XMLDocument());
 
-  tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
+  XMLDocument* doc = _p->opened_documents.back().get();
   doc->LoadFile(filepath.string().c_str());
 
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
@@ -168,9 +168,9 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
 
 void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
 {
-  _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
+  _p->opened_documents.emplace_back(new XMLDocument());
 
-  tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
+  XMLDocument* doc = _p->opened_documents.back().get();
   doc->Parse(xml_text.c_str(), xml_text.size());
 
   _p->loadDocImpl(doc, add_includes);
@@ -231,7 +231,7 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
   }
 }
 
-void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
+void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 {
   if (doc->Error())
   {
@@ -290,8 +290,8 @@ void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
       file_path = current_path / file_path;
     }
 
-    opened_documents.emplace_back(new tinyxml2::XMLDocument());
-    tinyxml2::XMLDocument* next_doc = opened_documents.back().get();
+    opened_documents.emplace_back(new XMLDocument());
+    XMLDocument* next_doc = opened_documents.back().get();
 
     // change current path to the included file for handling additional relative paths
     const auto previous_path = current_path;
@@ -341,7 +341,7 @@ void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
 void VerifyXML(const std::string& xml_text,
                const std::unordered_map<std::string, BT::NodeType>& registered_nodes)
 {
-  tinyxml2::XMLDocument doc;
+  XMLDocument doc;
   auto xml_error = doc.Parse(xml_text.c_str(), xml_text.size());
   if (xml_error)
   {
