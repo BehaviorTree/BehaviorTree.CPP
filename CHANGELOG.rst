@@ -2,6 +2,18 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue `#702 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/702>`_ : output ports require {}
+* Merge pull request `#691 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/691>`_ from galou/small_refactor_and_doc
+  Small code refactor, log- and doc changes
+* Merge pull request `#701 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/701>`_ from tony-p/fix/file-loggers-protected
+  fix: ensure public get config overload is used
+* ci: use pixi github action
+* fix: ensure public get config overload is used
+* Small code refactor, log- and doc changes
+* Contributors: Davide Faconti, Gaël Écorchard, Tony Paulussen
+
 4.4.1 (2023-11-12)
 ------------------
 * erase server_port+1
