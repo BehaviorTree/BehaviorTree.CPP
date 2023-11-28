@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.4.2 (2023-11-28)
+------------------
 * fix issue `#702 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/702>`_ : output ports require {}
 * Merge pull request `#691 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/691>`_ from galou/small_refactor_and_doc
   Small code refactor, log- and doc changes
