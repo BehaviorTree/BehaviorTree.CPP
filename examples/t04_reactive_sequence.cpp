@@ -65,7 +65,7 @@ int main()
 
   // The main difference that you should notice is:
   //  1) When Sequence is used, the ConditionNode is executed only __once__ because it returns SUCCESS.
-  //  2) When ReaciveSequence is used, BatteryOK is executed at __each__ tick()
+  //  2) When ReactiveSequence is used, BatteryOK is executed at __each__ tick()
 
   for (auto& xml_text : {xml_text_sequence, xml_text_reactive})
   {
