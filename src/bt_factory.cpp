@@ -78,8 +78,9 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<AlwaysFailureNode>("AlwaysFailure");
   registerNodeType<ScriptNode>("Script");
   registerNodeType<ScriptCondition>("ScriptCondition");
-  registerNodeType<SetBlackboard>("SetBlackboard");
+  registerNodeType<SetBlackboardNode>("SetBlackboard");
   registerNodeType<SleepNode>("Sleep");
+  registerNodeType<UnsetBlackboardNode>("UnsetBlackboard");
 
   registerNodeType<SubTreeNode>("SubTree");
 

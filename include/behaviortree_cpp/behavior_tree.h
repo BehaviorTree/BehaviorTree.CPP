@@ -41,6 +41,7 @@
 #include "behaviortree_cpp/actions/set_blackboard_node.h"
 #include "behaviortree_cpp/actions/test_node.h"
 #include "behaviortree_cpp/actions/sleep_node.h"
+#include "behaviortree_cpp/actions/unset_blackboard_node.h"
 
 #include "behaviortree_cpp/decorators/force_success_node.h"
 #include "behaviortree_cpp/decorators/force_failure_node.h"

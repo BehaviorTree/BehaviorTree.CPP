@@ -1,4 +1,4 @@
-/*  Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+/*  Copyright (C) 2018-2022 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,57 +10,39 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef ACTION_SETBLACKBOARD_NODE_H
-#define ACTION_SETBLACKBOARD_NODE_H
+#pragma once
 
 #include "behaviortree_cpp/action_node.h"
 
 namespace BT
 {
 /**
- * @brief The SetBlackboard is action used to store a string
- * into an entry of the Blackboard specified in "output_key".
- *
- * Example usage:
- *
- *  <SetBlackboard value="42" output_key="the_answer" />
- *
- * Will store the string "42" in the entry with key "the_answer".
+ * Action that removes an entry from the blackboard and return SUCCESS.
  */
-class SetBlackboardNode : public SyncActionNode
+class UnsetBlackboardNode : public SyncActionNode
 {
 public:
-  SetBlackboardNode(const std::string& name, const NodeConfig& config) :
+  UnsetBlackboardNode(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {
-    setRegistrationID("SetBlackboard");
+    setRegistrationID("UnsetBlackboard");
   }
 
   static PortsList providedPorts()
   {
-    return {InputPort("value", "Value to be written int othe output_key"),
-            BidirectionalPort("output_key", "Name of the blackboard entry where the "
-                                            "value should be written")};
+    return { InputPort<std::string>("key", "Key of the entry to remove") };
   }
 
 private:
   virtual BT::NodeStatus tick() override
   {
-    std::string key, value;
-    if (!getInput("output_key", key))
+    std::string key;
+    if (!getInput("key", key))
     {
-      throw RuntimeError("missing port [output_key]");
+      throw RuntimeError("missing input port [key]");
     }
-    if (!getInput("value", value))
-    {
-      throw RuntimeError("missing port [value]");
-    }
-
-    config().blackboard->set(static_cast<std::string>(key), value);
-
+    removeBlackboardEntry(key);
     return NodeStatus::SUCCESS;
   }
 };
 }   // namespace BT
-
-#endif
