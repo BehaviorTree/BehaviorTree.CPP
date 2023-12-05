@@ -167,11 +167,13 @@ TEST(Any, Cast)
     EXPECT_EQ(typeid(a.cast<bool>()), typeid(bool));
     EXPECT_EQ(a.cast<int>(), 44);
     EXPECT_EQ(a.cast<double>(), 44.0);
+#if __cpp_lib_to_chars >= 201611L
     const std::string a_str = a.cast<std::string>();
     double a_val;
     const auto res = std::from_chars(a_str.data(), a_str.data() + a_str.size(), a_val, std::chars_format::general);
     EXPECT_TRUE(res.ec == std::errc{});
     EXPECT_DOUBLE_EQ(a_val, 44.0);
+#endif
 
     Any b(44.1);
     EXPECT_TRUE(b.cast<bool>());
@@ -179,11 +181,13 @@ TEST(Any, Cast)
     // EXPECT_EQ(b.cast<int>(), 44);?
     EXPECT_ANY_THROW(b.cast<int>());
     EXPECT_EQ(b.cast<double>(), 44.1);
+#if __cpp_lib_to_chars >= 201611L
     const std::string b_str = b.cast<std::string>();
     double b_val;
     const auto res2 = std::from_chars(b_str.data(), b_str.data() + b_str.size(), b_val, std::chars_format::general);
     EXPECT_TRUE(res2.ec == std::errc{});
     EXPECT_DOUBLE_EQ(b_val, 44.1);
+#endif
 
     Any c(44.9);
     EXPECT_TRUE(c.cast<bool>());
