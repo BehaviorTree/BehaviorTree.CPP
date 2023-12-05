@@ -141,7 +141,14 @@ public:
   template <typename T>
   bool isType() const
   {
-    return _any.type() == typeid(T);
+    return type() == typeid(T);
+  }
+
+  bool isCastedAsNumber() const
+  {
+  return _any.type() == typeid(int64_t) ||
+         _any.type() == typeid(uint64_t) ||
+         _any.type() == typeid(double);
   }
 
   // copy the value (casting into dst). We preserve the destination type.
@@ -204,7 +211,7 @@ private:
   std::string errorMsg() const
   {
     return StrCat("[Any::convert]: no known safe conversion between [",
-                  demangle( _any.type() ), "] and [", demangle( typeid(T) ),"]");
+                  demangle( type() ), "] and [", demangle( typeid(T) ),"]");
   }
 };
 
@@ -269,15 +276,15 @@ inline Any &Any::operator =(const Any &other)
 
 inline bool Any::isNumber() const
 {
-  return _any.type() == typeid(int64_t) ||
-         _any.type() == typeid(uint64_t) ||
-         _any.type() == typeid(double);
+  return type() == typeid(int64_t) ||
+         type() == typeid(uint64_t) ||
+         type() == typeid(double);
 }
 
 inline bool Any::isIntegral() const
 {
-  return _any.type() == typeid(int64_t) ||
-         _any.type() == typeid(uint64_t);
+  return type() == typeid(int64_t) ||
+         type() == typeid(uint64_t);
 }
 
 inline void Any::copyInto(Any &dst)
@@ -290,11 +297,11 @@ inline void Any::copyInto(Any &dst)
 
   const auto& dst_type = dst.castedType();
 
-  if ((type() == dst_type) || (isString() && dst.isString()) )
+  if ((castedType() == dst_type) || (isString() && dst.isString()) )
   {
     dst._any = _any;
   }
-  else if(isNumber() && dst.isNumber())
+  else if(isCastedAsNumber() && dst.isCastedAsNumber())
   {
     if (dst_type == typeid(int64_t))
     {
@@ -440,7 +447,7 @@ nonstd::expected<T, std::string> Any::tryCast() const
     throw std::runtime_error("Any::cast failed because it is empty");
   }
 
-  if (_any.type() == typeid(T))
+  if (castedType() == typeid(T))
   {
     return linb::any_cast<T>(_any);
   }
@@ -449,7 +456,7 @@ nonstd::expected<T, std::string> Any::tryCast() const
   // We will try first a int convertion
   if constexpr(std::is_enum_v<T>)
   {
-    if(isNumber())
+    if(isCastedAsNumber())
     {
       return static_cast<T>( convert<int>().value() );
     }

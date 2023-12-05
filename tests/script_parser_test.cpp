@@ -216,6 +216,7 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(variables->get<int>("v1"), 1);
   EXPECT_EQ(variables->get<int>("v2"), 0);
 
+  EXPECT_EQ(GetResult(" v2 = true ").cast<int>(), 1);
   EXPECT_EQ(GetResult(" v2 = !false ").cast<int>(), 1);
   EXPECT_EQ(GetResult(" v2 = !v2 ").cast<int>(), 0);
 
