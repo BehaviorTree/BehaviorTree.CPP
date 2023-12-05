@@ -5,6 +5,7 @@ set(BT_TESTS
   src/action_test_node.cpp
   src/condition_test_node.cpp
 
+  gtest_any.cpp
   gtest_blackboard.cpp
   gtest_coroutines.cpp
   gtest_decorator.cpp
