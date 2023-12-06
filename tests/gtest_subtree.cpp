@@ -615,3 +615,41 @@ TEST(SubTree, RemappingIssue696)
   ASSERT_EQ(console[3], "bar");
 }
 
+TEST(SubTree, PrivateAutoRemapping)
+{
+    // clang-format off
+
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Subtree">\n"
+      <Sequence>
+        <SetBlackboard output_key="public_value"   value="hello"/>
+        <SetBlackboard output_key="_private_value" value="world"/>
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <SubTree ID="Subtree" _autoremap="true"/>
+        <PrintToConsole message="{public_value}"/>
+        <PrintToConsole message="{_private_value}"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+ )";
+
+  // clang-format on
+  BehaviorTreeFactory factory;
+  std::vector<std::string> console;
+  factory.registerNodeType<PrintToConsole>("PrintToConsole", &console);
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+  const auto res = tree.tickWhileRunning();
+
+  // should fail because _private_value is not autoremapped
+  ASSERT_EQ(res, BT::NodeStatus::FAILURE);
+  ASSERT_EQ(console.size(), 1);
+  ASSERT_EQ(console[0], "hello");
+}
+

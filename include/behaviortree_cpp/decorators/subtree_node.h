@@ -11,6 +11,8 @@ namespace BT
  * If you want to have data flow through ports, you need to explicitly
  * remap the ports.
  *
+ * NOTE: _autoremap will exclude all the ports which name start with underscore '_'
+ *
  * Consider this example:
 
 <root main_tree_to_execute = "MainTree" >
