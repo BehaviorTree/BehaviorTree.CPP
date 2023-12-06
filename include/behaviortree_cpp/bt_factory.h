@@ -162,7 +162,7 @@ public:
   /// move_nodes = tree.getNodesByPath<MoveBaseNode>("move_*");
   ///
   template <typename NodeType = BT::TreeNode> [[nodiscard]]
-  std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) {
+  std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) const {
     std::vector<const TreeNode*> nodes;
     for (auto const& subtree : subtrees) {
       for (auto const& node : subtree->nodes) {
