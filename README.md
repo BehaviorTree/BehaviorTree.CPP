@@ -95,6 +95,11 @@ example here: https://github.com/BehaviorTree/btcpp_sample .
 Are you using BT.CPP in your commercial product and do you need technical support / consulting?
 You can contact the primary author, **dfaconti@aurynrobotics.com**, to discuss your use case and needs.
 
+# Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=BehaviorTree/BehaviorTree.CPP&type=Date)](https://star-history.com/#BehaviorTree/BehaviorTree.CPP&Date)
+
+
 # License
 
 The MIT License (MIT)
