@@ -5,7 +5,6 @@
 #include <vector>
 #include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <typeinfo>
 #include <functional>
 #include <chrono>
@@ -216,7 +215,7 @@ using Optional = nonstd::expected<T, std::string>;
  * */
 using Result = Optional<void>;
 
-const std::unordered_set<std::string> ReservedPortNames = {"ID", "name", "_description"};
+static const std::array<std::string, 3> ReservedPortNames = {"ID", "name", "_description"};
 
 class PortInfo
 {
@@ -271,7 +270,7 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction, StringView 
                                             StringView description = {})
 {
   auto sname = static_cast<std::string>(name);
-  if (ReservedPortNames.count(sname) != 0)
+  if (std::count(ReservedPortNames.begin(), ReservedPortNames.end(), sname) != 0)
   {
     throw std::runtime_error("A port can not use a reserved name. See ReservedPortNames");
   }
