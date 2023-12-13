@@ -74,7 +74,7 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
 *   }
 *
 * IMPORTANT: this function MUST be declared in a cpp file, NOT a header file.
-* In your cake, you must add the definition [BT_PLUGIN_EXPORT] with:
+* You must add the definition [BT_PLUGIN_EXPORT] in CMakeLists.txt using:
 *
 *   target_compile_definitions(my_plugin_target PRIVATE  BT_PLUGIN_EXPORT )
 

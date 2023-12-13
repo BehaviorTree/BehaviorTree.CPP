@@ -397,7 +397,7 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
   if(!_p->parser->registeredBehaviorTrees().empty()) {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromText "
                  "after registerBehaviorTreeFrom[File/Text].\n"
-                 "This is NOTm probably, what you want to do.\n"
+                 "This is NOT, probably, what you want to do.\n"
                  "You should probably use BehaviorTreeFactory::createTree, instead"
               << std::endl;
   }
@@ -414,7 +414,7 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path &file_p
   if(!_p->parser->registeredBehaviorTrees().empty()) {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromFile "
                  "after registerBehaviorTreeFrom[File/Text].\n"
-                 "This is NOTm probably, what you want to do.\n"
+                 "This is NOT, probably, what you want to do.\n"
                  "You should probably use BehaviorTreeFactory::createTree, instead"
               << std::endl;
   }
