@@ -143,7 +143,7 @@ public:
       // this is not the first time we set this entry, we need to check
       // if the type is the same or not.
       Entry& entry = *it->second;
-      std::scoped_lock lock(entry.entry_mutex);
+      std::scoped_lock scoped_lock(entry.entry_mutex);
 
       Any& previous_any = entry.value;
 
