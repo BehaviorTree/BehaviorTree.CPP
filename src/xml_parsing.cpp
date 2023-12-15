@@ -49,6 +49,10 @@ namespace
 std::string
 xsdAttributeType(const BT::PortInfo& port_info)
 {
+  if (port_info.direction() == BT::PortDirection::OUTPUT)
+  {
+    return "blackboardType";
+  }
   const auto& type_info = port_info.type();
   if ((type_info == typeid(int)) or (type_info == typeid(unsigned int)))
   {
@@ -60,11 +64,11 @@ xsdAttributeType(const BT::PortInfo& port_info)
   }
   else if (type_info == typeid(bool))
   {
-    return "xs:boolean";
+    return "booleanOrBlackboardType";
   }
   else if (type_info == typeid(std::string))
   {
-    return "xs:string";
+    return "stringOrBlackboardType";
   }
 
   return std::string();
@@ -1201,17 +1205,22 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
 
   // TODO: add <xs:whiteSpace value="preserve"/> for `inputPortType` and `outputPortType`.
   parse_and_insert(schema_element, R"(
-    <xs:simpleType name="decimalOrBlackboardType">
+    <xs:simpleType name="blackboardType">
         <xs:restriction base="xs:string">
-            <xs:pattern value="[+-]?[0-9]*(\.[0-9]+)?"/>
-            <xs:pattern value="\{[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)*\}"/>
+            <xs:pattern value="\{.*\}"/>
         </xs:restriction>
     </xs:simpleType>
+    <xs:simpleType name="booleanOrBlackboardType">
+      <xs:union memberTypes="xs:boolean blackboardType"/>
+    </xs:simpleType>
     <xs:simpleType name="integerOrBlackboardType">
-        <xs:restriction base="xs:string">
-            <xs:pattern value="[+-]?[0-9]+"/>
-            <xs:pattern value="\{[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)*\}"/>
-        </xs:restriction>
+      <xs:union memberTypes="xs:integer blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="decimalOrBlackboardType">
+      <xs:union memberTypes="xs:decimal blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="stringOrBlackboardType">
+      <xs:union memberTypes="xs:string blackboardType"/>
     </xs:simpleType>
     <xs:simpleType name="descriptionType">
         <xs:restriction base="xs:string">
@@ -1295,7 +1304,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
           <xs:element ref="TreeNodesModel" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="BTCPP_format" type="xs:string" use="required"/>
-        <xs:attribute name="main_tree_to_execute" type="xs:string" use="required"/>
+        <xs:attribute name="main_tree_to_execute" type="xs:string" use="optional"/>
       </xs:complexType>
     </xs:element>
   )";
