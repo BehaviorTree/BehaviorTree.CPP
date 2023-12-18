@@ -115,7 +115,14 @@ TEST_F(RetryTest, RetryTestA)
 {
   action.setExpectedResult(NodeStatus::FAILURE);
 
-  root.executeTick();
+  while (true)
+  {
+    root.executeTick();
+    if (root.status() != NodeStatus::RUNNING)
+    {
+      break;
+    }
+  }
   ASSERT_EQ(NodeStatus::FAILURE, root.status());
   ASSERT_EQ(3, action.tickCount());
 
