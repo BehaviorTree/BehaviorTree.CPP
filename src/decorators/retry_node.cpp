@@ -51,35 +51,44 @@ NodeStatus RetryNode::tick()
 
   setStatus(NodeStatus::RUNNING);
 
-  while (try_count_ < max_attempts_ || max_attempts_ == -1)
+  if (try_count_ >= max_attempts_ && max_attempts_ != -1)
   {
-    NodeStatus child_state = child_node_->executeTick();
-    switch (child_state)
-    {
-      case NodeStatus::SUCCESS: {
-        try_count_ = 0;
-        resetChild();
-        return (NodeStatus::SUCCESS);
-      }
-
-      case NodeStatus::FAILURE: {
-        try_count_++;
-        resetChild();
-      }
-      break;
-
-      case NodeStatus::RUNNING: {
-        return NodeStatus::RUNNING;
-      }
-
-      default: {
-        throw LogicError("A child node must never return IDLE");
-      }
-    }
+    try_count_ = 0;
+    return BT::NodeStatus::FAILURE;
   }
 
-  try_count_ = 0;
-  return NodeStatus::FAILURE;
+  BT::NodeStatus child_state = child_node_->executeTick();
+  switch (child_state)
+  {
+    case BT::NodeStatus::SUCCESS:
+    {
+      try_count_ = 0;
+      resetChild();
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    case BT::NodeStatus::FAILURE:
+    {
+      ++try_count_;
+      resetChild();
+      if (try_count_ >= max_attempts_ && max_attempts_ != -1)
+      {
+        try_count_ = 0;
+        return BT::NodeStatus::FAILURE;
+      }
+      return BT::NodeStatus::RUNNING;
+    }
+
+    case BT::NodeStatus::RUNNING:
+    {
+      return BT::NodeStatus::RUNNING;
+    }
+
+    default:
+    {
+      throw BT::LogicError("A child node must never return IDLE");
+    }
+  }
 }
 
 }   // namespace BT

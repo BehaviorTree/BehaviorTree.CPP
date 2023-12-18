@@ -20,6 +20,7 @@ set(BT_TESTS
   gtest_subtree.cpp
   gtest_switch.cpp
   gtest_wakeup.cpp
+  gtest_retry.cpp
 )
 
 if( ZMQ_FOUND )
