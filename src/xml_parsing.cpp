@@ -1359,18 +1359,19 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
   {
     XMLElement* type = doc.NewElement("xs:complexType");
     type->SetAttribute("name", (model->registration_ID + "Type").c_str());
-    if ((model->type == NodeType::CONDITION) or (model->type == NodeType::ACTION))
+    if ((model->type == NodeType::ACTION)
+        or (model->type == NodeType::CONDITION)
+        or (model->type == NodeType::SUBTREE))
     {
       /* No children, nothing to add. */
     }
-    else if ((model->type == NodeType::DECORATOR)
-        or (model->type == NodeType::SUBTREE))
+    else if (model->type == NodeType::DECORATOR)
     {
       /* One child. */
-      // <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="1"/>
+      // <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
       XMLElement* group = doc.NewElement("xs:group");
       group->SetAttribute("ref", "oneNodeGroup");
-      group->SetAttribute("minOccurs", "0");
+      group->SetAttribute("minOccurs", "1");
       group->SetAttribute("maxOccurs", "1");
       type->InsertEndChild(group);
     }
