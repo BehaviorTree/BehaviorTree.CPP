@@ -33,10 +33,10 @@ namespace BT
  *
  * This will copy the type and content of {src_port} into {dst_port}
  */
-class SetBlackboard : public SyncActionNode
+class SetBlackboardNode : public SyncActionNode
 {
 public:
-  SetBlackboard(const std::string& name, const NodeConfig& config) :
+  SetBlackboardNode(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {
     setRegistrationID("SetBlackboard");

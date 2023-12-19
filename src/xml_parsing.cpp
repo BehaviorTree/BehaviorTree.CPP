@@ -437,8 +437,13 @@ void VerifyXML(const std::string& xml_text,
     {
       if (children_count == 0)
       {
-        ThrowError(node->GetLineNum(), "A Control node must have at least 1 "
-                                       "child");
+        std::string name_attr;
+        if (node->Attribute("name"))
+        {
+          name_attr = "(`" + std::string(node->Attribute("name")) + "`)";
+        }
+        ThrowError(node->GetLineNum(), std::string("A Control node must have at least 1 "
+                                       "child, error in XML node `") + node->Name() + name_attr + "`");
       }
     }
     else if (name == "SubTree")

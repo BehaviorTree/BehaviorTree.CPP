@@ -199,7 +199,22 @@ public:
       new_value.copyInto(previous_any);
     }
   }
-  
+
+  void unset(const std::string& key)
+  {
+    std::unique_lock lock(mutex_);
+
+    // check local storage
+    auto it = storage_.find(key);
+    if (it == storage_.end())
+    {
+      // No entry, nothing to do.
+      return;
+    }
+
+    storage_.erase(it);
+  }
+
   [[nodiscard]] const TypeInfo* entryInfo(const std::string& key);
 
   void addSubtreeRemapping(StringView internal, StringView external);
