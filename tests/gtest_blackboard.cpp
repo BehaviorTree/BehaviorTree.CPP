@@ -461,29 +461,37 @@ TEST(BlackboardTest, IssueSetBlackboard)
   ASSERT_EQ(42, tree.rootBlackboard()->get<int>("value"));
 }
 
+struct Point {
+  double x;
+  double y;
+};
+
 TEST(BlackboardTest, SetBlackboard_Issue725)
 {
   BT::BehaviorTreeFactory factory;
 
   const std::string xml_text = R"(
-  <root BTCPP_format="4" >
+  <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
-      <Sequence>
-        <SetBlackboard value="hello world" output_key="value" />
-        <SetBlackboard value="{value}" output_key="other_value" />
-        <SaySomething message="{other_value}" />
-      </Sequence>
+      <SetBlackboard value="{first_point}" output_key="other_point" />
     </BehaviorTree>
   </root> )";
 
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
-  const auto status = tree.tickWhileRunning();
+  auto& blackboard = tree.subtrees.front()->blackboard;
+
+  const Point point = {2,7};
+  blackboard->set("first_point", point);
+
+  const auto status = tree.tickOnce();
+
+  Point other_point = blackboard->get<Point>("other_point");
 
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
-  ASSERT_EQ("hello world", tree.rootBlackboard()->get<std::string>("value"));
-  ASSERT_EQ("hello world", tree.rootBlackboard()->get<std::string>("other_value"));
+  ASSERT_EQ(other_point.x, point.x);
+  ASSERT_EQ(other_point.y, point.y);
 }
 
 
