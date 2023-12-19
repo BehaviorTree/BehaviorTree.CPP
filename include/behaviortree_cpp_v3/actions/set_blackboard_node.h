@@ -26,6 +26,12 @@ namespace BT
  *  <SetBlackboard value="42" output_key="the_answer" />
  *
  * Will store the string "42" in the entry with key "the_answer".
+ *
+ * Alternatively, you can use it to copy one port inside another port:
+ *
+ * <SetBlackboard value="{src_port}" output_key="dst_port" />
+ *
+ * This will copy the type and content of {src_port} into {dst_port}
  */
 class SetBlackboard : public SyncActionNode
 {
@@ -38,26 +44,45 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort("value", "Value represented as a string. convertFromString must be "
-                               "implemented."),
+    return {InputPort("value", "Value to be written int othe output_key"),
             BidirectionalPort("output_key", "Name of the blackboard entry where the "
-                                            "value "
-                                            "should be written")};
+                                            "value should be written")};
   }
 
 private:
   virtual BT::NodeStatus tick() override
   {
-    std::string key, value;
-    if (!getInput("output_key", key))
+    std::string output_key;
+    if (!getInput("output_key", output_key))
     {
       throw RuntimeError("missing port [output_key]");
     }
-    if (!getInput("value", value))
+
+    const std::string value_str = config().input_ports.at("value");
+
+    if(isBlackboardPointer(value_str))
     {
-      throw RuntimeError("missing port [value]");
+      StringView stripped_key = stripBlackboardPointer(value_str);
+      const auto input_key = std::string(stripped_key);
+      std::shared_ptr<Blackboard::Entry> src_entry = config().blackboard->getEntry(input_key);
+      std::shared_ptr<Blackboard::Entry> dst_entry = config().blackboard->getEntry(output_key);
+
+      if(!src_entry)
+      {
+        throw RuntimeError("Can't find the port referred by [value]");
+      }
+      if(!dst_entry)
+      {
+        config().blackboard->createEntry(output_key, src_entry->port_info);
+        dst_entry = config().blackboard->getEntry(output_key);
+      }
+      dst_entry->value = src_entry->value;
     }
-    setOutput("output_key", value);
+    else
+    {
+      config().blackboard->set(output_key, value_str);
+    }
+
     return NodeStatus::SUCCESS;
   }
 };
