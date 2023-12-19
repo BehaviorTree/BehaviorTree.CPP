@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.4.3 (2023-12-19)
+------------------
 * Merge pull request #709 from galou/unset_blackboard
 * fix issue `#725 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/725>`_ : SetBlackboard can copy entries
 * add more unit tests
