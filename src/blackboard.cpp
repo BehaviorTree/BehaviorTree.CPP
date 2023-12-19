@@ -7,6 +7,35 @@ void Blackboard::enableAutoRemapping(bool remapping)
   autoremapping_ = remapping;
 }
 
+const Any *Blackboard::getAny(const std::string &key) const
+{
+  std::unique_lock<std::mutex> lock(mutex_);
+  auto it = storage_.find(key);
+
+  if(it == storage_.end())
+  {
+    // Try with autoremapping. This should work recursively
+    auto remapping_it = internal_to_external_.find(key);
+    if (remapping_it != internal_to_external_.end())
+    {
+      const auto& remapped_key = remapping_it->second;
+      if (auto parent = parent_bb_.lock())
+      {
+        return parent->getAny(remapped_key);
+      }
+    }
+
+    else if(autoremapping_)
+    {
+      if(auto parent = parent_bb_.lock()) {
+        return parent->getAny(key);
+      }
+    }
+    return nullptr;
+  }
+  return &(it->second->value);
+}
+
 const PortInfo* Blackboard::portInfo(const std::string& key)
 {
   std::unique_lock<std::mutex> lock(mutex_);

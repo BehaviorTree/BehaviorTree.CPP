@@ -48,24 +48,7 @@ public:
      *
      * @return the pointer or nullptr if it fails.
      */
-  const Any* getAny(const std::string& key) const
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    auto it = storage_.find(key);
-
-    if(it == storage_.end())
-    {
-      // Try with autoremapping. This should work recursively
-      if(autoremapping_)
-      {
-        if(auto parent = parent_bb_.lock()) {
-          return parent->getAny(key);
-        }
-      }
-      return nullptr;
-    }
-    return &(it->second->value);
-  }
+  const Any* getAny(const std::string& key) const;
 
   Any* getAny(const std::string& key)
   {
