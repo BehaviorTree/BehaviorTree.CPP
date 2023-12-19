@@ -41,7 +41,7 @@ private:
     {
       throw RuntimeError("missing input port [key]");
     }
-    removeBlackboardEntry(key);
+    config().blackboard->unset(key);
     return NodeStatus::SUCCESS;
   }
 };

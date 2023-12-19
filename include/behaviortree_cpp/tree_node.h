@@ -249,13 +249,6 @@ public:
   Result setOutput(const std::string& key, const T& value);
 
   /**
-   * @brief removeBlackboardEntry erases an entry from the blackboard
-   * @param key    the name of the entry.
-   * @return       valid Result, if succesful.
-   */
-  Result removeBlackboardEntry(const std::string& key);
-
-  /**
    * @brief getLockedPortContent should be used when:
    *
    * - your port contains an object with reference semantic (usually a smart pointer)
@@ -505,18 +498,6 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   remapped_key = stripBlackboardPointer(remapped_key);
   config().blackboard->set(static_cast<std::string>(remapped_key), value);
 
-  return {};
-}
-
-inline Result TreeNode::removeBlackboardEntry(const std::string& key)
-{
-  if (!config().blackboard)
-  {
-    return nonstd::make_unexpected("setOutput() failed: trying to access a "
-                                   "Blackboard(BB) entry, but BB is invalid");
-  }
-
-  config().blackboard->unset(key);
   return {};
 }
 
