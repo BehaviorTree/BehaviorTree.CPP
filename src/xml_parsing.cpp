@@ -523,7 +523,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
     for (const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
     {
       const std::string attribute_name = att->Name();
-      if (ReservedPortNames.count(attribute_name) == 0)
+      if (!IsReservedPortname(attribute_name))
       {
         port_remap[attribute_name] = att->Value();
       }
@@ -699,7 +699,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
           for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
                attr = attr->Next())
           {
-            if (ReservedPortNames.count(attr->Name()) == 0)
+            if (!IsReservedPortname(attr->Name()))
             {
               new_bb->addSubtreeRemapping(attr->Name(), attr->Value());
             }
@@ -720,7 +720,7 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
           const char* attr_name = attr->Name();
           const char* attr_value = attr->Value();
 
-          if (ReservedPortNames.count(attr->Name()) != 0)
+          if (IsReservedPortname(attr->Name()))
           {
             continue;
           }
@@ -779,7 +779,7 @@ void XMLParser::Pimpl::getPortsRecursively(const XMLElement* element,
   {
     const char* attr_name = attr->Name();
     const char* attr_value = attr->Value();
-    if (ReservedPortNames.count(attr_name) == 0 &&
+    if (!IsReservedPortname(attr_name) &&
         TreeNode::isBlackboardPointer(attr_value))
     {
       auto port_name = TreeNode::stripBlackboardPointer(attr_value);
