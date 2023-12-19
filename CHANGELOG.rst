@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-4.4.3 (2023-12-19)
-------------------
+Forthcoming
+-----------
 * fix issue `#725 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/725>`_ : SetBlackboard can copy entries
 * add more unit tests
 * fix typos `#721 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/721>`_
