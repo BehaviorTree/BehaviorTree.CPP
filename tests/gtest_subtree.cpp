@@ -349,34 +349,34 @@ public:
   }
 };
 
-TEST(SubTree, SubtreeIssue563)
+TEST(SubTree, SubtreeNav2_Issue563)
 {
   static const char* xml_text = R"(
 <root BTCPP_format="4" >
 
-<BehaviorTree ID="Tree1">
-  <Sequence>
-    <SetBlackboard output_key="the_message" value="hello world"/>
-    <SubTree ID="Tree2" _autoremap="true"/>
-    <SaySomething message="{reply}" />
-  </Sequence>
-</BehaviorTree>
+    <BehaviorTree ID="Tree1">
+      <Sequence>
+        <SetBlackboard output_key="the_message" value="hello world"/>
+        <SubTree ID="Tree2" _autoremap="true"/>
+        <SaySomething message="{reply}" />
+      </Sequence>
+    </BehaviorTree>
 
-<BehaviorTree ID="Tree2">
-    <SubTree ID="Tree3" _autoremap="true"/>
-</BehaviorTree>
+    <BehaviorTree ID="Tree2">
+        <SubTree ID="Tree3" _autoremap="true"/>
+    </BehaviorTree>
 
-<BehaviorTree ID="Tree3">
-    <SubTree ID="Talker" _autoremap="true"/>
-</BehaviorTree>
+    <BehaviorTree ID="Tree3">
+        <SubTree ID="Talker" _autoremap="true"/>
+    </BehaviorTree>
 
-<BehaviorTree ID="Talker">
-  <Sequence>
-    <SaySomething message="{the_message}" />
-    <Script code=" reply:='done' "/>
-    <NaughtyNav2Node/>
-  </Sequence>
-</BehaviorTree>
+    <BehaviorTree ID="Talker">
+      <Sequence>
+        <SaySomething message="{the_message}" />
+        <Script code=" reply:='done' "/>
+        <NaughtyNav2Node/>
+      </Sequence>
+    </BehaviorTree>
 
 </root>)";
 
@@ -394,6 +394,49 @@ TEST(SubTree, SubtreeIssue563)
   auto ret = tree.tickOnce();
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
 }
+
+TEST(SubTree, SubtreeNav2_Issue724)
+{
+
+static const char* xml_text = R"(
+<root BTCPP_format="4" >
+
+    <BehaviorTree ID="Tree1">
+      <Sequence>
+        <SubTreePlus ID="Tree2" ros_node="{ros_node}"/>
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Tree2">
+        <SubTreePlus ID="Tree3" ros_node="{ros_node}"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Tree3">
+        <SubTreePlus ID="Talker" ros_node="{ros_node}"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Talker">
+      <Sequence>
+        <NaughtyNav2Node/>
+      </Sequence>
+    </BehaviorTree>
+
+</root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NaughtyNav2Node>("NaughtyNav2Node");
+
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set<std::string>("ros_node", "nav2_shouldnt_do_this");
+
+  Tree tree = factory.createTree("Tree1", blackboard);
+
+  auto ret = tree.tickOnce();
+  ASSERT_EQ(ret, NodeStatus::SUCCESS);
+}
+
 
 
 TEST(SubTree, SubtreeIssue592)
