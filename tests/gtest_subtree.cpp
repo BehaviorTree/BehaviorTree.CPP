@@ -403,16 +403,16 @@ static const char* xml_text = R"(
 
     <BehaviorTree ID="Tree1">
       <Sequence>
-        <SubTreePlus ID="Tree2" ros_node="{ros_node}"/>
+        <SubTree ID="Tree2" ros_node="{ros_node}"/>
       </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="Tree2">
-        <SubTreePlus ID="Tree3" ros_node="{ros_node}"/>
+        <SubTree ID="Tree3" ros_node="{ros_node}"/>
     </BehaviorTree>
 
     <BehaviorTree ID="Tree3">
-        <SubTreePlus ID="Talker" ros_node="{ros_node}"/>
+        <SubTree ID="Talker" ros_node="{ros_node}"/>
     </BehaviorTree>
 
     <BehaviorTree ID="Talker">
