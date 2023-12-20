@@ -23,12 +23,8 @@ namespace BT
 */
 
 class JsonExporter{
-
-  public:
-  static JsonExporter& get() {
-    static JsonExporter global_instance;
-    return global_instance;
-  }
+public:
+  static JsonExporter& get();
 
   /**
    * @brief toJson adds the content of "any" to the JSON "destination".
@@ -41,6 +37,27 @@ class JsonExporter{
   template <typename T>
   void toJson(const T& val, nlohmann::json& dst) const {
     dst = val;
+  }
+
+  /**
+   * @brief fromJson tries to convert arbitrary JSON data into the type T.
+   *
+   * Calls only compile if `nlohmann::from_json(const nlohmann::json&, T&)` is
+   * defined in T's namespace.
+   */
+  template <typename T>
+  T fromJson(const nlohmann::json& src) const
+  {
+    // We don't need to implement a similar `type_converters` interface as
+    // `toJson` here because the type T must be know statically. There is no
+    // opaque BT::Any wrapper here requiring RTTI.
+    return src.template get<T>();
+  }
+
+  template <typename T>
+  void fromJson(const nlohmann::json& src, T& dst) const
+  {
+    dst = fromJson<T>(src);
   }
 
   /// Register new JSON converters with addConverter<Foo>(),

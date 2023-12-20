@@ -25,6 +25,13 @@
 #include "behaviortree_cpp/utils/wakeup_signal.hpp"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 
+#ifdef BTCPP_PYTHON
+#include <pybind11/pybind11.h>
+#include <pybind11/cast.h>
+
+#include "behaviortree_cpp/python/types.h"
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)
 #endif
@@ -443,11 +450,33 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
       auto val = any_ref.get();
       if(!val->empty())
       {
-        if (!std::is_same_v<T, std::string> &&
-            val->type() == typeid(std::string))
+        // Trivial conversion (T -> T)
+        if (val->type() == typeid(T))
+        {
+          destination = val->cast<T>();
+        }
+        else if (!std::is_same_v<T, std::string> && val->type() == typeid(std::string))
         {
           destination = ParseString(val->cast<std::string>());
         }
+#ifdef BTCPP_PYTHON
+        // py::object -> C++
+        else if (val->type() == typeid(pybind11::object))
+        {
+          if (!fromPythonObject<T>(val->cast<pybind11::object>(), destination))
+          {
+            return nonstd::make_unexpected("Cannot convert from Python object");
+          }
+        }
+        // C++ -> py::object
+        else if constexpr (std::is_same_v<T, pybind11::object>)
+        {
+          if (!toPythonObject(*val, destination))
+          {
+            return nonstd::make_unexpected("Cannot convert to Python object");
+          }
+        }
+#endif
         else
         {
           destination = val->cast<T>();

@@ -3,6 +3,7 @@
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/json_export.h"
 
 namespace DummyNodes
 {
@@ -121,6 +122,72 @@ class SleepNode : public BT::StatefulActionNode
     std::chrono::system_clock::time_point deadline_;
 };
 
+struct Vector3
+{
+  float x;
+  float y;
+  float z;
+};
+
+void to_json(nlohmann::json& j, const Vector3& p);
+
+void from_json(const nlohmann::json& j, Vector3& p);
+
+class RandomVector : public BT::SyncActionNode
+{
+public:
+  RandomVector(const std::string& name, const BT::NodeConfig& config) :
+    BT::SyncActionNode(name, config)
+  {}
+
+  // You must override the virtual function tick()
+  NodeStatus tick() override
+  {
+    setOutput("vector", Vector3{1.0, 2.0, 3.0});
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  // It is mandatory to define this static method.
+  static BT::PortsList providedPorts()
+  {
+    return {BT::OutputPort<Vector3>("vector")};
+  }
+};
+
+class PrintMapOfVectors : public BT::SyncActionNode
+{
+public:
+  PrintMapOfVectors(const std::string& name, const BT::NodeConfig& config) :
+    BT::SyncActionNode(name, config)
+  {}
+
+  // You must override the virtual function tick()
+  NodeStatus tick() override
+  {
+    auto input = getInput<std::unordered_map<std::string, Vector3>>("input");
+    if (input.has_value())
+    {
+      std::cerr << "{";
+      for (const auto& [key, value] : *input)
+      {
+        std::cerr << key << ": ("
+                  << value.x << ", "
+                  << value.y << ", "
+                  << value.z << "), ";
+      }
+      std::cerr << "}" << std::endl;;
+    }
+
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  // It is mandatory to define this static method.
+  static BT::PortsList providedPorts()
+  {
+    return {BT::InputPort<std::unordered_map<std::string, Vector3>>("input")};
+  }
+};
+
 inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
 {
     static GripperInterface grip_singleton;
@@ -132,6 +199,10 @@ inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
     factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &grip_singleton));
     factory.registerNodeType<ApproachObject>("ApproachObject");
     factory.registerNodeType<SaySomething>("SaySomething");
+    factory.registerNodeType<RandomVector>("RandomVector");
+    factory.registerNodeType<PrintMapOfVectors>("PrintMapOfVectors");
+
+    BT::JsonExporter::get().addConverter<Vector3>();
 }
 
 } // end namespace
