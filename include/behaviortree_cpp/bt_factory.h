@@ -44,13 +44,20 @@ template <typename T>
 inline TreeNodeManifest CreateManifest(const std::string& ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
-  if constexpr( has_static_method_description<T>::value)
+  if constexpr( has_static_method_description<T>::value && has_static_method_metadata<T>::value )
   {
-    return {getType<T>(), ID, portlist, T::description()};
+    return {getType<T>(), ID, portlist, T::description(), T::metadata()};
   }
-  else {
-    return {getType<T>(), ID, portlist, {}};
+  else if constexpr( has_static_method_description<T>::value && !has_static_method_metadata<T>::value )
+  {
+    return {getType<T>(), ID, portlist, T::description(), {}};
   }
+  else if constexpr( !has_static_method_description<T>::value && has_static_method_metadata<T>::value )
+  {
+    return {getType<T>(), ID, portlist, {}, T::metadata()};
+  }
+
+  return {getType<T>(), ID, portlist, {}, {}};
 }
 
 #ifdef BT_PLUGIN_EXPORT

@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 #include <filesystem>
+#include <string>
+#include <utility>
+#include <vector>
 #include "behaviortree_cpp/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
 #include "../sample_nodes/dummy_nodes.h"
@@ -409,7 +412,6 @@ public:
 
 TEST(BehaviorTreeFactory, DescriptionMethod)
 {
-
   BehaviorTreeFactory factory;
   factory.registerNodeType<DescriptiveAction>("DescriptiveAction");
   const auto& manifest = factory.manifests().at("DescriptiveAction");
@@ -419,4 +421,57 @@ TEST(BehaviorTreeFactory, DescriptionMethod)
   std::cout << xml << std::endl;
 
   ASSERT_NE(xml.find( "<description>THE DESCRIPTION</description>"), std::string::npos);
+}
+
+std::vector<ManifestMetadata> makeTestMetadata()
+{
+  ManifestMetadata text_metadata;
+  text_metadata.name = "text_metadata";
+  text_metadata.text_or_attribute = "text";
+
+  ManifestMetadata attribute_metadata;
+  attribute_metadata.name = "attribute_metadata";
+  attribute_metadata.text_or_attribute = std::make_pair<std::string, std::string>("attribute_name", "attribute_value");
+
+  return {text_metadata, attribute_metadata};
+}
+
+class ActionWithMetadata : public SyncActionNode
+{
+public:
+  ActionWithMetadata(const std::string& name, const NodeConfig& config):
+    SyncActionNode(name, config) {}
+
+  BT::NodeStatus tick() override {
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts() {
+    return {};
+  }
+
+  static std::vector<ManifestMetadata> metadata() {
+    return makeTestMetadata();
+  }
+};
+
+TEST(BehaviorTreeFactory, ManifestMethod)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithMetadata>("ActionWithMetadata");
+  const auto& manifest = factory.manifests().at("ActionWithMetadata");
+  ASSERT_EQ(manifest.metadata.size(), 2u);
+  auto expected_metadata = makeTestMetadata();
+  EXPECT_EQ(manifest.metadata[0].name, expected_metadata[0].name);
+  EXPECT_EQ(manifest.metadata[0].text_or_attribute, expected_metadata[0].text_or_attribute);
+  EXPECT_TRUE(manifest.metadata[0].representsText());
+  EXPECT_EQ(manifest.metadata[1].name, expected_metadata[1].name);
+  EXPECT_EQ(manifest.metadata[1].text_or_attribute, expected_metadata[1].text_or_attribute);
+  EXPECT_TRUE(manifest.metadata[1].representsAttribute());
+
+  auto xml = writeTreeNodesModelXML(factory, false);
+  std::cout << xml << std::endl;
+
+  ASSERT_NE(xml.find("<text_metadata>text</text_metadata>"), std::string::npos);
+  ASSERT_NE(xml.find("<attribute_metadata attribute_name=\"attribute_value\"/>"), std::string::npos);
 }

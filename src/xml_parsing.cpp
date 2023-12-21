@@ -83,7 +83,7 @@ struct XMLParser::PImpl
   std::map<std::string, SubtreeModel> subtree_models;
 
   int suffix_count;
-  
+
   explicit PImpl(const BehaviorTreeFactory& fact) :
     factory(fact), current_path(std::filesystem::current_path()), suffix_count(0)
   {}
@@ -989,6 +989,24 @@ void addNodeModelToXML(const TreeNodeManifest& model,
     element->InsertEndChild(description_element);
   }
 
+  for (const auto& metadata : model.metadata)
+  {
+    auto metadata_element = doc.NewElement(metadata.name.c_str());
+
+    if (metadata.representsText())
+    {
+      const auto element_text = std::get<std::string>(metadata.text_or_attribute);
+      metadata_element->SetText(element_text.c_str());
+    }
+    else
+    {
+      const auto [attribute_name, attribute_val] = std::get<ManifestMetadata::Attribute>(metadata.text_or_attribute);
+      metadata_element->SetAttribute(attribute_name.c_str(), attribute_val.c_str());
+    }
+
+    element->InsertEndChild(metadata_element);
+  }
+
   model_root->InsertEndChild(element);
 }
 
@@ -997,7 +1015,7 @@ void addTreeToXML(const Tree& tree,
                   XMLElement* rootXML,
                   bool add_metadata,
                   bool add_builtin_models)
-{  
+{
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node,
                 XMLElement* parent_elem)

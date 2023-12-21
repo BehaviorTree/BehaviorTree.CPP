@@ -91,7 +91,7 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<SwitchNode<4>>("Switch4");
   registerNodeType<SwitchNode<5>>("Switch5");
   registerNodeType<SwitchNode<6>>("Switch6");
-  
+
   registerNodeType<LoopNode<int>>("LoopInt");
   registerNodeType<LoopNode<bool>>("LoopBool");
   registerNodeType<LoopNode<double>>("LoopDouble");
@@ -157,7 +157,7 @@ void BehaviorTreeFactory::registerSimpleCondition(
     return std::make_unique<SimpleConditionNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::CONDITION, ID, std::move(ports), {}};
+  TreeNodeManifest manifest = {NodeType::CONDITION, ID, std::move(ports), {}, {}};
   registerBuilder(manifest, builder);
 }
 
@@ -170,7 +170,7 @@ void BehaviorTreeFactory::registerSimpleAction(
     return std::make_unique<SimpleActionNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::ACTION, ID, std::move(ports), {}};
+  TreeNodeManifest manifest = {NodeType::ACTION, ID, std::move(ports), {}, {}};
   registerBuilder(manifest, builder);
 }
 
@@ -183,7 +183,7 @@ void BehaviorTreeFactory::registerSimpleDecorator(
     return std::make_unique<SimpleDecoratorNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::DECORATOR, ID, std::move(ports), {}};
+  TreeNodeManifest manifest = {NodeType::DECORATOR, ID, std::move(ports), {}, {}};
   registerBuilder(manifest, builder);
 }
 
