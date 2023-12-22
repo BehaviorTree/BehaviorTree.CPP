@@ -157,7 +157,7 @@ void BehaviorTreeFactory::registerSimpleCondition(
     return std::make_unique<SimpleConditionNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::CONDITION, ID, std::move(ports), {}, {}};
+  TreeNodeManifest manifest = {NodeType::CONDITION, ID, std::move(ports), {}};
   registerBuilder(manifest, builder);
 }
 
@@ -170,7 +170,7 @@ void BehaviorTreeFactory::registerSimpleAction(
     return std::make_unique<SimpleActionNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::ACTION, ID, std::move(ports), {}, {}};
+  TreeNodeManifest manifest = {NodeType::ACTION, ID, std::move(ports), {}};
   registerBuilder(manifest, builder);
 }
 
@@ -183,7 +183,7 @@ void BehaviorTreeFactory::registerSimpleDecorator(
     return std::make_unique<SimpleDecoratorNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::DECORATOR, ID, std::move(ports), {}, {}};
+  TreeNodeManifest manifest = {NodeType::DECORATOR, ID, std::move(ports), {}};
   registerBuilder(manifest, builder);
 }
 
@@ -435,15 +435,15 @@ Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
   return tree;
 }
 
-void BehaviorTreeFactory::addDescriptionToManifest(const std::string& node_id,
-                                                   const std::string& description)
+void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
+                                                const std::vector<std::pair<std::string, std::string>>& metadata)
 {
   auto it = _p->manifests.find(node_id);
   if (it == _p->manifests.end())
   {
-    throw std::runtime_error("addDescriptionToManifest: wrong ID");
+    throw std::runtime_error("addMetadataToManifest: wrong ID");
   }
-  it->second.description = description;
+  it->second.metadata = metadata;
 }
 
 void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)

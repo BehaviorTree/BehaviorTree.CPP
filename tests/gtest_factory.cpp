@@ -391,49 +391,12 @@ TEST(BehaviorTreeReload, ReloadSameTree)
   }
 }
 
-class DescriptiveAction : public SyncActionNode
+std::vector<std::pair<std::string, std::string>> makeTestMetadata()
 {
-public:
-  DescriptiveAction(const std::string& name, const NodeConfig& config):
-    SyncActionNode(name, config) {}
-
-  BT::NodeStatus tick() override {
-    return NodeStatus::SUCCESS;
-  }
-
-  static PortsList providedPorts() {
-    return {};
-  }
-
-  static std::string description() {
-    return "THE DESCRIPTION";
-  }
-};
-
-TEST(BehaviorTreeFactory, DescriptionMethod)
-{
-  BehaviorTreeFactory factory;
-  factory.registerNodeType<DescriptiveAction>("DescriptiveAction");
-  const auto& manifest = factory.manifests().at("DescriptiveAction");
-  ASSERT_EQ(manifest.description, "THE DESCRIPTION");
-
-  auto xml = writeTreeNodesModelXML(factory, false);
-  std::cout << xml << std::endl;
-
-  ASSERT_NE(xml.find( "<description>THE DESCRIPTION</description>"), std::string::npos);
-}
-
-std::vector<ManifestMetadata> makeTestMetadata()
-{
-  ManifestMetadata text_metadata;
-  text_metadata.name = "text_metadata";
-  text_metadata.text_or_attribute = "text";
-
-  ManifestMetadata attribute_metadata;
-  attribute_metadata.name = "attribute_metadata";
-  attribute_metadata.text_or_attribute = std::make_pair<std::string, std::string>("attribute_name", "attribute_value");
-
-  return {text_metadata, attribute_metadata};
+  return {
+    std::make_pair<std::string, std::string>("foo", "hello"),
+    std::make_pair<std::string, std::string>("bar", "42"),
+  };
 }
 
 class ActionWithMetadata : public SyncActionNode
@@ -450,28 +413,39 @@ public:
     return {};
   }
 
-  static std::vector<ManifestMetadata> metadata() {
+  static std::vector<std::pair<std::string, std::string>> metadata() {
     return makeTestMetadata();
   }
 };
 
 TEST(BehaviorTreeFactory, ManifestMethod)
 {
+  const char* expectedXML = R"(
+        <Action ID="ActionWithMetadata">
+            <MetadataFields>
+                <Metadata foo="hello"/>
+                <Metadata bar="42"/>
+            </MetadataFields>
+        </Action>)";
+
   BehaviorTreeFactory factory;
   factory.registerNodeType<ActionWithMetadata>("ActionWithMetadata");
   const auto& manifest = factory.manifests().at("ActionWithMetadata");
-  ASSERT_EQ(manifest.metadata.size(), 2u);
-  auto expected_metadata = makeTestMetadata();
-  EXPECT_EQ(manifest.metadata[0].name, expected_metadata[0].name);
-  EXPECT_EQ(manifest.metadata[0].text_or_attribute, expected_metadata[0].text_or_attribute);
-  EXPECT_TRUE(manifest.metadata[0].representsText());
-  EXPECT_EQ(manifest.metadata[1].name, expected_metadata[1].name);
-  EXPECT_EQ(manifest.metadata[1].text_or_attribute, expected_metadata[1].text_or_attribute);
-  EXPECT_TRUE(manifest.metadata[1].representsAttribute());
+  EXPECT_EQ(manifest.metadata, makeTestMetadata());
 
   auto xml = writeTreeNodesModelXML(factory, false);
   std::cout << xml << std::endl;
 
-  ASSERT_NE(xml.find("<text_metadata>text</text_metadata>"), std::string::npos);
-  ASSERT_NE(xml.find("<attribute_metadata attribute_name=\"attribute_value\"/>"), std::string::npos);
+  EXPECT_NE(xml.find(expectedXML), std::string::npos);
+}
+
+TEST(BehaviorTreeFactory, addMetadataToManifest)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  const auto& initial_manifest = factory.manifests().at("SaySomething");
+  EXPECT_TRUE(initial_manifest.metadata.empty());
+  factory.addMetadataToManifest("SaySomething", makeTestMetadata());
+  const auto& modified_manifest = factory.manifests().at("SaySomething");
+  EXPECT_EQ(modified_manifest.metadata, makeTestMetadata());
 }

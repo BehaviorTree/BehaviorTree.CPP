@@ -440,43 +440,6 @@ struct has_static_method_providedPorts<
 };
 
 template <typename T, typename = void>
-struct has_static_method_description : std::false_type
-{
-};
-
-template <typename T>
-struct has_static_method_description<
-    T, typename std::enable_if<
-           std::is_same<decltype(T::description()), std::string>::value>::type>
-  : std::true_type
-{
-};
-
-/// Optional metadata for a TreeNodeManifest.
-/// The metadata can represent an xml element with text:
-///   <metadata_name>Descriptive text</metadata_name>
-/// Or an xml element with an attribute:
-///   <metadata_name attribute="value"/>
-struct ManifestMetadata
-{
-  /// A pair containing the <name, value> of a metadata's XML attribute.
-  using Attribute = std::pair<std::string, std::string>;
-
-  [[nodiscard]] bool representsText() const
-  {
-    return std::holds_alternative<std::string>(text_or_attribute);
-  }
-
-  [[nodiscard]] bool representsAttribute() const
-  {
-    return std::holds_alternative<Attribute>(text_or_attribute);
-  }
-
-  std::string name;
-  std::variant<std::string, Attribute> text_or_attribute;
-};
-
-template <typename T, typename = void>
 struct has_static_method_metadata : std::false_type
 {
 };
@@ -484,7 +447,7 @@ struct has_static_method_metadata : std::false_type
 template <typename T>
 struct has_static_method_metadata<
     T, typename std::enable_if<
-           std::is_same<decltype(T::metadata()), std::vector<ManifestMetadata>>::value>::type>
+           std::is_same<decltype(T::metadata()), std::vector<std::pair<std::string, std::string>>>::value>::type>
   : std::true_type
 {
 };

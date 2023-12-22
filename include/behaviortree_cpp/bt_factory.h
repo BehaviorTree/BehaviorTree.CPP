@@ -22,6 +22,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
@@ -44,20 +46,11 @@ template <typename T>
 inline TreeNodeManifest CreateManifest(const std::string& ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
-  if constexpr( has_static_method_description<T>::value && has_static_method_metadata<T>::value )
+  if constexpr( has_static_method_metadata<T>::value )
   {
-    return {getType<T>(), ID, portlist, T::description(), T::metadata()};
+    return {getType<T>(), ID, portlist, T::metadata()};
   }
-  else if constexpr( has_static_method_description<T>::value && !has_static_method_metadata<T>::value )
-  {
-    return {getType<T>(), ID, portlist, T::description(), {}};
-  }
-  else if constexpr( !has_static_method_description<T>::value && has_static_method_metadata<T>::value )
-  {
-    return {getType<T>(), ID, portlist, {}, T::metadata()};
-  }
-
-  return {getType<T>(), ID, portlist, {}, {}};
+  return {getType<T>(), ID, portlist, {}};
 }
 
 #ifdef BT_PLUGIN_EXPORT
@@ -432,10 +425,10 @@ public:
   Tree createTree(const std::string& tree_name,
                   Blackboard::Ptr blackboard = Blackboard::create());
 
-  /// Add a description to a specific manifest. This description will be added
+  /// Add metadata to a specific manifest. This metadata will be added
   /// to <TreeNodesModel> with the function writeTreeNodesModelXML()
-  void addDescriptionToManifest(const std::string& node_id,
-                                const std::string& description);
+  void addMetadataToManifest(const std::string& node_id,
+                             const std::vector<std::pair<std::string, std::string>>& metadata);
 
   /**
    * @brief Add an Enum to the scripting language.

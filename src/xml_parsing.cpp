@@ -982,29 +982,18 @@ void addNodeModelToXML(const TreeNodeManifest& model,
     element->InsertEndChild(port_element);
   }
 
-  if (!model.description.empty())
+  if (!model.metadata.empty())
   {
-    auto description_element = doc.NewElement("description");
-    description_element->SetText(model.description.c_str());
-    element->InsertEndChild(description_element);
-  }
+    auto metadata_root = doc.NewElement("MetadataFields");
 
-  for (const auto& metadata : model.metadata)
-  {
-    auto metadata_element = doc.NewElement(metadata.name.c_str());
-
-    if (metadata.representsText())
+    for (const auto& [name, value] : model.metadata)
     {
-      const auto element_text = std::get<std::string>(metadata.text_or_attribute);
-      metadata_element->SetText(element_text.c_str());
-    }
-    else
-    {
-      const auto [attribute_name, attribute_val] = std::get<ManifestMetadata::Attribute>(metadata.text_or_attribute);
-      metadata_element->SetAttribute(attribute_name.c_str(), attribute_val.c_str());
+      auto metadata_element = doc.NewElement("Metadata");
+      metadata_element->SetAttribute(name.c_str(), value.c_str());
+      metadata_root->InsertEndChild(metadata_element);
     }
 
-    element->InsertEndChild(metadata_element);
+    element->InsertEndChild(metadata_root);
   }
 
   model_root->InsertEndChild(element);
