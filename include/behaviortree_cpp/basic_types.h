@@ -331,10 +331,15 @@ public:
   template <typename T>
   void setDefaultValue(const T& default_value) {
     default_value_ = Any(default_value);
+    has_dyn_default_value_ = false;
     try{
       default_value_str_ = BT::toStr(default_value);
     }
     catch(LogicError&) {}
+  }
+
+  void setDefaultValue(const Any&) {
+    has_dyn_default_value_ = true;
   }
 
   [[nodiscard]] const std::string& description() const;
@@ -343,9 +348,12 @@ public:
 
   [[nodiscard]] const std::string& defaultValueString() const;
 
+  [[nodiscard]] bool hasDynamicDefaultValue() const {return has_dyn_default_value_;}
+
 private:
   PortDirection direction_;
   std::string description_;
+  bool has_dyn_default_value_ = false;
   Any default_value_;
   std::string default_value_str_;
 };
@@ -412,12 +420,31 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& defa
 }
 
 template <typename T = AnyTypeAllowed> [[nodiscard]]
+inline std::pair<std::string, PortInfo> InputPort(StringView name, const Any& any,
+                                                  StringView description)
+{
+  auto out = CreatePort<T>(PortDirection::INPUT, name, description);
+  out.second.setDefaultValue(any);
+  return out;
+}
+
+template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           const T& default_value,
                                                           StringView description)
 {
   auto out = CreatePort<T>(PortDirection::INOUT, name, description);
   out.second.setDefaultValue(default_value);
+  return out;
+}
+
+template <typename T = AnyTypeAllowed> [[nodiscard]]
+inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
+                                                          const Any& any,
+                                                          StringView description)
+{
+  auto out = CreatePort<T>(PortDirection::INOUT, name, description);
+  out.second.setDefaultValue(any);
   return out;
 }
 //----------
