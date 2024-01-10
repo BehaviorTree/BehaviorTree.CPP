@@ -91,7 +91,7 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<SwitchNode<4>>("Switch4");
   registerNodeType<SwitchNode<5>>("Switch5");
   registerNodeType<SwitchNode<6>>("Switch6");
-  
+
   registerNodeType<LoopNode<int>>("LoopInt");
   registerNodeType<LoopNode<bool>>("LoopBool");
   registerNodeType<LoopNode<double>>("LoopDouble");
@@ -435,15 +435,15 @@ Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
   return tree;
 }
 
-void BehaviorTreeFactory::addDescriptionToManifest(const std::string& node_id,
-                                                   const std::string& description)
+void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
+                                                const std::vector<std::pair<std::string, std::string>>& metadata)
 {
   auto it = _p->manifests.find(node_id);
   if (it == _p->manifests.end())
   {
-    throw std::runtime_error("addDescriptionToManifest: wrong ID");
+    throw std::runtime_error("addMetadataToManifest: wrong ID");
   }
-  it->second.description = description;
+  it->second.metadata = metadata;
 }
 
 void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
