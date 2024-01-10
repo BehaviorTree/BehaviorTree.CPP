@@ -2,6 +2,21 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix typo in unit test `#733 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/733>`_
+* allow Input/Output ports with type Any
+* Merge pull request `#703 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/703>`_ from galou/export_xsd
+  Implement writeTreeXSD() to generate an XSD
+* Any::isType() will return the original type. Cherry picking from `#708 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/708>`_
+* fix `#734 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/734>`_
+* remove unneeded includes
+* add Any::castPtr
+* add alias KeyValueVector
+* Merge pull request `#730 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/730>`_ from adlarkin/add_metadata
+  Add optional metadata to TreeNodeManifest
+* Contributors: Ashton Larkin, Davide Faconti, Gaël Écorchard
+
 4.4.3 (2023-12-19)
 ------------------
 * Merge pull request #709 from galou/unset_blackboard
