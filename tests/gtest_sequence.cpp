@@ -231,7 +231,7 @@ TEST_F(ComplexSequenceTest, ComplexSequenceConditionsTrue)
   // reactive node already reset seq_conditions
   ASSERT_EQ(NodeStatus::IDLE, seq_conditions.status());
   ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
-  ASSERT_EQ(NodeStatus::IDLE, condition_1.status());
+  ASSERT_EQ(NodeStatus::IDLE, condition_2.status());
   ASSERT_EQ(NodeStatus::RUNNING, action_1.status());
 }
 
