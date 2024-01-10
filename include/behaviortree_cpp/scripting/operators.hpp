@@ -103,15 +103,15 @@ struct ExprUnaryArithmetic : ExprBase
     auto rhs_v = rhs->evaluate(env);
     if (rhs_v.isNumber())
     {
-      double rv = rhs_v.cast<double>();
+      const double rv = rhs_v.cast<double>();
       switch (op)
       {
         case negate:
           return Any(-rv);
         case complement:
-          return Any(double(~static_cast<int64_t>(rv)));
+          return Any(static_cast<double>(~static_cast<int64_t>(rv)));
         case logical_not:
-          return Any(double(!static_cast<bool>(rv)));
+          return Any(static_cast<double>(!static_cast<bool>(rv)));
       }
     }
     else if (rhs_v.isString())
@@ -252,7 +252,7 @@ struct ExprBinaryArithmetic : ExprBase
         }
       }
     }
-    else if (rhs_v.isType<SimpleString>() && lhs_v.isType<SimpleString>() && op == plus)
+    else if (rhs_v.isString() && lhs_v.isString() && op == plus)
     {
       return Any(lhs_v.cast<std::string>() + rhs_v.cast<std::string>());
     }

@@ -133,10 +133,11 @@ public:
     return _any.type() == typeid(SafeAny::SimpleString);
   }
 
+  // check is the original type is equal to T
   template <typename T>
   [[nodiscard]] bool isType() const
   {
-    return _any.type() == typeid(T);
+    return _original_type == typeid(T);
   }
 
   // copy the value (casting into dst). We preserve the destination type.
@@ -170,11 +171,13 @@ public:
     return linb::any_cast<T>(&_any);
   }
 
+  // This is the original type
   [[nodiscard]] const std::type_index& type() const noexcept
   {
     return _original_type;
   }
 
+  // This is the type we casted to, internally
   [[nodiscard]] const std::type_info& castedType() const noexcept
   {
     return _any.type();
@@ -210,7 +213,7 @@ private:
   std::string errorMsg() const
   {
     return StrCat("[Any::convert]: no known safe conversion between [",
-                  demangle( _any.type() ), "] and [", demangle( typeid(T) ),"]");
+                  demangle( type() ), "] and [", demangle( typeid(T) ),"]");
   }
 };
 
@@ -296,7 +299,7 @@ inline void Any::copyInto(Any &dst)
 
   const auto& dst_type = dst.castedType();
 
-  if ((type() == dst_type) || (isString() && dst.isString()) )
+  if ((castedType() == dst_type) || (isString() && dst.isString()) )
   {
     dst._any = _any;
   }
@@ -446,7 +449,7 @@ nonstd::expected<T, std::string> Any::tryCast() const
     throw std::runtime_error("Any::cast failed because it is empty");
   }
 
-  if (_any.type() == typeid(T))
+  if (castedType() == typeid(T))
   {
     return linb::any_cast<T>(_any);
   }

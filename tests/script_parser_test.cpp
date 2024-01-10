@@ -152,7 +152,7 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(GetResult("y | x").cast<double>(), (5 | 3));
   EXPECT_EQ(GetResult("y ^ x").cast<double>(), (5 ^ 3));
 
-  EXPECT_ANY_THROW(GetResult("y ^ 5.1").cast<double>());
+  EXPECT_ANY_THROW(auto res = GetResult("y ^ 5.1").cast<double>());
 
   // test string variables
   EXPECT_EQ(GetResult("A:='hello'; B:=' '; C:='world'; A+B+C").cast<std::string>(),
@@ -216,6 +216,7 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(variables->get<int>("v1"), 1);
   EXPECT_EQ(variables->get<int>("v2"), 0);
 
+  EXPECT_EQ(GetResult(" v2 = true ").cast<int>(), 1);
   EXPECT_EQ(GetResult(" v2 = !false ").cast<int>(), 1);
   EXPECT_EQ(GetResult(" v2 = !v2 ").cast<int>(), 0);
 

@@ -5,6 +5,7 @@ set(BT_TESTS
   src/action_test_node.cpp
   src/condition_test_node.cpp
 
+  gtest_any.cpp
   gtest_blackboard.cpp
   gtest_coroutines.cpp
   gtest_decorator.cpp
@@ -58,7 +59,8 @@ else()
     enable_testing()
 
     add_executable(${BTCPP_LIBRARY}_test ${BT_TESTS}
-        gtest_enums.cpp)
+        gtest_enums.cpp
+        gtest_any.cpp)
     target_link_libraries(${PROJECT_NAME}_test
         ${TEST_DEPENDECIES}
         Threads::Threads
