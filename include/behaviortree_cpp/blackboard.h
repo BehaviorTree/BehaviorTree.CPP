@@ -196,7 +196,15 @@ public:
           throw LogicError(msg);
         }
       }
-      new_value.copyInto(previous_any);
+      // if doing set<BT::Any>, skip type check
+      if constexpr(std::is_same_v<Any, T>)
+      {
+        previous_any = new_value;
+      }
+      else {
+        // copy only if the type is compatible
+        new_value.copyInto(previous_any);
+      }
     }
   }
 

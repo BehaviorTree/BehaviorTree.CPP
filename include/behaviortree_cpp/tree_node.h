@@ -441,10 +441,16 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     if (auto any_ref = config().blackboard->getAnyLocked(std::string(remapped_key)))
     {
       auto val = any_ref.get();
+      // support getInput<Any>()
+      if constexpr (std::is_same_v<T, Any>)
+      {
+        destination = *val;
+        return {};
+      }
+
       if(!val->empty())
       {
-        if (!std::is_same_v<T, std::string> &&
-            val->type() == typeid(std::string))
+        if (!std::is_same_v<T, std::string> && val->isString())
         {
           destination = ParseString(val->cast<std::string>());
         }
@@ -493,6 +499,15 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   if (!isBlackboardPointer(remapped_key))
   {
     return nonstd::make_unexpected("setOutput requires a blackboard pointer. Use {}");
+  }
+
+  if constexpr(std::is_same_v<BT::Any, T>)
+  {
+    if(config().manifest->ports.at(key).type() != typeid(BT::Any))
+    {
+      throw LogicError("setOutput<Any> is not allowed, unless the port "
+                       "was declared using OutputPort<Any>");
+    }
   }
 
   remapped_key = stripBlackboardPointer(remapped_key);

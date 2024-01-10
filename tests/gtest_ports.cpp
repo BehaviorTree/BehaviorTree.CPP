@@ -289,3 +289,86 @@ TEST(PortTest, DefaultInput)
 }
 
 
+class GetAny : public SyncActionNode
+{
+public:
+  GetAny(const std::string& name, const NodeConfig& config) :
+      SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    // case 1: the port is Any, but we can cast dirrectly to string
+    auto res_str = getInput<std::string>("val_str");
+    // case 2: the port is Any, and we retrieve an Any (to be casted later)
+    auto res_int = getInput<BT::Any>("val_int");
+
+    // case 3: port is double and we get a double
+    auto res_real_A = getInput<double>("val_real");
+    // case 4: port is double and we get an Any
+    auto res_real_B = getInput<BT::Any>("val_real");
+
+    bool expected = res_str.value() == "hello" &&
+                    res_int->cast<int>() == 42 &&
+                    res_real_A.value() == 3.14 &&
+                    res_real_B->cast<double>() == 3.14;
+
+    return expected ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::InputPort<BT::Any>("val_str"),
+            BT::InputPort<BT::Any>("val_int"),
+            BT::InputPort<double>("val_real")};
+  }
+};
+
+class SetAny : public SyncActionNode
+{
+public:
+  SetAny(const std::string& name, const NodeConfig& config) :
+      SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    // check that the port can contain different types
+    setOutput("val_str", BT::Any(1.0));
+    setOutput("val_str", BT::Any(1));
+    setOutput("val_str", BT::Any("hello"));
+
+    setOutput("val_int", 42);
+    setOutput("val_real", 3.14);
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::OutputPort<BT::Any>("val_str"),
+            BT::OutputPort<int>("val_int"),
+            BT::OutputPort<BT::Any>("val_real")};
+  }
+};
+
+TEST(PortTest, AnyPort)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <Sequence>
+          <SetAny val_str="{val_str}" val_int="{val_int}" val_real="{val_real}"/>
+          <GetAny val_str="{val_str}" val_int="{val_int}" val_real="{val_real}"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<SetAny>("SetAny");
+  factory.registerNodeType<GetAny>("GetAny");
+  auto tree = factory.createTreeFromText(xml_txt);
+  auto status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+

@@ -297,7 +297,8 @@ public:
 
   [[nodiscard]] bool isStronglyTyped() const
   {
-    return type_info_ != typeid(AnyTypeAllowed);
+    return type_info_ != typeid(AnyTypeAllowed) &&
+           type_info_ != typeid(BT::Any);
   }
 
   [[nodiscard]] const StringConverter& converter() const
