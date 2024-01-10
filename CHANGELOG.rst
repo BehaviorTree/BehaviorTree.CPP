@@ -2,6 +2,18 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.4.3 (2023-12-19)
+------------------
+* Merge pull request #709 from galou/unset_blackboard
+* fix issue `#725 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/725>`_ : SetBlackboard can copy entries
+* add more unit tests
+* fix typos `#721 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/721>`_
+* fix: guard macro declaration to prevent redefinition warning
+* fix: Rename scoped lock so it doesn't hide the outer lock triggering a compiler warning
+* add private ports to exclude from autoremapping `#706 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/706>`_
+* fix issue `#713 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/713>`_:  getNodesByPath should be const
+* Contributors: Davide Faconti, Nestor Gonzalez, Tony Paulussen
+
 4.4.2 (2023-11-28)
 ------------------
 * fix issue `#702 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/702>`_ : output ports require {}

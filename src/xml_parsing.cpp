@@ -83,7 +83,7 @@ struct XMLParser::PImpl
   std::map<std::string, SubtreeModel> subtree_models;
 
   int suffix_count;
-  
+
   explicit PImpl(const BehaviorTreeFactory& fact) :
     factory(fact), current_path(std::filesystem::current_path()), suffix_count(0)
   {}
@@ -437,8 +437,13 @@ void VerifyXML(const std::string& xml_text,
     {
       if (children_count == 0)
       {
-        ThrowError(node->GetLineNum(), "A Control node must have at least 1 "
-                                       "child");
+        std::string name_attr;
+        if (node->Attribute("name"))
+        {
+          name_attr = "(`" + std::string(node->Attribute("name")) + "`)";
+        }
+        ThrowError(node->GetLineNum(), std::string("A Control node must have at least 1 "
+                                       "child, error in XML node `") + node->Name() + name_attr + "`");
       }
     }
     else if (name == "SubTree")
@@ -977,11 +982,18 @@ void addNodeModelToXML(const TreeNodeManifest& model,
     element->InsertEndChild(port_element);
   }
 
-  if (!model.description.empty())
+  if (!model.metadata.empty())
   {
-    auto description_element = doc.NewElement("description");
-    description_element->SetText(model.description.c_str());
-    element->InsertEndChild(description_element);
+    auto metadata_root = doc.NewElement("MetadataFields");
+
+    for (const auto& [name, value] : model.metadata)
+    {
+      auto metadata_element = doc.NewElement("Metadata");
+      metadata_element->SetAttribute(name.c_str(), value.c_str());
+      metadata_root->InsertEndChild(metadata_element);
+    }
+
+    element->InsertEndChild(metadata_root);
   }
 
   model_root->InsertEndChild(element);
@@ -992,7 +1004,7 @@ void addTreeToXML(const Tree& tree,
                   XMLElement* rootXML,
                   bool add_metadata,
                   bool add_builtin_models)
-{  
+{
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node,
                 XMLElement* parent_elem)

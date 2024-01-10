@@ -78,8 +78,9 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<AlwaysFailureNode>("AlwaysFailure");
   registerNodeType<ScriptNode>("Script");
   registerNodeType<ScriptCondition>("ScriptCondition");
-  registerNodeType<SetBlackboard>("SetBlackboard");
+  registerNodeType<SetBlackboardNode>("SetBlackboard");
   registerNodeType<SleepNode>("Sleep");
+  registerNodeType<UnsetBlackboardNode>("UnsetBlackboard");
 
   registerNodeType<SubTreeNode>("SubTree");
 
@@ -90,7 +91,7 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<SwitchNode<4>>("Switch4");
   registerNodeType<SwitchNode<5>>("Switch5");
   registerNodeType<SwitchNode<6>>("Switch6");
-  
+
   registerNodeType<LoopNode<int>>("LoopInt");
   registerNodeType<LoopNode<bool>>("LoopBool");
   registerNodeType<LoopNode<double>>("LoopDouble");
@@ -397,7 +398,7 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
   if(!_p->parser->registeredBehaviorTrees().empty()) {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromText "
                  "after registerBehaviorTreeFrom[File/Text].\n"
-                 "This is NOTm probably, what you want to do.\n"
+                 "This is NOT, probably, what you want to do.\n"
                  "You should probably use BehaviorTreeFactory::createTree, instead"
               << std::endl;
   }
@@ -414,7 +415,7 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path &file_p
   if(!_p->parser->registeredBehaviorTrees().empty()) {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromFile "
                  "after registerBehaviorTreeFrom[File/Text].\n"
-                 "This is NOTm probably, what you want to do.\n"
+                 "This is NOT, probably, what you want to do.\n"
                  "You should probably use BehaviorTreeFactory::createTree, instead"
               << std::endl;
   }
@@ -434,15 +435,15 @@ Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
   return tree;
 }
 
-void BehaviorTreeFactory::addDescriptionToManifest(const std::string& node_id,
-                                                   const std::string& description)
+void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
+                                                const KeyValueVector& metadata)
 {
   auto it = _p->manifests.find(node_id);
   if (it == _p->manifests.end())
   {
-    throw std::runtime_error("addDescriptionToManifest: wrong ID");
+    throw std::runtime_error("addMetadataToManifest: wrong ID");
   }
-  it->second.description = description;
+  it->second.metadata = metadata;
 }
 
 void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)

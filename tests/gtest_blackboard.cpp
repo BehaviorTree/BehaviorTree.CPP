@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2019 Davide Faconti, Eurecat - All Rights Reserved
+/* Copyright (C) 2018-2023 Davide Faconti, Eurecat - All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -17,6 +17,8 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/xml_parsing.h"
+
+#include "../sample_nodes/dummy_nodes.h"
 
 using namespace BT;
 
@@ -458,6 +460,40 @@ TEST(BlackboardTest, IssueSetBlackboard)
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
   ASSERT_EQ(42, tree.rootBlackboard()->get<int>("value"));
 }
+
+struct Point {
+  double x;
+  double y;
+};
+
+TEST(BlackboardTest, SetBlackboard_Issue725)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <SetBlackboard value="{first_point}" output_key="other_point" />
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+  auto& blackboard = tree.subtrees.front()->blackboard;
+
+  const Point point = {2,7};
+  blackboard->set("first_point", point);
+
+  const auto status = tree.tickOnce();
+
+  Point other_point = blackboard->get<Point>("other_point");
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(other_point.x, point.x);
+  ASSERT_EQ(other_point.y, point.y);
+}
+
 
 TEST(BlackboardTest, NullOutputRemapping)
 {

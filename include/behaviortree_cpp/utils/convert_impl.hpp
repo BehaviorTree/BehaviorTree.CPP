@@ -13,7 +13,6 @@
 #pragma once
 
 #include <type_traits>
-#include <exception>
 #include "simple_string.hpp"
 
 #undef max

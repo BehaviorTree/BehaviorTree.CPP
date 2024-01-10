@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 #include <filesystem>
+#include <string>
+#include <utility>
+#include <vector>
 #include "behaviortree_cpp/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
 #include "../sample_nodes/dummy_nodes.h"
@@ -388,10 +391,18 @@ TEST(BehaviorTreeReload, ReloadSameTree)
   }
 }
 
-class DescriptiveAction : public SyncActionNode
+KeyValueVector makeTestMetadata()
+{
+  return {
+    std::make_pair<std::string, std::string>("foo", "hello"),
+    std::make_pair<std::string, std::string>("bar", "42"),
+  };
+}
+
+class ActionWithMetadata : public SyncActionNode
 {
 public:
-  DescriptiveAction(const std::string& name, const NodeConfig& config):
+  ActionWithMetadata(const std::string& name, const NodeConfig& config):
     SyncActionNode(name, config) {}
 
   BT::NodeStatus tick() override {
@@ -402,21 +413,39 @@ public:
     return {};
   }
 
-  static std::string description() {
-    return "THE DESCRIPTION";
+  static KeyValueVector metadata() {
+    return makeTestMetadata();
   }
 };
 
-TEST(BehaviorTreeFactory, DescriptionMethod)
+TEST(BehaviorTreeFactory, ManifestMethod)
 {
+  const char* expectedXML = R"(
+        <Action ID="ActionWithMetadata">
+            <MetadataFields>
+                <Metadata foo="hello"/>
+                <Metadata bar="42"/>
+            </MetadataFields>
+        </Action>)";
 
   BehaviorTreeFactory factory;
-  factory.registerNodeType<DescriptiveAction>("DescriptiveAction");
-  const auto& manifest = factory.manifests().at("DescriptiveAction");
-  ASSERT_EQ(manifest.description, "THE DESCRIPTION");
+  factory.registerNodeType<ActionWithMetadata>("ActionWithMetadata");
+  const auto& manifest = factory.manifests().at("ActionWithMetadata");
+  EXPECT_EQ(manifest.metadata, makeTestMetadata());
 
   auto xml = writeTreeNodesModelXML(factory, false);
   std::cout << xml << std::endl;
 
-  ASSERT_NE(xml.find( "<description>THE DESCRIPTION</description>"), std::string::npos);
+  EXPECT_NE(xml.find(expectedXML), std::string::npos);
+}
+
+TEST(BehaviorTreeFactory, addMetadataToManifest)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  const auto& initial_manifest = factory.manifests().at("SaySomething");
+  EXPECT_TRUE(initial_manifest.metadata.empty());
+  factory.addMetadataToManifest("SaySomething", makeTestMetadata());
+  const auto& modified_manifest = factory.manifests().at("SaySomething");
+  EXPECT_EQ(modified_manifest.metadata, makeTestMetadata());
 }

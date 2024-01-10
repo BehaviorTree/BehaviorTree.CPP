@@ -20,8 +20,9 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
@@ -44,13 +45,11 @@ template <typename T>
 inline TreeNodeManifest CreateManifest(const std::string& ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
-  if constexpr( has_static_method_description<T>::value)
+  if constexpr( has_static_method_metadata<T>::value )
   {
-    return {getType<T>(), ID, portlist, T::description()};
+    return {getType<T>(), ID, portlist, T::metadata()};
   }
-  else {
-    return {getType<T>(), ID, portlist, {}};
-  }
+  return {getType<T>(), ID, portlist, {}};
 }
 
 #ifdef BT_PLUGIN_EXPORT
@@ -74,7 +73,7 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
 *   }
 *
 * IMPORTANT: this function MUST be declared in a cpp file, NOT a header file.
-* In your cake, you must add the definition [BT_PLUGIN_EXPORT] with:
+* You must add the definition [BT_PLUGIN_EXPORT] in CMakeLists.txt using:
 *
 *   target_compile_definitions(my_plugin_target PRIVATE  BT_PLUGIN_EXPORT )
 
@@ -162,7 +161,7 @@ public:
   /// move_nodes = tree.getNodesByPath<MoveBaseNode>("move_*");
   ///
   template <typename NodeType = BT::TreeNode> [[nodiscard]]
-  std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) {
+  std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) const {
     std::vector<const TreeNode*> nodes;
     for (auto const& subtree : subtrees) {
       for (auto const& node : subtree->nodes) {
@@ -425,10 +424,10 @@ public:
   Tree createTree(const std::string& tree_name,
                   Blackboard::Ptr blackboard = Blackboard::create());
 
-  /// Add a description to a specific manifest. This description will be added
+  /// Add metadata to a specific manifest. This metadata will be added
   /// to <TreeNodesModel> with the function writeTreeNodesModelXML()
-  void addDescriptionToManifest(const std::string& node_id,
-                                const std::string& description);
+  void addMetadataToManifest(const std::string& node_id,
+                             const KeyValueVector& metadata);
 
   /**
    * @brief Add an Enum to the scripting language.

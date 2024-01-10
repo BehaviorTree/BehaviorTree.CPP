@@ -143,7 +143,7 @@ public:
       // this is not the first time we set this entry, we need to check
       // if the type is the same or not.
       Entry& entry = *it->second;
-      std::scoped_lock lock(entry.entry_mutex);
+      std::scoped_lock scoped_lock(entry.entry_mutex);
 
       Any& previous_any = entry.value;
 
@@ -199,7 +199,22 @@ public:
       new_value.copyInto(previous_any);
     }
   }
-  
+
+  void unset(const std::string& key)
+  {
+    std::unique_lock lock(mutex_);
+
+    // check local storage
+    auto it = storage_.find(key);
+    if (it == storage_.end())
+    {
+      // No entry, nothing to do.
+      return;
+    }
+
+    storage_.erase(it);
+  }
+
   [[nodiscard]] const TypeInfo* entryInfo(const std::string& key);
 
   void addSubtreeRemapping(StringView internal, StringView external);

@@ -2,16 +2,14 @@
 
 #include <iostream>
 #include <vector>
-#include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <typeinfo>
 #include <functional>
 #include <chrono>
-#include <memory>
 #include <string_view>
+#include <utility>
 #include <variant>
-#include <optional>
+#include <vector>
 
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
@@ -60,6 +58,9 @@ enum class PortDirection
 };
 
 using StringView = std::string_view;
+
+// vector of key/value pairs
+using KeyValueVector = std::vector<std::pair<std::string, std::string>>;
 
 /**
  * convertFromString is used to convert a string into a custom type.
@@ -438,14 +439,14 @@ struct has_static_method_providedPorts<
 };
 
 template <typename T, typename = void>
-struct has_static_method_description : std::false_type
+struct has_static_method_metadata : std::false_type
 {
 };
 
 template <typename T>
-struct has_static_method_description<
+struct has_static_method_metadata<
     T, typename std::enable_if<
-           std::is_same<decltype(T::description()), std::string>::value>::type>
+        std::is_same<decltype(T::metadata()), KeyValueVector>::value>::type>
   : std::true_type
 {
 };
@@ -467,4 +468,3 @@ using TimePoint = std::chrono::high_resolution_clock::time_point;
 using Duration = std::chrono::high_resolution_clock::duration;
 
 }   // namespace BT
-

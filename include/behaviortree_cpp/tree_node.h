@@ -13,10 +13,9 @@
 
 #pragma once
 
-#include <condition_variable>
 #include <exception>
-#include <mutex>
 #include <map>
+#include <utility>
 
 #include "behaviortree_cpp/utils/signal.h"
 #include "behaviortree_cpp/basic_types.h"
@@ -38,7 +37,7 @@ struct TreeNodeManifest
   NodeType type;
   std::string registration_ID;
   PortsList ports;
-  std::string description;
+  KeyValueVector metadata;
 };
 
 using PortsRemapping = std::unordered_map<std::string, std::string>;
@@ -243,7 +242,7 @@ public:
    * @brief setOutput modifies the content of an Output port
    * @param key    the name of the port.
    * @param value  new value
-   * @return       valid Result, is succesfull.
+   * @return       valid Result, if succesful.
    */
   template <typename T>
   Result setOutput(const std::string& key, const T& value);

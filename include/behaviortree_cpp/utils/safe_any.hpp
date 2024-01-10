@@ -16,12 +16,7 @@
 #include <charconv>
 #endif
 
-#include <exception>
-#include <algorithm>
-#include <iostream>
-#include <chrono>
 #include <string>
-#include <cstring>
 #include <type_traits>
 #include <typeindex>
 
@@ -153,23 +148,23 @@ public:
 
   Any& operator = (const Any& other);
 
-  inline bool isNumber() const
+  [[nodiscard]] ool isNumber() const
   {
     return _is_number;
   }
 
-  inline bool isIntegral() const
+  [[nodiscard]] ool isIntegral() const
   {
     return _is_integral;
   }
 
-  bool isString() const
+  [[nodiscard]] bool isString() const
   {
     return _any.type() == typeid(SafeAny::SimpleString);
   }
 
   template <typename T>
-  bool isType() const
+  [[nodiscard]] bool isType() const
   {
     return type() == typeid(T);
   }
@@ -191,7 +186,7 @@ public:
 
   // same as tryCast, but throws if fails
   template <typename T>
-  T cast() const {
+  [[nodiscard]] T cast() const {
     if(auto res = tryCast<T>() )
     {
       return res.value();
@@ -201,17 +196,28 @@ public:
     }
   }
 
-  const std::type_index& type() const noexcept
+  // Method to access the value by pointer
+  template <typename T>
+  [[nodiscard]] T* castPtr() const {
+
+    if( _any.empty() )
+    {
+      return nullptr;
+    }
+    return linb::any_cast<T>(&_any);
+  }
+
+  [[nodiscard]] const std::type_index& type() const noexcept
   {
     return _original_type;
   }
 
-  const std::type_info& castedType() const noexcept
+  [[nodiscard]] const std::type_info& castedType() const noexcept
   {
     return _any.type();
   }
 
-  bool empty() const noexcept
+  [[nodiscard]] bool empty() const noexcept
   {
     return _any.empty();
   }

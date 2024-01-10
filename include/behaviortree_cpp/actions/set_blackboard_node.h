@@ -26,11 +26,17 @@ namespace BT
  *  <SetBlackboard value="42" output_key="the_answer" />
  *
  * Will store the string "42" in the entry with key "the_answer".
+ *
+ * Alternatively, you can use it to copy one port inside another port:
+ *
+ * <SetBlackboard value="{src_port}" output_key="dst_port" />
+ *
+ * This will copy the type and content of {src_port} into {dst_port}
  */
-class SetBlackboard : public SyncActionNode
+class SetBlackboardNode : public SyncActionNode
 {
 public:
-  SetBlackboard(const std::string& name, const NodeConfig& config) :
+  SetBlackboardNode(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
   {
     setRegistrationID("SetBlackboard");
@@ -46,17 +52,36 @@ public:
 private:
   virtual BT::NodeStatus tick() override
   {
-    std::string key, value;
-    if (!getInput("output_key", key))
+    std::string output_key;
+    if (!getInput("output_key", output_key))
     {
       throw RuntimeError("missing port [output_key]");
     }
-    if (!getInput("value", value))
-    {
-      throw RuntimeError("missing port [value]");
-    }
 
-    config().blackboard->set(static_cast<std::string>(key), value);
+    const std::string value_str = config().input_ports.at("value");
+
+    StringView stripped_key;
+    if(isBlackboardPointer(value_str, &stripped_key))
+    {
+      const auto input_key = std::string(stripped_key);
+      std::shared_ptr<Blackboard::Entry> src_entry = config().blackboard->getEntry(input_key);
+      std::shared_ptr<Blackboard::Entry> dst_entry = config().blackboard->getEntry(output_key);
+
+      if(!src_entry)
+      {
+        throw RuntimeError("Can't find the port referred by [value]");
+      }
+      if(!dst_entry)
+      {
+        config().blackboard->createEntry(output_key, src_entry->info);
+        dst_entry = config().blackboard->getEntry(output_key);
+      }
+      dst_entry->value = src_entry->value;
+    }
+    else
+    {
+      config().blackboard->set(output_key, value_str);
+    }
 
     return NodeStatus::SUCCESS;
   }
