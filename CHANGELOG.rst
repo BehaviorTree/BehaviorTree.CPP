@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.5.0 (2024-01-10)
+------------------
 * fix typo in unit test `#733 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/733>`_
 * allow Input/Output ports with type Any
 * Merge pull request `#703 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/703>`_ from galou/export_xsd
