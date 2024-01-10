@@ -2,10 +2,7 @@
 #define STRCAT_HPP
 
 #include <string_view>
-#include <array>
-#include <cstdint>
 #include <string>
-#include <type_traits>
 
 namespace BT {
 
