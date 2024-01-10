@@ -13,12 +13,9 @@
 
 #pragma once
 
-#include <condition_variable>
 #include <exception>
-#include <mutex>
 #include <map>
 #include <utility>
-#include <vector>
 
 #include "behaviortree_cpp/utils/signal.h"
 #include "behaviortree_cpp/basic_types.h"
@@ -40,7 +37,7 @@ struct TreeNodeManifest
   NodeType type;
   std::string registration_ID;
   PortsList ports;
-  std::vector<std::pair<std::string, std::string>> metadata;
+  KeyValueVector metadata;
 };
 
 using PortsRemapping = std::unordered_map<std::string, std::string>;

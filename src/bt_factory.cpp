@@ -436,7 +436,7 @@ Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
 }
 
 void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
-                                                const std::vector<std::pair<std::string, std::string>>& metadata)
+                                                const KeyValueVector& metadata)
 {
   auto it = _p->manifests.find(node_id);
   if (it == _p->manifests.end())

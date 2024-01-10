@@ -2,18 +2,14 @@
 
 #include <iostream>
 #include <vector>
-#include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <typeinfo>
 #include <functional>
 #include <chrono>
-#include <memory>
 #include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <optional>
 
 #include "behaviortree_cpp/utils/safe_any.hpp"
 #include "behaviortree_cpp/exceptions.h"
@@ -62,6 +58,9 @@ enum class PortDirection
 };
 
 using StringView = std::string_view;
+
+// vector of key/value pairs
+using KeyValueVector = std::vector<std::pair<std::string, std::string>>;
 
 /**
  * convertFromString is used to convert a string into a custom type.
@@ -447,7 +446,7 @@ struct has_static_method_metadata : std::false_type
 template <typename T>
 struct has_static_method_metadata<
     T, typename std::enable_if<
-           std::is_same<decltype(T::metadata()), std::vector<std::pair<std::string, std::string>>>::value>::type>
+        std::is_same<decltype(T::metadata()), KeyValueVector>::value>::type>
   : std::true_type
 {
 };

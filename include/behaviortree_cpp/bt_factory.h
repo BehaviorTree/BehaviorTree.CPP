@@ -20,7 +20,6 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
-#include <unordered_set>
 #include <set>
 #include <utility>
 #include <vector>
@@ -428,7 +427,7 @@ public:
   /// Add metadata to a specific manifest. This metadata will be added
   /// to <TreeNodesModel> with the function writeTreeNodesModelXML()
   void addMetadataToManifest(const std::string& node_id,
-                             const std::vector<std::pair<std::string, std::string>>& metadata);
+                             const KeyValueVector& metadata);
 
   /**
    * @brief Add an Enum to the scripting language.

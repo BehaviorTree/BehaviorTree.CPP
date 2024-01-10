@@ -391,7 +391,7 @@ TEST(BehaviorTreeReload, ReloadSameTree)
   }
 }
 
-std::vector<std::pair<std::string, std::string>> makeTestMetadata()
+KeyValueVector makeTestMetadata()
 {
   return {
     std::make_pair<std::string, std::string>("foo", "hello"),
@@ -413,7 +413,7 @@ public:
     return {};
   }
 
-  static std::vector<std::pair<std::string, std::string>> metadata() {
+  static KeyValueVector metadata() {
     return makeTestMetadata();
   }
 };
