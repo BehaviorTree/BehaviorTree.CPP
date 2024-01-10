@@ -10,8 +10,13 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <cstring>
 #include <functional>
+#include <iostream>
 #include <list>
+#include <sstream>
+#include <string>
+#include <typeindex>
 
 #if defined(__linux) || defined(__linux__)
 #pragma GCC diagnostic push
@@ -38,6 +43,38 @@
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_cpp/utils/demangle_util.h"
+
+namespace
+{
+std::string
+xsdAttributeType(const BT::PortInfo& port_info)
+{
+  if (port_info.direction() == BT::PortDirection::OUTPUT)
+  {
+    return "blackboardType";
+  }
+  const auto& type_info = port_info.type();
+  if ((type_info == typeid(int)) or (type_info == typeid(unsigned int)))
+  {
+    return "integerOrBlackboardType";
+  }
+  else if (type_info == typeid(double))
+  {
+    return "decimalOrBlackboardType";
+  }
+  else if (type_info == typeid(bool))
+  {
+    return "booleanOrBlackboardType";
+  }
+  else if (type_info == typeid(std::string))
+  {
+    return "stringOrBlackboardType";
+  }
+
+  return std::string();
+}
+
+} // Anonymous workspace
 
 namespace BT
 {
@@ -72,9 +109,9 @@ struct XMLParser::PImpl
   void getPortsRecursively(const XMLElement* element,
                            std::vector<std::string>& output_ports);
 
-  void loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes);
+  void loadDocImpl(XMLDocument* doc, bool add_includes);
 
-  std::list<std::unique_ptr<tinyxml2::XMLDocument> > opened_documents;
+  std::list<std::unique_ptr<XMLDocument> > opened_documents;
   std::map<std::string, const XMLElement*> tree_roots;
 
   const BehaviorTreeFactory& factory;
@@ -123,9 +160,9 @@ XMLParser::~XMLParser()
 
 void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_includes)
 {
-  _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
+  _p->opened_documents.emplace_back(new XMLDocument());
 
-  tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
+  XMLDocument* doc = _p->opened_documents.back().get();
   doc->LoadFile(filepath.string().c_str());
 
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
@@ -135,9 +172,9 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
 
 void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
 {
-  _p->opened_documents.emplace_back(new tinyxml2::XMLDocument());
+  _p->opened_documents.emplace_back(new XMLDocument());
 
-  tinyxml2::XMLDocument* doc = _p->opened_documents.back().get();
+  XMLDocument* doc = _p->opened_documents.back().get();
   doc->Parse(xml_text.c_str(), xml_text.size());
 
   _p->loadDocImpl(doc, add_includes);
@@ -198,7 +235,7 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
   }
 }
 
-void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes)
+void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 {
   if (doc->Error())
   {
@@ -257,8 +294,8 @@ void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
       file_path = current_path / file_path;
     }
 
-    opened_documents.emplace_back(new tinyxml2::XMLDocument());
-    tinyxml2::XMLDocument* next_doc = opened_documents.back().get();
+    opened_documents.emplace_back(new XMLDocument());
+    XMLDocument* next_doc = opened_documents.back().get();
 
     // change current path to the included file for handling additional relative paths
     const auto previous_path = current_path;
@@ -308,7 +345,7 @@ void XMLParser::PImpl::loadDocImpl(tinyxml2::XMLDocument* doc, bool add_includes
 void VerifyXML(const std::string& xml_text,
                const std::unordered_map<std::string, BT::NodeType>& registered_nodes)
 {
-  tinyxml2::XMLDocument doc;
+  XMLDocument doc;
   auto xml_error = doc.Parse(xml_text.c_str(), xml_text.size());
   if (xml_error)
   {
@@ -1122,6 +1159,275 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
   for (const auto& [registration_ID, model] : ordered_models)
   {
     addNodeModelToXML(*model, doc, model_root);
+  }
+
+  XMLPrinter printer;
+  doc.Print(&printer);
+  return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
+}
+
+std::string writeTreeXSD(const BehaviorTreeFactory& factory)
+{
+  // There are 2 forms of representation for a node:
+  // compact: <Sequence .../>  and explicit: <Control ID="Sequence" ... />
+  // Only the compact form is supported because the explicit form doesn't
+  // make sense with XSD since we would need to allow any attribute.
+  // Prepare the data
+
+  std::map<std::string, const TreeNodeManifest*> ordered_models;
+  for (const auto& [registration_id, model] : factory.manifests())
+  {
+    ordered_models.insert({registration_id, &model});
+  }
+
+  XMLDocument doc;
+
+  // Add the XML declaration
+  XMLDeclaration* declaration = doc.NewDeclaration("xml version=\"1.0\" encoding=\"UTF-8\"");
+  doc.InsertFirstChild(declaration);
+
+  // Create the root element with namespace and attributes
+  // To validate a BT XML file with `schema.xsd` in the same directory:
+  // <root BTCPP_format="4" main_tree_to_execute="MainTree"
+  //   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  //   xsi:noNamespaceSchemaLocation="schema.xsd">
+  XMLElement* schema_element = doc.NewElement("xs:schema");
+  schema_element->SetAttribute("xmlns:xs", "http://www.w3.org/2001/XMLSchema");
+  schema_element->SetAttribute("elementFormDefault", "qualified");
+  doc.InsertEndChild(schema_element);
+
+  auto parse_and_insert = [&doc](XMLElement* parent_elem, const char* str) {
+    XMLDocument tmp_doc;
+    tmp_doc.Parse(str);
+    if (tmp_doc.Error())
+    {
+      std::cerr << "Internal error parsing existing XML: " << tmp_doc.ErrorStr() << std::endl;
+      return;
+    }
+    for (auto child = tmp_doc.FirstChildElement(); child != nullptr;
+         child = child->NextSiblingElement())
+    {
+      parent_elem->InsertEndChild(child->DeepClone(&doc));
+    }
+  };
+
+  // Common elements.
+  XMLComment* comment = doc.NewComment("Define the common elements");
+  schema_element->InsertEndChild(comment);
+
+  // TODO: add <xs:whiteSpace value="preserve"/> for `inputPortType` and `outputPortType`.
+  parse_and_insert(schema_element, R"(
+    <xs:simpleType name="blackboardType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\{.*\}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="booleanOrBlackboardType">
+      <xs:union memberTypes="xs:boolean blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="integerOrBlackboardType">
+      <xs:union memberTypes="xs:integer blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="decimalOrBlackboardType">
+      <xs:union memberTypes="xs:decimal blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="stringOrBlackboardType">
+      <xs:union memberTypes="xs:string blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="descriptionType">
+        <xs:restriction base="xs:string">
+          <xs:whiteSpace value="preserve"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="inputPortType">
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" type="xs:string" use="required"/>
+          <xs:attribute name="type" type="xs:string" use="optional"/>
+          <xs:attribute name="default" type="xs:string" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="outputPortType">
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" type="xs:string" use="required"/>
+          <xs:attribute name="type" type="xs:string" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+    <xs:attributeGroup name="preconditionAttributeGroup">
+      <xs:attribute name="_failureIf" type="xs:string" use="optional"/>
+      <xs:attribute name="_skipIf" type="xs:string" use="optional"/>
+      <xs:attribute name="_successIf" type="xs:string" use="optional"/>
+      <xs:attribute name="_while" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="postconditionAttributeGroup">
+      <xs:attribute name="_onSuccess" type="xs:string" use="optional"/>
+      <xs:attribute name="_onFailure" type="xs:string" use="optional"/>
+      <xs:attribute name="_post" type="xs:string" use="optional"/>
+      <xs:attribute name="_onHalted" type="xs:string" use="optional"/>
+    </xs:attributeGroup>)");
+
+  // Common attributes
+  // Note that we do not add the `ID` attribute because we do not
+  // support the explicit notation (e.g. <Action ID="Saysomething">).
+  // Cf. https://www.behaviortree.dev/docs/learn-the-basics/xml_format/#compact-vs-explicit-representation
+  // There is no way to check attribute validity with the explicit notation with XSD.
+  // The `ID` attribute for `<SubTree>` is handled separately.
+  parse_and_insert(schema_element, R"(
+    <xs:attributeGroup name="commonAttributeGroup">
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attributeGroup ref="preconditionAttributeGroup"/>
+      <xs:attributeGroup ref="postconditionAttributeGroup"/>
+    </xs:attributeGroup>)");
+
+  // Basic node types
+  parse_and_insert(schema_element, R"(
+    <xs:complexType name="treeNodesModelNodeType">
+      <xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="input_port" type="inputPortType"/>
+          <xs:element name="output_port" type="outputPortType"/>
+        </xs:choice>
+        <xs:element name="description" type="descriptionType" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="ID" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:group name="treeNodesModelNodeGroup">
+      <xs:choice>
+        <xs:element name="Action" type="treeNodesModelNodeType"/>
+        <xs:element name="Condition" type="treeNodesModelNodeType"/>
+        <xs:element name="Control" type="treeNodesModelNodeType"/>
+        <xs:element name="Decorator" type="treeNodesModelNodeType"/>
+      </xs:choice>
+    </xs:group>
+    )");
+
+  // `root` element
+  const auto root_element_xsd = R"(
+    <xs:element name="root">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element ref="include"/>
+            <xs:element ref="BehaviorTree"/>
+          </xs:choice>
+          <xs:element ref="TreeNodesModel" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="BTCPP_format" type="xs:string" use="required"/>
+        <xs:attribute name="main_tree_to_execute" type="xs:string" use="optional"/>
+      </xs:complexType>
+    </xs:element>
+  )";
+  parse_and_insert(schema_element, root_element_xsd);
+
+  // Group definition for a single node of any of the existing node types.
+  XMLElement* one_node_group = doc.NewElement("xs:group");
+  {
+    one_node_group->SetAttribute("name", "oneNodeGroup");
+    std::ostringstream xsd;
+    xsd << "<xs:choice>";
+    for (const auto& [registration_id, model] : ordered_models)
+    {
+      xsd << "<xs:element name=\"" << registration_id << "\" type=\"" << registration_id << "Type\"/>";
+    }
+    xsd << "</xs:choice>";
+    parse_and_insert(one_node_group, xsd.str().c_str());
+    schema_element->InsertEndChild(one_node_group);
+  }
+
+  // `include` element
+  parse_and_insert(schema_element, R"(
+    <xs:element name="include">
+      <xs:complexType>
+        <xs:attribute name="path" type="xs:string" use="required"/>
+        <xs:attribute name="ros_pkg" type="xs:string" use="optional"/>
+      </xs:complexType>
+    </xs:element>
+  )");
+
+  // `BehaviorTree` element
+  parse_and_insert(schema_element, R"(
+  <xs:element name="BehaviorTree">
+    <xs:complexType>
+      <xs:group ref="oneNodeGroup"/>
+      <xs:attribute name="ID" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  )");
+
+  // `TreeNodesModel` element
+  parse_and_insert(schema_element, R"(
+    <xs:element name="TreeNodesModel">
+      <xs:complexType>
+          <xs:group ref="treeNodesModelNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:complexType>
+    </xs:element>
+  )");
+
+  // Definitions for all node types.
+  for (const auto& [registration_id, model] : ordered_models)
+  {
+    XMLElement* type = doc.NewElement("xs:complexType");
+    type->SetAttribute("name", (model->registration_ID + "Type").c_str());
+    if ((model->type == NodeType::ACTION)
+        or (model->type == NodeType::CONDITION)
+        or (model->type == NodeType::SUBTREE))
+    {
+      /* No children, nothing to add. */
+    }
+    else if (model->type == NodeType::DECORATOR)
+    {
+      /* One child. */
+      // <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+      XMLElement* group = doc.NewElement("xs:group");
+      group->SetAttribute("ref", "oneNodeGroup");
+      group->SetAttribute("minOccurs", "1");
+      group->SetAttribute("maxOccurs", "1");
+      type->InsertEndChild(group);
+    }
+    else
+    {
+      /* NodeType::CONTROL. */
+      // TODO: check the code, the doc says 1..N but why not 0..N?
+      // <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+      XMLElement* group = doc.NewElement("xs:group");
+      group->SetAttribute("ref", "oneNodeGroup");
+      group->SetAttribute("minOccurs", "0");
+      group->SetAttribute("maxOccurs", "unbounded");
+      type->InsertEndChild(group);
+    }
+    XMLElement* common_attr_group = doc.NewElement("xs:attributeGroup");
+    common_attr_group->SetAttribute("ref", "commonAttributeGroup");
+    type->InsertEndChild(common_attr_group);
+    for (const auto& [port_name, port_info] : model->ports)
+    {
+      XMLElement* attr = doc.NewElement("xs:attribute");
+      attr->SetAttribute("name", port_name.c_str());
+      const auto xsd_attribute_type = xsdAttributeType(port_info);
+      if (not xsd_attribute_type.empty())
+      {
+        attr->SetAttribute("type", xsd_attribute_type.c_str());
+      }
+      if (not port_info.defaultValue().empty())
+      {
+        attr->SetAttribute("default", port_info.defaultValueString().c_str());
+      }
+      else
+      {
+        attr->SetAttribute("use", "required");
+      }
+      type->InsertEndChild(attr);
+    }
+    if (model->registration_ID == "SubTree")
+    {
+      parse_and_insert(type, R"(
+        <xs:attribute name="ID" type="xs:string" use="required"/>
+        <xs:anyAttribute processContents="skip"/>
+      )");
+    }
+    schema_element->InsertEndChild(type);
   }
 
   XMLPrinter printer;

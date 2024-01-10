@@ -61,6 +61,16 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
                                    bool include_builtin = false);
 
 /**
+ * @brief writeTreeXSD generates an XSD for the nodes defined in the factory
+ *
+ * @param factory          the factory with the registered types
+ *
+ * @return  string containing the XML.
+ */
+[[nodiscard]]
+std::string writeTreeXSD(const BehaviorTreeFactory& factory);
+
+/**
  * @brief WriteTreeToXML create a string that contains the XML that corresponds to a given tree.
  * When using this function with a logger, you should probably set both add_metadata and
  * add_builtin_models to true.
