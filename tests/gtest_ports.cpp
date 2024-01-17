@@ -26,10 +26,8 @@ public:
 
   static PortsList providedPorts()
   {
-    return {BT::InputPort<int>("in_port_A", 42, "magic_number"), BT::InputPort<int>("in_"
-                                                                                    "port"
-                                                                                    "_"
-                                                                                    "B")};
+    return {BT::InputPort<int>("in_port_A", 42, "magic_number"),
+            BT::InputPort<int>("in_port_B")};
   }
 };
 
@@ -38,17 +36,47 @@ TEST(PortTest, DefaultPorts)
   std::string xml_txt = R"(
     <root BTCPP_format="4" >
         <BehaviorTree ID="MainTree">
-            <NodeWithPorts name = "first"  in_port_B="66" />
+            <NodeWithPorts in_port_B="66" />
+        </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeWithPorts>("NodeWithPorts");
+  auto tree = factory.createTreeFromText(xml_txt);
+  NodeStatus status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+
+TEST(PortTest, MissingPort)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <NodeWithPorts/>
+        </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeWithPorts>("NodeWithPorts");
+  auto tree = factory.createTreeFromText(xml_txt);
+  NodeStatus status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+}
+
+TEST(PortTest, WrongPort)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <NodeWithPorts da_port="66" />
         </BehaviorTree>
     </root>)";
 
   BehaviorTreeFactory factory;
   factory.registerNodeType<NodeWithPorts>("NodeWithPorts");
 
-  auto tree = factory.createTreeFromText(xml_txt);
-
-  NodeStatus status = tree.tickWhileRunning();
-  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(xml_txt));
 }
 
 TEST(PortTest, Descriptions)
