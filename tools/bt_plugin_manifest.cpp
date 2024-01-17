@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         auto& params = manifest.ports;
         std::cout << "---------------\n"
                   << manifest.registration_ID << " [" << manifest.type
-                  << "]\n  NodeParameters: " << params.size();
+                  << "]\n  NodeConfig: " << params.size();
 
         if (params.size() > 0)
         {

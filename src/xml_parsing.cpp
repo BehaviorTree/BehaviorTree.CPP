@@ -711,7 +711,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
       {
         throw RuntimeError("Possible typo? In the XML, you tried to remap port \"",
                            name_in_subtree, "\" in node [", config.path, "(type ", type_ID,
-                           ")], but the manifest of this node does not contain a port "
+                           ")], but the manifest/model of this node does not contain a port "
                            "with this name.");
       }
     }

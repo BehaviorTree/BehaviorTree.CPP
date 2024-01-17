@@ -75,7 +75,6 @@ public:
  *
  * Using lambdas or std::bind it is easy to pass a pointer to a method.
  * SimpleActionNode is executed synchronously and does not support halting.
- * NodeParameters aren't supported.
  */
 class SimpleActionNode : public SyncActionNode
 {

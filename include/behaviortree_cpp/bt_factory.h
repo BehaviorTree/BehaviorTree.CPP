@@ -358,22 +358,27 @@ public:
   template <typename T, typename... ExtraArgs>
   void registerNodeType(const std::string& ID, ExtraArgs... args)
   {
-    // check first if the given class is abstract
-    static_assert(!std::is_abstract_v<T>, "The given type can't be abstract");
+    if constexpr(std::is_abstract_v<T>) {
+      // check first if the given class is abstract
+      static_assert(!std::is_abstract_v<T>, "The Node type can't be abstract. "
+                                            "Did you forget to implement an abstract "
+                                            "method in the derived class?");
+    }
+    else {
+      constexpr bool param_constructable =
+          std::is_constructible<T, const std::string&, const NodeConfig&, ExtraArgs...>::value;
+      constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
 
-    constexpr bool param_constructable =
-        std::is_constructible<T, const std::string&, const NodeConfig&, ExtraArgs...>::value;
-    constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
+      // clang-format off
+      static_assert(!(param_constructable && !has_static_ports_list),
+                    "[registerNode]: you MUST implement the static method:\n"
+                    "  PortsList providedPorts();\n");
 
-    // clang-format off
-    static_assert(!(param_constructable && !has_static_ports_list),
-                  "[registerNode]: you MUST implement the static method:\n"
-                  "  PortsList providedPorts();\n");
-
-    static_assert(!(has_static_ports_list && !param_constructable),
-                  "[registerNode]: since you have a static method providedPorts(),\n"
-                  "you MUST add a constructor with signature:\n"
-                  "(const std::string&, const NodeParameters&)\n");
+      static_assert(!(has_static_ports_list && !param_constructable),
+                    "[registerNode]: since you have a static method providedPorts(),\n"
+                    "you MUST add a constructor with signature:\n"
+                    "(const std::string&, const NodeConfig&)\n");
+    }
     // clang-format on
     registerNodeType<T>(ID, getProvidedPorts<T>(), args...);
   }
