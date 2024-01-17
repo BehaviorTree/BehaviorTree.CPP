@@ -10,6 +10,7 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <cstdio>
 #include <cstring>
 #include <functional>
 #include <iostream>
@@ -21,10 +22,6 @@
 #if defined(__linux) || defined(__linux__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
-#endif
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4996)   // do not complain about sprintf
 #endif
 
 #include <map>
@@ -239,8 +236,8 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 {
   if (doc->Error())
   {
-    char buffer[200];
-    sprintf(buffer, "Error parsing the XML: %s", doc->ErrorStr());
+    char buffer[512];
+    snprintf(buffer, sizeof buffer, "Error parsing the XML: %s", doc->ErrorStr());
     throw RuntimeError(buffer);
   }
 
@@ -350,14 +347,14 @@ void VerifyXML(const std::string& xml_text,
   if (xml_error)
   {
     char buffer[512];
-    sprintf(buffer, "Error parsing the XML: %s", doc.ErrorName());
+    snprintf(buffer, sizeof buffer, "Error parsing the XML: %s", doc.ErrorName());
     throw RuntimeError(buffer);
   }
 
   //-------- Helper functions (lambdas) -----------------
   auto ThrowError = [&](int line_num, const std::string& text) {
     char buffer[512];
-    sprintf(buffer, "Error at line %d: -> %s", line_num, text.c_str());
+    snprintf(buffer, sizeof buffer, "Error at line %d: -> %s", line_num, text.c_str());
     throw RuntimeError(buffer);
   };
 
