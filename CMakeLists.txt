@@ -50,6 +50,9 @@ endif()
 
 find_package(ament_cmake QUIET)
 
+# This is a private variable to control the exported namespace name for installation
+# macros that support namespace targets.
+set(_BTCPP_EXPORTED_NAMESPACE BT::)
 if ( ament_cmake_FOUND )
 
     add_definitions( -DUSING_ROS2 )

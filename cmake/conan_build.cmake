@@ -29,7 +29,7 @@ macro(export_btcpp_package)
     install(EXPORT ${PROJECT_NAME}Targets
         FILE "${PROJECT_NAME}Targets.cmake"
         DESTINATION "${BTCPP_LIB_DESTINATION}/cmake/${PROJECT_NAME}"
-        NAMESPACE BT::
+        NAMESPACE "{_BTCPP_EXPORTED_NAMESPACE}"
         )
     export(PACKAGE ${PROJECT_NAME})
 
