@@ -8,18 +8,12 @@ env:
 
 jobs:
   build:
-    container: ${{ matrix.container }}
+    container: osrf/ros:${{matrix.ros_distro}}-desktop
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        container: ['osrf/ros:humble-desktop', 'osrf/ros:rolling-desktop']
         os: [ubuntu-22.04]
         ros_distro: [humble, rolling]
-        include:
-          - container: osrf/ros:humble-desktop
-            ros_distro: humble
-          - container: osrf/ros:rolling-desktop
-            ros_distro: rolling
     steps:
     - uses: actions/checkout@v2
 
@@ -28,28 +22,28 @@ jobs:
       run: |
         apt update
         rosdep update
-        source /opt/ros/${{matrix.rosdistro}}/setup.bash
-        rosdep install --from-paths src --ignore-src -y --rosdistro ${{matrix.rosdistro}}
+        source /opt/ros/${{matrix.ros_distro}}/setup.bash
+        rosdep install --from-paths src --ignore-src -y
       shell: bash
 
     - name: Build with colcon
       id: colcon-build
       run: |
-        source /opt/ros/${{matrix.rosdistro}}/setup.bash
+        source /opt/ros/${{matrix.ros_distro}}/setup.bash
         colcon build
       shell: bash
 
     - name: Test with colcon
       id: colcon-test
       run: |
-        source /opt/ros/${{matrix.rosdistro}}/setup.bash
+        source /opt/ros/${{matrix.ros_distro}}/setup.bash
         colcon test
         colcon test-result --all --verbose
       shell: bash
 
     - name: Test consuming with ament_target_dependencies
       run: |
-        source /opt/ros/${{matrix.rosdistro}}/setup.bash
+        source /opt/ros/${{matrix.ros_distro}}/setup.bash
         # This sets the variable AMENT_PREFIX_PATH
         source install/setup.bash
         cd tests/export/ament_target_deps
@@ -57,7 +51,7 @@ jobs:
 
     - name: Test consuming with target_link_libraries
       run: |
-        source /opt/ros/${{matrix.rosdistro}}/setup.bash
+        source /opt/ros/${{matrix.ros_distro}}/setup.bash
         # This sets the variable AMENT_PREFIX_PATH
         source install/setup.bash
         cd tests/export/target_link_libs
