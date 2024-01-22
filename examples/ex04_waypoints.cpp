@@ -1,7 +1,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/decorators/loop_node.h"
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
-#include <list>
+#include <deque>
 
 using namespace BT;
 

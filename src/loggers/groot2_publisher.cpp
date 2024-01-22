@@ -1,4 +1,3 @@
-#include <future>
 #include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/loggers/groot2_protocol.h"

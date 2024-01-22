@@ -160,15 +160,21 @@ public:
     }
   }
 
-  // Method to access the value by pointer
+  // Method to access the value by pointer.
+  // It will return nullptr, if the user try to cast it to a
+  // wrong type or if Any was empty.
   template <typename T>
-  [[nodiscard]] T* castPtr() const {
+  [[nodiscard]] T* castPtr() {
 
-    if( _any.empty() )
-    {
-      return nullptr;
-    }
-    return linb::any_cast<T>(&_any);
+    static_assert(!std::is_same_v<T, float>,
+                  "The value has been casted internally to [double]. "
+                  "Use that instead");
+    static_assert(!SafeAny::details::is_integer<T>() ||
+                  std::is_same_v<T, uint64_t>,
+                  "The value has been casted internally to [int64_t]. "
+                  "Use that instead");
+
+    return _any.empty() ? nullptr : linb::any_cast<T>(&_any);
   }
 
   // This is the original type
