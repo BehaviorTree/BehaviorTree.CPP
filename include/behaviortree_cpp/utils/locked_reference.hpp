@@ -58,10 +58,6 @@ class LockedPtr {
     }
   }
 
-  bool empty() const {
-    return ref_ == nullptr;
-  }
-
   const T* get() const{
     return ref_;
   }
@@ -85,7 +81,7 @@ class LockedPtr {
     {
       *ref_ = other;
     }
-    else if constexpr( std::is_same_v<BT::Any, OtherT>)
+    else if constexpr(std::is_same_v<BT::Any, OtherT>)
     {
       other->copyInto(*ref_);
     }

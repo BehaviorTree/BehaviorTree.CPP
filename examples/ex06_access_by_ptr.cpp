@@ -19,21 +19,24 @@ public:
     const int number = getInput<int>("value").value();
     if(auto any_ptr = getLockedPortContent("vector"))
     {
-      // inside this scope, any_ptr provides a mutex-protected,
-      // thread-safe way to access an element inside the blackboard.
-      if(auto vect_ptr = any_ptr->castPtr<std::vector<int>>())
+      // inside this scope (as long as any_ptr exists) the access to
+      // the entry in the blackboard is mutex-protected and thread-safe.
+
+      // check if the entry contains a valid element
+      if(any_ptr->empty())
       {
-        vect_ptr->push_back(number);
-        std::cout << "Value ["<< number <<"] pushed into the vector. New size: "
-                  << vect_ptr->size() << "\n";
-      }
-      else {
-        // This happens when the entry of the blackboard is empty or if
-        // we tried to cast to the wrong type.
-        // Let's insert a new vector<int> with a single value
+        // The entry hasn't been initialized by any other node, yet.
+        // Let's initialize it ourselves
         std::vector<int> vect = {number};
         any_ptr.assign(vect);
         std::cout << "We created a new vector, containing value ["<< number <<"]\n";
+      }
+      else if(auto* vect_ptr = any_ptr->castPtr<std::vector<int>>())
+      {
+        // NOTE: vect_ptr would be nullptr, if we try to cast it to the wrong type
+        vect_ptr->push_back(number);
+        std::cout << "Value ["<< number <<"] pushed into the vector. New size: "
+                  << vect_ptr->size() << "\n";
       }
       return NodeStatus::SUCCESS;
     }
