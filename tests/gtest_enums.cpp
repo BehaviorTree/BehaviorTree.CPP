@@ -89,3 +89,35 @@ TEST(Enums, StrintToEnum)
   }
 }
 
+TEST(Enums, SwitchNodeWithEnum)
+{
+  const std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <Script code=" my_color := Blue "/>
+          <Switch4 variable="{my_color}"
+            case_1="Red"
+            case_2="Blue"
+            case_3="Green"
+            case_4="Undefined">
+            <AlwaysFailure name="case_red" />
+            <AlwaysSuccess name="case_blue" />
+            <AlwaysFailure name="case_green" />
+            <AlwaysFailure name="case_undefined" />
+            <AlwaysFailure name="default_case" />
+          </Switch4>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerScriptingEnums<Color>();
+
+  auto tree = factory.createTreeFromText(xml_txt);
+
+  NodeStatus status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+

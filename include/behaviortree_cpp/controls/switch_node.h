@@ -36,47 +36,73 @@ namespace BT
 When the SwitchNode is executed (Switch3 is a node with 3 cases)
 the "variable" will be compared to the cases and execute the correct child
 or the default one (last).
-
  *
  */
+
+namespace details {
+
+bool CheckStringEquality(const std::string& v1, const std::string& v2,
+                         const ScriptingEnumsRegistry *enums);
+}
+
 template <size_t NUM_CASES>
 class SwitchNode : public ControlNode
 {
 public:
-  SwitchNode(const std::string& name, const BT::NodeConfig& config) :
-    ControlNode::ControlNode(name, config), running_child_(-1)
-  {
-    setRegistrationID("Switch");
-  }
+  SwitchNode(const std::string& name, const BT::NodeConfig& config);
 
   virtual ~SwitchNode() override = default;
 
-  void halt() override
-  {
-    running_child_ = -1;
-    ControlNode::halt();
-  }
+  void halt() override;
 
-  static PortsList providedPorts()
-  {
-    PortsList ports;
-    ports.insert(BT::InputPort<std::string>("variable"));
-    for (unsigned i = 0; i < NUM_CASES; i++)
-    {
-      char case_str[20];
-      sprintf(case_str, "case_%d", i + 1);
-      ports.insert(BT::InputPort<std::string>(case_str));
-    }
-    return ports;
-  }
+  static PortsList providedPorts();
 
 private:
   int running_child_;
+  std::vector<std::string> case_keys_;
   virtual BT::NodeStatus tick() override;
 };
 
-template <size_t NUM_CASES>
-inline NodeStatus SwitchNode<NUM_CASES>::tick()
+//-----------------------------------------------
+//-----------------------------------------------
+
+template<size_t NUM_CASES> inline
+SwitchNode<NUM_CASES>::SwitchNode(const std::string &name, const NodeConfig &config) :
+    ControlNode::ControlNode(name, config), running_child_(-1)
+{
+  setRegistrationID("Switch");
+  for (unsigned i = 1; i <= NUM_CASES; i++)
+  {
+    case_keys_.push_back( std::string("case_") + std::to_string(i));
+  }
+}
+
+template<size_t NUM_CASES> inline
+void SwitchNode<NUM_CASES>::halt()
+{
+  running_child_ = -1;
+  ControlNode::halt();
+}
+
+template<size_t NUM_CASES> inline
+PortsList SwitchNode<NUM_CASES>::providedPorts()
+{
+  static PortsList ports = []() {
+    PortsList ports;
+    ports.insert(BT::InputPort<std::string>("variable"));
+    for (unsigned i = 1; i <= NUM_CASES; i++)
+    {
+      auto key = std::string("case_") + std::to_string(i);
+      ports.insert(BT::InputPort<std::string>(key));
+    }
+    return ports;
+  }();
+
+  return ports;
+}
+
+template <size_t NUM_CASES> inline
+    NodeStatus SwitchNode<NUM_CASES>::tick()
 {
   if (childrenCount() != NUM_CASES + 1)
   {
@@ -88,19 +114,21 @@ inline NodeStatus SwitchNode<NUM_CASES>::tick()
   std::string value;
   int match_index = int(NUM_CASES);   // default index;
 
-  if (getInput("variable", variable))   // no variable? jump to default
+  // no variable? jump to default
+  if (getInput("variable", variable))
   {
     // check each case until you find a match
     for (int index = 0; index < int(NUM_CASES); ++index)
     {
-      char case_key[20];
-      sprintf(case_key, "case_%d", int(index + 1));
-      bool found = static_cast<bool>(getInput(case_key, value));
-
-      if (found && variable == value)
+      const std::string& case_key = case_keys_[index];
+      if (getInput(case_key, value))
       {
-        match_index = index;
-        break;
+        if(details::CheckStringEquality(
+                variable, value, this->config().enums.get()))
+        {
+          match_index = index;
+          break;
+        }
       }
     }
   }
