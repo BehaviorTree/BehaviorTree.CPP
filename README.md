@@ -1,11 +1,11 @@
 ![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
-![Version](https://img.shields.io/badge/version-4.4-blue.svg)
+![Version](https://img.shields.io/badge/version-4.5-blue.svg)
 [![conan Ubuntu](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml)
 [![conan Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 
-# BehaviorTree.CPP 4.4
+# BehaviorTree.CPP 4.5
 
 <p align="center"><img width=350 src="animated.svg"></p>
 

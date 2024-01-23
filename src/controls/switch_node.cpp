@@ -12,6 +12,10 @@
 
 #include "behaviortree_cpp/controls/switch_node.h"
 
+#if __has_include(<charconv>)
+#include <charconv>
+#endif
+
 namespace BT::details
 {
 
@@ -35,8 +39,18 @@ bool CheckStringEquality(const std::string &v1, const std::string &v2,
         return true;
       }
     }
+#if __cpp_lib_to_chars >= 201611L
     auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
     return (ec == std::errc());
+#else
+    try {
+      result = std::stoi(str);
+      return true;
+    }
+    catch(...) {
+      return false;
+    }
+#endif
   };
   int v1_int = 0;
   int v2_int = 0;
@@ -47,8 +61,18 @@ bool CheckStringEquality(const std::string &v1, const std::string &v2,
   // compare as real numbers next
   auto ToReal = [](const std::string& str, auto& result) -> bool
   {
+#if __cpp_lib_to_chars >= 201611L
     auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
     return (ec == std::errc());
+#else
+    try {
+      result = std::stod(str);
+      return true;
+    }
+    catch(...) {
+      return false;
+    }
+#endif
   };
   double v1_real = 0;
   double v2_real = 0;

@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.5.1 (2024-01-23)
+------------------
 * Support enums and real numbers in Node Switch
 * improve Any::castPtr and add example
 * fix issue `#748 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/748>`_ : static error messages
