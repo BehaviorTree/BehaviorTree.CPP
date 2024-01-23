@@ -2,6 +2,18 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support enums and real numbers in Node Switch
+* improve Any::castPtr and add example
+* fix issue `#748 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/748>`_ : static error messages
+* Merge pull request `#746 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/746>`_ from galou/snprintf
+  Use snprintf instead of sprintf
+* Use snprintf instead of sprintf
+  - Augment the buffer size on doc error.
+  - Let sprintf in switch_node.h since the max. string length is known.
+* Contributors: Davide Faconti, Gaël Écorchard
+
 4.5.0 (2024-01-10)
 ------------------
 * fix typo in unit test `#733 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/733>`_
