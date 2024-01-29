@@ -423,9 +423,9 @@ public:
     if( (inputOperator == "==" && firstValue == secondValue) ||
         (inputOperator == "!=" && firstValue != secondValue) ||
         (inputOperator == "<=" && firstValue <= secondValue) ||
-        (inputOperator == ">=" && firstValue <= secondValue) ||
+        (inputOperator == ">=" && firstValue >= secondValue) ||
         (inputOperator == "<" && firstValue < secondValue) ||
-        (inputOperator == ">" && firstValue < secondValue) )
+        (inputOperator == ">" && firstValue > secondValue) )
     {
       return BT::NodeStatus::SUCCESS;
     }
