@@ -131,7 +131,7 @@ public:
      *
      *     static PortsList providedPorts();
      */
-  TreeNode(std::string name, NodeConfig config);
+  TreeNode(const StringView name, NodeConfig config);
 
   TreeNode(const TreeNode& other) = delete;
   TreeNode& operator=(const TreeNode& other) = delete;

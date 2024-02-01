@@ -42,14 +42,14 @@ inline NodeBuilder CreateBuilder(Args... args)
 }
 
 template <typename T>
-inline TreeNodeManifest CreateManifest(const std::string& ID,
+inline TreeNodeManifest CreateManifest(const StringView ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
   if constexpr( has_static_method_metadata<T>::value )
   {
-    return {getType<T>(), ID, portlist, T::metadata()};
+    return {getType<T>(), std::string(ID), portlist, T::metadata()};
   }
-  return {getType<T>(), ID, portlist, {}};
+  return {getType<T>(), std::string(ID), portlist, {}};
 }
 
 #ifdef BT_PLUGIN_EXPORT
@@ -320,7 +320,7 @@ public:
    *  Doesn't require the implementation of static method providedPorts()
   */
   template <typename T, typename... ExtraArgs>
-  void registerNodeType(const std::string& ID, const PortsList& ports, ExtraArgs... args)
+  void registerNodeType(const StringView ID, const PortsList& ports, ExtraArgs... args)
   {
     static_assert(std::is_base_of<ActionNodeBase, T>::value ||
                   std::is_base_of<ControlNode, T>::value ||
@@ -356,7 +356,7 @@ public:
   *  ControlNode or ConditionNode.
   */
   template <typename T, typename... ExtraArgs>
-  void registerNodeType(const std::string& ID, ExtraArgs... args)
+  void registerNodeType(const StringView ID, ExtraArgs... args)
   {
     if constexpr(std::is_abstract_v<T>) {
       // check first if the given class is abstract

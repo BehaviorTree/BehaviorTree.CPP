@@ -20,8 +20,8 @@ namespace BT
 
 struct TreeNode::PImpl
 {
-  PImpl(std::string name, NodeConfig config):
-    name(std::move(name)),
+  PImpl(StringView name, NodeConfig config):
+    name(name),
     config(std::move(config))
   {}
 
@@ -52,8 +52,8 @@ struct TreeNode::PImpl
 };
 
 
-TreeNode::TreeNode(std::string name, NodeConfig config) :
-  _p(new PImpl(std::move(name), std::move(config)))
+TreeNode::TreeNode(StringView name, NodeConfig config) :
+  _p(new PImpl(name, std::move(config)))
 {
 }
 
@@ -322,7 +322,7 @@ uint16_t TreeNode::UID() const
   return _p->config.uid;
 }
 
-const std::string &TreeNode::fullPath() const
+const std::string& TreeNode::fullPath() const
 {
   return _p->config.path;
 }
@@ -332,12 +332,12 @@ const std::string& TreeNode::registrationName() const
   return _p->registration_ID;
 }
 
-const NodeConfig &TreeNode::config() const
+const NodeConfig& TreeNode::config() const
 {
   return _p->config;
 }
 
-NodeConfig &TreeNode::config()
+NodeConfig& TreeNode::config()
 {
   return _p->config;
 }
@@ -483,7 +483,7 @@ std::string toStr<PostCond>(const PostCond& pre)
   }
 }
 
-AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string &key)
+AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string& key)
 {
   if(auto remapped_key = getRemappedKey(key, getRawPortValue(key)))
   {
