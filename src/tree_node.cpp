@@ -109,11 +109,10 @@ NodeStatus TreeNode::executeTick()
     }
   }
 
-  checkPostConditions(new_status);
-
   // injected post callback
   if(isStatusCompleted(new_status))
   {
+    checkPostConditions(new_status);
     PostTickCallback  callback;
     {
       std::unique_lock lk(_p->callback_injection_mutex);
