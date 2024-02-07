@@ -1,12 +1,11 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <typeinfo>
-#include <functional>
 #include <chrono>
+#include <iostream>
+#include <functional>
 #include <string_view>
+#include <typeinfo>
+#include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -156,11 +155,17 @@ inline StringConverter GetAnyFromStringFunctor<void>()
 
 //------------------------------------------------------------------
 
+template <typename T>
+constexpr bool IsConvertibleToString()
+{
+  return std::is_convertible_v<T, std::string> ||
+         std::is_convertible_v<T, std::string_view>;
+}
+
 template<typename T> [[nodiscard]]
 std::string toStr(const T& value)
 {
-  if constexpr (std::is_convertible_v<T, std::string> ||
-                std::is_convertible_v<T, std::string_view>)
+  if constexpr (IsConvertibleToString<T>())
   {
     return value;
   }
@@ -169,8 +174,9 @@ std::string toStr(const T& value)
     throw LogicError(
         StrCat("Function BT::toStr<T>() not specialized for type [",
                BT::demangle(typeid(T)), "]")
-      );
-  } else {
+        );
+  }
+  else {
     return std::to_string(value);
   }
 }
@@ -383,6 +389,11 @@ std::pair<std::string, PortInfo> CreatePort(PortDirection direction,
 }
 
 //----------
+/** Syntactic sugar to invoke CreatePort<T>(PortDirection::INPUT, ...)
+ *
+ *  @param name the name of the port
+ *  @param description optional human-readable description
+ */
 template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> InputPort(StringView name,
                                                   StringView description = {})
@@ -390,6 +401,11 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name,
   return CreatePort<T>(PortDirection::INPUT, name, description);
 }
 
+/** Syntactic sugar to invoke CreatePort<T>(PortDirection::OUTPUT,...)
+ *
+ *  @param name the name of the port
+ *  @param description optional human-readable description
+ */
 template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> OutputPort(StringView name,
                                                    StringView description = {})
@@ -397,6 +413,11 @@ inline std::pair<std::string, PortInfo> OutputPort(StringView name,
   return CreatePort<T>(PortDirection::OUTPUT, name, description);
 }
 
+/** Syntactic sugar to invoke CreatePort<T>(PortDirection::INOUT,...)
+ *
+ *  @param name the name of the port
+ *  @param description optional human-readable description
+ */
 template <typename T = AnyTypeAllowed> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           StringView description = {})
@@ -404,24 +425,129 @@ inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
   return CreatePort<T>(PortDirection::INOUT, name, description);
 }
 //----------
-template <typename T = AnyTypeAllowed> [[nodiscard]]
-inline std::pair<std::string, PortInfo> InputPort(StringView name, const T& default_value,
+/** Syntactic sugar to invoke CreatePort<T>(PortDirection::INPUT,...)
+ *  It also sets the PortInfo::defaultValue()
+ *
+ *  @param name the name of the port
+ *  @param default_value default value of the port, either type T of BlackboardKey
+ *  @param description optional human-readable description
+ */
+template <typename T = AnyTypeAllowed, typename DefaultT = T> [[nodiscard]]
+inline std::pair<std::string, PortInfo> InputPort(StringView name,
+                                                  const DefaultT& default_value,
                                                   StringView description)
 {
+  static_assert(std::is_same_v<T, DefaultT> ||
+                IsConvertibleToString<DefaultT>() ||
+                std::is_convertible_v<DefaultT, T>,
+                "The default value must be either the same of the port or BlackboardKey");
+
   auto out = CreatePort<T>(PortDirection::INPUT, name, description);
   out.second.setDefaultValue(default_value);
   return out;
 }
 
-template <typename T = AnyTypeAllowed> [[nodiscard]]
+/** Syntactic sugar to invoke CreatePort<T>(PortDirection::INOUT,...)
+ *  It also sets the PortInfo::defaultValue()
+ *
+ *  @param name the name of the port
+ *  @param default_value default value of the port, either type T of BlackboardKey
+ *  @param description optional human-readable description
+ */
+template <typename T = AnyTypeAllowed, typename DefaultT = T> [[nodiscard]]
 inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
-                                                          const T& default_value,
+                                                          const DefaultT& default_value,
                                                           StringView description)
 {
+  static_assert(std::is_same_v<T, DefaultT> ||
+                IsConvertibleToString<DefaultT>() ||
+                std::is_convertible_v<DefaultT, T>,
+                "The default value must be either the same of the port or BlackboardKey");
+
   auto out = CreatePort<T>(PortDirection::INOUT, name, description);
   out.second.setDefaultValue(default_value);
   return out;
 }
+
+/** Syntactic sugar to invoke CreatePort<T>(PortDirection::OUTPUT,...)
+ *  It also sets the PortInfo::defaultValue()
+ *
+ *  @param name the name of the port
+ *  @param default_value default blackboard entry where the output is written
+ *  @param description optional human-readable description
+ */
+template <typename T = AnyTypeAllowed> [[nodiscard]]
+inline std::pair<std::string, PortInfo> OutputPort(StringView name,
+	  StringView default_value,
+	  StringView description)
+{
+  if(default_value.empty() || default_value.front() != '{' || default_value.back() != '}')
+  {
+    throw LogicError("Output port can only refer to blackboard entries, i.e. use the syntax '{port_name}'");
+  }
+  auto out = CreatePort<T>(PortDirection::OUTPUT, name, description);
+  out.second.setDefaultValue(default_value);
+  return out;
+}
+
+//----------
+
+// /** Syntactic sugar to invoke CreatePort<T>(PortDirection::INPUT,...)
+//  *  It also sets the default value to the blackboard entry specified
+//  *  in "default_key"
+//  *
+//  *  @param name the name of the port
+//  *  @param default_key the key of an entry in the blackbard
+//  *  @param description optional human-readable description
+//  */
+// template <typename T> [[nodiscard]]
+// inline std::pair<std::string, PortInfo> InputPort(
+//     StringView name,
+//     BlackboardKey default_key,
+//     StringView description)
+// {
+//   auto out = CreatePort<T>(PortDirection::INPUT, name, description);
+//   out.second.setDefaultValue(default_key);
+//   return out;
+// }
+
+// /** Syntactic sugar to invoke CreatePort<T>(PortDirection::INOUT,...)
+//  *  It also sets the default value to the blackboard entry specified
+//  *  in "default_key"
+//  *
+//  *  @param name the name of the port
+//  *  @param default_key the key of an entry in the blackbard
+//  *  @param description optional human-readable description
+//  */
+// template <typename T> [[nodiscard]]
+// inline std::pair<std::string, PortInfo> BidirectionalPort(
+//     StringView name,
+//     BlackboardKey default_key,
+//     StringView description)
+// {
+//   auto out = CreatePort<T>(PortDirection::INOUT, name, description);
+//   out.second.setDefaultValue(default_key);
+//   return out;
+// }
+
+// /** Syntactic sugar to invoke CreatePort<T>(PortDirection::OUTPUT,...)
+//  *  It also sets the default value to the blackboard entry specified
+//  *  in "default_key"
+//  *
+//  *  @param name the name of the port
+//  *  @param default_key the key of an entry in the blackbard
+//  *  @param description optional human-readable description
+//  */
+// template <typename T> [[nodiscard]]
+// inline std::pair<std::string, PortInfo> OutputPort(
+//     StringView name,
+//     BlackboardKey default_key,
+//     StringView description)
+// {
+//   auto out = CreatePort<T>(PortDirection::OUTPUT, name, description);
+//   out.second.setDefaultValue(default_key);
+//   return out;
+// }
 //----------
 
 using PortsList = std::unordered_map<std::string, PortInfo>;

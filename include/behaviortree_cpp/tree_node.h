@@ -396,28 +396,40 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     }
   };
 
-  auto remap_it = config().input_ports.find(key);
-  if (remap_it == config().input_ports.end())
-  {
-    return nonstd::make_unexpected(StrCat("getInput() of node `", fullPath(),
-                                          "` failed because "
-                                          "NodeConfig::input_ports "
-                                          "does not contain the key: [",
-                                          key, "]"));
-  }
+  std::string port_value_str;
 
-  // special case. Empty port value, we should use the default value,
-  // if available in the model.
-  // BUT, it the port type is a string, then an empty string might be
-  // a valid value
-  const std::string& port_value_str = remap_it->second;
-  if(port_value_str.empty() && config().manifest)
+  auto input_port_it = config().input_ports.find(key);
+  if(input_port_it != config().input_ports.end())
   {
-    const auto& port_manifest = config().manifest->ports.at(key);
-    const auto& default_value = port_manifest.defaultValue();
-    if(!default_value.empty() && !default_value.isString())
+    port_value_str = input_port_it->second;
+  }
+  else
+  {
+    // maybe it is declared with a default value in the manifest
+    auto port_manifest_it = config().manifest->ports.find(key);
+    if (port_manifest_it == config().manifest->ports.end())
     {
-      destination = default_value.cast<T>();
+      return nonstd::make_unexpected(
+          StrCat("getInput() of node '", fullPath(),
+                 "' failed because the manifest doesn't contain"
+                 "the key: [", key, "]"));
+    }
+    const auto& port_info = port_manifest_it->second;
+    // there is a default value
+    if(port_info.defaultValue().empty())
+    {
+      return nonstd::make_unexpected(
+          StrCat("getInput() of node '", fullPath(),
+                 "' failed because nor the manifest or the XML contain"
+                 "the key: [", key, "]"));
+    }
+    if(port_info.defaultValue().isString())
+    {
+      port_value_str = port_info.defaultValue().cast<std::string>();
+    }
+    else
+    {
+      destination = port_info.defaultValue().cast<T>();
       return {};
     }
   }

@@ -259,14 +259,29 @@ TEST(PortTest, SubtreeStringInput_Issue489)
   ASSERT_EQ(7, states[1]);
 }
 
+struct Point2D {
+  int x = 0;
+  int y = 0;
+};
+
+
+template <> [[nodiscard]]
+Point2D BT::convertFromString<Point2D>(StringView str)
+{
+  const auto parts = BT::splitString(str, ',');
+  if (parts.size() != 2)
+  {
+    throw BT::RuntimeError("invalid input)");
+  }
+  int x = convertFromString<int>(parts[0]);
+  int y = convertFromString<int>(parts[1]);
+  return {x, y};
+}
+
 
 class DefaultTestAction : public SyncActionNode
 {
 public:
-  struct Point2D {
-    int x;
-    int y;
-  };
 
   DefaultTestAction(const std::string& name, const NodeConfig& config) :
     SyncActionNode(name, config)
@@ -296,7 +311,7 @@ public:
   {
     return {BT::InputPort<int>("answer", 42, "the answer"),
             BT::InputPort<std::string>("greeting", "hello", "be polite"),
-            BT::InputPort<Point2D>("pos", {1,2}, "where")};
+            BT::InputPort<Point2D>("pos", Point2D{1,2}, "where")};
   }
 };
 
@@ -399,4 +414,49 @@ TEST(PortTest, AnyPort)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
+class NodeWithDefaultVectors : public SyncActionNode
+{
+public:
+  NodeWithDefaultVectors(const std::string& name, const NodeConfig& config) :
+      SyncActionNode(name, config) {}
+
+  NodeStatus tick() override
+  {
+    Point2D vectA, vectB, vectC;
+    if (getInput("vectorA", vectA) && vectA.x == 1 && vectA.y == 2 &&
+        getInput("vectorB", vectB) && vectB.x == 3 && vectB.y == 4 &&
+        getInput("vectorC", vectC) && vectC.x == 5 && vectC.y == 6)
+    {
+      return NodeStatus::SUCCESS;
+    }
+    return NodeStatus::FAILURE;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::InputPort<Point2D>("vectorA", Point2D{1, 2}, "default value is [1,2]"),
+            BT::InputPort<Point2D>("vectorB", "{vect}", "default value inside key {vect}"),
+            BT::InputPort<Point2D>("vectorC", "5,6", "default value is [5,6]")};
+  }
+};
+
+
+TEST(PortTest, DefaultInputVectors)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <NodeWithVectors/>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeWithDefaultVectors>("NodeWithVectors");
+  auto tree = factory.createTreeFromText(xml_txt);
+
+  tree.subtrees.front()->blackboard->set<Point2D>("vect", Point2D{3, 4});
+
+  auto status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
 

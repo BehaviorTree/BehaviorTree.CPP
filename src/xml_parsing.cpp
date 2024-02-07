@@ -782,16 +782,22 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
       const std::string& port_name = port_it.first;
       const PortInfo& port_info = port_it.second;
 
-      auto direction = port_info.direction();
-
-      if (direction != PortDirection::OUTPUT &&
-          config.input_ports.count(port_name) == 0 &&
-          !port_info.defaultValue().empty())
+      const auto direction = port_info.direction();
+      const auto& default_string = port_info.defaultValueString();
+      if(!default_string.empty())
       {
-        try {
-          config.input_ports.insert({port_name, port_info.defaultValueString()});
+        if (direction != PortDirection::OUTPUT &&
+            config.input_ports.count(port_name) == 0)
+        {
+          config.input_ports.insert({port_name, default_string});
         }
-        catch(LogicError&) {}
+
+        if (direction != PortDirection::INPUT &&
+            config.output_ports.count(port_name) == 0 &&
+            TreeNode::isBlackboardPointer(default_string))
+        {
+          config.output_ports.insert({port_name, default_string});
+        }
       }
     }
 
