@@ -186,6 +186,8 @@ private:
   std::atomic_bool halt_requested_;
 };
 
+#ifndef __EMSCRIPTEN__
+
 /**
  * @brief The CoroActionNode class is an a good candidate for asynchronous actions
  * which need to communicate with an external service using an async request/reply interface.
@@ -228,6 +230,7 @@ protected:
   void destroyCoroutine();
 };
 
+#endif
 
 }   // namespace BT
 
