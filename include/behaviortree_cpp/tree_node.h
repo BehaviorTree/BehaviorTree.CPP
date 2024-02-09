@@ -502,7 +502,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
                                           key, "]"));
   }
   StringView remapped_key = remap_it->second;
-  if (remapped_key == "=")
+  if (remapped_key == "{=}")
   {
     config().blackboard->set(static_cast<std::string>(key), value);
     return {};
@@ -539,12 +539,12 @@ inline void assignDefaultRemapping(NodeConfig& config)
     if (direction != PortDirection::OUTPUT)
     {
       // PortDirection::{INPUT,INOUT}
-      config.input_ports[port_name] = "=";
+      config.input_ports[port_name] = "{=}";
     }
     if (direction != PortDirection::INPUT)
     {
       // PortDirection::{OUTPUT,INOUT}
-      config.output_ports[port_name] = "=";
+      config.output_ports[port_name] = "{=}";
     }
   }
 }

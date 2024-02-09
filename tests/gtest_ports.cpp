@@ -262,6 +262,12 @@ TEST(PortTest, SubtreeStringInput_Issue489)
 struct Point2D {
   int x = 0;
   int y = 0;
+  bool operator == (const Point2D& other) const {
+    return x == other.x && y == other.y;
+  }
+  bool operator != (const Point2D& other) const {
+    return !(*this == other);
+  }
 };
 
 
@@ -414,29 +420,40 @@ TEST(PortTest, AnyPort)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
-class NodeWithDefaultVectors : public SyncActionNode
+class NodeWithDefaultPoints : public SyncActionNode
 {
 public:
-  NodeWithDefaultVectors(const std::string& name, const NodeConfig& config) :
+  NodeWithDefaultPoints(const std::string& name, const NodeConfig& config) :
       SyncActionNode(name, config) {}
 
   NodeStatus tick() override
   {
-    Point2D vectA, vectB, vectC;
-    if (getInput("vectorA", vectA) && vectA.x == 1 && vectA.y == 2 &&
-        getInput("vectorB", vectB) && vectB.x == 3 && vectB.y == 4 &&
-        getInput("vectorC", vectC) && vectC.x == 5 && vectC.y == 6)
-    {
-      return NodeStatus::SUCCESS;
+    Point2D vectA, vectB, vectC, vectD, input;
+    if (!getInput("pointA", vectA) || vectA != Point2D{1, 2}) {
+      throw std::runtime_error("failed pointA");
     }
-    return NodeStatus::FAILURE;
+    if (!getInput("pointB", vectB) || vectB != Point2D{3, 4}) {
+      throw std::runtime_error("failed pointB");
+    }
+    if (!getInput("pointC", vectC) || vectC != Point2D{5, 6}) {
+      throw std::runtime_error("failed pointC");
+    }
+    if (!getInput("pointD", vectD) || vectD != Point2D{7, 8}) {
+      throw std::runtime_error("failed pointD");
+    }
+    if (!getInput("input", input) || input != Point2D{9, 10}) {
+      throw std::runtime_error("failed input");
+    }
+    return NodeStatus::SUCCESS;
   }
 
   static PortsList providedPorts()
   {
-    return {BT::InputPort<Point2D>("vectorA", Point2D{1, 2}, "default value is [1,2]"),
-            BT::InputPort<Point2D>("vectorB", "{vect}", "default value inside key {vect}"),
-            BT::InputPort<Point2D>("vectorC", "5,6", "default value is [5,6]")};
+    return {BT::InputPort<Point2D>("input", "no default value"),
+            BT::InputPort<Point2D>("pointA", Point2D{1, 2}, "default value is [1,2]"),
+            BT::InputPort<Point2D>("pointB", "{point}", "default value inside blackboard {point}"),
+            BT::InputPort<Point2D>("pointC", "5,6", "default value is [5,6]"),
+            BT::InputPort<Point2D>("pointD", "{=}", "default value inside blackboard {pointD}")};
   }
 };
 
@@ -446,17 +463,73 @@ TEST(PortTest, DefaultInputVectors)
   std::string xml_txt = R"(
     <root BTCPP_format="4" >
       <BehaviorTree>
-        <NodeWithVectors/>
+        <NodeWithDefaultPoints input="9,10"/>
       </BehaviorTree>
     </root>)";
 
   BehaviorTreeFactory factory;
-  factory.registerNodeType<NodeWithDefaultVectors>("NodeWithVectors");
+  factory.registerNodeType<NodeWithDefaultPoints>("NodeWithDefaultPoints");
   auto tree = factory.createTreeFromText(xml_txt);
 
-  tree.subtrees.front()->blackboard->set<Point2D>("vect", Point2D{3, 4});
+  tree.subtrees.front()->blackboard->set<Point2D>("point", Point2D{3, 4});
+  tree.subtrees.front()->blackboard->set<Point2D>("pointD", Point2D{7, 8});
 
-  auto status = tree.tickOnce();
+  BT::NodeStatus status;
+  ASSERT_NO_THROW(status = tree.tickOnce());
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+class NodeWithDefaultStrings : public SyncActionNode
+{
+public:
+  NodeWithDefaultStrings(const std::string& name, const NodeConfig& config) :
+      SyncActionNode(name, config) {}
+
+  NodeStatus tick() override
+  {
+    std::string input, msgA, msgB, msgC;
+    if (!getInput("input", input) || input != "from XML") {
+      throw std::runtime_error("failed input");
+    }
+    if (!getInput("msgA", msgA) || msgA != "hello") {
+      throw std::runtime_error("failed msgA");
+    }
+    if (!getInput("msgB", msgB) || msgB != "ciao") {
+      throw std::runtime_error("failed msgB");
+    }
+    if (!getInput("msgC", msgC) || msgC != "hola") {
+      throw std::runtime_error("failed msgC");
+    }
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::InputPort<std::string>("input", "no default"),
+            BT::InputPort<std::string>("msgA", "hello", "default value is 'hello'"),
+            BT::InputPort<std::string>("msgB", "{msg}", "default value inside blackboard {msg}"),
+            BT::InputPort<std::string>("msgC", "{=}", "default value inside blackboard {msgC}")};
+  }
+};
+
+TEST(PortTest, DefaultInputStrings)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <NodeWithDefaultStrings input="from XML"/>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeWithDefaultStrings>("NodeWithDefaultStrings");
+  auto tree = factory.createTreeFromText(xml_txt);
+
+  tree.subtrees.front()->blackboard->set<std::string>("msg", "ciao");
+  tree.subtrees.front()->blackboard->set<std::string>("msgC", "hola");
+
+  BT::NodeStatus status;
+  ASSERT_NO_THROW(status = tree.tickOnce());
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 

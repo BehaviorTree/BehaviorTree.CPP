@@ -121,7 +121,7 @@ TEST(BlackboardTest, GetInputsFromText)
   EXPECT_THROW(missing_out.executeTick(), RuntimeError);
 
   config.blackboard = bb;
-  config.output_ports["out_port"] = "=";
+  config.output_ports["out_port"] = "{=}";
 
   BB_TestNode node("good_one", config);
   node.executeTick();
