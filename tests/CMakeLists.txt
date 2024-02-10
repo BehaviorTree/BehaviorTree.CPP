@@ -19,6 +19,7 @@ set(BT_TESTS
   gtest_match.cpp
   gtest_json.cpp
   gtest_reactive.cpp
+  gtest_reactive_backchaining.cpp
   gtest_sequence.cpp
   gtest_skipping.cpp
   gtest_substitution.cpp
@@ -55,12 +56,11 @@ elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
 
 else()
 
-    find_package(GTest)
+    find_package(GTest REQUIRED)
     enable_testing()
 
-    add_executable(${BTCPP_LIBRARY}_test ${BT_TESTS}
-        gtest_enums.cpp
-        gtest_any.cpp)
+    add_executable(${BTCPP_LIBRARY}_test ${BT_TESTS})
+
     target_link_libraries(${PROJECT_NAME}_test
         ${TEST_DEPENDECIES}
         Threads::Threads

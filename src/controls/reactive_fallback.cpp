@@ -15,7 +15,7 @@
 namespace BT
 {
 
-bool ReactiveFallback::throw_if_multiple_running = true;
+bool ReactiveFallback::throw_if_multiple_running = false;
 
 void ReactiveFallback::EnableException(bool enable)
 {

@@ -15,7 +15,7 @@
 namespace BT
 {
 
-bool ReactiveSequence::throw_if_multiple_running = true;
+bool ReactiveSequence::throw_if_multiple_running = false;
 
 void ReactiveSequence::EnableException(bool enable)
 {
