@@ -167,7 +167,7 @@ std::string toStr(const T& value)
 {
   if constexpr (IsConvertibleToString<T>())
   {
-    return value;
+    return static_cast<std::string>(value);
   }
   else if constexpr(!std::is_arithmetic_v<T>)
   {
@@ -440,7 +440,7 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name,
   static_assert(std::is_same_v<T, DefaultT> ||
                 IsConvertibleToString<DefaultT>() ||
                 std::is_convertible_v<DefaultT, T>,
-                "The default value must be either the same of the port or BlackboardKey");
+                "The default value must be either the same of the port or a string");
 
   auto out = CreatePort<T>(PortDirection::INPUT, name, description);
   out.second.setDefaultValue(default_value);
@@ -462,7 +462,7 @@ inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
   static_assert(std::is_same_v<T, DefaultT> ||
                 IsConvertibleToString<DefaultT>() ||
                 std::is_convertible_v<DefaultT, T>,
-                "The default value must be either the same of the port or BlackboardKey");
+                "The default value must be either the same of the port or a string");
 
   auto out = CreatePort<T>(PortDirection::INOUT, name, description);
   out.second.setDefaultValue(default_value);
@@ -490,64 +490,6 @@ inline std::pair<std::string, PortInfo> OutputPort(StringView name,
   return out;
 }
 
-//----------
-
-// /** Syntactic sugar to invoke CreatePort<T>(PortDirection::INPUT,...)
-//  *  It also sets the default value to the blackboard entry specified
-//  *  in "default_key"
-//  *
-//  *  @param name the name of the port
-//  *  @param default_key the key of an entry in the blackbard
-//  *  @param description optional human-readable description
-//  */
-// template <typename T> [[nodiscard]]
-// inline std::pair<std::string, PortInfo> InputPort(
-//     StringView name,
-//     BlackboardKey default_key,
-//     StringView description)
-// {
-//   auto out = CreatePort<T>(PortDirection::INPUT, name, description);
-//   out.second.setDefaultValue(default_key);
-//   return out;
-// }
-
-// /** Syntactic sugar to invoke CreatePort<T>(PortDirection::INOUT,...)
-//  *  It also sets the default value to the blackboard entry specified
-//  *  in "default_key"
-//  *
-//  *  @param name the name of the port
-//  *  @param default_key the key of an entry in the blackbard
-//  *  @param description optional human-readable description
-//  */
-// template <typename T> [[nodiscard]]
-// inline std::pair<std::string, PortInfo> BidirectionalPort(
-//     StringView name,
-//     BlackboardKey default_key,
-//     StringView description)
-// {
-//   auto out = CreatePort<T>(PortDirection::INOUT, name, description);
-//   out.second.setDefaultValue(default_key);
-//   return out;
-// }
-
-// /** Syntactic sugar to invoke CreatePort<T>(PortDirection::OUTPUT,...)
-//  *  It also sets the default value to the blackboard entry specified
-//  *  in "default_key"
-//  *
-//  *  @param name the name of the port
-//  *  @param default_key the key of an entry in the blackbard
-//  *  @param description optional human-readable description
-//  */
-// template <typename T> [[nodiscard]]
-// inline std::pair<std::string, PortInfo> OutputPort(
-//     StringView name,
-//     BlackboardKey default_key,
-//     StringView description)
-// {
-//   auto out = CreatePort<T>(PortDirection::OUTPUT, name, description);
-//   out.second.setDefaultValue(default_key);
-//   return out;
-// }
 //----------
 
 using PortsList = std::unordered_map<std::string, PortInfo>;
