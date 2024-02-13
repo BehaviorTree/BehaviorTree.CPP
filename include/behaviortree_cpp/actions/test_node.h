@@ -88,7 +88,7 @@ private:
   TestNodeConfig _test_config;
   ScriptFunction _executor;
   TimerQueue<> _timer;
-  std::atomic_bool _completed;
+  std::atomic_bool _completed = false;
 };
 
 }   // namespace BT

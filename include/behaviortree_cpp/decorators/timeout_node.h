@@ -73,7 +73,7 @@ private:
   void halt() override;
 
   TimerQueue<> timer_;
-  std::atomic_bool child_halted_;
+  std::atomic_bool child_halted_ = false;
   uint64_t timer_id_;
 
   unsigned msec_;

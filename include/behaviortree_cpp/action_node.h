@@ -132,7 +132,7 @@ public:
 
 private:
   std::exception_ptr exptr_;
-  std::atomic_bool halt_requested_;
+  std::atomic_bool halt_requested_ = false;
   std::future<void> thread_handle_;
   std::mutex mutex_;
 };
@@ -183,7 +183,7 @@ protected:
   void halt() override final;
 
 private:
-  std::atomic_bool halt_requested_;
+  std::atomic_bool halt_requested_ = false;
 };
 
 /**
