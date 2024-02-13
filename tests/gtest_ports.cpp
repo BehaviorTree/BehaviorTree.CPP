@@ -533,3 +533,16 @@ TEST(PortTest, DefaultInputStrings)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
+
+TEST(PortTest, Default_Issues_767_768)
+{
+  using namespace BT;
+
+  ASSERT_NO_THROW(auto p = InputPort<std::optional<Point2D>>("opt_A", std::nullopt, "default nullopt"));
+  ASSERT_NO_THROW(auto p = InputPort<std::optional<std::string>>("opt_B", std::nullopt, "default nullopt"));
+
+  ASSERT_NO_THROW(auto p = InputPort<std::shared_ptr<Point2D>>("ptr_A", nullptr, "default nullptr"));
+  ASSERT_NO_THROW(auto p = InputPort<std::shared_ptr<std::string>>("ptr_B", nullptr, "default nullptr"));
+}
+
+

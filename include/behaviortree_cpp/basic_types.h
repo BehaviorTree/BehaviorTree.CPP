@@ -425,6 +425,39 @@ inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
   return CreatePort<T>(PortDirection::INOUT, name, description);
 }
 //----------
+
+namespace details {
+
+template <typename T = AnyTypeAllowed, typename DefaultT = T> [[nodiscard]]
+inline std::pair<std::string, PortInfo> PortWithDefault(
+    PortDirection direction,
+    StringView name,
+    const DefaultT& default_value,
+    StringView description)
+{
+  static_assert(IsConvertibleToString<DefaultT>() ||
+                std::is_convertible_v<T, DefaultT> ||
+                std::is_constructible_v<T, DefaultT>,
+                "The default value must be either the same of the port or string");
+
+  auto out = CreatePort<T>(direction, name, description);
+
+  if constexpr(std::is_constructible_v<T, DefaultT>)
+  {
+    out.second.setDefaultValue(T(default_value));
+  }
+  else if constexpr(IsConvertibleToString<DefaultT>())
+  {
+    out.second.setDefaultValue(std::string(default_value));
+  }
+  else {
+    out.second.setDefaultValue(default_value);
+  }
+  return out;
+}
+
+} // end namespace details
+
 /** Syntactic sugar to invoke CreatePort<T>(PortDirection::INPUT,...)
  *  It also sets the PortInfo::defaultValue()
  *
@@ -437,14 +470,7 @@ inline std::pair<std::string, PortInfo> InputPort(StringView name,
                                                   const DefaultT& default_value,
                                                   StringView description)
 {
-  static_assert(std::is_same_v<T, DefaultT> ||
-                IsConvertibleToString<DefaultT>() ||
-                std::is_convertible_v<DefaultT, T>,
-                "The default value must be either the same of the port or a string");
-
-  auto out = CreatePort<T>(PortDirection::INPUT, name, description);
-  out.second.setDefaultValue(default_value);
-  return out;
+  return details::PortWithDefault<T, DefaultT>(PortDirection::INPUT, name, default_value, description);
 }
 
 /** Syntactic sugar to invoke CreatePort<T>(PortDirection::INOUT,...)
@@ -459,14 +485,7 @@ inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
                                                           const DefaultT& default_value,
                                                           StringView description)
 {
-  static_assert(std::is_same_v<T, DefaultT> ||
-                IsConvertibleToString<DefaultT>() ||
-                std::is_convertible_v<DefaultT, T>,
-                "The default value must be either the same of the port or a string");
-
-  auto out = CreatePort<T>(PortDirection::INOUT, name, description);
-  out.second.setDefaultValue(default_value);
-  return out;
+  return details::PortWithDefault<T, DefaultT>(PortDirection::INOUT, name, default_value, description);
 }
 
 /** Syntactic sugar to invoke CreatePort<T>(PortDirection::OUTPUT,...)
@@ -477,9 +496,10 @@ inline std::pair<std::string, PortInfo> BidirectionalPort(StringView name,
  *  @param description optional human-readable description
  */
 template <typename T = AnyTypeAllowed> [[nodiscard]]
-inline std::pair<std::string, PortInfo> OutputPort(StringView name,
-	  StringView default_value,
-	  StringView description)
+inline std::pair<std::string, PortInfo> OutputPort(
+    StringView name,
+    StringView default_value,
+    StringView description)
 {
   if(default_value.empty() || default_value.front() != '{' || default_value.back() != '}')
   {
