@@ -252,7 +252,9 @@ struct ExprBinaryArithmetic : ExprBase
         }
       }
     }
-    else if (rhs_v.isString() && lhs_v.isString() && op == plus)
+    else if (op == plus && ((rhs_v.isString() && lhs_v.isString()) ||
+                            (rhs_v.isString() && lhs_v.isNumber()) ||
+                            (rhs_v.isNumber() && lhs_v.isString())))
     {
       return Any(lhs_v.cast<std::string>() + rhs_v.cast<std::string>());
     }
