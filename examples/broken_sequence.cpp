@@ -35,7 +35,7 @@ public:
 
 private:
   int time_;
-  std::atomic_bool stop_loop_;
+  std::atomic_bool stop_loop_ = false;
 };
 
 int main()

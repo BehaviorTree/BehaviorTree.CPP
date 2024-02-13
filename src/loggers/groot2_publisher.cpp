@@ -73,7 +73,7 @@ struct Groot2Publisher::PImpl
 
   std::string tree_xml;
 
-  std::atomic_bool active_server;
+  std::atomic_bool active_server = false;
   std::thread server_thread;
 
   std::mutex status_mutex;
