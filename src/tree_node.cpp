@@ -394,7 +394,7 @@ StringView TreeNode::stripBlackboardPointer(StringView str)
 Expected<StringView> TreeNode::getRemappedKey(StringView port_name,
                                               StringView remapped_port)
 {
-  if (remapped_port == "{=}")
+  if (remapped_port == "{=}" || remapped_port == "=")
   {
     return {port_name};
   }

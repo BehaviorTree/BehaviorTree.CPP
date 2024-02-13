@@ -502,7 +502,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
                                           key, "]"));
   }
   StringView remapped_key = remap_it->second;
-  if (remapped_key == "{=}")
+  if (remapped_key == "{=}" || remapped_key == "=")
   {
     config().blackboard->set(static_cast<std::string>(key), value);
     return {};
