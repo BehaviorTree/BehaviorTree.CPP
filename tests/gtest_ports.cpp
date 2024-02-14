@@ -533,8 +533,32 @@ TEST(PortTest, DefaultInputStrings)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
+struct TestStruct
+{
+  int a;
+  double b;
+  std::string c;
+};
 
-TEST(PortTest, Default_Issues_767_768)
+class NodeWithDefaultNullptr : public SyncActionNode
+{
+public:
+  NodeWithDefaultNullptr(const std::string& name, const NodeConfig& config) :
+      SyncActionNode(name, config) {}
+
+  NodeStatus tick() override
+  {
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::InputPort< std::shared_ptr<TestStruct> >("input", nullptr, "default value is nullptr")};
+  }
+};
+
+
+TEST(PortTest, Default_Issues_767)
 {
   using namespace BT;
 
@@ -545,4 +569,29 @@ TEST(PortTest, Default_Issues_767_768)
   ASSERT_NO_THROW(auto p = InputPort<std::shared_ptr<std::string>>("ptr_B", nullptr, "default nullptr"));
 }
 
+TEST(PortTest, DefaultWronglyOverriden)
+{
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeWithDefaultNullptr>("NodeWithDefaultNullptr");
 
+  std::string xml_txt_wrong = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <NodeWithDefaultNullptr input=""/>
+      </BehaviorTree>
+    </root>)";
+
+  std::string xml_txt_correct = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <NodeWithDefaultNullptr/>
+      </BehaviorTree>
+    </root>)";
+
+  // this should throw, because we are NOT using the default, 
+  // but overriding it with an empty string instead.
+  // See issue 768 for reference
+  ASSERT_ANY_THROW( auto tree = factory.createTreeFromText(xml_txt_wrong));
+  // This is correct
+  ASSERT_NO_THROW( auto tree = factory.createTreeFromText(xml_txt_correct));
+}

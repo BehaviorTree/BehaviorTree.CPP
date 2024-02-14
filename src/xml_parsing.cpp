@@ -636,7 +636,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
 
   const TreeNodeManifest* manifest = nullptr;
 
-  auto manifest_it =  factory.manifests().find(type_ID);
+  auto manifest_it = factory.manifests().find(type_ID);
   if(manifest_it != factory.manifests().end())
   {
     manifest = &manifest_it->second;
@@ -647,8 +647,40 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   {
     if (IsAllowedPortName(att->Name()))
     {
-      const std::string attribute_name = att->Name();
-      port_remap[attribute_name] = att->Value();
+      const std::string port_name = att->Name();
+      const std::string port_value = att->Value();
+
+      if(manifest)
+      {
+        auto port_model_it = manifest->ports.find(port_name);
+        if(port_model_it == manifest->ports.end())
+        {
+          throw RuntimeError(StrCat("a port with name [", port_name,
+                                    "] is found in the XML, but not in the providedPorts()"));
+        }
+        else {
+          const auto& port_model = port_model_it->second;
+          bool is_blacbkboard = port_value.size() >= 3 &&
+                                port_value.front() == '{' &&
+                                port_value.back() == '}';
+          // let's test already if conversion is possible
+          if(!is_blacbkboard && port_model.converter() && port_model.isStronglyTyped())
+          {
+            // This may throw
+            try {
+              port_model.converter()(port_value);
+            }
+            catch(std::exception& ex)
+            {
+              auto msg = StrCat("The port with name \"", port_name, "\" and value \"", port_value,
+                                "\" can not be converted to ", port_model.typeName());
+              throw LogicError(msg);
+            }
+          }
+        }
+      }
+
+      port_remap[port_name] = port_value;
     }
   }
 

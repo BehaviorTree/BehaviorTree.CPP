@@ -61,6 +61,11 @@ using StringView = std::string_view;
 // vector of key/value pairs
 using KeyValueVector = std::vector<std::pair<std::string, std::string>>;
 
+
+struct AnyTypeAllowed
+{};
+
+
 /**
  * convertFromString is used to convert a string into a custom type.
  *
@@ -141,6 +146,11 @@ inline StringConverter GetAnyFromStringFunctor()
   if constexpr(std::is_constructible_v<StringView, T>)
   {
     return [](StringView str) { return Any(str); };
+  }
+  else if constexpr(std::is_same_v<BT::AnyTypeAllowed, T> ||
+                    std::is_enum_v<T>)
+  {
+    return {};
   }
   else {
     return [](StringView str) { return Any(convertFromString<T>(str)); };
@@ -264,9 +274,6 @@ using Result = Expected<std::monostate>;
 
 [[nodiscard]]
 bool IsAllowedPortName(StringView str);
-
-struct AnyTypeAllowed
-{};
 
 class TypeInfo
 {

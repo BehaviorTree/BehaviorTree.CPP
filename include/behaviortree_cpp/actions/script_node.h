@@ -31,7 +31,7 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort("code", "Piece of code that can be parsed")};
+    return {InputPort<std::string>("code", "Piece of code that can be parsed")};
   }
 
 private:
