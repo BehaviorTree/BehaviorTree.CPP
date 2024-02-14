@@ -533,8 +533,66 @@ TEST(PortTest, DefaultInputStrings)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
+struct TestStruct
+{
+  int a;
+  double b;
+  std::string c;
+};
 
-TEST(PortTest, Default_Issues_767_768)
+class NodeWithDefaultNullptr : public SyncActionNode
+{
+public:
+  NodeWithDefaultNullptr(const std::string& name, const NodeConfig& config) :
+      SyncActionNode(name, config) {}
+
+  NodeStatus tick() override
+  {
+    std::shared_ptr<TestStruct> test_struct_ptr;
+    if (!getInput("input", test_struct_ptr))
+    {
+      throw std::runtime_error("NodeWithDefaultNullptr: failed input");
+    }
+    if (test_struct_ptr == nullptr)
+    {
+      std::cout << "vec_ptr is nullptr" << std::endl;
+    }
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::InputPort< std::shared_ptr<TestStruct> >("input", nullptr, "default value is nullptr")};
+  }
+};
+
+class NodeWithDefaultNullopt : public SyncActionNode
+{
+public:
+  NodeWithDefaultNullopt(const std::string& name, const NodeConfig& config) :
+      SyncActionNode(name, config) {}
+
+  NodeStatus tick() override
+  {
+    std::shared_ptr<TestStruct> test_struct_ptr;
+    if (!getInput("input", test_struct_ptr))
+    {
+      throw std::runtime_error("NodeWithDefaultNullopt: failed input");
+    }
+    if (!test_struct_ptr)
+    {
+      std::cout << "vec_ptr is std::nullopt" << std::endl;
+    }
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return {BT::InputPort< std::optional<TestStruct> >("input", std::nullopt, "default value is nullptr")};
+  }
+};
+
+TEST(PortTest, Default_Issues_767)
 {
   using namespace BT;
 
@@ -545,4 +603,35 @@ TEST(PortTest, Default_Issues_767_768)
   ASSERT_NO_THROW(auto p = InputPort<std::shared_ptr<std::string>>("ptr_B", nullptr, "default nullptr"));
 }
 
+TEST(PortTest, Default_Issues_768)
+{
+  using namespace BT;
 
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeWithDefaultNullptr>("NodeWithDefaultNullptr");
+  factory.registerNodeType<NodeWithDefaultNullopt>("NodeWithDefaultNullopt");
+  BT::NodeStatus status;
+  BT::Tree tree;
+
+  // Default value is nullptr
+  std::string xml_txt_nullptr = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <NodeWithDefaultNullptr input=""/>
+      </BehaviorTree>
+    </root>)";
+  tree = factory.createTreeFromText(xml_txt_nullptr);
+  ASSERT_NO_THROW(status = tree.tickWhileRunning());
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+
+  // Default value is std::nullopt
+  std::string xml_txt_nullopt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree>
+        <NodeWithDefaultNullopt input=""/>
+      </BehaviorTree>
+    </root>)";
+  tree = factory.createTreeFromText(xml_txt_nullopt);
+  ASSERT_NO_THROW(status = tree.tickWhileRunning());
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
