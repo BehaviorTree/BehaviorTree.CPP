@@ -31,6 +31,8 @@ if (BT_COROUTINES)
     CompileExample("t09_async_actions_coroutines")
 endif()
 
+CompileExample("t12_groot_howto")
+
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
 CompileExample("ex03_ncurses_manual_selector")
