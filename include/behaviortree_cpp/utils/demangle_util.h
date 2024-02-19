@@ -1,6 +1,7 @@
 #ifndef DEMANGLE_UTIL_H
 #define DEMANGLE_UTIL_H
 
+#include <chrono>
 #include <string>
 #include <typeindex>
 
@@ -83,6 +84,22 @@ inline std::string demangle(const std::type_index& index)
   {
     return "std::string";
   }
+  if (index == typeid(std::string_view))
+  {
+    return "std::string_view";
+  }
+  if (index == typeid(std::chrono::seconds))
+  {
+    return "std::chrono::seconds";
+  }
+  if (index == typeid(std::chrono::milliseconds))
+  {
+    return "std::chrono::milliseconds";
+  }
+  if (index == typeid(std::chrono::microseconds))
+  {
+    return "std::chrono::microseconds";
+  }
 
   scoped_demangled_name demangled_name(index.name());
   char const* const p = demangled_name.get();
@@ -96,31 +113,10 @@ inline std::string demangle(const std::type_index& index)
   }
 }
 
-inline std::string demangle(const std::type_info* info)
-{
-  if (!info)
-  {
-    return "void";
-  }
-  if (info == &typeid(std::string))
-  {
-    return "std::string";
-  }
-  scoped_demangled_name demangled_name(info->name());
-  char const* const p = demangled_name.get();
-  if (p)
-  {
-    return p;
-  }
-  else
-  {
-    return info->name();
-  }
-}
 
 inline std::string demangle(const std::type_info& info)
 {
-  return demangle(&info);
+  return demangle(std::type_index(info));
 }
 
 }   // namespace BT
