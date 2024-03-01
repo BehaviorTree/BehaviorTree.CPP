@@ -298,3 +298,41 @@ TEST(Preconditions, Issue615_NoSkipWhenRunning_B)
   tree.rootBlackboard()->set("check", false);
   ASSERT_EQ( tree.tickOnce(), NodeStatus::RUNNING );
 }
+
+
+
+TEST(Preconditions, Remapping)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+
+    <BehaviorTree ID="Main">
+      <Sequence>
+        <Script  code="value:=1" />
+        <SubTree ID="Sub1" param="{value}"/>
+        <TestA _skipIf="value!=1" />
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Sub1">
+      <Sequence>
+        <TestB _skipIf="param!=1" />
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+
+  std::array<int, 2> counters;
+  RegisterTestTick(factory, "Test", counters);
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("Main");
+
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  ASSERT_EQ( counters[0], 1 );
+  ASSERT_EQ( counters[1], 1 );
+}
