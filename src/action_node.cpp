@@ -11,8 +11,11 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef __EMSCRIPTEN__
 #define MINICORO_IMPL
 #include "minicoro/minicoro.h"
+#endif
+
 #include "behaviortree_cpp/action_node.h"
 
 using namespace BT;
@@ -64,6 +67,7 @@ NodeStatus SyncActionNode::executeTick()
 }
 
 //-------------------------------------
+#ifdef MINICORO_IMPL
 
 struct CoroActionNode::Pimpl
 {
@@ -145,6 +149,7 @@ void CoroActionNode::destroyCoroutine()
   }
 }
 
+#endif
 
 bool StatefulActionNode::isHaltRequested() const
 {
