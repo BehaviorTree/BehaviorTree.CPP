@@ -2,6 +2,21 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bugfix: string to enum/integer/boolean in scripts
+* bug fix in scripting comparison
+* added more pretty-prints to demangler
+* fixes and checks in default values, based on PR `#773 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/773>`_
+* Initialize std::atomic_bool (`#772 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/772>`_)
+* Fix issue `#767 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/767>`_ and `#768 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/768>`_
+* updated default port syntax: "{=}"
+* new default port capability: blackbard entries
+* fix issue `#757 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/757>`_ : skipped nodes should not call post-condition ALWAYS
+* Merge pull request `#756 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/756>`_ from imere/imere-patch-1
+* fix(test): Typo in gtest_blackboard.cpp
+* Contributors: Davide Faconti, Lu Z, Marq Rasmussen
+
 4.5.1 (2024-01-23)
 ------------------
 * Support enums and real numbers in Node Switch
