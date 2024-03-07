@@ -314,7 +314,6 @@ public:
     setOutput("output", true);
     return BT::NodeStatus::SUCCESS;
   }
-
 };
 
 TEST(Preconditions, Remapping)

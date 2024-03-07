@@ -16,7 +16,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <utility>
 
 #include "behaviortree_cpp/scripting/any_types.hpp"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
@@ -555,11 +554,16 @@ struct ExprAssignment : ExprBase
         {
           *dst_ptr = converter(str);
         }
-        else
+        else if(dst_ptr->isNumber())
         {
-          auto msg = StrCat(errorPrefix(), "\nThe right operand is a string but"
-                                           "can't find the corresponding "
-                                           "convertFromString<T>().");
+          auto num_value = StringToDouble(value, env);
+          *dst_ptr = Any(num_value);
+        }
+        else {
+          auto msg = StrCat(errorPrefix(),
+                            "\nThe right operand is a string, "
+                            "can't convert to ",
+                            demangle(dst_ptr->type()));
           throw RuntimeError(msg);
         }
       }

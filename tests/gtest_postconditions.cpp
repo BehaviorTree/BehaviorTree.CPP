@@ -86,4 +86,59 @@ TEST(PostConditions, Issue601)
   ASSERT_EQ(tree.rootBlackboard()->get<std::string>("test"), "halted");
 }
 
+enum BatteryStatus
+{
+  BATTERY_OK,
+  LOW_BATTERY
+};
+
+class BatteryCheck : public BT::SyncActionNode
+{
+public:
+  BatteryCheck(const std::string& name, const BT::NodeConfig& config) :
+      BT::SyncActionNode(name, config){}
+
+  static BT::PortsList providedPorts() {
+    return { InputPort<int>("health")};
+  }
+
+  BT::NodeStatus tick() override {
+    int health = getInput<int>("health").value();
+    return health > 10 ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
+  }
+};
+
+TEST(PostConditions, OnFailure)
+{
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="Main">
+      <Sequence>
+        <Script code="battery_voltage := 7"/>
+        <Script code="battery_status := BATTERY_OK"/>
+        <SubTree ID="Sub" _autoremap="true"
+                          fault_status="LOW_BATTERY"
+                          health="{battery_voltage}" />
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Sub">
+      <BatteryCheck health="{health}"
+                    _onFailure="battery_status := fault_status" />
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<BatteryCheck>("BatteryCheck");
+  factory.registerScriptingEnums<BatteryStatus>();
+
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  auto tree = factory.createTree("Main");
+  const auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+  ASSERT_EQ(tree.rootBlackboard()->get<BatteryStatus>("battery_status"), LOW_BATTERY);
+}
+
 

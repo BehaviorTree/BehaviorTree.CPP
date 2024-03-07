@@ -254,7 +254,38 @@ TEST(ParserTest, NotInitializedComparison)
   EXPECT_ANY_THROW(GetResult("x += 1"));
 }
 
-TEST(ParserTest, Enums)
+TEST(ParserTest, EnumsBasic)
+{
+  BT::Ast::Environment environment = {BT::Blackboard::create(), {}};
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+
+  enum Color
+  {
+    RED = 1,
+    BLUE = 3,
+    GREEN = 5
+  };
+
+  environment.enums = std::make_shared<BT::EnumsTable>();
+  environment.enums->insert( {"RED", RED} );
+  environment.enums->insert( {"BLUE", BLUE} );
+  environment.enums->insert( {"GREEN", GREEN} );
+  GetResult("A:=RED");
+  GetResult("B:=RED");
+  GetResult("C:=BLUE");
+
+  EXPECT_EQ(GetResult("A==B").cast<int>(), 1);
+  EXPECT_EQ(GetResult("A!=C").cast<int>(), 1);
+
+  EXPECT_EQ(GetResult("A").cast<Color>(), RED);
+  EXPECT_EQ(GetResult("B").cast<Color>(), RED);
+  EXPECT_EQ(GetResult("C").cast<Color>(), BLUE);
+}
+
+TEST(ParserTest, EnumsXML)
 {
   BT::BehaviorTreeFactory factory;
 
