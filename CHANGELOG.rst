@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.5.2 (2024-03-07)
+------------------
 * bugfix: string to enum/integer/boolean in scripts
 * bug fix in scripting comparison
 * added more pretty-prints to demangler
