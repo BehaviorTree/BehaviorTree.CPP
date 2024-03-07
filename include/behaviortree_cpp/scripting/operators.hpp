@@ -384,7 +384,7 @@ struct ExprComparison : ExprBase
                (lhs_v.isNumber() && rhs_v.isString()))
       {
         auto lv = lhs_v.cast<double>();
-        auto rv = lhs_v.cast<double>();
+        auto rv = rhs_v.cast<double>();
         if (!SwitchImpl(lv, rv, ops[i]))
         {
           return False;

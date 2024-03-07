@@ -228,6 +228,10 @@ TEST(ParserTest, Equations)
 
   EXPECT_EQ(GetResult(" y == x  &&  x == 3 ").cast<int>(), 0);
   EXPECT_EQ(GetResult(" y == x  ||  x == 3 ").cast<int>(), 1);
+
+  // we expect string to be casted to number
+  EXPECT_EQ(GetResult(" par1:='3'; par2:=3; par1==par2").cast<int>(), 1);
+  EXPECT_EQ(GetResult(" par1:='3'; par2:=4; par1!=par2").cast<int>(), 1);
 }
 
 
