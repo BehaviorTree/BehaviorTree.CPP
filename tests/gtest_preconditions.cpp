@@ -300,6 +300,22 @@ TEST(Preconditions, Issue615_NoSkipWhenRunning_B)
 }
 
 
+class SimpleOutput : public BT::SyncActionNode
+{
+public:
+  SimpleOutput(const std::string& name, const BT::NodeConfig& config) :
+      BT::SyncActionNode(name, config){}
+
+  static BT::PortsList providedPorts() {
+    return { OutputPort<bool>("output")};
+  }
+
+  BT::NodeStatus tick() override {
+    setOutput("output", true);
+    return BT::NodeStatus::SUCCESS;
+  }
+
+};
 
 TEST(Preconditions, Remapping)
 {
@@ -308,16 +324,24 @@ TEST(Preconditions, Remapping)
 
     <BehaviorTree ID="Main">
       <Sequence>
-        <Script  code="value:=1" />
+        <SimpleOutput  output="{param}" />
+        <Script  code="value:=true" />
+
+        <SubTree ID="Sub1" param="{param}"/>
         <SubTree ID="Sub1" param="{value}"/>
-        <TestA _skipIf="value!=1" />
+        <SubTree ID="Sub1" param="true"/>
+        <TestA/>
       </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="Sub1">
       <Sequence>
-        <TestB _skipIf="param!=1" />
+        <SubTree ID="Sub2" _skipIf="param != true" />
       </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Sub2">
+      <TestB/>
     </BehaviorTree>
   </root>
   )";
@@ -325,6 +349,7 @@ TEST(Preconditions, Remapping)
   BehaviorTreeFactory factory;
 
   std::array<int, 2> counters;
+  factory.registerNodeType<SimpleOutput>("SimpleOutput");
   RegisterTestTick(factory, "Test", counters);
 
   factory.registerBehaviorTreeFromText(xml_text);
@@ -334,5 +359,5 @@ TEST(Preconditions, Remapping)
 
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
   ASSERT_EQ( counters[0], 1 );
-  ASSERT_EQ( counters[1], 1 );
+  ASSERT_EQ( counters[1], 3 );
 }

@@ -13,8 +13,6 @@
 #pragma once
 
 #include <cmath>
-#include <cstdio>
-#include <unordered_map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -29,6 +27,27 @@ namespace BT::Ast
 using SimpleString = SafeAny::SimpleString;
 
 using expr_ptr = std::shared_ptr<struct ExprBase>;
+
+// extended strin to number that consider enums and booleans
+double StringToDouble(const Any& value, const Environment& env)
+{
+  const auto str = value.cast<std::string>();
+  if(str == "true") {
+    return 1.0;
+  }
+  if(str == "false") {
+    return 0.0;
+  }
+  if(env.enums)
+  {
+    auto it = env.enums->find(str);
+    if(it != env.enums->end())
+    {
+      return it->second;
+    }
+  }
+  return value.cast<double>();
+}
 
 struct ExprBase
 {
@@ -380,11 +399,19 @@ struct ExprComparison : ExprBase
           return False;
         }
       }
-      else if ((lhs_v.isString() && rhs_v.isNumber()) ||
-               (lhs_v.isNumber() && rhs_v.isString()))
+      else if (lhs_v.isString() && rhs_v.isNumber())
+      {
+        auto lv = StringToDouble(lhs_v, env);
+        auto rv = rhs_v.cast<double>();
+        if (!SwitchImpl(lv, rv, ops[i]))
+        {
+          return False;
+        }
+      }
+      else if (lhs_v.isNumber() && rhs_v.isString())
       {
         auto lv = lhs_v.cast<double>();
-        auto rv = rhs_v.cast<double>();
+        auto rv = StringToDouble(rhs_v, env);
         if (!SwitchImpl(lv, rv, ops[i]))
         {
           return False;
