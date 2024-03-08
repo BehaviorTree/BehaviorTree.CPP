@@ -24,8 +24,8 @@ struct SimpleFallbackTest : testing::Test
   BT::ConditionTestNode condition;
   BT::AsyncActionTest action;
 
-  SimpleFallbackTest() :
-    root("root_fallback"), condition("condition"), action("action", milliseconds(100))
+  SimpleFallbackTest()
+    : root("root_fallback"), condition("condition"), action("action", milliseconds(100))
   {
     root.addChild(&condition);
     root.addChild(&action);
@@ -41,11 +41,11 @@ struct ReactiveFallbackTest : testing::Test
   BT::ConditionTestNode condition_2;
   BT::AsyncActionTest action_1;
 
-  ReactiveFallbackTest() :
-    root("root_first"),
-    condition_1("condition_1"),
-    condition_2("condition_2"),
-    action_1("action_1", milliseconds(100))
+  ReactiveFallbackTest()
+    : root("root_first")
+    , condition_1("condition_1")
+    , condition_2("condition_2")
+    , action_1("action_1", milliseconds(100))
   {
     root.addChild(&condition_1);
     root.addChild(&condition_2);
@@ -61,8 +61,8 @@ struct SimpleFallbackWithMemoryTest : testing::Test
   BT::AsyncActionTest action;
   BT::ConditionTestNode condition;
 
-  SimpleFallbackWithMemoryTest() :
-    root("root_sequence"), action("action", milliseconds(100)), condition("condition")
+  SimpleFallbackWithMemoryTest()
+    : root("root_sequence"), action("action", milliseconds(100)), condition("condition")
   {
     root.addChild(&condition);
     root.addChild(&action);
@@ -84,14 +84,14 @@ struct ComplexFallbackWithMemoryTest : testing::Test
   BT::FallbackNode fal_conditions;
   BT::FallbackNode fal_actions;
 
-  ComplexFallbackWithMemoryTest() :
-    root("root_fallback"),
-    action_1("action_1", milliseconds(100)),
-    action_2("action_2", milliseconds(100)),
-    condition_1("condition_1"),
-    condition_2("condition_2"),
-    fal_conditions("fallback_conditions"),
-    fal_actions("fallback_actions")
+  ComplexFallbackWithMemoryTest()
+    : root("root_fallback")
+    , action_1("action_1", milliseconds(100))
+    , action_2("action_2", milliseconds(100))
+    , condition_1("condition_1")
+    , condition_2("condition_2")
+    , fal_conditions("fallback_conditions")
+    , fal_actions("fallback_actions")
   {
     root.addChild(&fal_conditions);
     {

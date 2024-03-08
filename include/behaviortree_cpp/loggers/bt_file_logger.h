@@ -10,8 +10,7 @@
 namespace BT
 {
 
-class [[deprecated("Use FileLogger2 instead")]]
-FileLogger : public StatusChangeLogger
+class [[deprecated("Use FileLogger2 instead")]] FileLogger : public StatusChangeLogger
 {
 public:
   FileLogger(const Tree& tree, const char* filename, uint16_t buffer_size = 10);
@@ -33,6 +32,6 @@ private:
   size_t buffer_max_size_;
 };
 
-}   // namespace BT
+}  // namespace BT
 
-#endif   // BT_FILE_LOGGER_H
+#endif  // BT_FILE_LOGGER_H

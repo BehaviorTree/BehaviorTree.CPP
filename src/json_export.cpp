@@ -3,24 +3,24 @@
 namespace BT
 {
 
-bool JsonExporter::toJson(const Any &any, nlohmann::json &dst) const
+bool JsonExporter::toJson(const Any& any, nlohmann::json& dst) const
 {
   nlohmann::json json;
   auto const& type = any.castedType();
 
-  if (any.isString())
+  if(any.isString())
   {
     dst = any.cast<std::string>();
   }
-  else if (type == typeid(int64_t))
+  else if(type == typeid(int64_t))
   {
     dst = any.cast<int64_t>();
   }
-  else if (type == typeid(uint64_t))
+  else if(type == typeid(uint64_t))
   {
     dst = any.cast<uint64_t>();
   }
-  else if (type == typeid(double))
+  else if(type == typeid(double))
   {
     dst = any.cast<double>();
   }
@@ -31,17 +31,18 @@ bool JsonExporter::toJson(const Any &any, nlohmann::json &dst) const
     {
       it->second(any, dst);
     }
-    else {
+    else
+    {
       return false;
     }
   }
   return true;
 }
 
-nlohmann::json ExportBlackboardToJSON(Blackboard &blackboard)
+nlohmann::json ExportBlackboardToJSON(Blackboard& blackboard)
 {
   nlohmann::json dest;
-  for(auto entry_name: blackboard.getKeys())
+  for(auto entry_name : blackboard.getKeys())
   {
     std::string name(entry_name);
     if(auto any_ref = blackboard.getAnyLocked(name))
@@ -55,4 +56,4 @@ nlohmann::json ExportBlackboardToJSON(Blackboard &blackboard)
   return dest;
 }
 
-}
+}  // namespace BT

@@ -13,7 +13,7 @@
 #
 # See https://github.com/pre-commit/pre-commit
 
-exclude: ^3rdparty/|3rdparty
+exclude: ^3rdparty/|3rdparty|^include/behaviortree_cpp/contrib/
 repos:
 
   # Standard hooks

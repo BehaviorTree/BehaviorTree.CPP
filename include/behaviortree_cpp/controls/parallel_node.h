@@ -46,11 +46,12 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<int>(THRESHOLD_SUCCESS, -1,
-                           "number of children that need to succeed to trigger a "
-                           "SUCCESS"),
-            InputPort<int>(THRESHOLD_FAILURE, 1,
-                           "number of children that need to fail to trigger a FAILURE")};
+    return { InputPort<int>(THRESHOLD_SUCCESS, -1,
+                            "number of children that need to succeed to trigger a "
+                            "SUCCESS"),
+             InputPort<int>(THRESHOLD_FAILURE, 1,
+                            "number of children that need to fail to trigger a "
+                            "FAILURE") };
   }
 
   ~ParallelNode() override = default;
@@ -65,7 +66,7 @@ public:
 private:
   int success_threshold_;
   int failure_threshold_;
-  
+
   std::set<size_t> completed_list_;
 
   size_t success_count_ = 0;
@@ -80,4 +81,4 @@ private:
   void clear();
 };
 
-}   // namespace BT
+}  // namespace BT

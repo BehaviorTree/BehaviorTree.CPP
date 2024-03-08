@@ -116,4 +116,4 @@
 #define BT_OS BT_OS_VMS
 #endif
 
-#endif   // Foundation_Platform_INCLUDED
+#endif  // Foundation_Platform_INCLUDED

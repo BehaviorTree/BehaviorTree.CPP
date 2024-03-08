@@ -59,4 +59,4 @@ public:
   /// also send a halt() signal to all RUNNING children
   void resetChildren();
 };
-}   // namespace BT
+}  // namespace BT

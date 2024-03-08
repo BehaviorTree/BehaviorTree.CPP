@@ -23,8 +23,8 @@ namespace BT
 class BehaviorTreeException : public std::exception
 {
 public:
-  BehaviorTreeException(std::string_view message) :
-    message_(static_cast<std::string>(message))
+  BehaviorTreeException(std::string_view message)
+    : message_(static_cast<std::string>(message))
   {}
 
   template <typename... SV>
@@ -66,6 +66,6 @@ public:
   {}
 };
 
-}   // namespace BT
+}  // namespace BT
 
 #endif

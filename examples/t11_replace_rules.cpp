@@ -61,18 +61,18 @@ int main(int argc, char** argv)
   // a "dummy" node, that we want to create instead of a given one.
 
   // Simple node that just prints its name and return SUCCESS
-  factory.registerSimpleAction("DummyAction", [](BT::TreeNode& self){
-    std::cout << "DummyAction substituting: "<< self.name() << std::endl;
+  factory.registerSimpleAction("DummyAction", [](BT::TreeNode& self) {
+    std::cout << "DummyAction substituting: " << self.name() << std::endl;
     return BT::NodeStatus::SUCCESS;
   });
 
   // Action that is meant to substitute SaySomething.
   // It will try to use the input port "message"
-  factory.registerSimpleAction("TestSaySomething", [](BT::TreeNode& self){
+  factory.registerSimpleAction("TestSaySomething", [](BT::TreeNode& self) {
     auto msg = self.getInput<std::string>("message");
-    if (!msg)
+    if(!msg)
     {
-      throw BT::RuntimeError( "missing required input [message]: ", msg.error() );
+      throw BT::RuntimeError("missing required input [message]: ", msg.error());
     }
     std::cout << "TestSaySomething: " << msg.value() << std::endl;
     return BT::NodeStatus::SUCCESS;
@@ -92,7 +92,8 @@ int main(int argc, char** argv)
     {
       factory.loadSubstitutionRuleFromJSON(json_text);
     }
-    else {
+    else
+    {
       // Substitute nodes which match this wildcard pattern with TestAction
       factory.addSubstitutionRule("mysub/action_*", "TestAction");
 

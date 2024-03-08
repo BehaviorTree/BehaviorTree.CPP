@@ -15,11 +15,11 @@
 
 namespace BT
 {
-FallbackNode::FallbackNode(const std::string& name, bool make_aynch) :
-  ControlNode::ControlNode(name, {}),
-  current_child_idx_(0),
-  all_skipped_(true),
-  asynch_(make_aynch)
+FallbackNode::FallbackNode(const std::string& name, bool make_aynch)
+  : ControlNode::ControlNode(name, {})
+  , current_child_idx_(0)
+  , all_skipped_(true)
+  , asynch_(make_aynch)
 {
   if(asynch_)
     setRegistrationID("AsyncFallback");
@@ -38,7 +38,7 @@ NodeStatus FallbackNode::tick()
 
   setStatus(NodeStatus::RUNNING);
 
-  while (current_child_idx_ < children_count)
+  while(current_child_idx_ < children_count)
   {
     TreeNode* current_child_node = children_nodes_[current_child_idx_];
 
@@ -48,7 +48,7 @@ NodeStatus FallbackNode::tick()
     // switch to RUNNING state as soon as you find an active child
     all_skipped_ &= (child_status == NodeStatus::SKIPPED);
 
-    switch (child_status)
+    switch(child_status)
     {
       case NodeStatus::RUNNING: {
         return child_status;
@@ -62,9 +62,8 @@ NodeStatus FallbackNode::tick()
         current_child_idx_++;
         // Return the execution flow if the child is async,
         // to make this interruptable.
-        if (asynch_ && requiresWakeUp() &&
-            prev_status == NodeStatus::IDLE &&
-            current_child_idx_ < children_count)
+        if(asynch_ && requiresWakeUp() && prev_status == NodeStatus::IDLE &&
+           current_child_idx_ < children_count)
         {
           emitWakeUpSignal();
           return NodeStatus::RUNNING;
@@ -79,11 +78,11 @@ NodeStatus FallbackNode::tick()
       case NodeStatus::IDLE: {
         throw LogicError("[", name(), "]: A children should not return IDLE");
       }
-    }   // end switch
-  }     // end while loop
+    }  // end switch
+  }    // end while loop
 
   // The entire while loop completed. This means that all the children returned FAILURE.
-  if (current_child_idx_ == children_count)
+  if(current_child_idx_ == children_count)
   {
     resetChildren();
     current_child_idx_ = 0;
@@ -99,4 +98,4 @@ void FallbackNode::halt()
   ControlNode::halt();
 }
 
-}   // namespace BT
+}  // namespace BT

@@ -10,7 +10,7 @@ using SerializedTransition = std::array<uint8_t, 12>;
 
 inline Serialization::NodeType convertToFlatbuffers(BT::NodeType type)
 {
-  switch (type)
+  switch(type)
   {
     case BT::NodeType::ACTION:
       return Serialization::NodeType::ACTION;
@@ -30,7 +30,7 @@ inline Serialization::NodeType convertToFlatbuffers(BT::NodeType type)
 
 inline Serialization::NodeStatus convertToFlatbuffers(BT::NodeStatus type)
 {
-  switch (type)
+  switch(type)
   {
     case BT::NodeStatus::SKIPPED:
     case BT::NodeStatus::IDLE:
@@ -47,7 +47,7 @@ inline Serialization::NodeStatus convertToFlatbuffers(BT::NodeStatus type)
 
 inline Serialization::PortDirection convertToFlatbuffers(BT::PortDirection direction)
 {
-  switch (direction)
+  switch(direction)
   {
     case BT::PortDirection::INPUT:
       return Serialization::PortDirection::INPUT;
@@ -66,29 +66,29 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
 
   applyRecursiveVisitor(tree.rootNode(), [&](BT::TreeNode* node) {
     std::vector<uint16_t> children_uid;
-    if (auto control = dynamic_cast<BT::ControlNode*>(node))
+    if(auto control = dynamic_cast<BT::ControlNode*>(node))
     {
       children_uid.reserve(control->children().size());
-      for (const auto& child : control->children())
+      for(const auto& child : control->children())
       {
         children_uid.push_back(child->UID());
       }
     }
-    else if (auto decorator = dynamic_cast<BT::DecoratorNode*>(node))
+    else if(auto decorator = dynamic_cast<BT::DecoratorNode*>(node))
     {
       const auto& child = decorator->child();
       children_uid.push_back(child->UID());
     }
 
     // Const cast to ensure public access to config() overload
-    const auto& node_config = const_cast<BT::TreeNode const &>(*node).config();
+    const auto& node_config = const_cast<BT::TreeNode const&>(*node).config();
     std::vector<flatbuffers::Offset<Serialization::PortConfig>> ports;
-    for (const auto& it : node_config.input_ports)
+    for(const auto& it : node_config.input_ports)
     {
       ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(),
                                                             it.second.c_str()));
     }
-    for (const auto& it : node_config.output_ports)
+    for(const auto& it : node_config.output_ports)
     {
       ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(),
                                                             it.second.c_str()));
@@ -105,12 +105,12 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
 
   std::vector<flatbuffers::Offset<Serialization::NodeModel>> node_models;
 
-  for (const auto& node_it : tree.manifests)
+  for(const auto& node_it : tree.manifests)
   {
     const auto& manifest = node_it.second;
     std::vector<flatbuffers::Offset<Serialization::PortModel>> port_models;
 
-    for (const auto& port_it : manifest.ports)
+    for(const auto& port_it : manifest.ports)
     {
       const auto& port_name = port_it.first;
       const auto& port = port_it.second;
@@ -160,5 +160,4 @@ inline SerializedTransition SerializeTransition(uint16_t UID, Duration timestamp
   return buffer;
 }
 
-}   // namespace BT
-
+}  // namespace BT

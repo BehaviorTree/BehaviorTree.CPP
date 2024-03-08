@@ -63,6 +63,6 @@ protected:
 
   TickFunctor tick_functor_;
 };
-}   // namespace BT
+}  // namespace BT
 
 #endif

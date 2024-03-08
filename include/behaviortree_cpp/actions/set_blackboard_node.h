@@ -36,24 +36,24 @@ namespace BT
 class SetBlackboardNode : public SyncActionNode
 {
 public:
-  SetBlackboardNode(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  SetBlackboardNode(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {
     setRegistrationID("SetBlackboard");
   }
 
   static PortsList providedPorts()
   {
-    return {InputPort("value", "Value to be written int othe output_key"),
-            BidirectionalPort("output_key", "Name of the blackboard entry where the "
-                                            "value should be written")};
+    return { InputPort("value", "Value to be written int othe output_key"),
+             BidirectionalPort("output_key", "Name of the blackboard entry where the "
+                                             "value should be written") };
   }
 
 private:
   virtual BT::NodeStatus tick() override
   {
     std::string output_key;
-    if (!getInput("output_key", output_key))
+    if(!getInput("output_key", output_key))
     {
       throw RuntimeError("missing port [output_key]");
     }
@@ -64,8 +64,10 @@ private:
     if(isBlackboardPointer(value_str, &stripped_key))
     {
       const auto input_key = std::string(stripped_key);
-      std::shared_ptr<Blackboard::Entry> src_entry = config().blackboard->getEntry(input_key);
-      std::shared_ptr<Blackboard::Entry> dst_entry = config().blackboard->getEntry(output_key);
+      std::shared_ptr<Blackboard::Entry> src_entry =
+          config().blackboard->getEntry(input_key);
+      std::shared_ptr<Blackboard::Entry> dst_entry =
+          config().blackboard->getEntry(output_key);
 
       if(!src_entry)
       {
@@ -86,6 +88,6 @@ private:
     return NodeStatus::SUCCESS;
   }
 };
-}   // namespace BT
+}  // namespace BT
 
 #endif

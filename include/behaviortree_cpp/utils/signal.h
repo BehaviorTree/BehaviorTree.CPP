@@ -20,9 +20,9 @@ public:
 
   void notify(CallableArgs... args)
   {
-    for (size_t i = 0; i < subscribers_.size();)
+    for(size_t i = 0; i < subscribers_.size();)
     {
-      if (auto sub = subscribers_[i].lock())
+      if(auto sub = subscribers_[i].lock())
       {
         (*sub)(args...);
         i++;
@@ -44,6 +44,6 @@ public:
 private:
   std::vector<std::weak_ptr<CallableFunction>> subscribers_;
 };
-}   // namespace BT
+}  // namespace BT
 
-#endif   // SIMPLE_SIGNAL_H
+#endif  // SIMPLE_SIGNAL_H

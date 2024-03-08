@@ -47,4 +47,4 @@ private:
   virtual BT::NodeStatus tick() override;
 };
 
-}   // namespace BT
+}  // namespace BT

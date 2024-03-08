@@ -16,7 +16,7 @@ void SharedLibrary::load(const std::string& path, int)
   std::unique_lock<std::mutex> lock(_mutex);
 
   _handle = LoadLibrary(path.c_str());
-  if (!_handle)
+  if(!_handle)
   {
     throw RuntimeError("Could not load library: " + path);
   }
@@ -27,7 +27,7 @@ void SharedLibrary::unload()
 {
   std::unique_lock<std::mutex> lock(_mutex);
 
-  if (_handle)
+  if(_handle)
   {
     FreeLibrary((HMODULE)_handle);
     _handle = 0;
@@ -44,7 +44,7 @@ void* SharedLibrary::findSymbol(const std::string& name)
 {
   std::unique_lock<std::mutex> lock(_mutex);
 
-  if (_handle)
+  if(_handle)
   {
 #if defined(_WIN32_WCE)
     std::wstring uname;
@@ -77,4 +77,4 @@ std::string SharedLibrary::suffix()
 #endif
 }
 
-}   // namespace BT
+}  // namespace BT

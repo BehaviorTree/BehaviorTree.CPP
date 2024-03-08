@@ -220,4 +220,3 @@ INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
     FILES_MATCHING PATTERN "*.h*")
 
 export_btcpp_package()
-

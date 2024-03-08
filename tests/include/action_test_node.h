@@ -80,6 +80,6 @@ private:
   int success_count_;
   int failure_count_;
 };
-}   // namespace BT
+}  // namespace BT
 
 #endif

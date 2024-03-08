@@ -11,95 +11,95 @@ static bool s_interrupted = false;
 
 static void s_signal_handler(int)
 {
-    s_interrupted = true;
+  s_interrupted = true;
 }
 
 static void CatchSignals(void)
 {
 #ifdef _WIN32
-    signal(SIGINT, s_signal_handler);
-    signal(SIGTERM, s_signal_handler);
+  signal(SIGINT, s_signal_handler);
+  signal(SIGTERM, s_signal_handler);
 #else
-    struct sigaction action;
-    action.sa_handler = s_signal_handler;
-    action.sa_flags = 0;
-    sigemptyset(&action.sa_mask);
-    sigaction(SIGINT, &action, nullptr);
-    sigaction(SIGTERM, &action, nullptr);
+  struct sigaction action;
+  action.sa_handler = s_signal_handler;
+  action.sa_flags = 0;
+  sigemptyset(&action.sa_mask);
+  sigaction(SIGINT, &action, nullptr);
+  sigaction(SIGTERM, &action, nullptr);
 #endif
 }
 
 int main(int argc, char* argv[])
 {
-    if (argc != 2)
+  if(argc != 2)
+  {
+    printf("Wrong number of arguments\nUsage: %s [filename]\n", argv[0]);
+    return 1;
+  }
+
+  // register CTRL+C signal handler
+  CatchSignals();
+
+  zmq::context_t context(1);
+
+  //  Socket to talk to server
+  std::cout << "Trying to connect to [tcp://localhost:1666]\n" << std::endl;
+
+  zmq::socket_t subscriber(context, ZMQ_SUB);
+  subscriber.connect("tcp://localhost:1666");
+
+  //  Subscribe to everything
+  subscriber.set(zmq::sockopt::subscribe, "");
+
+  printf("----------- Started -----------------\n");
+
+  bool first_message = true;
+  std::ofstream file_os;
+
+  while(!s_interrupted)
+  {
+    zmq::message_t update;
+    zmq::message_t msg;
+    try
     {
-        printf("Wrong number of arguments\nUsage: %s [filename]\n", argv[0]);
-        return 1;
+      auto ret = subscriber.recv(update, zmq::recv_flags::none);
+      (void)ret;
+    }
+    catch(zmq::error_t& e)
+    {
+      if(!s_interrupted)
+      {
+        std::cout << "subscriber.recv() failed with exception: " << e.what() << std::endl;
+        return -1;
+      }
     }
 
-    // register CTRL+C signal handler
-    CatchSignals();
-
-    zmq::context_t context(1);
-
-    //  Socket to talk to server
-    std::cout << "Trying to connect to [tcp://localhost:1666]\n" << std::endl;
-
-    zmq::socket_t subscriber(context, ZMQ_SUB);
-    subscriber.connect("tcp://localhost:1666");
-
-    //  Subscribe to everything
-    subscriber.set(zmq::sockopt::subscribe, "");
-
-    printf("----------- Started -----------------\n");
-
-    bool first_message = true;
-    std::ofstream file_os;
-
-    while (!s_interrupted)
+    if(!s_interrupted)
     {
-        zmq::message_t update;
-        zmq::message_t msg;
-        try
-        {
-            auto ret = subscriber.recv(update, zmq::recv_flags::none);
-            (void)ret;
-        }
-        catch (zmq::error_t& e)
-        {
-            if (!s_interrupted)
-            {
-                std::cout << "subscriber.recv() failed with exception: " << e.what() << std::endl;
-                return -1;
-            }
-        }
+      char* data_ptr = static_cast<char*>(update.data());
+      const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>(data_ptr);
 
-        if (!s_interrupted)
-        {
-            char* data_ptr = static_cast<char*>(update.data());
-            const uint32_t header_size = flatbuffers::ReadScalar<uint32_t>(data_ptr);
+      if(first_message)
+      {
+        printf("First message received\n");
+        first_message = false;
 
-            if (first_message)
-            {
-                printf("First message received\n");
-                first_message = false;
+        file_os.open(argv[1], std::ofstream::binary | std::ofstream::out);
+        file_os.write(data_ptr, 4 + header_size);
+      }
+      data_ptr += 4 + header_size;
 
-                file_os.open(argv[1], std::ofstream::binary | std::ofstream::out);
-                file_os.write(data_ptr, 4 + header_size);
-            }
-            data_ptr += 4 + header_size;
+      const uint32_t transition_count = flatbuffers::ReadScalar<uint32_t>(data_ptr);
+      data_ptr += sizeof(uint32_t);
 
-            const uint32_t transition_count = flatbuffers::ReadScalar<uint32_t>(data_ptr);
-            data_ptr += sizeof(uint32_t);
-
-            file_os.write(data_ptr, 12 * transition_count);
-        }
+      file_os.write(data_ptr, 12 * transition_count);
     }
+  }
 
-    subscriber.close();
+  subscriber.close();
 
-    printf("Results saved to file\n");
-    file_os.close();
+  printf("Results saved to file\n");
+  file_os.close();
 
-    return 0;
+  return 0;
 }

@@ -20,7 +20,8 @@ public:
   TreeObserver(const BT::Tree& tree);
   ~TreeObserver() override;
 
-  virtual void flush() override {}
+  virtual void flush() override
+  {}
 
   void resetStatistics();
 
@@ -55,17 +56,17 @@ public:
   // path to UID map
   const std::unordered_map<std::string, uint16_t>& pathToUID() const;
 
-  const std::map<uint16_t, std::string> &uidToPath() const;
+  const std::map<uint16_t, std::string>& uidToPath() const;
 
-  private:
+private:
   std::unordered_map<uint16_t, NodeStatistics> _statistics;
   std::unordered_map<std::string, uint16_t> _path_to_uid;
   std::map<uint16_t, std::string> _uid_to_path;
 
-  virtual void callback(Duration timestamp, const TreeNode& node,
-                        NodeStatus prev_status, NodeStatus status) override;
+  virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
+                        NodeStatus status) override;
 };
 
-}   // namespace BT
+}  // namespace BT
 
-#endif   // BT_OBSERVER_H
+#endif  // BT_OBSERVER_H

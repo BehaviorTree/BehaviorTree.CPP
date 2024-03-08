@@ -8,11 +8,11 @@ namespace BT
 {
 std::atomic<bool> MinitraceLogger::ref_count(false);
 
-MinitraceLogger::MinitraceLogger(const Tree& tree, const char* filename_json) :
-  StatusChangeLogger(tree.rootNode())
+MinitraceLogger::MinitraceLogger(const Tree& tree, const char* filename_json)
+  : StatusChangeLogger(tree.rootNode())
 {
   bool expected = false;
-  if (!ref_count.compare_exchange_strong(expected, true))
+  if(!ref_count.compare_exchange_strong(expected, true))
   {
     throw LogicError("Only one instance of MinitraceLogger shall be created");
   }
@@ -31,7 +31,7 @@ MinitraceLogger::~MinitraceLogger()
 
 const char* toConstStr(NodeType type)
 {
-  switch (type)
+  switch(type)
   {
     case NodeType::ACTION:
       return "Action";
@@ -56,15 +56,15 @@ void MinitraceLogger::callback(Duration /*timestamp*/, const TreeNode& node,
   const char* category = toConstStr(node.type());
   const char* name = node.name().c_str();
 
-  if (prev_status == NodeStatus::IDLE && statusCompleted)
+  if(prev_status == NodeStatus::IDLE && statusCompleted)
   {
     MTR_INSTANT(category, name);
   }
-  else if (status == NodeStatus::RUNNING)
+  else if(status == NodeStatus::RUNNING)
   {
     MTR_BEGIN(category, name);
   }
-  else if (prev_status == NodeStatus::RUNNING && statusCompleted)
+  else if(prev_status == NodeStatus::RUNNING && statusCompleted)
   {
     MTR_END(category, name);
   }
@@ -74,4 +74,4 @@ void MinitraceLogger::flush()
 {
   mtr_flush();
 }
-}   // namespace BT
+}  // namespace BT

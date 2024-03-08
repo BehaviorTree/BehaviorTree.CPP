@@ -35,8 +35,8 @@ TEST(Reactive, RunningChildren)
 
   NodeStatus status = NodeStatus::IDLE;
 
-  int count=0;
-  while(!BT::isStatusCompleted(status) && count<100)
+  int count = 0;
+  while(!BT::isStatusCompleted(status) && count < 100)
   {
     count++;
     status = tree.tickExactlyOnce();
@@ -54,7 +54,6 @@ TEST(Reactive, RunningChildren)
   ASSERT_EQ(counters[4], 1);
   ASSERT_EQ(counters[5], 1);
 }
-
 
 TEST(Reactive, Issue587)
 {
@@ -108,14 +107,14 @@ TEST(Reactive, PreTickHooks)
 
   auto tree = factory.createTreeFromText(reactive_xml_text);
 
-  TreeNode::PreTickCallback callback =
-      [](TreeNode& node) -> NodeStatus {
+  TreeNode::PreTickCallback callback = [](TreeNode& node) -> NodeStatus {
     std::cout << node.name() << " callback" << std::endl;
     return NodeStatus::SUCCESS;
   };
 
   tree.applyVisitor([&](TreeNode* node) -> void {
-    if(auto dd = dynamic_cast<BT::AlwaysFailureNode*>(node)) {
+    if(auto dd = dynamic_cast<BT::AlwaysFailureNode*>(node))
+    {
       dd->setPreTickFunction(callback);
     }
   });
@@ -123,7 +122,6 @@ TEST(Reactive, PreTickHooks)
   auto ret = tree.tickWhileRunning();
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
 }
-
 
 TEST(Reactive, TestLogging)
 {
@@ -158,8 +156,3 @@ TEST(Reactive, TestLogging)
   ASSERT_EQ(observer.getStatistics("testA").success_count, num_ticks);
   ASSERT_EQ(observer.getStatistics("success").success_count, num_ticks);
 }
-
-
-
-
-

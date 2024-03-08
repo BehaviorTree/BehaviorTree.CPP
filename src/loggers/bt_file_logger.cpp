@@ -3,10 +3,10 @@
 
 namespace BT
 {
-FileLogger::FileLogger(const BT::Tree& tree, const char* filename, uint16_t buffer_size) :
-  StatusChangeLogger(tree.rootNode()), buffer_max_size_(buffer_size)
+FileLogger::FileLogger(const BT::Tree& tree, const char* filename, uint16_t buffer_size)
+  : StatusChangeLogger(tree.rootNode()), buffer_max_size_(buffer_size)
 {
-  if (buffer_max_size_ != 0)
+  if(buffer_max_size_ != 0)
   {
     buffer_.reserve(buffer_max_size_);
   }
@@ -41,14 +41,14 @@ void FileLogger::callback(Duration timestamp, const TreeNode& node,
   SerializedTransition buffer =
       SerializeTransition(node.UID(), timestamp, prev_status, status);
 
-  if (buffer_max_size_ == 0)
+  if(buffer_max_size_ == 0)
   {
     file_os_.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
   }
   else
   {
     buffer_.push_back(buffer);
-    if (buffer_.size() >= buffer_max_size_)
+    if(buffer_.size() >= buffer_max_size_)
     {
       this->flush();
     }
@@ -57,11 +57,11 @@ void FileLogger::callback(Duration timestamp, const TreeNode& node,
 
 void FileLogger::flush()
 {
-  for (const auto& array : buffer_)
+  for(const auto& array : buffer_)
   {
     file_os_.write(reinterpret_cast<const char*>(array.data()), array.size());
   }
   file_os_.flush();
   buffer_.clear();
 }
-}   // namespace BT
+}  // namespace BT

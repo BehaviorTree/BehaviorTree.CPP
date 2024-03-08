@@ -173,8 +173,8 @@ struct VectorIterator
   typedef IT* pointer;
   typedef IT& reference;
 
-  VectorIterator(const uint8_t* data, uoffset_t i) :
-    data_(data + IndirectHelper<T>::element_stride * i)
+  VectorIterator(const uint8_t* data, uoffset_t i)
+    : data_(data + IndirectHelper<T>::element_stride * i)
   {}
   VectorIterator(const VectorIterator& other) : data_(other.data_)
   {}
@@ -473,9 +473,9 @@ public:
     void* search_result = std::bsearch(&key, Data(), size(),
                                        IndirectHelper<T>::element_stride, KeyCompare<K>);
 
-    if (!search_result)
+    if(!search_result)
     {
-      return nullptr;   // Key not found.
+      return nullptr;  // Key not found.
     }
 
     const uint8_t* element = reinterpret_cast<const uint8_t*>(search_result);
@@ -718,7 +718,7 @@ protected:
   void CopyFromSpanImpl(flatbuffers::integral_constant<bool, false>,
                         flatbuffers::span<const T, length> src)
   {
-    for (size_type k = 0; k < length; k++)
+    for(size_type k = 0; k < length; k++)
     {
       Mutate(k, src[k]);
     }
@@ -858,7 +858,7 @@ static inline flatbuffers::string_view GetStringView(const String* str)
 {
   return str ? str->string_view() : flatbuffers::string_view();
 }
-#endif   // FLATBUFFERS_HAS_STRING_VIEW
+#endif  // FLATBUFFERS_HAS_STRING_VIEW
 
 // Allocator interface. This is flatbuffers-specific and meant only for
 // `vector_downward` usage.
@@ -882,7 +882,7 @@ public:
   virtual uint8_t* reallocate_downward(uint8_t* old_p, size_t old_size, size_t new_size,
                                        size_t in_use_back, size_t in_use_front)
   {
-    FLATBUFFERS_ASSERT(new_size > old_size);   // vector_downward only grows
+    FLATBUFFERS_ASSERT(new_size > old_size);  // vector_downward only grows
     uint8_t* new_p = allocate(new_size);
     memcpy_downward(old_p, old_size, new_p, new_size, in_use_back, in_use_front);
     deallocate(old_p, old_size);
@@ -933,7 +933,7 @@ inline uint8_t* Allocate(Allocator* allocator, size_t size)
 
 inline void Deallocate(Allocator* allocator, uint8_t* p, size_t size)
 {
-  if (allocator)
+  if(allocator)
     allocator->deallocate(p, size);
   else
     DefaultAllocator().deallocate(p, size);
@@ -955,35 +955,35 @@ inline uint8_t* ReallocateDownward(Allocator* allocator, uint8_t* old_p, size_t 
 class DetachedBuffer
 {
 public:
-  DetachedBuffer() :
-    allocator_(nullptr),
-    own_allocator_(false),
-    buf_(nullptr),
-    reserved_(0),
-    cur_(nullptr),
-    size_(0)
+  DetachedBuffer()
+    : allocator_(nullptr)
+    , own_allocator_(false)
+    , buf_(nullptr)
+    , reserved_(0)
+    , cur_(nullptr)
+    , size_(0)
   {}
 
   DetachedBuffer(Allocator* allocator, bool own_allocator, uint8_t* buf, size_t reserved,
-                 uint8_t* cur, size_t sz) :
-    allocator_(allocator),
-    own_allocator_(own_allocator),
-    buf_(buf),
-    reserved_(reserved),
-    cur_(cur),
-    size_(sz)
+                 uint8_t* cur, size_t sz)
+    : allocator_(allocator)
+    , own_allocator_(own_allocator)
+    , buf_(buf)
+    , reserved_(reserved)
+    , cur_(cur)
+    , size_(sz)
   {}
 
   // clang-format off
   #if !defined(FLATBUFFERS_CPP98_STL)
   // clang-format on
-  DetachedBuffer(DetachedBuffer&& other) :
-    allocator_(other.allocator_),
-    own_allocator_(other.own_allocator_),
-    buf_(other.buf_),
-    reserved_(other.reserved_),
-    cur_(other.cur_),
-    size_(other.size_)
+  DetachedBuffer(DetachedBuffer&& other)
+    : allocator_(other.allocator_)
+    , own_allocator_(other.own_allocator_)
+    , buf_(other.buf_)
+    , reserved_(other.reserved_)
+    , cur_(other.cur_)
+    , size_(other.size_)
   {
     other.reset();
   }
@@ -996,7 +996,7 @@ public:
   // clang-format on
   DetachedBuffer& operator=(DetachedBuffer&& other)
   {
-    if (this == &other)
+    if(this == &other)
       return *this;
 
     destroy();
@@ -1076,9 +1076,9 @@ protected:
 
   inline void destroy()
   {
-    if (buf_)
+    if(buf_)
       Deallocate(allocator_, buf_, reserved_);
-    if (own_allocator_ && allocator_)
+    if(own_allocator_ && allocator_)
     {
       delete allocator_;
     }
@@ -1106,15 +1106,15 @@ class vector_downward
 {
 public:
   explicit vector_downward(size_t initial_size, Allocator* allocator, bool own_allocator,
-                           size_t buffer_minalign) :
-    allocator_(allocator),
-    own_allocator_(own_allocator),
-    initial_size_(initial_size),
-    buffer_minalign_(buffer_minalign),
-    reserved_(0),
-    buf_(nullptr),
-    cur_(nullptr),
-    scratch_(nullptr)
+                           size_t buffer_minalign)
+    : allocator_(allocator)
+    , own_allocator_(own_allocator)
+    , initial_size_(initial_size)
+    , buffer_minalign_(buffer_minalign)
+    , reserved_(0)
+    , buf_(nullptr)
+    , cur_(nullptr)
+    , scratch_(nullptr)
   {}
 
   // clang-format off
@@ -1124,15 +1124,14 @@ public:
   vector_downward(vector_downward &other)
   #endif  // defined(FLATBUFFERS_CPP98_STL)
     // clang-format on
-    :
-    allocator_(other.allocator_),
-    own_allocator_(other.own_allocator_),
-    initial_size_(other.initial_size_),
-    buffer_minalign_(other.buffer_minalign_),
-    reserved_(other.reserved_),
-    buf_(other.buf_),
-    cur_(other.cur_),
-    scratch_(other.scratch_)
+    : allocator_(other.allocator_)
+    , own_allocator_(other.own_allocator_)
+    , initial_size_(other.initial_size_)
+    , buffer_minalign_(other.buffer_minalign_)
+    , reserved_(other.reserved_)
+    , buf_(other.buf_)
+    , cur_(other.cur_)
+    , scratch_(other.scratch_)
   {
     // No change in other.allocator_
     // No change in other.initial_size_
@@ -1172,7 +1171,7 @@ public:
 
   void clear()
   {
-    if (buf_)
+    if(buf_)
     {
       cur_ = buf_ + reserved_;
     }
@@ -1191,7 +1190,7 @@ public:
 
   void clear_allocator()
   {
-    if (own_allocator_ && allocator_)
+    if(own_allocator_ && allocator_)
     {
       delete allocator_;
     }
@@ -1201,7 +1200,7 @@ public:
 
   void clear_buffer()
   {
-    if (buf_)
+    if(buf_)
       Deallocate(allocator_, buf_, reserved_);
     buf_ = nullptr;
   }
@@ -1225,7 +1224,7 @@ public:
   {
     // allocator ownership (if any) is transferred to DetachedBuffer.
     DetachedBuffer fb(allocator_, own_allocator_, buf_, reserved_, cur_, size());
-    if (own_allocator_)
+    if(own_allocator_)
     {
       allocator_ = nullptr;
       own_allocator_ = false;
@@ -1238,7 +1237,7 @@ public:
   size_t ensure_space(size_t len)
   {
     FLATBUFFERS_ASSERT(cur_ >= scratch_ && scratch_ >= buf_);
-    if (len > static_cast<size_t>(cur_ - scratch_))
+    if(len > static_cast<size_t>(cur_ - scratch_))
     {
       reallocate(len);
     }
@@ -1301,7 +1300,7 @@ public:
 
   void push(const uint8_t* bytes, size_t num)
   {
-    if (num > 0)
+    if(num > 0)
     {
       memcpy(make_space(num), bytes, num);
     }
@@ -1328,7 +1327,7 @@ public:
   void fill(size_t zero_pad_bytes)
   {
     make_space(zero_pad_bytes);
-    for (size_t i = 0; i < zero_pad_bytes; i++)
+    for(size_t i = 0; i < zero_pad_bytes; i++)
       cur_[i] = 0;
   }
 
@@ -1379,8 +1378,8 @@ private:
   size_t buffer_minalign_;
   size_t reserved_;
   uint8_t* buf_;
-  uint8_t* cur_;       // Points at location between empty (below) and used (above).
-  uint8_t* scratch_;   // Points to the end of the scratchpad in use.
+  uint8_t* cur_;      // Points at location between empty (below) and used (above).
+  uint8_t* scratch_;  // Points to the end of the scratchpad in use.
 
   void reallocate(size_t len)
   {
@@ -1389,7 +1388,7 @@ private:
     auto old_scratch_size = scratch_size();
     reserved_ += (std::max)(len, old_reserved ? old_reserved / 2 : initial_size_);
     reserved_ = (reserved_ + buffer_minalign_ - 1) & ~(buffer_minalign_ - 1);
-    if (buf_)
+    if(buf_)
     {
       buf_ = ReallocateDownward(allocator_, buf_, old_reserved, reserved_, old_size,
                                 old_scratch_size);
@@ -1407,7 +1406,7 @@ private:
 inline voffset_t FieldIndexToOffset(voffset_t field_id)
 {
   // Should correspond to what EndTable() below builds up.
-  const int fixed_fields = 2;   // Vtable size and Object Size.
+  const int fixed_fields = 2;  // Vtable size and Object Size.
   return static_cast<voffset_t>((field_id + fixed_fields) * sizeof(voffset_t));
 }
 
@@ -1455,16 +1454,16 @@ public:
   /// directly after creation.
   explicit FlatBufferBuilder(size_t initial_size = 1024, Allocator* allocator = nullptr,
                              bool own_allocator = false,
-                             size_t buffer_minalign = AlignOf<largest_scalar_t>()) :
-    buf_(initial_size, allocator, own_allocator, buffer_minalign),
-    num_field_loc(0),
-    max_voffset_(0),
-    nested(false),
-    finished(false),
-    minalign_(1),
-    force_defaults_(false),
-    dedup_vtables_(true),
-    string_pool(nullptr)
+                             size_t buffer_minalign = AlignOf<largest_scalar_t>())
+    : buf_(initial_size, allocator, own_allocator, buffer_minalign)
+    , num_field_loc(0)
+    , max_voffset_(0)
+    , nested(false)
+    , finished(false)
+    , minalign_(1)
+    , force_defaults_(false)
+    , dedup_vtables_(true)
+    , string_pool(nullptr)
   {
     EndianCheck();
   }
@@ -1523,14 +1522,14 @@ public:
 
   ~FlatBufferBuilder()
   {
-    if (string_pool)
+    if(string_pool)
       delete string_pool;
   }
 
   void Reset()
   {
-    Clear();        // clear builder state
-    buf_.reset();   // deallocate buffer
+    Clear();       // clear builder state
+    buf_.reset();  // deallocate buffer
   }
 
   /// @brief Reset all the state in this FlatBufferBuilder so it can be reused
@@ -1542,7 +1541,7 @@ public:
     nested = false;
     finished = false;
     minalign_ = 1;
-    if (string_pool)
+    if(string_pool)
       string_pool->clear();
   }
 
@@ -1660,7 +1659,7 @@ public:
 
   void TrackMinAlign(size_t elem_size)
   {
-    if (elem_size > minalign_)
+    if(elem_size > minalign_)
       minalign_ = elem_size;
   }
 
@@ -1715,7 +1714,7 @@ public:
   // vtables later.
   void TrackField(voffset_t field, uoffset_t off)
   {
-    FieldLoc fl = {off, field};
+    FieldLoc fl = { off, field };
     buf_.scratch_push_small(fl);
     num_field_loc++;
     max_voffset_ = (std::max)(max_voffset_, field);
@@ -1726,7 +1725,7 @@ public:
   void AddElement(voffset_t field, T e, T def)
   {
     // We don't serialize values equal to the default.
-    if (IsTheSameAs(e, def) && !force_defaults_)
+    if(IsTheSameAs(e, def) && !force_defaults_)
       return;
     auto off = PushElement(e);
     TrackField(field, off);
@@ -1742,16 +1741,16 @@ public:
   template <typename T>
   void AddOffset(voffset_t field, Offset<T> off)
   {
-    if (off.IsNull())
-      return;   // Don't store.
+    if(off.IsNull())
+      return;  // Don't store.
     AddElement(field, ReferTo(off.o), static_cast<uoffset_t>(0));
   }
 
   template <typename T>
   void AddStruct(voffset_t field, const T* structptr)
   {
-    if (!structptr)
-      return;   // Default, don't store.
+    if(!structptr)
+      return;  // Default, don't store.
     Align(AlignOf<T>());
     buf_.push_small(*structptr);
     TrackField(field, GetSize());
@@ -1823,8 +1822,8 @@ public:
                            static_cast<voffset_t>(table_object_size));
     WriteScalar<voffset_t>(buf_.data(), max_voffset_);
     // Write the offsets into the table
-    for (auto it = buf_.scratch_end() - num_field_loc * sizeof(FieldLoc);
-         it < buf_.scratch_end(); it += sizeof(FieldLoc))
+    for(auto it = buf_.scratch_end() - num_field_loc * sizeof(FieldLoc);
+        it < buf_.scratch_end(); it += sizeof(FieldLoc))
     {
       auto field_location = reinterpret_cast<FieldLoc*>(it);
       auto pos = static_cast<voffset_t>(vtableoffsetloc - field_location->off);
@@ -1838,15 +1837,14 @@ public:
     auto vt_use = GetSize();
     // See if we already have generated a vtable with this exact same
     // layout before. If so, make it point to the old one, remove this one.
-    if (dedup_vtables_)
+    if(dedup_vtables_)
     {
-      for (auto it = buf_.scratch_data(); it < buf_.scratch_end();
-           it += sizeof(uoffset_t))
+      for(auto it = buf_.scratch_data(); it < buf_.scratch_end(); it += sizeof(uoffset_t))
       {
         auto vt_offset_ptr = reinterpret_cast<uoffset_t*>(it);
         auto vt2 = reinterpret_cast<voffset_t*>(buf_.data_at(*vt_offset_ptr));
         auto vt2_size = ReadScalar<voffset_t>(vt2);
-        if (vt1_size != vt2_size || 0 != memcmp(vt2, vt1, vt1_size))
+        if(vt1_size != vt2_size || 0 != memcmp(vt2, vt1, vt1_size))
           continue;
         vt_use = *vt_offset_ptr;
         buf_.pop(GetSize() - vtableoffsetloc);
@@ -1854,7 +1852,7 @@ public:
       }
     }
     // If this is a new vtable, remember it.
-    if (vt_use == GetSize())
+    if(vt_use == GetSize())
     {
       buf_.scratch_push_small(vt_use);
     }
@@ -1921,7 +1919,7 @@ public:
   Offset<String> CreateString(const char* str, size_t len)
   {
     NotNested();
-    PreAlign<uoffset_t>(len + 1);   // Always 0-terminated.
+    PreAlign<uoffset_t>(len + 1);  // Always 0-terminated.
     buf_.fill(1);
     PushBytes(reinterpret_cast<const uint8_t*>(str), len);
     PushElement(static_cast<uoffset_t>(len));
@@ -1989,7 +1987,7 @@ public:
   /// @return Returns the offset in the buffer where the string starts.
   Offset<String> CreateSharedString(const char* str, size_t len)
   {
-    if (!string_pool)
+    if(!string_pool)
       string_pool = new StringOffsetMap(StringOffsetCompare(buf_));
     auto size_before_string = buf_.size();
     // Must first serialize the string, since the set is all offsets into
@@ -1997,7 +1995,7 @@ public:
     auto off = CreateString(str, len);
     auto it = string_pool->find(off);
     // If it exists we reuse existing serialized data!
-    if (it != string_pool->end())
+    if(it != string_pool->end())
     {
       // We can remove the string we serialized.
       buf_.pop(buf_.size() - size_before_string);
@@ -2053,7 +2051,7 @@ public:
   /// @cond FLATBUFFERS_INTERNAL
   uoffset_t EndVector(size_t len)
   {
-    FLATBUFFERS_ASSERT(nested);   // Hit if no corresponding StartVector.
+    FLATBUFFERS_ASSERT(nested);  // Hit if no corresponding StartVector.
     nested = false;
     return PushElement(static_cast<uoffset_t>(len));
   }
@@ -2063,7 +2061,7 @@ public:
     NotNested();
     nested = true;
     PreAlign<uoffset_t>(len * elemsize);
-    PreAlign(len * elemsize, elemsize);   // Just in case elemsize > uoffset_t.
+    PreAlign(len * elemsize, elemsize);  // Just in case elemsize > uoffset_t.
   }
 
   // Call this right before StartVector/CreateVector if you want to force the
@@ -2100,7 +2098,7 @@ public:
     // causing the wrong overload to be selected, remove it.
     AssertScalarT<T>();
     StartVector(len, sizeof(T));
-    if (len == 0)
+    if(len == 0)
     {
       return Offset<Vector<T>>(EndVector(len));
     }
@@ -2124,7 +2122,7 @@ public:
   Offset<Vector<Offset<T>>> CreateVector(const Offset<T>* v, size_t len)
   {
     StartVector(len, sizeof(Offset<T>));
-    for (auto i = len; i > 0;)
+    for(auto i = len; i > 0;)
     {
       PushElement(v[--i]);
     }
@@ -2149,7 +2147,7 @@ public:
   Offset<Vector<uint8_t>> CreateVector(const std::vector<bool>& v)
   {
     StartVector(v.size(), sizeof(uint8_t));
-    for (auto i = v.size(); i > 0;)
+    for(auto i = v.size(); i > 0;)
     {
       PushElement(static_cast<uint8_t>(v[--i]));
     }
@@ -2187,7 +2185,7 @@ public:
   Offset<Vector<T>> CreateVector(size_t vector_size, F f, S* state)
   {
     std::vector<T> elems(vector_size);
-    for (size_t i = 0; i < vector_size; i++)
+    for(size_t i = 0; i < vector_size; i++)
       elems[i] = f(i, state);
     return CreateVector(elems);
   }
@@ -2201,7 +2199,7 @@ public:
   Offset<Vector<Offset<String>>> CreateVectorOfStrings(const std::vector<std::string>& v)
   {
     std::vector<Offset<String>> offsets(v.size());
-    for (size_t i = 0; i < v.size(); i++)
+    for(size_t i = 0; i < v.size(); i++)
       offsets[i] = CreateString(v[i]);
     return CreateVector(offsets);
   }
@@ -2291,7 +2289,7 @@ public:
   Offset<Vector<const T*>> CreateVectorOfStructs(size_t vector_size, F f, S* state)
   {
     T* structs = StartVectorOfStructs<T>(vector_size);
-    for (size_t i = 0; i < vector_size; i++)
+    for(size_t i = 0; i < vector_size; i++)
     {
       f(i, structs, state);
       structs++;
@@ -2514,7 +2512,7 @@ public:
     AssertScalarT<T>();
     AssertScalarT<U>();
     StartVector(len, sizeof(T));
-    for (auto i = len; i > 0;)
+    for(auto i = len; i > 0;)
     {
       PushElement(static_cast<T>(v[--i]));
     }
@@ -2574,13 +2572,13 @@ protected:
     PreAlign((size_prefix ? sizeof(uoffset_t) : 0) + sizeof(uoffset_t) +
                  (file_identifier ? kFileIdentifierLength : 0),
              minalign_);
-    if (file_identifier)
+    if(file_identifier)
     {
       FLATBUFFERS_ASSERT(strlen(file_identifier) == kFileIdentifierLength);
       PushBytes(reinterpret_cast<const uint8_t*>(file_identifier), kFileIdentifierLength);
     }
-    PushElement(ReferTo(root));   // Location of root.
-    if (size_prefix)
+    PushElement(ReferTo(root));  // Location of root.
+    if(size_prefix)
     {
       PushElement(GetSize());
     }
@@ -2610,7 +2608,7 @@ protected:
 
   size_t minalign_;
 
-  bool force_defaults_;   // Serialize values equal to their defaults anyway.
+  bool force_defaults_;  // Serialize values equal to their defaults anyway.
 
   bool dedup_vtables_;
 
@@ -2714,15 +2712,15 @@ class Verifier FLATBUFFERS_FINAL_CLASS
 {
 public:
   Verifier(const uint8_t* buf, size_t buf_len, uoffset_t _max_depth = 64,
-           uoffset_t _max_tables = 1000000, bool _check_alignment = true) :
-    buf_(buf),
-    size_(buf_len),
-    depth_(0),
-    max_depth_(_max_depth),
-    num_tables_(0),
-    max_tables_(_max_tables),
-    upper_bound_(0),
-    check_alignment_(_check_alignment)
+           uoffset_t _max_tables = 1000000, bool _check_alignment = true)
+    : buf_(buf)
+    , size_(buf_len)
+    , depth_(0)
+    , max_depth_(_max_depth)
+    , num_tables_(0)
+    , max_tables_(_max_tables)
+    , upper_bound_(0)
+    , check_alignment_(_check_alignment)
   {
     FLATBUFFERS_ASSERT(size_ < FLATBUFFERS_MAX_BUFFER_SIZE);
   }
@@ -2813,8 +2811,8 @@ public:
     size_t end;
     return !str ||
            (VerifyVectorOrString(reinterpret_cast<const uint8_t*>(str), 1, &end) &&
-            Verify(end, 1) &&            // Must have terminator
-            Check(buf_[end] == '\0'));   // Terminating byte must be 0.
+            Verify(end, 1) &&           // Must have terminator
+            Check(buf_[end] == '\0'));  // Terminating byte must be 0.
   }
 
   // Common code between vectors and strings.
@@ -2823,16 +2821,16 @@ public:
   {
     auto veco = static_cast<size_t>(vec - buf_);
     // Check we can read the size field.
-    if (!Verify<uoffset_t>(veco))
+    if(!Verify<uoffset_t>(veco))
       return false;
     // Check the whole array. If this is a string, the byte past the array
     // must be 0.
     auto size = ReadScalar<uoffset_t>(vec);
     auto max_elems = FLATBUFFERS_MAX_BUFFER_SIZE / elem_size;
-    if (!Check(size < max_elems))
-      return false;   // Protect against byte_size overflowing.
+    if(!Check(size < max_elems))
+      return false;  // Protect against byte_size overflowing.
     auto byte_size = sizeof(size) + elem_size * size;
-    if (end)
+    if(end)
       *end = veco + byte_size;
     return Verify(veco, byte_size);
   }
@@ -2840,11 +2838,11 @@ public:
   // Special case for string contents, after the above has been called.
   bool VerifyVectorOfStrings(const Vector<Offset<String>>* vec) const
   {
-    if (vec)
+    if(vec)
     {
-      for (uoffset_t i = 0; i < vec->size(); i++)
+      for(uoffset_t i = 0; i < vec->size(); i++)
       {
-        if (!VerifyString(vec->Get(i)))
+        if(!VerifyString(vec->Get(i)))
           return false;
       }
     }
@@ -2855,11 +2853,11 @@ public:
   template <typename T>
   bool VerifyVectorOfTables(const Vector<Offset<T>>* vec)
   {
-    if (vec)
+    if(vec)
     {
-      for (uoffset_t i = 0; i < vec->size(); i++)
+      for(uoffset_t i = 0; i < vec->size(); i++)
       {
-        if (!vec->Get(i)->Verify(*this))
+        if(!vec->Get(i)->Verify(*this))
           return false;
       }
     }
@@ -2871,7 +2869,7 @@ public:
   {
     // Check the vtable offset.
     auto tableo = static_cast<size_t>(table - buf_);
-    if (!Verify<soffset_t>(tableo))
+    if(!Verify<soffset_t>(tableo))
       return false;
     // This offset may be signed, but doing the subtraction unsigned always
     // gives the result we want.
@@ -2885,8 +2883,8 @@ public:
   template <typename T>
   bool VerifyBufferFromStart(const char* identifier, size_t start)
   {
-    if (identifier && !Check((size_ >= 2 * sizeof(flatbuffers::uoffset_t) &&
-                              BufferHasIdentifier(buf_ + start, identifier))))
+    if(identifier && !Check((size_ >= 2 * sizeof(flatbuffers::uoffset_t) &&
+                             BufferHasIdentifier(buf_ + start, identifier))))
     {
       return false;
     }
@@ -2925,18 +2923,18 @@ public:
 
   uoffset_t VerifyOffset(size_t start) const
   {
-    if (!Verify<uoffset_t>(start))
+    if(!Verify<uoffset_t>(start))
       return 0;
     auto o = ReadScalar<uoffset_t>(buf_ + start);
     // May not point to itself.
-    if (!Check(o != 0))
+    if(!Check(o != 0))
       return 0;
     // Can't wrap around / buffers are max 2GB.
-    if (!Check(static_cast<soffset_t>(o) >= 0))
+    if(!Check(static_cast<soffset_t>(o) >= 0))
       return 0;
     // Must be inside the buffer to create a pointer from it (pointer outside
     // buffer is UB).
-    if (!Verify(start + o, 1))
+    if(!Verify(start + o, 1))
       return 0;
     return o;
   }
@@ -2998,7 +2996,7 @@ private:
 // A BufferRef does not own its buffer.
 struct BufferRefBase
 {
-};   // for std::is_base_of
+};  // for std::is_base_of
 template <typename T>
 struct BufferRef : BufferRefBase
 {
@@ -3009,7 +3007,7 @@ struct BufferRef : BufferRefBase
 
   ~BufferRef()
   {
-    if (must_free)
+    if(must_free)
       free(buf);
   }
 
@@ -3131,7 +3129,7 @@ public:
   bool SetField(voffset_t field, T val, T def)
   {
     auto field_offset = GetOptionalFieldOffset(field);
-    if (!field_offset)
+    if(!field_offset)
       return IsTheSameAs(val, def);
     WriteScalar(data_ + field_offset, val);
     return true;
@@ -3140,7 +3138,7 @@ public:
   bool SetField(voffset_t field, T val)
   {
     auto field_offset = GetOptionalFieldOffset(field);
-    if (!field_offset)
+    if(!field_offset)
       return false;
     WriteScalar(data_ + field_offset, val);
     return true;
@@ -3149,7 +3147,7 @@ public:
   bool SetPointer(voffset_t field, const uint8_t* val)
   {
     auto field_offset = GetOptionalFieldOffset(field);
-    if (!field_offset)
+    if(!field_offset)
       return false;
     WriteScalar(data_ + field_offset,
                 static_cast<uoffset_t>(val - (data_ + field_offset)));
@@ -3274,11 +3272,11 @@ inline const uint8_t* GetBufferStartFromRootPointer(const void* root)
                                                                                "size as "
                                                                                "uoffset_"
                                                                                "t");
-  for (auto possible_roots = FLATBUFFERS_MAX_ALIGNMENT / sizeof(uoffset_t) + 1;
-       possible_roots; possible_roots--)
+  for(auto possible_roots = FLATBUFFERS_MAX_ALIGNMENT / sizeof(uoffset_t) + 1;
+      possible_roots; possible_roots--)
   {
     start -= sizeof(uoffset_t);
-    if (ReadScalar<uoffset_t>(start) + start == reinterpret_cast<const uint8_t*>(root))
+    if(ReadScalar<uoffset_t>(start) + start == reinterpret_cast<const uint8_t*>(root))
       return start;
   }
   // We didn't find the root, either the "root" passed isn't really a root,
@@ -3341,8 +3339,8 @@ bool IsFieldPresent(const T* table, typename T::FlatBuffersVTableOffset field)
 // names must be NULL terminated.
 inline int LookupEnum(const char** names, const char* name)
 {
-  for (const char** p = names; *p; p++)
-    if (!strcmp(*p, name))
+  for(const char** p = names; *p; p++)
+    if(!strcmp(*p, name))
       return static_cast<int>(p - names);
   return -1;
 }
@@ -3453,12 +3451,12 @@ typedef const TypeTable* (*TypeFunction)();
 struct TypeTable
 {
   SequenceType st;
-  size_t num_elems;                // of type_codes, values, names (but not type_refs).
-  const TypeCode* type_codes;      // num_elems count
-  const TypeFunction* type_refs;   // less than num_elems entries (see TypeCode).
-  const int16_t* array_sizes;      // less than num_elems entries (see TypeCode).
-  const int64_t* values;           // Only set for non-consecutive enum/union or structs.
-  const char* const* names;        // Only set if compiled with --reflect-names.
+  size_t num_elems;               // of type_codes, values, names (but not type_refs).
+  const TypeCode* type_codes;     // num_elems count
+  const TypeFunction* type_refs;  // less than num_elems entries (see TypeCode).
+  const int16_t* array_sizes;     // less than num_elems entries (see TypeCode).
+  const int64_t* values;          // Only set for non-consecutive enum/union or structs.
+  const char* const* names;       // Only set if compiled with --reflect-names.
 };
 
 // String which identifies the current version of FlatBuffers.
@@ -3517,4 +3515,4 @@ volatile __attribute__((weak)) const char *flatbuffer_version_string =
 
 // clang-format on
 
-#endif   // FLATBUFFERS_H_
+#endif  // FLATBUFFERS_H_

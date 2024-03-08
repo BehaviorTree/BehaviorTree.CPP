@@ -10,8 +10,8 @@ using namespace BT;
 class PushIntoVector : public SyncActionNode
 {
 public:
-  PushIntoVector(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  PushIntoVector(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
@@ -27,28 +27,29 @@ public:
       {
         // The entry hasn't been initialized by any other node, yet.
         // Let's initialize it ourselves
-        std::vector<int> vect = {number};
+        std::vector<int> vect = { number };
         any_ptr.assign(vect);
-        std::cout << "We created a new vector, containing value ["<< number <<"]\n";
+        std::cout << "We created a new vector, containing value [" << number << "]\n";
       }
       else if(auto* vect_ptr = any_ptr->castPtr<std::vector<int>>())
       {
         // NOTE: vect_ptr would be nullptr, if we try to cast it to the wrong type
         vect_ptr->push_back(number);
-        std::cout << "Value ["<< number <<"] pushed into the vector. New size: "
-                  << vect_ptr->size() << "\n";
+        std::cout << "Value [" << number
+                  << "] pushed into the vector. New size: " << vect_ptr->size() << "\n";
       }
       return NodeStatus::SUCCESS;
     }
-    else {
+    else
+    {
       return NodeStatus::FAILURE;
     }
   }
 
   static PortsList providedPorts()
   {
-    return {BT::BidirectionalPort<std::vector<int>>("vector"),
-            BT::InputPort<int>("value")};
+    return { BT::BidirectionalPort<std::vector<int>>("vector"), BT::InputPort<int>("valu"
+                                                                                   "e") };
   }
 };
 

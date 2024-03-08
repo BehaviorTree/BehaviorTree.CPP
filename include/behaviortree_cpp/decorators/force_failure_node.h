@@ -48,4 +48,4 @@ inline NodeStatus ForceFailureNode::tick()
   // RUNNING or skipping
   return child_status;
 }
-}   // namespace BT
+}  // namespace BT

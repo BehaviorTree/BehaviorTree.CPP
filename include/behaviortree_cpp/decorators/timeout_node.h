@@ -35,24 +35,24 @@ namespace BT
 class TimeoutNode : public DecoratorNode
 {
 public:
-  TimeoutNode(const std::string& name, unsigned milliseconds) :
-    DecoratorNode(name, {}),
-    child_halted_(false),
-    timer_id_(0),
-    msec_(milliseconds),
-    read_parameter_from_ports_(false),
-    timeout_started_(false)
+  TimeoutNode(const std::string& name, unsigned milliseconds)
+    : DecoratorNode(name, {})
+    , child_halted_(false)
+    , timer_id_(0)
+    , msec_(milliseconds)
+    , read_parameter_from_ports_(false)
+    , timeout_started_(false)
   {
     setRegistrationID("Timeout");
   }
 
-  TimeoutNode(const std::string& name, const NodeConfig& config) :
-    DecoratorNode(name, config),
-    child_halted_(false),
-    timer_id_(0),
-    msec_(0),
-    read_parameter_from_ports_(true),
-    timeout_started_(false)
+  TimeoutNode(const std::string& name, const NodeConfig& config)
+    : DecoratorNode(name, config)
+    , child_halted_(false)
+    , timer_id_(0)
+    , msec_(0)
+    , read_parameter_from_ports_(true)
+    , timeout_started_(false)
   {}
 
   ~TimeoutNode() override
@@ -62,12 +62,11 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<unsigned>("msec", "After a certain amount of time, "
-                                        "halt() the child if it is still running.")};
+    return { InputPort<unsigned>("msec", "After a certain amount of time, "
+                                         "halt() the child if it is still running.") };
   }
 
 private:
-
   virtual BT::NodeStatus tick() override;
 
   void halt() override;
@@ -82,4 +81,4 @@ private:
   std::mutex timeout_mutex_;
 };
 
-}   // namespace BT
+}  // namespace BT

@@ -138,6 +138,6 @@ private:
   std::mutex _mutex;
 };
 
-}   // namespace BT
+}  // namespace BT
 
-#endif   // Foundation_SharedLibrary_INCLUDED
+#endif  // Foundation_SharedLibrary_INCLUDED

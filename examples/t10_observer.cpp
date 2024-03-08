@@ -55,14 +55,15 @@ int main()
   // Print the unique ID and the corresponding human readable path
   // Path is also expected to be unique.
   std::map<uint16_t, std::string> ordered_UID_to_path;
-  for(const auto& [name, uid]: observer.pathToUID()) {
+  for(const auto& [name, uid] : observer.pathToUID())
+  {
     ordered_UID_to_path[uid] = name;
   }
 
-  for(const auto& [uid, name]: ordered_UID_to_path) {
+  for(const auto& [uid, name] : ordered_UID_to_path)
+  {
     std::cout << uid << " -> " << name << std::endl;
   }
-
 
   tree.tickWhileRunning();
 
@@ -72,14 +73,12 @@ int main()
 
   std::cout << "----------------" << std::endl;
   // print all the statistics
-  for(const auto& [uid, name]: ordered_UID_to_path) {
+  for(const auto& [uid, name] : ordered_UID_to_path)
+  {
     const auto& stats = observer.getStatistics(uid);
 
-    std::cout << "[" << name
-              << "] \tT/S/F:  " << stats.transitions_count
-              << "/" << stats.success_count
-              << "/" << stats.failure_count
-              << std::endl;
+    std::cout << "[" << name << "] \tT/S/F:  " << stats.transitions_count << "/"
+              << stats.success_count << "/" << stats.failure_count << std::endl;
   }
 
   return 0;

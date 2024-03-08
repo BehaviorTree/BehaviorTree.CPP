@@ -67,7 +67,7 @@ int main()
   //  1) When Sequence is used, the ConditionNode is executed only __once__ because it returns SUCCESS.
   //  2) When ReactiveSequence is used, BatteryOK is executed at __each__ tick()
 
-  for (auto& xml_text : {xml_text_sequence, xml_text_reactive})
+  for(auto& xml_text : { xml_text_sequence, xml_text_reactive })
   {
     std::cout << "\n------------ BUILDING A NEW TREE ------------\n\n";
 
@@ -83,14 +83,14 @@ int main()
 #else
     // If we need to run code between one tick() and the next,
     // we can implement our own while loop
-    while (status != NodeStatus::SUCCESS)
+    while(status != NodeStatus::SUCCESS)
     {
       std::cout << "--- ticking\n";
       status = tree.tickOnce();
       std::cout << "--- status: " << toStr(status) << "\n\n";
 
       // if still running, add some wait time
-      if (status == NodeStatus::RUNNING)
+      if(status == NodeStatus::RUNNING)
       {
         tree.sleep(std::chrono::milliseconds(100));
       }

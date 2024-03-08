@@ -43,8 +43,8 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<int>(NUM_CYCLES, "Repeat a successful child up to N times. "
-                                       "Use -1 to create an infinite loop.")};
+    return { InputPort<int>(NUM_CYCLES, "Repeat a successful child up to N times. "
+                                        "Use -1 to create an infinite loop.") };
   }
 
 private:
@@ -60,4 +60,4 @@ private:
   void halt() override;
 };
 
-}   // namespace BT
+}  // namespace BT

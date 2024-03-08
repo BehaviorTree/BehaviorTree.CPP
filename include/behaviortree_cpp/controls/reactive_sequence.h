@@ -52,4 +52,4 @@ private:
   static bool throw_if_multiple_running;
 };
 
-}   // namespace BT
+}  // namespace BT

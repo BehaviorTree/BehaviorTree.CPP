@@ -74,12 +74,10 @@ public:
     return NodeType::SUBTREE;
   }
 
-
-  private:
+private:
   std::string subtree_id_;
-
 };
 
-}   // namespace BT
+}  // namespace BT
 
-#endif   // DECORATOR_SUBTREE_NODE_H
+#endif  // DECORATOR_SUBTREE_NODE_H

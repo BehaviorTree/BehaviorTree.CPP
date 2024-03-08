@@ -13,21 +13,25 @@ enum class Color
 
 static const char* ToStr(const Color& c)
 {
-  switch (c) {
-    case Color::Red: return "Red";
-    case Color::Blue: return "Blue";
-    case Color::Green: return "Green";
-    case Color::Undefined: return "Undefined";
+  switch(c)
+  {
+    case Color::Red:
+      return "Red";
+    case Color::Blue:
+      return "Blue";
+    case Color::Green:
+      return "Green";
+    case Color::Undefined:
+      return "Undefined";
   }
   return nullptr;
 }
 
-
 class ActionEnum : public SyncActionNode
 {
 public:
-  ActionEnum(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  ActionEnum(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
@@ -39,7 +43,7 @@ public:
 
   static PortsList providedPorts()
   {
-    return {BT::InputPort<Color>("color")};
+    return { BT::InputPort<Color>("color") };
   }
 
   Color color = Color::Undefined;
@@ -69,7 +73,7 @@ TEST(Enums, StrintToEnum)
 
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 
-  for(const auto& node: tree.subtrees.front()->nodes)
+  for(const auto& node : tree.subtrees.front()->nodes)
   {
     if(auto enum_node = dynamic_cast<ActionEnum*>(node.get()))
     {
@@ -120,4 +124,3 @@ TEST(Enums, SwitchNodeWithEnum)
 
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
-

@@ -33,14 +33,14 @@ namespace BT
 class ParallelAllNode : public ControlNode
 {
 public:
-
   ParallelAllNode(const std::string& name, const NodeConfig& config);
 
   static PortsList providedPorts()
   {
-    return {InputPort<int>("max_failures", 1,
-                           "If the number of children returning FAILURE exceeds this value, "
-                           "ParallelAll returns FAILURE")};
+    return { InputPort<int>("max_failures", 1,
+                            "If the number of children returning FAILURE exceeds this "
+                            "value, "
+                            "ParallelAll returns FAILURE") };
   }
 
   ~ParallelAllNode() override = default;
@@ -59,4 +59,4 @@ private:
   virtual BT::NodeStatus tick() override;
 };
 
-}   // namespace BT
+}  // namespace BT

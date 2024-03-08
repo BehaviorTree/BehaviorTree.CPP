@@ -18,21 +18,21 @@ namespace BT
 void applyRecursiveVisitor(const TreeNode* node,
                            const std::function<void(const TreeNode*)>& visitor)
 {
-  if (!node)
+  if(!node)
   {
     throw LogicError("One of the children of a DecoratorNode or ControlNode is nullptr");
   }
 
   visitor(node);
 
-  if (auto control = dynamic_cast<const BT::ControlNode*>(node))
+  if(auto control = dynamic_cast<const BT::ControlNode*>(node))
   {
-    for (const auto& child : control->children())
+    for(const auto& child : control->children())
     {
       applyRecursiveVisitor(static_cast<const TreeNode*>(child), visitor);
     }
   }
-  else if (auto decorator = dynamic_cast<const BT::DecoratorNode*>(node))
+  else if(auto decorator = dynamic_cast<const BT::DecoratorNode*>(node))
   {
     applyRecursiveVisitor(decorator->child(), visitor);
   }
@@ -40,23 +40,23 @@ void applyRecursiveVisitor(const TreeNode* node,
 
 void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>& visitor)
 {
-  if (!node)
+  if(!node)
   {
     throw LogicError("One of the children of a DecoratorNode or ControlNode is nullptr");
   }
 
   visitor(node);
 
-  if (auto control = dynamic_cast<BT::ControlNode*>(node))
+  if(auto control = dynamic_cast<BT::ControlNode*>(node))
   {
-    for (const auto& child : control->children())
+    for(const auto& child : control->children())
     {
       applyRecursiveVisitor(child, visitor);
     }
   }
-  else if (auto decorator = dynamic_cast<BT::DecoratorNode*>(node))
+  else if(auto decorator = dynamic_cast<BT::DecoratorNode*>(node))
   {
-    if (decorator->child())
+    if(decorator->child())
     {
       applyRecursiveVisitor(decorator->child(), visitor);
     }
@@ -68,11 +68,11 @@ void printTreeRecursively(const TreeNode* root_node, std::ostream& stream)
   std::function<void(unsigned, const BT::TreeNode*)> recursivePrint;
 
   recursivePrint = [&recursivePrint, &stream](unsigned indent, const BT::TreeNode* node) {
-    for (unsigned i = 0; i < indent; i++)
+    for(unsigned i = 0; i < indent; i++)
     {
       stream << "   ";
     }
-    if (!node)
+    if(!node)
     {
       stream << "!nullptr!" << std::endl;
       return;
@@ -80,14 +80,14 @@ void printTreeRecursively(const TreeNode* root_node, std::ostream& stream)
     stream << node->name() << std::endl;
     indent++;
 
-    if (auto control = dynamic_cast<const BT::ControlNode*>(node))
+    if(auto control = dynamic_cast<const BT::ControlNode*>(node))
     {
-      for (const auto& child : control->children())
+      for(const auto& child : control->children())
       {
         recursivePrint(indent, child);
       }
     }
-    else if (auto decorator = dynamic_cast<const BT::DecoratorNode*>(node))
+    else if(auto decorator = dynamic_cast<const BT::DecoratorNode*>(node))
     {
       recursivePrint(indent, decorator->child());
     }
@@ -111,19 +111,21 @@ void buildSerializedStatusSnapshot(TreeNode* root_node,
   applyRecursiveVisitor(root_node, visitor);
 }
 
-int LibraryVersionNumber() {
+int LibraryVersionNumber()
+{
   static int number = -1;
-  if(number == -1) {
+  if(number == -1)
+  {
     auto const parts = splitString(BTCPP_LIBRARY_VERSION, '.');
-    number = std::stoi( std::string(parts[0]) ) * 10000 +
-             std::stoi( std::string(parts[1]) ) * 100 +
-             std::stoi( std::string(parts[2]));
+    number = std::stoi(std::string(parts[0])) * 10000 +
+             std::stoi(std::string(parts[1])) * 100 + std::stoi(std::string(parts[2]));
   }
   return number;
 }
 
-const char *LibraryVersionString() {
+const char* LibraryVersionString()
+{
   return BTCPP_LIBRARY_VERSION;
 }
 
-}   // namespace BT
+}  // namespace BT

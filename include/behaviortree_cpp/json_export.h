@@ -22,10 +22,11 @@ namespace BT
 *   RegisterJsonDefinition<Foo>();
 */
 
-class JsonExporter{
-
-  public:
-  static JsonExporter& get() {
+class JsonExporter
+{
+public:
+  static JsonExporter& get()
+  {
     static JsonExporter global_instance;
     return global_instance;
   }
@@ -39,7 +40,8 @@ class JsonExporter{
   bool toJson(const BT::Any& any, nlohmann::json& destination) const;
 
   template <typename T>
-  void toJson(const T& val, nlohmann::json& dst) const {
+  void toJson(const T& val, nlohmann::json& dst) const
+  {
     dst = val;
   }
 
@@ -47,20 +49,22 @@ class JsonExporter{
   /// But works only if this function is implemented:
   ///
   ///    void nlohmann::to_json(nlohmann::json& destination, const Foo& foo)
-  template <typename T> void addConverter()
+  template <typename T>
+  void addConverter()
   {
     auto converter = [](const BT::Any& entry, nlohmann::json& dst) {
       nlohmann::to_json(dst, entry.cast<T>());
     };
-    type_converters_.insert( {typeid(T), std::move(converter)} );
+    type_converters_.insert({ typeid(T), std::move(converter) });
   }
 
-  template <typename T> void addConverter(std::function<void(nlohmann::json&, const T&)> func)
+  template <typename T>
+  void addConverter(std::function<void(nlohmann::json&, const T&)> func)
   {
     auto converter = [func](const BT::Any& entry, nlohmann::json& dst) {
       func(dst, entry.cast<T>());
     };
-    type_converters_.insert( {typeid(T), std::move(converter)} );
+    type_converters_.insert({ typeid(T), std::move(converter) });
   }
 
   /// Register directly your own converter.
@@ -70,11 +74,10 @@ class JsonExporter{
     auto converter = [=](const BT::Any& entry, nlohmann::json& dst) {
       to_json(entry.cast<T>(), dst);
     };
-    type_converters_.insert( {typeid(T), std::move(converter)} );
+    type_converters_.insert({ typeid(T), std::move(converter) });
   }
 
-  private:
-
+private:
   using ToJonConverter = std::function<void(const BT::Any&, nlohmann::json&)>;
   std::unordered_map<std::type_index, ToJonConverter> type_converters_;
 };
@@ -94,7 +97,8 @@ class JsonExporter{
   // In you main function
   RegisterJsonDefinition<Position2D>()
 */
-template <typename T> inline void RegisterJsonDefinition()
+template <typename T>
+inline void RegisterJsonDefinition()
 {
   JsonExporter::get().addConverter<T>();
 }
@@ -110,14 +114,12 @@ template <typename T> inline void RegisterJsonDefinition()
     } );
 */
 
-template <typename T> inline
-void RegisterJsonDefinition(std::function<void(nlohmann::json&, const T&)> func)
+template <typename T>
+inline void RegisterJsonDefinition(std::function<void(nlohmann::json&, const T&)> func)
 {
   JsonExporter::get().addConverter<T>(func);
 }
 
 nlohmann::json ExportBlackboardToJSON(BT::Blackboard& blackboard);
 
-} // namespace BT
-
-
+}  // namespace BT

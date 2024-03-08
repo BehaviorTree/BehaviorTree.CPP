@@ -116,8 +116,8 @@ protected:
 class ThreadedAction : public ActionNodeBase
 {
 public:
-  ThreadedAction(const std::string& name, const NodeConfig& config) :
-    ActionNodeBase(name, config)
+  ThreadedAction(const std::string& name, const NodeConfig& config)
+    : ActionNodeBase(name, config)
   {}
 
   bool isHaltRequested() const
@@ -159,8 +159,8 @@ using AsyncActionNode = ThreadedAction;
 class StatefulActionNode : public ActionNodeBase
 {
 public:
-  StatefulActionNode(const std::string& name, const NodeConfig& config) :
-    ActionNodeBase(name, config)
+  StatefulActionNode(const std::string& name, const NodeConfig& config)
+    : ActionNodeBase(name, config)
   {}
 
   /// Method called once, when transitioning from the state IDLE.
@@ -222,13 +222,12 @@ public:
   void halt() override;
 
 protected:
-  struct Pimpl;   // The Pimpl idiom
+  struct Pimpl;  // The Pimpl idiom
   std::unique_ptr<Pimpl> _p;
 
   void destroyCoroutine();
 };
 
-
-}   // namespace BT
+}  // namespace BT
 
 #endif

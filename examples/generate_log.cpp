@@ -8,9 +8,11 @@
 
 int main(int argc, char** argv)
 {
-  if(argc < 2 || argc > 3) {
+  if(argc < 2 || argc > 3)
+  {
     std::cout << "Provide a XML file as first argument. "
-                 "Second argument might be the name of the tree to instantiate." << std::endl;
+                 "Second argument might be the name of the tree to instantiate."
+              << std::endl;
     return 1;
   }
   const std::string file = argv[1];
@@ -19,11 +21,13 @@ int main(int argc, char** argv)
 
   BT::Tree tree;
 
-  if(argc == 3) {
+  if(argc == 3)
+  {
     factory.registerBehaviorTreeFromFile(file);
     tree = factory.createTree(argv[2]);
   }
-  else {
+  else
+  {
     tree = factory.createTreeFromFile(file);
   }
 
@@ -37,7 +41,8 @@ int main(int argc, char** argv)
 
   std::cout << "\nTree will run indefinitively. Press CTRL-C to stop\n";
 
-  while(true) {
+  while(true)
+  {
     tree.tickWhileRunning();
   }
 }

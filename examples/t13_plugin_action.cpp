@@ -6,8 +6,7 @@ class PrintVector : public BT::SyncActionNode
 public:
   PrintVector(const std::string& name, const BT::NodeConfig& config)
     : BT::SyncActionNode(name, config)
-  {
-  }
+  {}
 
   BT::NodeStatus tick() override
   {
@@ -19,7 +18,7 @@ public:
   // It is mandatory to define this static method.
   static BT::PortsList providedPorts()
   {
-    return{ BT::InputPort<Vector4D>("value") };
+    return { BT::InputPort<Vector4D>("value") };
   }
 };
 

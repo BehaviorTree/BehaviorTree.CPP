@@ -22,7 +22,7 @@ namespace BT
  */
 class FileLogger2 : public StatusChangeLogger
 {
-  public:
+public:
   /**
    * @brief To correctly read this log with Groot2, you must use the suffix ".btlog".
    * Constructor will throw otherwise.
@@ -63,5 +63,4 @@ private:
   void writerLoop();
 };
 
-}   // namespace BT
-
+}  // namespace BT

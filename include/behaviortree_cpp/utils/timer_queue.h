@@ -34,9 +34,7 @@ public:
   bool waitUntil(const std::chrono::time_point<Clock, Duration>& point)
   {
     std::unique_lock<std::mutex> lock(m_mtx);
-    if (!m_cv.wait_until(lock, point, [this]() {
-          return m_count > 0 || m_unlock;
-        }))
+    if(!m_cv.wait_until(lock, point, [this]() { return m_count > 0 || m_unlock; }))
     {
       return false;
     }
@@ -57,7 +55,7 @@ private:
   unsigned m_count = 0;
   std::atomic_bool m_unlock = false;
 };
-}   // namespace details
+}  // namespace details
 
 // Timer Queue
 //
@@ -121,14 +119,14 @@ public:
     // The timer thread will then ignore the original item, since it has no
     // handler.
     std::unique_lock<std::mutex> lk(m_mtx);
-    for (auto&& item : m_items.getContainer())
+    for(auto&& item : m_items.getContainer())
     {
-      if (item.id == id && item.handler)
+      if(item.id == id && item.handler)
       {
         WorkItem newItem;
         // Zero time, so it stays at the top for immediate execution
         newItem.end = std::chrono::time_point<_Clock, _Duration>();
-        newItem.id = 0;   // Means it is a canceled item
+        newItem.id = 0;  // Means it is a canceled item
         // Move the handler from item to newItem.
         // Also, we need to manually set the handler to nullptr, since
         // the standard does not guarantee moving an std::function will
@@ -155,9 +153,9 @@ public:
     // Setting all "end" to 0 (for immediate execution) is ok,
     // since it maintains the heap integrity
     std::unique_lock<std::mutex> lk(m_mtx);
-    for (auto&& item : m_items.getContainer())
+    for(auto&& item : m_items.getContainer())
     {
-      if (item.id)
+      if(item.id)
       {
         item.end = std::chrono::time_point<_Clock, _Duration>();
         item.id = 0;
@@ -176,10 +174,10 @@ private:
 
   void run()
   {
-    while (!m_finish)
+    while(!m_finish)
     {
       auto end = calcWaitTime();
-      if (end.first)
+      if(end.first)
       {
         // Timers found, so wait until it expires (or something else
         // changes)
@@ -188,7 +186,7 @@ private:
       else
       {
         // No timers exist, so wait an arbitrary amount of time
-        m_checkWork.waitUntil( _Clock::now() + std::chrono::milliseconds(10));
+        m_checkWork.waitUntil(_Clock::now() + std::chrono::milliseconds(10));
       }
 
       // Check and execute as much work as possible, such as, all expired
@@ -204,9 +202,9 @@ private:
   std::pair<bool, std::chrono::time_point<_Clock, _Duration>> calcWaitTime()
   {
     std::lock_guard<std::mutex> lk(m_mtx);
-    while (m_items.size())
+    while(m_items.size())
     {
-      if (m_items.top().handler)
+      if(m_items.top().handler)
       {
         // Item present, so return the new wait time
         return std::make_pair(true, m_items.top().end);
@@ -226,13 +224,13 @@ private:
   void checkWork()
   {
     std::unique_lock<std::mutex> lk(m_mtx);
-    while (m_items.size() && m_items.top().end <= _Clock::now())
+    while(m_items.size() && m_items.top().end <= _Clock::now())
     {
       WorkItem item(std::move(m_items.top()));
       m_items.pop();
 
       lk.unlock();
-      if (item.handler)
+      if(item.handler)
       {
         item.handler(item.id == 0);
       }
@@ -248,7 +246,7 @@ private:
   struct WorkItem
   {
     std::chrono::time_point<_Clock, _Duration> end;
-    uint64_t id;   // id==0 means it was cancelled
+    uint64_t id;  // id==0 means it was cancelled
     std::function<void(bool)> handler;
     bool operator>(const WorkItem& other) const
     {
@@ -268,4 +266,4 @@ private:
     }
   } m_items;
 };
-}   // namespace BT
+}  // namespace BT

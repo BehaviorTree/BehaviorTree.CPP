@@ -51,8 +51,4 @@ jobs:
         working-directory: ${{github.workspace}}/build-env
         run: |
           pixi task add tests ${{ matrix.tests_command }}
-          pixi run tests 
-          
-
-    
-          
+          pixi run tests

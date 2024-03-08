@@ -34,8 +34,7 @@ namespace BT
 class SequenceNode : public ControlNode
 {
 public:
-  SequenceNode(const std::string& name,
-               bool make_async = false);
+  SequenceNode(const std::string& name, bool make_async = false);
 
   virtual ~SequenceNode() override = default;
 
@@ -49,4 +48,4 @@ private:
   virtual BT::NodeStatus tick() override;
 };
 
-}   // namespace BT
+}  // namespace BT

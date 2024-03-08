@@ -30,12 +30,12 @@ struct SimpleParallelTest : testing::Test
   BT::AsyncActionTest action_2;
   BT::ConditionTestNode condition_2;
 
-  SimpleParallelTest() :
-    root("root_parallel"),
-    action_1("action_1", milliseconds(100)),
-    condition_1("condition_1"),
-    action_2("action_2", milliseconds(300)),
-    condition_2("condition_2")
+  SimpleParallelTest()
+    : root("root_parallel")
+    , action_1("action_1", milliseconds(100))
+    , condition_1("condition_1")
+    , action_2("action_2", milliseconds(300))
+    , condition_2("condition_2")
   {
     root.addChild(&condition_1);
     root.addChild(&action_1);
@@ -61,16 +61,16 @@ struct ComplexParallelTest : testing::Test
   BT::AsyncActionTest action_R;
   BT::ConditionTestNode condition_R;
 
-  ComplexParallelTest() :
-    parallel_root("root"),
-    parallel_left("par1"),
-    parallel_right("par2"),
-    action_L1("action_1", milliseconds(100)),
-    condition_L1("condition_1"),
-    action_L2("action_2", milliseconds(200)),
-    condition_L2("condition_2"),
-    action_R("action_3", milliseconds(400)),
-    condition_R("condition_3")
+  ComplexParallelTest()
+    : parallel_root("root")
+    , parallel_left("par1")
+    , parallel_right("par2")
+    , action_L1("action_1", milliseconds(100))
+    , condition_L1("condition_1")
+    , action_L2("action_2", milliseconds(200))
+    , condition_L2("condition_2")
+    , action_R("action_3", milliseconds(400))
+    , condition_R("condition_3")
   {
     parallel_root.addChild(&parallel_left);
     {
@@ -127,7 +127,7 @@ TEST_F(SimpleParallelTest, Threshold_3)
 {
   root.setSuccessThreshold(3);
   action_1.setTime(milliseconds(100));
-  action_2.setTime(milliseconds(500));   // this takes a lot of time
+  action_2.setTime(milliseconds(500));  // this takes a lot of time
 
   BT::NodeStatus state = root.executeTick();
   // first tick, zero wait
@@ -152,7 +152,7 @@ TEST_F(SimpleParallelTest, Threshold_neg2)
 {
   root.setSuccessThreshold(-2);
   action_1.setTime(milliseconds(100));
-  action_2.setTime(milliseconds(500));   // this takes a lot of time
+  action_2.setTime(milliseconds(500));  // this takes a lot of time
 
   BT::NodeStatus state = root.executeTick();
   // first tick, zero wait
@@ -177,7 +177,7 @@ TEST_F(SimpleParallelTest, Threshold_neg1)
 {
   root.setSuccessThreshold(-1);
   action_1.setTime(milliseconds(100));
-  action_2.setTime(milliseconds(500));   // this takes a lot of time
+  action_2.setTime(milliseconds(500));  // this takes a lot of time
 
   BT::NodeStatus state = root.executeTick();
   // first tick, zero wait
@@ -434,9 +434,9 @@ TEST(Parallel, FailingParallel)
   auto state = tree.tickWhileRunning();
   // since at least one succeeded.
   ASSERT_EQ(NodeStatus::SUCCESS, state);
-  ASSERT_EQ( 1, observer.getStatistics("first").success_count);
-  ASSERT_EQ( 1, observer.getStatistics("second").failure_count);
-  ASSERT_EQ( 0, observer.getStatistics("third").failure_count);
+  ASSERT_EQ(1, observer.getStatistics("first").success_count);
+  ASSERT_EQ(1, observer.getStatistics("second").failure_count);
+  ASSERT_EQ(0, observer.getStatistics("third").failure_count);
 }
 
 TEST(Parallel, ParallelAll)
@@ -471,9 +471,9 @@ TEST(Parallel, ParallelAll)
 
     auto state = tree.tickWhileRunning();
     ASSERT_EQ(NodeStatus::FAILURE, state);
-    ASSERT_EQ( 1, observer.getStatistics("first").failure_count);
-    ASSERT_EQ( 1, observer.getStatistics("second").success_count);
-    ASSERT_EQ( 1, observer.getStatistics("third").success_count);
+    ASSERT_EQ(1, observer.getStatistics("first").failure_count);
+    ASSERT_EQ(1, observer.getStatistics("second").success_count);
+    ASSERT_EQ(1, observer.getStatistics("third").success_count);
   }
 
   {
@@ -492,9 +492,9 @@ TEST(Parallel, ParallelAll)
 
     auto state = tree.tickWhileRunning();
     ASSERT_EQ(NodeStatus::SUCCESS, state);
-    ASSERT_EQ( 1, observer.getStatistics("first").failure_count);
-    ASSERT_EQ( 1, observer.getStatistics("second").success_count);
-    ASSERT_EQ( 1, observer.getStatistics("third").success_count);
+    ASSERT_EQ(1, observer.getStatistics("first").failure_count);
+    ASSERT_EQ(1, observer.getStatistics("second").success_count);
+    ASSERT_EQ(1, observer.getStatistics("third").success_count);
   }
 }
 
@@ -557,12 +557,11 @@ TEST(Parallel, PauseWithRetry)
   bool done_detected = false;
 
   auto status = tree.tickExactlyOnce();
-  auto toMsec = [](const auto& t)
-  {
+  auto toMsec = [](const auto& t) {
     return std::chrono::duration_cast<std::chrono::milliseconds>(t).count();
   };
 
-  while (!isStatusCompleted(status))
+  while(!isStatusCompleted(status))
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -576,7 +575,6 @@ TEST(Parallel, PauseWithRetry)
       }
     }
     status = tree.tickExactlyOnce();
-
   }
   auto t2 = std::chrono::system_clock::now();
 
@@ -590,9 +588,7 @@ TEST(Parallel, PauseWithRetry)
 #endif
 
   // the second branch with the RetryUntilSuccessful should take about 150 ms
-  ASSERT_LE( toMsec(done_time-t1) - 150, margin_msec );
+  ASSERT_LE(toMsec(done_time - t1) - 150, margin_msec);
   // the whole process should take about 300 milliseconds
-  ASSERT_LE( toMsec(t2-t1) - 300, margin_msec*2 );
+  ASSERT_LE(toMsec(t2 - t1) - 300, margin_msec * 2);
 }
-
-

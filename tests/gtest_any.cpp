@@ -77,7 +77,7 @@ TEST(Any, IsType)
 
   // String.
   {
-    Any a(std::string{"forty-two"});
+    Any a(std::string{ "forty-two" });
     EXPECT_FALSE(a.isType<bool>());
     EXPECT_FALSE(a.isType<int>());
     EXPECT_FALSE(a.isType<unsigned int>());
@@ -170,7 +170,8 @@ TEST(Any, Cast)
 #if __cpp_lib_to_chars >= 201611L
     const std::string a_str = a.cast<std::string>();
     double a_val;
-    const auto res = std::from_chars(a_str.data(), a_str.data() + a_str.size(), a_val, std::chars_format::general);
+    const auto res = std::from_chars(a_str.data(), a_str.data() + a_str.size(), a_val,
+                                     std::chars_format::general);
     EXPECT_TRUE(res.ec == std::errc{});
     EXPECT_DOUBLE_EQ(a_val, 44.0);
 #endif
@@ -184,7 +185,8 @@ TEST(Any, Cast)
 #if __cpp_lib_to_chars >= 201611L
     const std::string b_str = b.cast<std::string>();
     double b_val;
-    const auto res2 = std::from_chars(b_str.data(), b_str.data() + b_str.size(), b_val, std::chars_format::general);
+    const auto res2 = std::from_chars(b_str.data(), b_str.data() + b_str.size(), b_val,
+                                      std::chars_format::general);
     EXPECT_TRUE(res2.ec == std::errc{});
     EXPECT_DOUBLE_EQ(b_val, 44.1);
 #endif
@@ -207,43 +209,43 @@ TEST(Any, Cast)
 
   // String.
   {
-    Any a(std::string{"fifty"});
+    Any a(std::string{ "fifty" });
     EXPECT_ANY_THROW(auto res = a.cast<bool>());
     EXPECT_ANY_THROW(auto res = a.cast<int>());
     EXPECT_ANY_THROW(auto res = a.cast<double>());
     EXPECT_EQ(a.cast<std::string>(), "fifty");
 
-    Any b(std::string{"true"});
+    Any b(std::string{ "true" });
     // EXPECT_TRUE(b.cast<bool>());?
     EXPECT_ANY_THROW(auto res = b.cast<bool>());
 
-    Any c(std::string{"false"});
+    Any c(std::string{ "false" });
     // EXPECT_FALSE(c.cast<bool>());?
     EXPECT_ANY_THROW(auto res = c.cast<bool>());
 
-    Any d(std::string{"0"});
+    Any d(std::string{ "0" });
     // EXPECT_FALSE(d.cast<bool>());?
     EXPECT_EQ(d.cast<int>(), 0);
     EXPECT_EQ(d.cast<double>(), 0.0);
 
-    Any e(std::string{"1"});
+    Any e(std::string{ "1" });
     // EXPECT_TRUE(e.cast<bool>());?
     EXPECT_EQ(e.cast<int>(), 1);
     EXPECT_EQ(e.cast<double>(), 1.0);
 
-    Any f(std::string{"51"});
+    Any f(std::string{ "51" });
     EXPECT_ANY_THROW(auto res = f.cast<bool>());
     EXPECT_EQ(f.cast<int>(), 51);
     EXPECT_EQ(f.cast<double>(), 51.0);
 
-    Any g(std::string{"51.1"});
+    Any g(std::string{ "51.1" });
     EXPECT_ANY_THROW(auto res = g.cast<bool>());
     EXPECT_EQ(g.cast<int>(), 51);
     EXPECT_DOUBLE_EQ(g.cast<double>(), 51.1);
   }
 
   {
-    std::vector<int> v{1, 2, 3};
+    std::vector<int> v{ 1, 2, 3 };
     Any a(v);
     EXPECT_EQ(a.cast<std::vector<int>>(), v);
   }

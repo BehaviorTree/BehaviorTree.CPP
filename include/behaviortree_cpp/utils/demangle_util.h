@@ -80,30 +80,30 @@ inline std::string demangle(char const* name)
 
 inline std::string demangle(const std::type_index& index)
 {
-  if (index == typeid(std::string))
+  if(index == typeid(std::string))
   {
     return "std::string";
   }
-  if (index == typeid(std::string_view))
+  if(index == typeid(std::string_view))
   {
     return "std::string_view";
   }
-  if (index == typeid(std::chrono::seconds))
+  if(index == typeid(std::chrono::seconds))
   {
     return "std::chrono::seconds";
   }
-  if (index == typeid(std::chrono::milliseconds))
+  if(index == typeid(std::chrono::milliseconds))
   {
     return "std::chrono::milliseconds";
   }
-  if (index == typeid(std::chrono::microseconds))
+  if(index == typeid(std::chrono::microseconds))
   {
     return "std::chrono::microseconds";
   }
 
   scoped_demangled_name demangled_name(index.name());
   char const* const p = demangled_name.get();
-  if (p)
+  if(p)
   {
     return p;
   }
@@ -113,14 +113,13 @@ inline std::string demangle(const std::type_index& index)
   }
 }
 
-
 inline std::string demangle(const std::type_info& info)
 {
   return demangle(std::type_index(info));
 }
 
-}   // namespace BT
+}  // namespace BT
 
 #undef HAS_CXXABI_H
 
-#endif   // DEMANGLE_UTIL_H
+#endif  // DEMANGLE_UTIL_H

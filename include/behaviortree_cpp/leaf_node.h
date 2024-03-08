@@ -27,6 +27,6 @@ public:
 
   virtual ~LeafNode() override = default;
 };
-}   // namespace BT
+}  // namespace BT
 
 #endif

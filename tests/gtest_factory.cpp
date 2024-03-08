@@ -267,9 +267,9 @@ std::string FilePath(const std::filesystem::path& relative_path)
       std::filesystem::current_path() / "tests"};
   // clang-format on
 
-  for (auto const& path : search_paths)
+  for(auto const& path : search_paths)
   {
-    if (std::filesystem::exists(path / relative_path))
+    if(std::filesystem::exists(path / relative_path))
     {
       return (path / relative_path).string();
     }
@@ -343,9 +343,7 @@ TEST(
   ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
-TEST(
-    BehaviorTreeFactory,
-    WrongTreeName)
+TEST(BehaviorTreeFactory, WrongTreeName)
 {
   const char* xmlA = R"(
   <root BTCPP_format="4" >
@@ -402,18 +400,22 @@ KeyValueVector makeTestMetadata()
 class ActionWithMetadata : public SyncActionNode
 {
 public:
-  ActionWithMetadata(const std::string& name, const NodeConfig& config):
-    SyncActionNode(name, config) {}
+  ActionWithMetadata(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
 
-  BT::NodeStatus tick() override {
+  BT::NodeStatus tick() override
+  {
     return NodeStatus::SUCCESS;
   }
 
-  static PortsList providedPorts() {
+  static PortsList providedPorts()
+  {
     return {};
   }
 
-  static KeyValueVector metadata() {
+  static KeyValueVector metadata()
+  {
     return makeTestMetadata();
   }
 };

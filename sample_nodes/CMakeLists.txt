@@ -33,5 +33,3 @@ target_link_libraries(movebase_node_dyn PRIVATE ${BTCPP_LIBRARY})
 target_compile_definitions(movebase_node_dyn PRIVATE  BT_PLUGIN_EXPORT )
 set_target_properties(movebase_node_dyn PROPERTIES LIBRARY_OUTPUT_DIRECTORY
     ${BTCPP_BIN_DESTINATION} )
-
-

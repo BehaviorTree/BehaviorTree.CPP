@@ -31,7 +31,7 @@ NodeStatus ReactiveFallback::tick()
   }
   setStatus(NodeStatus::RUNNING);
 
-  for (size_t index = 0; index < childrenCount(); index++)
+  for(size_t index = 0; index < childrenCount(); index++)
   {
     TreeNode* current_child_node = children_nodes_[index];
     const NodeStatus child_status = current_child_node->executeTick();
@@ -39,12 +39,12 @@ NodeStatus ReactiveFallback::tick()
     // switch to RUNNING state as soon as you find an active child
     all_skipped &= (child_status == NodeStatus::SKIPPED);
 
-    switch (child_status)
+    switch(child_status)
     {
       case NodeStatus::RUNNING: {
         // reset the previous children, to make sure that they are
         // in IDLE state the next time we tick them
-        for (size_t i = 0; i < childrenCount(); i++)
+        for(size_t i = 0; i < childrenCount(); i++)
         {
           if(i != index)
           {
@@ -58,12 +58,14 @@ NodeStatus ReactiveFallback::tick()
         else if(throw_if_multiple_running && running_child_ != int(index))
         {
           throw LogicError("[ReactiveFallback]: only a single child can return RUNNING.\n"
-                           "This throw can be disabled with ReactiveFallback::EnableException(false)");
+                           "This throw can be disabled with "
+                           "ReactiveFallback::EnableException(false)");
         }
         return NodeStatus::RUNNING;
       }
 
-      case NodeStatus::FAILURE: break;
+      case NodeStatus::FAILURE:
+        break;
 
       case NodeStatus::SUCCESS: {
         resetChildren();
@@ -79,8 +81,8 @@ NodeStatus ReactiveFallback::tick()
       case NodeStatus::IDLE: {
         throw LogicError("[", name(), "]: A children should not return IDLE");
       }
-    }   // end switch
-  }     //end for
+    }  // end switch
+  }    //end for
 
   resetChildren();
 
@@ -94,4 +96,4 @@ void ReactiveFallback::halt()
   ControlNode::halt();
 }
 
-}   // namespace BT
+}  // namespace BT

@@ -13,8 +13,8 @@
 #include "condition_test_node.h"
 #include <string>
 
-BT::ConditionTestNode::ConditionTestNode(const std::string& name) :
-  ConditionNode::ConditionNode(name, {})
+BT::ConditionTestNode::ConditionTestNode(const std::string& name)
+  : ConditionNode::ConditionNode(name, {})
 {
   expected_result_ = NodeStatus::SUCCESS;
   tick_count_ = 0;

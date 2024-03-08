@@ -31,7 +31,7 @@ NodeStatus ReactiveSequence::tick()
   }
   setStatus(NodeStatus::RUNNING);
 
-  for (size_t index = 0; index < childrenCount(); index++)
+  for(size_t index = 0; index < childrenCount(); index++)
   {
     TreeNode* current_child_node = children_nodes_[index];
     const NodeStatus child_status = current_child_node->executeTick();
@@ -39,12 +39,12 @@ NodeStatus ReactiveSequence::tick()
     // switch to RUNNING state as soon as you find an active child
     all_skipped &= (child_status == NodeStatus::SKIPPED);
 
-    switch (child_status)
+    switch(child_status)
     {
       case NodeStatus::RUNNING: {
         // reset the previous children, to make sure that they are
         // in IDLE state the next time we tick them
-        for (size_t i = 0; i < childrenCount(); i++)
+        for(size_t i = 0; i < childrenCount(); i++)
         {
           if(i != index)
           {
@@ -58,7 +58,8 @@ NodeStatus ReactiveSequence::tick()
         else if(throw_if_multiple_running && running_child_ != int(index))
         {
           throw LogicError("[ReactiveSequence]: only a single child can return RUNNING.\n"
-                           "This throw can be disabled with ReactiveSequence::EnableException(false)");
+                           "This throw can be disabled with "
+                           "ReactiveSequence::EnableException(false)");
         }
         return NodeStatus::RUNNING;
       }
@@ -68,9 +69,10 @@ NodeStatus ReactiveSequence::tick()
         return NodeStatus::FAILURE;
       }
       // do nothing if SUCCESS
-      case NodeStatus::SUCCESS: break;
+      case NodeStatus::SUCCESS:
+        break;
 
-      case NodeStatus::SKIPPED:{
+      case NodeStatus::SKIPPED: {
         // to allow it to be skipped again, we must reset the node
         haltChild(index);
       }
@@ -79,8 +81,8 @@ NodeStatus ReactiveSequence::tick()
       case NodeStatus::IDLE: {
         throw LogicError("[", name(), "]: A children should not return IDLE");
       }
-    }   // end switch
-  }     //end for
+    }  // end switch
+  }    //end for
 
   resetChildren();
 
@@ -94,4 +96,4 @@ void ReactiveSequence::halt()
   ControlNode::halt();
 }
 
-}   // namespace BT
+}  // namespace BT

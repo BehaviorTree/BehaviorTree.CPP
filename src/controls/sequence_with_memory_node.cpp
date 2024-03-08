@@ -15,8 +15,8 @@
 
 namespace BT
 {
-SequenceWithMemory::SequenceWithMemory(const std::string& name) :
-  ControlNode::ControlNode(name, {}), current_child_idx_(0)
+SequenceWithMemory::SequenceWithMemory(const std::string& name)
+  : ControlNode::ControlNode(name, {}), current_child_idx_(0)
 {
   setRegistrationID("SequenceWithMemory");
 }
@@ -31,7 +31,7 @@ NodeStatus SequenceWithMemory::tick()
   }
   setStatus(NodeStatus::RUNNING);
 
-  while (current_child_idx_ < children_count)
+  while(current_child_idx_ < children_count)
   {
     TreeNode* current_child_node = children_nodes_[current_child_idx_];
 
@@ -41,14 +41,14 @@ NodeStatus SequenceWithMemory::tick()
     // switch to RUNNING state as soon as you find an active child
     all_skipped_ &= (child_status == NodeStatus::SKIPPED);
 
-    switch (child_status)
+    switch(child_status)
     {
       case NodeStatus::RUNNING: {
         return child_status;
       }
       case NodeStatus::FAILURE: {
         // DO NOT reset current_child_idx_ on failure
-        for (size_t i = current_child_idx_; i < childrenCount(); i++)
+        for(size_t i = current_child_idx_; i < childrenCount(); i++)
         {
           haltChild(i);
         }
@@ -59,8 +59,8 @@ NodeStatus SequenceWithMemory::tick()
         current_child_idx_++;
         // Return the execution flow if the child is async,
         // to make this interruptable.
-        if (requiresWakeUp() && prev_status == NodeStatus::IDLE &&
-            current_child_idx_ < children_count)
+        if(requiresWakeUp() && prev_status == NodeStatus::IDLE &&
+           current_child_idx_ < children_count)
         {
           emitWakeUpSignal();
           return NodeStatus::RUNNING;
@@ -77,11 +77,11 @@ NodeStatus SequenceWithMemory::tick()
       case NodeStatus::IDLE: {
         throw LogicError("[", name(), "]: A children should not return IDLE");
       }
-    }   // end switch
-  }     // end while loop
+    }  // end switch
+  }    // end while loop
 
   // The entire while loop completed. This means that all the children returned SUCCESS.
-  if (current_child_idx_ == children_count)
+  if(current_child_idx_ == children_count)
   {
     resetChildren();
     current_child_idx_ = 0;
@@ -97,4 +97,4 @@ void SequenceWithMemory::halt()
   ControlNode::halt();
 }
 
-}   // namespace BT
+}  // namespace BT

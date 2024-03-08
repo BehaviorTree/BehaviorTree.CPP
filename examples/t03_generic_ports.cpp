@@ -23,7 +23,7 @@ inline Position2D convertFromString(StringView str)
 
   // real numbers separated by semicolons
   auto parts = splitString(str, ';');
-  if (parts.size() != 2)
+  if(parts.size() != 2)
   {
     throw RuntimeError("invalid input)");
   }
@@ -35,38 +35,38 @@ inline Position2D convertFromString(StringView str)
     return output;
   }
 }
-}   // end namespace BT
+}  // end namespace BT
 
 class CalculateGoal : public SyncActionNode
 {
 public:
-  CalculateGoal(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  CalculateGoal(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
-    Position2D mygoal = {1.1, 2.3};
+    Position2D mygoal = { 1.1, 2.3 };
     setOutput("goal", mygoal);
     return NodeStatus::SUCCESS;
   }
   static PortsList providedPorts()
   {
-    return {OutputPort<Position2D>("goal")};
+    return { OutputPort<Position2D>("goal") };
   }
 };
 
 class PrintTarget : public SyncActionNode
 {
 public:
-  PrintTarget(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  PrintTarget(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
     auto res = getInput<Position2D>("target");
-    if (!res)
+    if(!res)
     {
       throw RuntimeError("error reading port [target]:", res.error());
     }
@@ -79,7 +79,7 @@ public:
   {
     // Optionally, a port can have a human readable description
     const char* description = "Simply print the target on console...";
-    return {InputPort<Position2D>("target", description)};
+    return { InputPort<Position2D>("target", description) };
   }
 };
 

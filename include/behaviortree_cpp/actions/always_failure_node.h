@@ -33,4 +33,4 @@ private:
     return NodeStatus::FAILURE;
   }
 };
-}   // namespace BT
+}  // namespace BT

@@ -40,7 +40,7 @@ inline NodeStatus KeepRunningUntilFailureNode::tick()
 
   const NodeStatus child_state = child_node_->executeTick();
 
-  switch (child_state)
+  switch(child_state)
   {
     case NodeStatus::FAILURE: {
       resetChild();
@@ -60,4 +60,4 @@ inline NodeStatus KeepRunningUntilFailureNode::tick()
   }
   return status();
 }
-}   // namespace BT
+}  // namespace BT

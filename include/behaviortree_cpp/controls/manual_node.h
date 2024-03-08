@@ -30,10 +30,11 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<bool>(REPEAT_LAST_SELECTION, false,
-                            "If true, execute again the same child that was selected the "
-                            "last "
-                            "time")};
+    return { InputPort<bool>(REPEAT_LAST_SELECTION, false,
+                             "If true, execute again the same child that was selected "
+                             "the "
+                             "last "
+                             "time") };
   }
 
 private:
@@ -55,4 +56,4 @@ private:
   uint8_t selectChild() const;
 };
 
-}   // namespace BT
+}  // namespace BT

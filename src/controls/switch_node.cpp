@@ -19,7 +19,7 @@
 namespace BT::details
 {
 
-bool CheckStringEquality(const std::string &v1, const std::string &v2,
+bool CheckStringEquality(const std::string& v1, const std::string& v2,
                          const ScriptingEnumsRegistry* enums)
 {
   // compare strings first
@@ -28,12 +28,11 @@ bool CheckStringEquality(const std::string &v1, const std::string &v2,
     return true;
   }
   // compare as integers next
-  auto ToInt = [enums](const std::string& str, auto& result) -> bool
-  {
+  auto ToInt = [enums](const std::string& str, auto& result) -> bool {
     if(enums)
     {
       auto it = enums->find(str);
-      if( it != enums->end())
+      if(it != enums->end())
       {
         result = it->second;
         return true;
@@ -43,11 +42,13 @@ bool CheckStringEquality(const std::string &v1, const std::string &v2,
     auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
     return (ec == std::errc());
 #else
-    try {
+    try
+    {
       result = std::stoi(str);
       return true;
     }
-    catch(...) {
+    catch(...)
+    {
       return false;
     }
 #endif
@@ -59,17 +60,18 @@ bool CheckStringEquality(const std::string &v1, const std::string &v2,
     return true;
   }
   // compare as real numbers next
-  auto ToReal = [](const std::string& str, auto& result) -> bool
-  {
+  auto ToReal = [](const std::string& str, auto& result) -> bool {
 #if __cpp_lib_to_chars >= 201611L
     auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
     return (ec == std::errc());
 #else
-    try {
+    try
+    {
       result = std::stod(str);
       return true;
     }
-    catch(...) {
+    catch(...)
+    {
       return false;
     }
 #endif
@@ -77,12 +79,11 @@ bool CheckStringEquality(const std::string &v1, const std::string &v2,
   double v1_real = 0;
   double v2_real = 0;
   constexpr auto eps = double(std::numeric_limits<float>::epsilon());
-  if(ToReal(v1, v1_real) && ToReal(v2, v2_real) &&
-      std::abs(v1_real - v2_real) <= eps)
+  if(ToReal(v1, v1_real) && ToReal(v2, v2_real) && std::abs(v1_real - v2_real) <= eps)
   {
     return true;
   }
   return false;
 }
 
-}
+}  // namespace BT::details

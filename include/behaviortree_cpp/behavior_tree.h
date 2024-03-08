@@ -95,9 +95,8 @@ inline NodeType getType()
   // clang-format on
 }
 
-
 const char* LibraryVersionString();
 
 int LibraryVersionNumber();
 
-}   // namespace BT
+}  // namespace BT

@@ -20,9 +20,8 @@ namespace BT
 
 struct TreeNode::PImpl
 {
-  PImpl(std::string name, NodeConfig config):
-    name(std::move(name)),
-    config(std::move(config))
+  PImpl(std::string name, NodeConfig config)
+    : name(std::move(name)), config(std::move(config))
   {}
 
   const std::string name;
@@ -51,24 +50,23 @@ struct TreeNode::PImpl
   std::array<ScriptFunction, size_t(PostCond::COUNT_)> post_parsed;
 };
 
+TreeNode::TreeNode(std::string name, NodeConfig config)
+  : _p(new PImpl(std::move(name), std::move(config)))
+{}
 
-TreeNode::TreeNode(std::string name, NodeConfig config) :
-  _p(new PImpl(std::move(name), std::move(config)))
-{
-}
-
-TreeNode::TreeNode(TreeNode &&other) noexcept
+TreeNode::TreeNode(TreeNode&& other) noexcept
 {
   this->_p = std::move(other._p);
 }
 
-TreeNode &TreeNode::operator=(TreeNode &&other) noexcept
+TreeNode& TreeNode::operator=(TreeNode&& other) noexcept
 {
   this->_p = std::move(other._p);
   return *this;
 }
 
-TreeNode::~TreeNode() {}
+TreeNode::~TreeNode()
+{}
 
 NodeStatus TreeNode::executeTick()
 {
@@ -76,7 +74,7 @@ NodeStatus TreeNode::executeTick()
 
   // a pre-condition may return the new status.
   // In this case it override the actual tick()
-  if (auto precond = checkPreConditions())
+  if(auto precond = checkPreConditions())
   {
     new_status = precond.value();
   }
@@ -86,7 +84,7 @@ NodeStatus TreeNode::executeTick()
     bool substituted = false;
     if(!isStatusCompleted(_p->status))
     {
-      PreTickCallback  callback;
+      PreTickCallback callback;
       {
         std::unique_lock lk(_p->callback_injection_mutex);
         callback = _p->substitution_callback;
@@ -104,7 +102,8 @@ NodeStatus TreeNode::executeTick()
     }
 
     // Call the ACTUAL tick
-    if(!substituted){
+    if(!substituted)
+    {
       new_status = tick();
     }
   }
@@ -113,7 +112,7 @@ NodeStatus TreeNode::executeTick()
   if(isStatusCompleted(new_status))
   {
     checkPostConditions(new_status);
-    PostTickCallback  callback;
+    PostTickCallback callback;
     {
       std::unique_lock lk(_p->callback_injection_mutex);
       callback = _p->post_condition_callback;
@@ -129,7 +128,8 @@ NodeStatus TreeNode::executeTick()
   }
 
   // preserve the IDLE state if skipped, but communicate SKIPPED to parent
-  if(new_status != NodeStatus::SKIPPED) {
+  if(new_status != NodeStatus::SKIPPED)
+  {
     setStatus(new_status);
   }
   return new_status;
@@ -140,16 +140,16 @@ void TreeNode::haltNode()
   halt();
 
   const auto& parse_executor = _p->post_parsed[size_t(PostCond::ON_HALTED)];
-  if (parse_executor)
+  if(parse_executor)
   {
-    Ast::Environment env = {config().blackboard, config().enums};
+    Ast::Environment env = { config().blackboard, config().enums };
     parse_executor(env);
   }
 }
 
 void TreeNode::setStatus(NodeStatus new_status)
 {
-  if (new_status == NodeStatus::IDLE)
+  if(new_status == NodeStatus::IDLE)
   {
     throw RuntimeError("Node [", name(),
                        "]: you are not allowed to set manually the status to IDLE. "
@@ -162,7 +162,7 @@ void TreeNode::setStatus(NodeStatus new_status)
     prev_status = _p->status;
     _p->status = new_status;
   }
-  if (prev_status != new_status)
+  if(prev_status != new_status)
   {
     _p->state_condition_variable.notify_all();
     _p->state_change_signal.notify(std::chrono::high_resolution_clock::now(), *this,
@@ -170,23 +170,25 @@ void TreeNode::setStatus(NodeStatus new_status)
   }
 }
 
-TreeNode::PreScripts &TreeNode::preConditionsScripts() {
+TreeNode::PreScripts& TreeNode::preConditionsScripts()
+{
   return _p->pre_parsed;
 }
 
-TreeNode::PostScripts &TreeNode::postConditionsScripts() {
+TreeNode::PostScripts& TreeNode::postConditionsScripts()
+{
   return _p->post_parsed;
 }
 
 Expected<NodeStatus> TreeNode::checkPreConditions()
 {
-  Ast::Environment env = {config().blackboard, config().enums};
+  Ast::Environment env = { config().blackboard, config().enums };
 
   // check the pre-conditions
-  for (size_t index = 0; index < size_t(PreCond::COUNT_); index++)
+  for(size_t index = 0; index < size_t(PreCond::COUNT_); index++)
   {
     const auto& parse_executor = _p->pre_parsed[index];
-    if (!parse_executor)
+    if(!parse_executor)
     {
       continue;
     }
@@ -194,21 +196,20 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     const PreCond preID = PreCond(index);
 
     // Some preconditions are applied only when the node state is IDLE or SKIPPED
-    if (_p->status == NodeStatus::IDLE ||
-        _p->status == NodeStatus::SKIPPED)
+    if(_p->status == NodeStatus::IDLE || _p->status == NodeStatus::SKIPPED)
     {
       // what to do if the condition is true
-      if (parse_executor(env).cast<bool>())
+      if(parse_executor(env).cast<bool>())
       {
-        if (preID == PreCond::FAILURE_IF)
+        if(preID == PreCond::FAILURE_IF)
         {
           return NodeStatus::FAILURE;
         }
-        else if (preID == PreCond::SUCCESS_IF)
+        else if(preID == PreCond::SUCCESS_IF)
         {
           return NodeStatus::SUCCESS;
         }
-        else if (preID == PreCond::SKIP_IF)
+        else if(preID == PreCond::SKIP_IF)
         {
           return NodeStatus::SKIPPED;
         }
@@ -222,32 +223,32 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     else if(_p->status == NodeStatus::RUNNING && preID == PreCond::WHILE_TRUE)
     {
       // what to do if the condition is false
-      if (!parse_executor(env).cast<bool>())
+      if(!parse_executor(env).cast<bool>())
       {
         haltNode();
         return NodeStatus::SKIPPED;
       }
     }
   }
-  return nonstd::make_unexpected("");   // no precondition
+  return nonstd::make_unexpected("");  // no precondition
 }
 
 void TreeNode::checkPostConditions(NodeStatus status)
 {
   auto ExecuteScript = [this](const PostCond& cond) {
     const auto& parse_executor = _p->post_parsed[size_t(cond)];
-    if (parse_executor)
+    if(parse_executor)
     {
-      Ast::Environment env = {config().blackboard, config().enums};
+      Ast::Environment env = { config().blackboard, config().enums };
       parse_executor(env);
     }
   };
 
-  if (status == NodeStatus::SUCCESS)
+  if(status == NodeStatus::SUCCESS)
   {
     ExecuteScript(PostCond::ON_SUCCESS);
   }
-  else if (status == NodeStatus::FAILURE)
+  else if(status == NodeStatus::FAILURE)
   {
     ExecuteScript(PostCond::ON_FAILURE);
   }
@@ -263,7 +264,7 @@ void TreeNode::resetStatus()
     _p->status = NodeStatus::IDLE;
   }
 
-  if (prev_status != NodeStatus::IDLE)
+  if(prev_status != NodeStatus::IDLE)
   {
     _p->state_condition_variable.notify_all();
     _p->state_change_signal.notify(std::chrono::high_resolution_clock::now(), *this,
@@ -281,7 +282,7 @@ NodeStatus TreeNode::waitValidStatus()
 {
   std::unique_lock<std::mutex> lock(_p->state_mutex);
 
-  while (isHalted())
+  while(isHalted())
   {
     _p->state_condition_variable.wait(lock);
   }
@@ -321,7 +322,7 @@ uint16_t TreeNode::UID() const
   return _p->config.uid;
 }
 
-const std::string &TreeNode::fullPath() const
+const std::string& TreeNode::fullPath() const
 {
   return _p->config.path;
 }
@@ -331,12 +332,12 @@ const std::string& TreeNode::registrationName() const
   return _p->registration_ID;
 }
 
-const NodeConfig &TreeNode::config() const
+const NodeConfig& TreeNode::config() const
 {
   return _p->config;
 }
 
-NodeConfig &TreeNode::config()
+NodeConfig& TreeNode::config()
 {
   return _p->config;
 }
@@ -344,10 +345,10 @@ NodeConfig &TreeNode::config()
 StringView TreeNode::getRawPortValue(const std::string& key) const
 {
   auto remap_it = _p->config.input_ports.find(key);
-  if (remap_it == _p->config.input_ports.end())
+  if(remap_it == _p->config.input_ports.end())
   {
     remap_it = _p->config.output_ports.find(key);
-    if (remap_it == _p->config.output_ports.end())
+    if(remap_it == _p->config.output_ports.end())
     {
       throw std::logic_error(StrCat("[", key, "] not found"));
     }
@@ -357,13 +358,13 @@ StringView TreeNode::getRawPortValue(const std::string& key) const
 
 bool TreeNode::isBlackboardPointer(StringView str, StringView* stripped_pointer)
 {
-  if (str.size() < 3)
+  if(str.size() < 3)
   {
     return false;
   }
   // strip leading and following spaces
   size_t front_index = 0;
-  size_t last_index = str.size()-1;
+  size_t last_index = str.size() - 1;
   while(str[front_index] == ' ' && front_index <= last_index)
   {
     front_index++;
@@ -372,11 +373,11 @@ bool TreeNode::isBlackboardPointer(StringView str, StringView* stripped_pointer)
   {
     last_index--;
   }
-  const auto size = (last_index-front_index) + 1;
+  const auto size = (last_index - front_index) + 1;
   auto valid = size >= 3 && str[front_index] == '{' && str[last_index] == '}';
   if(valid && stripped_pointer)
   {
-    *stripped_pointer = StringView( &str[front_index+1], size-2);
+    *stripped_pointer = StringView(&str[front_index + 1], size - 2);
   }
   return valid;
 }
@@ -394,21 +395,21 @@ StringView TreeNode::stripBlackboardPointer(StringView str)
 Expected<StringView> TreeNode::getRemappedKey(StringView port_name,
                                               StringView remapped_port)
 {
-  if (remapped_port == "{=}" || remapped_port == "=")
+  if(remapped_port == "{=}" || remapped_port == "=")
   {
-    return {port_name};
+    return { port_name };
   }
   StringView stripped;
-  if (isBlackboardPointer(remapped_port, &stripped))
+  if(isBlackboardPointer(remapped_port, &stripped))
   {
-    return {stripped};
+    return { stripped };
   }
   return nonstd::make_unexpected("Not a blackboard pointer");
 }
 
 void TreeNode::emitWakeUpSignal()
 {
-  if (_p->wake_up)
+  if(_p->wake_up)
   {
     _p->wake_up->emitSignal();
   }
@@ -431,15 +432,15 @@ void TreeNode::setWakeUpInstance(std::shared_ptr<WakeUpSignal> instance)
 
 void TreeNode::modifyPortsRemapping(const PortsRemapping& new_remapping)
 {
-  for (const auto& new_it : new_remapping)
+  for(const auto& new_it : new_remapping)
   {
     auto it = _p->config.input_ports.find(new_it.first);
-    if (it != _p->config.input_ports.end())
+    if(it != _p->config.input_ports.end())
     {
       it->second = new_it.second;
     }
     it = _p->config.output_ports.find(new_it.first);
-    if (it != _p->config.output_ports.end())
+    if(it != _p->config.output_ports.end())
     {
       it->second = new_it.second;
     }
@@ -449,7 +450,7 @@ void TreeNode::modifyPortsRemapping(const PortsRemapping& new_remapping)
 template <>
 std::string toStr<PreCond>(const PreCond& pre)
 {
-  switch (pre)
+  switch(pre)
   {
     case PreCond::SUCCESS_IF:
       return "_successIf";
@@ -467,7 +468,7 @@ std::string toStr<PreCond>(const PreCond& pre)
 template <>
 std::string toStr<PostCond>(const PostCond& pre)
 {
-  switch (pre)
+  switch(pre)
   {
     case PostCond::ON_SUCCESS:
       return "_onSuccess";
@@ -482,7 +483,7 @@ std::string toStr<PostCond>(const PostCond& pre)
   }
 }
 
-AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string &key)
+AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string& key)
 {
   if(auto remapped_key = getRemappedKey(key, getRawPortValue(key)))
   {
@@ -491,4 +492,4 @@ AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string &key)
   return {};
 }
 
-}   // namespace BT
+}  // namespace BT

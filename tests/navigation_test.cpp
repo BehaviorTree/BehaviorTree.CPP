@@ -119,13 +119,13 @@ class FollowPath : public ActionNodeBase, public TestNode
   std::chrono::high_resolution_clock::time_point _initial_time;
 
 public:
-  FollowPath(const std::string& name) :
-    ActionNodeBase(name, {}), TestNode(name), _halted(false)
+  FollowPath(const std::string& name)
+    : ActionNodeBase(name, {}), TestNode(name), _halted(false)
   {}
 
   NodeStatus tick() override
   {
-    if (status() == NodeStatus::IDLE)
+    if(status() == NodeStatus::IDLE)
     {
       setStatus(NodeStatus::RUNNING);
       _halted = false;
@@ -134,11 +134,11 @@ public:
     }
 
     // Yield for 1 second
-    while (Now() < _initial_time + Milliseconds(600) || _halted)
+    while(Now() < _initial_time + Milliseconds(600) || _halted)
     {
       return NodeStatus::RUNNING;
     }
-    if (_halted)
+    if(_halted)
     {
       return NodeStatus::IDLE;
     }
@@ -164,7 +164,7 @@ private:
 template <typename Original, typename Casted>
 void TryDynamicCastPtr(Original* ptr, Casted*& destination)
 {
-  if (dynamic_cast<Casted*>(ptr))
+  if(dynamic_cast<Casted*>(ptr))
   {
     destination = dynamic_cast<Casted*>(ptr);
   }
@@ -191,13 +191,13 @@ TEST(Navigationtest, MoveBaseRecovery)
   ComputePathToPose* compute_node = nullptr;
   FollowPath* follow_node = nullptr;
 
-  for (auto& subtree : tree.subtrees)
+  for(auto& subtree : tree.subtrees)
   {
-    for (auto& node : subtree->nodes)
+    for(auto& node : subtree->nodes)
     {
       auto ptr = node.get();
 
-      if (!first_stuck_node)
+      if(!first_stuck_node)
       {
         TryDynamicCastPtr(ptr, first_stuck_node);
       }
@@ -224,7 +224,7 @@ TEST(Navigationtest, MoveBaseRecovery)
 
   first_stuck_node->setExpectedResult(false);
 
-  while (status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
+  while(status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
   {
     status = tree.tickWhileRunning();
     std::this_thread::sleep_for(Milliseconds(100));
@@ -255,10 +255,10 @@ TEST(Navigationtest, MoveBaseRecovery)
   status = NodeStatus::IDLE;
   int cycle = 0;
 
-  while (status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
+  while(status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
   {
     // At the fifth cycle get stuck
-    if (++cycle == 2)
+    if(++cycle == 2)
     {
       first_stuck_node->setExpectedResult(true);
       second_stuck_node->setExpectedResult(true);
@@ -279,7 +279,7 @@ TEST(Navigationtest, MoveBaseRecovery)
   // compute done once and follow started but halted
   ASSERT_EQ(compute_node->tickCount(), 1);
 
-  ASSERT_EQ(follow_node->tickCount(), 0);   // started but never completed
+  ASSERT_EQ(follow_node->tickCount(), 0);  // started but never completed
   ASSERT_TRUE(follow_node->wasHalted());
 
   ASSERT_EQ(compute_node->status(), NodeStatus::IDLE);
@@ -300,7 +300,7 @@ TEST(Navigationtest, MoveBaseRecovery)
   first_stuck_node->setExpectedResult(false);
   second_stuck_node->setExpectedResult(false);
 
-  while (status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
+  while(status == NodeStatus::IDLE || status == NodeStatus::RUNNING)
   {
     status = tree.tickWhileRunning();
     std::this_thread::sleep_for(Milliseconds(100));

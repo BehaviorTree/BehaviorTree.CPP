@@ -47,8 +47,8 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<int>(NUM_ATTEMPTS, "Execute again a failing child up to N times. "
-                                         "Use -1 to create an infinite loop.")};
+    return { InputPort<int>(NUM_ATTEMPTS, "Execute again a failing child up to N times. "
+                                          "Use -1 to create an infinite loop.") };
   }
 
   virtual void halt() override;
@@ -71,10 +71,10 @@ class [[deprecated("RetryUntilSuccesful was a typo and deprecated, use "
 public:
   RetryNodeTypo(const std::string& name, int NTries) : RetryNode(name, NTries){};
 
-  RetryNodeTypo(const std::string& name, const NodeConfig& config) :
-    RetryNode(name, config){};
+  RetryNodeTypo(const std::string& name, const NodeConfig& config)
+    : RetryNode(name, config){};
 
   virtual ~RetryNodeTypo() override = default;
 };
 
-}   // namespace BT
+}  // namespace BT

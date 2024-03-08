@@ -25,7 +25,7 @@ NodeStatus InverterNode::tick()
   setStatus(NodeStatus::RUNNING);
   const NodeStatus child_status = child_node_->executeTick();
 
-  switch (child_status)
+  switch(child_status)
   {
     case NodeStatus::SUCCESS: {
       resetChild();
@@ -49,4 +49,4 @@ NodeStatus InverterNode::tick()
   return status();
 }
 
-}   // namespace BT
+}  // namespace BT

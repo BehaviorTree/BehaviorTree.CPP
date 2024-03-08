@@ -23,7 +23,7 @@ class Groot2Publisher : public StatusChangeLogger
 
   using Position = Monitor::Hook::Position;
 
-  public:
+public:
   Groot2Publisher(const BT::Tree& tree, unsigned server_port = 1667);
 
   ~Groot2Publisher() override;
@@ -32,7 +32,7 @@ class Groot2Publisher : public StatusChangeLogger
   Groot2Publisher& operator=(const Groot2Publisher& other) = delete;
 
   Groot2Publisher(Groot2Publisher&& other) = default;
-  Groot2Publisher& operator=(Groot2Publisher&& other)  = default;
+  Groot2Publisher& operator=(Groot2Publisher&& other) = default;
 
   /**
    * @brief setMaxHeartbeatDelay is used to tell the publisher
@@ -41,15 +41,12 @@ class Groot2Publisher : public StatusChangeLogger
    *
    * Default is 5000 ms
    */
-  void setMaxHeartbeatDelay( std::chrono::milliseconds delay);
+  void setMaxHeartbeatDelay(std::chrono::milliseconds delay);
 
   std::chrono::milliseconds maxHeartbeatDelay() const;
 
-  private:
-
-  void callback(Duration timestamp,
-                const TreeNode& node,
-                NodeStatus prev_status,
+private:
+  void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
                 NodeStatus status) override;
 
   void flush() override;
@@ -77,5 +74,4 @@ class Groot2Publisher : public StatusChangeLogger
 
   void enableAllHooks(bool enable);
 };
-}   // namespace BT
-
+}  // namespace BT

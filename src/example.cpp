@@ -35,21 +35,21 @@ BT::ReturnStatus MyAction::Tick()
 {
   std::cout << "The Action is doing some operations" << std::endl;
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  if (is_halted())
+  if(is_halted())
   {
     return NodeStatus::IDLE;
   }
 
   std::cout << "The Action is doing some others operations" << std::endl;
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  if (is_halted())
+  if(is_halted())
   {
     return NodeStatus::IDLE;
   }
 
   std::cout << "The Action is doing more operations" << std::endl;
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  if (is_halted())
+  if(is_halted())
   {
     return NodeStatus::IDLE;
   }

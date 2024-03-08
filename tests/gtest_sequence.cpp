@@ -25,8 +25,8 @@ struct SimpleSequenceTest : testing::Test
   BT::ConditionTestNode condition;
   BT::AsyncActionTest action;
 
-  SimpleSequenceTest() :
-    root("root_sequence"), condition("condition"), action("action", milliseconds(100))
+  SimpleSequenceTest()
+    : root("root_sequence"), condition("condition"), action("action", milliseconds(100))
   {
     root.addChild(&condition);
     root.addChild(&action);
@@ -44,12 +44,12 @@ struct ComplexSequenceTest : testing::Test
 
   BT::SequenceNode seq_conditions;
 
-  ComplexSequenceTest() :
-    root("root"),
-    action_1("action_1", milliseconds(100)),
-    condition_1("condition_1"),
-    condition_2("condition_2"),
-    seq_conditions("sequence_conditions")
+  ComplexSequenceTest()
+    : root("root")
+    , action_1("action_1", milliseconds(100))
+    , condition_1("condition_1")
+    , condition_2("condition_2")
+    , seq_conditions("sequence_conditions")
   {
     root.addChild(&seq_conditions);
     {
@@ -70,12 +70,12 @@ struct SequenceTripleActionTest : testing::Test
   BT::SyncActionTest action_2;
   BT::AsyncActionTest action_3;
 
-  SequenceTripleActionTest() :
-    root("root_sequence"),
-    condition("condition"),
-    action_1("action_1", milliseconds(100)),
-    action_2("action_2"),
-    action_3("action_3", milliseconds(100))
+  SequenceTripleActionTest()
+    : root("root_sequence")
+    , condition("condition")
+    , action_1("action_1", milliseconds(100))
+    , action_2("action_2")
+    , action_3("action_3", milliseconds(100))
   {
     root.addChild(&condition);
     root.addChild(&action_1);
@@ -97,14 +97,14 @@ struct ComplexSequence2ActionsTest : testing::Test
   BT::ConditionTestNode condition_1;
   BT::ConditionTestNode condition_2;
 
-  ComplexSequence2ActionsTest() :
-    root("root_sequence"),
-    action_1("action_1", milliseconds(100)),
-    action_2("action_2", milliseconds(100)),
-    seq_1("sequence_1"),
-    seq_2("sequence_2"),
-    condition_1("condition_1"),
-    condition_2("condition_2")
+  ComplexSequence2ActionsTest()
+    : root("root_sequence")
+    , action_1("action_1", milliseconds(100))
+    , action_2("action_2", milliseconds(100))
+    , seq_1("sequence_1")
+    , seq_2("sequence_2")
+    , condition_1("condition_1")
+    , condition_2("condition_2")
   {
     root.addChild(&seq_1);
     {
@@ -127,8 +127,8 @@ struct SimpleSequenceWithMemoryTest : testing::Test
   BT::AsyncActionTest action;
   BT::ConditionTestNode condition;
 
-  SimpleSequenceWithMemoryTest() :
-    root("root_sequence"), action("action", milliseconds(100)), condition("condition")
+  SimpleSequenceWithMemoryTest()
+    : root("root_sequence"), action("action", milliseconds(100)), condition("condition")
   {
     root.addChild(&condition);
     root.addChild(&action);
@@ -150,14 +150,14 @@ struct ComplexSequenceWithMemoryTest : testing::Test
   BT::SequenceWithMemory seq_conditions;
   BT::SequenceWithMemory seq_actions;
 
-  ComplexSequenceWithMemoryTest() :
-    root("root_sequence"),
-    action_1("action_1", milliseconds(100)),
-    action_2("action_2", milliseconds(100)),
-    condition_1("condition_1"),
-    condition_2("condition_2"),
-    seq_conditions("sequence_conditions"),
-    seq_actions("sequence_actions")
+  ComplexSequenceWithMemoryTest()
+    : root("root_sequence")
+    , action_1("action_1", milliseconds(100))
+    , action_2("action_2", milliseconds(100))
+    , condition_1("condition_1")
+    , condition_2("condition_2")
+    , seq_conditions("sequence_conditions")
+    , seq_actions("sequence_actions")
   {
     root.addChild(&seq_conditions);
     {
@@ -183,12 +183,12 @@ struct SimpleParallelTest : testing::Test
   BT::AsyncActionTest action_2;
   BT::ConditionTestNode condition_2;
 
-  SimpleParallelTest() :
-    root("root_parallel"),
-    action_1("action_1", milliseconds(100)),
-    condition_1("condition_1"),
-    action_2("action_2", milliseconds(100)),
-    condition_2("condition_2")
+  SimpleParallelTest()
+    : root("root_parallel")
+    , action_1("action_1", milliseconds(100))
+    , condition_1("condition_1")
+    , action_2("action_2", milliseconds(100))
+    , condition_2("condition_2")
   {
     root.setSuccessThreshold(4);
     root.addChild(&condition_1);
@@ -261,7 +261,7 @@ TEST_F(SequenceTripleActionTest, TripleAction)
   ASSERT_EQ(NodeStatus::IDLE, action_3.status());
 
   // continue until successful
-  while (state != NodeStatus::SUCCESS && system_clock::now() < timeout)
+  while(state != NodeStatus::SUCCESS && system_clock::now() < timeout)
   {
     std::this_thread::sleep_for(milliseconds(1));
     state = root.executeTick();
@@ -279,7 +279,7 @@ TEST_F(SequenceTripleActionTest, TripleAction)
   ASSERT_EQ(NodeStatus::IDLE, action_1.status());
   ASSERT_EQ(NodeStatus::IDLE, action_2.status());
   ASSERT_EQ(NodeStatus::IDLE, action_3.status());
-  ASSERT_TRUE(system_clock::now() < timeout);   // no timeout should occur
+  ASSERT_TRUE(system_clock::now() < timeout);  // no timeout should occur
 }
 
 TEST_F(ComplexSequence2ActionsTest, ConditionsTrue)
@@ -396,7 +396,6 @@ TEST_F(ComplexSequenceWithMemoryTest, Conditions1ToFalse)
   ASSERT_EQ(NodeStatus::IDLE, action_2.status());
 }
 
-
 TEST(SequenceWithMemoryTest, Issue_636)
 {
   static const char* xml_text = R"(
@@ -436,4 +435,3 @@ TEST(SequenceWithMemoryTest, Issue_636)
 
   ASSERT_EQ(5, tick_count);
 }
-

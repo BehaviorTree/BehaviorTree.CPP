@@ -24,9 +24,8 @@ struct FileLogger2::PImpl
   std::atomic_bool loop = true;
 };
 
-FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& filepath) :
-  StatusChangeLogger(tree.rootNode()),
-  _p(new PImpl)
+FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& filepath)
+  : StatusChangeLogger(tree.rootNode()), _p(new PImpl)
 {
   if(filepath.filename().extension() != ".btlog")
   {
@@ -38,7 +37,8 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
   //-------------------------------------
   _p->file_stream.open(filepath, std::ofstream::binary | std::ofstream::out);
 
-  if(!_p->file_stream.is_open()) {
+  if(!_p->file_stream.is_open())
+  {
     throw RuntimeError("problem opening file in FileLogger2");
   }
 
@@ -77,7 +77,7 @@ FileLogger2::~FileLogger2()
 }
 
 void FileLogger2::callback(Duration timestamp, const TreeNode& node,
-                          NodeStatus /*prev_status*/, NodeStatus status)
+                           NodeStatus /*prev_status*/, NodeStatus status)
 {
   Transition trans;
   trans.timestamp_usec = uint64_t(ToUsec(timestamp - _p->first_timestamp));
@@ -105,8 +105,9 @@ void FileLogger2::writerLoop()
     transitions.clear();
     {
       std::unique_lock lock(_p->queue_mutex);
-      _p->queue_cv.wait_for(lock, std::chrono::milliseconds(10),
-                         [this]() {return !_p->transitions_queue.empty() && _p->loop; } );
+      _p->queue_cv.wait_for(lock, std::chrono::milliseconds(10), [this]() {
+        return !_p->transitions_queue.empty() && _p->loop;
+      });
       // simple way to pop all the transitions from _p->transitions_queue into transitions
       std::swap(transitions, _p->transitions_queue);
     }
@@ -114,9 +115,9 @@ void FileLogger2::writerLoop()
     {
       const auto trans = transitions.front();
       std::array<char, 9> write_buffer;
-      std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6 );
-      std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2 );
-      std::memcpy(write_buffer.data() + 8, &trans.status, 1 );
+      std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6);
+      std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2);
+      std::memcpy(write_buffer.data() + 8, &trans.status, 1);
 
       _p->file_stream.write(write_buffer.data(), 9);
       transitions.pop_front();
@@ -125,4 +126,4 @@ void FileLogger2::writerLoop()
   }
 }
 
-}   // namespace BT
+}  // namespace BT

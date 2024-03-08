@@ -16,17 +16,16 @@ NodeStatus SayHello();
 
 class GripperInterface
 {
-  public:
-    GripperInterface() : _opened(true)
-    {
-    }
+public:
+  GripperInterface() : _opened(true)
+  {}
 
-    NodeStatus open();
+  NodeStatus open();
 
-    NodeStatus close();
+  NodeStatus close();
 
-  private:
-    bool _opened;
+private:
+  bool _opened;
 };
 
 //--------------------------------------
@@ -35,34 +34,31 @@ class GripperInterface
 // without ports.
 class ApproachObject : public BT::SyncActionNode
 {
-  public:
-    ApproachObject(const std::string& name) :
-        BT::SyncActionNode(name, {})
-    {
-    }
+public:
+  ApproachObject(const std::string& name) : BT::SyncActionNode(name, {})
+  {}
 
-    // You must override the virtual function tick()
-    NodeStatus tick() override;
+  // You must override the virtual function tick()
+  NodeStatus tick() override;
 };
 
 // Example of custom SyncActionNode (synchronous action)
 // with an input port.
 class SaySomething : public BT::SyncActionNode
 {
-  public:
-    SaySomething(const std::string& name, const BT::NodeConfig& config)
-      : BT::SyncActionNode(name, config)
-    {
-    }
+public:
+  SaySomething(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config)
+  {}
 
-    // You must override the virtual function tick()
-    NodeStatus tick() override;
+  // You must override the virtual function tick()
+  NodeStatus tick() override;
 
-    // It is mandatory to define this static method.
-    static BT::PortsList providedPorts()
-    {
-        return{ BT::InputPort<std::string>("message") };
-    }
+  // It is mandatory to define this static method.
+  static BT::PortsList providedPorts()
+  {
+    return { BT::InputPort<std::string>("message") };
+  }
 };
 
 //Same as class SaySomething, but to be registered with SimpleActionNode
@@ -71,69 +67,73 @@ NodeStatus SaySomethingSimple(BT::TreeNode& self);
 // Example os Asynchronous node that use StatefulActionNode as base class
 class SleepNode : public BT::StatefulActionNode
 {
-  public:
-    SleepNode(const std::string& name, const BT::NodeConfig& config)
-      : BT::StatefulActionNode(name, config)
-    {}
+public:
+  SleepNode(const std::string& name, const BT::NodeConfig& config)
+    : BT::StatefulActionNode(name, config)
+  {}
 
-    static BT::PortsList providedPorts()
+  static BT::PortsList providedPorts()
+  {
+    // amount of milliseconds that we want to sleep
+    return { BT::InputPort<int>("msec") };
+  }
+
+  NodeStatus onStart() override
+  {
+    int msec = 0;
+    getInput("msec", msec);
+    if(msec <= 0)
     {
-        // amount of milliseconds that we want to sleep
-        return{ BT::InputPort<int>("msec") };
+      // no need to go into the RUNNING state
+      return NodeStatus::SUCCESS;
     }
-
-    NodeStatus onStart() override
+    else
     {
-        int msec = 0;
-        getInput("msec", msec);
-        if( msec <= 0 )
-        {
-            // no need to go into the RUNNING state
-            return NodeStatus::SUCCESS;
-        }
-        else {
-            using namespace std::chrono;
-            // once the deadline is reached, we will return SUCCESS.
-            deadline_ = system_clock::now() + milliseconds(msec);
-            return NodeStatus::RUNNING;
-        }
+      using namespace std::chrono;
+      // once the deadline is reached, we will return SUCCESS.
+      deadline_ = system_clock::now() + milliseconds(msec);
+      return NodeStatus::RUNNING;
     }
+  }
 
-    /// method invoked by an action in the RUNNING state.
-    NodeStatus onRunning() override
+  /// method invoked by an action in the RUNNING state.
+  NodeStatus onRunning() override
+  {
+    if(std::chrono::system_clock::now() >= deadline_)
     {
-        if ( std::chrono::system_clock::now() >= deadline_ )
-        {
-            return NodeStatus::SUCCESS;
-        }
-        else {
-            return NodeStatus::RUNNING;
-        }
+      return NodeStatus::SUCCESS;
     }
-
-    void onHalted() override
+    else
     {
-        // nothing to do here...
-        std::cout << "SleepNode interrupted" << std::endl;
+      return NodeStatus::RUNNING;
     }
+  }
 
-  private:
-    std::chrono::system_clock::time_point deadline_;
+  void onHalted() override
+  {
+    // nothing to do here...
+    std::cout << "SleepNode interrupted" << std::endl;
+  }
+
+private:
+  std::chrono::system_clock::time_point deadline_;
 };
 
 inline void RegisterNodes(BT::BehaviorTreeFactory& factory)
 {
-    static GripperInterface grip_singleton;
+  static GripperInterface grip_singleton;
 
-    factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
-    factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
-    factory.registerSimpleAction("SayHello", std::bind(SayHello));
-    factory.registerSimpleAction("OpenGripper", std::bind(&GripperInterface::open, &grip_singleton));
-    factory.registerSimpleAction("CloseGripper", std::bind(&GripperInterface::close, &grip_singleton));
-    factory.registerNodeType<ApproachObject>("ApproachObject");
-    factory.registerNodeType<SaySomething>("SaySomething");
+  factory.registerSimpleCondition("CheckBattery", std::bind(CheckBattery));
+  factory.registerSimpleCondition("CheckTemperature", std::bind(CheckTemperature));
+  factory.registerSimpleAction("SayHello", std::bind(SayHello));
+  factory.registerSimpleAction("OpenGripper",
+                               std::bind(&GripperInterface::open, &grip_singleton));
+  factory.registerSimpleAction("CloseGripper",
+                               std::bind(&GripperInterface::close, &grip_singleton));
+  factory.registerNodeType<ApproachObject>("ApproachObject");
+  factory.registerNodeType<SaySomething>("SaySomething");
 }
 
-} // end namespace
+}  // namespace DummyNodes
 
-#endif   // SIMPLE_BT_NODES_H
+#endif  // SIMPLE_BT_NODES_H

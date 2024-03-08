@@ -23,23 +23,24 @@ inline void ToJson(nlohmann::json& dest, const Vector4D& pose)
   dest["z"] = pose.z;
 }
 
-namespace BT {
+namespace BT
+{
 
-template <> inline
-    Vector4D convertFromString(StringView key)
+template <>
+inline Vector4D convertFromString(StringView key)
 {
   const auto parts = BT::splitString(key, ',');
-  if (parts.size() != 4)
+  if(parts.size() != 4)
   {
     throw BT::RuntimeError("invalid input)");
   }
 
   Vector4D output;
   output.w = convertFromString<double>(parts[0]);
-  output.x     = convertFromString<double>(parts[1]);
-  output.y     = convertFromString<double>(parts[2]);
+  output.x = convertFromString<double>(parts[1]);
+  output.y = convertFromString<double>(parts[2]);
   output.z = convertFromString<double>(parts[3]);
   return output;
 }
 
-}
+}  // namespace BT

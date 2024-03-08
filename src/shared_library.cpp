@@ -9,7 +9,7 @@ BT::SharedLibrary::SharedLibrary(const std::string& path, int flags)
 void* BT::SharedLibrary::getSymbol(const std::string& name)
 {
   void* result = findSymbol(name);
-  if (result)
+  if(result)
     return result;
   else
     throw RuntimeError("[SharedLibrary::getSymbol]: can't find symbol ", name);

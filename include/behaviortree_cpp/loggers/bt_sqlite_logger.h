@@ -3,7 +3,8 @@
 #include <filesystem>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
 
-namespace sqlite{
+namespace sqlite
+{
 class Connection;
 }
 
@@ -32,15 +33,11 @@ public:
    * @param filepath  path of the file where info will be stored
    * @param append    if true, add this recording to the database
    */
-  SqliteLogger(const Tree &tree,
-               std::filesystem::path const& file,
-               bool append = false);
+  SqliteLogger(const Tree& tree, std::filesystem::path const& file, bool append = false);
 
   virtual ~SqliteLogger() override;
 
-  virtual void callback(Duration timestamp,
-                        const TreeNode& node,
-                        NodeStatus prev_status,
+  virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
                         NodeStatus status) override;
 
   virtual void flush() override;
@@ -53,7 +50,8 @@ private:
 
   int session_id_ = -1;
 
-  struct Transition {
+  struct Transition
+  {
     uint16_t node_uid;
     int64_t timestamp;
     int64_t duration;
@@ -68,8 +66,6 @@ private:
   std::atomic_bool loop_ = true;
 
   void writerLoop();
-
 };
 
-}
-
+}  // namespace BT

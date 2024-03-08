@@ -15,18 +15,18 @@
 
 namespace BT
 {
-ConditionNode::ConditionNode(const std::string& name, const NodeConfig& config) :
-  LeafNode::LeafNode(name, config)
+ConditionNode::ConditionNode(const std::string& name, const NodeConfig& config)
+  : LeafNode::LeafNode(name, config)
 {}
 
 SimpleConditionNode::SimpleConditionNode(const std::string& name,
                                          TickFunctor tick_functor,
-                                         const NodeConfig& config) :
-  ConditionNode(name, config), tick_functor_(std::move(tick_functor))
+                                         const NodeConfig& config)
+  : ConditionNode(name, config), tick_functor_(std::move(tick_functor))
 {}
 
 NodeStatus SimpleConditionNode::tick()
 {
   return tick_functor_(*this);
 }
-}   // namespace BT
+}  // namespace BT

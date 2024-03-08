@@ -26,7 +26,7 @@ static const char* xml_text = R"(
 BT::NodeStatus TickWhileRunning(BT::TreeNode& node)
 {
   auto status = node.executeTick();
-  while (status == BT::NodeStatus::RUNNING)
+  while(status == BT::NodeStatus::RUNNING)
   {
     status = node.executeTick();
   }
@@ -43,10 +43,10 @@ struct SwitchTest : testing::Test
   BT::Blackboard::Ptr bb = BT::Blackboard::create();
   BT::NodeConfig simple_switch_config_;
 
-  SwitchTest() :
-    action_1("action_1", milliseconds(200)),
-    action_42("action_42", milliseconds(200)),
-    action_def("action_default", milliseconds(200))
+  SwitchTest()
+    : action_1("action_1", milliseconds(200))
+    , action_42("action_42", milliseconds(200))
+    , action_def("action_default", milliseconds(200))
   {
     BT::PortsRemapping input;
     input.insert(std::make_pair("variable", "{my_var}"));

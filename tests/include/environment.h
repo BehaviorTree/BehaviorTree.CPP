@@ -10,7 +10,7 @@ class Environment : public testing::Environment
 public:
   Environment(int argc, char** argv)
   {
-    if (argc >= 1)
+    if(argc >= 1)
     {
       executable_path = filesystem::path(argv[0]).make_absolute();
     }

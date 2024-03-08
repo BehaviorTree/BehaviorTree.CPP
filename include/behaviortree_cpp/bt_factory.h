@@ -45,24 +45,24 @@ template <typename T>
 inline TreeNodeManifest CreateManifest(const std::string& ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
-  if constexpr( has_static_method_metadata<T>::value )
+  if constexpr(has_static_method_metadata<T>::value)
   {
-    return {getType<T>(), ID, portlist, T::metadata()};
+    return { getType<T>(), ID, portlist, T::metadata() };
   }
-  return {getType<T>(), ID, portlist, {}};
+  return { getType<T>(), ID, portlist, {} };
 }
 
 #ifdef BT_PLUGIN_EXPORT
 
 #if defined(_WIN32)
-  #define BTCPP_EXPORT extern "C" __declspec(dllexport)
+#define BTCPP_EXPORT extern "C" __declspec(dllexport)
 #else
-  // Unix-like OSes
-  #define BTCPP_EXPORT extern "C" __attribute__ ((visibility ("default")))
+// Unix-like OSes
+#define BTCPP_EXPORT extern "C" __attribute__((visibility("default")))
 #endif
 
 #else
-  #define BTCPP_EXPORT static
+#define BTCPP_EXPORT static
 #endif
 /* Use this macro to automatically register one or more custom Nodes
 * into a factory. For instance:
@@ -85,7 +85,7 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
 
 constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 
-bool WildcardMatch(const std::string &str, StringView filter);
+bool WildcardMatch(const std::string& str, StringView filter);
 
 /**
  * @brief Struct used to store a tree.
@@ -160,13 +160,19 @@ public:
   ///
   /// move_nodes = tree.getNodesByPath<MoveBaseNode>("move_*");
   ///
-  template <typename NodeType = BT::TreeNode> [[nodiscard]]
-  std::vector<const TreeNode*> getNodesByPath(StringView wildcard_filter) const {
+  template <typename NodeType = BT::TreeNode>
+  [[nodiscard]] std::vector<const TreeNode*>
+  getNodesByPath(StringView wildcard_filter) const
+  {
     std::vector<const TreeNode*> nodes;
-    for (auto const& subtree : subtrees) {
-      for (auto const& node : subtree->nodes) {
-        if(auto node_recast = dynamic_cast<const NodeType*>(node.get())) {
-          if(WildcardMatch(node->fullPath(), wildcard_filter)) {
+    for(auto const& subtree : subtrees)
+    {
+      for(auto const& node : subtree->nodes)
+      {
+        if(auto node_recast = dynamic_cast<const NodeType*>(node.get()))
+        {
+          if(WildcardMatch(node->fullPath(), wildcard_filter))
+          {
             nodes.push_back(node.get());
           }
         }
@@ -174,7 +180,6 @@ public:
     }
     return nodes;
   }
-
 
 private:
   std::shared_ptr<WakeUpSignal> wake_up_;
@@ -295,8 +300,7 @@ public:
 
   /// Returns the ID of the trees registered either with
   /// registerBehaviorTreeFromFile or registerBehaviorTreeFromText.
-  [[nodiscard]]
-  std::vector<std::string> registeredBehaviorTrees() const;
+  [[nodiscard]] std::vector<std::string> registeredBehaviorTrees() const;
 
   /**
    * @brief Clear previously-registered behavior trees.
@@ -311,10 +315,8 @@ public:
      * @param config   configuration that is passed to the constructor of the TreeNode.
      * @return         new node.
      */
-  [[nodiscard]]
-  std::unique_ptr<TreeNode> instantiateTreeNode(const std::string& name,
-                                                const std::string& ID,
-                                                const NodeConfig& config) const;
+  [[nodiscard]] std::unique_ptr<TreeNode> instantiateTreeNode(
+      const std::string& name, const std::string& ID, const NodeConfig& config) const;
 
   /** registerNodeType where you explicitly pass the list of ports.
    *  Doesn't require the implementation of static method providedPorts()
@@ -323,9 +325,9 @@ public:
   void registerNodeType(const std::string& ID, const PortsList& ports, ExtraArgs... args)
   {
     static_assert(std::is_base_of<ActionNodeBase, T>::value ||
-                  std::is_base_of<ControlNode, T>::value ||
-                  std::is_base_of<DecoratorNode, T>::value ||
-                  std::is_base_of<ConditionNode, T>::value,
+                      std::is_base_of<ControlNode, T>::value ||
+                      std::is_base_of<DecoratorNode, T>::value ||
+                      std::is_base_of<ConditionNode, T>::value,
                   "[registerNode]: accepts only classed derived from either "
                   "ActionNodeBase, "
                   "DecoratorNode, ControlNode or ConditionNode");
@@ -358,15 +360,18 @@ public:
   template <typename T, typename... ExtraArgs>
   void registerNodeType(const std::string& ID, ExtraArgs... args)
   {
-    if constexpr(std::is_abstract_v<T>) {
+    if constexpr(std::is_abstract_v<T>)
+    {
       // check first if the given class is abstract
       static_assert(!std::is_abstract_v<T>, "The Node type can't be abstract. "
                                             "Did you forget to implement an abstract "
                                             "method in the derived class?");
     }
-    else {
+    else
+    {
       constexpr bool param_constructable =
-          std::is_constructible<T, const std::string&, const NodeConfig&, ExtraArgs...>::value;
+          std::is_constructible<T, const std::string&, const NodeConfig&,
+                                ExtraArgs...>::value;
       constexpr bool has_static_ports_list = has_static_method_providedPorts<T>::value;
 
       // clang-format off
@@ -384,16 +389,14 @@ public:
   }
 
   /// All the builders. Made available mostly for debug purposes.
-  [[nodiscard]]
-  const std::unordered_map<std::string, NodeBuilder>& builders() const;
+  [[nodiscard]] const std::unordered_map<std::string, NodeBuilder>& builders() const;
 
   /// Manifests of all the registered TreeNodes.
-  [[nodiscard]]
-  const std::unordered_map<std::string, TreeNodeManifest>& manifests() const;
+  [[nodiscard]] const std::unordered_map<std::string, TreeNodeManifest>&
+  manifests() const;
 
   /// List of builtin IDs.
-  [[nodiscard]]
-  const std::set<std::string>& builtinNodes() const;
+  [[nodiscard]] const std::set<std::string>& builtinNodes() const;
 
   /**
    * @brief createTreeFromText will parse the XML directly from string.
@@ -406,9 +409,8 @@ public:
    * @param blackboard  blackboard of the root tree
    * @return the newly created tree
    */
-  [[nodiscard]]
-  Tree createTreeFromText(const std::string& text,
-                          Blackboard::Ptr blackboard = Blackboard::create());
+  [[nodiscard]] Tree createTreeFromText(
+      const std::string& text, Blackboard::Ptr blackboard = Blackboard::create());
 
   /**
    * @brief createTreeFromFile will parse the XML from a given file.
@@ -421,18 +423,16 @@ public:
    * @param blackboard  blackboard of the root tree
    * @return the newly created tree
    */
-  [[nodiscard]]
-  Tree createTreeFromFile(const std::filesystem::path& file_path,
-                          Blackboard::Ptr blackboard = Blackboard::create());
+  [[nodiscard]] Tree
+  createTreeFromFile(const std::filesystem::path& file_path,
+                     Blackboard::Ptr blackboard = Blackboard::create());
 
-  [[nodiscard]]
-  Tree createTree(const std::string& tree_name,
-                  Blackboard::Ptr blackboard = Blackboard::create());
+  [[nodiscard]] Tree createTree(const std::string& tree_name,
+                                Blackboard::Ptr blackboard = Blackboard::create());
 
   /// Add metadata to a specific manifest. This metadata will be added
   /// to <TreeNodesModel> with the function writeTreeNodesModelXML()
-  void addMetadataToManifest(const std::string& node_id,
-                             const KeyValueVector& metadata);
+  void addMetadataToManifest(const std::string& node_id, const KeyValueVector& metadata);
 
   /**
    * @brief Add an Enum to the scripting language.
@@ -461,7 +461,7 @@ public:
   void registerScriptingEnums()
   {
     constexpr auto entries = magic_enum::enum_entries<EnumType>();
-    for (const auto& it : entries)
+    for(const auto& it : entries)
     {
       registerScriptingEnum(it.second, static_cast<int>(it.first));
     }
@@ -496,17 +496,14 @@ public:
   /**
    * @brief substitutionRules return the current substitution rules.
    */
-  [[nodiscard]]
-  const std::unordered_map<std::string, SubstitutionRule>&
+  [[nodiscard]] const std::unordered_map<std::string, SubstitutionRule>&
   substitutionRules() const;
 
 private:
-
   struct PImpl;
   std::unique_ptr<PImpl> _p;
-
 };
 
-}   // namespace BT
+}  // namespace BT
 
-#endif   // BT_FACTORY_H
+#endif  // BT_FACTORY_H

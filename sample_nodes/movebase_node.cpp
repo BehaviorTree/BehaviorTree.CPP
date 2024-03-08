@@ -5,17 +5,17 @@
 // a plugin that can be loaded at run-time
 BT_REGISTER_NODES(factory)
 {
-    factory.registerNodeType<MoveBaseAction>("MoveBase");
+  factory.registerNodeType<MoveBaseAction>("MoveBase");
 }
 
 BT::NodeStatus MoveBaseAction::onStart()
 {
-  if ( !getInput<Pose2D>("goal", _goal))
+  if(!getInput<Pose2D>("goal", _goal))
   {
     throw BT::RuntimeError("missing required input [goal]");
   }
-  printf("[ MoveBase: SEND REQUEST ]. goal: x=%.1f y=%.1f theta=%.1f\n",
-         _goal.x, _goal.y, _goal.theta);
+  printf("[ MoveBase: SEND REQUEST ]. goal: x=%.1f y=%.1f theta=%.1f\n", _goal.x, _goal.y,
+         _goal.theta);
 
   // We use this counter to simulate an action that takes a certain
   // amount of time to be completed (220 ms)

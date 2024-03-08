@@ -17,7 +17,7 @@ using namespace BT;
  * - sub_out_result (default remapping to port {output})
  * - sub_out_state (no default)
  *
- * The callee (parent tree, including the subtree) MUST specify those 
+ * The callee (parent tree, including the subtree) MUST specify those
  * remapping which have no default value.
  */
 

@@ -36,7 +36,8 @@ public:
   Parser(Parser&& other) = default;
   Parser& operator=(Parser&& other) = default;
 
-  virtual void loadFromFile(const std::filesystem::path& filename, bool add_includes = true) = 0;
+  virtual void loadFromFile(const std::filesystem::path& filename,
+                            bool add_includes = true) = 0;
 
   virtual void loadFromText(const std::string& xml_text, bool add_includes = true) = 0;
 
@@ -48,4 +49,4 @@ public:
   virtual void clearInternalState(){};
 };
 
-}   // namespace BT
+}  // namespace BT

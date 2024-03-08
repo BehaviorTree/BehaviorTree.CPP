@@ -22,7 +22,7 @@ NodeStatus CrossDoor::passThroughDoor()
 NodeStatus CrossDoor::openDoor()
 {
   SleepMS(500);
-  if (_door_locked)
+  if(_door_locked)
   {
     return NodeStatus::FAILURE;
   }
@@ -37,7 +37,7 @@ NodeStatus CrossDoor::pickLock()
 {
   SleepMS(500);
   // succeed at 3rd attempt
-  if (_pick_attempts++ > 3)
+  if(_pick_attempts++ > 3)
   {
     _door_locked = false;
     _door_open = true;
@@ -53,27 +53,24 @@ NodeStatus CrossDoor::smashDoor()
   return NodeStatus::SUCCESS;
 }
 
-void CrossDoor::registerNodes(BT::BehaviorTreeFactory &factory)
+void CrossDoor::registerNodes(BT::BehaviorTreeFactory& factory)
 {
-  factory.registerSimpleCondition(
-      "IsDoorClosed", std::bind(&CrossDoor::isDoorClosed, this));
+  factory.registerSimpleCondition("IsDoorClosed",
+                                  std::bind(&CrossDoor::isDoorClosed, this));
 
-  factory.registerSimpleAction(
-      "PassThroughDoor", std::bind(&CrossDoor::passThroughDoor, this));
+  factory.registerSimpleAction("PassThroughDoor",
+                               std::bind(&CrossDoor::passThroughDoor, this));
 
-  factory.registerSimpleAction(
-      "OpenDoor", std::bind(&CrossDoor::openDoor, this));
+  factory.registerSimpleAction("OpenDoor", std::bind(&CrossDoor::openDoor, this));
 
-  factory.registerSimpleAction(
-      "PickLock", std::bind(&CrossDoor::pickLock, this));
+  factory.registerSimpleAction("PickLock", std::bind(&CrossDoor::pickLock, this));
 
-  factory.registerSimpleCondition(
-      "SmashDoor", std::bind(&CrossDoor::smashDoor, this));
+  factory.registerSimpleCondition("SmashDoor", std::bind(&CrossDoor::smashDoor, this));
 }
 
 void CrossDoor::reset()
 {
-  _door_open   = false;
+  _door_open = false;
   _door_locked = true;
   _pick_attempts = 0;
 }

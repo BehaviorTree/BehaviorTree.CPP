@@ -39,10 +39,11 @@ or the default one (last).
  *
  */
 
-namespace details {
+namespace details
+{
 
 bool CheckStringEquality(const std::string& v1, const std::string& v2,
-                         const ScriptingEnumsRegistry *enums);
+                         const ScriptingEnumsRegistry* enums);
 }
 
 template <size_t NUM_CASES>
@@ -66,31 +67,32 @@ private:
 //-----------------------------------------------
 //-----------------------------------------------
 
-template<size_t NUM_CASES> inline
-SwitchNode<NUM_CASES>::SwitchNode(const std::string &name, const NodeConfig &config) :
-    ControlNode::ControlNode(name, config), running_child_(-1)
+template <size_t NUM_CASES>
+inline SwitchNode<NUM_CASES>::SwitchNode(const std::string& name,
+                                         const NodeConfig& config)
+  : ControlNode::ControlNode(name, config), running_child_(-1)
 {
   setRegistrationID("Switch");
-  for (unsigned i = 1; i <= NUM_CASES; i++)
+  for(unsigned i = 1; i <= NUM_CASES; i++)
   {
-    case_keys_.push_back( std::string("case_") + std::to_string(i));
+    case_keys_.push_back(std::string("case_") + std::to_string(i));
   }
 }
 
-template<size_t NUM_CASES> inline
-void SwitchNode<NUM_CASES>::halt()
+template <size_t NUM_CASES>
+inline void SwitchNode<NUM_CASES>::halt()
 {
   running_child_ = -1;
   ControlNode::halt();
 }
 
-template<size_t NUM_CASES> inline
-PortsList SwitchNode<NUM_CASES>::providedPorts()
+template <size_t NUM_CASES>
+inline PortsList SwitchNode<NUM_CASES>::providedPorts()
 {
   static PortsList ports = []() {
     PortsList ports;
     ports.insert(BT::InputPort<std::string>("variable"));
-    for (unsigned i = 1; i <= NUM_CASES; i++)
+    for(unsigned i = 1; i <= NUM_CASES; i++)
     {
       auto key = std::string("case_") + std::to_string(i);
       ports.insert(BT::InputPort<std::string>(key));
@@ -101,10 +103,10 @@ PortsList SwitchNode<NUM_CASES>::providedPorts()
   return ports;
 }
 
-template <size_t NUM_CASES> inline
-    NodeStatus SwitchNode<NUM_CASES>::tick()
+template <size_t NUM_CASES>
+inline NodeStatus SwitchNode<NUM_CASES>::tick()
 {
-  if (childrenCount() != NUM_CASES + 1)
+  if(childrenCount() != NUM_CASES + 1)
   {
     throw LogicError("Wrong number of children in SwitchNode; "
                      "must be (num_cases + default)");
@@ -112,19 +114,18 @@ template <size_t NUM_CASES> inline
 
   std::string variable;
   std::string value;
-  int match_index = int(NUM_CASES);   // default index;
+  int match_index = int(NUM_CASES);  // default index;
 
   // no variable? jump to default
-  if (getInput("variable", variable))
+  if(getInput("variable", variable))
   {
     // check each case until you find a match
-    for (int index = 0; index < int(NUM_CASES); ++index)
+    for(int index = 0; index < int(NUM_CASES); ++index)
     {
       const std::string& case_key = case_keys_[index];
-      if (getInput(case_key, value))
+      if(getInput(case_key, value))
       {
-        if(details::CheckStringEquality(
-                variable, value, this->config().enums.get()))
+        if(details::CheckStringEquality(variable, value, this->config().enums.get()))
         {
           match_index = index;
           break;
@@ -134,21 +135,21 @@ template <size_t NUM_CASES> inline
   }
 
   // if another one was running earlier, halt it
-  if (running_child_ != -1 && running_child_ != match_index)
+  if(running_child_ != -1 && running_child_ != match_index)
   {
     haltChild(running_child_);
   }
 
   auto& selected_child = children_nodes_[match_index];
   NodeStatus ret = selected_child->executeTick();
-  if (ret == NodeStatus::SKIPPED)
+  if(ret == NodeStatus::SKIPPED)
   {
     // if the matching child is SKIPPED, should I jump to default or
     // be SKIPPED myself? Going with the former, for the time being.
     running_child_ = -1;
     return NodeStatus::SKIPPED;
   }
-  else if (ret == NodeStatus::RUNNING)
+  else if(ret == NodeStatus::RUNNING)
   {
     running_child_ = match_index;
   }
@@ -160,4 +161,4 @@ template <size_t NUM_CASES> inline
   return ret;
 }
 
-}   // namespace BT
+}  // namespace BT

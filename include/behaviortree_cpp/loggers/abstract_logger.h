@@ -21,7 +21,7 @@ public:
   StatusChangeLogger(const StatusChangeLogger& other) = delete;
   StatusChangeLogger& operator=(const StatusChangeLogger& other) = delete;
 
-  StatusChangeLogger(StatusChangeLogger&& other)  = default;
+  StatusChangeLogger(StatusChangeLogger&& other) = default;
   StatusChangeLogger& operator=(StatusChangeLogger&& other) = default;
 
   virtual void callback(BT::Duration timestamp, const TreeNode& node,
@@ -65,16 +65,16 @@ private:
 
 //--------------------------------------------
 
-inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node) :
-  enabled_(true), show_transition_to_idle_(true), type_(TimestampType::absolute)
+inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node)
+  : enabled_(true), show_transition_to_idle_(true), type_(TimestampType::absolute)
 {
   first_timestamp_ = std::chrono::high_resolution_clock::now();
 
   auto subscribeCallback = [this](TimePoint timestamp, const TreeNode& node,
                                   NodeStatus prev, NodeStatus status) {
-    if (enabled_ && (status != NodeStatus::IDLE || show_transition_to_idle_))
+    if(enabled_ && (status != NodeStatus::IDLE || show_transition_to_idle_))
     {
-      if (type_ == TimestampType::absolute)
+      if(type_ == TimestampType::absolute)
       {
         this->callback(timestamp.time_since_epoch(), node, prev, status);
       }
@@ -91,6 +91,6 @@ inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node) :
 
   applyRecursiveVisitor(root_node, visitor);
 }
-}   // namespace BT
+}  // namespace BT
 
-#endif   // ABSTRACT_LOGGER_H
+#endif  // ABSTRACT_LOGGER_H

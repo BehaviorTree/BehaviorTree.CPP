@@ -15,13 +15,13 @@
 
 namespace BT
 {
-DecoratorNode::DecoratorNode(const std::string& name, const NodeConfig& config) :
-  TreeNode::TreeNode(name, config), child_node_(nullptr)
+DecoratorNode::DecoratorNode(const std::string& name, const NodeConfig& config)
+  : TreeNode::TreeNode(name, config), child_node_(nullptr)
 {}
 
 void DecoratorNode::setChild(TreeNode* child)
 {
-  if (child_node_)
+  if(child_node_)
   {
     throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
   }
@@ -32,7 +32,7 @@ void DecoratorNode::setChild(TreeNode* child)
 void DecoratorNode::halt()
 {
   resetChild();
-  resetStatus(); // might be redundant
+  resetStatus();  // might be redundant
 }
 
 const TreeNode* DecoratorNode::child() const
@@ -52,22 +52,21 @@ void DecoratorNode::haltChild()
 
 void DecoratorNode::resetChild()
 {
-  if (!child_node_)
+  if(!child_node_)
   {
     return;
   }
-  if (child_node_->status() == NodeStatus::RUNNING)
+  if(child_node_->status() == NodeStatus::RUNNING)
   {
     child_node_->haltNode();
   }
   child_node_->resetStatus();
 }
 
-
 SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name,
                                          TickFunctor tick_functor,
-                                         const NodeConfig& config) :
-  DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
+                                         const NodeConfig& config)
+  : DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
 {}
 
 NodeStatus SimpleDecoratorNode::tick()
@@ -79,11 +78,11 @@ NodeStatus DecoratorNode::executeTick()
 {
   NodeStatus status = TreeNode::executeTick();
   NodeStatus child_status = child()->status();
-  if (child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE)
+  if(child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE)
   {
     child()->resetStatus();
   }
   return status;
 }
 
-}   // namespace BT
+}  // namespace BT

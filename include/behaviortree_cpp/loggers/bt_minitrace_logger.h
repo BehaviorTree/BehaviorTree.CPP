@@ -24,6 +24,6 @@ private:
   TimePoint prev_time_;
 };
 
-}   // namespace BT
+}  // namespace BT
 
-#endif   // BT_MINITRACE_LOGGER_H
+#endif  // BT_MINITRACE_LOGGER_H

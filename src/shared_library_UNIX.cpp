@@ -15,13 +15,13 @@ void SharedLibrary::load(const std::string& path, int)
 {
   std::unique_lock<std::mutex> lock(_mutex);
 
-  if (_handle)
+  if(_handle)
   {
     throw RuntimeError("Library already loaded: " + path);
   }
 
   _handle = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
-  if (!_handle)
+  if(!_handle)
   {
     const char* err = dlerror();
     throw RuntimeError("Could not load library: " + (err ? std::string(err) : path));
@@ -33,7 +33,7 @@ void SharedLibrary::unload()
 {
   std::unique_lock<std::mutex> lock(_mutex);
 
-  if (_handle)
+  if(_handle)
   {
     dlclose(_handle);
     _handle = nullptr;
@@ -50,7 +50,7 @@ void* SharedLibrary::findSymbol(const std::string& name)
   std::unique_lock<std::mutex> lock(_mutex);
 
   void* result = nullptr;
-  if (_handle)
+  if(_handle)
   {
     result = dlsym(_handle, name.c_str());
   }
@@ -100,4 +100,4 @@ std::string SharedLibrary::suffix()
 #endif
 }
 
-}   // namespace BT
+}  // namespace BT

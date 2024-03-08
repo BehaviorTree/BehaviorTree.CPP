@@ -22,8 +22,8 @@ namespace BT
 class UnsetBlackboardNode : public SyncActionNode
 {
 public:
-  UnsetBlackboardNode(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  UnsetBlackboardNode(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {
     setRegistrationID("UnsetBlackboard");
   }
@@ -37,7 +37,7 @@ private:
   virtual BT::NodeStatus tick() override
   {
     std::string key;
-    if (!getInput("key", key))
+    if(!getInput("key", key))
     {
       throw RuntimeError("missing input port [key]");
     }
@@ -45,4 +45,4 @@ private:
     return NodeStatus::SUCCESS;
   }
 };
-}   // namespace BT
+}  // namespace BT

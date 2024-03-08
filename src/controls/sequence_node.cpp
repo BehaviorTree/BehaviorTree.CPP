@@ -15,11 +15,11 @@
 
 namespace BT
 {
-SequenceNode::SequenceNode(const std::string& name, bool make_async) :
-  ControlNode::ControlNode(name, {}),
-  current_child_idx_(0),
-  all_skipped_(true),
-  asynch_(make_async)
+SequenceNode::SequenceNode(const std::string& name, bool make_async)
+  : ControlNode::ControlNode(name, {})
+  , current_child_idx_(0)
+  , all_skipped_(true)
+  , asynch_(make_async)
 {
   if(asynch_)
     setRegistrationID("AsyncSequence");
@@ -44,7 +44,7 @@ NodeStatus SequenceNode::tick()
 
   setStatus(NodeStatus::RUNNING);
 
-  while (current_child_idx_ < children_count)
+  while(current_child_idx_ < children_count)
   {
     TreeNode* current_child_node = children_nodes_[current_child_idx_];
 
@@ -54,7 +54,7 @@ NodeStatus SequenceNode::tick()
     // switch to RUNNING state as soon as you find an active child
     all_skipped_ &= (child_status == NodeStatus::SKIPPED);
 
-    switch (child_status)
+    switch(child_status)
     {
       case NodeStatus::RUNNING: {
         return NodeStatus::RUNNING;
@@ -69,9 +69,8 @@ NodeStatus SequenceNode::tick()
         current_child_idx_++;
         // Return the execution flow if the child is async,
         // to make this interruptable.
-        if (asynch_ && requiresWakeUp() &&
-            prev_status == NodeStatus::IDLE &&
-            current_child_idx_ < children_count)
+        if(asynch_ && requiresWakeUp() && prev_status == NodeStatus::IDLE &&
+           current_child_idx_ < children_count)
         {
           emitWakeUpSignal();
           return NodeStatus::RUNNING;
@@ -88,11 +87,11 @@ NodeStatus SequenceNode::tick()
       case NodeStatus::IDLE: {
         throw LogicError("[", name(), "]: A children should not return IDLE");
       }
-    }   // end switch
-  }     // end while loop
+    }  // end switch
+  }    // end while loop
 
   // The entire while loop completed. This means that all the children returned SUCCESS.
-  if (current_child_idx_ == children_count)
+  if(current_child_idx_ == children_count)
   {
     resetChildren();
     current_child_idx_ = 0;
@@ -101,4 +100,4 @@ NodeStatus SequenceNode::tick()
   return all_skipped_ ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
 }
 
-}   // namespace BT
+}  // namespace BT

@@ -34,58 +34,56 @@ namespace dsl = lexy::dsl;
 //----------
 struct Integer : lexy::token_production
 {
-    struct integer
-    {
-        static constexpr auto rule = dsl::sign + dsl::integer<int64_t>;
-        static constexpr auto value = lexy::as_integer<int64_t>;
-    };
+  struct integer
+  {
+    static constexpr auto rule = dsl::sign + dsl::integer<int64_t>;
+    static constexpr auto value = lexy::as_integer<int64_t>;
+  };
 
-    struct invalid_suffix
-    {
-        static constexpr auto name = "invalid suffix on integer literal";
-    };
+  struct invalid_suffix
+  {
+    static constexpr auto name = "invalid suffix on integer literal";
+  };
 
-    static constexpr auto rule = [] {
-        auto hex_integer = (LEXY_LIT("0x") | LEXY_LIT("0X")) >> dsl::integer<int64_t, dsl::hex>;
-        auto regular_integer = dsl::peek(dsl::lit_c<'-'> /
-                                         dsl::lit_c<'+'> /
-                                         dsl::digit<>) >> dsl::p<integer>;
-        auto suffix_error = dsl::peek_not(dsl::period /
-                                          dsl::ascii::alpha /
-                                          dsl::ascii::alpha_underscore).error<invalid_suffix>;
-        return ( hex_integer | regular_integer ) >> suffix_error;
-    }();
+  static constexpr auto rule = [] {
+    auto hex_integer =
+        (LEXY_LIT("0x") | LEXY_LIT("0X")) >> dsl::integer<int64_t, dsl::hex>;
+    auto regular_integer =
+        dsl::peek(dsl::lit_c<'-'> / dsl::lit_c<'+'> / dsl::digit<>) >> dsl::p<integer>;
+    auto suffix_error =
+        dsl::peek_not(dsl::period / dsl::ascii::alpha / dsl::ascii::alpha_underscore)
+            .error<invalid_suffix>;
+    return (hex_integer | regular_integer) >> suffix_error;
+  }();
 
-    static constexpr auto value = lexy::construct<int64_t>;
+  static constexpr auto value = lexy::construct<int64_t>;
 };
 
 //----------
 struct Real : lexy::token_production
 {
-    struct invalid_suffix
-    {
-        static constexpr auto name = "invalid suffix on double literal";
-    };
+  struct invalid_suffix
+  {
+    static constexpr auto name = "invalid suffix on double literal";
+  };
 
-    static constexpr auto rule = [] {
-        auto integer_part = dsl::sign + dsl::digits<>;
-        auto fraction = dsl::period >> dsl::digits<>;
-        auto exponent = (dsl::lit_c<'e'> / dsl::lit_c<'E'>) >> (dsl::sign + dsl::digits<>);
+  static constexpr auto rule = [] {
+    auto integer_part = dsl::sign + dsl::digits<>;
+    auto fraction = dsl::period >> dsl::digits<>;
+    auto exponent = (dsl::lit_c<'e'> / dsl::lit_c<'E'>) >> (dsl::sign + dsl::digits<>);
 
-        auto suffix_error = dsl::peek_not(dsl::period /
-                                          dsl::ascii::alpha /
-                                          dsl::ascii::alpha_underscore).error<invalid_suffix>;
+    auto suffix_error =
+        dsl::peek_not(dsl::period / dsl::ascii::alpha / dsl::ascii::alpha_underscore)
+            .error<invalid_suffix>;
 
-        auto real_part = (fraction >> dsl::if_(exponent) | exponent) >> suffix_error;
-        auto real_number = dsl::token(integer_part + real_part);
-        return dsl::capture(real_number);
-    }();
+    auto real_part = (fraction >> dsl::if_(exponent) | exponent) >> suffix_error;
+    auto real_number = dsl::token(integer_part + real_part);
+    return dsl::capture(real_number);
+  }();
 
-    static constexpr auto value
-        = lexy::as_string<std::string>
-          | lexy::callback<BT::Any>([](std::string&& str) {
-              return BT::Any(std::stod(str));
-            });
+  static constexpr auto value =
+      lexy::as_string<std::string> |
+      lexy::callback<BT::Any>([](std::string&& str) { return BT::Any(std::stod(str)); });
 };
 
 //----------
@@ -98,7 +96,8 @@ struct Real : lexy::token_production
 //----------
 struct StringLiteral : lexy::token_production
 {
-  static constexpr auto rule = dsl::single_quoted(dsl::ascii::character) | dsl::quoted(dsl::ascii::character);
+  static constexpr auto rule =
+      dsl::single_quoted(dsl::ascii::character) | dsl::quoted(dsl::ascii::character);
   static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -121,11 +120,11 @@ struct BooleanLiteral : lexy::token_production
 };
 
 //----------
-struct AnyValue  : lexy::token_production
+struct AnyValue : lexy::token_production
 {
-  static constexpr auto rule = dsl::p<BooleanLiteral> | dsl::p<StringLiteral> | dsl::p<Real> | dsl::p<Integer> ;
+  static constexpr auto rule =
+      dsl::p<BooleanLiteral> | dsl::p<StringLiteral> | dsl::p<Real> | dsl::p<Integer>;
   static constexpr auto value = lexy::construct<BT::Any>;
 };
 
-} // end namespace Grammar
-
+}  // namespace BT::Grammar

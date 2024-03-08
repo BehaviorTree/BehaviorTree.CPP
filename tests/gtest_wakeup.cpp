@@ -1,4 +1,4 @@
-﻿#include <gtest/gtest.h>
+#include <gtest/gtest.h>
 #include "behaviortree_cpp/bt_factory.h"
 
 using namespace BT;
@@ -7,8 +7,8 @@ class FastAction : public BT::ThreadedAction
 {
 public:
   // Any TreeNode with ports must have a constructor with this signature
-  FastAction(const std::string& name, const BT::NodeConfig& config) :
-    ThreadedAction(name, config)
+  FastAction(const std::string& name, const BT::NodeConfig& config)
+    : ThreadedAction(name, config)
   {}
 
   static BT::PortsList providedPorts()

@@ -95,14 +95,17 @@ enum BatteryStatus
 class BatteryCheck : public BT::SyncActionNode
 {
 public:
-  BatteryCheck(const std::string& name, const BT::NodeConfig& config) :
-      BT::SyncActionNode(name, config){}
+  BatteryCheck(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config)
+  {}
 
-  static BT::PortsList providedPorts() {
-    return { InputPort<int>("health")};
+  static BT::PortsList providedPorts()
+  {
+    return { InputPort<int>("health") };
   }
 
-  BT::NodeStatus tick() override {
+  BT::NodeStatus tick() override
+  {
     int health = getInput<int>("health").value();
     return health > 10 ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
   }
@@ -140,5 +143,3 @@ TEST(PostConditions, OnFailure)
   ASSERT_EQ(status, NodeStatus::FAILURE);
   ASSERT_EQ(tree.rootBlackboard()->get<BatteryStatus>("battery_status"), LOW_BATTERY);
 }
-
-

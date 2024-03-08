@@ -21,8 +21,8 @@ namespace BT
 class ScriptNode : public SyncActionNode
 {
 public:
-  ScriptNode(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  ScriptNode(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {
     setRegistrationID("ScriptNode");
 
@@ -31,16 +31,16 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<std::string>("code", "Piece of code that can be parsed")};
+    return { InputPort<std::string>("code", "Piece of code that can be parsed") };
   }
 
 private:
   virtual BT::NodeStatus tick() override
   {
     loadExecutor();
-    if (_executor)
+    if(_executor)
     {
-      Ast::Environment env = {config().blackboard, config().enums};
+      Ast::Environment env = { config().blackboard, config().enums };
       _executor(env);
     }
     return NodeStatus::SUCCESS;
@@ -49,16 +49,16 @@ private:
   void loadExecutor()
   {
     std::string script;
-    if (!getInput("code", script))
+    if(!getInput("code", script))
     {
       throw RuntimeError("Missing port [code] in Script");
     }
-    if (script == _script)
+    if(script == _script)
     {
       return;
     }
     auto executor = ParseScript(script);
-    if (!executor)
+    if(!executor)
     {
       throw RuntimeError(executor.error());
     }
@@ -73,4 +73,4 @@ private:
   ScriptFunction _executor;
 };
 
-}   // namespace BT
+}  // namespace BT

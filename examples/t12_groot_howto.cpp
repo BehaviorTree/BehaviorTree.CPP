@@ -11,7 +11,8 @@
  */
 
 // A custom structuree that I want to visualize in Groot2
-struct Position2D {
+struct Position2D
+{
   double x;
   double y;
 };
@@ -25,13 +26,15 @@ void PositionToJson(nlohmann::json& j, const Position2D& p)
 }
 
 // Simple Action that updates an instance of Position2D in the blackboard
-class UpdatePosition: public BT::SyncActionNode
+class UpdatePosition : public BT::SyncActionNode
 {
 public:
-  UpdatePosition(const std::string& name, const BT::NodeConfig& config):
-    BT::SyncActionNode(name, config) {}
+  UpdatePosition(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config)
+  {}
 
-  BT::NodeStatus tick() override {
+  BT::NodeStatus tick() override
+  {
     _pos.x += 0.2;
     _pos.y += 0.1;
     setOutput("pos", _pos);
@@ -40,10 +43,11 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return {BT::OutputPort<Position2D>("pos")};
+    return { BT::OutputPort<Position2D>("pos") };
   }
+
 private:
-  Position2D _pos = {0, 0};
+  Position2D _pos = { 0, 0 };
 };
 
 // clang-format off

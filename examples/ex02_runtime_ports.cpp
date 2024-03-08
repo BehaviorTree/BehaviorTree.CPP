@@ -17,8 +17,8 @@ static const char* xml_text = R"(
 class ThinkRuntimePort : public BT::SyncActionNode
 {
 public:
-  ThinkRuntimePort(const std::string& name, const BT::NodeConfig& config) :
-    BT::SyncActionNode(name, config)
+  ThinkRuntimePort(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config)
   {}
 
   BT::NodeStatus tick() override
@@ -31,15 +31,15 @@ public:
 class SayRuntimePort : public BT::SyncActionNode
 {
 public:
-  SayRuntimePort(const std::string& name, const BT::NodeConfig& config) :
-    BT::SyncActionNode(name, config)
+  SayRuntimePort(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config)
   {}
 
   // You must override the virtual function tick()
   BT::NodeStatus tick() override
   {
     auto msg = getInput<std::string>("message");
-    if (!msg)
+    if(!msg)
     {
       throw BT::RuntimeError("missing required input [message]: ", msg.error());
     }
@@ -54,12 +54,12 @@ int main()
 
   //-------- register ports that might be defined at runtime --------
   // more verbose way
-  PortsList think_ports = {BT::OutputPort<std::string>("text")};
+  PortsList think_ports = { BT::OutputPort<std::string>("text") };
   factory.registerBuilder(
       CreateManifest<ThinkRuntimePort>("ThinkRuntimePort", think_ports),
       CreateBuilder<ThinkRuntimePort>());
   // less verbose way
-  PortsList say_ports = {BT::InputPort<std::string>("message")};
+  PortsList say_ports = { BT::InputPort<std::string>("message") };
   factory.registerNodeType<SayRuntimePort>("SayRuntimePort", say_ports);
 
   factory.registerBehaviorTreeFromText(xml_text);

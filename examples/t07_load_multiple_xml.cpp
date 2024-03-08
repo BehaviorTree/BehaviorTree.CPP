@@ -50,7 +50,7 @@ int main()
 
   //Check that the BTs have been registered correctly
   std::cout << "Registered BehaviorTrees:" << std::endl;
-  for (const std::string& bt_name : factory.registeredBehaviorTrees())
+  for(const std::string& bt_name : factory.registeredBehaviorTrees())
   {
     std::cout << " - " << bt_name << std::endl;
   }

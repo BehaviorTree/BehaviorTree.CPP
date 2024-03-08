@@ -18,15 +18,14 @@
 namespace BT
 {
 
-ParallelAllNode::ParallelAllNode(const std::string& name, const NodeConfig& config) :
-  ControlNode::ControlNode(name, config),
-  failure_threshold_(1)
+ParallelAllNode::ParallelAllNode(const std::string& name, const NodeConfig& config)
+  : ControlNode::ControlNode(name, config), failure_threshold_(1)
 {}
 
 NodeStatus ParallelAllNode::tick()
 {
   int max_failures = 0;
-  if (!getInput("max_failures", max_failures))
+  if(!getInput("max_failures", max_failures))
   {
     throw RuntimeError("Missing parameter [max_failures] in ParallelNode");
   }
@@ -35,7 +34,7 @@ NodeStatus ParallelAllNode::tick()
 
   size_t skipped_count = 0;
 
-  if (children_count < failure_threshold_)
+  if(children_count < failure_threshold_)
   {
     throw LogicError("Number of children is less than threshold. Can never fail.");
   }
@@ -43,7 +42,7 @@ NodeStatus ParallelAllNode::tick()
   setStatus(NodeStatus::RUNNING);
 
   // Routing the tree according to the sequence node's logic:
-  for (size_t index = 0; index < children_count; index++)
+  for(size_t index = 0; index < children_count; index++)
   {
     TreeNode* child_node = children_nodes_[index];
 
@@ -55,7 +54,7 @@ NodeStatus ParallelAllNode::tick()
 
     NodeStatus const child_status = child_node->executeTick();
 
-    switch (child_status)
+    switch(child_status)
     {
       case NodeStatus::SUCCESS: {
         completed_list_.insert(index);
@@ -88,13 +87,13 @@ NodeStatus ParallelAllNode::tick()
   {
     return NodeStatus::SKIPPED;
   }
-  if( skipped_count + completed_list_.size() >= children_count)
+  if(skipped_count + completed_list_.size() >= children_count)
   {
     // DONE
     haltChildren();
     completed_list_.clear();
-    auto const status = (failure_count_ >= failure_threshold_) ?
-                            NodeStatus::FAILURE : NodeStatus::SUCCESS;
+    auto const status = (failure_count_ >= failure_threshold_) ? NodeStatus::FAILURE :
+                                                                 NodeStatus::SUCCESS;
     failure_count_ = 0;
     return status;
   }
@@ -110,16 +109,14 @@ void ParallelAllNode::halt()
   ControlNode::halt();
 }
 
-
 size_t ParallelAllNode::failureThreshold() const
 {
   return failure_threshold_;
 }
 
-
 void ParallelAllNode::setFailureThreshold(int threshold)
 {
-  if (threshold < 0)
+  if(threshold < 0)
   {
     failure_threshold_ = size_t(std::max(int(children_nodes_.size()) + threshold + 1, 0));
   }
@@ -129,4 +126,4 @@ void ParallelAllNode::setFailureThreshold(int threshold)
   }
 }
 
-}   // namespace BT
+}  // namespace BT

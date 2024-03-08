@@ -26,16 +26,15 @@ public:
   XMLParser(XMLParser&& other) noexcept;
   XMLParser& operator=(XMLParser&& other) noexcept;
 
-  void loadFromFile(const std::filesystem::path &filename, bool add_includes = true) override;
+  void loadFromFile(const std::filesystem::path& filename,
+                    bool add_includes = true) override;
 
   void loadFromText(const std::string& xml_text, bool add_includes = true) override;
 
-  [[nodiscard]] std::vector<std::string>
-  registeredBehaviorTrees() const override;
+  [[nodiscard]] std::vector<std::string> registeredBehaviorTrees() const override;
 
-  [[nodiscard]]Tree
-  instantiateTree(const Blackboard::Ptr& root_blackboard,
-                  std::string main_tree_to_execute = {}) override;
+  [[nodiscard]] Tree instantiateTree(const Blackboard::Ptr& root_blackboard,
+                                     std::string main_tree_to_execute = {}) override;
 
   void clearInternalState() override;
 
@@ -56,9 +55,8 @@ void VerifyXML(const std::string& xml_text,
  *
  * @return  string containing the XML.
  */
-[[nodiscard]]
-std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
-                                   bool include_builtin = false);
+[[nodiscard]] std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
+                                                 bool include_builtin = false);
 
 /**
  * @brief writeTreeXSD generates an XSD for the nodes defined in the factory
@@ -67,8 +65,7 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
  *
  * @return  string containing the XML.
  */
-[[nodiscard]]
-std::string writeTreeXSD(const BehaviorTreeFactory& factory);
+[[nodiscard]] std::string writeTreeXSD(const BehaviorTreeFactory& factory);
 
 /**
  * @brief WriteTreeToXML create a string that contains the XML that corresponds to a given tree.
@@ -81,9 +78,9 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory);
  *
  * @return string containing the XML.
  */
-[[nodiscard]]
-std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin_models);
+[[nodiscard]] std::string WriteTreeToXML(const Tree& tree, bool add_metadata,
+                                         bool add_builtin_models);
 
-}   // namespace BT
+}  // namespace BT
 
-#endif   // XML_PARSING_BT_H
+#endif  // XML_PARSING_BT_H

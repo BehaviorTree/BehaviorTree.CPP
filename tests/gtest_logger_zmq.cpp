@@ -17,7 +17,7 @@ TEST(LoggerZMQ, ZMQLoggerDeletesCleanlyAfterTickingTree)
   auto tree = factory.createTreeFromText(XML);
 
   {
-    BT::PublisherZMQ zmq_logger{tree, 1};
+    BT::PublisherZMQ zmq_logger{ tree, 1 };
     tree.tickWhileRunning();
     // WHEN zmq_logger goes out of scope
   }
@@ -40,7 +40,7 @@ TEST(LoggerZMQ, ZMQLoggerDeletesCleanlyAfterNotTickingTree)
   auto tree = factory.createTreeFromText(XML);
 
   {
-    BT::PublisherZMQ zmq_logger{tree, 1};
+    BT::PublisherZMQ zmq_logger{ tree, 1 };
     // GIVEN we haven't even ticked the tree, so ZMQ hasn't published any state change messages
     // (meaning no send is pending and send_future_ has not been set)
     // WHEN zmq_logger goes out of scope

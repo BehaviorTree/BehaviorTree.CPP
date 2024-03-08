@@ -45,7 +45,8 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<unsigned>("delay_msec", "Tick the child after a few milliseconds")};
+    return { InputPort<unsigned>("delay_msec", "Tick the child after a few "
+                                               "milliseconds") };
   }
 
   void halt() override;
@@ -64,4 +65,4 @@ private:
   std::mutex delay_mutex_;
 };
 
-}   // namespace BT
+}  // namespace BT

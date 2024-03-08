@@ -13,11 +13,11 @@ class SimpleCoroAction : public BT::CoroActionNode
 {
 public:
   SimpleCoroAction(milliseconds timeout, bool will_fail, const std::string& node_name,
-                   const BT::NodeConfig& config) :
-    BT::CoroActionNode(node_name, config),
-    will_fail_(will_fail),
-    timeout_(timeout),
-    start_time_(Timepoint::min())
+                   const BT::NodeConfig& config)
+    : BT::CoroActionNode(node_name, config)
+    , will_fail_(will_fail)
+    , timeout_(timeout)
+    , start_time_(Timepoint::min())
   {}
 
   virtual void halt() override
@@ -44,12 +44,12 @@ protected:
     std::cout << "Starting action " << std::endl;
     halted_ = false;
 
-    if (start_time_ == Timepoint::min())
+    if(start_time_ == Timepoint::min())
     {
       start_time_ = std::chrono::steady_clock::now();
     }
 
-    while (std::chrono::steady_clock::now() < (start_time_ + timeout_))
+    while(std::chrono::steady_clock::now() < (start_time_ + timeout_))
     {
       setStatusRunningAndYield();
     }
@@ -73,7 +73,7 @@ private:
 BT::NodeStatus executeWhileRunning(BT::TreeNode& node)
 {
   auto status = node.executeTick();
-  while (status == BT::NodeStatus::RUNNING)
+  while(status == BT::NodeStatus::RUNNING)
   {
     status = node.executeTick();
     std::this_thread::sleep_for(Millisecond(1));

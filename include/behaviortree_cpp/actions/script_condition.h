@@ -25,8 +25,8 @@ namespace BT
 class ScriptCondition : public ConditionNode
 {
 public:
-  ScriptCondition(const std::string& name, const NodeConfig& config) :
-    ConditionNode(name, config)
+  ScriptCondition(const std::string& name, const NodeConfig& config)
+    : ConditionNode(name, config)
   {
     setRegistrationID("ScriptCondition");
     loadExecutor();
@@ -34,7 +34,8 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort("code", "Piece of code that can be parsed. Must return false or true")};
+    return { InputPort("code", "Piece of code that can be parsed. Must return false or "
+                               "true") };
   }
 
 private:
@@ -42,25 +43,24 @@ private:
   {
     loadExecutor();
 
-    Ast::Environment env = {config().blackboard, config().enums};
+    Ast::Environment env = { config().blackboard, config().enums };
     auto result = _executor(env);
-    return (result.cast<bool>()) ?
-        NodeStatus::SUCCESS : NodeStatus::FAILURE;
+    return (result.cast<bool>()) ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
   }
 
   void loadExecutor()
   {
     std::string script;
-    if (!getInput("code", script))
+    if(!getInput("code", script))
     {
       throw RuntimeError("Missing port [code] in ScriptCondition");
     }
-    if (script == _script)
+    if(script == _script)
     {
       return;
     }
     auto executor = ParseScript(script);
-    if (!executor)
+    if(!executor)
     {
       throw RuntimeError(executor.error());
     }
@@ -75,4 +75,4 @@ private:
   ScriptFunction _executor;
 };
 
-}   // namespace BT
+}  // namespace BT

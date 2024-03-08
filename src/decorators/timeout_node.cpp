@@ -17,32 +17,32 @@ namespace BT
 
 NodeStatus TimeoutNode::tick()
 {
-  if (read_parameter_from_ports_)
+  if(read_parameter_from_ports_)
   {
-    if (!getInput("msec", msec_))
+    if(!getInput("msec", msec_))
     {
       throw RuntimeError("Missing parameter [msec] in TimeoutNode");
     }
   }
 
-  if (!timeout_started_)
+  if(!timeout_started_)
   {
     timeout_started_ = true;
     setStatus(NodeStatus::RUNNING);
     child_halted_ = false;
 
-    if (msec_ > 0)
+    if(msec_ > 0)
     {
       timer_id_ = timer_.add(std::chrono::milliseconds(msec_), [this](bool aborted) {
         // Return immediately if the timer was aborted.
         // This function could be invoked during destruction of this object and
         // we don't want to access member variables if not needed.
-        if (aborted)
+        if(aborted)
         {
           return;
         }
         std::unique_lock<std::mutex> lk(timeout_mutex_);
-        if (child()->status() == NodeStatus::RUNNING)
+        if(child()->status() == NodeStatus::RUNNING)
         {
           child_halted_ = true;
           haltChild();
@@ -54,7 +54,7 @@ NodeStatus TimeoutNode::tick()
 
   std::unique_lock<std::mutex> lk(timeout_mutex_);
 
-  if (child_halted_)
+  if(child_halted_)
   {
     timeout_started_ = false;
     return NodeStatus::FAILURE;
@@ -81,5 +81,4 @@ void TimeoutNode::halt()
   DecoratorNode::halt();
 }
 
-
-}   // namespace BT
+}  // namespace BT

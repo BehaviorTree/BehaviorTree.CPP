@@ -7,7 +7,7 @@ std::atomic<bool> StdCoutLogger::ref_count(false);
 StdCoutLogger::StdCoutLogger(const BT::Tree& tree) : StatusChangeLogger(tree.rootNode())
 {
   bool expected = false;
-  if (!ref_count.compare_exchange_strong(expected, true))
+  if(!ref_count.compare_exchange_strong(expected, true))
   {
     throw LogicError("Only one instance of StdCoutLogger shall be created");
   }
@@ -38,4 +38,4 @@ void StdCoutLogger::flush()
   ref_count = false;
 }
 
-}   // namespace BT
+}  // namespace BT

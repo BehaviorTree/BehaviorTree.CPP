@@ -146,7 +146,7 @@ macro(_conan_detect_compiler)
                 set(COMPILER_VERSION ${MAJOR})
             else()
                 set(COMPILER_VERSION ${MAJOR}.${MINOR})
-            endif()    
+            endif()
         elseif (${CMAKE_${LANGUAGE}_COMPILER_ID} STREQUAL QCC)
             set(_CONAN_SETTING_COMPILER qcc)
             set(COMPILER_VERSION ${MAJOR}.${MINOR})
@@ -180,7 +180,7 @@ macro(_conan_detect_compiler)
             set(COMPILER_VERSION ${MAJOR})
         else()
             set(COMPILER_VERSION ${MAJOR}.${MINOR})
-        endif() 
+        endif()
 
         set(_CONAN_SETTING_COMPILER_VERSION ${COMPILER_VERSION})
 
@@ -190,7 +190,7 @@ macro(_conan_detect_compiler)
             set(_CONAN_SETTING_COMPILER_LIBCXX ${_LIBCXX})
         endif ()
     elseif (${CMAKE_${LANGUAGE}_COMPILER_ID} STREQUAL Clang
-                AND NOT "${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC" 
+                AND NOT "${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC"
                 AND NOT "${CMAKE_${LANGUAGE}_SIMULATE_ID}" STREQUAL "MSVC")
 
         string(REPLACE "." ";" VERSION_LIST ${CMAKE_${LANGUAGE}_COMPILER_VERSION})
@@ -203,7 +203,7 @@ macro(_conan_detect_compiler)
             set(COMPILER_VERSION ${MAJOR})
         else()
             set(COMPILER_VERSION ${MAJOR}.${MINOR})
-        endif() 
+        endif()
 
         set(_CONAN_SETTING_COMPILER_VERSION ${COMPILER_VERSION})
 
@@ -219,8 +219,8 @@ macro(_conan_detect_compiler)
             set(_CONAN_SETTING_COMPILER_LIBCXX ${_LIBCXX})
         endif ()
     elseif(${CMAKE_${LANGUAGE}_COMPILER_ID} STREQUAL MSVC
-                OR (${CMAKE_${LANGUAGE}_COMPILER_ID} STREQUAL Clang 
-                    AND "${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC" 
+                OR (${CMAKE_${LANGUAGE}_COMPILER_ID} STREQUAL Clang
+                    AND "${CMAKE_${LANGUAGE}_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC"
                     AND "${CMAKE_${LANGUAGE}_SIMULATE_ID}" STREQUAL "MSVC"))
 
         set(_VISUAL "Visual Studio")
@@ -475,7 +475,7 @@ function(conan_cmake_autodetect detected_settings)
 endfunction()
 
 macro(conan_parse_arguments)
-    set(options         BASIC_SETUP CMAKE_TARGETS UPDATE KEEP_RPATHS NO_LOAD NO_OUTPUT_DIRS 
+    set(options         BASIC_SETUP CMAKE_TARGETS UPDATE KEEP_RPATHS NO_LOAD NO_OUTPUT_DIRS
                         OUTPUT_QUIET NO_IMPORTS SKIP_STD)
     set(oneValueArgs    CONANFILE ARCH BUILD_TYPE INSTALL_FOLDER OUTPUT_FOLDER CONAN_COMMAND)
     set(multiValueArgs  DEBUG_PROFILE RELEASE_PROFILE RELWITHDEBINFO_PROFILE MINSIZEREL_PROFILE
@@ -656,11 +656,11 @@ function(conan_cmake_install)
     if(DEFINED NO_IMPORTS)
         set(NO_IMPORTS --no-imports)
     endif()
-    set(install_args install  ${PATH_OR_REFERENCE} ${REFERENCE} ${UPDATE} ${NO_IMPORTS} ${REMOTE} 
-                              ${LOCKFILE} ${LOCKFILE_OUT} ${LOCKFILE_NODE_ID} ${INSTALL_FOLDER} 
-                              ${OUTPUT_FOLDER} ${GENERATOR} ${BUILD} ${ENV} ${ENV_HOST} ${ENV_BUILD} 
-                              ${OPTIONS} ${OPTIONS_HOST} ${OPTIONS_BUILD} ${PROFILE} ${PROFILE_HOST} 
-                              ${PROFILE_BUILD} ${SETTINGS} ${SETTINGS_HOST} ${SETTINGS_BUILD} 
+    set(install_args install  ${PATH_OR_REFERENCE} ${REFERENCE} ${UPDATE} ${NO_IMPORTS} ${REMOTE}
+                              ${LOCKFILE} ${LOCKFILE_OUT} ${LOCKFILE_NODE_ID} ${INSTALL_FOLDER}
+                              ${OUTPUT_FOLDER} ${GENERATOR} ${BUILD} ${ENV} ${ENV_HOST} ${ENV_BUILD}
+                              ${OPTIONS} ${OPTIONS_HOST} ${OPTIONS_BUILD} ${PROFILE} ${PROFILE_HOST}
+                              ${PROFILE_BUILD} ${SETTINGS} ${SETTINGS_HOST} ${SETTINGS_BUILD}
                               ${CONF} ${CONF_HOST} ${CONF_BUILD})
 
     string(REPLACE ";" " " _install_args "${install_args}")
@@ -764,12 +764,12 @@ function(conan_cmake_lock_create)
         set(BASE --base)
     endif()
     set(lock_create_Args lock create ${PATH} ${REFERENCE} ${UPDATE} ${BASE} ${REMOTE} ${LOCKFILE} ${LOCKFILE_OUT} ${LOCKFILE_NODE_ID} ${INSTALL_FOLDER}
-                                ${GENERATOR} ${BUILD} ${ENV} ${ENV_HOST} ${ENV_BUILD} ${OPTIONS} ${OPTIONS_HOST} ${OPTIONS_BUILD} 
+                                ${GENERATOR} ${BUILD} ${ENV} ${ENV_HOST} ${ENV_BUILD} ${OPTIONS} ${OPTIONS_HOST} ${OPTIONS_BUILD}
                                 ${PROFILE} ${PROFILE_HOST} ${PROFILE_BUILD} ${SETTINGS} ${SETTINGS_HOST} ${SETTINGS_BUILD})
 
     string(REPLACE ";" " " _lock_create_Args "${lock_create_Args}")
     message(STATUS "Conan executing: ${CONAN_CMD} ${_lock_create_Args}")
-    
+
     if(ARGS_OUTPUT_QUIET)
       set(OUTPUT_OPT OUTPUT_QUIET)
     endif()
@@ -1083,7 +1083,7 @@ function(conan_cmake_profile)
     set(profileMultiValueArgs SETTINGS OPTIONS CONF ENV BUILDENV RUNENV TOOL_REQUIRES)
     cmake_parse_arguments(ARGS "" "${profileOneValueArgs}" "${profileMultiValueArgs}" ${ARGN})
 
-    if(DEFINED ARGS_FILEPATH)  
+    if(DEFINED ARGS_FILEPATH)
         set(_FN "${ARGS_FILEPATH}")
     else()
         set(_FN "${CMAKE_CURRENT_BINARY_DIR}/profile")

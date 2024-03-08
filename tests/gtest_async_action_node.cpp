@@ -24,7 +24,7 @@ struct MockedThreadedAction : public BT::ThreadedAction
     do
     {
       executeTick();
-    } while (status() == BT::NodeStatus::RUNNING);
+    } while(status() == BT::NodeStatus::RUNNING);
     return status();
   }
 
@@ -48,8 +48,8 @@ struct NodeStatusFixture : public testing::WithParamInterface<BT::NodeStatus>,
 };
 
 INSTANTIATE_TEST_SUITE_P(/**/, NodeStatusFixture,
-                        testing::Values(BT::NodeStatus::SUCCESS,
-                                        BT::NodeStatus::FAILURE));
+                         testing::Values(BT::NodeStatus::SUCCESS,
+                                         BT::NodeStatus::FAILURE));
 
 TEST_P(NodeStatusFixture, normal_routine)
 {
@@ -75,7 +75,7 @@ TEST_F(MockedThreadedActionFixture, no_halt)
   ASSERT_TRUE(sn.isHaltRequested());
 
   // Below we further verify that the halt flag is cleaned up properly.
-  const BT::NodeStatus state{BT::NodeStatus::SUCCESS};
+  const BT::NodeStatus state{ BT::NodeStatus::SUCCESS };
   EXPECT_CALL(sn, tick()).WillOnce(testing::Return(state));
 
   // Spin the node and check.
@@ -90,11 +90,11 @@ TEST_F(MockedThreadedActionFixture, halt)
   std::mutex m;
   std::condition_variable cv;
 
-  const BT::NodeStatus state{BT::NodeStatus::SUCCESS};
+  const BT::NodeStatus state{ BT::NodeStatus::SUCCESS };
   EXPECT_CALL(sn, tick()).WillOnce(testing::Invoke([&]() {
     // Sleep until we send the release signal.
     std::unique_lock<std::mutex> l(m);
-    while (!release)
+    while(!release)
       cv.wait(l);
 
     return state;
@@ -136,7 +136,7 @@ TEST_F(MockedThreadedActionFixture, exception)
 
   // Now verify that the exception is cleared up (we succeed).
   sn.setStatus(BT::NodeStatus::IDLE);
-  const BT::NodeStatus state{BT::NodeStatus::SUCCESS};
+  const BT::NodeStatus state{ BT::NodeStatus::SUCCESS };
   EXPECT_CALL(sn, tick()).WillOnce(testing::Return(state));
   ASSERT_EQ(sn.spinUntilDone(), state);
 }

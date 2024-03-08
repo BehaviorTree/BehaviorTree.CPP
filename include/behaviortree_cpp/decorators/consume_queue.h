@@ -26,14 +26,13 @@ namespace BT
  * An empty queue will return SUCCESS
  */
 
-
 template <typename T>
-class [[deprecated("You are encouraged to use the LoopNode instead")]]
-ConsumeQueue : public DecoratorNode
+class [[deprecated("You are encouraged to use the LoopNode instead")]] ConsumeQueue
+  : public DecoratorNode
 {
 public:
-  ConsumeQueue(const std::string& name, const NodeConfig& config) :
-    DecoratorNode(name, config)
+  ConsumeQueue(const std::string& name, const NodeConfig& config)
+    : DecoratorNode(name, config)
   {}
 
   NodeStatus tick() override
@@ -41,11 +40,11 @@ public:
     // by default, return SUCCESS, even if queue is empty
     NodeStatus status_to_be_returned = NodeStatus::SUCCESS;
 
-    if (running_child_)
+    if(running_child_)
     {
       NodeStatus child_state = child_node_->executeTick();
       running_child_ = (child_state == NodeStatus::RUNNING);
-      if (running_child_)
+      if(running_child_)
       {
         return NodeStatus::RUNNING;
       }
@@ -57,12 +56,12 @@ public:
     }
 
     std::shared_ptr<ProtectedQueue<T>> queue;
-    if (getInput("queue", queue) && queue)
+    if(getInput("queue", queue) && queue)
     {
       std::unique_lock<std::mutex> lk(queue->mtx);
       auto& items = queue->items;
 
-      while (!items.empty())
+      while(!items.empty())
       {
         setStatus(NodeStatus::RUNNING);
 
@@ -75,14 +74,14 @@ public:
         lk.lock();
 
         running_child_ = (child_state == NodeStatus::RUNNING);
-        if (running_child_)
+        if(running_child_)
         {
           return NodeStatus::RUNNING;
         }
         else
         {
           haltChild();
-          if (child_state == NodeStatus::FAILURE)
+          if(child_state == NodeStatus::FAILURE)
           {
             return NodeStatus::FAILURE;
           }
@@ -96,12 +95,14 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"),
-            OutputPort<T>("popped_item")};
+    return { InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"), OutputPort<T>("poppe"
+                                                                                   "d_"
+                                                                                   "ite"
+                                                                                   "m") };
   }
 
 private:
   bool running_child_ = false;
 };
 
-}   // namespace BT
+}  // namespace BT

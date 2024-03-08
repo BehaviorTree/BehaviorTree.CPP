@@ -24,6 +24,6 @@ private:
   NodeStatus expected_result_;
   int tick_count_;
 };
-}   // namespace BT
+}  // namespace BT
 
 #endif

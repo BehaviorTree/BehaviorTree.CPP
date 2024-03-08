@@ -30,12 +30,12 @@ struct BehaviorTreeTest : testing::Test
 
   BT::FallbackNode fal_conditions;
 
-  BehaviorTreeTest() :
-    root("root_sequence"),
-    action_1("action_1", milliseconds(100)),
-    condition_1("condition_1"),
-    condition_2("condition_2"),
-    fal_conditions("fallback_conditions")
+  BehaviorTreeTest()
+    : root("root_sequence")
+    , action_1("action_1", milliseconds(100))
+    , condition_1("condition_1")
+    , condition_2("condition_2")
+    , fal_conditions("fallback_conditions")
   {
     root.addChild(&fal_conditions);
     {

@@ -1,6 +1,6 @@
 #include "behaviortree_cpp/actions/test_node.h"
 
-void BT::TestNode::setConfig(const TestNodeConfig &config)
+void BT::TestNode::setConfig(const TestNodeConfig& config)
 {
   if(config.return_status == NodeStatus::IDLE)
   {
@@ -11,7 +11,7 @@ void BT::TestNode::setConfig(const TestNodeConfig &config)
   if(!_test_config.post_script.empty())
   {
     auto executor = ParseScript(_test_config.post_script);
-    if (!executor)
+    if(!executor)
     {
       throw RuntimeError(executor.error());
     }
@@ -26,30 +26,31 @@ BT::NodeStatus BT::TestNode::onStart()
     _test_config.pre_func();
   }
 
-  if( _test_config.async_delay <= std::chrono::milliseconds(0) )
+  if(_test_config.async_delay <= std::chrono::milliseconds(0))
   {
     return onCompleted();
   }
   // convert this in an asynchronous operation. Use another thread to count
   // a certain amount of time.
   _completed = false;
-  _timer.add(std::chrono::milliseconds(_test_config.async_delay),
-             [this](bool aborted) {
-               if(!aborted)
-               {
-                 _completed.store(true);
-                 this->emitWakeUpSignal();
-               }
-               else {
-                 _completed.store(false);
-               }
-             });
+  _timer.add(std::chrono::milliseconds(_test_config.async_delay), [this](bool aborted) {
+    if(!aborted)
+    {
+      _completed.store(true);
+      this->emitWakeUpSignal();
+    }
+    else
+    {
+      _completed.store(false);
+    }
+  });
   return NodeStatus::RUNNING;
 }
 
 BT::NodeStatus BT::TestNode::onRunning()
 {
-  if(_completed) {
+  if(_completed)
+  {
     return onCompleted();
   }
   return NodeStatus::RUNNING;
@@ -62,9 +63,9 @@ void BT::TestNode::onHalted()
 
 BT::NodeStatus BT::TestNode::onCompleted()
 {
-  if (_executor)
+  if(_executor)
   {
-    Ast::Environment env = {config().blackboard, config().enums};
+    Ast::Environment env = { config().blackboard, config().enums };
     _executor(env);
   }
   if(_test_config.post_func)

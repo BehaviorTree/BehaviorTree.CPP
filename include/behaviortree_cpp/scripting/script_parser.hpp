@@ -24,17 +24,18 @@ using EnumsTablePtr = std::shared_ptr<EnumsTable>;
 
 namespace Ast
 {
-   /**
+/**
    * @brief The Environment class is used to encapsulate
    * the information and states needed by the scripting language
    */
-  struct Environment{
-    BT::Blackboard::Ptr vars;
-    EnumsTablePtr enums;
-  };
-}
+struct Environment
+{
+  BT::Blackboard::Ptr vars;
+  EnumsTablePtr enums;
+};
+}  // namespace Ast
 
-  /**
+/**
  * @brief ValidateScript will check if a certain string is valid.
  */
 Result ValidateScript(const std::string& script);
@@ -43,8 +44,6 @@ using ScriptFunction = std::function<Any(Ast::Environment& env)>;
 
 Expected<ScriptFunction> ParseScript(const std::string& script);
 
-Expected<Any> ParseScriptAndExecute(Ast::Environment& env,
-                                    const std::string& script);
+Expected<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string& script);
 
-}
-
+}  // namespace BT

@@ -3,20 +3,23 @@
 
 //----------- Custom types ----------
 
-struct Vector3D {
+struct Vector3D
+{
   double x;
   double y;
   double z;
 };
 
-struct Quaternion3D {
+struct Quaternion3D
+{
   double w;
   double x;
   double y;
   double z;
 };
 
-struct Pose3D {
+struct Pose3D
+{
   Vector3D pos;
   Quaternion3D rot;
 };
@@ -26,7 +29,7 @@ struct Pose3D {
 void to_json(nlohmann::json& j, const Vector3D& v)
 {
   // compact syntax
-  j = {{"x", v.x}, {"y", v.y}, {"z", v.z}};
+  j = { { "x", v.x }, { "y", v.y }, { "z", v.z } };
 }
 
 void to_json(nlohmann::json& j, const Quaternion3D& q)
@@ -40,9 +43,8 @@ void to_json(nlohmann::json& j, const Quaternion3D& q)
 
 void to_json(nlohmann::json& j, const Pose3D& p)
 {
-  j = {{"pos", p.pos}, {"rot", p.rot}};
+  j = { { "pos", p.pos }, { "rot", p.rot } };
 }
-
 
 using namespace BT;
 
@@ -50,15 +52,14 @@ TEST(JsonTest, Exporter)
 {
   JsonExporter exporter;
 
-  Pose3D pose = { {1,2,3},
-                               {4,5,6,7} };
+  Pose3D pose = { { 1, 2, 3 }, { 4, 5, 6, 7 } };
 
   nlohmann::json json;
   exporter.toJson(BT::Any(69), json["int"]);
   exporter.toJson(BT::Any(3.14), json["real"]);
 
   // expected to throw, because we haven't called addConverter()
-  ASSERT_FALSE( exporter.toJson(BT::Any(pose), json["pose"]) );
+  ASSERT_FALSE(exporter.toJson(BT::Any(pose), json["pose"]));
 
   // now it should work
   exporter.addConverter<Pose3D>();
@@ -81,7 +82,3 @@ TEST(JsonTest, Exporter)
 
   std::cout << json.dump(2) << std::endl;
 }
-
-
-
-

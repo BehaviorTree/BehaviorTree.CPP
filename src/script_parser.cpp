@@ -18,12 +18,12 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
   auto result =
       lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
-  if (result.has_value() && result.error_count() == 0)
+  if(result.has_value() && result.error_count() == 0)
   {
     try
     {
       std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
-      if (exprs.empty())
+      if(exprs.empty())
       {
         return nonstd::make_unexpected("Empty Script");
       }
@@ -31,19 +31,19 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
       return [exprs, script](Ast::Environment& env) -> Any {
         try
         {
-          for (auto i = 0u; i < exprs.size() - 1; ++i)
+          for(auto i = 0u; i < exprs.size() - 1; ++i)
           {
             exprs[i]->evaluate(env);
           }
           return exprs.back()->evaluate(env);
         }
-        catch (RuntimeError& err)
+        catch(RuntimeError& err)
         {
-          throw RuntimeError(StrCat("Error in script [",script,"]\n", err.what()));
+          throw RuntimeError(StrCat("Error in script [", script, "]\n", err.what()));
         }
       };
     }
-    catch (std::runtime_error& err)
+    catch(std::runtime_error& err)
     {
       return nonstd::make_unexpected(err.what());
     }
@@ -57,36 +57,36 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
 BT::Expected<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string& script)
 {
   auto executor = ParseScript(script);
-  if (executor)
+  if(executor)
   {
     return executor.value()(env);
   }
-  else   // forward the error
+  else  // forward the error
   {
     return nonstd::make_unexpected(executor.error());
   }
 }
 
-Result ValidateScript(const std::string &script)
+Result ValidateScript(const std::string& script)
 {
   char error_msgs_buffer[2048];
 
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
   auto result =
       lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
-  if (result.has_value() && result.error_count() == 0)
+  if(result.has_value() && result.error_count() == 0)
   {
     try
     {
       std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
-      if (exprs.empty())
+      if(exprs.empty())
       {
         return nonstd::make_unexpected("Empty Script");
       }
       // valid script
       return {};
     }
-    catch (std::runtime_error& err)
+    catch(std::runtime_error& err)
     {
       return nonstd::make_unexpected(err.what());
     }
@@ -94,4 +94,4 @@ Result ValidateScript(const std::string &script)
   return nonstd::make_unexpected(error_msgs_buffer);
 }
 
-}   // namespace BT
+}  // namespace BT

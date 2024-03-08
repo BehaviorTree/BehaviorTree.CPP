@@ -41,20 +41,21 @@ enum class NodeStatus : int8_t
 
 inline const NodeStatus (&EnumValuesNodeStatus())[4]
 {
-  static const NodeStatus values[] = {NodeStatus::IDLE, NodeStatus::RUNNING,
-                                      NodeStatus::SUCCESS, NodeStatus::FAILURE};
+  static const NodeStatus values[] = { NodeStatus::IDLE, NodeStatus::RUNNING,
+                                       NodeStatus::SUCCESS, NodeStatus::FAILURE };
   return values;
 }
 
 inline const char* const* EnumNamesNodeStatus()
 {
-  static const char* const names[5] = {"IDLE", "RUNNING", "SUCCESS", "FAILURE", nullptr};
+  static const char* const names[5] = { "IDLE", "RUNNING", "SUCCESS", "FAILURE",
+                                        nullptr };
   return names;
 }
 
 inline const char* EnumNameNodeStatus(NodeStatus e)
 {
-  if (flatbuffers::IsOutRange(e, NodeStatus::IDLE, NodeStatus::FAILURE))
+  if(flatbuffers::IsOutRange(e, NodeStatus::IDLE, NodeStatus::FAILURE))
     return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesNodeStatus()[index];
@@ -74,22 +75,22 @@ enum class NodeType : int8_t
 
 inline const NodeType (&EnumValuesNodeType())[6]
 {
-  static const NodeType values[] = {NodeType::UNDEFINED, NodeType::ACTION,
-                                    NodeType::CONDITION, NodeType::CONTROL,
-                                    NodeType::DECORATOR, NodeType::SUBTREE};
+  static const NodeType values[] = { NodeType::UNDEFINED, NodeType::ACTION,
+                                     NodeType::CONDITION, NodeType::CONTROL,
+                                     NodeType::DECORATOR, NodeType::SUBTREE };
   return values;
 }
 
 inline const char* const* EnumNamesNodeType()
 {
-  static const char* const names[7] = {"UNDEFINED", "ACTION",  "CONDITION", "CONTROL",
-                                       "DECORATOR", "SUBTREE", nullptr};
+  static const char* const names[7] = { "UNDEFINED", "ACTION",  "CONDITION", "CONTROL",
+                                        "DECORATOR", "SUBTREE", nullptr };
   return names;
 }
 
 inline const char* EnumNameNodeType(NodeType e)
 {
-  if (flatbuffers::IsOutRange(e, NodeType::UNDEFINED, NodeType::SUBTREE))
+  if(flatbuffers::IsOutRange(e, NodeType::UNDEFINED, NodeType::SUBTREE))
     return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesNodeType()[index];
@@ -106,20 +107,20 @@ enum class PortDirection : int8_t
 
 inline const PortDirection (&EnumValuesPortDirection())[3]
 {
-  static const PortDirection values[] = {PortDirection::INPUT, PortDirection::OUTPUT,
-                                         PortDirection::INOUT};
+  static const PortDirection values[] = { PortDirection::INPUT, PortDirection::OUTPUT,
+                                          PortDirection::INOUT };
   return values;
 }
 
 inline const char* const* EnumNamesPortDirection()
 {
-  static const char* const names[4] = {"INPUT", "OUTPUT", "INOUT", nullptr};
+  static const char* const names[4] = { "INPUT", "OUTPUT", "INOUT", nullptr };
   return names;
 }
 
 inline const char* EnumNamePortDirection(PortDirection e)
 {
-  if (flatbuffers::IsOutRange(e, PortDirection::INPUT, PortDirection::INOUT))
+  if(flatbuffers::IsOutRange(e, PortDirection::INPUT, PortDirection::INOUT))
     return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPortDirection()[index];
@@ -133,8 +134,8 @@ private:
 public:
   Timestamp() : usec_since_epoch_(0)
   {}
-  Timestamp(uint64_t _usec_since_epoch) :
-    usec_since_epoch_(flatbuffers::EndianScalar(_usec_since_epoch))
+  Timestamp(uint64_t _usec_since_epoch)
+    : usec_since_epoch_(flatbuffers::EndianScalar(_usec_since_epoch))
   {}
   uint64_t usec_since_epoch() const
   {
@@ -159,12 +160,12 @@ public:
   }
   StatusChange(uint16_t _uid, Serialization::NodeStatus _prev_status,
                Serialization::NodeStatus _status,
-               const Serialization::Timestamp& _timestamp) :
-    uid_(flatbuffers::EndianScalar(_uid)),
-    prev_status_(flatbuffers::EndianScalar(static_cast<int8_t>(_prev_status))),
-    status_(flatbuffers::EndianScalar(static_cast<int8_t>(_status))),
-    padding0__(0),
-    timestamp_(_timestamp)
+               const Serialization::Timestamp& _timestamp)
+    : uid_(flatbuffers::EndianScalar(_uid))
+    , prev_status_(flatbuffers::EndianScalar(static_cast<int8_t>(_prev_status)))
+    , status_(flatbuffers::EndianScalar(static_cast<int8_t>(_status)))
+    , padding0__(0)
+    , timestamp_(_timestamp)
   {
     (void)padding0__;
   }
@@ -798,6 +799,6 @@ inline void FinishSizePrefixedBehaviorTreeBuffer(
   fbb.FinishSizePrefixed(root);
 }
 
-}   // namespace Serialization
+}  // namespace Serialization
 
-#endif   // FLATBUFFERS_GENERATED_BTLOGGER_SERIALIZATION_H_
+#endif  // FLATBUFFERS_GENERATED_BTLOGGER_SERIALIZATION_H_

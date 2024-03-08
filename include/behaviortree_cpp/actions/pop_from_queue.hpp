@@ -17,7 +17,6 @@
 #include "behaviortree_cpp/action_node.h"
 #include "behaviortree_cpp/decorator_node.h"
 
-
 /**
  * Template Action used in ex04_waypoints.cpp example.
  *
@@ -35,8 +34,8 @@ namespace BT
 template <typename T>
 struct ProtectedQueue
 {
-    std::list<T> items;
-    std::mutex mtx;
+  std::list<T> items;
+  std::mutex mtx;
 };
 
 /*
@@ -52,45 +51,47 @@ struct ProtectedQueue
  *
  * */
 
-
 template <typename T>
 class PopFromQueue : public SyncActionNode
 {
-  public:
-    PopFromQueue(const std::string& name, const NodeConfig& config)
-      : SyncActionNode(name, config)
-    {
-    }
+public:
+  PopFromQueue(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
 
-    NodeStatus tick() override
+  NodeStatus tick() override
+  {
+    std::shared_ptr<ProtectedQueue<T>> queue;
+    if(getInput("queue", queue) && queue)
     {
-        std::shared_ptr<ProtectedQueue<T>> queue;
-        if( getInput("queue", queue) && queue )
-        {
-            std::unique_lock<std::mutex> lk(queue->mtx);
-            auto& items = queue->items;
+      std::unique_lock<std::mutex> lk(queue->mtx);
+      auto& items = queue->items;
 
-            if( items.empty() )
-            {
-                return NodeStatus::FAILURE;
-            }
-            else{
-                T val = items.front();
-                items.pop_front();
-                setOutput("popped_item", val);
-                return NodeStatus::SUCCESS;
-            }
-        }
-        else{
-            return NodeStatus::FAILURE;
-        }
+      if(items.empty())
+      {
+        return NodeStatus::FAILURE;
+      }
+      else
+      {
+        T val = items.front();
+        items.pop_front();
+        setOutput("popped_item", val);
+        return NodeStatus::SUCCESS;
+      }
     }
-
-    static PortsList providedPorts()
+    else
     {
-        return { InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"),
-                 OutputPort<T>("popped_item")};
+      return NodeStatus::FAILURE;
     }
+  }
+
+  static PortsList providedPorts()
+  {
+    return { InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"), OutputPort<T>("poppe"
+                                                                                   "d_"
+                                                                                   "ite"
+                                                                                   "m") };
+  }
 };
 
 /**
@@ -107,39 +108,37 @@ class PopFromQueue : public SyncActionNode
 template <typename T>
 class QueueSize : public SyncActionNode
 {
-  public:
-    QueueSize(const std::string& name, const NodeConfig& config)
-      : SyncActionNode(name, config)
-    {
-    }
+public:
+  QueueSize(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
 
-    NodeStatus tick() override
+  NodeStatus tick() override
+  {
+    std::shared_ptr<ProtectedQueue<T>> queue;
+    if(getInput("queue", queue) && queue)
     {
-        std::shared_ptr<ProtectedQueue<T>> queue;
-        if( getInput("queue", queue) && queue )
-        {
-            std::unique_lock<std::mutex> lk(queue->mtx);
-            auto& items = queue->items;
+      std::unique_lock<std::mutex> lk(queue->mtx);
+      auto& items = queue->items;
 
-            if( items.empty() )
-            {
-                return NodeStatus::FAILURE;
-            }
-            else{
-                setOutput("size", int(items.size()) );
-                return NodeStatus::SUCCESS;
-            }
-        }
+      if(items.empty())
+      {
         return NodeStatus::FAILURE;
+      }
+      else
+      {
+        setOutput("size", int(items.size()));
+        return NodeStatus::SUCCESS;
+      }
     }
+    return NodeStatus::FAILURE;
+  }
 
-    static PortsList providedPorts()
-    {
-        return { InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"),
-                 OutputPort<int>("size")};
-    }
+  static PortsList providedPorts()
+  {
+    return { InputPort<std::shared_ptr<ProtectedQueue<T>>>("queue"),
+             OutputPort<int>("size") };
+  }
 };
 
-
-}
-
+}  // namespace BT

@@ -41,8 +41,7 @@ struct BehaviorTreeFactory::PImpl
   std::unordered_map<std::string, SubstitutionRule> substitution_rules;
 };
 
-BehaviorTreeFactory::BehaviorTreeFactory():
-  _p(new PImpl)
+BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
 {
   _p->parser = std::make_shared<XMLParser>(*this);
   registerNodeType<FallbackNode>("Fallback");
@@ -52,7 +51,7 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<SequenceWithMemory>("SequenceWithMemory");
 
 #ifdef USE_BTCPP3_OLD_NAMES
-  registerNodeType<SequenceWithMemory>("SequenceStar");   // backward compatibility
+  registerNodeType<SequenceWithMemory>("SequenceStar");  // backward compatibility
 #endif
 
   registerNodeType<ParallelNode>("Parallel");
@@ -97,7 +96,7 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   registerNodeType<LoopNode<double>>("LoopDouble");
   registerNodeType<LoopNode<std::string>>("LoopString");
 
-  for (const auto& it : _p->builders)
+  for(const auto& it : _p->builders)
   {
     _p->builtin_IDs.insert(it.first);
   }
@@ -105,12 +104,12 @@ BehaviorTreeFactory::BehaviorTreeFactory():
   _p->scripting_enums = std::make_shared<std::unordered_map<std::string, int>>();
 }
 
-BehaviorTreeFactory::BehaviorTreeFactory(BehaviorTreeFactory &&other) noexcept
+BehaviorTreeFactory::BehaviorTreeFactory(BehaviorTreeFactory&& other) noexcept
 {
   this->_p = std::move(other._p);
 }
 
-BehaviorTreeFactory &BehaviorTreeFactory::operator=(BehaviorTreeFactory &&other) noexcept
+BehaviorTreeFactory& BehaviorTreeFactory::operator=(BehaviorTreeFactory&& other) noexcept
 {
   this->_p = std::move(other._p);
   return *this;
@@ -121,12 +120,12 @@ BehaviorTreeFactory::~BehaviorTreeFactory()
 
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
 {
-  if (builtinNodes().count(ID))
+  if(builtinNodes().count(ID))
   {
     throw LogicError("You can not remove the builtin registration ID [", ID, "]");
   }
   auto it = _p->builders.find(ID);
-  if (it == _p->builders.end())
+  if(it == _p->builders.end())
   {
     return false;
   }
@@ -139,13 +138,13 @@ void BehaviorTreeFactory::registerBuilder(const TreeNodeManifest& manifest,
                                           const NodeBuilder& builder)
 {
   auto it = _p->builders.find(manifest.registration_ID);
-  if (it != _p->builders.end())
+  if(it != _p->builders.end())
   {
     throw BehaviorTreeException("ID [", manifest.registration_ID, "] already registered");
   }
 
-  _p->builders.insert({manifest.registration_ID, builder});
-  _p->manifests.insert({manifest.registration_ID, manifest});
+  _p->builders.insert({ manifest.registration_ID, builder });
+  _p->manifests.insert({ manifest.registration_ID, manifest });
 }
 
 void BehaviorTreeFactory::registerSimpleCondition(
@@ -157,7 +156,7 @@ void BehaviorTreeFactory::registerSimpleCondition(
     return std::make_unique<SimpleConditionNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::CONDITION, ID, std::move(ports), {}};
+  TreeNodeManifest manifest = { NodeType::CONDITION, ID, std::move(ports), {} };
   registerBuilder(manifest, builder);
 }
 
@@ -170,7 +169,7 @@ void BehaviorTreeFactory::registerSimpleAction(
     return std::make_unique<SimpleActionNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::ACTION, ID, std::move(ports), {}};
+  TreeNodeManifest manifest = { NodeType::ACTION, ID, std::move(ports), {} };
   registerBuilder(manifest, builder);
 }
 
@@ -183,7 +182,7 @@ void BehaviorTreeFactory::registerSimpleDecorator(
     return std::make_unique<SimpleDecoratorNode>(name, tick_functor, config);
   };
 
-  TreeNodeManifest manifest = {NodeType::DECORATOR, ID, std::move(ports), {}};
+  TreeNodeManifest manifest = { NodeType::DECORATOR, ID, std::move(ports), {} };
   registerBuilder(manifest, builder);
 }
 
@@ -193,7 +192,7 @@ void BehaviorTreeFactory::registerFromPlugin(const std::string& file_path)
   loader.load(file_path);
   typedef void (*Func)(BehaviorTreeFactory&);
 
-  if (loader.hasSymbol(PLUGIN_SYMBOL))
+  if(loader.hasSymbol(PLUGIN_SYMBOL))
   {
     Func func = (Func)loader.getSymbol(PLUGIN_SYMBOL);
     func(*this);
@@ -208,9 +207,9 @@ void BehaviorTreeFactory::registerFromPlugin(const std::string& file_path)
 #ifdef USING_ROS
 
 #ifdef _WIN32
-const char os_pathsep(';');   // NOLINT
+const char os_pathsep(';');  // NOLINT
 #else
-const char os_pathsep(':');   // NOLINT
+const char os_pathsep(':');  // NOLINT
 #endif
 
 // This function is a copy from the one in class_loader_imp.hpp in ROS pluginlib
@@ -220,12 +219,12 @@ std::vector<std::string> getCatkinLibraryPaths()
 {
   std::vector<std::string> lib_paths;
   const char* env = std::getenv("CMAKE_PREFIX_PATH");
-  if (env)
+  if(env)
   {
     const std::string env_catkin_prefix_paths(env);
     std::vector<BT::StringView> catkin_prefix_paths =
         splitString(env_catkin_prefix_paths, os_pathsep);
-    for (BT::StringView catkin_prefix_path : catkin_prefix_paths)
+    for(BT::StringView catkin_prefix_path : catkin_prefix_paths)
     {
       std::filesystem::path path(static_cast<std::string>(catkin_prefix_path));
       std::filesystem::path lib("lib");
@@ -241,13 +240,13 @@ void BehaviorTreeFactory::registerFromROSPlugins()
   ros::package::getPlugins("behaviortree_cpp", "bt_lib_plugin", plugins, true);
   std::vector<std::string> catkin_lib_paths = getCatkinLibraryPaths();
 
-  for (const auto& plugin : plugins)
+  for(const auto& plugin : plugins)
   {
     auto filename = std::filesystem::path(plugin + BT::SharedLibrary::suffix());
-    for (const auto& lib_path : catkin_lib_paths)
+    for(const auto& lib_path : catkin_lib_paths)
     {
       const auto full_path = std::filesystem::path(lib_path) / filename;
-      if (std::filesystem::exists(full_path))
+      if(std::filesystem::exists(full_path))
       {
         std::cout << "Registering ROS plugins from " << full_path.string() << std::endl;
         registerFromPlugin(full_path.string());
@@ -266,7 +265,8 @@ void BehaviorTreeFactory::registerFromROSPlugins()
 }
 #endif
 
-void BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::filesystem::path &filename)
+void BehaviorTreeFactory::registerBehaviorTreeFromFile(
+    const std::filesystem::path& filename)
 {
   _p->parser->loadFromFile(filename);
 }
@@ -289,10 +289,9 @@ void BehaviorTreeFactory::clearRegisteredBehaviorTrees()
 std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     const std::string& name, const std::string& ID, const NodeConfig& config) const
 {
-  auto idNotFound = [this, ID]
-  {
+  auto idNotFound = [this, ID] {
     std::cerr << ID << " not included in this list:" << std::endl;
-    for (const auto& builder_it : _p->builders)
+    for(const auto& builder_it : _p->builders)
     {
       std::cerr << builder_it.first << std::endl;
     }
@@ -300,36 +299,36 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   };
 
   auto it_manifest = _p->manifests.find(ID);
-  if (it_manifest == _p->manifests.end())
+  if(it_manifest == _p->manifests.end())
   {
     idNotFound();
   }
 
-
   std::unique_ptr<TreeNode> node;
 
   bool substituted = false;
-  for(const auto& [filter, rule]: _p->substitution_rules)
+  for(const auto& [filter, rule] : _p->substitution_rules)
   {
-    if( filter == name || filter == ID || wildcards::match(config.path, filter))
+    if(filter == name || filter == ID || wildcards::match(config.path, filter))
     {
       // first case: the rule is simply a string with the name of the
       // node to create instead
-      if(const auto substituted_ID = std::get_if<std::string>(&rule) )
+      if(const auto substituted_ID = std::get_if<std::string>(&rule))
       {
         auto it_builder = _p->builders.find(*substituted_ID);
-        if (it_builder != _p->builders.end())
+        if(it_builder != _p->builders.end())
         {
           auto& builder = it_builder->second;
           node = builder(name, config);
         }
-        else{
+        else
+        {
           throw RuntimeError("Substituted Node ID not found");
         }
         substituted = true;
         break;
       }
-      else if(const auto test_config = std::get_if<TestNodeConfig>(&rule) )
+      else if(const auto test_config = std::get_if<TestNodeConfig>(&rule))
       {
         // second case, the varian is a TestNodeConfig
         auto test_node = new TestNode(name, config);
@@ -346,7 +345,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   if(!substituted)
   {
     auto it_builder = _p->builders.find(ID);
-    if (it_builder == _p->builders.end())
+    if(it_builder == _p->builders.end())
     {
       idNotFound();
     }
@@ -358,9 +357,9 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   node->config().enums = _p->scripting_enums;
 
   auto AssignConditions = [](auto& conditions, auto& executors) {
-    for (const auto& [cond_id, script] : conditions)
+    for(const auto& [cond_id, script] : conditions)
     {
-      if (auto executor = ParseScript(script))
+      if(auto executor = ParseScript(script))
       {
         executors[size_t(cond_id)] = executor.value();
       }
@@ -395,7 +394,8 @@ const std::set<std::string>& BehaviorTreeFactory::builtinNodes() const
 Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
                                              Blackboard::Ptr blackboard)
 {
-  if(!_p->parser->registeredBehaviorTrees().empty()) {
+  if(!_p->parser->registeredBehaviorTrees().empty())
+  {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromText "
                  "after registerBehaviorTreeFrom[File/Text].\n"
                  "This is NOT, probably, what you want to do.\n"
@@ -409,10 +409,11 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
   return tree;
 }
 
-Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path &file_path,
+Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path& file_path,
                                              Blackboard::Ptr blackboard)
 {
-  if(!_p->parser->registeredBehaviorTrees().empty()) {
+  if(!_p->parser->registeredBehaviorTrees().empty())
+  {
     std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromFile "
                  "after registerBehaviorTreeFrom[File/Text].\n"
                  "This is NOT, probably, what you want to do.\n"
@@ -439,7 +440,7 @@ void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
                                                 const KeyValueVector& metadata)
 {
   auto it = _p->manifests.find(node_id);
-  if (it == _p->manifests.end())
+  if(it == _p->manifests.end())
   {
     throw std::runtime_error("addMetadataToManifest: wrong ID");
   }
@@ -461,14 +462,14 @@ void BehaviorTreeFactory::addSubstitutionRule(StringView filter, SubstitutionRul
   _p->substitution_rules[std::string(filter)] = rule;
 }
 
-void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string &json_text)
+void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_text)
 {
   auto const json = nlohmann::json::parse(json_text);
 
   std::unordered_map<std::string, TestNodeConfig> configs;
 
   auto test_configs = json.at("TestNodeConfigs");
-  for(auto const& [name, test_config]: test_configs.items())
+  for(auto const& [name, test_config] : test_configs.items())
   {
     auto& config = configs[name];
 
@@ -486,7 +487,7 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string &json_t
   }
 
   auto substitutions = json.at("SubstitutionRules");
-  for(auto const& [node_name, test]: substitutions.items())
+  for(auto const& [node_name, test] : substitutions.items())
   {
     auto test_name = test.get<std::string>();
     auto it = configs.find(test_name);
@@ -494,20 +495,20 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string &json_t
     {
       addSubstitutionRule(node_name, test_name);
     }
-    else {
+    else
+    {
       addSubstitutionRule(node_name, it->second);
     }
   }
 }
 
-const std::unordered_map<std::string, BehaviorTreeFactory::SubstitutionRule> &
+const std::unordered_map<std::string, BehaviorTreeFactory::SubstitutionRule>&
 BehaviorTreeFactory::substitutionRules() const
 {
   return _p->substitution_rules;
 }
 
-
-Tree &Tree::operator=(Tree &&other)
+Tree& Tree::operator=(Tree&& other)
 {
   subtrees = std::move(other.subtrees);
   manifests = std::move(other.manifests);
@@ -518,7 +519,7 @@ Tree &Tree::operator=(Tree &&other)
 Tree::Tree()
 {}
 
-Tree::Tree(Tree &&other)
+Tree::Tree(Tree&& other)
 {
   (*this) = std::move(other);
 }
@@ -526,9 +527,9 @@ Tree::Tree(Tree &&other)
 void Tree::initialize()
 {
   wake_up_ = std::make_shared<WakeUpSignal>();
-  for (auto& subtree : subtrees)
+  for(auto& subtree : subtrees)
   {
-    for (auto& node : subtree->nodes)
+    for(auto& node : subtree->nodes)
     {
       node->setWakeUpInstance(wake_up_);
     }
@@ -537,7 +538,7 @@ void Tree::initialize()
 
 void Tree::haltTree()
 {
-  if (!rootNode())
+  if(!rootNode())
   {
     return;
   }
@@ -554,7 +555,7 @@ void Tree::haltTree()
 
 TreeNode* Tree::rootNode() const
 {
-  if (subtrees.empty())
+  if(subtrees.empty())
   {
     return nullptr;
   }
@@ -589,7 +590,7 @@ NodeStatus Tree::tickWhileRunning(std::chrono::milliseconds sleep_time)
 
 Blackboard::Ptr Tree::rootBlackboard()
 {
-  if (subtrees.size() > 0)
+  if(subtrees.size() > 0)
   {
     return subtrees.front()->blackboard;
   }
@@ -598,7 +599,7 @@ Blackboard::Ptr Tree::rootBlackboard()
 
 void Tree::applyVisitor(const std::function<void(const TreeNode*)>& visitor)
 {
-  for (auto const& subtree : subtrees)
+  for(auto const& subtree : subtrees)
   {
     BT::applyRecursiveVisitor(static_cast<const TreeNode*>(subtree->nodes.front().get()),
                               visitor);
@@ -607,15 +608,16 @@ void Tree::applyVisitor(const std::function<void(const TreeNode*)>& visitor)
 
 void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
 {
-  for (auto const& subtree : subtrees)
+  for(auto const& subtree : subtrees)
   {
     BT::applyRecursiveVisitor(static_cast<TreeNode*>(subtree->nodes.front().get()),
                               visitor);
   }
 }
 
-uint16_t Tree::getUID() {
-  auto uid =  ++uid_counter_;
+uint16_t Tree::getUID()
+{
+  auto uid = ++uid_counter_;
   return uid;
 }
 
@@ -623,35 +625,34 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
 {
   NodeStatus status = NodeStatus::IDLE;
 
-  if (!wake_up_)
+  if(!wake_up_)
   {
     initialize();
   }
 
-  if (!rootNode())
+  if(!rootNode())
   {
     throw RuntimeError("Empty Tree");
   }
 
-  while (status == NodeStatus::IDLE ||
-         (opt == TickOption::WHILE_RUNNING && status == NodeStatus::RUNNING))
+  while(status == NodeStatus::IDLE ||
+        (opt == TickOption::WHILE_RUNNING && status == NodeStatus::RUNNING))
   {
     status = rootNode()->executeTick();
 
     // Inner loop. The previous tick might have triggered the wake-up
     // in this case, unless TickOption::EXACTLY_ONCE, we tick again
-    while( opt != TickOption::EXACTLY_ONCE &&
-           status == NodeStatus::RUNNING &&
-           wake_up_->waitFor(std::chrono::milliseconds(0)) )
+    while(opt != TickOption::EXACTLY_ONCE && status == NodeStatus::RUNNING &&
+          wake_up_->waitFor(std::chrono::milliseconds(0)))
     {
       status = rootNode()->executeTick();
     }
 
-    if (isStatusCompleted(status))
+    if(isStatusCompleted(status))
     {
       rootNode()->resetStatus();
     }
-    if (status == NodeStatus::RUNNING && sleep_time.count() > 0)
+    if(status == NodeStatus::RUNNING && sleep_time.count() > 0)
     {
       sleep(std::chrono::milliseconds(sleep_time));
     }
@@ -660,4 +661,4 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
   return status;
 }
 
-}   // namespace BT
+}  // namespace BT

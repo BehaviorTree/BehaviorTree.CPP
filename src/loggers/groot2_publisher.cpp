@@ -11,7 +11,8 @@ namespace BT
 std::mutex Groot2Publisher::used_ports_mutex;
 std::set<unsigned> Groot2Publisher::used_ports;
 
-enum {
+enum
+{
   IDLE_FROM_SUCCESS = 10 + static_cast<int>(NodeStatus::SUCCESS),
   IDLE_FROM_FAILURE = 10 + static_cast<int>(NodeStatus::FAILURE),
   IDLE_FROM_RUNNING = 10 + static_cast<int>(NodeStatus::RUNNING)
@@ -30,13 +31,13 @@ struct Transition
   uint8_t padding[5];
 };
 
-std::array<char,16> CreateRandomUUID()
+std::array<char, 16> CreateRandomUUID()
 {
   std::mt19937 gen;
   std::uniform_int_distribution<uint32_t> dist;
-  std::array<char,16> out;
+  std::array<char, 16> out;
   char* bytes = out.data();
-  for (int i = 0; i < 16; i += 4)
+  for(int i = 0; i < 16; i += 4)
   {
     *reinterpret_cast<uint32_t*>(bytes + i) = dist(gen);
   }
@@ -104,24 +105,22 @@ struct Groot2Publisher::PImpl
   zmq::socket_t publisher;
 };
 
-Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
-                                 unsigned server_port) :
-  StatusChangeLogger(tree.rootNode()),
-  _p(new PImpl())
+Groot2Publisher::Groot2Publisher(const BT::Tree& tree, unsigned server_port)
+  : StatusChangeLogger(tree.rootNode()), _p(new PImpl())
 {
   _p->server_port = server_port;
 
   {
     std::unique_lock<std::mutex> lk(Groot2Publisher::used_ports_mutex);
     if(Groot2Publisher::used_ports.count(server_port) != 0 ||
-        Groot2Publisher::used_ports.count(server_port+1) != 0)
+       Groot2Publisher::used_ports.count(server_port + 1) != 0)
     {
       auto msg = StrCat("Another instance of Groot2Publisher is using port ",
                         std::to_string(server_port));
       throw LogicError(msg);
     }
     Groot2Publisher::used_ports.insert(server_port);
-    Groot2Publisher::used_ports.insert(server_port+1);
+    Groot2Publisher::used_ports.insert(server_port + 1);
   }
 
   _p->tree_xml = WriteTreeToXML(tree, true, true);
@@ -129,7 +128,7 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
   //-------------------------------
   // Prepare the status buffer
   size_t node_count = 0;
-  for(const auto& subtree: tree.subtrees)
+  for(const auto& subtree : tree.subtrees)
   {
     node_count += subtree->nodes.size();
   }
@@ -138,25 +137,24 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree,
   unsigned ptr_offset = 0;
   char* buffer_ptr = _p->status_buffer.data();
 
-  for(const auto& subtree: tree.subtrees)
+  for(const auto& subtree : tree.subtrees)
   {
-    auto name = subtree->instance_name.empty() ? subtree->tree_ID : subtree->instance_name;
-    _p->subtrees.insert( {name, subtree} );
+    auto name =
+        subtree->instance_name.empty() ? subtree->tree_ID : subtree->instance_name;
+    _p->subtrees.insert({ name, subtree });
 
-    for(const auto& node: subtree->nodes)
+    for(const auto& node : subtree->nodes)
     {
-      _p->nodes_by_uid.insert( {node->UID(), node} );
+      _p->nodes_by_uid.insert({ node->UID(), node });
 
-      ptr_offset += Monitor::Serialize(buffer_ptr, ptr_offset,
-                                       node->UID());
-      _p->status_buffermap.insert( {node->UID(), buffer_ptr + ptr_offset} );
-      ptr_offset += Monitor::Serialize(buffer_ptr, ptr_offset,
-                                       uint8_t(NodeStatus::IDLE));
+      ptr_offset += Monitor::Serialize(buffer_ptr, ptr_offset, node->UID());
+      _p->status_buffermap.insert({ node->UID(), buffer_ptr + ptr_offset });
+      ptr_offset += Monitor::Serialize(buffer_ptr, ptr_offset, uint8_t(NodeStatus::IDLE));
     }
   }
   //-------------------------------
   _p->server_address = StrCat("tcp://*:", std::to_string(server_port));
-  _p->publisher_address = StrCat("tcp://*:", std::to_string(server_port+1));
+  _p->publisher_address = StrCat("tcp://*:", std::to_string(server_port + 1));
 
   _p->server.bind(_p->server_address.c_str());
   _p->publisher.bind(_p->publisher_address.c_str());
@@ -180,12 +178,12 @@ Groot2Publisher::~Groot2Publisher()
   removeAllHooks();
 
   _p->active_server = false;
-  if (_p->server_thread.joinable())
+  if(_p->server_thread.joinable())
   {
     _p->server_thread.join();
   }
 
-  if (_p->heartbeat_thread.joinable())
+  if(_p->heartbeat_thread.joinable())
   {
     _p->heartbeat_thread.join();
   }
@@ -195,17 +193,18 @@ Groot2Publisher::~Groot2Publisher()
   {
     std::unique_lock<std::mutex> lk(Groot2Publisher::used_ports_mutex);
     Groot2Publisher::used_ports.erase(_p->server_port);
-    Groot2Publisher::used_ports.erase(_p->server_port+1);
+    Groot2Publisher::used_ports.erase(_p->server_port + 1);
   }
 }
 
-void Groot2Publisher::callback(Duration ts, const TreeNode& node,
-                               NodeStatus prev_status, NodeStatus new_status)
+void Groot2Publisher::callback(Duration ts, const TreeNode& node, NodeStatus prev_status,
+                               NodeStatus new_status)
 {
   std::unique_lock<std::mutex> lk(_p->status_mutex);
   auto status = static_cast<char>(new_status);
 
-  if( new_status == NodeStatus::IDLE) {
+  if(new_status == NodeStatus::IDLE)
+  {
     status = 10 + static_cast<char>(prev_status);
   }
   *(_p->status_buffermap.at(node.UID())) = status;
@@ -215,11 +214,12 @@ void Groot2Publisher::callback(Duration ts, const TreeNode& node,
     Transition trans;
     trans.node_uid = node.UID();
     trans.status = static_cast<uint8_t>(new_status);
-    auto timestamp = ts -_p->recording_fist_time;
+    auto timestamp = ts - _p->recording_fist_time;
     trans.timestamp_usec =
         std::chrono::duration_cast<std::chrono::microseconds>(timestamp).count();
     _p->transitions_buffer.push_back(trans);
-    while(_p->transitions_buffer.size() > 1000) {
+    while(_p->transitions_buffer.size() > 1000)
+    {
       _p->transitions_buffer.pop_front();
     }
   }
@@ -237,8 +237,7 @@ void Groot2Publisher::serverLoop()
   _p->active_server = true;
   auto& socket = _p->server;
 
-  auto sendErrorReply = [&socket](const std::string& msg)
-  {
+  auto sendErrorReply = [&socket](const std::string& msg) {
     zmq::multipart_t error_msg;
     error_msg.addstr("error");
     error_msg.addstr(msg);
@@ -248,10 +247,10 @@ void Groot2Publisher::serverLoop()
   // initialize _p->last_heartbeat
   _p->last_heartbeat = std::chrono::system_clock::now();
 
-  while (_p->active_server)
+  while(_p->active_server)
   {
     zmq::multipart_t requestMsg;
-    if( !requestMsg.recv(socket) || requestMsg.size() == 0)
+    if(!requestMsg.recv(socket) || requestMsg.size() == 0)
     {
       continue;
     }
@@ -273,35 +272,36 @@ void Groot2Publisher::serverLoop()
     reply_header.tree_id = serialized_uuid;
 
     zmq::multipart_t reply_msg;
-    reply_msg.addstr( Monitor::SerializeHeader(reply_header) );
+    reply_msg.addstr(Monitor::SerializeHeader(reply_header));
 
     switch(request_header.type)
     {
-      case Monitor::RequestType::FULLTREE:
-      {
-        reply_msg.addstr( _p->tree_xml );
-      } break;
+      case Monitor::RequestType::FULLTREE: {
+        reply_msg.addstr(_p->tree_xml);
+      }
+      break;
 
-      case Monitor::RequestType::STATUS:
-      {
+      case Monitor::RequestType::STATUS: {
         std::unique_lock<std::mutex> lk(_p->status_mutex);
-        reply_msg.addstr( _p->status_buffer );
-      } break;
+        reply_msg.addstr(_p->status_buffer);
+      }
+      break;
 
-      case Monitor::RequestType::BLACKBOARD:
-      {
-        if(requestMsg.size() != 2) {
+      case Monitor::RequestType::BLACKBOARD: {
+        if(requestMsg.size() != 2)
+        {
           sendErrorReply("must be 2 parts message");
           continue;
         }
         std::string const bb_names_str = requestMsg[1].to_string();
         auto msg = generateBlackboardsDump(bb_names_str);
         reply_msg.addmem(msg.data(), msg.size());
-      } break;
+      }
+      break;
 
-      case Monitor::RequestType::HOOK_INSERT:
-      {
-        if(requestMsg.size() != 2) {
+      case Monitor::RequestType::HOOK_INSERT: {
+        if(requestMsg.size() != 2)
+        {
           sendErrorReply("must be 2 parts message");
           continue;
         }
@@ -324,7 +324,7 @@ void Groot2Publisher::serverLoop()
               hook->wakeup.notify_all();
             }
           }
-          else // if not found, create a new one
+          else  // if not found, create a new one
           {
             auto new_hook = std::make_shared<Monitor::Hook>();
             BT::Monitor::from_json(json, *new_hook);
@@ -335,20 +335,23 @@ void Groot2Publisher::serverLoop()
         auto const received_json = nlohmann::json::parse(requestMsg[1].to_string());
 
         // the json may contain a Hook or an array of Hooks
-        if(received_json.is_array()) {
-          for(auto const& json: received_json) {
+        if(received_json.is_array())
+        {
+          for(auto const& json : received_json)
+          {
             InsertHook(json);
           }
         }
-        else {
+        else
+        {
           InsertHook(received_json);
         }
+      }
+      break;
 
-      } break;
-
-      case Monitor::RequestType::BREAKPOINT_UNLOCK:
-      {
-        if(requestMsg.size() != 2) {
+      case Monitor::RequestType::BREAKPOINT_UNLOCK: {
+        if(requestMsg.size() != 2)
+        {
           sendErrorReply("must be 2 parts message");
           continue;
         }
@@ -360,11 +363,11 @@ void Groot2Publisher::serverLoop()
         bool remove = json.at("remove_when_done").get<bool>();
 
         NodeStatus desired_status = NodeStatus::SKIPPED;
-        if( status_str == "SUCCESS")
+        if(status_str == "SUCCESS")
         {
           desired_status = NodeStatus::SUCCESS;
         }
-        else if( status_str == "FAILURE")
+        else if(status_str == "FAILURE")
         {
           desired_status = NodeStatus::FAILURE;
         }
@@ -374,21 +377,22 @@ void Groot2Publisher::serverLoop()
           sendErrorReply("Node ID not found");
           continue;
         }
-      } break;
+      }
+      break;
 
-      case Monitor::RequestType::REMOVE_ALL_HOOKS:
-      {
+      case Monitor::RequestType::REMOVE_ALL_HOOKS: {
         removeAllHooks();
-      } break;
+      }
+      break;
 
-      case Monitor::RequestType::DISABLE_ALL_HOOKS:
-      {
+      case Monitor::RequestType::DISABLE_ALL_HOOKS: {
         enableAllHooks(false);
-      } break;
+      }
+      break;
 
-      case Monitor::RequestType::HOOK_REMOVE:
-      {
-        if(requestMsg.size() != 2) {
+      case Monitor::RequestType::HOOK_REMOVE: {
+        if(requestMsg.size() != 2)
+        {
           sendErrorReply("must be 2 parts message");
           continue;
         }
@@ -402,22 +406,23 @@ void Groot2Publisher::serverLoop()
           sendErrorReply("Node ID not found");
           continue;
         }
-      } break;
+      }
+      break;
 
-      case Monitor::RequestType::HOOKS_DUMP:
-      {
+      case Monitor::RequestType::HOOKS_DUMP: {
         std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
         auto json_out = nlohmann::json::array();
-        for(auto [node_uid, breakpoint]: _p->pre_hooks)
+        for(auto [node_uid, breakpoint] : _p->pre_hooks)
         {
-          json_out.push_back( *breakpoint );
+          json_out.push_back(*breakpoint);
         }
-        reply_msg.addstr( json_out.dump() );
-      } break;
+        reply_msg.addstr(json_out.dump());
+      }
+      break;
 
-      case Monitor::RequestType::TOGGLE_RECORDING:
-      {
-        if(requestMsg.size() != 2) {
+      case Monitor::RequestType::TOGGLE_RECORDING: {
+        if(requestMsg.size() != 2)
+        {
           sendErrorReply("must be 2 parts message");
           continue;
         }
@@ -440,16 +445,16 @@ void Groot2Publisher::serverLoop()
         {
           _p->recording = false;
         }
-      } break;
+      }
+      break;
 
-      case Monitor::RequestType::GET_TRANSITIONS:
-      {
+      case Monitor::RequestType::GET_TRANSITIONS: {
         thread_local std::string trans_buffer;
         trans_buffer.resize(9 * _p->transitions_buffer.size());
 
         std::unique_lock<std::mutex> lk(_p->status_mutex);
         size_t offset = 0;
-        for(const auto& trans: _p->transitions_buffer)
+        for(const auto& trans : _p->transitions_buffer)
         {
           std::memcpy(&trans_buffer[offset], &trans.timestamp_usec, 6);
           offset += 6;
@@ -461,7 +466,8 @@ void Groot2Publisher::serverLoop()
         _p->transitions_buffer.clear();
         trans_buffer.resize(offset);
         reply_msg.addstr(trans_buffer);
-      } break;
+      }
+      break;
 
       default: {
         sendErrorReply("Request not recognized");
@@ -476,7 +482,7 @@ void Groot2Publisher::serverLoop()
 void BT::Groot2Publisher::enableAllHooks(bool enable)
 {
   std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
-  for(auto& [node_uid, hook]: _p->pre_hooks)
+  for(auto& [node_uid, hook] : _p->pre_hooks)
   {
     std::unique_lock<std::mutex> lk(hook->mutex);
     hook->enabled = enable;
@@ -493,14 +499,14 @@ void Groot2Publisher::heartbeatLoop()
 {
   bool has_heartbeat = true;
 
-  while (_p->active_server)
+  while(_p->active_server)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     auto now = std::chrono::system_clock::now();
     bool prev_heartbeat = has_heartbeat;
 
-    has_heartbeat = ( now - _p->last_heartbeat < _p->max_heartbeat_delay);
+    has_heartbeat = (now - _p->last_heartbeat < _p->max_heartbeat_delay);
 
     // if we loose or gain heartbeat, disable/enable all breakpoints
     if(has_heartbeat != prev_heartbeat)
@@ -510,12 +516,11 @@ void Groot2Publisher::heartbeatLoop()
   }
 }
 
-std::vector<uint8_t>
-Groot2Publisher::generateBlackboardsDump(const std::string &bb_list)
+std::vector<uint8_t> Groot2Publisher::generateBlackboardsDump(const std::string& bb_list)
 {
   auto json = nlohmann::json();
   auto const bb_names = BT::splitString(bb_list, ';');
-  for(auto name: bb_names)
+  for(auto name : bb_names)
   {
     std::string const bb_name(name);
     auto it = _p->subtrees.find(bb_name);
@@ -523,7 +528,8 @@ Groot2Publisher::generateBlackboardsDump(const std::string &bb_list)
     if(it != _p->subtrees.end())
     {
       // lock the weak pointer
-      if(auto subtree = it->second.lock()) {
+      if(auto subtree = it->second.lock())
+      {
         json[bb_name] = ExportBlackboardToJSON(*subtree->blackboard);
       }
     }
@@ -535,7 +541,7 @@ bool Groot2Publisher::insertHook(std::shared_ptr<Monitor::Hook> hook)
 {
   auto const node_uid = hook->node_uid;
   auto it = _p->nodes_by_uid.find(node_uid);
-  if( it == _p->nodes_by_uid.end())
+  if(it == _p->nodes_by_uid.end())
   {
     return false;
   }
@@ -545,8 +551,7 @@ bool Groot2Publisher::insertHook(std::shared_ptr<Monitor::Hook> hook)
     return false;
   }
 
-  auto injectedCallback = [hook, this](TreeNode& node) -> NodeStatus
-  {
+  auto injectedCallback = [hook, this](TreeNode& node) -> NodeStatus {
     std::unique_lock<std::mutex> lk(hook->mutex);
     if(!hook->enabled)
     {
@@ -556,20 +561,20 @@ bool Groot2Publisher::insertHook(std::shared_ptr<Monitor::Hook> hook)
     // Notify that a breakpoint was reached, using the _p->publisher
     Monitor::RequestHeader breakpoint_request(Monitor::BREAKPOINT_REACHED);
     zmq::multipart_t request_msg;
-    request_msg.addstr( Monitor::SerializeHeader(breakpoint_request) );
+    request_msg.addstr(Monitor::SerializeHeader(breakpoint_request));
     request_msg.addstr(std::to_string(hook->node_uid));
     request_msg.send(_p->publisher);
 
     // wait until someone wake us up
     if(hook->mode == Monitor::Hook::Mode::BREAKPOINT)
     {
-      hook->wakeup.wait(lk, [hook]() {
-        return hook->ready || !hook->enabled;  } );
+      hook->wakeup.wait(lk, [hook]() { return hook->ready || !hook->enabled; });
 
       hook->ready = false;
       // wait was unblocked but it could be the breakpoint becoming disabled.
       // in this case, just skip
-      if(!hook->enabled) {
+      if(!hook->enabled)
+      {
         return NodeStatus::SKIPPED;
       }
     }
@@ -591,10 +596,11 @@ bool Groot2Publisher::insertHook(std::shared_ptr<Monitor::Hook> hook)
   return true;
 }
 
-bool Groot2Publisher::unlockBreakpoint(Position pos, uint16_t node_uid, NodeStatus result, bool remove)
+bool Groot2Publisher::unlockBreakpoint(Position pos, uint16_t node_uid, NodeStatus result,
+                                       bool remove)
 {
   auto it = _p->nodes_by_uid.find(node_uid);
-  if( it == _p->nodes_by_uid.end())
+  if(it == _p->nodes_by_uid.end())
   {
     return false;
   }
@@ -627,7 +633,7 @@ bool Groot2Publisher::unlockBreakpoint(Position pos, uint16_t node_uid, NodeStat
 bool Groot2Publisher::removeHook(Position pos, uint16_t node_uid)
 {
   auto it = _p->nodes_by_uid.find(node_uid);
-  if( it == _p->nodes_by_uid.end())
+  if(it == _p->nodes_by_uid.end())
   {
     return false;
   }
@@ -666,7 +672,7 @@ void Groot2Publisher::removeAllHooks()
 {
   std::vector<uint16_t> uids;
 
-  for(auto pos: {Position::PRE, Position::POST})
+  for(auto pos : { Position::PRE, Position::POST })
   {
     uids.clear();
     auto hooks = pos == Position::PRE ? &_p->pre_hooks : &_p->post_hooks;
@@ -674,13 +680,13 @@ void Groot2Publisher::removeAllHooks()
     if(!hooks->empty())
     {
       uids.reserve(hooks->size());
-      for(auto [node_uid, _]: *hooks)
+      for(auto [node_uid, _] : *hooks)
       {
         uids.push_back(node_uid);
       }
 
       lk.unlock();
-      for(auto node_uid: uids)
+      for(auto node_uid : uids)
       {
         removeHook(pos, node_uid);
       }
@@ -693,11 +699,11 @@ Monitor::Hook::Ptr Groot2Publisher::getHook(Position pos, uint16_t node_uid)
   auto hooks = pos == Position::PRE ? &_p->pre_hooks : &_p->post_hooks;
   std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
   auto bk_it = hooks->find(node_uid);
-  if( bk_it == hooks->end())
+  if(bk_it == hooks->end())
   {
     return {};
   }
   return bk_it->second;
 }
 
-}   // namespace BT
+}  // namespace BT

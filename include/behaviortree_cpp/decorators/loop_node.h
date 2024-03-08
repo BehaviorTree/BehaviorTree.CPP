@@ -41,8 +41,8 @@ class LoopNode : public DecoratorNode
   SharedQueue<T> current_queue_;
 
 public:
-  LoopNode(const std::string& name, const NodeConfig& config) :
-    DecoratorNode(name, config)
+  LoopNode(const std::string& name, const NodeConfig& config)
+    : DecoratorNode(name, config)
   {
     auto raw_port = getRawPortValue("queue");
     if(!isBlackboardPointer(raw_port))
@@ -69,15 +69,15 @@ public:
     {
       // if the port is static, any_ref is empty, otherwise it will keep access to
       // port locked for thread-safety
-      AnyPtrLocked any_ref = static_queue_ ?
-                                 AnyPtrLocked() :
-                                 getLockedPortContent("queue");
+      AnyPtrLocked any_ref =
+          static_queue_ ? AnyPtrLocked() : getLockedPortContent("queue");
       if(any_ref)
       {
         current_queue_ = any_ref.get()->cast<SharedQueue<T>>();
       }
 
-      if(current_queue_ && !current_queue_->empty()) {
+      if(current_queue_ && !current_queue_->empty())
+      {
         auto value = std::move(current_queue_->front());
         current_queue_->pop_front();
         popped = true;
@@ -90,7 +90,7 @@ public:
       return getInput<NodeStatus>("if_empty").value();
     }
 
-    if( status() == NodeStatus::IDLE)
+    if(status() == NodeStatus::IDLE)
     {
       setStatus(NodeStatus::RUNNING);
     }
@@ -113,61 +113,61 @@ public:
   static PortsList providedPorts()
   {
     // we mark "queue" as BidirectionalPort, because the original element is modified
-    return {BidirectionalPort<SharedQueue<T>>("queue"),
-            InputPort<NodeStatus>("if_empty", NodeStatus::SUCCESS,
-                                  "Status to return if queue is empty: "
-                                  "SUCCESS, FAILURE, SKIPPED"),
-            OutputPort<T>("value")};
+    return { BidirectionalPort<SharedQueue<T>>("queue"),
+             InputPort<NodeStatus>("if_empty", NodeStatus::SUCCESS,
+                                   "Status to return if queue is empty: "
+                                   "SUCCESS, FAILURE, SKIPPED"),
+             OutputPort<T>("value") };
   }
 };
 
-template <> inline
-SharedQueue<int> convertFromString<SharedQueue<int>>(StringView str)
+template <>
+inline SharedQueue<int> convertFromString<SharedQueue<int>>(StringView str)
 {
   auto parts = splitString(str, ';');
   SharedQueue<int> output = std::make_shared<std::deque<int>>();
-  for (const StringView& part : parts)
+  for(const StringView& part : parts)
   {
     output->push_back(convertFromString<int>(part));
   }
   return output;
 }
 
-template <> inline
-SharedQueue<bool> convertFromString<SharedQueue<bool>>(StringView str)
+template <>
+inline SharedQueue<bool> convertFromString<SharedQueue<bool>>(StringView str)
 {
   auto parts = splitString(str, ';');
   SharedQueue<bool> output = std::make_shared<std::deque<bool>>();
-  for (const StringView& part : parts)
+  for(const StringView& part : parts)
   {
     output->push_back(convertFromString<bool>(part));
   }
   return output;
 }
 
-template <> inline
-SharedQueue<double> convertFromString<SharedQueue<double>>(StringView str)
+template <>
+inline SharedQueue<double> convertFromString<SharedQueue<double>>(StringView str)
 {
   auto parts = splitString(str, ';');
   SharedQueue<double> output = std::make_shared<std::deque<double>>();
-  for (const StringView& part : parts)
+  for(const StringView& part : parts)
   {
     output->push_back(convertFromString<double>(part));
   }
   return output;
 }
 
-template <> inline
-SharedQueue<std::string> convertFromString<SharedQueue<std::string>>(StringView str)
+template <>
+inline SharedQueue<std::string>
+convertFromString<SharedQueue<std::string>>(StringView str)
 {
   auto parts = splitString(str, ';');
   SharedQueue<std::string> output = std::make_shared<std::deque<std::string>>();
-  for (const StringView& part : parts)
+  for(const StringView& part : parts)
   {
     output->push_back(convertFromString<std::string>(part));
   }
   return output;
 }
 
-
-}   // namespace BT
+}  // namespace BT

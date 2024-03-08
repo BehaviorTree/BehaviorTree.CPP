@@ -21,8 +21,8 @@ namespace BT
 class PreconditionNode : public DecoratorNode
 {
 public:
-  PreconditionNode(const std::string& name, const NodeConfig& config) :
-    DecoratorNode(name, config)
+  PreconditionNode(const std::string& name, const NodeConfig& config)
+    : DecoratorNode(name, config)
   {
     loadExecutor();
   }
@@ -31,10 +31,10 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<std::string>("if"),
-            InputPort<NodeStatus>("else", NodeStatus::FAILURE,
-                                  "Return status if condition is "
-                                  "false")};
+    return { InputPort<std::string>("if"),
+             InputPort<NodeStatus>("else", NodeStatus::FAILURE,
+                                   "Return status if condition is "
+                                   "false") };
   }
 
 private:
@@ -43,12 +43,12 @@ private:
     loadExecutor();
 
     BT::NodeStatus else_return;
-    if (!getInput("else", else_return))
+    if(!getInput("else", else_return))
     {
       throw RuntimeError("Missing parameter [else] in Precondition");
     }
 
-    Ast::Environment env = {config().blackboard, config().enums};
+    Ast::Environment env = { config().blackboard, config().enums };
     if(_executor(env).cast<bool>())
     {
       auto const child_status = child_node_->executeTick();
@@ -58,7 +58,8 @@ private:
       }
       return child_status;
     }
-    else {
+    else
+    {
       return else_return;
     }
   }
@@ -66,16 +67,16 @@ private:
   void loadExecutor()
   {
     std::string script;
-    if (!getInput("if", script))
+    if(!getInput("if", script))
     {
       throw RuntimeError("Missing parameter [if] in Precondition");
     }
-    if (script == _script)
+    if(script == _script)
     {
       return;
     }
     auto executor = ParseScript(script);
-    if (!executor)
+    if(!executor)
     {
       throw RuntimeError(executor.error());
     }
@@ -90,4 +91,4 @@ private:
   ScriptFunction _executor;
 };
 
-}   // namespace BT
+}  // namespace BT

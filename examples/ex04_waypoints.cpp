@@ -21,16 +21,16 @@ struct Pose2D
 class GenerateWaypoints : public SyncActionNode
 {
 public:
-  GenerateWaypoints(const std::string& name, const NodeConfig& config) :
-    SyncActionNode(name, config)
+  GenerateWaypoints(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
     auto shared_queue = std::make_shared<std::deque<Pose2D>>();
-    for (int i = 0; i < 5; i++)
+    for(int i = 0; i < 5; i++)
     {
-      shared_queue->push_back(Pose2D{double(i), double(i), 0});
+      shared_queue->push_back(Pose2D{ double(i), double(i), 0 });
     }
     setOutput("waypoints", shared_queue);
     return NodeStatus::SUCCESS;
@@ -38,21 +38,22 @@ public:
 
   static PortsList providedPorts()
   {
-    return {OutputPort<SharedQueue<Pose2D>>("waypoints")};
+    return { OutputPort<SharedQueue<Pose2D>>("waypoints") };
   }
 };
 //--------------------------------------------------------------
 class PrintNumber : public SyncActionNode
 {
-  public:
-  PrintNumber(const std::string& name, const NodeConfig& config) :
-        SyncActionNode(name, config)
+public:
+  PrintNumber(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
     double value;
-    if (getInput("value", value)) {
+    if(getInput("value", value))
+    {
       std::cout << "PrintNumber: " << value << "\n";
       return NodeStatus::SUCCESS;
     }
@@ -61,7 +62,7 @@ class PrintNumber : public SyncActionNode
 
   static PortsList providedPorts()
   {
-    return {InputPort<double>("value")};
+    return { InputPort<double>("value") };
   }
 };
 
@@ -73,14 +74,14 @@ class PrintNumber : public SyncActionNode
 class UseWaypoint : public ThreadedAction
 {
 public:
-  UseWaypoint(const std::string& name, const NodeConfig& config) :
-    ThreadedAction(name, config)
+  UseWaypoint(const std::string& name, const NodeConfig& config)
+    : ThreadedAction(name, config)
   {}
 
   NodeStatus tick() override
   {
     Pose2D wp;
-    if (getInput("waypoint", wp))
+    if(getInput("waypoint", wp))
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       std::cout << "Using waypoint: " << wp.x << "/" << wp.y << std::endl;
@@ -94,7 +95,7 @@ public:
 
   static PortsList providedPorts()
   {
-    return {InputPort<Pose2D>("waypoint")};
+    return { InputPort<Pose2D>("waypoint") };
   }
 };
 
@@ -121,7 +122,7 @@ static const char* xml_tree = R"(
 int main()
 {
   BehaviorTreeFactory factory;
-  
+
   factory.registerNodeType<LoopNode<Pose2D>>("LoopPose");
 
   factory.registerNodeType<UseWaypoint>("UseWaypoint");
