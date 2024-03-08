@@ -1,5 +1,5 @@
 ---
-BasedOnStyle:  Google
+BasedOnStyle: Google
 AccessModifierOffset: -2
 ConstructorInitializerIndentWidth: 2
 AlignEscapedNewlinesLeft: false
@@ -8,15 +8,13 @@ AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
-AllowShortLoopsOnASingleLine: false
 AlwaysBreakTemplateDeclarations: true
 AlwaysBreakBeforeMultilineStrings: false
 BreakBeforeBinaryOperators: false
 BreakBeforeTernaryOperators: false
-BreakConstructorInitializersBeforeComma: false
-BreakConstructorInitializers: AfterColon
+BreakConstructorInitializers: BeforeComma
 BinPackParameters: true
-ColumnLimit:    90
+ColumnLimit: 90
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 DerivePointerBinding: false
 PointerBindsToType: true
@@ -31,15 +29,15 @@ PenaltyBreakString: 1
 PenaltyBreakFirstLessLess: 1000
 PenaltyExcessCharacter: 1000
 PenaltyReturnTypeOnItsOwnLine: 90
-SpacesBeforeTrailingComments: 3
-Cpp11BracedListStyle: true
-Standard:        Auto
-IndentWidth:     2
-TabWidth:        2
-UseTab:          Never
+SpacesBeforeTrailingComments: 2
+Cpp11BracedListStyle: false
+Standard: Auto
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
 IndentFunctionDeclarationAfterType: false
 SpacesInParentheses: false
-SpacesInAngles:  false
+SpacesInAngles: false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpaceAfterControlStatementKeyword: true
@@ -54,17 +52,16 @@ BreakBeforeBraces: Custom
 
 # Control of individual brace wrapping cases
 BraceWrapping: {
-    AfterClass: 'true'
-    AfterControlStatement: 'true'
-    AfterEnum : 'true'
-    AfterFunction : 'true'
-    AfterNamespace : 'true'
-    AfterStruct : 'true'
-    AfterUnion : 'true'
-    BeforeCatch : 'true'
-    BeforeElse : 'true'
+    AfterClass: 'true',
+    AfterControlStatement: 'true',
+    AfterEnum : 'true',
+    AfterFunction : 'true',
+    AfterNamespace : 'true',
+    AfterStruct : 'true',
+    AfterUnion : 'true',
+    BeforeCatch : 'true',
+    BeforeElse : 'true',
     IndentBraces : 'false'
     SplitEmptyFunction: 'false'
 }
 ...
-
