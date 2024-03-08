@@ -1,4 +1,4 @@
-<!-- 
+<!--
 You must run clang-format, otherwise your change may not pass the tests on CI
 We recommend using pre-commit.
 
