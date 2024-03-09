@@ -881,15 +881,19 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
     {
       auto new_bb = Blackboard::create(blackboard);
       const std::string subtree_ID = element->Attribute("ID");
-      std::unordered_map<std::string, std::string> remapping;
+      std::unordered_map<std::string, std::string> subtree_remapping;
       bool do_autoremap = false;
 
       for(auto attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
       {
-        const char* attr_name = attr->Name();
-        const char* attr_value = attr->Value();
+        std::string attr_name = attr->Name();
+        std::string attr_value = attr->Value();
+        if(attr_value == "{=}")
+        {
+          attr_value = StrCat("{", attr_name, "}");
+        }
 
-        if(StrEqual(attr_name, "_autoremap"))
+        if(attr_name == "_autoremap")
         {
           do_autoremap = convertFromString<bool>(attr_value);
           new_bb->enableAutoRemapping(do_autoremap);
@@ -899,10 +903,10 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
         {
           continue;
         }
-        remapping.insert({ attr_name, attr_value });
+        subtree_remapping.insert({ attr_name, attr_value });
       }
       // check if this subtree has a model. If it does,
-      // we want o check if all the mandatory ports were remapped and
+      // we want to check if all the mandatory ports were remapped and
       // add default ones, if necessary
       auto subtree_model_it = subtree_models.find(subtree_ID);
       if(subtree_model_it != subtree_models.end())
@@ -913,9 +917,9 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
         // - if any of these has default value
         for(const auto& [port_name, port_info] : subtree_model_ports)
         {
-          auto it = remapping.find(port_name);
+          auto it = subtree_remapping.find(port_name);
           // don't override existing remapping
-          if(it == remapping.end() && !do_autoremap)
+          if(it == subtree_remapping.end() && !do_autoremap)
           {
             // remapping is not explicitly defined in the XML: use the model
             if(port_info.defaultValueString().empty())
@@ -927,13 +931,13 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
             }
             else
             {
-              remapping.insert({ port_name, port_info.defaultValueString() });
+              subtree_remapping.insert({ port_name, port_info.defaultValueString() });
             }
           }
         }
       }
 
-      for(const auto& [attr_name, attr_value] : remapping)
+      for(const auto& [attr_name, attr_value] : subtree_remapping)
       {
         if(TreeNode::isBlackboardPointer(attr_value))
         {
