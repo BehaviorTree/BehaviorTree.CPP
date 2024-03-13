@@ -89,7 +89,7 @@ inline void SwitchNode<NUM_CASES>::halt()
 template <size_t NUM_CASES>
 inline PortsList SwitchNode<NUM_CASES>::providedPorts()
 {
-  static PortsList ports = []() {
+  static PortsList provided_ports = []() {
     PortsList ports;
     ports.insert(BT::InputPort<std::string>("variable"));
     for(unsigned i = 1; i <= NUM_CASES; i++)
@@ -100,7 +100,7 @@ inline PortsList SwitchNode<NUM_CASES>::providedPorts()
     return ports;
   }();
 
-  return ports;
+  return provided_ports;
 }
 
 template <size_t NUM_CASES>
