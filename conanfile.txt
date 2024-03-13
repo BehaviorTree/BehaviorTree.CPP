@@ -1,5 +1,5 @@
 [requires]
-gtest/1.12.1
+gtest/1.14.0
 zeromq/4.3.4
 sqlite3/3.40.1
 
