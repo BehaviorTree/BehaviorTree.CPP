@@ -506,3 +506,74 @@ TEST(BlackboardTest, NullOutputRemapping)
   // This will throw because setOutput should fail in BB_TestNode::tick()
   ASSERT_ANY_THROW(node.executeTick());
 }
+
+void BlackboardClone(const Blackboard& src, Blackboard& dst)
+{
+  dst.clear();
+  for(auto const key_name: src.getKeys())
+  {
+    const auto key = std::string(key_name);
+    const auto entry = src.getEntry(key);
+    dst.createEntry(key, entry->info);
+    auto new_entry =  dst.getEntry(key);
+    new_entry->value = entry->value;
+    new_entry->string_converter = entry->string_converter;
+  }
+}
+
+TEST(BlackboardTest, BlackboardBackup)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="MySubtree">
+      <Sequence>
+        <Script code=" value:= sub_value " />
+        <Script code=" my_value=2 " />
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code=" my_value:=1 " />
+        <SubTree ID="MySubtree" sub_value="true" _autoremap="true" />
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+
+  // Blackboard Backup
+  std::vector<Blackboard::Ptr> bb_backup;
+  bb_backup.reserve(tree.subtrees.size());
+  for(const auto& sub: tree.subtrees)
+  {
+    bb_backup.push_back( BT::Blackboard::create() );
+    BlackboardClone(*sub->blackboard, *bb_backup.back());
+  }
+
+  std::vector<size_t> sizes;
+  for(const auto& sub: tree.subtrees)
+  {
+    sizes.push_back(sub->blackboard->getKeys().size());
+  }
+
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+
+  // Restore Blackboard
+  ASSERT_EQ(bb_backup.size(), tree.subtrees.size());
+  for(size_t i=0; i<tree.subtrees.size(); i++)
+  {
+    BlackboardClone(*(bb_backup[i]), *(tree.subtrees[i]->blackboard));
+  }
+
+  for(size_t i=0; i<tree.subtrees.size(); i++)
+  {
+    ASSERT_EQ(sizes[i], tree.subtrees[i]->blackboard->getKeys().size());
+  }
+
+}
