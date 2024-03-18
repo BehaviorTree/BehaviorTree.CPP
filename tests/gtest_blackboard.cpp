@@ -506,3 +506,54 @@ TEST(BlackboardTest, NullOutputRemapping)
   // This will throw because setOutput should fail in BB_TestNode::tick()
   ASSERT_ANY_THROW(node.executeTick());
 }
+
+TEST(BlackboardTest, BlackboardBackup)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="MySubtree">
+      <Sequence>
+        <Script code=" value:= sub_value " />
+        <Script code=" my_value=2 " />
+      </Sequence>
+    </BehaviorTree>
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code=" my_value:=1 " />
+        <SubTree ID="MySubtree" sub_value="true" _autoremap="true" />
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+
+  // Blackboard Backup
+  const auto bb_backup = BlackboardBackup(tree);
+
+  std::vector<std::vector<StringView>> expected_keys;
+  for(const auto& sub : tree.subtrees)
+  {
+    expected_keys.push_back(sub->blackboard->getKeys());
+  }
+
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+
+  // Restore Blackboard
+  ASSERT_EQ(bb_backup.size(), tree.subtrees.size());
+  BlackboardRestore(bb_backup, tree);
+
+  for(size_t i = 0; i < tree.subtrees.size(); i++)
+  {
+    const auto keys = tree.subtrees[i]->blackboard->getKeys();
+    ASSERT_EQ(expected_keys[i].size(), keys.size());
+    for(size_t a = 0; a < keys.size(); a++)
+    {
+      ASSERT_EQ(expected_keys[i][a], keys[a]);
+    }
+  }
+}

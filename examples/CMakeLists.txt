@@ -38,6 +38,7 @@ CompileExample("ex02_runtime_ports")
 CompileExample("ex04_waypoints")
 CompileExample("ex05_subtree_model")
 CompileExample("ex06_access_by_ptr")
+CompileExample("ex07_blackboard_backup")
 
 CompileExample("t13_plugin_executor")
 

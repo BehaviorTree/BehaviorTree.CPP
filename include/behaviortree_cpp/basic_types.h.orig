@@ -63,6 +63,173 @@ bool StartWith(StringView str, StringView prefix);
 // vector of key/value pairs
 using KeyValueVector = std::vector<std::pair<std::string, std::string>>;
 
+<<<<<<< HEAD
+struct AnyTypeAllowed
+{
+};
+
+/**
+ * convertFromString is used to convert a string into a custom type.
+ *
+ * This function is invoked under the hood by TreeNode::getInput(), but only when the
+ * input port contains a string.
+ *
+ * If you have a custom type, you need to implement the corresponding template specialization.
+ */
+template <typename T>
+[[nodiscard]] inline T convertFromString(StringView /*str*/)
+{
+  auto type_name = BT::demangle(typeid(T));
+
+  std::cerr << "You (maybe indirectly) called BT::convertFromString() for type ["
+            << type_name << "], but I can't find the template specialization.\n"
+            << std::endl;
+
+  throw LogicError(std::string("You didn't implement the template specialization of "
+                               "convertFromString for this type: ") +
+                   type_name);
+}
+
+template <>
+[[nodiscard]] std::string convertFromString<std::string>(StringView str);
+
+template <>
+[[nodiscard]] const char* convertFromString<const char*>(StringView str);
+
+template <>
+[[nodiscard]] int convertFromString<int>(StringView str);
+
+template <>
+[[nodiscard]] unsigned convertFromString<unsigned>(StringView str);
+
+template <>
+[[nodiscard]] long convertFromString<long>(StringView str);
+
+template <>
+[[nodiscard]] unsigned long convertFromString<unsigned long>(StringView str);
+
+template <>
+[[nodiscard]] float convertFromString<float>(StringView str);
+
+template <>
+[[nodiscard]] double convertFromString<double>(StringView str);
+
+// Integer numbers separated by the character ";"
+template <>
+[[nodiscard]] std::vector<int> convertFromString<std::vector<int>>(StringView str);
+
+// Real numbers separated by the character ";"
+template <>
+[[nodiscard]] std::vector<double> convertFromString<std::vector<double>>(StringView str);
+
+// This recognizes either 0/1, true/false, TRUE/FALSE
+template <>
+[[nodiscard]] bool convertFromString<bool>(StringView str);
+
+// Names with all capital letters
+template <>
+[[nodiscard]] NodeStatus convertFromString<NodeStatus>(StringView str);
+
+// Names with all capital letters
+template <>
+[[nodiscard]] NodeType convertFromString<NodeType>(StringView str);
+
+template <>
+[[nodiscard]] PortDirection convertFromString<PortDirection>(StringView str);
+
+using StringConverter = std::function<Any(StringView)>;
+
+using StringConvertersMap = std::unordered_map<const std::type_info*, StringConverter>;
+
+// helper function
+template <typename T>
+[[nodiscard]] inline StringConverter GetAnyFromStringFunctor()
+{
+  if constexpr(std::is_constructible_v<StringView, T>)
+  {
+    return [](StringView str) { return Any(str); };
+  }
+  else if constexpr(std::is_same_v<BT::AnyTypeAllowed, T> || std::is_enum_v<T>)
+  {
+    return {};
+  }
+  else
+  {
+    return [](StringView str) { return Any(convertFromString<T>(str)); };
+  }
+}
+
+template <>
+[[nodiscard]] inline StringConverter GetAnyFromStringFunctor<void>()
+{
+  return {};
+}
+
+//------------------------------------------------------------------
+
+template <typename T>
+constexpr bool IsConvertibleToString()
+{
+  return std::is_convertible_v<T, std::string> ||
+         std::is_convertible_v<T, std::string_view>;
+}
+
+template <typename T>
+[[nodiscard]] std::string toStr(const T& value)
+{
+  if constexpr(IsConvertibleToString<T>())
+  {
+    return static_cast<std::string>(value);
+  }
+  else if constexpr(!std::is_arithmetic_v<T>)
+  {
+    throw LogicError(StrCat("Function BT::toStr<T>() not specialized for type [",
+                            BT::demangle(typeid(T)), "]"));
+  }
+  else
+  {
+    return std::to_string(value);
+  }
+}
+
+template <>
+[[nodiscard]] std::string toStr<bool>(const bool& value);
+
+template <>
+[[nodiscard]] std::string toStr<std::string>(const std::string& value);
+
+template <>
+[[nodiscard]] std::string toStr<BT::NodeStatus>(const BT::NodeStatus& status);
+
+/**
+ * @brief toStr converts NodeStatus to string. Optionally colored.
+ */
+[[nodiscard]] std::string toStr(BT::NodeStatus status, bool colored);
+
+std::ostream& operator<<(std::ostream& os, const BT::NodeStatus& status);
+
+template <>
+[[nodiscard]] std::string toStr<BT::NodeType>(const BT::NodeType& type);
+
+std::ostream& operator<<(std::ostream& os, const BT::NodeType& type);
+
+template <>
+[[nodiscard]] std::string toStr<BT::PortDirection>(const BT::PortDirection& direction);
+
+std::ostream& operator<<(std::ostream& os, const BT::PortDirection& type);
+
+// Small utility, unless you want to use <boost/algorithm/string.hpp>
+[[nodiscard]] std::vector<StringView> splitString(const StringView& strToSplit,
+                                                  char delimeter);
+
+template <typename Predicate>
+using enable_if = typename std::enable_if<Predicate::value>::type*;
+
+template <typename Predicate>
+using enable_if_not = typename std::enable_if<!Predicate::value>::type*;
+
+=======
+>>>>>>> 8f94d2c (json conversions)
 /** Usage: given a function/method like this:
  *
  *     Expected<double> getAnswer();

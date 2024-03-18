@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/json_export.h"
 
 using namespace BT;
 
@@ -273,6 +275,11 @@ struct Point2D
 template <>
 [[nodiscard]] Point2D BT::convertFromString<Point2D>(StringView str)
 {
+  if(StartWith(str, "json:"))
+  {
+    str.remove_prefix(5);
+    return convertFromJSON<Point2D>(str);
+  }
   const auto parts = BT::splitString(str, ',');
   if(parts.size() != 2)
   {
@@ -281,6 +288,18 @@ template <>
   int x = convertFromString<int>(parts[0]);
   int y = convertFromString<int>(parts[1]);
   return { x, y };
+}
+
+template <>
+[[nodiscard]] std::string BT::toStr<Point2D>(const Point2D& point)
+{
+  return std::to_string(point.x) + "," + std::to_string(point.y);
+}
+
+BT_JSON_CONVERTER(Point2D, point)
+{
+  add_field("x", &point.x);
+  add_field("y", &point.y);
 }
 
 class DefaultTestAction : public SyncActionNode
@@ -422,24 +441,29 @@ public:
 
   NodeStatus tick() override
   {
-    Point2D vectA, vectB, vectC, vectD, input;
-    if(!getInput("pointA", vectA) || vectA != Point2D{ 1, 2 })
+    Point2D pointA, pointB, pointC, pointD, pointE, input;
+
+    if(!getInput("pointA", pointA) || pointA != Point2D{ 1, 2 })
     {
       throw std::runtime_error("failed pointA");
     }
-    if(!getInput("pointB", vectB) || vectB != Point2D{ 3, 4 })
+    if(!getInput("pointB", pointB) || pointB != Point2D{ 3, 4 })
     {
       throw std::runtime_error("failed pointB");
     }
-    if(!getInput("pointC", vectC) || vectC != Point2D{ 5, 6 })
+    if(!getInput("pointC", pointC) || pointC != Point2D{ 5, 6 })
     {
       throw std::runtime_error("failed pointC");
     }
-    if(!getInput("pointD", vectD) || vectD != Point2D{ 7, 8 })
+    if(!getInput("pointD", pointD) || pointD != Point2D{ 7, 8 })
     {
       throw std::runtime_error("failed pointD");
     }
-    if(!getInput("input", input) || input != Point2D{ 9, 10 })
+    if(!getInput("pointE", pointE) || pointE != Point2D{ 9, 10 })
+    {
+      throw std::runtime_error("failed pointD");
+    }
+    if(!getInput("input", input) || input != Point2D{ -1, -2 })
     {
       throw std::runtime_error("failed input");
     }
@@ -454,18 +478,22 @@ public:
                                     "default value inside blackboard {point}"),
              BT::InputPort<Point2D>("pointC", "5,6", "default value is [5,6]"),
              BT::InputPort<Point2D>("pointD", "{=}",
-                                    "default value inside blackboard {pointD}") };
+                                    "default value inside blackboard {pointD}"),
+             BT::InputPort<Point2D>("pointE", R"(json:{"x":9,"y":10})",
+                                    "default value is [9,10]") };
   }
 };
 
-TEST(PortTest, DefaultInputVectors)
+TEST(PortTest, DefaultInputPoint2D)
 {
   std::string xml_txt = R"(
     <root BTCPP_format="4" >
       <BehaviorTree>
-        <NodeWithDefaultPoints input="9,10"/>
+        <NodeWithDefaultPoints input="-1,-2"/>
       </BehaviorTree>
     </root>)";
+
+  JsonExporter::get().addConverter<Point2D>();
 
   BehaviorTreeFactory factory;
   factory.registerNodeType<NodeWithDefaultPoints>("NodeWithDefaultPoints");
@@ -477,6 +505,8 @@ TEST(PortTest, DefaultInputVectors)
   BT::NodeStatus status;
   ASSERT_NO_THROW(status = tree.tickOnce());
   ASSERT_EQ(status, NodeStatus::SUCCESS);
+
+  std::cout << writeTreeNodesModelXML(factory) << std::endl;
 }
 
 class NodeWithDefaultStrings : public SyncActionNode
@@ -538,6 +568,8 @@ TEST(PortTest, DefaultInputStrings)
   BT::NodeStatus status;
   ASSERT_NO_THROW(status = tree.tickOnce());
   ASSERT_EQ(status, NodeStatus::SUCCESS);
+
+  std::cout << writeTreeNodesModelXML(factory) << std::endl;
 }
 
 struct TestStruct

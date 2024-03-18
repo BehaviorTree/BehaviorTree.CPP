@@ -1,4 +1,5 @@
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/json_export.h"
 
 namespace BT
 {
@@ -169,6 +170,20 @@ void Blackboard::createEntry(const std::string& key, const TypeInfo& info)
   createEntryImpl(key, info);
 }
 
+void Blackboard::cloneInto(Blackboard& dst) const
+{
+  std::unique_lock lk(dst.mutex_);
+  dst.storage_.clear();
+
+  for(const auto& [key, entry] : storage_)
+  {
+    auto new_entry = std::make_shared<Entry>(entry->info);
+    new_entry->value = entry->value;
+    new_entry->string_converter = entry->string_converter;
+    dst.storage_.insert({ key, new_entry });
+  }
+}
+
 std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string& key,
                                                                const TypeInfo& info)
 {
@@ -211,7 +226,7 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
   {
     if(auto parent = parent_bb_.lock())
     {
-      entry = parent->createEntryImpl(key, info);
+      return parent->createEntryImpl(key, info);
     }
   }
   else  // not remapped, not found. Create locally.
@@ -222,6 +237,40 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
   }
   storage_.insert({ key, entry });
   return entry;
+}
+
+nlohmann::json ExportBlackboardToJSON(const Blackboard& blackboard)
+{
+  nlohmann::json dest;
+  for(auto entry_name : blackboard.getKeys())
+  {
+    std::string name(entry_name);
+    if(auto any_ref = blackboard.getAnyLocked(name))
+    {
+      if(auto any_ptr = any_ref.get())
+      {
+        JsonExporter::get().toJson(*any_ptr, dest[name]);
+      }
+    }
+  }
+  return dest;
+}
+
+void ImportBlackboardFromJSON(const nlohmann::json& json, Blackboard& blackboard)
+{
+  for(auto it = json.begin(); it != json.end(); ++it)
+  {
+    if(auto res = JsonExporter::get().fromJson(it.value()))
+    {
+      auto entry = blackboard.getEntry(it.key());
+      if(!entry)
+      {
+        blackboard.createEntry(it.key(), res->second);
+        entry = blackboard.getEntry(it.key());
+      }
+      entry->value = res->first;
+    }
+  }
 }
 
 }  // namespace BT

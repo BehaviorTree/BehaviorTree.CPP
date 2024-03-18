@@ -10,7 +10,11 @@
  *  But this time we also show how to connect
  */
 
+<<<<<<< HEAD
+// A custom structuree that I want to visualize in Groot2
+=======
 // A custom struct  that I want to visualize in Groot2
+>>>>>>> 8f94d2c (json conversions)
 struct Position2D
 {
   double x;

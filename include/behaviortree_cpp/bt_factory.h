@@ -504,6 +504,44 @@ private:
   std::unique_ptr<PImpl> _p;
 };
 
+/**
+ * @brief BlackboardClone make a copy of the content of the
+ * blackboard
+ * @param src   source
+ * @param dst   destination
+ */
+void BlackboardClone(const Blackboard& src, Blackboard& dst);
+
+/**
+ * @brief BlackboardBackup uses Blackboard::cloneInto to backup
+ * all the blackboards of the tree
+ *
+ * @param tree source
+ * @return destination (the backup)
+ */
+std::vector<Blackboard::Ptr> BlackboardBackup(const BT::Tree& tree);
+
+/**
+ * @brief BlackboardRestore uses Blackboard::cloneInto to restore
+ * all the blackboards of the tree
+ *
+ * @param backup a vectror of blackboards
+ * @param tree the destination
+ */
+void BlackboardRestore(const std::vector<Blackboard::Ptr>& backup, BT::Tree& tree);
+
+/**
+ * @brief ExportTreeToJSON it calls ExportBlackboardToJSON
+ * for all the blackboards in the tree
+ */
+nlohmann::json ExportTreeToJSON(const BT::Tree& tree);
+
+/**
+ * @brief ImportTreeFromJSON it calls ImportBlackboardFromJSON
+ * for all the blackboards in the tree
+ */
+void ImportTreeFromJSON(const nlohmann::json& json, BT::Tree& tree);
+
 }  // namespace BT
 
 #endif  // BT_FACTORY_H

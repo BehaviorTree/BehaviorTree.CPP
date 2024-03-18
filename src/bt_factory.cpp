@@ -11,7 +11,6 @@
 */
 
 #include <filesystem>
-#include <fstream>
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/contrib/json.hpp"
@@ -659,6 +658,65 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
   }
 
   return status;
+}
+
+// void BlackboardClone(const Blackboard& src, Blackboard& dst)
+// {
+//   dst.clear();
+//   for(auto const key_name : src.getKeys())
+//   {
+//     const auto key = std::string(key_name);
+//     const auto entry = src.getEntry(key);
+//     dst.createEntry(key, entry->info);
+//     auto new_entry = dst.getEntry(key);
+//     new_entry->value = entry->value;
+//     new_entry->string_converter = entry->string_converter;
+//   }
+// }
+
+void BlackboardRestore(const std::vector<Blackboard::Ptr>& backup, Tree& tree)
+{
+  assert(backup.size() == tree.subtrees.size());
+  for(size_t i = 0; i < tree.subtrees.size(); i++)
+  {
+    backup[i]->cloneInto(*(tree.subtrees[i]->blackboard));
+  }
+}
+
+std::vector<Blackboard::Ptr> BlackboardBackup(const Tree& tree)
+{
+  std::vector<Blackboard::Ptr> bb;
+  bb.reserve(tree.subtrees.size());
+  for(const auto& sub : tree.subtrees)
+  {
+    bb.push_back(BT::Blackboard::create());
+    sub->blackboard->cloneInto(*bb.back());
+  }
+  return bb;
+}
+
+nlohmann::json ExportTreeToJSON(const Tree& tree)
+{
+  std::vector<nlohmann::json> bbs;
+  for(const auto& subtree : tree.subtrees)
+  {
+    bbs.push_back(ExportBlackboardToJSON(*subtree->blackboard));
+  }
+  return bbs;
+}
+
+void ImportTreeFromJSON(const nlohmann::json& json, Tree& tree)
+{
+  if(json.size() != tree.subtrees.size())
+  {
+    std::cerr << "Number of blackboards don't match:" << json.size() << "/"
+              << tree.subtrees.size() << "\n";
+    throw std::runtime_error("Number of blackboards don't match:");
+  }
+  for(size_t i = 0; i < tree.subtrees.size(); i++)
+  {
+    ImportBlackboardFromJSON(json.at(i), *tree.subtrees.at(i)->blackboard);
+  }
 }
 
 }  // namespace BT

@@ -437,15 +437,22 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     // pure string, not a blackboard key
     if(!remapped_res)
     {
-      destination = ParseString(port_value_str);
+      try
+      {
+        destination = ParseString(port_value_str);
+      }
+      catch(std::exception& ex)
+      {
+        return nonstd::make_unexpected(StrCat("getInput(): ", ex.what()));
+      }
       return {};
     }
     const auto& remapped_key = remapped_res.value();
 
     if(!config().blackboard)
     {
-      return nonstd::make_unexpected("getInput(): trying to access an invalid "
-                                     "Blackboard");
+      return nonstd::make_unexpected("getInput(): trying to access "
+                                     "an invalid Blackboard");
     }
 
     if(auto any_ref = config().blackboard->getAnyLocked(std::string(remapped_key)))
