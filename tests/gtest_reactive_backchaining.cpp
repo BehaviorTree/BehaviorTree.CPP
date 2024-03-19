@@ -9,13 +9,14 @@ class SimpleCondition : public BT::ConditionNode
 {
 private:
   std::string port_name_;
+
 public:
   SimpleCondition(const std::string& name, const BT::NodeConfig& config,
-                  std::string port_name) :
-      BT::ConditionNode(name, config),
-      port_name_(port_name)
+                  std::string port_name)
+    : BT::ConditionNode(name, config), port_name_(port_name)
   {}
-  static BT::PortsList providedPorts() {
+  static BT::PortsList providedPorts()
+  {
     return {};
   }
   BT::NodeStatus tick() override
@@ -30,28 +31,35 @@ class AsyncTestAction : public BT::StatefulActionNode
 {
   int counter_ = 0;
   std::string port_name_;
+
 public:
   AsyncTestAction(const std::string& name, const BT::NodeConfig& config,
-                  std::string port_name) :
-      BT::StatefulActionNode(name, config),
-      port_name_(port_name)
+                  std::string port_name)
+    : BT::StatefulActionNode(name, config), port_name_(port_name)
   {}
 
-  static BT::PortsList providedPorts(){ return {}; }
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
 
-  NodeStatus onStart() override {
+  NodeStatus onStart() override
+  {
     counter_ = 0;
     return NodeStatus::RUNNING;
   }
 
-  NodeStatus onRunning() override {
-    if(++counter_ == 2) {
+  NodeStatus onRunning() override
+  {
+    if(++counter_ == 2)
+    {
       config().blackboard->set<bool>(port_name_, true);
       return NodeStatus::SUCCESS;
     }
     return NodeStatus::RUNNING;
   }
-  void onHalted() override {}
+  void onHalted() override
+  {}
 };
 //--------------------------
 
@@ -111,7 +119,6 @@ TEST(ReactiveBackchaining, EnsureWarm)
 
   EXPECT_EQ(observer.getStatistics("wear").success_count, 1);
 }
-
 
 TEST(ReactiveBackchaining, EnsureWarmWithEnsureHoldingHacket)
 {
@@ -181,4 +188,4 @@ TEST(ReactiveBackchaining, EnsureWarmWithEnsureHoldingHacket)
   EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::SUCCESS);
 }
 
-}
+}  // namespace BT::test

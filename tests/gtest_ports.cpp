@@ -206,11 +206,11 @@ TEST(PortTest, IllegalPorts)
   ASSERT_ANY_THROW(factory.registerNodeType<IllegalPorts>("nope"));
 }
 
-class ActionVectorIn : public SyncActionNode
+class ActionVectorDoubleIn : public SyncActionNode
 {
 public:
-  ActionVectorIn(const std::string& name, const NodeConfig& config,
-                 std::vector<double>* states)
+  ActionVectorDoubleIn(const std::string& name, const NodeConfig& config,
+                       std::vector<double>* states)
     : SyncActionNode(name, config), states_(states)
   {}
 
@@ -238,14 +238,14 @@ TEST(PortTest, SubtreeStringInput_Issue489)
       </BehaviorTree>
 
       <BehaviorTree ID="Subtree_A">
-        <ActionVectorIn states="{states}"/>
+        <ActionVectorDoubleIn states="{states}"/>
       </BehaviorTree>
     </root>)";
 
   std::vector<double> states;
 
   BehaviorTreeFactory factory;
-  factory.registerNodeType<ActionVectorIn>("ActionVectorIn", &states);
+  factory.registerNodeType<ActionVectorDoubleIn>("ActionVectorDoubleIn", &states);
 
   factory.registerBehaviorTreeFromText(xml_txt);
   auto tree = factory.createTree("Main");
@@ -256,6 +256,55 @@ TEST(PortTest, SubtreeStringInput_Issue489)
   ASSERT_EQ(2, states.size());
   ASSERT_EQ(3, states[0]);
   ASSERT_EQ(7, states[1]);
+}
+
+class ActionVectorStringIn : public SyncActionNode
+{
+public:
+  ActionVectorStringIn(const std::string& name, const NodeConfig& config,
+                       std::vector<std::string>* states)
+    : SyncActionNode(name, config), states_(states)
+  {}
+
+  NodeStatus tick() override
+  {
+    getInput("states", *states_);
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<std::vector<std::string>>("states") };
+  }
+
+private:
+  std::vector<std::string>* states_;
+};
+
+TEST(PortTest, SubtreeStringInput_StringVector)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <ActionVectorStringIn states="hello;world;with spaces"/>
+      </BehaviorTree>
+    </root>)";
+
+  std::vector<std::string> states;
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionVectorStringIn>("ActionVectorStringIn", &states);
+
+  factory.registerBehaviorTreeFromText(xml_txt);
+  auto tree = factory.createTree("Main");
+
+  NodeStatus status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(3, states.size());
+  ASSERT_EQ("hello", states[0]);
+  ASSERT_EQ("world", states[1]);
+  ASSERT_EQ("with spaces", states[2]);
 }
 
 struct Point2D
