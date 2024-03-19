@@ -515,18 +515,20 @@ TEST(BlackboardTest, BlackboardBackup)
   <root BTCPP_format="4" >
     <BehaviorTree ID="MySubtree">
       <Sequence>
-        <Script code=" value:= sub_value " />
-        <Script code=" my_value=2 " />
+        <Script code=" important_value:= sub_value " />
+        <Script code=" my_value=false " />
+        <SaySomething message="{message}" />
       </Sequence>
     </BehaviorTree>
     <BehaviorTree ID="MainTree">
       <Sequence>
-        <Script code=" my_value:=1 " />
-        <SubTree ID="MySubtree" sub_value="true" _autoremap="true" />
+        <Script code=" my_value:=true; another_value:='hi' " />
+        <SubTree ID="MySubtree" sub_value="true" message="{another_value}" _autoremap="true" />
       </Sequence>
     </BehaviorTree>
   </root> )";
 
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
 
@@ -556,4 +558,6 @@ TEST(BlackboardTest, BlackboardBackup)
       ASSERT_EQ(expected_keys[i][a], keys[a]);
     }
   }
+  status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
 }
