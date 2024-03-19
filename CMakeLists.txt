@@ -19,8 +19,9 @@ endif()
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -DWIN32_LEAN_AND_MEAN)
 else()
-    add_definitions(-Wpedantic)
+    add_definitions(-Wpedantic -fno-omit-frame-pointer)
 endif()
+
 
 #---- project configuration ----
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)

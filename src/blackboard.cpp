@@ -210,8 +210,6 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
     return storage_it->second;
   }
 
-  std::shared_ptr<Entry> entry;
-
   // manual remapping first
   auto remapping_it = internal_to_external_.find(key);
   if(remapping_it != internal_to_external_.end())
@@ -219,22 +217,24 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
     const auto& remapped_key = remapping_it->second;
     if(auto parent = parent_bb_.lock())
     {
-      entry = parent->createEntryImpl(remapped_key, info);
+      return parent->createEntryImpl(remapped_key, info);
     }
+    throw RuntimeError("Missing parent blackboard");
   }
-  else if(autoremapping_ && !IsPrivateKey(key))
+  // autoremapping second (excluding private keys)
+  if(autoremapping_ && !IsPrivateKey(key))
   {
     if(auto parent = parent_bb_.lock())
     {
       return parent->createEntryImpl(key, info);
     }
+    throw RuntimeError("Missing parent blackboard");
   }
-  else  // not remapped, not found. Create locally.
-  {
-    entry = std::make_shared<Entry>(info);
-    // even if empty, let's assign to it a default type
-    entry->value = Any(info.type());
-  }
+  // not remapped, not found. Create locally.
+
+  auto entry = std::make_shared<Entry>(info);
+  // even if empty, let's assign to it a default type
+  entry->value = Any(info.type());
   storage_.insert({ key, entry });
   return entry;
 }

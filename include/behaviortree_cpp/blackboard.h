@@ -201,7 +201,6 @@ inline void Blackboard::set(const std::string& key, const T& value)
     }
     lock.lock();
 
-    storage_.insert({ key, entry });
     entry->value = new_value;
   }
   else
