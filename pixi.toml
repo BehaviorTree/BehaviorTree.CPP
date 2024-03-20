@@ -7,15 +7,20 @@ channels = ["conda-forge"]
 platforms = ["linux-64", "win-64"]
 
 [target.win-64.tasks]
-test = "'PATH=\"$PATH;build/Release\" build/tests/Release/behaviortree_cpp_test.exe'"
+test = "PATH=\"$PATH;build/Release\" build/tests/Release/behaviortree_cpp_test.exe"
 
 [target.linux-64.tasks]
 test = "./build/tests/behaviortree_cpp_test"
 
 [tasks]
-build = "cd build; cmake ../BehaviorTree.CPP -DCMAKE_BUILD_TYPE=Release; cmake --build . --parallel --config Release"
+build = "mkdir -p build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel --config Release"
 
 [dependencies]
+cmake = ">=3.28.4,<3.29"
+gmock = "1.12.*"
+sqlite = "3.40.*"
+zeromq = "4.3.*"
+gtest = "1.12.*"
 
 [target.win-64.dependencies]
 vs2022_win-64 = "19.*"
