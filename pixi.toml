@@ -22,6 +22,8 @@ sqlite = "3.40.*"
 zeromq = "4.3.*"
 gtest = "1.12.*"
 
+pre-commit = "*"
+
 [target.win-64.dependencies]
 vs2022_win-64 = "19.*"
 
