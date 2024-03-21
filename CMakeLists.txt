@@ -30,6 +30,7 @@ option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
 option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
 option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
+option(BTCPP_VENDOR_3RDPARTY "Use the 3rdparty libraries in the vendor folder" ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
@@ -78,7 +79,11 @@ endif()
 #############################################################
 # LIBRARY
 
-add_subdirectory(3rdparty/lexy)
+if (BTCPP_VENDOR_3RDPARTY)
+    add_subdirectory(3rdparty/lexy)
+else()
+    find_package(lexy CONFIG REQUIRED)
+endif()
 
 list(APPEND BT_SOURCE
     src/action_node.cpp
