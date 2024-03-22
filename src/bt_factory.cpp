@@ -15,7 +15,7 @@
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
-#include "wildcards/wildcards.hpp"
+#include "wildcards.hpp"
 
 #ifdef USING_ROS
 #include <ros/package.h>

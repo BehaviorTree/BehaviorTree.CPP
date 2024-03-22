@@ -2,7 +2,7 @@
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 
 #define MTR_ENABLED true
-#include "minitrace/minitrace.h"
+#include "minitrace.h"
 
 namespace BT
 {

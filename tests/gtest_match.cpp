@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "wildcards/wildcards.hpp"
+#include "wildcards.hpp"
 
 TEST(Match, Match)
 {

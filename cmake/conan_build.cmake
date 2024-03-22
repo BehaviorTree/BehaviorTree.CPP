@@ -2,15 +2,26 @@ list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
 if(BTCPP_GROOT_INTERFACE)
     find_package(ZeroMQ REQUIRED)
-    list(APPEND BTCPP_EXTRA_LIBRARIES ${ZeroMQ_LIBRARIES})
+    list(APPEND BTCPP_EXTRA_LIBRARIES $<IF:$<TARGET_EXISTS:libzmq-static>, libzmq-static, libzmq-shared>)
     list(APPEND BTCPP_EXTRA_INCLUDE_DIRS ${ZeroMQ_INCLUDE_DIRS})
     message(STATUS "ZeroMQ_LIBRARIES: ${ZeroMQ_LIBRARIES}")
 endif()
 
 if(BTCPP_SQLITE_LOGGING)
     find_package(SQLite3 REQUIRED)
-    list(APPEND BTCPP_EXTRA_LIBRARIES ${SQLite3_LIBRARIES})
+    list(APPEND BTCPP_EXTRA_LIBRARIES SQLite::SQLite3)
     message(STATUS "SQLite3_LIBRARIES: ${SQLite3_LIBRARIES}")
+endif()
+
+if (NOT BTCPP_VENDOR_3RDPARTY)
+    find_package(lexy CONFIG REQUIRED)
+    find_package(minicoro REQUIRED)
+    find_package(minitrace REQUIRED)
+    find_package(wildcards REQUIRED)
+    find_package(tinyxml2 REQUIRED)
+
+    list(APPEND BTCPP_EXTRA_LIBRARIES foonathan::lexy minicoro::minicoro minitrace::minitrace wildcards::wildcards tinyxml2::tinyxml2)
+    list(APPEND BTCPP_EXTRA_INCLUDE_DIRS ${lexy_INCLUDE_DIRS} ${minicoro_INCLUDE_DIRS} ${minitrace_INCLUDE_DIRS} ${wildcards_INCLUDE_DIRS} ${tinyxml2_INCLUDE_DIRS})
 endif()
 
 

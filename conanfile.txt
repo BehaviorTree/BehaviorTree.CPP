@@ -1,7 +1,14 @@
-[requires]
+[tool_requires]
 gtest/1.14.0
-zeromq/4.3.4
-sqlite3/3.40.1
+
+[requires]
+foonathan-lexy/2022.12.1
+zeromq/4.3.5
+sqlite3/3.45.2
+minicoro/0.1.3
+minitrace/cci.20230905
+wildcards/1.4.0
+tinyxml2/10.0.0
 
 [generators]
 CMakeDeps

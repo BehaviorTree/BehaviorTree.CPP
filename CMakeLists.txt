@@ -81,8 +81,6 @@ endif()
 
 if (BTCPP_VENDOR_3RDPARTY)
     add_subdirectory(3rdparty/lexy)
-else()
-    find_package(lexy CONFIG REQUIRED)
 endif()
 
 list(APPEND BT_SOURCE
@@ -126,8 +124,8 @@ list(APPEND BT_SOURCE
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
 
-    3rdparty/tinyxml2/tinyxml2.cpp
-    3rdparty/minitrace/minitrace.cpp
+    $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/tinyxml2/tinyxml2.cpp,>
+    $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/minitrace/minitrace.cpp,>
     )
 
 
@@ -165,7 +163,7 @@ target_link_libraries(${BTCPP_LIBRARY}
     PRIVATE
         Threads::Threads
         ${CMAKE_DL_LIBS}
-        $<BUILD_INTERFACE:foonathan::lexy>
+        $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,$<BUILD_INTERFACE:foonathan::lexy>,>
         ${BTCPP_EXTRA_LIBRARIES}
 )
 
@@ -176,6 +174,10 @@ target_include_directories(${BTCPP_LIBRARY}
     PRIVATE
         $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty,>
         $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include,>
+        $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/tinyxml2,>
+        $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/minitrace,>
+        $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wildcards,>
+        $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/minicoro,>
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
 
