@@ -172,7 +172,7 @@ target_include_directories(${BTCPP_LIBRARY}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
         $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include,>
         $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/tinyxml2,>
         $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/minitrace,>
