@@ -35,6 +35,7 @@ set(BT_TESTS
 set(TEST_DEPENDECIES
     ${BTCPP_LIBRARY}
     foonathan::lexy
+    $<IF:$<NOT:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>>,wildcards::wildcards,>
     bt_sample_nodes)
 
 if(ament_cmake_FOUND AND BUILD_TESTING)
