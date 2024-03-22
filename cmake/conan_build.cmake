@@ -20,7 +20,7 @@ if (NOT BTCPP_VENDOR_3RDPARTY)
     find_package(wildcards REQUIRED)
     find_package(tinyxml2 REQUIRED)
 
-    list(APPEND BTCPP_EXTRA_LIBRARIES foonathan::lexy minicoro::minicoro minitrace::minitrace wildcards::wildcards tinyxml2::tinyxml2)
+    list(APPEND BTCPP_EXTRA_LIBRARIES minicoro::minicoro minitrace::minitrace wildcards::wildcards tinyxml2::tinyxml2)
     list(APPEND BTCPP_EXTRA_INCLUDE_DIRS ${lexy_INCLUDE_DIRS} ${minicoro_INCLUDE_DIRS} ${minitrace_INCLUDE_DIRS} ${wildcards_INCLUDE_DIRS} ${tinyxml2_INCLUDE_DIRS})
 endif()
 

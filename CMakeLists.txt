@@ -163,7 +163,7 @@ target_link_libraries(${BTCPP_LIBRARY}
     PRIVATE
         Threads::Threads
         ${CMAKE_DL_LIBS}
-        $<IF:$<BOOL:${BTCPP_VENDOR_3RDPARTY}>,$<BUILD_INTERFACE:foonathan::lexy>,>
+        $<BUILD_INTERFACE:foonathan::lexy>
         ${BTCPP_EXTRA_LIBRARIES}
 )
 
