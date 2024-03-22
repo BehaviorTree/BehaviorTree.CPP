@@ -1,4 +1,4 @@
-[tool_requires]
+[test_requires]
 gtest/1.14.0
 
 [requires]
