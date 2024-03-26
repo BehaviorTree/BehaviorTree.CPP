@@ -142,7 +142,7 @@ inline void RegisterJsonDefinition()
   template <class AddField>                                                              \
   void _JsonTypeDefinition(Type&, AddField&);                                            \
                                                                                          \
-  inline void to_json(nlohmann::json& js, const Type& p, bool add_type_name = false)     \
+  inline void to_json(nlohmann::json& js, const Type& p)                                 \
   {                                                                                      \
     auto op = [&js](const char* name, auto* val) { to_json(js[name], *val); };           \
     _JsonTypeDefinition(const_cast<Type&>(p), op);                                       \
