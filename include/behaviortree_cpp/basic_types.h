@@ -169,6 +169,11 @@ template <>
 template <>
 [[nodiscard]] std::vector<double> convertFromString<std::vector<double>>(StringView str);
 
+// Strings separated by the character ";"
+template <>
+[[nodiscard]] std::vector<std::string>
+convertFromString<std::vector<std::string>>(StringView str);
+
 // This recognizes either 0/1, true/false, TRUE/FALSE
 template <>
 [[nodiscard]] bool convertFromString<bool>(StringView str);
