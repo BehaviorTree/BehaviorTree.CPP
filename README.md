@@ -4,6 +4,7 @@
 [![conan Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
+[![pixi (Conda)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml)
 
 # BehaviorTree.CPP 4.5
 
@@ -85,6 +86,11 @@ use conan, simply type:
 mkdir build; cd build
 cmake ../BehaviorTree.CPP
 cmake --build . --parallel
+```
+
+If you want to build in a [pixi](https://pixi.sh/) project (conda virtual environment).
+```
+pixi run build
 ```
 
 If you want to use BT.CPP in your application, please refer to the
