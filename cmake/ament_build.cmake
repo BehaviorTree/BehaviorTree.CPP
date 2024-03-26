@@ -18,8 +18,6 @@ set( BTCPP_EXTRA_LIBRARIES
     $<BUILD_INTERFACE:${SQLite3_LIBRARIES}>
 )
 
-ament_export_dependencies(ament_index_cpp)
-
 set( BTCPP_LIB_DESTINATION     lib )
 set( BTCPP_INCLUDE_DESTINATION include )
 set( BTCPP_BIN_DESTINATION     bin )
@@ -31,7 +29,11 @@ mark_as_advanced(
     BTCPP_BIN_DESTINATION )
 
 macro(export_btcpp_package)
-    ament_export_include_directories(include)
-    ament_export_libraries(${BTCPP_LIBRARY})
+    ament_export_targets(
+        ${PROJECT_NAME}Targets
+        NAMESPACE "{_BTCPP_EXPORTED_NAMESPACE}"
+        HAS_LIBRARY_TARGET
+    )
+    ament_export_dependencies(ament_index_cpp)
     ament_package()
 endmacro()
