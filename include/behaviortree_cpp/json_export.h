@@ -144,7 +144,7 @@ inline void RegisterJsonDefinition()
                                                                                          \
   inline void to_json(nlohmann::json& js, const Type& p)                                 \
   {                                                                                      \
-    auto op = [&js](const char* name, auto* val) { to_json(js[name], *val); };           \
+    auto op = [&js](const char* name, auto* val) { js[name] = *val; };                   \
     _JsonTypeDefinition(const_cast<Type&>(p), op);                                       \
     js["__type"] = #Type;                                                                \
   }                                                                                      \
