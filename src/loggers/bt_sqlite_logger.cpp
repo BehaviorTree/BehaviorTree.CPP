@@ -27,6 +27,11 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
                           "state      INTEGER NOT NULL,"
                           "metadata   VARCHAR );");
 
+  sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Nodes ("
+                          "session_id INTEGER NOT NULL, "
+                          "fullpath   VARCHAR, "
+                          "uid        INTEGER NOT NULL );");
+
   sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Definitions ("
                           "session_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                           "date       TEXT NOT NULL,"
@@ -50,6 +55,16 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
   {
     session_id_ = res.Get(0);
   }
+
+  for(const auto& subtree : tree.subtrees)
+  {
+    for(const auto& node : subtree->nodes)
+    {
+      sqlite::Statement(*db_, "INSERT INTO Nodes VALUES (?, ?, ?)", session_id_,
+                        node->fullPath(), node->UID());
+    }
+  }
+
   writer_thread_ = std::thread(&SqliteLogger::writerLoop, this);
 }
 
