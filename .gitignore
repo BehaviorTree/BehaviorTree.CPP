@@ -11,3 +11,4 @@ CMakeSettings.json
 
 # OSX junk
 .DS_Store
+CMakeUserPresets.json

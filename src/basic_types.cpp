@@ -128,7 +128,7 @@ int64_t convertFromString<int64_t>(StringView str)
 }
 
 template <>
-uint64_t convertFromString<unsigned long>(StringView str)
+uint64_t convertFromString<uint64_t>(StringView str)
 {
   unsigned long result = 0;
   auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);

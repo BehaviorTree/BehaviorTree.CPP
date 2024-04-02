@@ -100,15 +100,12 @@ template <typename T>
 inline void JsonExporter::addConverter()
 {
   ToJonConverter to_converter = [](const BT::Any& entry, nlohmann::json& dst) {
-    using namespace nlohmann;
-    to_json(dst, *const_cast<BT::Any&>(entry).castPtr<T>());
+    dst = *const_cast<BT::Any&>(entry).castPtr<T>();
   };
   to_json_converters_.insert({ typeid(T), to_converter });
 
-  FromJonConverter from_converter = [](const nlohmann::json& dst) -> Entry {
-    T value;
-    using namespace nlohmann;
-    from_json(dst, value);
+  FromJonConverter from_converter = [](const nlohmann::json& src) -> Entry {
+    T value = src.get<T>();
     return { BT::Any(value), BT::TypeInfo::Create<T>() };
   };
 
