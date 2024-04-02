@@ -49,11 +49,7 @@ namespace BT
 class JsonExporter
 {
 public:
-  static JsonExporter& get()
-  {
-    static JsonExporter global_instance;
-    return global_instance;
-  }
+  static JsonExporter& get();
 
   /**
    * @brief toJson adds the content of "any" to the JSON "destination".
@@ -100,15 +96,12 @@ template <typename T>
 inline void JsonExporter::addConverter()
 {
   ToJonConverter to_converter = [](const BT::Any& entry, nlohmann::json& dst) {
-    using namespace nlohmann;
-    to_json(dst, *const_cast<BT::Any&>(entry).castPtr<T>());
+    dst = *const_cast<BT::Any&>(entry).castPtr<T>();
   };
   to_json_converters_.insert({ typeid(T), to_converter });
 
-  FromJonConverter from_converter = [](const nlohmann::json& dst) -> Entry {
-    T value;
-    using namespace nlohmann;
-    from_json(dst, value);
+  FromJonConverter from_converter = [](const nlohmann::json& src) -> Entry {
+    T value = src.get<T>();
     return { BT::Any(value), BT::TypeInfo::Create<T>() };
   };
 
@@ -142,9 +135,9 @@ inline void RegisterJsonDefinition()
   template <class AddField>                                                              \
   void _JsonTypeDefinition(Type&, AddField&);                                            \
                                                                                          \
-  inline void to_json(nlohmann::json& js, const Type& p, bool add_type_name = false)     \
+  inline void to_json(nlohmann::json& js, const Type& p)                                 \
   {                                                                                      \
-    auto op = [&js](const char* name, auto* val) { to_json(js[name], *val); };           \
+    auto op = [&js](const char* name, auto* val) { js[name] = *val; };                   \
     _JsonTypeDefinition(const_cast<Type&>(p), op);                                       \
     js["__type"] = #Type;                                                                \
   }                                                                                      \

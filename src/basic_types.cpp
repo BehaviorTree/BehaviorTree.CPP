@@ -116,51 +116,75 @@ std::string convertFromString<std::string>(StringView str)
 }
 
 template <>
-int convertFromString<int>(StringView str)
-{
-  int result = 0;
-  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
-  if(ec != std::errc())
-  {
-    throw RuntimeError(StrCat("Can't convert string [", str, "] to int"));
-  }
-  return result;
-}
-
-template <>
-long convertFromString<long>(StringView str)
+int64_t convertFromString<int64_t>(StringView str)
 {
   long result = 0;
   auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
   if(ec != std::errc())
   {
-    throw RuntimeError(StrCat("Can't convert string [", str, "] to long"));
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to integer"));
   }
   return result;
 }
 
 template <>
-unsigned convertFromString<unsigned>(StringView str)
-{
-  unsigned result = 0;
-  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
-  if(ec != std::errc())
-  {
-    throw RuntimeError(StrCat("Can't convert string [", str, "] to unsigned"));
-  }
-  return result;
-}
-
-template <>
-unsigned long convertFromString<unsigned long>(StringView str)
+uint64_t convertFromString<uint64_t>(StringView str)
 {
   unsigned long result = 0;
   auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
   if(ec != std::errc())
   {
-    throw RuntimeError(StrCat("Can't convert string [", str, "] to unsigned long"));
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to integer"));
   }
   return result;
+}
+
+template <typename T>
+T ConvertWithBoundCheck(StringView str)
+{
+  auto res = convertFromString<int64_t>(str);
+  if(res < std::numeric_limits<T>::lowest() || res > std::numeric_limits<T>::max())
+  {
+    throw RuntimeError(
+        StrCat("Value out of bound when converting [", str, "] to integer"));
+  }
+  return res;
+}
+
+template <>
+int8_t convertFromString<int8_t>(StringView str)
+{
+  return ConvertWithBoundCheck<int8_t>(str);
+}
+
+template <>
+int16_t convertFromString<int16_t>(StringView str)
+{
+  return ConvertWithBoundCheck<int16_t>(str);
+}
+
+template <>
+int32_t convertFromString<int32_t>(StringView str)
+{
+  return ConvertWithBoundCheck<int32_t>(str);
+}
+
+template <>
+uint8_t convertFromString<uint8_t>(StringView str)
+{
+  return ConvertWithBoundCheck<uint8_t>(str);
+}
+
+template <>
+uint16_t convertFromString<uint16_t>(StringView str)
+{
+  return ConvertWithBoundCheck<uint16_t>(str);
+}
+
+template <>
+uint32_t convertFromString<uint32_t>(StringView str)
+{
+  return ConvertWithBoundCheck<uint32_t>(str);
 }
 
 template <>
@@ -208,6 +232,19 @@ std::vector<double> convertFromString<std::vector<double>>(StringView str)
   for(const StringView& part : parts)
   {
     output.push_back(convertFromString<double>(part));
+  }
+  return output;
+}
+
+template <>
+std::vector<std::string> convertFromString<std::vector<std::string>>(StringView str)
+{
+  auto parts = splitString(str, ';');
+  std::vector<std::string> output;
+  output.reserve(parts.size());
+  for(const StringView& part : parts)
+  {
+    output.push_back(convertFromString<std::string>(part));
   }
   return output;
 }

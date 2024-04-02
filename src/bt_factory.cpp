@@ -448,7 +448,21 @@ void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
 
 void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
 {
-  (*_p->scripting_enums)[std::string(name)] = value;
+  const auto str = std::string(name);
+  auto it = _p->scripting_enums->find(str);
+  if(it == _p->scripting_enums->end())
+  {
+    _p->scripting_enums->insert({ str, value });
+  }
+  else
+  {
+    if(it->second != value)
+    {
+      throw LogicError(
+          StrCat("Registering the enum [", name, "] twice with different values, first ",
+                 std::to_string(it->second), " and later ", std::to_string(value)));
+    }
+  }
 }
 
 void BehaviorTreeFactory::clearSubstitutionRules()
@@ -659,20 +673,6 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
 
   return status;
 }
-
-// void BlackboardClone(const Blackboard& src, Blackboard& dst)
-// {
-//   dst.clear();
-//   for(auto const key_name : src.getKeys())
-//   {
-//     const auto key = std::string(key_name);
-//     const auto entry = src.getEntry(key);
-//     dst.createEntry(key, entry->info);
-//     auto new_entry = dst.getEntry(key);
-//     new_entry->value = entry->value;
-//     new_entry->string_converter = entry->string_converter;
-//   }
-// }
 
 void BlackboardRestore(const std::vector<Blackboard::Ptr>& backup, Tree& tree)
 {
