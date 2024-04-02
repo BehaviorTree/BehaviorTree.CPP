@@ -49,11 +49,7 @@ namespace BT
 class JsonExporter
 {
 public:
-  static JsonExporter& get()
-  {
-    static JsonExporter global_instance;
-    return global_instance;
-  }
+  static JsonExporter& get();
 
   /**
    * @brief toJson adds the content of "any" to the JSON "destination".
