@@ -95,7 +95,8 @@ public:
 
   [[nodiscard]] std::vector<StringView> getKeys() const;
 
-  void clear();
+  [[deprecated("This command is unsafe. Consider using Backup/Restore instead")]] void
+  clear();
 
   [[deprecated("Use getAnyLocked to access safely an Entry")]] std::recursive_mutex&
   entryMutex() const;
