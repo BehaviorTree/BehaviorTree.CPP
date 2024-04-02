@@ -144,16 +144,28 @@ template <>
 [[nodiscard]] const char* convertFromString<const char*>(StringView str);
 
 template <>
-[[nodiscard]] int convertFromString<int>(StringView str);
+[[nodiscard]] int8_t convertFromString<int8_t>(StringView str);
 
 template <>
-[[nodiscard]] unsigned convertFromString<unsigned>(StringView str);
+[[nodiscard]] int16_t convertFromString<int16_t>(StringView str);
 
 template <>
-[[nodiscard]] long convertFromString<long>(StringView str);
+[[nodiscard]] int32_t convertFromString<int32_t>(StringView str);
 
 template <>
-[[nodiscard]] unsigned long convertFromString<unsigned long>(StringView str);
+[[nodiscard]] int64_t convertFromString<int64_t>(StringView str);
+
+template <>
+[[nodiscard]] uint8_t convertFromString<uint8_t>(StringView str);
+
+template <>
+[[nodiscard]] uint16_t convertFromString<uint16_t>(StringView str);
+
+template <>
+[[nodiscard]] uint32_t convertFromString<uint32_t>(StringView str);
+
+template <>
+[[nodiscard]] uint64_t convertFromString<uint64_t>(StringView str);
 
 template <>
 [[nodiscard]] float convertFromString<float>(StringView str);

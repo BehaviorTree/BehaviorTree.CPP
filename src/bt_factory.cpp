@@ -674,20 +674,6 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
   return status;
 }
 
-// void BlackboardClone(const Blackboard& src, Blackboard& dst)
-// {
-//   dst.clear();
-//   for(auto const key_name : src.getKeys())
-//   {
-//     const auto key = std::string(key_name);
-//     const auto entry = src.getEntry(key);
-//     dst.createEntry(key, entry->info);
-//     auto new_entry = dst.getEntry(key);
-//     new_entry->value = entry->value;
-//     new_entry->string_converter = entry->string_converter;
-//   }
-// }
-
 void BlackboardRestore(const std::vector<Blackboard::Ptr>& backup, Tree& tree)
 {
   assert(backup.size() == tree.subtrees.size());
