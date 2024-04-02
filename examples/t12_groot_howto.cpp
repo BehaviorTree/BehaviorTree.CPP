@@ -125,6 +125,21 @@ int main()
   bool append_to_database = true;
   BT::SqliteLogger sqlite_logger(tree, "t12_sqlitelog.db3", append_to_database);
 
+  // We can add some extra information to the SqliteLogger, for instance the value of the
+  // "door_open" blackboard entry, at the end of node "tryOpen" (Fallback)
+
+  auto sqlite_callback = [](BT::Duration timestamp, const BT::TreeNode& node,
+                            BT::NodeStatus prev_status,
+                            BT::NodeStatus status) -> std::string {
+    if(node.name() == "tryOpen" && BT::isStatusCompleted(status))
+    {
+      auto is_open = BT::toStr(node.config().blackboard->get<bool>("door_open"));
+      return "[tryOpen] door_open=" + is_open;
+    }
+    return {};
+  };
+  sqlite_logger.setMetadataCallback(sqlite_callback);
+
   while(1)
   {
     std::cout << "Start" << std::endl;

@@ -37,6 +37,12 @@ public:
 
   virtual ~SqliteLogger() override;
 
+  // You can inject a function that add a metadata filed (a string) to the raw in the table.
+  // The arguments of the function are the same as SqliteLogger::callback()
+  using MetadataFunc =
+      std::function<std::string(Duration, const TreeNode&, NodeStatus, NodeStatus)>;
+  void setMetadataCallback(MetadataFunc func);
+
   virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
                         NodeStatus status) override;
 
@@ -56,6 +62,7 @@ private:
     int64_t timestamp;
     int64_t duration;
     NodeStatus status;
+    std::string metadata;
   };
 
   std::deque<Transition> transitions_queue_;
@@ -64,6 +71,8 @@ private:
 
   std::thread writer_thread_;
   std::atomic_bool loop_ = true;
+
+  MetadataFunc meta_func_;
 
   void writerLoop();
 };

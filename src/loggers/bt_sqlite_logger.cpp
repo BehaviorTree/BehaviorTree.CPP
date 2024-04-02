@@ -24,7 +24,8 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
                           "session_id INTEGER NOT NULL, "
                           "uid        INTEGER NOT NULL, "
                           "duration   INTEGER, "
-                          "state      INTEGER NOT NULL);");
+                          "state      INTEGER NOT NULL,"
+                          "metadata   VARCHAR );");
 
   sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Definitions ("
                           "session_id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -61,6 +62,11 @@ SqliteLogger::~SqliteLogger()
   sqlite::Statement(*db_, "PRAGMA optimize;");
 }
 
+void SqliteLogger::setMetadataCallback(MetadataFunc func)
+{
+  meta_func_ = func;
+}
+
 void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
                             NodeStatus prev_status, NodeStatus status)
 {
@@ -91,6 +97,11 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
   trans.node_uid = node.UID();
   trans.status = status;
 
+  if(meta_func_)
+  {
+    trans.metadata = meta_func_(timestamp, node, prev_status, status);
+  }
+
   {
     std::scoped_lock lk(queue_mutex_);
     transitions_queue_.push_back(trans);
@@ -116,9 +127,9 @@ void SqliteLogger::writerLoop()
       auto const trans = transitions.front();
       transitions.pop_front();
 
-      sqlite::Statement(*db_, "INSERT INTO Transitions VALUES (?, ?, ?, ?, ?)",
+      sqlite::Statement(*db_, "INSERT INTO Transitions VALUES (?, ?, ?, ?, ?, ?)",
                         trans.timestamp, session_id_, trans.node_uid, trans.duration,
-                        static_cast<int>(trans.status));
+                        static_cast<int>(trans.status), trans.metadata);
     }
   }
 }
