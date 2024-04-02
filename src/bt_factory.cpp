@@ -448,7 +448,21 @@ void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
 
 void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)
 {
-  (*_p->scripting_enums)[std::string(name)] = value;
+  const auto str = std::string(name);
+  auto it = _p->scripting_enums->find(str);
+  if(it == _p->scripting_enums->end())
+  {
+    _p->scripting_enums->insert({ str, value });
+  }
+  else
+  {
+    if(it->second != value)
+    {
+      throw LogicError(
+          StrCat("Registering the enum [", name, "] twice with different values, first ",
+                 std::to_string(it->second), " and later ", std::to_string(value)));
+    }
+  }
 }
 
 void BehaviorTreeFactory::clearSubstitutionRules()
