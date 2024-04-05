@@ -60,6 +60,8 @@ using StringView = std::string_view;
 
 bool StartWith(StringView str, StringView prefix);
 
+bool StartWith(StringView str, char prefix);
+
 // vector of key/value pairs
 using KeyValueVector = std::vector<std::pair<std::string, std::string>>;
 

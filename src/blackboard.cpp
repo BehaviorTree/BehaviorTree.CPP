@@ -45,6 +45,19 @@ Any* Blackboard::getAny(const std::string& key)
 const std::shared_ptr<Blackboard::Entry>
 Blackboard::getEntry(const std::string& key) const
 {
+  // special syntax: "@" will always refer to the root BB
+  if(StartWith(key, '@'))
+  {
+    if(auto parent = parent_bb_.lock())
+    {
+      return parent->getEntry(key);
+    }
+    else
+    {
+      return getEntry(key.substr(1, key.size() - 1));
+    }
+  }
+
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = storage_.find(key);
   if(it != storage_.end())
@@ -70,46 +83,13 @@ Blackboard::getEntry(const std::string& key) const
 
 std::shared_ptr<Blackboard::Entry> Blackboard::getEntry(const std::string& key)
 {
-  std::unique_lock<std::mutex> lock(mutex_);
-  auto it = storage_.find(key);
-  if(it != storage_.end())
-  {
-    return it->second;
-  }
-
-  // not found. Try autoremapping
-  if(auto parent = parent_bb_.lock())
-  {
-    auto remap_it = internal_to_external_.find(key);
-    if(remap_it != internal_to_external_.cend())
-    {
-      auto const& new_key = remap_it->second;
-      auto entry = parent->getEntry(new_key);
-      if(entry)
-      {
-        storage_.insert({ key, entry });
-      }
-      return entry;
-    }
-    if(autoremapping_ && !IsPrivateKey(key))
-    {
-      auto entry = parent->getEntry(key);
-      if(entry)
-      {
-        storage_.insert({ key, entry });
-      }
-      return entry;
-    }
-  }
-  return {};
+  return static_cast<const Blackboard&>(*this).getEntry(key);
 }
 
 const TypeInfo* Blackboard::entryInfo(const std::string& key)
 {
-  std::unique_lock<std::mutex> lock(mutex_);
-
-  auto it = storage_.find(key);
-  return (it == storage_.end()) ? nullptr : &(it->second->info);
+  auto entry = getEntry(key);
+  return (!entry) ? nullptr : &(entry->info);
 }
 
 void Blackboard::addSubtreeRemapping(StringView internal, StringView external)
@@ -167,7 +147,21 @@ std::recursive_mutex& Blackboard::entryMutex() const
 
 void Blackboard::createEntry(const std::string& key, const TypeInfo& info)
 {
-  createEntryImpl(key, info);
+  if(StartWith(key, '@'))
+  {
+    if(auto parent = parent_bb_.lock())
+    {
+      parent->createEntry(key, info);
+    }
+    else
+    {
+      createEntryImpl(key.substr(1, key.size() - 1), info);
+    }
+  }
+  else
+  {
+    createEntryImpl(key, info);
+  }
 }
 
 void Blackboard::cloneInto(Blackboard& dst) const

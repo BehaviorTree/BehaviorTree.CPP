@@ -557,3 +557,47 @@ TEST(BlackboardTest, BlackboardBackup)
   status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
 }
+
+TEST(BlackboardTest, RootBlackboard)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="SubA">
+      <Sequence>
+        <SubTree ID="SubB" />
+        <Script code=" @var3:=3 " />
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="SubB">
+      <Sequence>
+        <SaySomething message="{@msg}" />
+        <Script code=" @var4:=4 " />
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code=" msg:='hello' " />
+        <SubTree ID="SubA" />
+
+        <Script code=" var1:=1 " />
+        <Script code=" @var2:=2 " />
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+
+  auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+
+  ASSERT_EQ(1, tree.rootBlackboard()->get<int>("var1"));
+  ASSERT_EQ(2, tree.rootBlackboard()->get<int>("var2"));
+  ASSERT_EQ(3, tree.rootBlackboard()->get<int>("var3"));
+  ASSERT_EQ(4, tree.rootBlackboard()->get<int>("var4"));
+}

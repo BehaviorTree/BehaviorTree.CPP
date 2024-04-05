@@ -467,4 +467,9 @@ bool StartWith(StringView str, StringView prefix)
          strncmp(str.data(), prefix.data(), prefix.size()) == 0;
 }
 
+bool StartWith(StringView str, char prefix)
+{
+  return str.size() >= 1 && str[0] == prefix;
+}
+
 }  // namespace BT

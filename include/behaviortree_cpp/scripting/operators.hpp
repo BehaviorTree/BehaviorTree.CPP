@@ -510,6 +510,10 @@ struct ExprAssignment : ExprBase
       {
         env.vars->createEntry(key, PortInfo());
         entry = env.vars->getEntry(key);
+        if(!entry)
+        {
+          throw LogicError("Bug: report");
+        }
       }
       else
       {
@@ -550,7 +554,8 @@ struct ExprAssignment : ExprBase
         // special case: string to other type.
         // Check if we can use the StringConverter
         auto const str = value.cast<std::string>();
-        const auto& entry_info = env.vars->entryInfo(key);
+        const auto* entry_info = env.vars->entryInfo(key);
+
         if(auto converter = entry_info->converter())
         {
           *dst_ptr = converter(str);
@@ -647,15 +652,6 @@ namespace BT::Grammar
 namespace dsl = lexy::dsl;
 
 constexpr auto escaped_newline = dsl::backslash >> dsl::newline;
-
-// A Unicode-aware identifier.
-struct Name
-{
-  static constexpr auto rule =
-      dsl::identifier(dsl::unicode::xid_start_underscore, dsl::unicode::xid_continue);
-
-  static constexpr auto value = lexy::as_string<std::string>;
-};
 
 // An expression that is nested inside another expression.
 struct nested_expr : lexy::transparent_production
