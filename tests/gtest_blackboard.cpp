@@ -531,10 +531,15 @@ TEST(BlackboardTest, BlackboardBackup)
   // Blackboard Backup
   const auto bb_backup = BlackboardBackup(tree);
 
-  std::vector<std::vector<StringView>> expected_keys;
+  std::vector<std::vector<std::string>> expected_keys;
   for(const auto& sub : tree.subtrees)
   {
-    expected_keys.push_back(sub->blackboard->getKeys());
+    std::vector<std::string> keys;
+    for(const auto& str_view : sub->blackboard->getKeys())
+    {
+      keys.push_back(std::string(str_view));
+    }
+    expected_keys.push_back(keys);
   }
 
   auto status = tree.tickWhileRunning();

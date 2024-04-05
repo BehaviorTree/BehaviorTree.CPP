@@ -510,7 +510,7 @@ public:
     }
     if(!getInput("pointE", pointE) || pointE != Point2D{ 9, 10 })
     {
-      throw std::runtime_error("failed pointD");
+      throw std::runtime_error("failed pointE");
     }
     if(!getInput("input", input) || input != Point2D{ -1, -2 })
     {
