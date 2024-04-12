@@ -3,6 +3,12 @@
 namespace BT
 {
 
+JsonExporter& JsonExporter::get()
+{
+  static JsonExporter global_instance;
+  return global_instance;
+}
+
 bool JsonExporter::toJson(const Any& any, nlohmann::json& dst) const
 {
   nlohmann::json json;

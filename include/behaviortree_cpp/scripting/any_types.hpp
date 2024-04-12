@@ -1,4 +1,4 @@
-/*  Copyright (C) 2022 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2022-24 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -12,14 +12,6 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstdio>
-#include <map>
-#include <string>
-#include <vector>
-#include <utility>
-#include <charconv>
-
 #include "lexy/action/parse.hpp"
 #include "lexy/callback.hpp"
 #include "lexy/dsl.hpp"
@@ -30,6 +22,46 @@
 namespace BT::Grammar
 {
 namespace dsl = lexy::dsl;
+
+struct _xid_start_character : lexyd::char_class_base<_xid_start_character>
+{
+  static LEXY_CONSTEVAL auto char_class_name()
+  {
+    return "code-point.BT-start-character";
+  }
+
+  static LEXY_CONSTEVAL auto char_class_ascii()
+  {
+    lexy::_detail::ascii_set result;
+    result.insert('a', 'z');
+    result.insert('A', 'Z');
+    result.insert('_');
+    result.insert('@');
+    return result;
+  }
+
+  static LEXY_UNICODE_CONSTEXPR bool char_class_match_cp(char32_t cp)
+  {
+    // underscore handled as part of ASCII.
+    return lexy::_detail::code_point_has_properties<LEXY_UNICODE_PROPERTY(xid_start)>(cp);
+  }
+
+  template <typename Encoding>
+  static constexpr auto char_class_match_swar(lexy::_detail::swar_int c)
+  {
+    return lexyd::ascii::_alphau::template char_class_match_swar<Encoding>(c);
+  }
+};
+inline constexpr auto xid_start_character = _xid_start_character{};
+
+// A Unicode-aware identifier.
+struct Name
+{
+  static constexpr auto rule =
+      dsl::identifier(xid_start_character, dsl::unicode::xid_continue);
+
+  static constexpr auto value = lexy::as_string<std::string>;
+};
 
 //----------
 struct Integer : lexy::token_production
