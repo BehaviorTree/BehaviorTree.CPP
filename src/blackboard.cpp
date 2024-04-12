@@ -191,6 +191,8 @@ void Blackboard::cloneInto(Blackboard& dst) const
       dst_entry->string_converter = src_entry->string_converter;
       dst_entry->value = src_entry->value;
       dst_entry->info = src_entry->info;
+      dst_entry->sequence_id++;
+      dst_entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
     }
     else
     {
@@ -295,6 +297,16 @@ void ImportBlackboardFromJSON(const nlohmann::json& json, Blackboard& blackboard
       entry->value = res->first;
     }
   }
+}
+
+Blackboard::Entry& Blackboard::Entry::operator=(const Entry& other)
+{
+  value = other.value;
+  info = other.info;
+  string_converter = other.string_converter;
+  sequence_id = other.sequence_id;
+  stamp = other.stamp;
+  return *this;
 }
 
 }  // namespace BT

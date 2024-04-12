@@ -223,6 +223,9 @@ public:
   template <typename T>
   Result getInput(const std::string& key, T& destination) const;
 
+  template <typename T>
+  ResultStamped getInputStamped(const std::string& key, T& destination) const;
+
   /** Same as bool getInput(const std::string& key, T& destination)
    * but using optional.
    *
@@ -352,6 +355,9 @@ protected:
   PreScripts& preConditionsScripts();
   PostScripts& postConditionsScripts();
 
+  template <typename T>
+  T parseString(const std::string& str) const;
+
 private:
   struct PImpl;
   std::unique_ptr<PImpl> _p;
@@ -365,32 +371,31 @@ private:
 };
 
 //-------------------------------------------------------
+
 template <typename T>
-inline Result TreeNode::getInput(const std::string& key, T& destination) const
+T TreeNode::parseString(const std::string& str) const
 {
-  // address the special case where T is an enum
-  auto ParseString = [this](const std::string& str) -> T {
-    (void)this;  // maybe unused
-    if constexpr(std::is_enum_v<T> && !std::is_same_v<T, NodeStatus>)
+  if constexpr(std::is_enum_v<T> && !std::is_same_v<T, NodeStatus>)
+  {
+    auto it = config().enums->find(str);
+    // conversion available
+    if(it != config().enums->end())
     {
-      auto it = config().enums->find(str);
-      // conversion available
-      if(it != config().enums->end())
-      {
-        return static_cast<T>(it->second);
-      }
-      else
-      {
-        // hopefully str contains a number that can be parsed. May throw
-        return static_cast<T>(convertFromString<int>(str));
-      }
+      return static_cast<T>(it->second);
     }
     else
     {
-      return convertFromString<T>(str);
+      // hopefully str contains a number that can be parsed. May throw
+      return static_cast<T>(convertFromString<int>(str));
     }
-  };
+  }
+  return convertFromString<T>(str);
+}
 
+template <typename T>
+inline ResultStamped TreeNode::getInputStamped(const std::string& key,
+                                               T& destination) const
+{
   std::string port_value_str;
 
   auto input_port_it = config().input_ports.find(key);
@@ -406,8 +411,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     {
       return nonstd::make_unexpected(StrCat("getInput() of node '", fullPath(),
                                             "' failed because the manifest doesn't "
-                                            "contain"
-                                            "the key: [",
+                                            "contain the key: [",
                                             key, "]"));
     }
     const auto& port_info = port_manifest_it->second;
@@ -416,8 +420,7 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     {
       return nonstd::make_unexpected(StrCat("getInput() of node '", fullPath(),
                                             "' failed because nor the manifest or the "
-                                            "XML contain"
-                                            "the key: [",
+                                            "XML contain the key: [",
                                             key, "]"));
     }
     if(port_info.defaultValue().isString())
@@ -427,27 +430,27 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
     else
     {
       destination = port_info.defaultValue().cast<T>();
-      return {};
+      return Timestamp{};
     }
   }
 
-  auto remapped_res = getRemappedKey(key, port_value_str);
+  auto blackboard_ptr = getRemappedKey(key, port_value_str);
   try
   {
     // pure string, not a blackboard key
-    if(!remapped_res)
+    if(!blackboard_ptr)
     {
       try
       {
-        destination = ParseString(port_value_str);
+        destination = parseString<T>(port_value_str);
       }
       catch(std::exception& ex)
       {
         return nonstd::make_unexpected(StrCat("getInput(): ", ex.what()));
       }
-      return {};
+      return Timestamp{};
     }
-    const auto& remapped_key = remapped_res.value();
+    const auto& blackboard_key = blackboard_ptr.value();
 
     if(!config().blackboard)
     {
@@ -455,38 +458,51 @@ inline Result TreeNode::getInput(const std::string& key, T& destination) const
                                      "an invalid Blackboard");
     }
 
-    if(auto any_ref = config().blackboard->getAnyLocked(std::string(remapped_key)))
+    if(auto entry = config().blackboard->getEntry(std::string(blackboard_key)))
     {
-      auto val = any_ref.get();
+      std::unique_lock lk(entry->entry_mutex);
+      auto& any_value = entry->value;
+
       // support getInput<Any>()
       if constexpr(std::is_same_v<T, Any>)
       {
-        destination = *val;
+        destination = any_value;
         return {};
       }
 
-      if(!val->empty())
+      if(!entry->value.empty())
       {
-        if(!std::is_same_v<T, std::string> && val->isString())
+        if(!std::is_same_v<T, std::string> && any_value.isString())
         {
-          destination = ParseString(val->cast<std::string>());
+          destination = parseString<T>(any_value.cast<std::string>());
         }
         else
         {
-          destination = val->cast<T>();
+          destination = any_value.cast<T>();
         }
-        return {};
+        return Timestamp{ entry->sequence_id, entry->stamp };
       }
     }
 
     return nonstd::make_unexpected(StrCat("getInput() failed because it was unable to "
                                           "find the key [",
-                                          key, "] remapped to [", remapped_key, "]"));
+                                          key, "] remapped to [", blackboard_key, "]"));
   }
   catch(std::exception& err)
   {
     return nonstd::make_unexpected(err.what());
   }
+}
+
+template <typename T>
+inline Result TreeNode::getInput(const std::string& key, T& destination) const
+{
+  auto res = getInputStamped(key, destination);
+  if(!res)
+  {
+    return nonstd::make_unexpected(res.error());
+  }
+  return {};
 }
 
 template <typename T>

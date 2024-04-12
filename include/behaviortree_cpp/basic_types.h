@@ -332,6 +332,14 @@ using Optional = nonstd::expected<T, std::string>;
  * */
 using Result = Expected<std::monostate>;
 
+struct Timestamp
+{
+  uint64_t seq = 0;
+  std::chrono::nanoseconds stamp = std::chrono::nanoseconds(0);
+};
+
+using ResultStamped = Expected<Timestamp>;
+
 [[nodiscard]] bool IsAllowedPortName(StringView str);
 
 class TypeInfo

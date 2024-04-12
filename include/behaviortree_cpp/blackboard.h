@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include <mutex>
+#include <optional>
 
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/contrib/json.hpp"
@@ -40,8 +41,14 @@ public:
     StringConverter string_converter;
     mutable std::mutex entry_mutex;
 
+    uint64_t sequence_id = 0;
+    // timestamp since epoch
+    std::chrono::nanoseconds stamp = std::chrono::nanoseconds{ 0 };
+
     Entry(const TypeInfo& _info) : info(_info)
     {}
+
+    Entry& operator=(const Entry& other);
   };
 
   /** Use this static method to create an instance of the BlackBoard
@@ -75,11 +82,17 @@ public:
   template <typename T>
   [[nodiscard]] bool get(const std::string& key, T& value) const;
 
+  template <typename T>
+  std::optional<Timestamp> getStamped(const std::string& key, T& value) const;
+
   /**
    * Version of get() that throws if it fails.
    */
   template <typename T>
   [[nodiscard]] T get(const std::string& key) const;
+
+  template <typename T>
+  std::pair<T, Timestamp> getStamped(const std::string& key) const;
 
   /// Update the entry with the given key
   template <typename T>
@@ -155,10 +168,7 @@ inline T Blackboard::get(const std::string& key) const
     }
     return any_ref.get()->cast<T>();
   }
-  else
-  {
-    throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
-  }
+  throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
 }
 
 inline void Blackboard::unset(const std::string& key)
@@ -203,6 +213,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
     lock.lock();
 
     entry->value = new_value;
+    entry->sequence_id++;
+    entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
   }
   else
   {
@@ -212,7 +224,6 @@ inline void Blackboard::set(const std::string& key, const T& value)
     std::scoped_lock scoped_lock(entry.entry_mutex);
 
     Any& previous_any = entry.value;
-
     Any new_value(value);
 
     // special case: entry exists but it is not strongly typed... yet
@@ -220,6 +231,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
     {
       // Use the new type to create a new entry that is strongly typed.
       entry.info = TypeInfo::Create<T>();
+      entry.sequence_id++;
+      entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
       previous_any = std::move(new_value);
       return;
     }
@@ -273,6 +286,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
       // copy only if the type is compatible
       new_value.copyInto(previous_any);
     }
+    entry.sequence_id++;
+    entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
   }
 }
 
@@ -281,10 +296,47 @@ inline bool Blackboard::get(const std::string& key, T& value) const
 {
   if(auto any_ref = getAnyLocked(key))
   {
+    if(any_ref.get()->empty())
+    {
+      return false;
+    }
     value = any_ref.get()->cast<T>();
     return true;
   }
   return false;
+}
+
+template <typename T>
+inline std::optional<Timestamp> Blackboard::getStamped(const std::string& key,
+                                                       T& value) const
+{
+  if(auto entry = getEntry(key))
+  {
+    std::unique_lock lk(entry->entry_mutex);
+    if(entry->value.empty())
+    {
+      return std::nullopt;
+    }
+    value = entry->value.cast<T>();
+    return Timestamp{ entry->sequence_id, entry->stamp };
+  }
+  return std::nullopt;
+}
+
+template <typename T>
+inline std::pair<T, Timestamp> Blackboard::getStamped(const std::string& key) const
+{
+  if(auto entry = getEntry(key))
+  {
+    std::unique_lock lk(entry->entry_mutex);
+    if(entry->value.empty())
+    {
+      throw RuntimeError("Blackboard::get() error. Entry [", key,
+                         "] hasn't been initialized, yet");
+    }
+    return { entry->value.cast<T>(), Timestamp{ entry->sequence_id, entry->stamp } };
+  }
+  throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
 }
 
 }  // namespace BT
