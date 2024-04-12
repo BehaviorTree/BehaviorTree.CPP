@@ -77,9 +77,14 @@ SqliteLogger::~SqliteLogger()
   sqlite::Statement(*db_, "PRAGMA optimize;");
 }
 
-void SqliteLogger::setMetadataCallback(MetadataFunc func)
+void SqliteLogger::setMetadataCallback(MetadataCallback func)
 {
   meta_func_ = func;
+}
+
+void SqliteLogger::setAdditionalCallback(ExtraCallback func)
+{
+  extra_func_ = func;
 }
 
 void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
@@ -122,6 +127,16 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
     transitions_queue_.push_back(trans);
   }
   queue_cv_.notify_one();
+
+  if(extra_func_)
+  {
+    extra_func_(timestamp, node, prev_status, status);
+  }
+}
+
+void SqliteLogger::execSqlStatement(std::string statement)
+{
+  sqlite::Statement(*db_, statement);
 }
 
 void SqliteLogger::writerLoop()
