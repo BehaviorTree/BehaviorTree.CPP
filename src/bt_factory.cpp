@@ -697,25 +697,32 @@ std::vector<Blackboard::Ptr> BlackboardBackup(const Tree& tree)
 
 nlohmann::json ExportTreeToJSON(const Tree& tree)
 {
-  std::vector<nlohmann::json> bbs;
+  nlohmann::json out;
   for(const auto& subtree : tree.subtrees)
   {
-    bbs.push_back(ExportBlackboardToJSON(*subtree->blackboard));
+    nlohmann::json json_sub;
+    auto sub_name = subtree->instance_name;
+    if(sub_name.empty())
+    {
+      sub_name = subtree->tree_ID;
+    }
+    out[sub_name] = ExportBlackboardToJSON(*subtree->blackboard);
   }
-  return bbs;
+  return out;
 }
 
 void ImportTreeFromJSON(const nlohmann::json& json, Tree& tree)
 {
   if(json.size() != tree.subtrees.size())
   {
-    std::cerr << "Number of blackboards don't match:" << json.size() << "/"
-              << tree.subtrees.size() << "\n";
     throw std::runtime_error("Number of blackboards don't match:");
   }
-  for(size_t i = 0; i < tree.subtrees.size(); i++)
+
+  size_t index = 0;
+  for(auto& [key, array] : json.items())
   {
-    ImportBlackboardFromJSON(json.at(i), *tree.subtrees.at(i)->blackboard);
+    auto& subtree = tree.subtrees.at(index++);
+    ImportBlackboardFromJSON(array, *subtree->blackboard);
   }
 }
 
