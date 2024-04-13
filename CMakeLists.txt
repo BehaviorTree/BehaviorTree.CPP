@@ -103,7 +103,9 @@ list(APPEND BT_SOURCE
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
     src/decorators/timeout_node.cpp
+    src/decorators/skip_unless_updated.cpp
     src/decorators/subtree_node.cpp
+    src/decorators/wait_update.cpp
 
     src/controls/if_then_else_node.cpp
     src/controls/fallback_node.cpp
@@ -148,7 +150,8 @@ endif()
 
 if (BTCPP_SHARED_LIBS)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE})
+    add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE}
+        src/decorators/wait_update.cpp)
 else()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_library(${BTCPP_LIBRARY} STATIC ${BT_SOURCE})

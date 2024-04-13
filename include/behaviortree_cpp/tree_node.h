@@ -467,7 +467,7 @@ inline ResultStamped TreeNode::getInputStamped(const std::string& key,
       if constexpr(std::is_same_v<T, Any>)
       {
         destination = any_value;
-        return {};
+        return Timestamp{ entry->sequence_id, entry->stamp };
       }
 
       if(!entry->value.empty())

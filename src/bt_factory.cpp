@@ -95,6 +95,9 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
   registerNodeType<LoopNode<double>>("LoopDouble");
   registerNodeType<LoopNode<std::string>>("LoopString");
 
+  registerNodeType<SkipUnlessUpdated>("SkipUnlessUpdated");
+  registerNodeType<WaitValueUpdate>("WaitValueUpdate");
+
   for(const auto& it : _p->builders)
   {
     _p->builtin_IDs.insert(it.first);
