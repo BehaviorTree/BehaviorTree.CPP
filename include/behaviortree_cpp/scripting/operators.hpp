@@ -279,9 +279,9 @@ struct ExprBinaryArithmetic : ExprBase
     {
       return Any(lhs_v.cast<std::string>() + rhs_v.cast<std::string>());
     }
-    else if (op == concat && ((rhs_v.isString() && lhs_v.isString()) ||
-                            (rhs_v.isString() && lhs_v.isNumber()) ||
-                            (rhs_v.isNumber() && lhs_v.isString())))
+    else if(op == concat && ((rhs_v.isString() && lhs_v.isString()) ||
+                             (rhs_v.isString() && lhs_v.isNumber()) ||
+                             (rhs_v.isNumber() && lhs_v.isString())))
     {
       return Any(lhs_v.cast<std::string>() + rhs_v.cast<std::string>());
     }
@@ -737,7 +737,7 @@ struct Expression : lexy::expression_production
     static constexpr auto op = [] {
       return dsl::op<Ast::ExprBinaryArithmetic::concat>(LEXY_LIT(".."));
     }();
-    
+
     using operand = math_sum;
   };
 
