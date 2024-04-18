@@ -150,8 +150,7 @@ endif()
 
 if (BTCPP_SHARED_LIBS)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE}
-        src/decorators/wait_update.cpp)
+    add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE})
 else()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_library(${BTCPP_LIBRARY} STATIC ${BT_SOURCE})
