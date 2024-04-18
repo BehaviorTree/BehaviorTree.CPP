@@ -4,7 +4,6 @@
 #include <memory>
 #include <unordered_map>
 #include <mutex>
-#include <optional>
 
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/contrib/json.hpp"
@@ -18,6 +17,13 @@ namespace BT
 /// This type contains a pointer to Any, protected
 /// with a locked mutex as long as the object is in scope
 using AnyPtrLocked = LockedPtr<Any>;
+
+template <typename T>
+struct StampedValue
+{
+  T value;
+  Timestamp stamp;
+};
 
 /**
  * @brief The Blackboard is the mechanism used by BehaviorTrees to exchange
@@ -83,7 +89,7 @@ public:
   [[nodiscard]] bool get(const std::string& key, T& value) const;
 
   template <typename T>
-  std::optional<Timestamp> getStamped(const std::string& key, T& value) const;
+  [[nodiscard]] Expected<Timestamp> getStamped(const std::string& key, T& value) const;
 
   /**
    * Version of get() that throws if it fails.
@@ -92,7 +98,7 @@ public:
   [[nodiscard]] T get(const std::string& key) const;
 
   template <typename T>
-  std::pair<T, Timestamp> getStamped(const std::string& key) const;
+  [[nodiscard]] Expected<StampedValue<T>> getStamped(const std::string& key) const;
 
   /// Update the entry with the given key
   template <typename T>
@@ -307,36 +313,36 @@ inline bool Blackboard::get(const std::string& key, T& value) const
 }
 
 template <typename T>
-inline std::optional<Timestamp> Blackboard::getStamped(const std::string& key,
-                                                       T& value) const
+inline Expected<Timestamp> Blackboard::getStamped(const std::string& key, T& value) const
 {
   if(auto entry = getEntry(key))
   {
     std::unique_lock lk(entry->entry_mutex);
     if(entry->value.empty())
     {
-      return std::nullopt;
+      return nonstd::make_unexpected(StrCat("Blackboard::getStamped() error. Entry [",
+                                            key, "] hasn't been initialized, yet"));
     }
     value = entry->value.cast<T>();
     return Timestamp{ entry->sequence_id, entry->stamp };
   }
-  return std::nullopt;
+  return nonstd::make_unexpected(
+      StrCat("Blackboard::getStamped() error. Missing key [", key, "]"));
 }
 
 template <typename T>
-inline std::pair<T, Timestamp> Blackboard::getStamped(const std::string& key) const
+inline Expected<StampedValue<T>> Blackboard::getStamped(const std::string& key) const
 {
-  if(auto entry = getEntry(key))
+  StampedValue<T> out;
+  if(auto res = getStamped<T>(key, out.value))
   {
-    std::unique_lock lk(entry->entry_mutex);
-    if(entry->value.empty())
-    {
-      throw RuntimeError("Blackboard::get() error. Entry [", key,
-                         "] hasn't been initialized, yet");
-    }
-    return { entry->value.cast<T>(), Timestamp{ entry->sequence_id, entry->stamp } };
+    out.stamp = *res;
+    return out;
   }
-  throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
+  else
+  {
+    return nonstd::make_unexpected(res.error());
+  }
 }
 
 }  // namespace BT

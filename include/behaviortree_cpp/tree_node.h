@@ -218,13 +218,23 @@ public:
    * convertFromString<T>() is used automatically to parse the text.
    *
    * @param key   the name of the port.
+   * @param destination  reference to the object where the value should be stored
    * @return      false if an error occurs.
    */
   template <typename T>
   Result getInput(const std::string& key, T& destination) const;
 
+  /**
+   * @brief getInputStamped is similar to getInput(dey, destination),
+   * but it returne also the Timestamp object, that can be used to check if
+   * a value was updated and when.
+   *
+   * @param key   the name of the port.
+   * @param destination  reference to the object where the value should be stored
+   */
   template <typename T>
-  ResultStamped getInputStamped(const std::string& key, T& destination) const;
+  [[nodiscard]] Expected<Timestamp> getInputStamped(const std::string& key,
+                                                    T& destination) const;
 
   /** Same as bool getInput(const std::string& key, T& destination)
    * but using optional.
@@ -237,6 +247,26 @@ public:
     T out;
     auto res = getInput(key, out);
     return (res) ? Expected<T>(out) : nonstd::make_unexpected(res.error());
+  }
+
+  /** Same as bool getInputStamped(const std::string& key, T& destination)
+   * but return StampedValue<T>
+   *
+   * @param key   the name of the port.
+   */
+  template <typename T>
+  [[nodiscard]] Expected<StampedValue<T>> getInputStamped(const std::string& key) const
+  {
+    StampedValue<T> out;
+    if(auto res = getInputStamped(key, out.value))
+    {
+      out.stamp = *res;
+      return out;
+    }
+    else
+    {
+      return nonstd::make_unexpected(res.error());
+    }
   }
 
   /**
@@ -393,8 +423,8 @@ T TreeNode::parseString(const std::string& str) const
 }
 
 template <typename T>
-inline ResultStamped TreeNode::getInputStamped(const std::string& key,
-                                               T& destination) const
+inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
+                                                     T& destination) const
 {
   std::string port_value_str;
 
