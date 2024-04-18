@@ -103,7 +103,9 @@ list(APPEND BT_SOURCE
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp
     src/decorators/timeout_node.cpp
+    src/decorators/skip_unless_updated.cpp
     src/decorators/subtree_node.cpp
+    src/decorators/wait_update.cpp
 
     src/controls/if_then_else_node.cpp
     src/controls/fallback_node.cpp

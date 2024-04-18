@@ -606,3 +606,42 @@ TEST(BlackboardTest, RootBlackboard)
   ASSERT_EQ(3, tree.rootBlackboard()->get<int>("var3"));
   ASSERT_EQ(4, tree.rootBlackboard()->get<int>("var4"));
 }
+
+TEST(BlackboardTest, TimestampedInterface)
+{
+  auto bb = BT::Blackboard::create();
+
+  // still empty, expected to fail
+  int value;
+  ASSERT_FALSE(bb->getStamped<int>("value"));
+  ASSERT_FALSE(bb->getStamped("value", value));
+
+  auto nsec_before = std::chrono::steady_clock::now().time_since_epoch().count();
+  bb->set("value", 42);
+  auto result = bb->getStamped<int>("value");
+  auto stamp_opt = bb->getStamped<int>("value", value);
+
+  ASSERT_EQ(result->value, 42);
+  ASSERT_EQ(result->stamp.seq, 1);
+  ASSERT_GE(result->stamp.time.count(), nsec_before);
+
+  ASSERT_EQ(value, 42);
+  ASSERT_TRUE(stamp_opt);
+  ASSERT_EQ(stamp_opt->seq, 1);
+  ASSERT_GE(stamp_opt->time.count(), nsec_before);
+
+  //---------------------------------
+  nsec_before = std::chrono::steady_clock::now().time_since_epoch().count();
+  bb->set("value", 69);
+  result = bb->getStamped<int>("value");
+  stamp_opt = bb->getStamped<int>("value", value);
+
+  ASSERT_EQ(result->value, 69);
+  ASSERT_EQ(result->stamp.seq, 2);
+  ASSERT_GE(result->stamp.time.count(), nsec_before);
+
+  ASSERT_EQ(value, 69);
+  ASSERT_TRUE(stamp_opt);
+  ASSERT_EQ(stamp_opt->seq, 2);
+  ASSERT_GE(stamp_opt->time.count(), nsec_before);
+}

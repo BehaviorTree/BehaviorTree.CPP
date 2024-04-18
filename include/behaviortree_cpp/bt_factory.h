@@ -14,14 +14,11 @@
 #ifndef BT_FACTORY_H
 #define BT_FACTORY_H
 
-#include <algorithm>
-#include <cstring>
 #include <filesystem>
 #include <functional>
 #include <memory>
 #include <unordered_map>
 #include <set>
-#include <utility>
 #include <vector>
 
 #include "behaviortree_cpp/contrib/magic_enum.hpp"

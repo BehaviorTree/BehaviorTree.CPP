@@ -18,6 +18,13 @@ namespace BT
 /// with a locked mutex as long as the object is in scope
 using AnyPtrLocked = LockedPtr<Any>;
 
+template <typename T>
+struct StampedValue
+{
+  T value;
+  Timestamp stamp;
+};
+
 /**
  * @brief The Blackboard is the mechanism used by BehaviorTrees to exchange
  * typed data.
@@ -40,8 +47,14 @@ public:
     StringConverter string_converter;
     mutable std::mutex entry_mutex;
 
+    uint64_t sequence_id = 0;
+    // timestamp since epoch
+    std::chrono::nanoseconds stamp = std::chrono::nanoseconds{ 0 };
+
     Entry(const TypeInfo& _info) : info(_info)
     {}
+
+    Entry& operator=(const Entry& other);
   };
 
   /** Use this static method to create an instance of the BlackBoard
@@ -75,11 +88,17 @@ public:
   template <typename T>
   [[nodiscard]] bool get(const std::string& key, T& value) const;
 
+  template <typename T>
+  [[nodiscard]] Expected<Timestamp> getStamped(const std::string& key, T& value) const;
+
   /**
    * Version of get() that throws if it fails.
    */
   template <typename T>
   [[nodiscard]] T get(const std::string& key) const;
+
+  template <typename T>
+  [[nodiscard]] Expected<StampedValue<T>> getStamped(const std::string& key) const;
 
   /// Update the entry with the given key
   template <typename T>
@@ -155,10 +174,7 @@ inline T Blackboard::get(const std::string& key) const
     }
     return any_ref.get()->cast<T>();
   }
-  else
-  {
-    throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
-  }
+  throw RuntimeError("Blackboard::get() error. Missing key [", key, "]");
 }
 
 inline void Blackboard::unset(const std::string& key)
@@ -203,6 +219,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
     lock.lock();
 
     entry->value = new_value;
+    entry->sequence_id++;
+    entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
   }
   else
   {
@@ -212,7 +230,6 @@ inline void Blackboard::set(const std::string& key, const T& value)
     std::scoped_lock scoped_lock(entry.entry_mutex);
 
     Any& previous_any = entry.value;
-
     Any new_value(value);
 
     // special case: entry exists but it is not strongly typed... yet
@@ -220,6 +237,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
     {
       // Use the new type to create a new entry that is strongly typed.
       entry.info = TypeInfo::Create<T>();
+      entry.sequence_id++;
+      entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
       previous_any = std::move(new_value);
       return;
     }
@@ -273,6 +292,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
       // copy only if the type is compatible
       new_value.copyInto(previous_any);
     }
+    entry.sequence_id++;
+    entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
   }
 }
 
@@ -281,10 +302,47 @@ inline bool Blackboard::get(const std::string& key, T& value) const
 {
   if(auto any_ref = getAnyLocked(key))
   {
+    if(any_ref.get()->empty())
+    {
+      return false;
+    }
     value = any_ref.get()->cast<T>();
     return true;
   }
   return false;
+}
+
+template <typename T>
+inline Expected<Timestamp> Blackboard::getStamped(const std::string& key, T& value) const
+{
+  if(auto entry = getEntry(key))
+  {
+    std::unique_lock lk(entry->entry_mutex);
+    if(entry->value.empty())
+    {
+      return nonstd::make_unexpected(StrCat("Blackboard::getStamped() error. Entry [",
+                                            key, "] hasn't been initialized, yet"));
+    }
+    value = entry->value.cast<T>();
+    return Timestamp{ entry->sequence_id, entry->stamp };
+  }
+  return nonstd::make_unexpected(
+      StrCat("Blackboard::getStamped() error. Missing key [", key, "]"));
+}
+
+template <typename T>
+inline Expected<StampedValue<T>> Blackboard::getStamped(const std::string& key) const
+{
+  StampedValue<T> out;
+  if(auto res = getStamped<T>(key, out.value))
+  {
+    out.stamp = *res;
+    return out;
+  }
+  else
+  {
+    return nonstd::make_unexpected(res.error());
+  }
 }
 
 }  // namespace BT
