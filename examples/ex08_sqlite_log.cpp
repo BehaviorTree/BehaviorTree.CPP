@@ -111,46 +111,8 @@ int main()
   BT::SqliteLogger sqlite_logger(tree, "ex08_sqlitelog.db3", false);
 
   //------------------------------------------------------------------------
-  // Approach ONE: create additional tables.
-  // This requires you to execute a "CREATE TABLE IF NOT EXISTS..." statement
-  // at the beginning and then an "INSERT INTO TaskB VALUES .." statement
-  // in a callback injected using sqlite_logger.setAdditionalCallback()
-
-  sqlite_logger.execSqlStatement("CREATE TABLE IF NOT EXISTS TaskA ("
-                                 "name   VARCHAR, "
-                                 "type   INTEGER );");
-
-  sqlite_logger.execSqlStatement("CREATE TABLE IF NOT EXISTS TaskB ("
-                                 "name   VARCHAR, "
-                                 "value  REAL );");
-
-  auto extra_callback = [&](BT::Duration timestamp, const BT::TreeNode& node,
-                            BT::NodeStatus prev_status, BT::NodeStatus status) -> void {
-    if(prev_status == BT::NodeStatus::RUNNING && BT::isStatusCompleted(status))
-    {
-      if(node.name() == "ExecuteTaskA")
-      {
-        auto task = node.config().blackboard->get<Command>("task");
-        auto taskA = std::get<TaskA>(task);
-        auto str = BT::StrCat("INSERT INTO TaskA VALUES ", "('", taskA.name, "',",
-                              std::to_string(taskA.type), ");");
-        sqlite_logger.execSqlStatement(str);
-      }
-      if(node.name() == "ExecuteTaskB")
-      {
-        auto task = node.config().blackboard->get<Command>("task");
-        auto taskB = std::get<TaskB>(task);
-        auto str = BT::StrCat("INSERT INTO TaskB VALUES ", "('", taskB.name, "',",
-                              std::to_string(taskB.value), ");");
-        sqlite_logger.execSqlStatement(str);
-      }
-    }
-  };
-  sqlite_logger.setAdditionalCallback(extra_callback);
-
-  //------------------------------------------------------------------------
-  // Approach TWO: serialize data into the extra column "metadata"
-  // We will use JSON serialization
+  // Write some data (from the blackboard) and write into the
+  // extra column called "extra_data". We will use JSON serialization
 
   auto meta_callback = [&](BT::Duration timestamp, const BT::TreeNode& node,
                            BT::NodeStatus prev_status,
@@ -176,7 +138,7 @@ int main()
     }
     return {};
   };
-  sqlite_logger.setMetadataCallback(meta_callback);
+  sqlite_logger.setAdditionalCallback(meta_callback);
   //------------------------------------------------------------------------
   while(1)
   {

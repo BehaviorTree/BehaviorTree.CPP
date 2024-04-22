@@ -22,15 +22,15 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
   sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Transitions ("
                           "timestamp  INTEGER PRIMARY KEY NOT NULL, "
                           "session_id INTEGER NOT NULL, "
-                          "uid        INTEGER NOT NULL, "
+                          "node_uid   INTEGER NOT NULL, "
                           "duration   INTEGER, "
                           "state      INTEGER NOT NULL,"
-                          "metadata   VARCHAR );");
+                          "extra_data VARCHAR );");
 
   sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Nodes ("
                           "session_id INTEGER NOT NULL, "
                           "fullpath   VARCHAR, "
-                          "uid        INTEGER NOT NULL );");
+                          "node_uid   INTEGER NOT NULL );");
 
   sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Definitions ("
                           "session_id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -41,6 +41,7 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
   {
     sqlite::Statement(*db_, "DELETE from Transitions;");
     sqlite::Statement(*db_, "DELETE from Definitions;");
+    sqlite::Statement(*db_, "DELETE from Nodes;");
   }
 
   auto tree_xml = WriteTreeToXML(tree, true, true);
@@ -49,7 +50,8 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
                     "VALUES (datetime('now','localtime'),?);",
                     tree_xml);
 
-  auto res = sqlite::Query(*db_, "SELECT MAX(session_id) FROM Definitions LIMIT 1;");
+  auto res = sqlite::Query(*db_, "SELECT MAX(session_id) "
+                                 "FROM Definitions LIMIT 1;");
 
   while(res.Next())
   {
@@ -75,11 +77,6 @@ SqliteLogger::~SqliteLogger()
   writer_thread_.join();
   flush();
   sqlite::Statement(*db_, "PRAGMA optimize;");
-}
-
-void SqliteLogger::setMetadataCallback(MetadataCallback func)
-{
-  meta_func_ = func;
 }
 
 void SqliteLogger::setAdditionalCallback(ExtraCallback func)
@@ -117,9 +114,9 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
   trans.node_uid = node.UID();
   trans.status = status;
 
-  if(meta_func_)
+  if(extra_func_)
   {
-    trans.metadata = meta_func_(timestamp, node, prev_status, status);
+    trans.extra_data = extra_func_(timestamp, node, prev_status, status);
   }
 
   {
@@ -159,7 +156,7 @@ void SqliteLogger::writerLoop()
 
       sqlite::Statement(*db_, "INSERT INTO Transitions VALUES (?, ?, ?, ?, ?, ?)",
                         trans.timestamp, session_id_, trans.node_uid, trans.duration,
-                        static_cast<int>(trans.status), trans.metadata);
+                        static_cast<int>(trans.status), trans.extra_data);
     }
   }
 }

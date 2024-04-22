@@ -98,7 +98,7 @@ int main()
   // Groot2 editor requires a model of your registered Nodes.
   // You don't need to write that by hand, it can be automatically
   // generated using the following command.
-  std::string xml_models = BT::writeTreeNodesModelXML(factory);
+  const std::string xml_models = BT::writeTreeNodesModelXML(factory);
 
   factory.registerBehaviorTreeFromText(xml_text);
 
@@ -138,7 +138,7 @@ int main()
     }
     return {};
   };
-  sqlite_logger.setMetadataCallback(sqlite_callback);
+  sqlite_logger.setAdditionalCallback(sqlite_callback);
 
   while(1)
   {
