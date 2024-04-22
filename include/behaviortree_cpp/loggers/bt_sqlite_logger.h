@@ -11,6 +11,28 @@ class Connection;
 namespace BT
 {
 
+/** SQL schema
+ *
+ * CREATE TABLE IF NOT EXISTS Definitions (
+ *     session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+ *     date       TEXT NOT NULL,
+ *     xml_tree   TEXT NOT NULL);
+ *
+ * CREATE TABLE IF NOT EXISTS Nodes ("
+ *     session_id INTEGER NOT NULL,
+ *     fullpath   VARCHAR, "
+ *     node_uid   INTEGER NOT NULL );
+ *
+ * CREATE TABLE IF NOT EXISTS Transitions (
+ *     timestamp  INTEGER PRIMARY KEY NOT NULL,
+ *     session_id INTEGER NOT NULL,
+ *     node_uid   INTEGER NOT NULL,
+ *     duration   INTEGER,
+ *     state      INTEGER NOT NULL,
+ *     extra_data VARCHAR );
+ *
+ */
+
 /**
  * @brief The SqliteLogger is a logger that will store the tree and all the
  * status transitions in a SQLite database (single file).
@@ -37,8 +59,17 @@ public:
 
   virtual ~SqliteLogger() override;
 
+  // You can inject a function that add a string to the Transitions table,
+  // in the column "extra_data".
+  // The arguments of the function are the same as SqliteLogger::callback()
+  using ExtraCallback =
+      std::function<std::string(Duration, const TreeNode&, NodeStatus, NodeStatus)>;
+  void setAdditionalCallback(ExtraCallback func);
+
   virtual void callback(Duration timestamp, const TreeNode& node, NodeStatus prev_status,
                         NodeStatus status) override;
+
+  void execSqlStatement(std::string statement);
 
   virtual void flush() override;
 
@@ -56,6 +87,7 @@ private:
     int64_t timestamp;
     int64_t duration;
     NodeStatus status;
+    std::string extra_data;
   };
 
   std::deque<Transition> transitions_queue_;
@@ -64,6 +96,8 @@ private:
 
   std::thread writer_thread_;
   std::atomic_bool loop_ = true;
+
+  ExtraCallback extra_func_;
 
   void writerLoop();
 };
