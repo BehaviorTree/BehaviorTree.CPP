@@ -2,7 +2,6 @@
 #include "crossdoor_nodes.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
-#include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_cpp/json_export.h"
 
@@ -119,26 +118,8 @@ int main()
   // Add two more loggers, to save the transitions into a file.
   // Both formats are compatible with Groot2
 
-  // Lightweight serialization
+  // Logging with lightweight serialization
   BT::FileLogger2 logger2(tree, "t12_logger2.btlog");
-  // SQLite logger can save multiple sessions into the same database
-  bool append_to_database = true;
-  BT::SqliteLogger sqlite_logger(tree, "t12_sqlitelog.db3", append_to_database);
-
-  // We can add some extra information to the SqliteLogger, for instance the value of the
-  // "door_open" blackboard entry, at the end of node "tryOpen" (Fallback)
-
-  auto sqlite_callback = [](BT::Duration timestamp, const BT::TreeNode& node,
-                            BT::NodeStatus prev_status,
-                            BT::NodeStatus status) -> std::string {
-    if(node.name() == "tryOpen" && BT::isStatusCompleted(status))
-    {
-      auto is_open = BT::toStr(node.config().blackboard->get<bool>("door_open"));
-      return "[tryOpen] door_open=" + is_open;
-    }
-    return {};
-  };
-  sqlite_logger.setAdditionalCallback(sqlite_callback);
 
   while(1)
   {
