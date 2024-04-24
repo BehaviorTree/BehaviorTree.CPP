@@ -12,24 +12,23 @@
 
 #pragma once
 
-#include "behaviortree_cpp/decorator_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 namespace BT
 {
 /**
- * @brief The EntryUpdatedNode checks the Timestamp in an entry
- * to determine if the value was updated since the last time (true,
- * the first time).
+ * @brief The EntryUpdatedAction checks the Timestamp in an entry
+ * to determine if the value was updated since the last time.
  *
- * If it is, the child will be executed, otherwise [if_not_updated] value is returned.
+ * SUCCESS if it was updated, since the last time it was checked,
+ * FAILURE if it doesn't exist or was not updated.
  */
-class EntryUpdatedNode : public DecoratorNode
+class EntryUpdatedAction : public SyncActionNode
 {
 public:
-  EntryUpdatedNode(const std::string& name, const NodeConfig& config,
-                   NodeStatus if_not_updated);
+  EntryUpdatedAction(const std::string& name, const NodeConfig& config);
 
-  ~EntryUpdatedNode() override = default;
+  ~EntryUpdatedAction() override = default;
 
   static PortsList providedPorts()
   {
@@ -37,14 +36,10 @@ public:
   }
 
 private:
-  int64_t sequence_id_ = -1;
+  uint64_t sequence_id_ = 0;
   std::string entry_key_;
-  bool still_executing_child_ = false;
-  NodeStatus if_not_updated_;
 
   NodeStatus tick() override;
-
-  void halt() override;
 };
 
 }  // namespace BT

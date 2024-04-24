@@ -26,6 +26,7 @@ set(BT_TESTS
   gtest_subtree.cpp
   gtest_switch.cpp
   gtest_tree.cpp
+  gtest_updates.cpp
   gtest_wakeup.cpp
 
   script_parser_test.cpp

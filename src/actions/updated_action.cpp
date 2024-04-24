@@ -10,16 +10,21 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/decorators/entry_updated_nodes.h"
+#include "behaviortree_cpp/actions/updated_action.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 namespace BT
 {
 
-EntryUpdatedNode::EntryUpdatedNode(const std::string& name, const NodeConfig& config,
-                                   NodeStatus if_not_updated)
-  : DecoratorNode(name, config), if_not_updated_(if_not_updated)
+EntryUpdatedAction::EntryUpdatedAction(const std::string& name, const NodeConfig& config)
+  : SyncActionNode(name, config)
 {
-  const auto entry_str = config.input_ports.at("entry");
+  auto it = config.input_ports.find("entry");
+  if(it == config.input_ports.end() || it->second.empty())
+  {
+    throw LogicError("Missing port 'entry' in ", name);
+  }
+  const auto entry_str = it->second;
   StringView stripped_key;
   if(isBlackboardPointer(entry_str, &stripped_key))
   {
@@ -31,35 +36,34 @@ EntryUpdatedNode::EntryUpdatedNode(const std::string& name, const NodeConfig& co
   }
 }
 
-NodeStatus EntryUpdatedNode::tick()
+NodeStatus EntryUpdatedAction::tick()
 {
-  // continue executing an asynchronous child
-  if(still_executing_child_)
+  if(auto entry = config().blackboard->getEntry(entry_key_))
   {
-    auto status = child()->executeTick();
-    still_executing_child_ = (status == NodeStatus::RUNNING);
-    return status;
-  }
-
-  {
-    auto entry = config().blackboard->getEntry(entry_key_);
     std::unique_lock lk(entry->entry_mutex);
-    auto seq = static_cast<int64_t>(entry->sequence_id);
-    if(seq == sequence_id_)
+    const uint64_t current_id = entry->sequence_id;
+    const uint64_t previous_id = sequence_id_;
+    sequence_id_ = current_id;
+    /*
+    uint64_t previous_id = 0;
+    auto& previous_id_registry = details::GlobalSequenceRegistry();
+
+    // find the previous id in the registry.
+    auto it = previous_id_registry.find(entry.get());
+    if(it != previous_id_registry.end())
     {
-      return if_not_updated_;
+      previous_id = it->second;
     }
-    sequence_id_ = seq;
+    if(previous_id != current_id)
+    {
+      previous_id_registry[entry.get()] = current_id;
+    }*/
+    return (previous_id != current_id) ? NodeStatus::SUCCESS : NodeStatus::FAILURE;
   }
-
-  auto status = child()->executeTick();
-  still_executing_child_ = (status == NodeStatus::RUNNING);
-  return status;
-}
-
-void EntryUpdatedNode::halt()
-{
-  still_executing_child_ = false;
+  else
+  {
+    return NodeStatus::FAILURE;
+  }
 }
 
 }  // namespace BT
