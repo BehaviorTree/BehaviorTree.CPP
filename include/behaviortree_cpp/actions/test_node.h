@@ -22,8 +22,14 @@ namespace BT
 
 struct TestNodeConfig
 {
-  /// status to return when the action is completed
+  /// status to return when the action is completed.
   NodeStatus return_status = NodeStatus::SUCCESS;
+
+  /// script to execute when complete_func() returns SUCCESS
+  std::string success_script;
+
+  /// script to execute when complete_func() returns FAILURE
+  std::string failure_script;
 
   /// script to execute when actions is completed
   std::string post_script;
@@ -31,11 +37,9 @@ struct TestNodeConfig
   /// if async_delay > 0, this action become asynchronous and wait this amount of time
   std::chrono::milliseconds async_delay = std::chrono::milliseconds(0);
 
-  /// C++ callback to execute at the beginning
-  std::function<void()> pre_func;
-
-  /// C++ callback to execute at the end
-  std::function<void()> post_func;
+  /// Function invoked when the action is completed. By default just return [return_status]
+  /// Override it to intorduce more comple cases
+  std::function<NodeStatus(void)> complete_func = [this]() { return return_status; };
 };
 
 /**
@@ -84,7 +88,9 @@ private:
   NodeStatus onCompleted();
 
   TestNodeConfig _test_config;
-  ScriptFunction _executor;
+  ScriptFunction _success_executor;
+  ScriptFunction _failure_executor;
+  ScriptFunction _post_executor;
   TimerQueue<> _timer;
   std::atomic_bool _completed = false;
 };

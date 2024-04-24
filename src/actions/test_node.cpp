@@ -8,24 +8,24 @@ void BT::TestNode::setConfig(const TestNodeConfig& config)
   }
   _test_config = config;
 
-  if(!_test_config.post_script.empty())
-  {
-    auto executor = ParseScript(_test_config.post_script);
-    if(!executor)
+  auto prepareScript = [](const std::string& script, auto& executor) {
+    if(!script.empty())
     {
-      throw RuntimeError(executor.error());
+      auto result = ParseScript(script);
+      if(!result)
+      {
+        throw RuntimeError(result.error());
+      }
+      executor = result.value();
     }
-    _executor = executor.value();
-  }
+  };
+  prepareScript(config.success_script, _success_executor);
+  prepareScript(config.failure_script, _failure_executor);
+  prepareScript(config.post_script, _post_executor);
 }
 
 BT::NodeStatus BT::TestNode::onStart()
 {
-  if(_test_config.pre_func)
-  {
-    _test_config.pre_func();
-  }
-
   if(_test_config.async_delay <= std::chrono::milliseconds(0))
   {
     return onCompleted();
@@ -63,14 +63,20 @@ void BT::TestNode::onHalted()
 
 BT::NodeStatus BT::TestNode::onCompleted()
 {
-  if(_executor)
+  Ast::Environment env = { config().blackboard, config().enums };
+
+  auto status = _test_config.complete_func();
+  if(status == NodeStatus::SUCCESS && _success_executor)
   {
-    Ast::Environment env = { config().blackboard, config().enums };
-    _executor(env);
+    _success_executor(env);
   }
-  if(_test_config.post_func)
+  else if(status == NodeStatus::FAILURE && _failure_executor)
   {
-    _test_config.post_func();
+    _failure_executor(env);
   }
-  return _test_config.return_status;
+  if(_post_executor)
+  {
+    _post_executor(env);
+  }
+  return status;
 }

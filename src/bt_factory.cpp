@@ -326,7 +326,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
         }
         else
         {
-          throw RuntimeError("Substituted Node ID not found");
+          throw RuntimeError("Substituted Node ID [", *substituted_ID, "] not found");
         }
         substituted = true;
         break;
@@ -490,8 +490,8 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
   {
     auto& config = configs[name];
 
-    auto status = test_config.at("return_status").get<std::string>();
-    config.return_status = convertFromString<NodeStatus>(status);
+    auto return_status = test_config.at("return_status").get<std::string>();
+    config.return_status = convertFromString<NodeStatus>(return_status);
     if(test_config.contains("async_delay"))
     {
       config.async_delay =
@@ -500,6 +500,14 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
     if(test_config.contains("post_script"))
     {
       config.post_script = test_config["post_script"].get<std::string>();
+    }
+    if(test_config.contains("success_script"))
+    {
+      config.success_script = test_config["success_script"].get<std::string>();
+    }
+    if(test_config.contains("failure_script"))
+    {
+      config.failure_script = test_config["failure_script"].get<std::string>();
     }
   }
 
@@ -616,20 +624,12 @@ Blackboard::Ptr Tree::rootBlackboard()
 
 void Tree::applyVisitor(const std::function<void(const TreeNode*)>& visitor)
 {
-  for(auto const& subtree : subtrees)
-  {
-    BT::applyRecursiveVisitor(static_cast<const TreeNode*>(subtree->nodes.front().get()),
-                              visitor);
-  }
+  BT::applyRecursiveVisitor(static_cast<const TreeNode*>(rootNode()), visitor);
 }
 
 void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
 {
-  for(auto const& subtree : subtrees)
-  {
-    BT::applyRecursiveVisitor(static_cast<TreeNode*>(subtree->nodes.front().get()),
-                              visitor);
-  }
+  BT::applyRecursiveVisitor(static_cast<TreeNode*>(rootNode()), visitor);
 }
 
 uint16_t Tree::getUID()
