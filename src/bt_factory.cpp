@@ -334,9 +334,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
       else if(const auto test_config = std::get_if<TestNodeConfig>(&rule))
       {
         // second case, the varian is a TestNodeConfig
-        auto test_node = new TestNode(name, config);
-        test_node->setConfig(*test_config);
-
+        auto test_node = new TestNode(name, config, *test_config);
         node.reset(test_node);
         substituted = true;
         break;

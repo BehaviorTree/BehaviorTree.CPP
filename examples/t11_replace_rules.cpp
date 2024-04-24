@@ -157,3 +157,34 @@ int main(int argc, char** argv)
 
   return 0;
 }
+
+/* Expecte output:
+
+----- Nodes fullPath() -------
+Sequence::1
+talk
+mysub
+mysub/Sequence::4
+mysub/action_subA
+mysub/action_subB
+set_message
+SaySomething::8
+counting
+SaySomething::10
+SaySomething::11
+SaySomething::12
+
+------ Output (original) ------
+Robot says: hello world
+Robot says: the original message
+Robot says: 1
+Robot says: 2
+Robot says: 3
+
+------ Output (substituted) ------
+DummySaySomething: hello world
+DummyAction substituting node with fullPath(): mysub/action_subA
+DummyAction substituting node with fullPath(): mysub/action_subB
+Robot says: message SUBSTITUTED
+
+*/

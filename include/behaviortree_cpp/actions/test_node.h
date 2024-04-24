@@ -64,21 +64,14 @@ struct TestNodeConfig
 class TestNode : public BT::StatefulActionNode
 {
 public:
-  TestNode(const std::string& name, const NodeConfig& config,
-           TestNodeConfig test_config = {})
-    : StatefulActionNode(name, config), _test_config(std::move(test_config))
-  {
-    setRegistrationID("TestNode");
-  }
+  TestNode(const std::string& name, const NodeConfig& config, TestNodeConfig test_config);
 
   static PortsList providedPorts()
   {
     return {};
   }
 
-  void setConfig(const TestNodeConfig& config);
-
-private:
+protected:
   virtual NodeStatus onStart() override;
 
   virtual NodeStatus onRunning() override;

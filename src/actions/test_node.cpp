@@ -1,12 +1,15 @@
 #include "behaviortree_cpp/actions/test_node.h"
 
-void BT::TestNode::setConfig(const TestNodeConfig& config)
+BT::TestNode::TestNode(const std::string& name, const NodeConfig& config,
+                       TestNodeConfig test_config)
+  : StatefulActionNode(name, config), _test_config(std::move(test_config))
 {
-  if(config.return_status == NodeStatus::IDLE)
+  setRegistrationID("TestNode");
+
+  if(_test_config.return_status == NodeStatus::IDLE)
   {
     throw RuntimeError("TestNode can not return IDLE");
   }
-  _test_config = config;
 
   auto prepareScript = [](const std::string& script, auto& executor) {
     if(!script.empty())
@@ -19,9 +22,9 @@ void BT::TestNode::setConfig(const TestNodeConfig& config)
       executor = result.value();
     }
   };
-  prepareScript(config.success_script, _success_executor);
-  prepareScript(config.failure_script, _failure_executor);
-  prepareScript(config.post_script, _post_executor);
+  prepareScript(_test_config.success_script, _success_executor);
+  prepareScript(_test_config.failure_script, _failure_executor);
+  prepareScript(_test_config.post_script, _post_executor);
 }
 
 BT::NodeStatus BT::TestNode::onStart()
