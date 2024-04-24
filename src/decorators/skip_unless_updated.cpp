@@ -40,14 +40,16 @@ NodeStatus SkipUnlessUpdated::tick()
     return status;
   }
 
-  auto entry = config().blackboard->getEntry(entry_key_);
-  std::unique_lock lk(entry->entry_mutex);
-  auto seq = static_cast<int64_t>(entry->sequence_id);
-  if(seq == sequence_id_)
   {
-    return NodeStatus::SKIPPED;
+    auto entry = config().blackboard->getEntry(entry_key_);
+    std::unique_lock lk(entry->entry_mutex);
+    auto seq = static_cast<int64_t>(entry->sequence_id);
+    if(seq == sequence_id_)
+    {
+      return NodeStatus::SKIPPED;
+    }
+    sequence_id_ = seq;
   }
-  sequence_id_ = seq;
 
   auto status = child()->executeTick();
   still_executing_child_ = (status == NodeStatus::RUNNING);
