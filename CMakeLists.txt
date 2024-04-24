@@ -186,6 +186,8 @@ else()
     target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
 endif()
 
+add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
+
 #############################################################
 message( STATUS "BTCPP_LIB_DESTINATION:   ${BTCPP_LIB_DESTINATION} " )
 message( STATUS "BTCPP_INCLUDE_DESTINATION: ${BTCPP_INCLUDE_DESTINATION} " )
