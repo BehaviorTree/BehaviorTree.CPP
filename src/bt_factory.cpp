@@ -95,8 +95,8 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
   registerNodeType<LoopNode<double>>("LoopDouble");
   registerNodeType<LoopNode<std::string>>("LoopString");
 
-  registerNodeType<SkipUnlessUpdated>("SkipUnlessUpdated");
-  registerNodeType<WaitValueUpdate>("WaitValueUpdate");
+  registerNodeType<EntryUpdatedNode>("SkipUnlessUpdated", NodeStatus::SKIPPED);
+  registerNodeType<EntryUpdatedNode>("WaitValueUpdate", NodeStatus::RUNNING);
 
   for(const auto& it : _p->builders)
   {

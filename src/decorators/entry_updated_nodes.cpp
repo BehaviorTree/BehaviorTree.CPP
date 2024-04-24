@@ -10,13 +10,14 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp/decorators/skip_unless_updated.h"
+#include "behaviortree_cpp/decorators/entry_updated_nodes.h"
 
 namespace BT
 {
 
-SkipUnlessUpdated::SkipUnlessUpdated(const std::string& name, const NodeConfig& config)
-  : DecoratorNode(name, config)
+EntryUpdatedNode::EntryUpdatedNode(const std::string& name, const NodeConfig& config,
+                                   NodeStatus if_not_updated)
+  : DecoratorNode(name, config), if_not_updated_(if_not_updated)
 {
   const auto entry_str = config.input_ports.at("entry");
   StringView stripped_key;
@@ -30,7 +31,7 @@ SkipUnlessUpdated::SkipUnlessUpdated(const std::string& name, const NodeConfig& 
   }
 }
 
-NodeStatus SkipUnlessUpdated::tick()
+NodeStatus EntryUpdatedNode::tick()
 {
   // continue executing an asynchronous child
   if(still_executing_child_)
@@ -46,7 +47,7 @@ NodeStatus SkipUnlessUpdated::tick()
     auto seq = static_cast<int64_t>(entry->sequence_id);
     if(seq == sequence_id_)
     {
-      return NodeStatus::SKIPPED;
+      return if_not_updated_;
     }
     sequence_id_ = seq;
   }
@@ -56,7 +57,7 @@ NodeStatus SkipUnlessUpdated::tick()
   return status;
 }
 
-void SkipUnlessUpdated::halt()
+void EntryUpdatedNode::halt()
 {
   still_executing_child_ = false;
 }

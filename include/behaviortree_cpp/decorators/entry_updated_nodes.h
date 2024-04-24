@@ -16,31 +16,31 @@
 
 namespace BT
 {
-
 /**
- * @brief The SkipUnlessUpdated checks the Timestamp in an entry
+ * @brief The EntryUpdatedNode checks the Timestamp in an entry
  * to determine if the value was updated since the last time (true,
  * the first time).
  *
- * If it is, the child will be executed, otherwise SKIPPED is returned.
+ * If it is, the child will be executed, otherwise [if_not_updated] value is returned.
  */
-class SkipUnlessUpdated : public DecoratorNode
+class EntryUpdatedNode : public DecoratorNode
 {
 public:
-  SkipUnlessUpdated(const std::string& name, const NodeConfig& config);
+  EntryUpdatedNode(const std::string& name, const NodeConfig& config,
+                   NodeStatus if_not_updated);
 
-  ~SkipUnlessUpdated() override = default;
+  ~EntryUpdatedNode() override = default;
 
   static PortsList providedPorts()
   {
-    return { InputPort<BT::Any>("entry", "Skip this branch unless the blackboard value "
-                                         "was updated") };
+    return { InputPort<BT::Any>("entry", "Entry to check") };
   }
 
 private:
   int64_t sequence_id_ = -1;
   std::string entry_key_;
   bool still_executing_child_ = false;
+  NodeStatus if_not_updated_;
 
   NodeStatus tick() override;
 
