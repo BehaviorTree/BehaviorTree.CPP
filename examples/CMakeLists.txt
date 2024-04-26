@@ -42,6 +42,7 @@ endif()
 
 CompileExample("t17_blackboard_backup")
 CompileExample("t18_waypoints")
+CompileExample("t19_global_blackboard")
 
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
