@@ -25,7 +25,7 @@ int main(int argc, char** argv)
   using namespace BT;
   BehaviorTreeFactory factory;
 
-  std::string plugin_path = "t13_plugin_action.so";
+  std::string plugin_path = "test_plugin_action.so";
 
   // if you don't want to use the hardcoded path, pass it as an argument
   if(argc == 2)

@@ -3,8 +3,6 @@
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
-#include "behaviortree_cpp/json_export.h"
-
 struct TaskA
 {
   int type;
