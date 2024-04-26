@@ -27,15 +27,19 @@ CompileExample("t08_additional_node_args")
 CompileExample("t09_scripting")
 CompileExample("t10_observer")
 
-if(BTCPP_GROOT_INTERFACE AND BTCPP_SQLITE_LOGGING)
-CompileExample("t11_groot_howto")
+if(BTCPP_GROOT_INTERFACE)
+  CompileExample("t11_groot_howto")
 endif()
 
 CompileExample("t12_default_ports")
 CompileExample("t13_access_by_ref")
 CompileExample("t14_subtree_model")
 CompileExample("t15_nodes_mocking")
-CompileExample("t16_sqlite_log")
+
+if(BTCPP_SQLITE_LOGGING)
+  CompileExample("t16_sqlite_log")
+endif()
+
 CompileExample("t17_blackboard_backup")
 CompileExample("t18_waypoints")
 
