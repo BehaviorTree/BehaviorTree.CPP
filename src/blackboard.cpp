@@ -210,6 +210,15 @@ void Blackboard::cloneInto(Blackboard& dst) const
   }
 }
 
+Blackboard::Ptr Blackboard::parent()
+{
+  if(auto parent = parent_bb_.lock())
+  {
+    return parent;
+  }
+  return {};
+}
+
 std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string& key,
                                                                const TypeInfo& info)
 {

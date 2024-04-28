@@ -53,15 +53,17 @@ public:
     : BT::SyncActionNode(name, config)
   {}
 
-  // You must override the virtual function tick()
   NodeStatus tick() override
   {
     const int val = getInput<int>("val").value();
+    // If you prefer not having a port and accessing the top-level blackboard
+    // directly with an hardcoded address... you should question your own choices!
+    // But this is the way it is done
+    // val = config().blackboard-><int>("@value");
     std::cout << "[" << name() << "] val: " << val << std::endl;
     return NodeStatus::SUCCESS;
   }
 
-  // It is mandatory to define this static method.
   static BT::PortsList providedPorts()
   {
     return { BT::InputPort<int>("val") };
@@ -78,11 +80,12 @@ int main()
 
   // No one "own" this blackboard
   auto global_blackboard = BT::Blackboard::create();
-  // This blackboard will be owned by "MainTree". It parent is global_blackboard
+  // This blackboard will be owned by "MainTree". Its parent is global_blackboard
   auto root_blackboard = BT::Blackboard::create(global_blackboard);
 
   auto tree = factory.createTree("MainTree", root_blackboard);
 
+  // we can interact directly with global_blackboard
   for(int i = 1; i <= 3; i++)
   {
     global_blackboard->set("value", i);

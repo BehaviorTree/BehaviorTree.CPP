@@ -2,6 +2,37 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add tutorial 19 about the global blackboard
+* renamed examples to match website
+* Update TestNode and the corresponding tutorial
+* bug fixes related to sequence_id and unit tests added
+* Add string concatenation operator to scripting (`#802 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/802>`_)
+* Add library alias for BT::behaviortree_cpp (`#808 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/808>`_)
+* add Time Stamped blackboard (`#805 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/805>`_)
+* add additional information and functionality to SQLiteLogger
+* add syntax for entries in the root blackboard ("@" prefix)
+* Fix/pixi build (`#791 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/791>`_)
+* fix unit tests in Windows
+* fix windows compilation
+* Update cmake_windows.yml
+* Deprecate Balckboard::clear(). Issue `#794 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/794>`_
+* Support string vector conversion for ports (`#790 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/790>`_)
+* add more convertToString for integers
+* warn about overwritten enums
+* fix ambiguous to_json
+* Extend unit test for blackboard backup to run the second tree (`#789 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/789>`_)
+* json convertion changed and
+* issue `#755 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/755>`_ : add backchaining test and change reactive nodes checks (`#770 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/770>`_)
+* Update switch_node.h
+* test moved and port remapping fixed
+* Create pull_request_template.md
+
+* adding pre-commit
+* handle enums conversions is assignment
+* Contributors: Davide Faconti, Sean Geles, Sebastian Castro, Victor Massagué Respall, avikus-seonghyeon.kwon, tony-p
+
 4.5.2 (2024-03-07)
 ------------------
 * bugfix: string to enum/integer/boolean in scripts

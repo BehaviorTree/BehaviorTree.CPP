@@ -133,6 +133,8 @@ public:
    */
   void cloneInto(Blackboard& dst) const;
 
+  Blackboard::Ptr parent();
+
 private:
   mutable std::mutex mutex_;
   mutable std::recursive_mutex entry_mutex_;

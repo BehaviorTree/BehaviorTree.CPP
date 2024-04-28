@@ -1,12 +1,12 @@
 ![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
-![Version](https://img.shields.io/badge/version-4.5-blue.svg)
+![Version](https://img.shields.io/badge/version-4.6-blue.svg)
 [![conan Ubuntu](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml)
 [![conan Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
 [![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
 [![pixi (Conda)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml)
 
-# BehaviorTree.CPP 4.5
+# BehaviorTree.CPP 4.6
 
 <p align="center"><img width=350 src="animated.svg"></p>
 
@@ -39,14 +39,6 @@ You can learn about the main concepts, the API and the tutorials here: https://w
 
 If the documentation doesn't answer your questions and/or you want to
 connect with the other **BT.CPP** users, visit [our forum](https://github.com/BehaviorTree/BehaviorTree.CPP/discussions)
-
-## Previous version
-
-Version 3.8 of the software can be found in the branch
-[v3.8](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/v3.8).
-
-That branch might receive bug fixes, but the new features will be implemented
-only in the master branch.
 
 # GUI Editor
 
@@ -105,6 +97,13 @@ You can contact the primary author, **dfaconti@aurynrobotics.com**, to discuss y
 
 [![Star History Chart](https://api.star-history.com/svg?repos=BehaviorTree/BehaviorTree.CPP&type=Date)](https://star-history.com/#BehaviorTree/BehaviorTree.CPP&Date)
 
+## Previous version
+
+Version 3.8 of the software can be found in the branch
+[v3.8](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/v3.8).
+
+That branch might receive bug fixes, but the new features will be implemented
+only in the master branch.
 
 # License
 

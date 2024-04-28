@@ -52,18 +52,14 @@ int main()
   // a certain set of transitions happened as expected
   BT::TreeObserver observer(tree);
 
+  std::map<int, std::string> UID_to_path;
+
   // Print the unique ID and the corresponding human readable path
   // Path is also expected to be unique.
-  std::map<uint16_t, std::string> ordered_UID_to_path;
-  for(const auto& [name, uid] : observer.pathToUID())
-  {
-    ordered_UID_to_path[uid] = name;
-  }
-
-  for(const auto& [uid, name] : ordered_UID_to_path)
-  {
-    std::cout << uid << " -> " << name << std::endl;
-  }
+  tree.applyVisitor([&UID_to_path](BT::TreeNode* node) {
+    UID_to_path[node->UID()] = node->fullPath();
+    std::cout << node->UID() << " -> " << node->fullPath() << std::endl;
+  });
 
   tree.tickWhileRunning();
 
@@ -73,7 +69,7 @@ int main()
 
   std::cout << "----------------" << std::endl;
   // print all the statistics
-  for(const auto& [uid, name] : ordered_UID_to_path)
+  for(const auto& [uid, name] : UID_to_path)
   {
     const auto& stats = observer.getStatistics(uid);
 
