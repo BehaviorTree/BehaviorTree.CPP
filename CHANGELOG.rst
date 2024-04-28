@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.6.0 (2024-04-28)
+------------------
 * add tutorial 19 about the global blackboard
 * renamed examples to match website
 * Update TestNode and the corresponding tutorial
