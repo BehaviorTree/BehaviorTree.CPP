@@ -35,17 +35,16 @@ CompileExample("t12_default_ports")
 CompileExample("t13_access_by_ref")
 CompileExample("t14_subtree_model")
 CompileExample("t15_nodes_mocking")
-
-if(BTCPP_SQLITE_LOGGING)
-  CompileExample("t16_sqlite_log")
-endif()
-
+CompileExample("t16_global_blackboard")
 CompileExample("t17_blackboard_backup")
 CompileExample("t18_waypoints")
-CompileExample("t19_global_blackboard")
 
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
+
+if(BTCPP_SQLITE_LOGGING)
+  CompileExample("ex03_sqlite_log")
+endif()
 
 
 ############ Create plugin and executor in folder plugin_example ##########
