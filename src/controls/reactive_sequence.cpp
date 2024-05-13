@@ -14,9 +14,22 @@
 
 namespace BT
 {
+
+bool ReactiveSequence::throw_if_multiple_running = false;
+
+void ReactiveSequence::EnableException(bool enable)
+{
+  ReactiveSequence::throw_if_multiple_running = enable;
+}
+
 NodeStatus ReactiveSequence::tick()
 {
   size_t success_count = 0;
+  if(status() == NodeStatus::IDLE)
+  {
+    running_child_ = -1;
+  }
+  setStatus(NodeStatus::RUNNING);
 
   for (size_t index = 0; index < childrenCount(); index++)
   {
@@ -26,11 +39,23 @@ NodeStatus ReactiveSequence::tick()
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
-        // reset the previous children, to make sure that they are in IDLE state
-        // the next time we tick them
-        for (size_t i = 0; i < index; i++)
+        // reset the previous children, to make sure that they are
+        // in IDLE state the next time we tick them
+        for (size_t i = 0; i < childrenCount(); i++)
         {
-          haltChild(i);
+          if(i != index)
+          {
+            haltChild(i);
+          }
+        }
+        if(running_child_ == -1)
+        {
+          running_child_ = int(index);
+        }
+        else if(throw_if_multiple_running && running_child_ != int(index))
+        {
+          throw LogicError("[ReactiveSequence]: only a single child can return RUNNING.\n"
+                           "This throw can be disabled with ReactiveSequence::EnableException(false)");
         }
         return NodeStatus::RUNNING;
       }
@@ -57,6 +82,12 @@ NodeStatus ReactiveSequence::tick()
     return NodeStatus::SUCCESS;
   }
   return NodeStatus::RUNNING;
+}
+
+void ReactiveSequence::halt()
+{
+  running_child_ = -1;
+  ControlNode::halt();
 }
 
 }   // namespace BT

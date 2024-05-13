@@ -36,8 +36,19 @@ public:
   ReactiveFallback(const std::string& name) : ControlNode(name, {})
   {}
 
+  /** A ReactiveFallback is not supposed to have more than a single
+  * anychronous node; if it does an exception is thrown.
+  * You can disabled that check, if you know what you are doing.
+  */
+  static void EnableException(bool enable);
+
 private:
-  virtual BT::NodeStatus tick() override;
+  BT::NodeStatus tick() override;
+
+  void halt() override;
+
+  int running_child_ = -1;
+  static bool throw_if_multiple_running;
 };
 
 }   // namespace BT
