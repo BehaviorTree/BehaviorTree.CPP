@@ -224,7 +224,7 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
       {
         return NodeStatus::SKIPPED;
       }
-      else if (preID == PreCond::ONLY_IF) 
+      else if(preID == PreCond::ONLY_IF)
       {
         return NodeStatus::SKIPPED;
       }
