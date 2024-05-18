@@ -1296,6 +1296,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
     </xs:complexType>
     <xs:attributeGroup name="preconditionAttributeGroup">
       <xs:attribute name="_failureIf" type="xs:string" use="optional"/>
+      <xs:attribute name="_onlyIf" type="xs:string" use="optional"/>
       <xs:attribute name="_skipIf" type="xs:string" use="optional"/>
       <xs:attribute name="_successIf" type="xs:string" use="optional"/>
       <xs:attribute name="_while" type="xs:string" use="optional"/>
