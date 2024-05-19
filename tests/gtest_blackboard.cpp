@@ -584,7 +584,7 @@ TEST(BlackboardTest, RootBlackboard)
     </BehaviorTree>
 
     <BehaviorTree ID="Sub_Issue823">
-      <BB_TestNode in_port="2" out_port={@var5} />
+      <BB_TestNode in_port="2" out_port="{@var5}" />
     </BehaviorTree>
 
     <BehaviorTree ID="MainTree">
