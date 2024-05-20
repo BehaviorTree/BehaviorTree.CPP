@@ -135,6 +135,11 @@ public:
 
   Blackboard::Ptr parent();
 
+  // recursively look for parent Blackboard, until you find the root
+  Blackboard* rootBlackboard();
+
+  const Blackboard* rootBlackboard() const;
+
 private:
   mutable std::mutex mutex_;
   mutable std::recursive_mutex entry_mutex_;
@@ -197,6 +202,11 @@ inline void Blackboard::unset(const std::string& key)
 template <typename T>
 inline void Blackboard::set(const std::string& key, const T& value)
 {
+  if(StartWith(key, '@'))
+  {
+    rootBlackboard()->set(key.substr(1, key.size() - 1), value);
+    return;
+  }
   std::unique_lock lock(mutex_);
 
   // check local storage
