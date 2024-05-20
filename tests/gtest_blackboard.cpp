@@ -583,10 +583,17 @@ TEST(BlackboardTest, RootBlackboard)
       </Sequence>
     </BehaviorTree>
 
+    <BehaviorTree ID="Sub_Issue823">
+      <BB_TestNode in_port="2" out_port="{@var5}" />
+    </BehaviorTree>
+
     <BehaviorTree ID="MainTree">
       <Sequence>
         <Script code=" msg:='hello' " />
         <SubTree ID="SubA" />
+
+        <Script code="@var5:=0" />
+        <SubTree ID="Sub_Issue823" />
 
         <Script code=" var1:=1 " />
         <Script code=" @var2:=2 " />
@@ -595,6 +602,7 @@ TEST(BlackboardTest, RootBlackboard)
   </root> )";
 
   factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  factory.registerNodeType<BB_TestNode>("BB_TestNode");
   factory.registerBehaviorTreeFromText(xml_text);
   auto tree = factory.createTree("MainTree");
 
@@ -605,6 +613,7 @@ TEST(BlackboardTest, RootBlackboard)
   ASSERT_EQ(2, tree.rootBlackboard()->get<int>("var2"));
   ASSERT_EQ(3, tree.rootBlackboard()->get<int>("var3"));
   ASSERT_EQ(4, tree.rootBlackboard()->get<int>("var4"));
+  ASSERT_EQ(4, tree.rootBlackboard()->get<int>("var5"));
 }
 
 TEST(BlackboardTest, TimestampedInterface)
