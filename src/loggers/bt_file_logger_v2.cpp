@@ -1,6 +1,6 @@
 #include "behaviortree_cpp/loggers/bt_file_logger_v2.h"
-#include "behaviortree_cpp/flatbuffers/base.h"
 #include "behaviortree_cpp/xml_parsing.h"
+#include "flatbuffers/base.h"
 
 namespace BT
 {
