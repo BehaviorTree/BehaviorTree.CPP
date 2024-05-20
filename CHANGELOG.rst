@@ -2,6 +2,14 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove flatbuffers from public API and old file_logger
+* fix issue `#824 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/824>`_: use global in Blackboard::set
+* Add test for setting a global blackboard entry using a node's output port `#823 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/823>`_
+* examples renamed
+* Contributors: Davide Faconti, Robin Müller
+
 4.6.0 (2024-04-28)
 ------------------
 * add tutorial 19 about the global blackboard
