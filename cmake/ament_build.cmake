@@ -33,5 +33,6 @@ mark_as_advanced(
 macro(export_btcpp_package)
     ament_export_include_directories(include)
     ament_export_libraries(${BTCPP_LIBRARY})
+    ament_export_targets(${BTCPP_LIBRARY}Targets)
     ament_package()
 endmacro()
