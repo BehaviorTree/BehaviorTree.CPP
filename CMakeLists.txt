@@ -250,6 +250,7 @@ if(ament_cmake_FOUND)
 
     ament_export_include_directories(include)
     ament_export_libraries(${BEHAVIOR_TREE_LIBRARY})
+    ament_export_targets(${BEHAVIOR_TREE_LIBRARY}Targets)
     ament_package()
 elseif(catkin_FOUND)
 
