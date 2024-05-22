@@ -433,6 +433,13 @@ inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
   {
     port_value_str = input_port_it->second;
   }
+  else if(!config().manifest)
+  {
+    return nonstd::make_unexpected(StrCat("getInput() of node '", fullPath(),
+                                          "' failed because the manifest is "
+                                          "nullptr (WTF?) and the key: [",
+                                          key, "] is missing"));
+  }
   else
   {
     // maybe it is declared with a default value in the manifest

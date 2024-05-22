@@ -18,8 +18,16 @@ public:
   {
     int val_A = 0;
     int val_B = 0;
-    if(getInput("in_port_A", val_A) && getInput("in_port_B", val_B) && val_A == 42 &&
-       val_B == 66)
+    if(!getInput("in_port_A", val_A))
+    {
+      throw RuntimeError("missing input [in_port_A]");
+    }
+    if(!getInput("in_port_B", val_B))
+    {
+      throw RuntimeError("missing input [in_port_B]");
+    }
+
+    if(val_A == 42 && val_B == 66)
     {
       return NodeStatus::SUCCESS;
     }
@@ -32,6 +40,16 @@ public:
              BT::InputPort<int>("in_port_B") };
   }
 };
+
+TEST(PortTest, WrongNodeConfig)
+{
+  NodeConfig config;
+  config.input_ports["in_port_A"] = "42";
+  // intentionally missing:
+  // config.input_ports["in_port_B"] = "69";
+  NodeWithPorts node("will_fail", config);
+  ASSERT_ANY_THROW(node.tick());
+}
 
 TEST(PortTest, DefaultPorts)
 {
@@ -61,8 +79,7 @@ TEST(PortTest, MissingPort)
   BehaviorTreeFactory factory;
   factory.registerNodeType<NodeWithPorts>("NodeWithPorts");
   auto tree = factory.createTreeFromText(xml_txt);
-  NodeStatus status = tree.tickWhileRunning();
-  ASSERT_EQ(status, NodeStatus::FAILURE);
+  ASSERT_ANY_THROW(tree.tickWhileRunning());
 }
 
 TEST(PortTest, WrongPort)
