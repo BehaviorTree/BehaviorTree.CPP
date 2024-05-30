@@ -15,11 +15,11 @@
 
 namespace BT
 {
-FallbackNode::FallbackNode(const std::string& name, bool make_aynch)
+FallbackNode::FallbackNode(const std::string& name, bool make_asynch)
   : ControlNode::ControlNode(name, {})
   , current_child_idx_(0)
   , all_skipped_(true)
-  , asynch_(make_aynch)
+  , asynch_(make_asynch)
 {
   if(asynch_)
     setRegistrationID("AsyncFallback");
