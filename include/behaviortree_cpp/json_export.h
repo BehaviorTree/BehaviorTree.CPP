@@ -62,7 +62,7 @@ public:
   /// This information is needed to create a BT::Blackboard::entry
   using Entry = std::pair<BT::Any, BT::TypeInfo>;
 
-  using ExpectedEntry = nonstd::expected_lite::expected<Entry, std::string>;
+  using ExpectedEntry = nonstd::expected<Entry, std::string>;
 
   /**
    * @brief fromJson will return an Entry (value wrappedn in Any + TypeInfo)

@@ -217,6 +217,13 @@ namespace nonstd {
 
     using std::expected;
 //  ...
+//backward compatibility
+template <typename E>
+nsel_constexpr14 auto make_unexpected(E&& value)
+    -> unexpected_type<typename std::decay<E>::type>
+{
+  return unexpected_type<typename std::decay<E>::type>(std::forward<E>(value));
+}
 }
 
 #else // nsel_USES_STD_EXPECTED
