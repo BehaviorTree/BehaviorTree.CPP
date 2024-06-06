@@ -13,7 +13,7 @@
 #define NONSTD_EXPECTED_LITE_HPP
 
 #define expected_lite_MAJOR  0
-#define expected_lite_MINOR  7
+#define expected_lite_MINOR  8
 #define expected_lite_PATCH  0
 
 #define expected_lite_VERSION  expected_STRINGIFY(expected_lite_MAJOR) "." expected_STRINGIFY(expected_lite_MINOR) "." expected_STRINGIFY(expected_lite_PATCH)
