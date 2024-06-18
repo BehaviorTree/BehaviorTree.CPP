@@ -408,101 +408,94 @@ void VerifyXML(const std::string& xml_text,
   recursiveStep = [&](const XMLElement* node) {
     const int children_count = ChildrenCount(node);
     const std::string name = node->Name();
+    const std::string ID = node->Attribute("ID") ? node->Attribute("ID") : "";
+    const int line_number = node->GetLineNum();
+
     if(name == "Decorator")
     {
       if(children_count != 1)
       {
-        ThrowError(node->GetLineNum(), "The node <Decorator> must have exactly 1 "
-                                       "child");
+        ThrowError(line_number, "The tag <Decorator> must have exactly 1 "
+                                "child");
       }
-      if(!node->Attribute("ID"))
+      if(ID.empty())
       {
-        ThrowError(node->GetLineNum(), "The node <Decorator> must have the "
-                                       "attribute [ID]");
+        ThrowError(line_number, "The tag <Decorator> must have the "
+                                "attribute [ID]");
       }
     }
     else if(name == "Action")
     {
       if(children_count != 0)
       {
-        ThrowError(node->GetLineNum(), "The node <Action> must not have any "
-                                       "child");
+        ThrowError(line_number, "The tag <Action> must not have any "
+                                "child");
       }
-      if(!node->Attribute("ID"))
+      if(ID.empty())
       {
-        ThrowError(node->GetLineNum(), "The node <Action> must have the "
-                                       "attribute [ID]");
+        ThrowError(line_number, "The tag <Action> must have the "
+                                "attribute [ID]");
       }
     }
     else if(name == "Condition")
     {
       if(children_count != 0)
       {
-        ThrowError(node->GetLineNum(), "The node <Condition> must not have any "
-                                       "child");
+        ThrowError(line_number, "The tag <Condition> must not have any "
+                                "child");
       }
-      if(!node->Attribute("ID"))
+      if(ID.empty())
       {
-        ThrowError(node->GetLineNum(), "The node <Condition> must have the "
-                                       "attribute [ID]");
+        ThrowError(line_number, "The tag <Condition> must have the "
+                                "attribute [ID]");
       }
     }
     else if(name == "Control")
     {
       if(children_count == 0)
       {
-        ThrowError(node->GetLineNum(), "The node <Control> must have at least 1 "
-                                       "child");
+        ThrowError(line_number, "The tag <Control> must have at least 1 "
+                                "child");
       }
-      if(!node->Attribute("ID"))
+      if(ID.empty())
       {
-        ThrowError(node->GetLineNum(), "The node <Control> must have the "
-                                       "attribute [ID]");
-      }
-    }
-    else if(name == "Sequence" || name == "ReactiveSequence" ||
-            name == "SequenceWithMemory" || name == "Fallback")
-    {
-      if(children_count == 0)
-      {
-        std::string name_attr;
-        if(node->Attribute("name"))
-        {
-          name_attr = "(`" + std::string(node->Attribute("name")) + "`)";
-        }
-        ThrowError(node->GetLineNum(), std::string("A Control node must have at least 1 "
-                                                   "child, error in XML node `") +
-                                           node->Name() + name_attr + "`");
+        ThrowError(line_number, "The tag <Control> must have the "
+                                "attribute [ID]");
       }
     }
     else if(name == "SubTree")
     {
-      auto child = node->FirstChildElement();
-
-      if(child)
+      if(children_count != 0)
       {
-        if(StrEqual(child->Name(), "remap"))
-        {
-          ThrowError(node->GetLineNum(), "<remap> was deprecated");
-        }
-        else
-        {
-          ThrowError(node->GetLineNum(), "<SubTree> should not have any child");
-        }
+        ThrowError(line_number, "<SubTree> should not have any child");
       }
-
-      if(!node->Attribute("ID"))
+      if(ID.empty())
       {
-        ThrowError(node->GetLineNum(), "The node <SubTree> must have the "
-                                       "attribute [ID]");
+        ThrowError(line_number, "The tag <SubTree> must have the "
+                                "attribute [ID]");
+      }
+      if(registered_nodes.count(ID) != 0)
+      {
+        ThrowError(line_number, "The attribute [ID] of tag <SubTree> must "
+                                "not use the name of a registered Node");
       }
     }
     else if(name == "BehaviorTree")
     {
+      if(ID.empty())
+      {
+        ThrowError(line_number, "The tag <BehaviorTree> must have the "
+                                "attribute [ID]");
+      }
       if(children_count != 1)
       {
-        ThrowError(node->GetLineNum(), "The node <BehaviorTree> must have exactly 1 "
-                                       "child");
+        ThrowError(line_number, "The tag <BehaviorTree> must have exactly 1 "
+                                "child");
+      }
+      if(registered_nodes.count(ID) != 0)
+      {
+        ThrowError(line_number, "The attribute [ID] of tag <BehaviorTree> "
+                                "must not use the name of a registered Node");
       }
     }
     else
@@ -512,26 +505,31 @@ void VerifyXML(const std::string& xml_text,
       bool found = (search != registered_nodes.end());
       if(!found)
       {
-        ThrowError(node->GetLineNum(), std::string("Node not recognized: ") + name);
+        ThrowError(line_number, std::string("Node not recognized: ") + name);
       }
 
       if(search->second == NodeType::DECORATOR)
       {
         if(children_count != 1)
         {
-          ThrowError(node->GetLineNum(),
+          ThrowError(line_number,
                      std::string("The node <") + name + "> must have exactly 1 child");
+        }
+      }
+      else if(search->second == NodeType::CONTROL)
+      {
+        if(children_count == 0)
+        {
+          ThrowError(line_number,
+                     std::string("The node <") + name + "> must have 1 or more children");
         }
       }
     }
     //recursion
-    if(name != "SubTree")
+    for(auto child = node->FirstChildElement(); child != nullptr;
+        child = child->NextSiblingElement())
     {
-      for(auto child = node->FirstChildElement(); child != nullptr;
-          child = child->NextSiblingElement())
-      {
-        recursiveStep(child);
-      }
+      recursiveStep(child);
     }
   };
 

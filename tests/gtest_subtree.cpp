@@ -696,3 +696,33 @@ TEST(SubTree, PrivateAutoRemapping)
   ASSERT_EQ(console.size(), 1);
   ASSERT_EQ(console[0], "hello");
 }
+
+TEST(SubTree, SubtreeNameNotRegistered)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="PrintToConsole">\n"
+      <Sequence>
+        <PrintToConsole message="world"/>
+      </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <PrintToConsole message="hello"/>
+        <SubTree ID="PrintToConsole"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+ )";
+
+  // clang-format on
+  BehaviorTreeFactory factory;
+  std::vector<std::string> console;
+  factory.registerNodeType<PrintToConsole>("PrintToConsole", &console);
+
+  ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
+  ASSERT_ANY_THROW(factory.registerBehaviorTreeFromText(xml_text));
+}
