@@ -2,7 +2,7 @@
 
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/utils/safe_any.hpp"
-#include "behaviortree_cpp/contrib/expected.hpp"
+#include "behaviortree_cpp/basic_types.h"
 
 // Use the version nlohmann::json embedded in BT.CPP
 #include "behaviortree_cpp/contrib/json.hpp"
@@ -73,13 +73,31 @@ public:
    */
   ExpectedEntry fromJson(const nlohmann::json& source) const;
 
-  /// Same as the other, but providing the specific type
+  /// Same as the other, but providing the specific type,
+  /// To be preferred if the JSON doesn't contain the field [__type]
   ExpectedEntry fromJson(const nlohmann::json& source, std::type_index type) const;
+
+  template <typename T>
+  Expected<T> fromJson(const nlohmann::json& source) const;
 
   /// Register new JSON converters with addConverter<Foo>().
   /// You should have used first the macro BT_JSON_CONVERTER
   template <typename T>
   void addConverter();
+
+  /**
+   * @brief addConverter register a to_json function that converts a json to a type T.
+   *
+   * @param to_json the function with signature void(const T&, nlohmann::json&)
+   * @param add_type if true, add a field called [__type] with the name ofthe type.
+   * */
+  template <typename T>
+  void addConverter(std::function<void(const T&, nlohmann::json&)> to_json,
+                    bool add_type = true);
+
+  /// Register custom from_json converter directly.
+  template <typename T>
+  void addConverter(std::function<void(const nlohmann::json&, T&)> from_json);
 
 private:
   using ToJonConverter = std::function<void(const BT::Any&, nlohmann::json&)>;
@@ -89,6 +107,22 @@ private:
   std::unordered_map<std::type_index, FromJonConverter> from_json_converters_;
   std::unordered_map<std::string, BT::TypeInfo> type_names_;
 };
+
+template <typename T>
+inline Expected<T> JsonExporter::fromJson(const nlohmann::json& source) const
+{
+  auto res = fromJson(source);
+  if(!res)
+  {
+    return nonstd::expected_lite::make_unexpected(res.error());
+  }
+  auto casted = res->first.tryCast<T>();
+  if(!casted)
+  {
+    return nonstd::expected_lite::make_unexpected(casted.error());
+  }
+  return *casted;
+}
 
 //-------------------------------------------------------------------
 
@@ -115,6 +149,33 @@ inline void JsonExporter::addConverter()
   type_names_.insert({ BT::demangle(typeid(T)), BT::TypeInfo::Create<T>() });
 
   from_json_converters_.insert({ typeid(T), from_converter });
+}
+
+template <typename T>
+inline void JsonExporter::addConverter(
+    std::function<void(const T&, nlohmann::json&)> func, bool add_type)
+{
+  auto converter = [func, add_type](const BT::Any& entry, nlohmann::json& json) {
+    func(entry.cast<T>(), json);
+    if(add_type)
+    {
+      json["__type"] = BT::demangle(typeid(T));
+    }
+  };
+  to_json_converters_.insert({ typeid(T), std::move(converter) });
+}
+
+template <typename T>
+inline void
+JsonExporter::addConverter(std::function<void(const nlohmann::json&, T&)> func)
+{
+  auto converter = [func](const nlohmann::json& json) -> Entry {
+    T tmp;
+    func(json, tmp);
+    return { BT::Any(tmp), BT::TypeInfo::Create<T>() };
+  };
+  type_names_.insert({ BT::demangle(typeid(T)), BT::TypeInfo::Create<T>() });
+  from_json_converters_.insert({ typeid(T), std::move(converter) });
 }
 
 template <typename T>

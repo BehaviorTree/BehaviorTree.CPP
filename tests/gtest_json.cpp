@@ -29,6 +29,12 @@ struct Pose3D
   Quaternion3D rot;
 };
 
+struct Time
+{
+  uint32_t sec;
+  uint32_t nsec;
+};
+
 BT_JSON_CONVERTER(Vector3D, v)
 {
   add_field("x", &v.x);
@@ -50,6 +56,19 @@ BT_JSON_CONVERTER(Pose3D, v)
   add_field("rot", &v.rot);
 }
 
+// specialized functions
+void jsonFromTime(const Time& t, nlohmann::json& j)
+{
+  j["stamp"] = double(t.sec) + 1e-9 * double(t.nsec);
+}
+
+void jsonToTime(const nlohmann::json& j, Time& t)
+{
+  double sec = j["stamp"];
+  t.sec = int(sec);
+  t.nsec = (sec - t.sec) * 1e9;
+}
+
 }  // namespace TestTypes
 
 //----------- JSON specialization ----------
@@ -63,6 +82,9 @@ protected:
     exporter.addConverter<TestTypes::Pose3D>();
     exporter.addConverter<TestTypes::Vector3D>();
     exporter.addConverter<TestTypes::Quaternion3D>();
+
+    exporter.addConverter<TestTypes::Time>(TestTypes::jsonFromTime);
+    exporter.addConverter<TestTypes::Time>(TestTypes::jsonToTime);
   }
 };
 
@@ -108,6 +130,37 @@ TEST_F(JsonTest, TwoWaysConversion)
   ASSERT_EQ(num, 69);
   auto real = exporter.fromJson(json["real"])->first.cast<double>();
   ASSERT_EQ(real, 3.14);
+}
+
+TEST_F(JsonTest, CustomTime)
+{
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
+
+  TestTypes::Time stamp = { 3, 8000000 };
+  nlohmann::json json;
+  exporter.toJson(BT::Any(stamp), json);
+  std::cout << json.dump() << std::endl;
+
+  {
+    auto res = exporter.fromJson(json, typeid(TestTypes::Time));
+    ASSERT_TRUE(res);
+    auto stamp_out = res->first.cast<TestTypes::Time>();
+    ASSERT_EQ(stamp.sec, stamp_out.sec);
+    ASSERT_EQ(stamp.nsec, stamp_out.nsec);
+  }
+  {
+    auto res = exporter.fromJson(json);
+    ASSERT_TRUE(res);
+    auto stamp_out = res->first.cast<TestTypes::Time>();
+    ASSERT_EQ(stamp.sec, stamp_out.sec);
+    ASSERT_EQ(stamp.nsec, stamp_out.nsec);
+  }
+  {
+    auto stamp_out = exporter.fromJson<TestTypes::Time>(json);
+    ASSERT_TRUE(stamp_out);
+    ASSERT_EQ(stamp.sec, stamp_out->sec);
+    ASSERT_EQ(stamp.nsec, stamp_out->nsec);
+  }
 }
 
 TEST_F(JsonTest, ConvertFromString)
