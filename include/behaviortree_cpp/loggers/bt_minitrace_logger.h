@@ -8,8 +8,6 @@ namespace BT
 {
 class MinitraceLogger : public StatusChangeLogger
 {
-  static std::atomic<bool> ref_count;
-
 public:
   MinitraceLogger(const BT::Tree& tree, const char* filename_json);
 

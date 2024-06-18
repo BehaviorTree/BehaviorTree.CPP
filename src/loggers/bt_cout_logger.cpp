@@ -2,20 +2,11 @@
 
 namespace BT
 {
-std::atomic<bool> StdCoutLogger::ref_count(false);
 
 StdCoutLogger::StdCoutLogger(const BT::Tree& tree) : StatusChangeLogger(tree.rootNode())
-{
-  bool expected = false;
-  if(!ref_count.compare_exchange_strong(expected, true))
-  {
-    throw LogicError("Only one instance of StdCoutLogger shall be created");
-  }
-}
+{}
 StdCoutLogger::~StdCoutLogger()
-{
-  ref_count.store(false);
-}
+{}
 
 void StdCoutLogger::callback(Duration timestamp, const TreeNode& node,
                              NodeStatus prev_status, NodeStatus status)
@@ -35,7 +26,6 @@ void StdCoutLogger::callback(Duration timestamp, const TreeNode& node,
 void StdCoutLogger::flush()
 {
   std::cout << std::flush;
-  ref_count = false;
 }
 
 }  // namespace BT

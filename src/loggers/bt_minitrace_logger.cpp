@@ -6,17 +6,10 @@
 
 namespace BT
 {
-std::atomic<bool> MinitraceLogger::ref_count(false);
 
 MinitraceLogger::MinitraceLogger(const Tree& tree, const char* filename_json)
   : StatusChangeLogger(tree.rootNode())
 {
-  bool expected = false;
-  if(!ref_count.compare_exchange_strong(expected, true))
-  {
-    throw LogicError("Only one instance of MinitraceLogger shall be created");
-  }
-
   mtr_register_sigint_handler();
   mtr_init(filename_json);
   this->enableTransitionToIdle(true);
@@ -26,7 +19,6 @@ MinitraceLogger::~MinitraceLogger()
 {
   mtr_flush();
   mtr_shutdown();
-  ref_count = false;
 }
 
 const char* toConstStr(NodeType type)
