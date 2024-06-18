@@ -4,6 +4,7 @@
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_cpp/json_export.h"
+#include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 
 /** We are using the same example in Tutorial 5,
  *  But this time we also show how to connect
@@ -120,6 +121,7 @@ int main()
 
   // Logging with lightweight serialization
   BT::FileLogger2 logger2(tree, "t12_logger2.btlog");
+  BT::MinitraceLogger minilog(tree, "minitrace.json");
 
   while(1)
   {

@@ -60,6 +60,7 @@ void MinitraceLogger::callback(Duration /*timestamp*/, const TreeNode& node,
   {
     MTR_END(category, name);
   }
+  mtr_flush();
 }
 
 void MinitraceLogger::flush()

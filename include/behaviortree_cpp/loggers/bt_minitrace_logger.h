@@ -1,7 +1,5 @@
-#ifndef BT_MINITRACE_LOGGER_H
-#define BT_MINITRACE_LOGGER_H
+#pragma once
 
-#include <cstring>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
 
 namespace BT
@@ -23,5 +21,3 @@ private:
 };
 
 }  // namespace BT
-
-#endif  // BT_MINITRACE_LOGGER_H
