@@ -402,6 +402,13 @@ void VerifyXML(const std::string& xml_text,
   }
   //-------------------------------------------------
 
+  int behavior_tree_count = 0;
+  for(auto child = xml_root->FirstChildElement(); child != nullptr;
+      child = child->NextSiblingElement())
+  {
+    behavior_tree_count++;
+  }
+
   // function to be called recursively
   std::function<void(const XMLElement*)> recursiveStep;
 
@@ -482,7 +489,7 @@ void VerifyXML(const std::string& xml_text,
     }
     else if(name == "BehaviorTree")
     {
-      if(ID.empty())
+      if(ID.empty() && behavior_tree_count > 1)
       {
         ThrowError(line_number, "The tag <BehaviorTree> must have the "
                                 "attribute [ID]");

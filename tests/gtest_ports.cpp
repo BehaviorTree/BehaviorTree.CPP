@@ -104,11 +104,11 @@ TEST(PortTest, Descriptions)
         <BehaviorTree ID="MainTree" _description="this is my tree" >
             <Sequence>
                 <NodeWithPorts name="first"  in_port_B="66" _description="this is my action" />
-                <SubTree ID="SubTree" name="second" _description="this is a subtree"/>
+                <SubTree ID="mySubTree" name="second" _description="this is a subtree"/>
             </Sequence>
         </BehaviorTree>
 
-        <BehaviorTree ID="SubTree" _description="this is a subtree" >
+        <BehaviorTree ID="mySubTree" _description="this is a subtree" >
             <NodeWithPorts name="third" in_port_B="99" />
         </BehaviorTree>
 
