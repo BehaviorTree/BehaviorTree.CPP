@@ -70,8 +70,16 @@ TreeNode::~TreeNode()
 
 NodeStatus TreeNode::executeTick()
 {
-  std::unique_lock lk(_p->callback_injection_mutex);
   auto new_status = _p->status;
+  PreTickCallback pre_tick;
+  PostTickCallback post_tick;
+  TickMonitorCallback monitor_tick;
+  {
+    std::scoped_lock lk(_p->callback_injection_mutex);
+    pre_tick = _p->pre_tick_callback;
+    post_tick = _p->post_tick_callback;
+    monitor_tick = _p->tick_monitor_callback;
+  }
 
   // a pre-condition may return the new status.
   // In this case it override the actual tick()
@@ -83,9 +91,9 @@ NodeStatus TreeNode::executeTick()
   {
     // injected pre-callback
     bool substituted = false;
-    if(_p->pre_tick_callback && !isStatusCompleted(_p->status))
+    if(pre_tick && !isStatusCompleted(_p->status))
     {
-      auto override_status = _p->pre_tick_callback(*this);
+      auto override_status = pre_tick(*this);
       if(isStatusCompleted(override_status))
       {
         // don't execute the actual tick()
@@ -97,18 +105,13 @@ NodeStatus TreeNode::executeTick()
     // Call the ACTUAL tick
     if(!substituted)
     {
-      if(_p->tick_monitor_callback)
+      using namespace std::chrono;
+      auto t1 = steady_clock::now();
+      new_status = tick();
+      auto t2 = steady_clock::now();
+      if(monitor_tick)
       {
-        using namespace std::chrono;
-        auto t1 = steady_clock::now();
-        new_status = tick();
-        auto t2 = steady_clock::now();
-        _p->tick_monitor_callback(*this, new_status,
-                                  duration_cast<microseconds>(t2 - t1));
-      }
-      else
-      {
-        new_status = tick();
+        monitor_tick(*this, new_status, duration_cast<microseconds>(t2 - t1));
       }
     }
   }
@@ -119,9 +122,9 @@ NodeStatus TreeNode::executeTick()
     checkPostConditions(new_status);
   }
 
-  if(_p->post_tick_callback)
+  if(post_tick)
   {
-    auto override_status = _p->post_tick_callback(*this, new_status);
+    auto override_status = post_tick(*this, new_status);
     if(isStatusCompleted(override_status))
     {
       new_status = override_status;
