@@ -38,9 +38,9 @@ struct TreeNode::PImpl
 
   std::string registration_ID;
 
-  PreTickCallback substitution_callback;
-
-  PostTickCallback post_condition_callback;
+  PreTickCallback pre_tick_callback;
+  PostTickCallback post_tick_callback;
+  TickMonitorCallback tick_monitor_callback;
 
   std::mutex callback_injection_mutex;
 
@@ -70,6 +70,7 @@ TreeNode::~TreeNode()
 
 NodeStatus TreeNode::executeTick()
 {
+  std::unique_lock lk(_p->callback_injection_mutex);
   auto new_status = _p->status;
 
   // a pre-condition may return the new status.
@@ -82,29 +83,33 @@ NodeStatus TreeNode::executeTick()
   {
     // injected pre-callback
     bool substituted = false;
-    if(!isStatusCompleted(_p->status))
+    if(_p->pre_tick_callback && !isStatusCompleted(_p->status))
     {
-      PreTickCallback callback;
+      auto override_status = _p->pre_tick_callback(*this);
+      if(isStatusCompleted(override_status))
       {
-        std::unique_lock lk(_p->callback_injection_mutex);
-        callback = _p->substitution_callback;
-      }
-      if(callback)
-      {
-        auto override_status = callback(*this);
-        if(isStatusCompleted(override_status))
-        {
-          // don't execute the actual tick()
-          substituted = true;
-          new_status = override_status;
-        }
+        // don't execute the actual tick()
+        substituted = true;
+        new_status = override_status;
       }
     }
 
     // Call the ACTUAL tick
     if(!substituted)
     {
-      new_status = tick();
+      if(_p->tick_monitor_callback)
+      {
+        using namespace std::chrono;
+        auto t1 = steady_clock::now();
+        new_status = tick();
+        auto t2 = steady_clock::now();
+        _p->tick_monitor_callback(*this, new_status,
+                                  duration_cast<microseconds>(t2 - t1));
+      }
+      else
+      {
+        new_status = tick();
+      }
     }
   }
 
@@ -112,18 +117,14 @@ NodeStatus TreeNode::executeTick()
   if(isStatusCompleted(new_status))
   {
     checkPostConditions(new_status);
-    PostTickCallback callback;
+  }
+
+  if(_p->post_tick_callback)
+  {
+    auto override_status = _p->post_tick_callback(*this, new_status);
+    if(isStatusCompleted(override_status))
     {
-      std::unique_lock lk(_p->callback_injection_mutex);
-      callback = _p->post_condition_callback;
-    }
-    if(callback)
-    {
-      auto override_status = callback(*this, new_status);
-      if(isStatusCompleted(override_status))
-      {
-        new_status = override_status;
-      }
+      new_status = override_status;
     }
   }
 
@@ -308,13 +309,19 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
 void TreeNode::setPreTickFunction(PreTickCallback callback)
 {
   std::unique_lock lk(_p->callback_injection_mutex);
-  _p->substitution_callback = callback;
+  _p->pre_tick_callback = callback;
 }
 
 void TreeNode::setPostTickFunction(PostTickCallback callback)
 {
   std::unique_lock lk(_p->callback_injection_mutex);
-  _p->post_condition_callback = callback;
+  _p->post_tick_callback = callback;
+}
+
+void TreeNode::setTickMonitorCallback(TickMonitorCallback callback)
+{
+  std::unique_lock lk(_p->callback_injection_mutex);
+  _p->tick_monitor_callback = callback;
 }
 
 uint16_t TreeNode::UID() const
