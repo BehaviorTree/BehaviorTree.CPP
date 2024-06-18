@@ -32,7 +32,7 @@ namespace BT
 class FallbackNode : public ControlNode
 {
 public:
-  FallbackNode(const std::string& name, bool make_aynch = false);
+  FallbackNode(const std::string& name, bool make_asynch = false);
 
   virtual ~FallbackNode() override = default;
 
