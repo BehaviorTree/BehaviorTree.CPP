@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_LIST_HPP_INCLUDED
@@ -132,8 +132,7 @@ struct _lst : _copy_base<Item>
 template <typename Item>
 constexpr auto list(Item)
 {
-    static_assert(lexy::is_branch_rule<Item>,
-                  "list() without a separator requires a branch condition");
+    LEXY_REQUIRE_BRANCH_RULE(Item, "list() without a separator");
     return _lst<Item, void>{};
 }
 
@@ -148,8 +147,7 @@ constexpr auto list(Item, _sep<Sep, Tag>)
 template <typename Item, typename Sep>
 constexpr auto list(Item, _tsep<Sep>)
 {
-    static_assert(lexy::is_branch_rule<Item>,
-                  "list() without a trailing separator requires a branch condition");
+    LEXY_REQUIRE_BRANCH_RULE(Item, "list() with a trailing separator");
     return _lst<Item, _tsep<Sep>>{};
 }
 

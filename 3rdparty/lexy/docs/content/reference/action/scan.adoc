@@ -1,0 +1,392 @@
+---
+header: "lexy/action/scan.hpp"
+entities:
+  "lexy::scan_failed": scan_result
+  "lexy::scan_result": scan_result
+  "lexy::scanner-common": scanner-common
+  "lexy::scanner": scan
+  "lexy::scan": scan
+---
+:toc: left
+
+[#scan_result]
+== Class `lexy::scan_result`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct scan_failed_t {};
+    constexpr scan_failed_t scan_failed;
+
+    template <typename T>
+    class scan_result
+    {
+    public:
+        using value_type = T;
+
+        constexpr scan_result() = default;
+        constexpr scan_result(scan_failed_t);
+
+        constexpr scan_result(T&& value);      // T != void only
+        constexpr scan_result(bool has_value); // T == void only
+
+        constexpr bool has_value() const noexcept;
+        constexpr explicit operator bool() const noexcept
+        {
+            return has_value();
+        }
+
+        // T != void only
+        constexpr const T& value() const& noexcept;
+        constexpr T&& value() && noexcept;
+
+        // T != void only
+        template <typename U = T>
+        constexpr U value_or(U&& fallback) const& noexcept;
+        template <typename U = T>
+        constexpr U value_or(U&& fallback) && noexcept;
+    };
+}
+----
+
+[.lead]
+The result of an individual scanning operation.
+
+Like `std::optional<T>`, it is either empty or stores a `T`.
+Unlike `std::optional<T>`, it supports `void` and is immutable.
+
+[#scanner-common]
+== Common scanner interface
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_reader_ Reader>
+    class _scanner-common_
+    {
+    public:
+        using encoding = typename Reader::encoding;
+
+        _scanner-common_(const _scanner-common_&) = delete;
+        _scanner-common_& operator=(const _scanner-common_&) = delete;
+
+        //=== status access ===//
+        constexpr explicit operator bool() const noexcept;
+
+        constexpr bool is_at_eof() const;
+
+        constexpr auto position() const noexcept
+          -> typename Reader::iterator;
+
+        constexpr _input_ auto remaining_input() const noexcept;
+
+        //=== parsing ===//
+        template <typename T>
+        constexpr void parse(scan_result<T>& result, _rule_ auto rule);
+
+        template <_production_ Production>
+        constexpr auto parse(Production production = {})
+          -> scan_result<_return-type-of-value_>;
+
+        constexpr void parse(_rule_ auto rule);
+
+        //=== branch parsing ===//
+        template <typename T>
+        constexpr bool branch(scan_result<T>& result, _branch-rule_ auto rule);
+
+        template <_production_ Production>
+        constexpr bool branch(scan_result<_return-type-of-value_>& result,
+                              Production production = {});
+
+        template <typename T>
+        constexpr bool branch(_branch-rule_ auto rule);
+
+        //=== error handling ===//
+        class error_recovery_guard;
+
+        constexpr error_recovery_guard error_recovery();
+
+        constexpr bool discard(_token-rule_ auto rule);
+
+        template <typename Tag, typename .... Args>
+        constexpr void error(Tag tag, Args&&... args);
+        template <typename .... Args>
+        constexpr void error(const char* msg, Args&&... args);
+
+        template <typename Tag, typename .... Args>
+        constexpr void fatal_error(Tag tag, Args&&... args);
+        template <typename .... Args>
+        constexpr void fatal_error(const char* msg, Args&&... args);
+
+        //=== convenience ===//
+        // Forwards to `parse(result, rule)` overload.
+        template <typename T>
+        constexpr scan_result<T> parse(_rule_ auto rule);
+
+        // Equivalent to `branch(dsl::peek(rule))`.
+        constexpr bool peek(_rule_ auto rule);
+
+        // Equivalent to `parse(result, dsl::integer<T, Base>(digits))`.
+        template <typename T, typename Base>
+        constexpr scan_result<T> auto integer(_token-rule_ auto digits);
+        template <typename T>
+        constexpr scan_result<T> integer(_digits-dsl_  digits);
+        template <typename T>
+        constexpr scan_result<T> integer(_ndigits-dsl_ digits);
+
+        // Forwards to `parse(result, dsl::capture(rule))`.
+        constexpr scan_result<lexeme<Reader>> capture(_rule_ auto rule);
+    };
+}
+----
+
+[.lead]
+The scanner interface common to {{% docref "lexy::scanner" %}} and {{% docref "lexy::rule_scanner" %}}.
+
+A scanner allows parsing rules manually for full control.
+It internally stores a reader, which remembers the current position in the input,
+and it can be in one of three states:
+
+1. The ok state, which is the default one.
+   In that state, the scanner can be used to parse rules.
+2. The error state, which is entered when a rule fails to parse.
+   In that state, any other rule parse has no effect.
+   Error recovery can be used to clear the state back to the ok state.
+3. The recovery state, which is entered by error recovery.
+   In that state, the scanner can be used to parse rules to recover.
+
+=== Status access
+
+{{% interface %}}
+----
+constexpr explicit operator bool() const noexcept;
+----
+
+[.lead]
+Returns `true` if the scanner is currently in the ok state, `false` otherwise (error or recovery).
+
+{{% interface %}}
+----
+constexpr bool is_at_eof() const;
+----
+
+[.lead]
+Returns `true` if the current position of the reader is at EOF, `false` otherwise.
+
+{{% interface %}}
+----
+constexpr auto position() const noexcept
+  -> typename Reader::iterator;
+----
+
+[.lead]
+Returns an iterator to the current position of the reader.
+
+CAUTION: The iterator must only be dereferenced if `is_at_eof() == false`.
+
+{{% interface %}}
+----
+constexpr _input_ auto remaining_input() const noexcept;
+----
+
+[.lead]
+Returns a new input that can be used to access the input from `position()` until EOF.
+
+=== Parsing
+
+{{% interface %}}
+----
+template <typename T>
+constexpr void parse(scan_result<T>& result, _rule_ auto rule);
+
+template <_production_ Production>
+constexpr auto parse(Production production = {})
+  -> scan_result<_return-type-of-value_>;
+
+constexpr void parse(_rule_ auto rule);
+----
+
+[.lead]
+Parses the given `rule`.
+
+If the scanner is in the error state, immediately returns without doing anything.
+This makes it unnecessary to check for errors after each parse step.
+
+Otherwise, parses the `rule` beginning at the current reader position.
+If that succeeds, consumes everything consumed by `rule`, generating the necessary tokens in the parse tree if necessary,
+and returns.
+Otherwise, consumes everything already consumed by `rule` and puts the scanner in the error state.
+
+The first overload parses the `rule` as if the parse action {{% docref "lexy::parse" %}} was used,
+regardless of the actual parse action used in the top-level.
+If `rule` parses a child production `P`, it invokes the `P::value` callback as necessary to produce a value.
+When the rule succeeds, all arguments produced by `rule` are passed to `lexy::construct<T>` and the result stored in `result`.
+
+The second overload parses the `production`;
+it is equivalent to `parse(result, dsl::p<Production>)`.
+The production can be specified by an explicit template argument or by passing an object as parameter.
+
+The third overload parses the `rule` as if the parse action {{% docref "lexy::match" %}} was used;
+no value is produced and child productions do not need a `::value` member.
+
+=== Branch parsing
+
+{{% interface %}}
+----
+template <typename T>
+constexpr bool branch(scan_result<T>& result, _branch-rule_ auto rule);
+
+template <_production_ Production>
+constexpr bool branch(scan_result<_return-type-of-value_>& result,
+                      Production production = {});
+
+template <typename T>
+constexpr bool branch(_branch-rule_ auto rule);
+----
+
+[.lead]
+Branch parses the given `rule`.
+
+If the scanner is in the error state, immediately returns `false` without doing anything.
+This makes it unnecessary to check for errors after each parse step.
+It returns `false`, as the branch couldn't be taken.
+
+Otherwise, branch parses the `rule` beginning at the current reader position.
+If that backtracks, the reader is not advanced and it returns `false`.
+If that succeeds, consumes everything consumed by `rule`, generating the necessary tokens in the parse if necessary, and returns `true`.
+Otherwise, consumes everything already consumed by `rule` and puts the scanner in the error state.
+It then also returns `true`, as parsing has already committed to take the branch and only failed later.
+
+Similar to `.parse()`, the first overload produces a value, the second overload a production, and the third overload does not produce values.
+
+NOTE: `scanner.branch(condition) ? scanner.parse(a) : scanner.parse(b)` is entirely equivalent to `scanner.parse(condition >> a | dsl::else_ >> b)`.
+
+=== Error handling
+
+{{% interface %}}
+----
+class error_recovery_guard
+{
+public:
+    error_recovery_guard(const error_recovery_guard&) = delete;
+    error_recovery_guard& operator=(const error_recovery_guard&) = delete;
+
+    constexpr void cancel() &&;
+    constexpr void finish() &&;
+};
+
+constexpr error_recovery_guard error_recovery();
+----
+
+[.lead]
+Allows recovery from a failed state.
+
+Calling `.error_recovery()` is only allowed when the scanner is currently in the failed state.
+It puts the scanner in the recovery state and returns a new `error_recovery_guard` object.
+
+The scanner can then be used to try and recover from the error.
+If that succeeds, calling `.finish()` on the `error_recovery_guard` object puts the scanner in the ok state.
+Otherwise, calling `.cancel()` resets the scanner back to the failed state.
+Any input already consumed during recovery stays consumed.
+
+{{% playground-example "scan-recovery" "Manually parse an integer surrounded by quotes" %}}
+
+{{% interface %}}
+----
+constexpr bool discard(_token-rule_ auto rule);
+----
+
+[.lead]
+Parses a token rule and discards it by producing an error token.
+
+If the scanner is in a failed state, returns `false` without doing anything.
+Otherwise, attempts to match `rule` at the current error position.
+If that consumes a non-zero amount of input, generates an error token.
+It returns `true` if matching was successful, `false` otherwise.
+
+NOTE: It is meant to be called during error recovery only.
+
+{{% interface %}}
+----
+template <typename Tag, typename .... Args>
+constexpr void error(Tag tag, Args&&... args);
+template <typename .... Args>
+constexpr void error(const char* msg, Args&&... args);
+
+template <typename Tag, typename .... Args>
+constexpr void fatal_error(Tag tag, Args&&... args);
+template <typename .... Args>
+constexpr void fatal_error(const char* msg, Args&&... args);
+----
+
+[.lead]
+Raise a {{% docref "lexy::error" %}}.
+
+All overloads construct a `lexy::error` object from the specified arguments and forward it to the handler.
+The fatal overloads then puts the scanner in a failed state, the non-fatal overloads leaves the state unchanged.
+
+[#scan]
+== Action `lexy::scan`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_production_ ControlProduction,
+              _input_ Input, typename ParseState, _error-callback_ ErrorCallback>
+    class scanner
+    : public _scanner-common_
+    {
+    public:
+        constexpr const ParseState& parse_state() const;
+
+        constexpr auto finish() && -> lexy::validate_result<ErrorCallback>;
+    };
+
+    template <_production_ ControlProduction = void>
+    constexpr scanner scan(const _input_ auto& input,
+                           _error-callback_ auto error_callback);
+
+    template <_production_ ControlProduction = void, typename ParseState>
+    constexpr scanner scan(const _input_ auto& input,
+                           ParseState& parse_state,
+                           _error-callback_ auto error_callback);
+    template <_production_ ControlProduction = void, typename ParseState>
+    constexpr scanner scan(const _input_ auto& input,
+                           const ParseState& parse_state,
+                           _error-callback_ auto error_callback);
+}
+----
+
+[.lead]
+A parse action that allows manual parsing of an input.
+
+Unlike the other actions, it does not directly parse a given production on the input.
+Instead, it returns a scanner object that allows manual control over the parsing process.
+
+The scanner object starts parsing the input from the beginning using the same handler as {{% docref "lexy::validate" %}} internally.
+It implements the {{% docref "lexy::scanner-common" %}} interface for parsing individual rules.
+During parsing, any errors will be forwarded to the {{% error-callback %}}.
+`.finish()` can be called at the end to return the result in a {{% docref "lexy::validate_result" %}} object, whose status corresponds to the scanner state as follows:
+
+* If the scanner is in the ok state and no errors have been reported to the error callback, `is_success()` will return `true`.
+* If the scanner is in the ok state but error have been reported, `is_recovered_error()` will return `true`.
+* Otherwise, if the scanner is not in the ok state, `is_fatal_error()` will return `true`.
+
+If the error callback does not return an interesting result, `.finish()` does not need to be called.
+
+An optional `ControlProduction` can be specified.
+This is used to specify whitespace for {{% docref "whitespace" "automatic whitespace skipping" %}},
+the recursion depth for {{% docref "lexy::dsl::recurse" %}}, and other meta data of the "grammar" being parsed.
+It does not need a `::rule` member; any member specified will be ignored.
+
+{{% godbolt-example "scan" "Use `lexy` as a verbose `std::scanf` replacement" %}}
+
+TIP: See {{< github-example "shell" >}} for an example that uses `lexy::scan()` to handle parsing directives that don't directly belong to the grammar.
+
+NOTE: Use {{% docref "lexy::dsl::scan" %}} if you want to manually parse some production of your grammar.
+
+CAUTION: The overload that takes a `parse_state` internally stores a pointer to it.
+As such, `parse_state` must live as long as the `lexy::scanner` object.

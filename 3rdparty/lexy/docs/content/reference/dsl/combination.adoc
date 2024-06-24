@@ -1,0 +1,106 @@
+---
+header: "lexy/dsl/combination.hpp"
+entities:
+  "lexy::dsl::combination": combination
+  "lexy::dsl::partial_combination": partial_combination
+---
+:toc: left
+
+[.lead]
+The `combination` and `partial_combination` rules.
+
+[#combination]
+== Rule `lexy::dsl::combination`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct combination_duplicate {};
+}
+
+namespace lexy::dsl
+{
+    struct _combination-dsl_ // models _rule_
+    {
+        template <typename Tag>
+        static constexpr _rule_ auto missing_error;
+
+        template <typename Tag>
+        static constexpr _rule_ auto duplicate_error;
+    };
+
+    constexpr _combination-dsl_ combination(_branch-rule_ auto ... branches);
+}
+----
+
+[.lead]
+`combination` is a rule that parses all of the specified {{% branch-rule %}}s, but in arbitrary order.
+
+Parsing::
+  Parses the {{% docref choice %}} `(branches | ...)` a total of `sizeof...(branches)` times in {{% docref sequence %}}.
+Errors::
+  * `lexy::exhausted_choice`: if one iteration of the choice does not match; at the starting position of the iteration.
+    The rule then fails.
+    This error tag can be changed by specifying a different `Tag` using `.missing_error`.
+  * `lexy::combination_duplicate`: if one iteration parses a branch rule that has already been selected in a previous iteration; at the starting position of the later iteration.
+    The rule then recovers without consuming additional input, but the values produced by the duplicate are not forwarded to the sink,
+    and the duplicated iteration does not count towards the total number of repetitions.
+    This error tag can be changed by specifying a different `Tag` using `.duplicate_error`.
+  * All other errors raised by the choice `(branches | ...)`, i.e. the errors raised by the individual rules during branch parsing.
+    The rule then fails if they have failed.
+Values::
+  It creates a sink of the current context.
+  All values produced by the selected branch in an iteration are forwarded to the sink.
+  The value of the finished sink is produced as only value of the `combination` rule.
+
+{{% playground-example combination "Parse `a`, `b`, `c` in some order" %}}
+
+WARNING: The branches are always tried in the same order and branches already taken are not removed in future iterations.
+If an earlier branch always matches the same as a later branch, the later branch is not taken and the rule cannot succeed.
+
+TIP: Use {{% docref "lexy::dsl::member" %}} together with `lexy::as_aggregate` as the sink.
+
+[#partial_combination]
+== Rule `lexy::dsl::partial_combination`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _partial-combination-dsl_ // models _rule_
+    {
+        template <typename Tag>
+        static constexpr _rule_ auto duplicate_error;
+    };
+
+    constexpr auto partial_combination(_branch-rule_ auto ... branches)
+      -> _partial-combination-dsl_;
+}
+----
+
+[.lead]
+`partial_combination` is a rule that parses a subset of the specified {{% branch-rule %}}s, but in arbitrary order.
+
+Parsing::
+  Parses the {{% docref choice %}} `(branches | ...)` a total of `sizeof...(branches)` times in {{% docref sequence %}}.
+  If the choice would fail with a `lexy::exhausted_choice` error, this error is not reported.
+  Instead the rule succeeds early without consuming additional input.
+Errors::
+  * `lexy::combination_duplicate`: if one iteration parses a branch rule that has already been selected in a previous iteration; at the starting position of the later iteration.
+    The rule then recovers without consuming additional input, but the values produced by the duplicate are not forwarded to the sink,
+    and the duplicated iteration does not count towards the total number of repetitions.
+    This error tag can be changed by specifying a different `Tag` using `.duplicate_error`.
+  * All other errors raised by the choice `(branches | ...)`, i.e. the errors raised by the individual rules during branch parsing.
+    The rule then fails if they have failed.
+Values::
+  It creates a sink of the current context.
+  All values produced by the selected branch in an iteration are forwarded to the sink.
+  The value of the finished sink is produced as only value of the `combination` rule.
+
+{{% playground-example partial_combination "Parse a subset of `a`, `b`, `c` in some order" %}}
+
+NOTE: `partial_combination` can match the empty string.
+
+TIP: Use {{% docref "lexy::dsl::flags" %}} if you want to parse a combination of enum flags represented as {{% docref "lexy::dsl::symbol" %}}.
+

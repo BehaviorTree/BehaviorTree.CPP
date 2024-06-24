@@ -1,0 +1,98 @@
+---
+header: "lexy/dsl/option.hpp"
+entities:
+  "lexy::nullopt": nullopt
+  "lexy::dsl::nullopt": nullopt
+  "lexy::dsl::opt": opt
+---
+:toc: left
+
+[.lead]
+The `nullopt` and `opt()` rules.
+
+[#nullopt]
+== Rule `lexy::dsl::nullopt`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    concept _optional-like_
+      = std::is_default_constructible_v<T>
+        && requires(T t) {
+          *t;
+          !t;
+        };
+
+    struct nullopt
+    {
+        template <typename T>
+          requires _optional-like_<T>
+        constexpr operator T() const;
+    };
+}
+
+namespace lexy::dsl
+{
+    constexpr _rule_ auto nullopt;
+}
+----
+
+[.lead]
+`nullopt` is a rule that produces a value of type `lexy::nullopt` without consuming anything.
+
+Parsing::
+  Always succeeds without consuming anything.
+Errors::
+  None.
+Values::
+  A single object of the tag type `lexy::nullopt`.
+  This type is implicitly convertible to any type that is `_optional-like_` by constructing a default constructible instance of it.
+
+{{% godbolt-example try "Recover from missing version numbers" %}}
+
+NOTE: See {{< github-example config >}} for a more complete version number parser.
+
+{{% godbolt-example lookahead "Create an empty optional if we're not having the key" %}}
+
+CAUTION: If `lexy::nullopt` is combined with a type that has a constructor accepting `lexy::nullopt` (e.g. because it is templated),
+it will use that constructor instead of the default constructor.
+For example, `std::optional<std::optional<int>>(lexy::nullopt{})` will contain a default-constructed `std::optional<int>`,
+and is not empty itself.
+This is not the same behavior as `std::optional<std::optional<int>>(std::nullopt{})`, which will create a `std::optional<std::optional<int>>` containing nothing.
+Similarly, `std::optional<int*>(lexy::nullopt{})` will contain a `nullptr`.
+
+[#opt]
+== Rule `lexy::dsl::opt`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto opt(_branch-rule_ auto branch);
+}
+----
+
+[.lead]
+`opt` is a rule that tries to parse a {{% branch-rule %}}, producing a `lexy::nullopt` otherwise.
+
+Parsing::
+  Tries to parse `branch`.
+  If that backtracks, succeeds without consuming anything.
+Errors::
+  All errors raised by `branch` during branch parsing.
+  The rule then fails if `branch` has failed.
+Values::
+  If `branch` was parsed, all values produced by it.
+  Otherwise, a single object of the tag type `lexy::nullopt` (see above).
+
+{{% godbolt-example opt "Only parse a fraction if preceded by a dot " %}}
+
+NOTE: `opt(branch)` is functionally equivalent to the {{% docref choice %}} `branch | lexy::dsl::else_ >> lexy::dsl::nullopt`,
+and it parses the same as {{% docref "lexy::dsl::if_" %}}.
+
+TIP: Use {{% docref "lexy::bind" %}} with {{% docref "lexy::nth_value" %}} and `or` to pass a different value than `lexy::nullopt` to the callback.
+
+TIP: Use {{% docref "lexy::dsl::flag" %}} if you want a value if `branch` parsed as well.
+

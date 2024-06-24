@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_STRING_VIEW_HPP_INCLUDED
@@ -136,9 +136,17 @@ public:
         }
     }
 
-    constexpr bool starts_with(basic_string_view prefix) const
+    constexpr bool starts_with(basic_string_view prefix) const noexcept
     {
         return substr(0, prefix.size()) == prefix;
+    }
+    constexpr bool try_remove_prefix(basic_string_view prefix) noexcept
+    {
+        if (!starts_with(prefix))
+            return false;
+
+        remove_prefix(prefix.length());
+        return true;
     }
 
     constexpr std::size_t find(basic_string_view str, std::size_t pos = 0) const noexcept

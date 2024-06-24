@@ -1,0 +1,52 @@
+---
+header: "lexy/input/lexeme_input.hpp"
+entities:
+  "lexy::lexeme_input": lexeme_input
+---
+
+[#lexeme_input]
+== Input `lexy::lexeme_input`
+
+{{% interface %}}
+----
+namespace lexy
+{
+  template <_input_ auto ParentInput>
+  class lexeme_input
+  {
+      using _lexeme-type_ = lexeme_for<ParentInput>;
+
+  public:
+      using encoding  = typename _lexeme-type_::encoding;
+      using char_type = typename _lexeme-type_::char_type;
+      using iterator  = typename _lexeme-type_::iterator;
+
+      //=== constructor ===//
+      explicit lexeme_input(const ParentInput& input, _lexeme-type_ lexeme);
+
+      explicit lexeme_input(const ParentInput& input, iterator begin, iterator end);
+
+      //=== access ===//
+      const ParentInput& parent_input() const;
+      _lexeme-type_ lexeme() const;
+
+      //=== input ===//
+      _reader_ auto reader() const& noexcept;
+  };
+}
+----
+
+[.lead]
+The class `lexy::lexeme_input` uses a {{% docref "lexy::lexeme" %}} as the input.
+
+A lexeme is a subset of an existing input, the parent input, which must be provided as well.
+If the parent input is a view-like input (e.g. {{% docref "lexy::string_input" %}} or {{% docref "lexy::range_input" %}},
+it stores a copy.
+Otherwise, if the parent input owns the input (e.g. {{% docref "lexy::buffer" %}}), it stores a pointer to the parent input.
+
+If an error is generated on a lexeme input, {{% docref "lexy::error_context" %}} will return the parent input.
+That way, any calls to {{% docref "lexy::get_input_location" %}} will result in the correct line/column information for the entire input,
+and don't start at the partial input.
+
+TIP: Use `lexy::lexeme_input` if the input is parsed in multiple passes.
+

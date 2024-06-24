@@ -1,0 +1,7 @@
+docs/assets/cpp/playground_headers.single.hpp
+docs/content/_index.adoc
+docs/content/learn/changelog.adoc
+docs/data/tags/head.toml
+docs/static/download/*.zip
+docs/public/
+docs/resources/

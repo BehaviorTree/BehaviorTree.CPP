@@ -1,0 +1,26 @@
+---
+header: "lexy/callback/noop.hpp"
+entities:
+  "lexy::noop": noop
+---
+
+[#noop]
+== Callback and sink `lexy::noop`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    constexpr _callback_ auto noop;
+    constexpr _sink<>_   auto noop;
+}
+----
+
+[.lead]
+A callback and sink that ignores all arguments and returns `void`.
+
+As a callback, it can be called with arbitrary arguments that are all ignored.
+As a sink, the sink callback also ignores all arguments.
+
+{{% godbolt-example "noop" "Ignore all errors produced during parsing" %}}
+

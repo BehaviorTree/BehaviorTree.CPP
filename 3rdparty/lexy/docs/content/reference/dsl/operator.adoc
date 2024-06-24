@@ -1,0 +1,90 @@
+---
+header: "lexy/dsl/operator.hpp"
+entities:
+  "lexy::dsl::op": op
+  "lexy::dsl::operator/ (operator)": choice
+---
+:toc: left
+
+[.lead]
+Define operators of an {{% docref "expression" %}}.
+
+[#op]
+== Branch rule `lexy::dsl::op`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <auto OperatorRule>
+    using op = _see-below_;
+}
+
+namespace lexy::dsl
+{
+    constexpr _operator-rule_ auto op(_branch-rule_ auto r); <1>
+
+    template <typename Tag>
+    constexpr _operator-rule_ auto op(_branch-rule_ auto r); <2>
+
+    template <auto Tag>
+    constexpr _operator-rule_ auto op(_branch-rule_ auto r); <3>
+}
+----
+
+[.lead]
+`op` is a {{% branch-rule %}} that parses an operator.
+
+Requires::
+  `r` is either a {{% literal-rule %}} or a {{% docref "branch" %}} whose condition is a {{% literal-rule %}}.
+(Branch) parsing::
+  Parses `r`.
+Errors::
+  All errors raised by (branch) parsing `r`.
+Values::
+  A single value describing the operator that was just parsed (the tag), followed by all values produced by `r`.
+  The type of the tag value is given by `lexy::op`, it is:
+  * For overload 1, a unique type computed from the rule `r`.
+  * For overload 2 and `Tag != void`, an object of the specified `Tag` type.
+    If `Tag` is constructible from the iterator type of the input, it constructs it giving it the start position of the operator.
+    Similarly, it is also possible to construct the `Tag` from the parse state and the iterator.
+    Otherwise, it uses the default constructor.
+  * For overload 2 and `Tag == void`, no tag value is produced.
+  * For overload 3, an object of implementation-defined type that is implicitly convertible to the type of `Tag`, returning that value.
+
+{{% godbolt-example op-basic "By default, operators produce a unique tag type" %}}
+
+{{% godbolt-example op-custom "Operator with custom type to get position information" %}}
+
+TIP: Use a branch rule as operators to parse a ternary operator, as seen in {{< github-example calculator >}}.
+
+[#choice]
+== Branch rule `lexy::dsl::operator/ (operator)`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _operator-rule_ auto operator/(_operator-rule_ auto lhs,
+                                           _operator-rule_ auto rhs);
+}
+----
+
+[.lead]
+`operator/` is a {{% branch-rule %}} that parses one of multiple operators.
+
+Branch parsing::
+  Let `lset` be the {{% docref "lexy::dsl::literal_set" %}} created by collecting all initial {{% literal-rule %}}s of `lhs` and `rhs`,
+  possibly recursively if they themselves are created using `operator/`.
+  Tries to match and consume `lset`, backtracks if that fails.
+  Otherwise, it has selected the initial operator of a {{% docref "lexy::dsl::op" %}} rule, parses the remainder of the rule without backtracking.
+Parsing::
+  Same as branch parsing, but fails instead of backtracking.
+Errors::
+  * `lexy::expected_literal_set`: if no initial literal rule matched, at the initial position.
+  * All errors raised by parsing the selected operator.
+Values::
+  All values produced by the selected operator, including the tag.
+
+{{% godbolt-example op-choice "Match plus or minus" %}}
+

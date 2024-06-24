@@ -1,0 +1,42 @@
+---
+header: "lexy/dsl/position.hpp"
+entities:
+  "lexy::dsl::position": position
+---
+
+[#position]
+== Rule `lexy::dsl::position`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto position;                                  <1>
+
+    constexpr _rule_ auto position(_rule_ auto rule);                <2>
+    constexpr _branch-rule_ auto position(_branch-rule_ auto rule);
+}
+----
+
+[.lead]
+`position` is a rule that produces the current input position without consuming anything.
+
+(Branch) Parsing::
+  1. Always succeeds without consuming anything.
+  2. (Branch) Parses `rule`.
+Errors::
+  1. None.
+  2. All errors raised by (branch) parsing `rule`.
+     The rule then fails if `rule` has failed.
+Values::
+  An iterator to the current position of the reader, followed by all values produced by `rule`.
+Parse tree::
+  A single token node, whose range is begins and ends at its position, with the {{% docref "lexy::predefined_token_kind" %}} `lexy::position_token_node`,
+  followed by all nodes produced by `rule`.
+
+{{% playground-example position "Determine the position of a function declaration" %}}
+
+NOTE: As a rule, `position` does not do {{% docref whitespace %}} skipping.
+If used immediately before a {{% token-rule %}} it will produce the position that is the beginning of this token,
+because whitespace skipping is done _after_ token rules.
+

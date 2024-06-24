@@ -1,0 +1,182 @@
+---
+header: "lexy/callback/container.hpp"
+entities:
+  "lexy::as_list": as_list
+  "lexy::as_collection": as_list
+  "lexy::concat": concat
+  "lexy::collect": collect
+---
+:toc: left
+
+[.lead]
+Callbacks and sinks for constructing containers.
+
+[#as_list]
+== Callback and sink `lexy::as_list` and `lexy::as_collection`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Container>
+    struct _as-container_
+    {
+        //=== callback ===//
+        using return_type = Container;
+
+        constexpr Container operator()(lexy::nullopt) const;
+        constexpr Container operator()(Container&& container) const;
+
+        template <typename ... Args>
+        constexpr Container operator()(Args&&... args) const;
+        template <typename ... Args>
+        constexpr Container operator()(const Container::allocator_type& allocator,
+                                       Args&&... args) const;
+
+        //=== sink ===//
+        struct _sink-callback_
+        {
+            using return_type = Container;
+
+            template <typename T>
+            constexpr void operator()(T&& obj);
+
+            template <typename ... Args>
+            constexpr void operator()(Args&&... args);
+
+            constexpr Container finish() &&;
+        };
+
+        constexpr _sink-callback_ sink() const;
+        constexpr _sink-callback_ sink(const Container::allocator_type& allocator) const;
+
+        //=== allocator ===//
+        template <typename AllocatorFn>
+        constexpr auto allocator(AllocatorFn allocator_fn) const;
+
+        constexpr auto allocator() const
+        {
+            return allocator(_identity-fn_);
+        }
+    };
+
+    template <typename Container>
+    constexpr _as-container_<Container> as_list;
+
+    template <typename Collection>
+    constexpr _as-container_<Container> as_collection;
+}
+----
+
+[.lead]
+Callbacks and sink to construct the given `Container`.
+
+`as_list` is used for positional containers like `std::vector`.
+It calls `.push_back()` and `.emplace_back()`.
+`as_collection` is used for non-positional containers like `std::set`.
+It calls `.insert()` and `.emplace()`.
+
+As a callback, they have the following overloads:
+
+`(lexy::nullopt)`::
+  Returns an empty container by default constructing it.
+`(Container&& container)`::
+  Forwards an existing container unchanged.
+`(Args&&... args)`::
+  Repeatedly calls `.push_back()`/`.insert()` on an empty container;
+  if called with `N` arguments, the resulting container will contain `N` items.
+  If `.reserve(sizeof...(args))` is well-formed, calls that first.
+  The final container is returned.
+`(const typename Container::allocator_type& allocator, Args&&... args)`::
+  Same as above, but constructs the empty container using the given `allocator`.
+
+As a sink, `.sink()` can be called with zero arguments or with one argument of type `Container::allocator_type`.
+In the first case, it default constructs an empty container.
+In the second case, it constructs it using the allocator.
+The resulting sink callback has the following overloads and returns the finished container:
+
+`(T&& object)`::
+  Calls `.push_back()`/`.insert()` on the container.
+`(Args&&... args)`::
+  Calls `.emplace_back()`/`.emplace()` on the container.
+
+The `.allocator()` function takes a function that obtains the allocator from the parse state.
+If the function is not provided, it uses the parse state itself as the allocator.
+It returns a new callback and sink that accepts the parse state.
+It then has the same overloads and behaviors, except that it will always use the allocator obtained via the `allocator_fn` from the parse state.
+As a callback, this behavior is similar to {{% docref "lexy::bind" %}} where the allocator is bound via {{% docref "lexy::parse_state" %}}.
+As a sink, this behavior is similar to {{% docref "lexy::bind_sink" %}} where the allocator is bound via {{% docref "lexy::parse_state" %}}.
+
+{{% godbolt-example "as_list" "Construct a list of integers" %}}
+
+{{% godbolt-example "as_list-allocator" "Construct a list of integers with a custom allocator" %}}
+
+[#concat]
+== Callback and sink `lexy::concat`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Container>
+    struct _concat-impl_
+    {
+        using return_type = Container;
+
+        constexpr Container operator()() const;
+        constexpr Container operator()(lexy::nullopt) const;
+        constexpr Container operator()(Container&& head, Container&&... tail) const;
+
+        constexpr _sink_ auto sink() const;
+    };
+
+    template <typename Container>
+    constexpr _concat-impl_ concat;
+}
+----
+
+[.lead]
+Callback and sink that concatenates multiple containers.
+
+As a callback, it accepts zero or more existing containers, and will concatenate them together.
+This is done by repeatedly calling `.append()` or `.push_back()` on the first container.
+
+As a sink, it creates a default constructed container object as the current result.
+It can then be invoked with a single container object.
+If the current result is still empty, the new container is move assigned into it.
+Otherwise, the new container is appended by calling `.append()` or `.push_back()`.
+
+{{% godbolt-example "concat" "Construct a list of integers from a list of list of integers" %}}
+
+[#collect]
+== Sink `lexy::collect`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    constexpr _sink_<> auto collect(_callback_ auto&& callback)
+        requires std::is_void_v<_callback-return-type_>;
+
+    template <typename Container>
+    constexpr _sink_<> auto collect(_callback_ auto&& callback);
+        requires !std::is_void_v<_callback-return-type_>;
+}
+----
+
+[.lead]
+Turns a callback into a sink by collecting all results.
+
+The first overload requires that the `callback` returns `void`.
+It returns a sink that repeatedly invokes `callback` and produces the number of invocations as a `std::size_t`.
+
+The second overload requires that the `callback` does not return `void`.
+`.sink()` can be called with zero arguments or with one argument of type `Container::allocator_type`.
+In the first case, it default constructs an empty container; in the second case, it constructs it using the allocator.
+The sink callback just forwards to `callback` and adds the result to the container by calling `.push_back()`.
+The final container is returned.
+
+NOTE: See {{% docref "lexy::callback" %}} for the inverse operation that turns a sink into a callback.
+
+TIP: Use `collect` for the error callback. It will collect all errors into a single container.
+

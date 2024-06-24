@@ -1,0 +1,157 @@
+---
+header: "lexy/dsl/brackets.hpp"
+entities:
+  "lexy::dsl::brackets": brackets
+  "lexy::dsl::round_bracketed": brackets-predefined
+  "lexy::dsl::square_bracketed": brackets-predefined
+  "lexy::dsl::curly_bracketed": brackets-predefined
+  "lexy::dsl::angle_bracketed": brackets-predefined
+  "lexy::dsl::parenthesized": brackets-predefined
+---
+:toc: left
+
+[.lead]
+Rules for parsing bracketed or parenthesized expressions.
+
+[#brackets]
+== Rule DSL `lexy::dsl::brackets`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _brackets-dsl_ // note: not a rule itself
+    {
+        constexpr _branch-rule_ auto open() const;
+        constexpr _branch-rule_ auto close() const;
+
+        constexpr _terminator-dsl_ as_terminator() const;
+
+        constexpr _brackets-dsl_   limit(auto ... limit);
+        constexpr _rule_ auto      recovery_rule() const;
+
+        //=== rules ===//
+        constexpr _branch-rule_ auto operator()(_rule_ auto rule) const;
+
+        constexpr _branch-rule_ auto try_(_rule_ auto rule) const;
+
+        constexpr _branch-rule_ auto opt(_rule_ auto rule) const;
+
+        constexpr _branch-rule_ auto list(_rule_ auto item) const;
+        constexpr _branch-rule_ auto list(_rule_ auto item, _separator_ auto sep) const;
+
+        constexpr _branch-rule_ auto opt_list(_rule_ auto item) const;
+        constexpr _branch-rule_ auto opt_list(_rule_ auto item, _separator_ auto sep) const;
+    };
+
+    constexpr _brackets-dsl_ brackets(_branch-rule_ auto open, _branch-rule_ auto close);
+}
+----
+
+[.lead]
+`brackets` is not a rule, but a DSL for specifying rules that all parse something surrounded by brackets.
+
+Many rules require a {{% branch-rule %}} as argument, like {{% docref "lexy::dsl::list" %}}.
+However, there isn't always an easy way to check for a branch condition and sometimes the rule in question is always surrounded by brackets.
+Then you can use `brackets`:
+it specifies branch rules for open and closing brackets and provides ways of building rules where any branch condition is just "the closing bracket hasn't been matched yet".
+As such, you don't need to provide a branch condition anymore.
+
+Common brackets, like parentheses, are predefined (see below).
+
+NOTE: See {{% docref "lexy::dsl::terminator" %}} if you want to parse something that is just terminated by something and doesn't have an "opening bracket".
+
+=== Branch rules `.open()` and `.close()`
+
+{{% interface %}}
+----
+constexpr _branch-rule_ auto open() const;  <1>
+constexpr _branch-rule_ auto close() const; <2>
+----
+<1> Returns the opening bracket rule passed as first argument to `brackets()`.
+<2> Returns the opening bracket rule passed as second argument to `brackets()`.
+
+=== `.as_terminator()`, `.limit()`, and `.recovery_rule()`
+
+{{% interface %}}
+----
+constexpr _terminator-dsl_ as_terminator() const;             <1>
+
+constexpr _brackets-dsl_   limit(auto ... limit); <2>
+constexpr _rule_ auto      recovery_rule() const;             <3>
+----
+<1> Returns the corresponding `terminator`.
+<2> Sets the limit for error recovery.
+<3> Returns `as_terminator().recovery_rule()`.
+
+`brackets` itself is just a thin wrapper over {{% docref "lexy::dsl::terminator" %}};
+`as_terminator()` returns that terminator:
+`lexy::dsl::brackets(open, close).as_terminator()` is equivalent to `lexy::dsl::terminator(close)`;
+`lexy::dsl::brackets(open, close).limit(tokens...).as_terminator()` is equivalent to `lexy::dsl::terminator(close).limit(tokens...).as_terminator()`.
+
+=== Bracketed rules
+
+{{% interface %}}
+----
+constexpr _branch-rule_ auto operator()(_rule_ auto rule) const
+{
+    return open() >> as_terminator()(rule);
+}
+
+constexpr _branch-rule_ auto try_(_rule_ auto rule) const
+{
+    return open() >> as_terminator().try_(rule);
+}
+
+constexpr _branch-rule_ auto opt(_rule_ auto rule) const
+{
+    return open() >> as_terminator().opt(rule);
+}
+
+constexpr _branch-rule_ auto list(_rule_ auto item) const
+{
+    return open() >> as_terminator().list(item);
+}
+constexpr _branch-rule_ auto list(_rule_ auto item, _separator_ auto sep) const
+{
+    return open() >> as_terminator().list(item, sep);
+}
+
+constexpr _branch-rule_ auto opt_list(_rule_ auto item) const
+{
+    return open() >> as_terminator().opt_list(item);
+}
+constexpr _branch-rule_ auto opt_list(_rule_ auto item, _separator_ auto sep) const
+{
+    return open() >> as_terminator().opt_list(item, sep);
+}
+----
+
+[.lead]
+Parse something surrounded by brackets.
+
+They are all entirely equivalent to the expression indicated above:
+the result is a {{% docref branch %}} whose condition is `open()`,
+and then it parses `as_terminator().foo(...)`, where the terminator is `close()`.
+
+[#brackets-predefined]
+== Predefined brackets
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _brackets-dsl_ auto round_bracketed  = brackets(lit_c<'('>, lit_c<')'>);
+    constexpr _brackets-dsl_ auto square_bracketed = brackets(lit_c<'['>, lit_c<']'>);
+    constexpr _brackets-dsl_ auto curly_bracketed  = brackets(lit_c<'{'>, lit_c<'}'>);
+    constexpr _brackets-dsl_ auto angle_bracketed  = brackets(lit_c<'<'>, lit_c<'>'>);
+
+    constexpr _brackets-dsl_ auto parenthesized = round_bracketed;
+}
+----
+
+[.lead]
+ASCII brackets are pre-defined.
+
+{{% playground-example parenthesized "Parse a parenthesized list of things" %}}
+

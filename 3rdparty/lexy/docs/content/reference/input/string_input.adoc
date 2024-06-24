@@ -1,0 +1,145 @@
+---
+header: "lexy/input/string_input.hpp"
+entities:
+  "lexy::string_input": string_input
+  "lexy::zstring_input": zstring_input
+  "lexy::string_lexeme": typedefs
+  "lexy::string_error": typedefs
+  "lexy::string_error_context": typedefs
+---
+:toc: left
+
+[.lead]
+Inputs that read a string.
+
+[#string_input]
+== Input `lexy::string_input`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding = default_encoding>
+    class string_input
+    {
+    public:
+        using encoding  = Encoding;
+        using char_type = typename encoding::char_type;
+
+        //=== constructors ===//
+        constexpr string_input() noexcept;
+
+        template <typename CharT>
+        constexpr string_input(const CharT* data, std::size_t size) noexcept;
+        template <typename CharT>
+        constexpr string_input(const CharT* begin, const CharT* end) noexcept;
+        template <typename View>
+        constexpr explicit string_input(const View& view) noexcept;
+
+        //=== access ===//
+        constexpr const char_type* data() const noexcept;
+        constexpr std::size_t      size() const noexcept;
+
+        constexpr _reader_ auto reader() const& noexcept;
+    };
+}
+----
+
+[.lead]
+The class `string_input` uses a string as input.
+
+It is a lightweight view and does not own any of the data.
+Use {{% docref "lexy::buffer" %}} if you need to own the contents of the string.
+
+{{% godbolt-example "string_input" "Use a byte array as input" %}}
+
+=== Pointer constructors
+
+{{% interface %}}
+----
+template <typename CharT>
+constexpr string_input(const CharT* data, std::size_t size) noexcept;  <1>
+template <typename CharT>
+constexpr string_input(const CharT* begin, const CharT* end) noexcept; <2>
+
+template <typename CharT>
+string_input(const CharT* data, std::size_t size)
+  -> string_input<deduce_encoding<CharT>>;
+template <typename CharT>
+string_input(const CharT* begin, const CharT* end)
+  -> string_input<deduce_encoding<CharT>>;
+----
+<1> Use the contiguous range `[data, data + size)` as input.
+<2> Use the contiguous range `[begin, end)` as input.
+
+`CharT` must be the primary or secondary character type of the {{% encoding %}}.
+CTAD can be used to deduce the encoding from the character type.
+
+=== View constructor
+
+{{% interface %}}
+----
+template <typename View>
+    requires requires (View view) {
+        view.data();
+        view.size();
+    }
+constexpr explicit string_input(const View& view) noexcept;
+
+template <typename View>
+string_input(const View&)
+  -> string_input<_deduce-encoding_>;
+----
+
+Use the contiguous range `[view.data(), view.data() + view.size())` as input.
+Its character type must be the primary or secondary character type of the {{% encoding %}}.
+CTAD can be used to deduce the encoding from the character type.
+
+[#zstring_input]
+== Input `lexy::zstring_input`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding, typename CharT>
+    constexpr auto zstring_input(const CharT* str) noexcept
+      -> string_input<Encoding>;
+
+    template <typename CharT>
+    constexpr auto zstring_input(const CharT* str) noexcept
+      -> string_input<deduce_encoding<CharT>>;
+}
+----
+
+[.lead]
+The function `zstring_input` uses a null-terminated string as input.
+
+It returns the {{% docref "lexy::string_input" %}} for the range `[str, str + std::strlen(str))`.
+The second overload deduces the {{% encoding %}} from the character type.
+
+{{% godbolt-example "zstring_input" "Use a string literal as input" %}}
+
+TIP: This input is useful for testing your grammar.
+
+[#typedefs]
+== Convenience typedefs
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding = default_encoding>
+    using string_lexeme = lexeme_for<string_input<Encoding>>;
+
+    template <typename Tag, _encoding_ Encoding = default_encoding>
+    using string_error = error_for<string_input<Encoding>, Tag>;
+
+    template <_encoding_ Encoding = default_encoding>
+    using string_error_context = error_context<string_input<Encoding>>;
+}
+----
+
+[.lead]
+Convenience typedefs for string inputs.
+

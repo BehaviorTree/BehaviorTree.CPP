@@ -1,0 +1,471 @@
+= Changelog
+
+== Upcoming
+
+=== Potential breaking changes
+
+* `scanner-common::capture_token` was renamed to `scanner-common::capture`, and old `scanner-common::capture` removed.
+  Previously, `capture_token` was a linker error anyway, but if you're calling `scanner-common::capture` it will no longer work for arbitrary rules and instead only like `dsl::capture`.
+* `lexy::parse_as_tree` will add a position token to production nodes that would otherwise be empty.
+  That way, no production node will be empty, unless the builder API is used directly.
+* Change `lexy::dsl::try_()` error recovery behavior:
+  It will now skip whitespace after the (optional) error recovery rule.
+* Deprecate the `lexy::parse_tree::builder::finish()` overload that does not take a `remaining_input`.
+* The typo `lexy::code_point::spaing_mark` was fixed to `spacing_mark`.
+
+=== New Features
+
+* **Experimental**: Add `lexy::parse_tree_input` and `lexy::dsl::tnode`/`lexy::dsl::pnode` to support multi-pass parsing.
+* Add `lexy::dsl::byte.if_`/`set`/`range`/`ascii` methods to match specific bytes.
+* Add an overload of `fatal_error()` on scanners that allows construction of type-erased generic errors (#134).
+* Add `lexy::buffer::release()` and `lexy::buffer::adopt()` to deconstruct a buffer into its components and re-assemble it later.
+* Add `lexy::parse_tree::node::position()` and `::covering_lexeme()`.
+* Add default argument to `lexy::dsl::flag()`.
+* Add `lexy::callback_with_state`.
+* Pass the parse state to the tag of `lexy::dsl::op` if required (#172).
+
+=== Bug fixes
+
+* Add missing `constexpr` to container callbacks and `lexy::as_string`.
+* Fix infinite loop in `dsl::delimited` when dealing with invalid code points (#173).
+* Fix swallowed errors from case-folding rules (#149).
+* Fix `lexy::production_name` for productions in an anonymous namespace.
+* Fix bugs in `dsl::scan` (#133, #135, #142, #154).
+* Fix bug with the position passed to the tag constructor of `lexy::dsl::op` (#170).
+* Fix bug where `lexy_ext::report_error` unconditionally wrote to `stderr`, ignoring the output iterator.
+* Fix bug with missing `lexy::error_context::position` in `lexy::parse_as_tree` (#184).
+* Fix `static_assert` in `lexy::parse_tree` (#190).
+* Workaround compiler bugs and improve documentation.
+
+== Release 2022.12.1
+
+* Add constructor to `lexy::input_location`.
+* `lexy::error_context::production` will not be a transparent production.
+* Fix `lexy::production_info::operator==` when the compiler doesn't merge string literals.
+* Fix SWAR matching of `dsl::ascii::print` and `dsl::ascii::graph`.
+* Fix CMake target installation (#108).
+
+== Release 2022.12.0
+
+=== Potential breaking changes
+
+* Change `lexy::dsl::peek_not()` error recovery behavior:
+  it will now consume the input it matched to recover, which is more useful.
+* Remove `Production` parameter from `lexy::error_context`.
+  It is replaced by a type-erased `lexy::production_info`.
+* `lexy::validate`, `lexy::parse`, and `lexy::parse_as_tree` now type-erase generic error tags prior to invoking the callback.
+* Use type-erased `lexy::production_info` instead of `Production` type in `lexy::parse_tree`.
+  This is technically a breaking change, as it may affect overload resolution.
+
+=== New features
+
+* Update Unicode database to Unicode 15.
+* Use SWAR (SIMD within a register) techniques to optimize token parsing.
+* Add `lexy::dsl::subgrammar` to split a grammar into multiple translation units.
+* Add `lexy::dsl::flags` and `lexy::dsl::flag` to parse enum flags.
+* Add overload of `lexy::dsl::position` that parses a rule.
+  This allows using it as branch conditions.
+* Add `lexy::dsl::effect` to trigger side-effects during parsing.
+* Add `lexy::subexpression_production` to parse a subexpression.
+* Add `lexy::utf8_char_encoding`.
+* Add `lexy::parse_tree::remaining_input()` and populate it by `lexy::parse_as_tree`.
+* Add `lexy::make_buffer_from_input` function.
+* Add type-erased version of `lexy::error`.
+* Support non-`const` parse state.
+
+=== Bugfixes
+
+* Fix bug where `lexy::bind` callback does not forward rvalue arguments; they got turned into lvalues instead.
+* Fix bug where callback composition was not allowed if the final callback returns `void`.
+* Fix bug where `dsl::quoted(cc.error<foo>)` did not use `foo` as the error.
+
+== Release 2022.05.1
+
+* Change `dsl::scan`: it will now be invoked with the previously produced values.
+* Add `dsl::parse_as` to ensure that a rule always produces a value (e.g. when combined with the `dsl::scan` change above).
+* Add `lexy::lexeme_input` to support multi-pass parsing.
+* Turn `dsl::terminator(term)(branch)` into a branch rule, as opposed to being a plain rule (#74).
+* Add `dsl::ignore_trailing_sep()` separator.
+* Add `lexy::bounded<T, Max>` for bounded integer parsing (#72).
+* Add `dsl::code_unit_id` rule.
+* Turn `lexy::forward<void>` into a sink.
+* Support references in `lexy::parse_result` and `lexy::scan_result`
+* Fix bug that prevented `lexy::parse` with a root production whose value is `void`.
+* Fix bug that caused infinite template instantiations for recursive scans.
+* Fix bug that didn't skip whitespace in `lexy::scanner` for token productions.
+
+== Release 2022.05.0
+
+Initial release.
+
+'''
+
+NOTE: The following changelog items track the historic development; only breaking changes are documented.
+
+== 2022-04-21
+
+`dsl::lit_cp` in a char class now requires a Unicode encoding; use `dsl::lit_b` to support default/byte encoding.
+
+== 2022-03-21
+
+* *BEHAVIOR CHANGE*: `lexy::token_production` that define a `::whitespace` member now skip whitespace in the direct rule as well.
+  Previously, it would only apply the whitespace rule to child productions but not the production itself.
+* *BEHAVIOR CHANGE*: production rules that define a `::whitespace` member now skip whitespace before parsing.
+  This also applies to the root production, so whitespace at the beginning of the input is now skipped automatically.
+* `dsl::p<Production>` where `Production` defines a `::whitespace` member is now longer a branch rule: as it will now skip whitespace first, it can't be used as a branch condition.
+* Remove `dsl::whitespace` (no arguments); it's now unnecessary as initial whitespace is skipped automatically.
+
+== 2022-03-02
+
+* *BEHAVIOR CHANGE*: `dsl::capture_token()` is now `dsl::capture()`, old `dsl::capture()` is removed.
+  If you're using `dsl::capture_token()` you need to rename it to `dsl::capture()` (compile error).
+  If you're using `dsl::capture()` on a non-token rule, you need to use `dsl::scan` instead and manually produce the value (compile error).
+  If you're using `dsl::capture()` on a token, this will no longer capture trailing whitespace (silent behavior change).
+  I can't imagine a situation where capturing trailing whitespace was intended.
+* *BEHAVIOR CHANGE*: if a non-root production defines a `::whitespace` member, it will now also apply to all children.
+  Previously, it would only apply to the production that defined the member, and not it's children (except if it was a token production).
+
+== 2022-02-09
+
+* *BEHAVIOR CHANGE*: `dsl::newline` (and `dsl::eol` in the newline case) generate a token node with the `lexy::literal_token_kind`;
+  `lexy::newline_token_kind` and `lexy::eol_token_kind` have been removed.
+* `dsl::eof` and `dsl::eol` are now branch rules: replace `dsl::until(dsl::eol)` by `dsl::until(dsl::newline).or_eof()`.
+* Removed generic `dsl::operator/` (alternative): use `dsl::literal_set()` or `dsl::operator|` instead.
+* Require a char class rule in `.limit()` of `dsl::delimited()`: instead of `dsl::eol` or `dsl::newline`, use `dsl::ascii::newline`.
+* Require literal rules in `dsl::lookahead()`, `dsl::find()`, and `.limit()` of error recovery rules.
+* Require literal rules in `.reserve()` and variants of `dsl::identifier`.
+* `dsl::bom` now generates a `lexy::expected_literal` error instead of `lexy::expected_char_class`.
+
+== 2022-01-30
+
+* *BEHAVIOR CHANGE*: the introduction of char class rules changes error messages and token kinds in some situations.
+* Renamed `dsl::code_point.lit<Cp>()` to `dsl::lit_cp<Cp>` and moved to `dsl/literal.hpp`.
+* Require char classes in `operator-` for tokens; removed `dsl::contains()` and `dsl::prefix()`.
+* Require char classes in `dsl::delimited()` and `dsl::identifier()`.
+* Renamed `.character_class()` of `dsl::error` to `.name()`.
+
+== 2021-12-08
+
+`dsl::integer` now uses `lexy::digits_token_kind` instead of `lexy::error_token_kind` during recovery.
+
+== 2021-12-01
+
+`dsl::bom` and `dsl::lit_b` now require `lexy::byte_encoding`.
+
+== 2021-11-30
+
+Remove `lexy_ext/input_location.hpp`: use `lexy/input_location.hpp` instead, which has a different interface but more functionality.
+
+== 2021-11-23
+
+* Added more pre-defined token kinds: for example, tokens created by `LEXY_LIT()` now have their own literal token kind.
+  This breaks code that does not use user-defined token kinds and does matching on `lexy::parse_tree`.
+* `dsl::delimited()` now merges adjacent characters into a single `lexy::lexeme` that is passed to the sink.
+* `lexy::token_production` now longer merges adjacent tokens, but `dsl::delimited()` merges character tokens.
+
+== 2021-10-13
+
+* Terminator rules are no longer branch rules; this behavior was somewhat confusing.
+  If you need branch rules, you can manually write the equivalent rules.
+* `dsl::integer()` now requires a token rule. This ensures the correct behavior in combination with whitespace skipping.
+* *BEHAVIOR CHANGE*: branch parsing an identifier will now backtrack without raising an error if it can match an identifier,
+  but it is reserved. Previously, this would not backtrack and then raise an error (but trivially recover).
+  This behavior is consistent with `dsl::symbol()`.
+
+== 2021-10-07
+
+* Removed branch functionality of token sequence (again).
+  It was already removed once as it was unimplementable due to automatic whitespace skipping, but then re-implemented later on.
+  But as it turns out, it is in fact unimplementable and the current implementation was completely broken.
+  Instead of `tok1 + tok2 >> rule1 | tok1 + tok3 >> rule2` use `tok1 >> (tok2 >> rule1 | tok3 >> rule2)`.
+* Removed `dsl::encode()`. The rule was completely broken in combination with `dsl::capture()` and rules built on top like `dsl::identifier()`.
+* *BEHAVIOR CHANGE*: error recovery now produces a new error token in the parse tree.
+  This ensures that the parse tree stays lossless even in the presence of errors.
+* *Potential pitfall*: `dsl::recover()` and `dsl::find()` now always raise the recovery events.
+  If you're using them outside of `dsl::try_()`, this is not what you want, so don't do them - they're not meant for it.
+
+== 2021-08-22
+
+`lexy::read_file_result` is no longer an input; you need to call `.buffer()` when passing it to a parse action.
+
+== 2021-08-17
+
+Replaced `lexy_ext::dump_parse_tree()` by `lexy::visualize()`.
+
+== 2021-07-15
+
+* Moved `lexy/match.hpp`, `lexy/parse.hpp`, and `lexy/validate.hpp` to `lexy/action/match.hpp`, `lexy/action/parse.hpp` and `lexy/action/validate.hpp`.
+* Moved `lexy::parse_as_tree()` to new header `lexy/action/parse_as_tree.hpp`; `lexy::parse_tree` stayed in `lexy/parse_tree.hpp`.
+* Renamed `lexy::parse_tree::builder::backtrack_production` to `cancel_production`,
+  and its `production_state` to `marker`.
+
+== 2021-07-01
+
+* Moved callback adapters and composition into new header files, but still implicitly included by `callback.hpp`.
+* Removed overload of `lexy::bind` that takes a sink; bind individual items in a separate production instead.
+* Removed unneeded overloads of `lexy::as_sink` and changed the transcoding behavior:
+  It will now only use the pointer + size constructor if the character types match and no longer `reinterpret_cast`.
+
+== 2021-06-27
+
+* Simplified and minimized interface of the input classes, removing e.g. iterators from them.
+* Moved definition of `lexy::code_point` from `encoding.hpp` to new header `code_point.hpp`.
+
+== 2021-06-20
+
+* Turned `dsl::else_` into a tag object that can only be used with `operator>>`, instead of a stand-alone rule.
+* **BEHAVIOR CHANGE**: `dsl::peek[_not]()` and `dsl::lookahead()` are no longer no-ops when used outside a branch condition.
+  Instead, they will perform lookahead and raise an error if that fails.
+* Removed `dsl::require/prevent(rule).error<tag>`; use `dsl::peek[_not](rule).error<tag>` instead.
+* Improved and simplified interface for `dsl::context_flag` and `dsl::context_counter`:
+  instead of `.select()`/`.compare()`, you now use `.is_set()`/`.is()` as a branch condition,
+  and instead of `.require()`, you now use `dsl::must()` with `.is[_set]()`.
+* Removed `dsl::context_lexeme`; use `dsl::context_identifier` instead.
+
+== 2021-06-18
+
+* `lexy::fold[_inplace]` is now longer a callback, only a sink;
+  use `lexy::callback(lexy::fold(...))` to turn it into a callback if needed.
+* Removed `dsl::opt_list()`; use `dsl::opt(dsl::list())` instead.
+* *BEHAVIOR CHANGE*: `.opt_list()` of `dsl::terminator`/`dsl::brackets` now produces `lexy::nullopt` instead of an empty sink result if the list has no items.
+  If you're using pre-defined callbacks like `lexy::as_list`, `lexy::as_collection`, or `lexy::as_string`, it continues to work as expected.
+  If you're using `sink >> callback`, `callback` now requires one overload that takes `lexy::nullopt`.
+* Removed `.while[_one]()` from `dsl::terminator`/`dsl::brackets`.
+
+== 2021-06-14
+
+Choice (`operator|`) is no longer a branch rule if it would be an unconditional branch rule;
+using an unconditional choice as a branch is almost surely a bug.
+
+== 2021-06-13
+
+* Removed `dsl::label` and `dsl::id`; use a separate production instead.
+* Removed `lexy::sink`; instead of `lexy::sink<T>(fn)` use `lexy::fold_inplace<T>({}, fn)`.
+* *BEHAVIOR CHANGE*: `dsl::times`/`dsl::twice` no longer produce an array, but instead all values individually.
+  Use `lexy::fold` instead of a loop.
+
+== 2021-06-12
+
+* Removed `lexy::null_input`.
+* Downgraded `lexy/input/shell.hpp` to `lexy_ext/shell.hpp`, with the namespace change to `lexy_ext`.
+* Removed `.capture()` from `dsl::code_point`; use `dsl::capture()` instead.
+* *BEHAVIOR CHANGE*: Don't produce a tag value if no sign was present in `dsl::[minus/plus_]sign`.
+  If you use `lexy::as_integer` as callback, this doesn't affect you.
+* *BEHAVIOR CHANGE*: Don't consume input in `dsl::prevent`.
+* *BEHAVIOR CHANGE*: Produce only a single whitespace node in parse tree, instead of the individual token nodes.
+  Prohibited `dsl::p`/`dsl::recurse` inside the whitespace rule.
+
+== 2021-05-25
+
+* Changed `dsl::[plus/minus_]sign` to produce `lexy::plus/minus_sign` instead of `+1`/`-1`.
+  Also changed callback `lexy::as_integer` to adapt.
+* Removed `dsl::parse_state` and `dsl::parse_state_member`; use `lexy::bind()` with `lexy::parse_state` instead.
+* Removed `dsl::value_*` rules; use `lexy::bind()` or `dsl::id`/`dsl::label` instead.
+
+== 2021-04-24
+
+* The alternative rule `/` now tries to find the longest match instead of the first one.
+  If it was well-specified before, this doesn't change anything.
+* Removed `dsl::switch_()`; use the new `dsl::symbol()` instead which is more efficient as well.
+* Removed `.lit[_c]()` from `dsl::escape()`; use the new `.symbol()` instead.
+
+== 2021-03-29
+
+* Restructure callback header files; an `#include <lexy/callback.hpp>` might be necessary now.
+
+== 2021-03-29
+
+* Support empty token nodes in the parse tree if they don't have an unknown kind.
+  In particular, the parse tree will now contain an EOF node at the end.
+* Turn `lexy::unknown_token_kind` into a value (as opposed to the type it was before).
+
+== 2021-03-26
+
+Renamed `lexy::raw_encoding` to `lexy::byte_encoding`.
+
+== 2021-03-23
+
+* Changed the return type of `lexy::read_file()` (and `lexy_ext::read_file()`) to use a new `lexy::read_file_result` over `lexy::result`.
+* Changed the return type of `lexy::validate()` and `lexy::parse_as_tree()` to a new `lexy::validate_result` type.
+* Changed the return type of `lexy::parse()` to a new `lexy::parse_result` type.
+* Removed `lexy::result`.
+* An error callback that returns a non-void type must now be a sink. Use `lexy::collect<Container>(error_callback)` to create a sink that stores all results in the container. If the error callback returns void, no change is required.
+* Removed `dsl::no_trailing_sep()`; `dsl::sep()` now has that behavior as well.
+* `dsl::require()` and `dsl::prevent()` now recover from errors, which might lead to worse error messages in certain situations.
+  If they're used as intended -- to create a better error message if something didn't work out -- this shouldn't happen.
+
+== 2021-02-25
+
+* Removed empty state from `lexy::result`. It was only added because it was useful internally, but this is no longer the case.
+* Reverted optimization that merged multiple lexemes in the sink/tokens of `dsl::delimited()`.
+  Tokens are instead now automatically merged by the parse tree builder if direct children of a `lexy::token_production`.
+* `dsl::switch_(rule).case_()` now requires a branch of the form `token >> rule`, previously it could take an arbitrary branch.
+
+== 2021-02-21
+
+* Unified error interface:
+  ** `.error<Tag>()` has become `.error<Tag>` (e.g. for tokens, `dsl::switch()`).
+  ** `f<Tag>(...)` has become `f(...).error<Tag>` (e.g. for `dsl::require()`).
+  ** `ctx.require<Tag>()` has become `ctx.require().error<Tag>`.
+  ** `dsl::[partial_]combination()` now have `.missing_error<Tag>` and `.duplicate_error<Tag>` members.
+* **BEHAVIOR CHANGE**: if `dsl::code_point_id` overflows, the tag is now `lexy::invalid_code_point` instead of `lexy::integer_overflow`.
+
+== 2021-02-20
+
+* Replaced use of `lexy::_detail::string_view` by `const char*` in all user facing functions.
+  As a consequence, automatic type name now requires GCC > 8.
+* Removed `lexy::make_error_location()`. It has been replaced by `lexy_ext::find_input_location()`.
+
+== 2021-02-17
+
+Renamed `lexy::make_buffer` to `lexy::make_buffer_from_raw`.
+
+== 2021-02-04
+
+Removed support for arbitrary rules as content of a `dsl::delimited()` rule, no only tokens are allowed.
+Also removed support for an escape choice in the `dsl::delimited()` rule, it must be a branch now.
+
+As a related change, the sink will now be invoked with a `lexy::lexeme` that can span multiple occurrences of the content token,
+not multiple times (one lexeme per token occurrence) as it was previously.
+This means that a `dsl::quoted(dsl::code_point)` rule will now invoke the sink only once giving it a `lexy::lexeme` that spans the entire content of the string literal.
+Previously it was invoked once per `dsl::code_point`.
+
+== 2021-01-11
+
+Limited implicit conversion of `lexy::nullopt` to types that are like `std::optional` or pointers.
+Replaced `lexy::dsl::nullopt` by `lexy::dsl::value_t<T>` and `lexy::dsl::opt(rule)` by `rule | lexy::dsl::value_t<T>` to keep the previous behavior of getting a default constructed object of type `T`.
+
+== 2021-01-10
+
+* Replaced `operator[]` and `dsl::whitespaced()` by new `dsl::whitespace` rule.
+Whitespace can now be parsed manually or automatically.
++
+To parse whitespace manually, replace `rule[ws]` by `rule + dsl::whitespace(rule)`,
+or otherwise insert `dsl::whitespace(rule)` calls where appropriate.
+See `examples/email.cpp` or `examples/xml.cpp` for an example of manual whitespace skipping.
++
+To parse whitespace automatically, define a `static constexpr auto whitespace` member in the root production of the grammar.
+This rule is then skipped _after_ every token.
+To temporarily disable automatic whitespace skipping inside one production, inherit from `lexy::token_production`.
+See `examples/tutorial.cpp` or `examples/json.cpp` for an example of automatic whitespace skipping.
+
+* Removed support for choices in while, i.e. `dsl::while_(a | b | c)`.
+This can be replaced by `dsl::loop(a | b | c | dsl::break_)`.
+
+== 2021-01-09
+
+* Removed `.check()` from `dsl::context_flag` and `.check_eq/lt/gt` from `dsl::context_counter` due to implementation problems.
+Use `.select()` and `.compare()` instead.
+
+* A sequence rule using `operator+` is now longer a branch.
+Previously, it was a branch if it consisted of only tokens.
+However, this was unimplementable in combination with automatic whitespace skipping.
++
+A branch condition that is a sequence is only required if you have something like `prefix + a >> rule_a | prefix + b >> rule_b`.
+Use `prefix + (a >> rule_a | b >> rule_b)` instead.
+
+== 2021-01-08
+
+Removed context sensitive parsing mechanism from `context.hpp` (`dsl::context_push()`, `_pop()` etc.).
+Use `dsl::context_lexeme` instead: `.capture()` replaces `dsl::context_push()` and `.require()` replaces `dsl::context_pop()`.
+
+== 2021-01-03
+
+* Removed callback from `lexy::as_list` and `lexy::as_collection`; they're now only sink.
+  `lexy::construct` can be used in most cases instead.
+* Merged `::list` and `::value` callbacks from productions.
+  There are three cases:
+  ** A production has a `value` member only: this continues to work as before.
+  ** A production has a `list` member only: just rename it to `value`. It is treated as a sink automatically when required.
+  ** A production has a `list` and `value` member:
+     add a `value` member that uses `sink >> callback`, where `sink` was the previous `list` value and `callback` the previous `callback`.
+     This will use `sink` to construct the list then pass everything to `callback`.
+* `lexy::result` now has an empty state. It is only used internally and never exposed to the user.
+  As a related change, the default constructor has been removed due to unclear semantics.
+  Use `lexy::result(lexy::result_error)` to restore its behavior of creating a default constructed error.
+
+== 2020-12-26
+
+* Replaced `Pattern` concept with a new `Token` and `Branch` concept (See #10).
+A `Branch` is a rule that can make branching decision (it is required by choices and can be used as branch condition).
+A `Token` is an atomic parse unit; it is also a `Branch`.
++
+Most patterns (e.g. `LEXY_LIT`) are now tokens, which doesn't break anything.
+Some patterns are now branches (e.g. `dsl::peek()`), which breaks in rules that now require tokens (e.g. `dsl::until()`).
+The remaining patterns are now plain rules (e.g. `dsl::while_(condition >> then)`), which makes them unusable as branch conditions.
++
+The patterns that are now branches:
++
+--
+** `dsl::error`
+** `dsl::peek()` and `dsl::peek_not()`
+** `condition >> then` was a pattern if `then` is a pattern, now it is always a branch
+--
++
+The patterns that are now plain rules:
++
+--
+** a sequence using `operator+` (it is still a token if all arguments are tokens, so it can be used as condition)
+** a choice using `operator|`, even if all arguments are tokens (use `operator/` instead which is a token)
+** `dsl::while_[one]()`, even if the argument is a token
+** `dsl::times()`
+** `dsl::if_()`
+--
++
+The following rules previously required only patterns but now require tokens:
++
+--
+** a minus using `operator-` (both arguments)
+** `dsl::until()`
+** `dsl::lookahead()`
+** `dsl::escape()` (the escape character itself) and its `.capture()`
+** digit separators
+** automatic capturing of `dsl::delimited()`
+** `lexy::make_error_location()`
+--
++
+If you have a breaking change because you now use a non-token rule where a token was expected, use `dsl::token()`,
+which turns an arbitrary rule into a token (just like `dsl::match()` turned a rule into a pattern).
+
+* Removed `dsl::match()`; use `dsl::token()` instead.
+  If you previously had `dsl::peek(dsl::match(rule)) >> then` you can now even use `dsl::peek(rule) >> then`,
+  as `dsl::peek[_not]()` have learned to support arbitrary rules.
+
+* Removed `dsl::try_<Tag>(pattern)`.
+  If `pattern` is now a token, you can use `rule.error<Tag>()` instead.
+  Otherwise, use `dsl::token(pattern).error<Tag>()`.
+
+* Removed `.capture()` on `dsl::sep(pattern)` and `dsl::trailing_sep(pattern)`.
+  You can now use `dsl::sep(dsl::capture(pattern))`,
+  as `dsl::capture()` is now a branch and the separators have learned to support branches.
+
+* Removed `.zero()` and `.non_zero()` from `dsl::digit<Base>`.
+  Use `dsl::zero` instead of `dsl::digit<Base>.zero()`.
+  Use `dsl::digit<Base> - dsl::zero` (potentially with a nice error specified using `.error()`) instead of `dsl::digit<Base>.non_zero()`.
+
+* Removed `dsl::success`, as it is now longer needed internally.
+  It can be added back if needed.
+
+* *BEHAVIOR CHANGE*: As part of the branch changes, `dsl::peek()`, `dsl::peek_not()` and `dsl::lookahead()` are now no-ops if not used as branch condition.
+  For example, `prefix + dsl::peek(rule) + suffix` is equivalent to `prefix + suffix`.
+  In most cases, this is only a change in the error message as they don't consume characters.
+  Use `dsl::require()` and `dsl::prevent()` if the lookahead was intended.
+
+* *BEHAVIOR CHANGE*: Errors in whitespace are currently not reported.
+For example, if you have `/* unterminated C comment int i;` and support space and C comments as whitespace,
+this would previously raise an error about the unterminated C comment.
+Right now, it will try to skip the C comment, fail, and then just be done with whitespace skipping.
+The error for the unterminated C comment then manifests as `expected 'int', got '/*'`.
++
+This behavior is only temporary until a better solution for whitespace is implemented (see #10).
+
+== 2020-12-22
+
+* Removed `dsl::build_list()` and `dsl::item()`.
+  They were mainly used to implement `dsl::list()`, and became unnecessary after an internal restructuring.
+* Removed support for choices in lists, i.e. `dsl::list(a | b | c)`.
+  This can be added back if needed.
+* Removed `dsl::operator!` due to implementation problems.
+  Existing uses of `dsl::peek(!rule)` can be replaced by `dsl::peek_not(rule)`;
+  existing uses of `!rule >> do_sth` can be replaced using `dsl::terminator()`.
+

@@ -1,0 +1,66 @@
+---
+header: "lexy/dsl/member.hpp"
+entities:
+  "lexy::dsl::member": member
+  "lexy::member": member
+  "LEXY_MEM": member
+---
+:toc: left
+
+[#member]
+== Rule `lexy::dsl::member`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Fn>
+    struct member {};
+}
+
+namespace lexy::dsl
+{
+    class _member-dsl_ // note: not a _rule_ itself
+    {
+    public:
+        constexpr _rule_        auto operator=(_rule_        auto rule);
+        constexpr _branch-rule_ auto operator=(_branch-rule_ auto rule);
+    };
+
+    template <auto MemberPtr>
+    constexpr _member-dsl_ member;
+}
+
+#define LEXY_MEM(Name) lexy::dsl::member<...>
+----
+
+[.lead]
+`member` is a rule that can be used to specify a member of an aggregate that will receive the resulting value a rule.
+
+A rule is formed by writing `member<MemberPtr> = rule`.
+
+Requires::
+  * `MemberPtr` is a member point of some aggregate type `Aggregate`.
+  * `rule` produces exactly one value.
+(Branch) Parsing::
+  Parses `rule`.
+Errors::
+  All errors raised by `rule`.
+  The rule then fails if `rule` has failed.
+Values::
+  Two values.
+  The first is a value of type `lexy::member<Fn>{}`.
+  Here, `Fn` is a default constructible function object that takes two arguments:
+  a reference to an `Aggregate` object and the value of `rule`.
+  When invoked, it will set the member described `MemberPtr` of the `Aggregate` object to the value of `rule`.
+  The second is the value `rule` has produced.
+
+The macro version `LEXY_MEM(member) = rule` behaves identical, except that `member` is not a member pointer but the name of a member.
+The resulting `Fn` can take an arbitrary aggregate type and will assign the member with that name.
+
+It is designed to be used with {{% docref "lexy::as_aggregate" %}} as the callback.
+
+{{% godbolt-example member "Parse a point" %}}
+
+TIP: The `member` rule works good in combination with {{% docref "lexy::dsl::combination" %}} where rules are parsed in an arbitrary order.
+

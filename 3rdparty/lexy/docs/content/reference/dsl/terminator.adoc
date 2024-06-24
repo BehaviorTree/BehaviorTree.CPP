@@ -1,0 +1,235 @@
+---
+header: "lexy/dsl/terminator.hpp"
+entities:
+  "lexy::dsl::terminator": terminator
+---
+
+[#terminator]
+== Rule DSL `lexy::dsl::terminator`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _terminator-dsl // note: not a rule itself
+    {
+        constexpr _branch-rule_ auto terminator() const;
+
+        constexpr _terminator-dsl_ limit(auto ... limit);
+        constexpr _rule_ auto      recovery_rule() const;
+
+        //=== rules ===//
+        constexpr _rule_        auto operator()(_rule_ auto rule) const;
+        constexpr _rule_        auto try_(_rule_ auto rule) const;
+
+        constexpr _rule_ auto opt(_rule_ auto rule) const;
+
+        constexpr _rule_ auto list(_rule_ auto item) const;
+        constexpr _rule_ auto list(_rule_ auto item, _separator_ auto sep) const;
+
+        constexpr _rule_ auto opt_list(_rule_ auto item) const;
+        constexpr _rule_ auto opt_list(_rule_ auto item, _separator_ auto sep) const;
+    };
+
+    constexpr _terminator-dsl_ terminator(_branch-rule_ auto branch);
+}
+----
+
+[.lead]
+`terminator` is not a rule, but a DSL for specifying rules that all parse something followed by a terminator.
+
+Many rules require a {{% branch-rule %}} as argument, like {{% docref "lexy::dsl::list" %}}.
+However, there isn't always an easy way to check for a branch condition and sometimes the rule in question is always terminated by a given token (e.g. a semicolon).
+Then you can use `terminator`:
+it specifies a {{% branch-rule %}} as the terminator and provides ways of building rules where any branch condition is just "the terminator hasn't been matched yet".
+As such, you don't need to provide a branch condition anymore.
+
+NOTE: See {{% docref "lexy::dsl::brackets" %}} if you want to parse something that has not only a terminator but some prefix as well.
+
+=== Branch rule `.terminator()`
+
+{{% interface %}}
+----
+constexpr _branch-rule_ auto terminator() const;
+----
+
+[.lead]
+`.terminator()` returns the rule that was passed to the top-level `lexy::dsl::terminator()`.
+
+=== `.limit()`
+
+{{% interface %}}
+----
+constexpr _terminator-dsl_ limit(auto ... limit);
+----
+
+[.lead]
+Provide a limit for error recovery.
+
+`terminator` can also do error recovery after an error by discarding input until the terminator is reached.
+Similar to {{% docref "lexy::dsl::find" %}} or {{% docref "lexy::dsl::recover" %}} one can provide a limit, which is a {{% literal-rule %}} or {{% docref "lexy::dsl::literal_set" %}}.
+If the limit is reached before the terminator, error recovery fails.
+
+{{% playground-example terminator_recovery "Recover while parsing a list of statements" %}}
+
+=== `.recovery_rule()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto recovery_rule() const;
+----
+
+[.lead]
+`.recovery_rule()` returns the rule that is used for the simple error recovery.
+
+It is equivalent to {{% docref "lexy::dsl::recover" %}}`(terminator()).limit(tokens...)`,
+where `tokens` are all the tokens passed to every `.limit()` call.
+This simply discards input until it can match `terminator()`.
+Recovery fails when it reaches EOF or one of the limits, if any have been specified.
+
+=== Rule `.operator()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto operator()(_rule_ auto rule) const
+{
+    return rule + terminator();
+}
+constexpr _branch-rule_ auto operator()(_branch-rule_ auto rule) const
+{
+    return rule >> terminator();
+}
+----
+
+[.lead]
+`.operator()` returns a rule that parses `rule`, then parses the terminator.
+
+It behaves entirely equivalent to `rule + terminator()`.
+
+{{% playground-example terminator "Parse a statement" %}}
+
+=== Rule `.try_()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto try_(_rule_ auto rule) const;
+----
+
+[.lead]
+`.try_()` returns a rule that parses `rule`, then parses the terminator, but recovers on failure.
+
+Parsing::
+  Parses `rule` and `terminator()` in {{% docref sequence %}}.
+Errors::
+  All errors raised by `rule` and `terminator()`.
+  It can recover from a failed `rule` by parsing `recovery_rule()`.
+  It does not recover from a failed `terminator()`.
+Values::
+  * All values produced by `rule` followed by all values produced by `terminator()`.
+  * After error recovery, it only produces the values by `terminator()`.
+
+{{% playground-example terminator_try "Parse a statement; recover on failure" %}}
+
+=== Rule `.opt()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto opt(_rule_ auto rule) const;
+----
+
+[.lead]
+`.opt()` returns a rule that parses `rule` if it is there, then parses the terminator.
+
+Parsing::
+  Tries to parse `terminator()` and succeeds if that is the case.
+  Otherwise, parses `rule` and `terminator()` in {{% docref sequence %}}.
+Errors::
+  All errors raised by (branch) parsing of `terminator()` and parsing of `rule`.
+  It can recover from a failed `rule` by parsing `recovery_rule()`.
+  It does not recover from a failed `terminator()`.
+Values::
+  * An object of type {{% docref "lexy::dsl::nullopt" "`lexy::nullopt`" %}} followed by all values produced by `terminator()` in the first case.
+  * All values produced by `rule` followed by all values produced by `terminator()` in the second case.
+  * After error recovery, it only produces the values by `terminator()`.
+
+{{% playground-example terminator_opt "Parse a (null) statement" %}}
+
+NOTE: `.opt(rule)` consumes the same input as {{% docref "lexy::dsl::opt" %}}`(` {{% docref "lexy::dsl::peek_not" %}}`(terminator()) >> rule ) + terminator()`, but more efficiently.
+
+=== Rule `.list()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto list(_rule_ auto item) const;
+constexpr _rule_ auto list(_rule_ auto item, _separator_ auto sep) const;
+----
+
+[.lead]
+`.list()` returns a rule that parses a non-empty list of `item`, optionally separated by `sep`, followed by the terminator.
+
+Parsing::
+  It first parses `item` once, recovers if necessary.
+  Then it enters the main loop of parsing the rest of the list.
+  1. It first tries to parse `terminator()`.
+     If that succeeds, finishes parsing.
+     Otherwise, it continues with step 2.
+  2. If no {{% docref separator %}} was specified, immediately continues with step 4.
+     Otherwise, tries to parse `sep`.
+     On success, it continues with step 3.
+     If the separator was missing, immediately recovers by going to step 4.
+     Otherwise, recovers as described below.
+  3. Tries to parse `terminator()` again.
+     On success, handles a trailing separator by raising an error if necessary.
+     It then immediately recovers and succeeds.
+  4. Parses `item`. On success, repeats everything by going back to step 1.
+     Otherwise, recovers as described below.
+Errors::
+  * All errors raised by branch parsing of `terminator()`.
+    The rule then fails if `terminator()` has failed and never tries to recover.
+  * `lexy::unexpected_trailing_separator`: if a trailing separator was parsed but is not allowed; at the position of the trailing separator.
+    It then recovers without consuming additional input.
+  * All errors raised by branch parsing of `sep` and parsing `item`.
+    It then recovers by discarding input until it either matches `sep`,
+    if `sep` was specified, or until it reaches `item`, if no `sep` was specified.
+    The latter is only possible if `item` is a branch rule.
+    If `sep`/`item` was matched, continues in the appropriate step from the parsing algorithm.
+    If recovery reaches `terminator()`, parses it and finishes.
+    If recovery reaches the end of the input, or a limit, if one was specified, recovery fails.
+Values::
+  It creates a sink of the current context.
+  All items produced by `item` and `sep` are forwarded to it;
+  there are separate calls for every iteration and for `item` and `sep`.
+  The value of the finished sink is then produced followed by all values of `terminator()`.
+  After error recovery, it only produces the values by `terminator()`.
+
+{{% playground-example terminator_list "Parse a list of things terminated by a period" %}}
+
+NOTE: `.list(rule, sep)` consumes the same input as {{% docref "lexy::dsl::list" %}}`(` {{% docref "lexy::dsl::peek_not" %}}`(terminator()) >> rule, sep ) + terminator()`, but more efficiently.
+
+=== Rule `.opt_list()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto opt_list(_rule_ auto item) const;
+constexpr _rule_ auto opt_list(_rule_ auto item, _separator_ auto sep) const;
+----
+
+[.lead]
+`.opt_list()` returns a rule that parses a (possibly empty) list of `item`, optionally separated by `sep`, followed by the terminator.
+
+Parsing::
+  Tries to parse `terminator()` and succeeds if that is the case.
+  Otherwise, it parses the corresponding `.list()` rule.
+Errors::
+  All errors raised by branch parsing of `terminator()` or parsing of `.list()`.
+  It never recovers from the terminator, and recovers from `.list()` as described there.
+Values::
+  The first argument is:
+  * a `lexy::nullopt` object in the first case,
+  * The result of the `.list()` rule in the second case.
+  It is then followed by all values produced by `terminator()`.
+  After error recovery, it only produces the values by `terminator()`.
+
+NOTE: This is different from `term.opt(term.list(r))` as that would parse the terminator twice: once by `.list()` and once by `.opt()`.
+Apart from that, it behaves identically.
+

@@ -1,0 +1,89 @@
+---
+header: "lexy/dsl/flags.hpp"
+entities:
+  "lexy::dsl::flags": "flags"
+  "lexy::dsl::flag": "flag"
+---
+:toc: left
+
+[.lead]
+Parse an optional flag or multiple ones.
+
+[#flag]
+== Rule `lexy::dsl::flag`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <auto If, auto Else = decltype(If){}>
+    constexpr _rule_ auto flag(_branch-rule_ auto branch);
+
+    constexpr _rule_ auto flag(_branch-rule_ auto branch)
+    {
+        return flag<true, false>(branch);
+    }
+}
+----
+
+[.lead]
+`flag` is a rule that tries to parse a {{% branch-rule %}} and produces `If`, otherwise `Else`.
+
+Parsing::
+  Tries to parse `branch`.
+  If that backtracks, succeeds without consuming anything.
+Errors::
+  All errors raised by `branch` during branch parsing.
+  The rule then fails if `branch` has failed.
+Values::
+  If `branch` was parsed, `If` followed by all values produced by it.
+  Otherwise, `Else`.
+
+NOTE: Use {{% docref "lexy::dsl::opt" %}} if you only want a value if `branch` did not match.
+
+[#flags]
+== Rule `lexy::dsl::flags`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct duplicate_flag {};
+}
+
+namespace lexy::dsl
+{
+    struct _flag-rule_ // models _rule_
+    {
+        template <typename Tag>
+        static constexpr _rule_ auto error;
+    };
+
+    constexpr _rule_ auto flags(_symbol-rule_ flag_rule);
+
+    template <auto Default>
+    constexpr _rule_ auto flags(_symbol-rule_ flag_rule);
+}
+----
+
+[.lead]
+`flags` is a {{% rule %}} that parses a combination of enum flags in any order.
+
+Requires::
+  `flag_rule` is a {{% docref "lexy::dsl::symbol" %}} rule that maps strings to enum values, which do not have common bits set.
+  `Default` is of the same enum type.
+Parsing::
+  Repeatedly matches and consumes `flag_rule` until it does not match anymore.
+Errors::
+  `lexy::duplicate_flag`: if a flag has already been parsed; its range covers the duplicate flag.
+  This is determined by checking whether the bit set by a flag has already been set in the result `(result & flag) != 0`.
+  The tag can be overridden by `.error`.
+Values::
+  `Default | ... | flags` where `Default` is the specified value or else a default-constructed enum, and `flags` are all the flags parsed.
+
+{{% godbolt-example flags "Parse cv qualifiers" %}}
+
+NOTE: The enum type does not need to overload bitwise operators; the code operators on its underlying integer type and casts back at the end.
+
+NOTE: It is equivalent to {{% docref "lexy::dsl::partial_combination" %}} with a sink that performs a bitwise or.
+

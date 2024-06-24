@@ -1,0 +1,82 @@
+---
+header: "lexy/dsl/list.hpp"
+entities:
+  "lexy::dsl::list": list
+---
+
+[#list]
+== Rule `lexy::dsl::list`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _branch-rule_ auto list(_branch-rule_ auto item);
+
+    constexpr _rule_        auto list(_rule_ auto item,
+                                 _separator_ auto sep);
+    constexpr _branch-rule_ auto list(_rule_ auto item,
+                                 _separator_ auto sep);
+}
+----
+
+[.lead]
+`list` is a rule that parses a non-empty list of `item`, optionally separated by `sep`.
+
+Requires::
+  If the {{% docref separator %}} `sep` is {{% docref "lexy::dsl::trailing_sep" %}},
+  `item` is a {{% docref branch-rule %}};
+  i.e. the second overload must not be called.
+Parsing::
+  It first parses `item` once.
+  Then there are four cases to consider:
+  1. First overload, no separator.
+     Then it repeatedly tries to parse `rule`.
+     It finishes when `rule` backtracks.
+  2. Second overload, {{% docref "lexy::dsl::sep" %}}.
+     Then it repeatedly tries to parse `sep`.
+     If that backtracks, it is finished.
+     Otherwise, it parses `item` and repeats.
+  3. Third overload, {{% docref "lexy::dsl::sep" %}}.
+     Then it repeatedly tries to parse `sep`.
+     If that backtracks, it is finished.
+     Otherwise, it tries to parse `item`.
+     If that backtracks, it has an unexpected trailing separator.
+     Otherwise, it repeats.
+  4. Third overload, {{% docref "lexy::dsl::trailing_sep" %}}.
+     Then it repeatedly tries to parse `sep`.
+     If that backtracks, it is finished.
+     Otherwise, it tries to parse `item`.
+     If that backtracks, it has an allowed trailing separator and finishes.
+     Otherwise, it repeats.
+Branch parsing::
+  The first and third overloads where `item` is a branch rule, are also a branch rules.
+  They try to parse the initial `item` and backtrack if that backtracks.
+  Otherwise, they continues with normal parsing.
+Errors::
+  * All errors raised by (branch) parsing `item` or `sep`.
+    It then fails if they failed.
+  * `lexy::unexpected_trailing_separator`: in case 2, at the position of the trailing separator.
+    It then recovers by simply consuming the separator and continues.
+Values::
+  It creates a sink of the current context.
+  All values produced by `item` and `sep` are forwarded to it;
+  there are separate calls for every iteration and for `item` and `sep`.
+  The value of the finished sink is produced as the only value of the `list` rule.
+
+{{% godbolt-example list "Parse a list of letters (first overload)" %}}
+
+{{% godbolt-example list_sep "Parse a list of letters separated by commas (second overload, case 2)" %}}
+
+NOTE: `lexy::dsl::list(item)` matches the same input as {{% docref "lexy::dsl::while_one" %}}`(item)`;
+`lexy::dsl::list(item, sep)` (case 2) matches the same input as {{% docref "lexy::dsl::do_while" %}}`(item, sep)`.
+
+TIP: If your list is always followed by a certain token or surrounded in parenthesis,
+you can use {{% docref "lexy::dsl::terminator" %}} and {{% docref "lexy::dsl::brackets" %}},
+which do not require a branch rule as arguments.
+
+TIP: Use {{% docref "lexy::dsl::opt" %}}`(lexy::dsl::list(...))` to parse a list that might be empty;
+this requires a branch condition.
+
+TIP: Use {{% docref "lexy::as_list" %}} for the callback to create e.g. a `std::vector<T>`.
+

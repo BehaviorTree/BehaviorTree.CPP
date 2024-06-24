@@ -1,0 +1,139 @@
+---
+header: "lexy/dsl/ascii.hpp"
+entities:
+  "lexy::dsl::ascii": doc
+  "lexy::dsl::ascii::control": class
+  "lexy::dsl::ascii::blank": class
+  "lexy::dsl::ascii::newline": class
+  "lexy::dsl::ascii::other_space": class
+  "lexy::dsl::ascii::space": class
+  "lexy::dsl::ascii::digit": class
+  "lexy::dsl::ascii::lower": class
+  "lexy::dsl::ascii::upper": class
+  "lexy::dsl::ascii::alpha": class
+  "lexy::dsl::ascii::alpha_underscore": class
+  "lexy::dsl::ascii::alpha_digit": class
+  "lexy::dsl::ascii::alnum": class
+  "lexy::dsl::ascii::word": class
+  "lexy::dsl::ascii::alpha_digit_underscore": class
+  "lexy::dsl::ascii::punct": class
+  "lexy::dsl::ascii::graph": class
+  "lexy::dsl::ascii::print": class
+  "lexy::dsl::ascii::character": class
+  "lexy::dsl::ascii::one_of": one_of
+  "LEXY_ASCII_ONE_OF": one_of
+---
+:toc: left
+
+[.lead]
+Char class rules for matching the ASCII char classes.
+
+[#class]
+== ASCII char classes
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    namespace ascii
+    {
+        constexpr _char-class-rule_ auto control;
+
+        constexpr _char-class-rule_ auto blank;
+        constexpr _char-class-rule_ auto newline;
+        constexpr _char-class-rule_ auto other_space;
+        constexpr _char-class-rule_ auto space;
+
+        constexpr _char-class-rule_ auto digit;
+
+        constexpr _char-class-rule_ auto lower;
+        constexpr _char-class-rule_ auto upper;
+        constexpr _char-class-rule_ auto alpha;
+        constexpr _char-class-rule_ auto alpha_underscore;
+
+        constexpr _char-class-rule_ auto alpha_digit;
+        constexpr _char-class-rule_ auto alnum = alpha_digit;
+
+        constexpr _char-class-rule_ auto word;
+        constexpr _char-class-rule_ auto alpha_digit_underscore = word;
+
+        constexpr _char-class-rule_ auto punct;
+
+        constexpr _char-class-rule_ auto graph;
+        constexpr _char-class-rule_ auto print;
+
+        constexpr _char-class-rule_ auto character;
+    }
+}
+----
+
+[.lead]
+These {{% char-class-rule %}}s match one ASCII character from a char class,
+as specified in the table below.
+
+[%collapsible]
+.The char classes
+====
+|===
+| Token Rule                | Char Class                        | `<cctype>` function (C locale)
+
+| `control`                 | `0x00-0x1F`, `\x7F`               | `std::iscntrl()`
+| `blank`                   | `' '` (space) or `'\t'`           | `std::isblank()`
+| `newline`                 | `'\n'` or `'\r'`                  | n/a
+| `other_space`             | `'\f'` or `'\v\`                  | n/a
+| `space`                   | `blank`, `newline`, `other_space` | `std::isspace()`
+| `digit`                   | `0123456789`                      | `std::isdigit()`
+| `lower`                   | `abcdefghijklmnopqrstuvwxyz`      | `std::islower()`
+| `upper`                   | `ABCDEFGHIJKLMNOPQRSTUVWXYZ`      | `std::isupper()`
+| `alpha`                   | `lower`, `upper`                  | `std::isalpha()`
+| `alpha_underscore`        | `lower`, `upper`, `'_'`           | n/a
+| `alpha_digit`             | `lower`, `upper`, `digit`         | `std::isalnum()`
+| `word`                    | `lower`, `upper`, `digit`, `'_'`  | n/a
+| `punct`                   | ``!"#$%&'()*+,-./:;\<\=>?@[\]^_`{\|}~`` | `std::ispunct()`
+| `graph`                   | `alpha_digit`, `punct`            | `std::isgraph()`
+| `print`                   | `alpha_digit`, `punct`, `' '` (space) | `std::ispunct()`
+| `character`               | any ASCII character               | n/a
+|===
+====
+
+{{% playground-example identifier "A C-like identifier" %}}
+
+{{% playground-example whitespace "Allow ASCII whitespace between tokens" %}}
+
+NOTE: The only difference between `lexy::dsl::ascii::digit` and {{% docref "lexy::dsl::digit" "`lexy::dsl::digit<lexy::dsl::decimal>`" %}} is the name of the character class in the error.
+
+CAUTION: Differentiate between `lexy::dsl::ascii::newline`, which matches `\r` or `\n`, and {{% docref "lexy::dsl::newline" %}}, which matches `\r\n` or `\n`!
+
+CAUTION: As token rules, they match {{% docref whitespace whitespace %}} immediately following the character.
+As such, the rule is best used in contexts where automatic whitespace skipping is disabled.
+They can safely be used as part of the whitespace definition.
+
+TIP: The equivalent of `std::isxdigit()` is {{% docref "lexy::dsl::digit" "`lexy::dsl::digit<lexy::dsl::hex>`" %}}.
+
+TIP: Use {{% docref "lexy::dsl::unicode" %}} for the equivalent Unicode character classes.
+
+[#one_of]
+== Char class rule `lexy::dsl::ascii::one_of`
+
+{{% interface %}}
+----
+namespace lexy::dsl::ascii
+{
+    template <auto Str>
+    constexpr _char-class-rule_ auto one_of;
+}
+
+#define LEXY_ASCII_ONE_OF(Str) lexy::dsl::ascii::one_of<Str>
+----
+
+[.lead]
+`one_of` is a {{% char-class-rule %}} that matches one of the specified ASCII characters.
+Its name is `Str`.
+
+The macro `LEXY_ASCII_ONE_OF(Str)` is equivalent to `one_of<Str>`, except that it also works on older compilers that do not support C++20's extended NTTPs.
+Use this instead of `one_of<Str>` if you need to support them.
+
+{{% playground-example "one_of" "Match the name of a musical note." %}}
+
+NOTE: It is impossible to match the null character using `one_of`.
+

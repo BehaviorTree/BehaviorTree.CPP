@@ -1,0 +1,64 @@
+name: Sanitizers
+
+on:
+  push:
+    branches: '**'
+  pull_request:
+
+jobs:
+  sanitizers:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install ninja
+      run: sudo apt-get -qq update && sudo apt-get install -y ninja-build
+
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-DLEXY_DISABLE_CONSTEXPR_TESTS -fsanitize=address,undefined,leak -fno-sanitize-recover=all" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined,leak"
+    - name: Build
+      working-directory: build/
+      run: cmake --build .
+    - name: Test
+      working-directory: build/
+      run: ctest --output-on-failure
+      env:
+        ASAN_OPTIONS: detect_stack_use_after_return=1
+
+  clang-tidy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+    - name: Install ninja and clang-tidy
+      run: sudo apt-get -qq update && sudo apt-get install -y ninja-build clang-tidy-14
+
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14;-extra-arg=-Wno-unknown-warning-option"
+    - name: Build
+      working-directory: build/
+      run: cmake --build . --target lexy_test lexy_ext_test
+
+  benchmarks: # just to ensure that they are compiled
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+    - name: Install ninja
+      run: sudo apt-get -qq update && sudo apt-get install -y ninja-build
+
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE -DLEXY_BUILD_BENCHMARKS=ON
+    - name: Build
+      working-directory: build/
+      run: cmake --build .
+

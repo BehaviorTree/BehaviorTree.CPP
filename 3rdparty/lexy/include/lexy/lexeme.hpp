@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_LEXEME_HPP_INCLUDED
@@ -17,8 +17,8 @@ class lexeme
 {
 public:
     using encoding  = typename Reader::encoding;
-    using char_type = typename encoding::char_type;
     using iterator  = typename Reader::iterator;
+    using char_type = LEXY_DECAY_DECLTYPE(*LEXY_DECLVAL(iterator&));
 
     constexpr lexeme() noexcept : _begin(), _end() {}
     constexpr lexeme(iterator begin, iterator end) noexcept : _begin(begin), _end(end) {}
@@ -29,6 +29,13 @@ public:
     constexpr explicit lexeme(const Reader& reader, iterator begin) noexcept
     : _begin(begin), _end(reader.position())
     {}
+
+    template <typename OtherReader, typename = std::enable_if_t<std::is_same_v<
+                                        typename Reader::iterator, typename OtherReader::iterator>>>
+    constexpr operator lexeme<OtherReader>() const noexcept
+    {
+        return lexeme<OtherReader>(this->begin(), this->end());
+    }
 
     constexpr bool empty() const noexcept
     {

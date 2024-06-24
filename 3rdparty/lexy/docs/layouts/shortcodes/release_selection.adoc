@@ -1,0 +1,25 @@
+++++
+<select id="release-selection" autocomplete="off">
+{{ range sort $.Site.Data.tags "date" "desc" }}
+    <option value={{ .download }}>{{ .name }}</option>
+{{ end }}
+</select>
+++++
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(lexy URL https://lexy.foonathan.net/download/lexy-src.zip)
+FetchContent_MakeAvailable(lexy)
+```
+
+++++
+<script>
+  document.getElementById('release-selection').addEventListener('change', function() {
+      for (var tag of document.getElementsByClassName('tok-s'))
+          if (tag.innerHTML == "URL" && tag.previousSibling.previousSibling.innerHTML == "lexy") {
+              tag.nextSibling.nextSibling.innerHTML = this.value;
+          }
+  });
+</script>
+++++
+

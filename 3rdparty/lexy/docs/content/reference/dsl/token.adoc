@@ -1,0 +1,120 @@
+---
+header: "lexy/dsl/token.hpp"
+entities:
+  "token-rule": doc
+  ".error": error
+  ".kind": kind
+  "lexy::dsl::token": token
+---
+:toc: left
+
+[.lead]
+The basic token interface as well as the `token` token rule.
+
+{{% interface %}}
+----
+template <typename T>
+concept _token-rule_ = _rule_<T> && …;
+----
+
+A _token_ is an atomic element of the input, which can be parsed by a token rule.
+_Token rules_ are special rules that do not produce any values and can be matched efficiently.
+As such, every token rule is also a branch rule.
+
+In a parse tree, every token rule produces a token node which directly captures a substring of the input, the part consumed by the rule.
+The token node also has a token kind, which identifies a token rule.
+
+As token rules are the atomic elements, they also serve the basis for {{% docref whitespace %}} handling:
+if automatic whitespace skipping has been enabled, it is skipped after every token rule.
+
+[#error]
+== Token interface `.error<Tag>`
+
+{{% interface %}}
+----
+class _token-rule_
+{
+public:
+    template <typename Tag>
+    static constexpr _token-rule_ auto error;
+
+    …
+};
+----
+
+[.lead]
+Every token rule `token` has a `.error<Tag>` member that overrides the error raised when `token` does not match.
+
+Matching::
+  Matches and consumes `token`.
+Errors::
+  `Tag`: if matching `token` fails.
+  Its range covers everything already consumed by `token`.
+  The rule then fails as well.
+
+{{% playground-example quoted_error "A string literal with a nice error" %}}
+
+CAUTION: `.error<Tag>` overrides _all_ errors raised by a token rule to the same error.
+If a token can fail with different kinds of errors, this information is lost.
+
+[#kind]
+== Token interface `.kind<Tag>`
+
+{{% interface %}}
+----
+class _token-rule_
+{
+public:
+    template <auto Kind>
+    static constexpr _token-rule_ auto kind;
+
+    …
+};
+----
+
+[.lead]
+Every token rule `token` has a `.kind<Kind>` member that overrides the token kind of its node in the parse tree.
+
+Matching::
+  Matches and consumes `token`.
+Errors::
+  All errors raised by `token`.
+  The rule then fails.
+Parse tree::
+  A single token whose range covers everything consumed by `token`.
+  However, its kind is now `Kind`.
+
+[#token]
+== Token rule `lexy::dsl::token`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct missing_token {};
+}
+
+namespace lexy::dsl
+{
+    constexpr _token-rule_ auto token(_rule_ auto rule);
+}
+----
+
+[.lead]
+`token` is a rule that converts an arbitrary `rule` into a token rule.
+
+Matching::
+  Matches and consumes `rule` in a new context.
+Errors::
+  `lexy::missing_token`: if matching of `rule` has failed for any reason;
+  its range covers everything `rule` has already consumed.
+  The rule then fails.
+
+NOTE: {{% docref whitespace "Whitespace skipping" %}} is disabled while parsing `rule`,
+but it is skipped at the end, as it is a token rule.
+
+CAUTION: While `token` is optimized itself, parsing `rule` can be arbitrarily expensive.
+As such, it should only be used when absolutely required.
+
+WARNING: `rule` does not have access to any context variables created by the context-sensitive parsing facilities and it can't use recursion.
+

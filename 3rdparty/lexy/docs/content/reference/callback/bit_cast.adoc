@@ -1,0 +1,28 @@
+---
+header: "lexy/callback/bit_cast.hpp"
+entities:
+  "lexy::bit_cast": bit_cast
+---
+
+[#bit_cast]
+== Callback `lexy::bit_cast`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    constexpr _callback_ auto bit_cast;
+}
+----
+
+[.lead]
+A callback that calls https://en.cppreference.com/w/cpp/numeric/bit_cast[`std::bit_cast`].
+
+It requires that `T` is trivially copyable.
+It accepts any type that is also trivially copyable and has the same size as `T`.
+It then converts the argument to `T` by reinterpreting the bits.
+
+NOTE: If `std::bit_cast` is not available, it is emulated.
+This might make the callback non-`constexpr` and require that `T` is in addition default constructible.
+

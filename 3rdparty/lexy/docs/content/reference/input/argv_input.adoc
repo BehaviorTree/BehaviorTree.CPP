@@ -1,0 +1,128 @@
+---
+header: "lexy/input/argv_input.hpp"
+entities:
+  "lexy::argv_iterator": range
+  "lexy::argv_sentinel": range
+  "lexy::argv_begin": range
+  "lexy::argv_end": range
+  "lexy::argv_input": argv_input
+  "lexy::argv_lexeme": typedefs
+  "lexy::argv_error": typedefs
+  "lexy::argv_error_context": typedefs
+  "lexy::dsl::argv_separator": argv_separator
+---
+:toc: left
+
+[.lead]
+An input that uses the command line arguments.
+
+[#range]
+== Range `lexy::argv_begin`/`lexy::argv_end`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    class argv_sentinel;
+    class argv_iterator;
+
+    constexpr argv_iterator argv_begin(int argc, char* argv[]) noexcept;
+    constexpr argv_iterator argv_end(int argc, char* argv[]) noexcept;
+}
+----
+
+[.lead]
+An iterator range over the characters of the command-line arguments.
+
+`argv_iterator` is a bidirectional iterator with value type `const char` that iterates over the characters of the command-line arguments.
+It includes the null character as separator between two arguments, but not after the last argument.
+`argv_sentinel` is its corresponding sentinel.
+
+`argv_begin` returns an iterator to the first character of the first command-line argument after the executable name (i.e. `argv[1][0]`),
+`argv_end` returns an iterator one past the last character of the last argument (i.e. `argv[argc - 1] + std::strlen(argv[argc - 1])`).
+
+{{% godbolt-example "argv_iterator" "Print the command-line arguments" %}}
+
+[#argv_input]
+== Input `lexy::argv_input`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding = default_encoding>
+    class argv_input
+    {
+    public:
+        using encoding  = Encoding;
+        using char_type = typename encoding::char_type;
+
+        constexpr argv_input();
+
+        constexpr argv_input(argv_iterator begin, argv_iterator end) noexcept;
+        constexpr argv_input(int argc, char* argv[]) noexcept
+        : argv_input(argv_begin(argc, argv), argv_end(argc, argv))
+        {}
+
+        constexpr _reader_ auto reader() const& noexcept;
+    };
+}
+----
+
+[.lead]
+The class `argv_input` is an input that uses the command-line arguments as input.
+
+Its {{% encoding %}} must have `char` as primary or secondary character type.
+The range `[begin, end)` of the {{% docref "lexy::argv_iterator" %}} will be used as input.
+
+{{% godbolt-example "argv_input" "Use the command-line arguments as input" %}}
+
+NOTE: The input will contain `\0` as separator between two command-line arguments.
+Use the rule {{% docref "lexy::dsl::argv_separator" %}} to match it.
+
+[#typedefs]
+== Convenience typedefs
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding = default_encoding>
+    using argv_lexeme = lexeme_for<argv_input<Encoding>>;
+
+    template <typename Tag, _encoding_ Encoding = default_encoding>
+    using argv_error = error_for<argv_input<Encoding>, Tag>;
+
+    template <_encoding_ Encoding = default_encoding>
+    using argv_error_context = error_context<argv_input<Encoding>>;
+}
+----
+
+[.lead]
+Convenience typedefs for the command-line argument input.
+
+[#argv_separator]
+== Token rule `lexy::dsl::argv_separator`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _token-rule_ auto argv_separator;
+}
+----
+
+[.lead]
+`argv_separator` is a {{% token-rule %}} that matches the separator between two command-line arguments.
+
+Matching::
+  Matches and consumes the separator between two command-line arguments.
+Errors::
+  {{% docref "lexy::expected_char_class" %}} (`"argv-separator"`): at the unchanged reader position.
+  The rule then fails.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::literal_token_kind`.
+
+The rule can only succeed on a {{% docref "lexy::argv_input" %}}.
+There is no argument separator before the first command-line argument, or after the last one.
+

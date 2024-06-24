@@ -1,0 +1,69 @@
+---
+header: "lexy/dsl/repeat.hpp"
+entities:
+  "lexy::dsl::repeat": repeat
+---
+
+[#repeat]
+== Rule DSL `lexy::dsl::repeat`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _repeat-dsl_ // note: not a rule itself
+    {
+        constexpr _rule_ auto operator()(_rule_ auto item);
+        constexpr _rule_ auto operator()(_rule_ auto item, _separator_ auto sep);
+
+        constexpr _rule_ auto capture(_rule_ auto item);
+        constexpr _rule_ auto capture(_rule_ auto item, _separator_ auto sep);
+
+        constexpr _rule_ auto list(_rule_ auto item);
+        constexpr _rule_ auto list(_rule_ auto item, _separator_ auto sep);
+    };
+
+    constexpr _repeat-dsl_ repeat(_rule_ auto count);
+}
+----
+
+[.lead]
+`repeat` is not a rule, but a DSL for parsing something `N` times in sequence with optional separator in between,
+where `N` is determined as the result of parsing a `count` rule.
+
+The actual rule is obtained by calling `operator()`, `capture()`, or `list()` on the result of `repeat()`.
+All three have the same parsing behavior and differ only in the values they produce.
+The resulting rule is a branch rule, if `count` is a branch rule.
+
+Requires::
+  * `count` must produce a value convertible to `std::size_t` when parsed with the parse action {{% docref "lexy::parse" %}}.
+  * If `operator()` or `capture()` is used, `item` and `sep` must not produce any values.
+Parsing::
+  Parses `count` as if the parse action {{% docref "lexy::parse" %}} was used; the result is a `std::size_t` `n`.
+  Then parses `item` `n` times in sequence.
+  If `sep` has been specified, parses it in between.
+  After the last rule, handles a trailing separator as necessary.
+Branch parsing::
+  Same as above, but branch parses `count`.
+  If `count` backtracks, backtracks as well.
+  Otherwise, does not backtrack anymore.
+Errors::
+  * All errors raised by parsing `count`. The rule then fails.
+  * All errors raised by parsing `item` or `sep` in any iteration.
+    The rule then fails.
+  * `lexy::unexpected_trailing_separator`: if a trailing separator can be matched after the last item and that is not allowed;
+    at the position of the separator.
+    It then recovers by simply consuming the separator.
+Values::
+  * If `operator()` is used, does not produce any values.
+  * If `capture()` is used, produces a single value: a {{% docref "lexy::lexeme" %}} spanning everything consumed by parsing `rule` and `sep` `n` times.
+    This is like the behavior of {{% docref "lexy::dsl::capture" %}} except that `count` is not captured.
+  * If `list()` is used, creates a sink of the current context.
+    All values produced by `item` and `sep` are forwarded to it; there are separate calls for every iteration and for `item` and `sep`.
+    The value of the finished sink is produced as the only value.
+    This is like the behavior of {{% docref "lexy::dsl::list" %}}.
+
+{{% playground-example repeat "Parse an integer and then that many 'a's" %}}
+
+NOTE: Use {{% docref "lexy::dsl::times" %}} if the number of repetitions is hard-coded into the grammar.
+

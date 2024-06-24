@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_CALLBACK_ADAPTER_HPP_INCLUDED
@@ -16,6 +16,33 @@ struct _callback : _overloaded<Fns...>
     constexpr explicit _callback(Fns... fns) : _overloaded<Fns...>(LEXY_MOV(fns)...) {}
 };
 
+template <typename ReturnType, typename... Fns>
+struct _callback_with_state : _overloaded<Fns...>
+{
+    using return_type = ReturnType;
+
+    template <typename State>
+    struct _with_state
+    {
+        const _callback_with_state& _cb;
+        State&                      _state;
+
+        template <typename... Args>
+        constexpr return_type operator()(Args&&... args) const&&
+        {
+            return _cb(_state, LEXY_FWD(args)...);
+        }
+    };
+
+    constexpr explicit _callback_with_state(Fns... fns) : _overloaded<Fns...>(LEXY_MOV(fns)...) {}
+
+    template <typename State>
+    constexpr auto operator[](State& state) const
+    {
+        return _with_state<State>{*this, state};
+    }
+};
+
 /// Creates a callback.
 template <typename... Fns>
 constexpr auto callback(Fns&&... fns)
@@ -26,12 +53,26 @@ constexpr auto callback(Fns&&... fns)
     else
         return _callback<void, std::decay_t<Fns>...>(LEXY_FWD(fns)...);
 }
-
-/// Creates a callback.
 template <typename ReturnType, typename... Fns>
 constexpr auto callback(Fns&&... fns)
 {
     return _callback<ReturnType, std::decay_t<Fns>...>(LEXY_FWD(fns)...);
+}
+
+/// Creates a callback that also receives the parse state.
+template <typename... Fns>
+constexpr auto callback_with_state(Fns&&... fns)
+{
+    if constexpr ((lexy::is_callback<std::decay_t<Fns>> && ...))
+        return _callback_with_state<std::common_type_t<typename std::decay_t<Fns>::return_type...>,
+                                    std::decay_t<Fns>...>(LEXY_FWD(fns)...);
+    else
+        return _callback_with_state<void, std::decay_t<Fns>...>(LEXY_FWD(fns)...);
+}
+template <typename ReturnType, typename... Fns>
+constexpr auto callback_with_state(Fns&&... fns)
+{
+    return _callback_with_state<ReturnType, std::decay_t<Fns>...>(LEXY_FWD(fns)...);
 }
 
 template <typename Sink>

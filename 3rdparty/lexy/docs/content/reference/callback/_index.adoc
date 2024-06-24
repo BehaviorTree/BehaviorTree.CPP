@@ -1,0 +1,149 @@
+---
+layout: single
+header: "lexy/callback.hpp"
+entities:
+  "callback": callback
+  "sink": sink
+---
+:toc: left
+
+[.lead]
+Callbacks that receive the values produced during parsing and process them.
+
+[#callback]
+== Callback
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    concept _callback_ = requires { typename T::return_type; }
+
+    template <typename T>
+    constexpr bool is_callback = _callback_<T>;
+
+    template <typename T, typename ... Args>
+    concept _callback-for_ = callback<T>
+      && requires(const T& cb, Args&&... args) {
+          { cb(std::forward<Args>(args)...) }
+            -> std::same_as<typename T::return_type>;
+        };
+
+    template <typename T, typename ... Args>
+    constexpr bool is_callback_for = _callback-for_<T, Args..>;
+
+    template <typename T, typename State, typename ... Args>
+    concept _callback-with-state_ = callback<T>
+      && requires(const T& cb, State& state) {
+            { cb[state](std::forward<Args>(args)...) }
+              -> std::same_as<typename T::return_type>;
+         };
+
+    template <typename T, typename State>
+    constexpr bool is_callback_state
+        = _callback-with-state_<T, State, some-arguments...>;
+}
+----
+
+[.lead]
+A _callback_ is a function object with a `return_type` typedef that specifies its return type.
+
+The callback can have multiple overloads of `operator()`, but all of them must return the same type.
+To be usable in the grammar, a callback must not have any mutable state.
+
+A callback can optionally take a state.
+This is an additional parameter that is passed via `operator[]` in addition to all the arguments.
+During parsing, the callback arguments are the values produced by the rules while the state parameter is the parse state.
+
+[#sink]
+== Sink
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    concept _sink-callback_ = requires (T& cb) {
+          typename T::return_type;
+
+          // there exist some args... with:
+          { cb(args...) } -> std::same_as<void>;
+
+          { std::move(cb).finish() } -> std::same_as<typename T::return_type>;
+      };
+
+    template <typename T, typename ... Args>
+    concept _sink_ = requires (const T& s, Args&&... args) {
+          { s.sink(std::forward<Args>(args)...) } -> _sink-callback_;
+      };
+
+    template <typename T, typename... Args>
+    constexpr bool is_sink = _sink_<T, Args...>;
+
+    template <typename Sink, typename... Args>
+    using sink_callback = /* return type of .sink(Args...) */;
+
+    template <typename T, typename ... Args>
+    constexpr bool is_sink_callback_for
+      = /* T is a sink callback that can be invoked with Args... */;
+}
+----
+
+[.lead]
+A _sink_ is an object with a `sink()` member function that returns a _sink callback_, which is a callback that can be invoked multiples times before producing the final value.
+
+The `sink()` member function can take arbitrary arguments to construct the sink callback.
+This is used to e.g. pass allocator parameters to a container's constructor.
+During parsing, `sink()` is passed the parse state, if it accepts it, otherwise it is invoked without arguments.
+
+The sink callback can be invoked with some arguments, and will somehow append them to the result.
+Calling `finish()` on the sink callback will return the finished result.
+Once `finish()` has been called, the sink callback is never used again.
+During parsing, the sink callback is repeatedly invoked by values produced during a list rule.
+
+== Pre-defined callbacks and sinks
+
+[%collapsible]
+.Adapters and composition
+====
+{{% docref "lexy::callback" %}}::
+  Turn an overload set of function objects into a callback.
+{{% docref "lexy::mem_fn" %}}::
+  Turn a member function/data pointer into a callback.
+{{% docref "lexy::operator|" %}} and {{% docref "lexy::operator>>" %}}::
+  Combine callbacks and sinks.
+{{% docref "lexy::bind" %}} and {{% docref "lexy::bind_sink" %}}::
+  Bind parameters and reorder and transform arguments of a callback or sink.
+{{% docref "lexy::fold" %}} and {{% docref "lexy::fold_inplace" %}}::
+  Fold over all arguments of a sink.
+====
+
+[%collapsible]
+.Primitives
+====
+{{% docref "lexy::noop" %}}::
+  Do nothing.
+{{% docref "lexy::constant" %}}::
+  Produce a constant value.
+{{% docref "lexy::forward" %}}::
+  Forward an existing value unchanged.
+{{% docref "lexy::construct" %}} and {{% docref "lexy::new_" %}}::
+  Construct a new object.
+{{% docref "lexy::bit_cast" %}}::
+  Constructs a new object by reinterpreting the bits of an existing one.
+====
+
+[%collapsible]
+.Rule specific
+====
+{{% docref "lexy::as_integer" %}}::
+  Produce a (signed) integer value.
+{{% docref "lexy::as_string" %}}::
+  Produce a string.
+{{% docref "lexy::as_list" %}} and {{% docref "lexy::as_collection" %}}::
+  Produce a container from all list items.
+{{% docref "lexy::as_aggregate" %}}::
+  Produce an aggregate by setting the specified members.
+====
+

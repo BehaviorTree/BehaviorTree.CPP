@@ -1,0 +1,4 @@
+{{- $url := relref . "/reference/dsl/branch#doc" -}}
+{{- $.Page.Scratch.SetInMap "see-also" "branch rules" (printf "<a href=%s>branch rules</a>" $url) -}}
+link:{{ $url }}[branch rule]
+{{- printf "" -}}

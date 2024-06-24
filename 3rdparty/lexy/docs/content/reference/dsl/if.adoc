@@ -1,0 +1,36 @@
+---
+header: "lexy/dsl/if.hpp"
+entities:
+  "lexy::dsl::if_": if_
+---
+:toc: left
+
+[#if_]
+== Rule `lexy::dsl::if_`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto if_(_branch-rule_ auto branch);
+}
+----
+
+[.lead]
+`if_` is a rule that tries to parse a {{% branch-rule %}}.
+
+Parsing::
+  Tries to parse `branch`.
+  If that backtracks, succeeds without consuming anything.
+Errors::
+  All errors raised by `branch` during branch parsing.
+  The rule then fails if `branch` has failed.
+Values::
+  All values produced by `branch`.
+
+{{% playground-example if "Only parse a fraction if preceded by a dot " %}}
+
+NOTE: `if_(branch)` is functionally equivalent to the {{% docref choice %}} `branch | lexy::dsl::else_`.
+
+TIP: Use {{% docref "lexy::dsl::opt" %}} if you need a value to indicate that `branch` was not parsed.
+

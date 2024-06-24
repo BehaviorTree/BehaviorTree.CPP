@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_CONTEXT_IDENTIFIER_HPP_INCLUDED
@@ -73,7 +73,7 @@ struct _ctx_irem : branch_base
     template <typename Reader>
     struct bp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
         template <typename ControlBlock>
         constexpr bool try_parse(const ControlBlock* cb, const Reader& reader)
@@ -85,7 +85,7 @@ struct _ctx_irem : branch_base
             end = parser.end;
 
             // The two lexemes need to be equal.
-            auto lexeme = lexy::lexeme<Reader>(reader.position(), end);
+            auto lexeme = lexy::lexeme<Reader>(reader.position(), end.position());
             return lexy::_detail::equal_lexemes(_ctx_id<Id, Reader>::get(cb), lexeme);
         }
 
@@ -97,8 +97,9 @@ struct _ctx_irem : branch_base
         LEXY_PARSER_FUNC bool finish(Context& context, Reader& reader, Args&&... args)
         {
             // Finish parsing the token.
-            context.on(_ev::token{}, lexy::identifier_token_kind, reader.position(), end);
-            reader.set_position(end);
+            context.on(_ev::token{}, lexy::identifier_token_kind, reader.position(),
+                       end.position());
+            reader.reset(end);
             return lexy::whitespace_parser<Context, NextParser>::parse(context, reader,
                                                                        LEXY_FWD(args)...);
         }

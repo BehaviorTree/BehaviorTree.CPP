@@ -1,0 +1,80 @@
+name: Feature CI
+
+on:
+  push:
+    branches-ignore: ['main', 'fix/*']
+  pull_request:
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["gcc:7", "gcc:13", "clang:6", "clang:16"]
+
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/foonathan/${{matrix.image}}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Debug
+    - name: Build
+      working-directory: build/
+      run: cmake --build .
+    - name: Test
+      working-directory: build/
+      run: ctest --output-on-failure
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode: ['11', '13']
+
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: ${{matrix.xcode}}
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+    - name: Install ninja
+      run: brew install ninja
+
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE
+    - name: Build
+      working-directory: build/
+      run: cmake --build .
+    - name: Test
+      working-directory: build/
+      run: ctest --output-on-failure
+
+  windows:
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+
+    - name: Configure
+      shell: bash
+      working-directory: build/
+      run: cmake $GITHUB_WORKSPACE -G"Visual Studio 16 2019"
+    - name: Build
+      working-directory: build/
+      run: cmake --build . --config Debug -j 2
+    - name: Test
+      working-directory: build/
+      run: ctest -C Debug --output-on-failure
+

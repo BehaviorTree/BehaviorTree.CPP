@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_INTEGER_HPP_INCLUDED
@@ -414,7 +414,7 @@ struct _int : _copy_base<Token>
     template <typename Reader>
     struct bp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
         constexpr auto try_parse(const void*, const Reader& reader)
         {
@@ -432,10 +432,11 @@ struct _int : _copy_base<Token>
         LEXY_PARSER_FUNC bool finish(Context& context, Reader& reader, Args&&... args)
         {
             auto begin = reader.position();
-            context.on(_ev::token{}, Token{}, begin, end);
-            reader.set_position(end);
+            context.on(_ev::token{}, Token{}, begin, end.position());
+            reader.reset(end);
 
-            return _pc<NextParser>::parse(context, reader, begin, end, LEXY_FWD(args)...);
+            return _pc<NextParser>::parse(context, reader, begin, end.position(),
+                                          LEXY_FWD(args)...);
         }
     };
 
@@ -448,17 +449,19 @@ struct _int : _copy_base<Token>
             auto begin = reader.position();
             if (lexy::token_parser_for<Token, Reader> parser(reader); parser.try_parse(reader))
             {
-                context.on(_ev::token{}, typename Token::token_type{}, begin, parser.end);
-                reader.set_position(parser.end);
+                context.on(_ev::token{}, typename Token::token_type{}, begin,
+                           parser.end.position());
+                reader.reset(parser.end);
             }
             else
             {
                 parser.report_error(context, reader);
-                reader.set_position(parser.end);
+                reader.reset(parser.end);
 
                 // To recover we try and skip additional digits.
                 while (lexy::try_match_token(digit<typename IntParser::base>, reader))
-                {}
+                {
+                }
 
                 auto recovery_end = reader.position();
                 if (begin == recovery_end)

@@ -1,0 +1,211 @@
+---
+header: "lexy/visualize.hpp"
+entities:
+  "lexy::visualization_flags": visualization_flags
+  "lexy::visualization_options": visualization_options
+  "lexy::visualize_to": visualize_to
+  "lexy::cfile_output_iterator": visualize
+  "lexy::visualize": visualize
+  "lexy::visualization_display_width": visualization_display_width
+---
+:toc: left
+
+[.lead]
+Functions to visualize lexy's data structures for debugging purposes.
+
+[#visualization_flags]
+== Enum bit flags `lexy::visualization_flags`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    enum visualization_flags
+    {
+        visualize_default,
+
+        visualize_use_unicode,
+        visualize_use_color,
+        visualize_use_symbols,
+
+        visualize_fancy
+            = visualize_use_unicode | visualize_use_color | visualize_use_symbols,
+
+        visualize_space,
+    };
+
+    constexpr visualization_flags operator|(visualization_flags lhs,
+                                            visualization_flags rhs) noexcept;
+}
+----
+
+[.lead]
+Flags for controlling the visualization.
+
+`visualize_default`::
+  The default behavior; no flag is set.
+`visualize_use_unicode`::
+  Visualization can use Unicode characters for meta data (e.g. the box drawing characters for the parse tree);
+  non-ASCII characters in the content are still escaped.
+  It will write UTF-8 encoded code points.
+`visualize_use_color`::
+  Visualization can use the ANSI escape codes to add color.
+`visualize_use_symbols`::
+  Visualization can use Unicode symbols for e.g. newline and tab characters,
+  which will be written as UTF-8 encoded code points.
+  It is separate from `visualize_use_unicode`.
+`visualize_fancy`::
+  Enable Unicode, color, and symbols.
+`visualize_space`::
+  Visualization will display space as a visible symbol instead of the literal space character.
+  Useful to indicate trailing spaces; best combined with `visualize_use_symbols`.
+
+NOTE: Use `visualize_fancy` for visualizing to modern terminals;
+use `visualize_use_unicode | visualize_use_symbols` for visualizing to a file.
+
+[#visualization_options]
+== Struct `lexy::visualization_options`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct visualization_options
+    {
+        static constexpr unsigned char max_tree_depth_limit = 32;
+
+        visualization_flags flags = visualize_default;
+
+        unsigned char max_tree_depth   = max_tree_depth_limit;
+        unsigned char max_lexeme_width = 0;
+        unsigned char tab_width        = 0;
+
+        constexpr bool is_set(visualization_flags f) const noexcept;
+
+        constexpr auto reset(visualization_flags f) const noexcept
+          -> visualization_options;
+    };
+
+    constexpr visualization_options operator|(visualization_options lhs,
+                                              visualization_flags   rhs) noexcept;
+}
+----
+
+[.lead]
+Options for controlling visualization.
+
+It combines the {{% docref `lexy::visualization_flags` %}} with other options.
+
+`max_tree_depth`::
+  When visualizing a {{% docref "lexy::parse_tree" %}}, stop visualization at this depth.
+  Child nodes whose depth exceeds `max_tree_depth` are omitted, which is indicated by a symbol.
+  It must be `<= max_tree_depth_limit`.
+`max_lexeme_width`::
+  When visualizing a {{% docref "lexy::lexeme" %}}, stop visualization after this many "characters".
+  Here a "character" depends on the encoding, e.g. for text based encodings, it is code points.
+  If it is `0`, an unlimited amount of characters is printed.
+`tab_width`::
+  How many spaces are printed for a tab character.
+  If it is `0`, tabs are printed as escaped control characters (e.g. `\t`).
+
+[#visualize_to]
+== Function `lexy::visualize_to`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <std::output_iterator<char> OutputIt>
+    OutputIt visualize_to(OutputIt out, code_point cp,
+                      visualization_options opts = {});                        <1>
+
+    template <std::output_iterator<char> OutputIt, _reader_ Reader>
+    OutputIt visualize_to(OutputIt out, lexeme<Reader> lexeme,
+                      visualization_options opts = {});                        <2>
+
+    template <std::output_iterator<char> OutputIt,
+              _reader_ Reader, typename TokenKind, typename MemoryResource>
+    OutputIt visualize_to(OutputIt out,
+                      const parse_tree<Reader, TokenKind, MemoryResource>& tree,
+                      visualization_options opts = {});                        <3>
+}
+----
+
+<1> Visualize a {{% docref "lexy::code_point" %}}.
+<2> Visualize a {{% docref "lexy::lexeme" %}} by visualizing the individual code points.
+<3> Visualize a {{% docref "lexy::parse_tree" %}} by visualizing each node.
+
+[.lead]
+Visualize a data structure by writing it to `out` using the {{% docref "lexy::visualization_options" %}}.
+
+The format is designed to be human-readable only; it is not documented exactly and subject to change.
+By default, it writes ASCII characters only.
+If `opts` has set the flags `visualize_use_unicode` or `visualize_use_symbols` sets, it can also write UTF-8 encoded code points.
+
+To visualize a code point, it writes it directly if it is a printable ASCII character,
+and otherwise writes its code point value or another escape sequence.
+Non-ASCII or control code points are never written directly for clarity in debugging.
+
+Visualization of a lexeme depends on the {{% encoding %}}.
+For the text-based encodings it writes the individual code points.
+For {{% docref "lexy::byte_encoding" %}}, it writes the bytes as hexadecimal.
+
+To visualize a parse tree, it visualizes each node in a tree format.
+The maximal depth can be controlled by the options.
+
+NOTE: Use {{% docref "lexy::trace" %}} to visualize the parsing process itself.
+
+[#visualize]
+== Function `lexy::visualize`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    class cfile_output_iterator
+    {
+    public:
+        explicit cfile_output_iterator(std::FILE* file);
+
+        // OutputIterator members
+    };
+
+    class stdout_output_iterator { … };
+    class stderr_output_iterator { … };
+
+    template <typename T>
+    void visualize(std::FILE* file, const T& obj,
+                   visualization_options opts = {})
+    {
+        visualize_to(cfile_output_iterator(file), obj, opts);
+    }
+}
+----
+
+[.lead]
+Visualizes a data structure by writing it to `file`.
+
+It uses `cfile_output_iterator`, which is an output iterator that repeatedly calls `std::fputc`, and then forwards to {{% docref "lexy::visualize_to" %}}.
+`stdout_output_iterator` and `stderr_output_iterator` are default-constructible output iterators that always write to `stdout`/stderr` respectively.
+
+{{% godbolt-example "visualize" "Visualize a `lexy::parse_tree`" %}}
+
+[#visualization_display_width]
+== Function `lexy::visualization_display_width`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    std::size_t visualization_display_width(const T& obj,
+                                            visualization_options opts = {});
+}
+----
+
+[.lead]
+Computes the display width for visualizing `obj` using `opts`, which is the number of Unicode code points.
+
+As the only non-ASCII Unicode characters are carefully chosen to occupy one display cell in a monospace font,
+this is the number of characters necessary to underline the visualization result or indent past it.
+

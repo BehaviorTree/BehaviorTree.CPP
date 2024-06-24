@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_COMBINATION_HPP_INCLUDED
@@ -130,7 +130,7 @@ struct _comb : rule_base
 template <typename... R>
 constexpr auto combination(R...)
 {
-    static_assert((lexy::is_branch_rule<R> && ...), "combination() requires a branch rule");
+    LEXY_REQUIRE_BRANCH_RULE(R..., "combination()");
     static_assert((!lexy::is_unconditional_branch_rule<R> && ...),
                   "combination() does not support unconditional branches");
     return _comb<void, void, R...>{};
@@ -141,7 +141,7 @@ constexpr auto combination(R...)
 template <typename... R>
 constexpr auto partial_combination(R...)
 {
-    static_assert((lexy::is_branch_rule<R> && ...), "partial_combination() requires a branch rule");
+    LEXY_REQUIRE_BRANCH_RULE(R..., "partial_combination()");
     static_assert((!lexy::is_unconditional_branch_rule<R> && ...),
                   "partial_combination() does not support unconditional branches");
     // If the choice no longer matches, we just break.

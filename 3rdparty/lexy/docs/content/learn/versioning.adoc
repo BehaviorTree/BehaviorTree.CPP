@@ -1,0 +1,53 @@
+---
+title: Versioning and compatibility policy
+---
+
+lexy uses https://calver.org[calender versioning] according to the following schema:
+
+```
+YYYY.MM.N[-beta]
+```
+
+* `YYYY.MM` the year and month of the release for `N = 0`.
+* `N` the minor/patch number of the release.
+* `-beta` suffix indicating a beta release.
+
+== Major releases
+
+A major release is released when enough features have accumulated, but at least once for each new Unicode version.
+We promise:
+
+* No change in semantics of existing functionality.
+  In particular, all DSL rules will continue to accept the same input as they have in the previous version, and produce the same values.
+  This does _not_ apply to the behavior on invalid input, see below.
+* No removal of functionality unless it has been deprecated in a previous major release.
+* Few build breaking changes: whenever possible, we will add an alternative with a different spelling and deprecate the previous version instead.
+
+We reserve the right to:
+
+* Deprecate existing functionality and remove previously deprecated functionality.
+* Change anything that is not documented or explicitly marked as experimental (enabled by linking `foonathan::lexy::experimental`).
+  In particular, writing custom rules, readers, or parse actions is not guaranteed to work across major releases.
+* Change everything about the extension headers.
+* Change the behavior of rules on invalid input.
+  This includes generated error messages and error recovery.
+  We reserve the right to add error recovery to rules that currently do not have error recovery,
+  remove error recovery of existing rules, or change error recovery.
+  What is considered invalid input does not change, however.
+* Change the ABI.
+* Add new functionality, change the signature of existing functions (in an API compatible way), change transitive includes and implementation details.
+
+== Minor releases
+
+A minor (or patch) release is done to fix bugs or improve existing functionality.
+It increments `N` but leaves `YYYY.MM` unchanged, even if released in a different month.
+Minor releases are fully API and ABI compatible.
+
+We will only add minor releases to the latest major release and do not support multiple major releases at the same time.
+
+== Beta release
+
+We can do a beta release of any major or minor release first.
+We reserve the right to make any changes between the beta release and the final release for new functionality introduced in the beta release.
+Stability guarantees for existing functionality still applies.
+

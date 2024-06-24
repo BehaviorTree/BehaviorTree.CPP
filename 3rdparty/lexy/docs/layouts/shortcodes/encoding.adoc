@@ -1,0 +1,4 @@
+{{- $url := relref . "/reference/encoding#doc" -}}
+{{- $.Page.Scratch.SetInMap "see-also" "rules" (printf "<a href=%s>input encodings</a>" $url) -}}
+link:{{ $url }}[encoding]
+{{- printf "" -}}

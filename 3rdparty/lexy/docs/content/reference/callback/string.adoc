@@ -1,0 +1,76 @@
+---
+header: "lexy/callback/string.hpp"
+entities:
+  "lexy::as_string": as_string
+---
+
+[#as_string]
+== Callback and sink `lexy::as_string`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename String, _encoding_ Encoding = _deduce-encoding-from-string_>
+    constexpr auto as_string;
+}
+----
+
+[.lead]
+Callback and sink to construct the given `String`.
+
+The {{% encoding %}} parameter is only relevant when it needs to encode a {{% docref "lexy::code_point" %}}.
+By default, it is deduced from the character type of `String`.
+The character type of `Encoding` must be compatible with the one from `String`, i.e. the latter must be the primary or one of the secondary character types.
+
+As a callback, it has the following overloads; `A` is `typename String::allocator_type`:
+
+`(lexy::nullopt)`::
+  Returns an empty string by default-constructing it.
+`(String&& str)`::
+  Forwards an existing string unchanged.
+`(lexy::lexeme<Reader> lex)` and `(const A& allocator, lexy::lexeme<Reader> lex)`::
+  Requires that the character type of `lex` is compatible with the character type of `Encoding`.
+  If the iterator type of `lex` is a pointer whose value type is the same as the character type of `String`,
+  returns `String(lex.data(), lex.size())`;
+  otherwise, returns `String(lex.begin(), lex.end())`.
+  The second version passes the `allocator` as last parameter.
+`(Iterator begin, Iterator end)` and `(const A& allocator, Iterator begin, Iterator end)`::
+  Constructs a string from an iterator range directly.
+`(lexy::code_point cp)` and `(const A& allocator, lexy::code_point cp)`::
+  Encodes `cp` in the `Encoding`, which must be ASCII, UTF-8, UTF-16, or UTF-32.
+  Returns `String(begin, end)`, where `[begin, end)` is an iterator range to the encoded representation of `cp`.
+  The second version passes the `allocator` as last parameter.
+
+As a sink, `.sink()` can be called with zero arguments or with one argument of type `String::allocator_type`.
+In the first case, it default constructs an empty container.
+In the second case, it constructs it using the allocator.
+The resulting sink callback has the following overloads and returns the finished string:
+
+`(CharT c)`::
+  Calls `.push_back(c)` on the resulting string.
+  Requires that this is well-formed.
+`(String&& str)`::
+  Calls `.append(std::move(str))` on the resulting string.
+`(lexy::lexeme<Reader> lex)`::
+  Requires that the character type of `lex` is compatible with the character type of `Encoding`.
+  Calls `.append(lex.begin(), lex.end())` on the resulting string.
+`(Iterator begin, Iterator end)`::
+  Calls `.append(begin, end)`.
+`(lexy::code_point cp)`::
+  Encodes `cp` in the `Encoding`, which must be ASCII, UTF-8, UTF-16, or UTF-32.
+  Calls `.append(begin, end)`, where `[begin, end)` is an iterator range to the encoded representation of `cp`, on the resulting string.
+
+It also provides a member function `.case_folding()` that accepts a case folding DSL object like {{% docref "lexy::dsl::ascii::case_folding" %}} or {{% docref "lexy::dsl::unicode::simple_case_folding" %}}.
+It returns a callback where each resulting string will be case folded before returned.
+It requires that `Encoding` is ASCII, UTF-8, UTF-16, or UTF-32.
+
+{{% godbolt-example list_sep "Build a list of characters" %}}
+
+{{% godbolt-example quoted_escape "Parse a string literal" %}}
+
+{{% godbolt-example identifier_case_folded "Parse a case-insensitive identifier" %}}
+
+NOTE: `lexy::as_string<std::string_view>` is a valid callback that can convert a {{% docref "lexy::lexeme" %}} to a `std::string_view`,
+provided that the character types are an exact match and that the iterators of the input are pointers.
+

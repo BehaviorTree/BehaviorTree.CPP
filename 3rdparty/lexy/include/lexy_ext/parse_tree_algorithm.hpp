@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_EXT_PARSE_TREE_ALGORITHM_HPP_INCLUDED
@@ -216,7 +216,7 @@ private:
 
 template <typename Predicate, typename Iterator, typename Sentinel>
 _filtered_node_range(Predicate&& pred, Iterator begin, Sentinel end) noexcept
-    ->_filtered_node_range<std::decay_t<Predicate>, Iterator, Sentinel>;
+    -> _filtered_node_range<std::decay_t<Predicate>, Iterator, Sentinel>;
 
 /// Returns the children that of node that match the predicate.
 ///

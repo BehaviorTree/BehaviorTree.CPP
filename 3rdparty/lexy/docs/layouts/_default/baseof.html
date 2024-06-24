@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang=en-US>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+    {{- block "title"  . -}}
+        {{ if .IsHome }}
+            {{ .Site.Title }}: {{ .Site.Params.tagline }}
+        {{ else }}
+            {{ .Title }} — {{ .Site.Title }}
+        {{ end }}
+    {{- end -}}
+    </title>
+
+    {{ $style := resources.Get "css/style.scss" | resources.ToCSS | resources.Minify }}
+    <style>{{ $style.Content | safeCSS }}</style>
+</head>
+<body>
+    <nav id="menu">
+        <div class="menu-container">
+        <ul id="home">
+            <li>
+                <a href="/">
+                    <span class="title">{{ .Site.Title }}:</span> {{ .Site.Params.tagline }}
+                </a>
+            </li>
+        </ul>
+        <ul id="main">
+        {{- $currentPage := . }}
+        {{- with .Site.Menus.main }}
+        {{- range sort . -}}
+            <li>
+                <a class="{{ if ($currentPage.IsMenuCurrent "main" .) }}active{{ end }}" href="{{ .URL | relURL }}">{{ .Name }}</a>
+            </li>
+        {{- end -}}
+        {{- end -}}
+            <li>
+                <a href="{{ .Site.Params.github }}" title="GitHub">
+                    {{ (resources.Get "icons/github.svg").Content | safeHTML }}
+                </a>
+            </li>
+        </ul>
+        </div>
+    </nav>
+    {{- block "main" . -}}{{- end -}}
+    <footer id="page-footer">
+      <section class="copyright">
+          &copy; <a target="_blank" href="{{ .Site.Params.github_src_prefix }}/LICENSE" title="License">{{ .Site.Copyright }}</a>
+      </section>
+      <section class="poweredby">
+          Made with <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://fontawesome.com/license">Font Awesome</a>.
+      </section>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,119 @@
+---
+header: "lexy/dsl/sign.hpp"
+entities:
+  "lexy::dsl::plus_sign": plus_sign
+  "lexy::dsl::minus_sign": minus_sign
+  "lexy::dsl::sign": sign
+---
+:toc: left
+
+[.lead]
+The `plus_sign`, `minus_sign` and `sign` rules.
+
+== Tag types
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct plus_sign
+    {
+        constexpr operator int() const
+        {
+            return +1;
+        }
+    };
+
+    struct minus_sign
+    {
+        constexpr operator int() const
+        {
+            return -1;
+        }
+    };
+}
+----
+
+[.lead]
+The tag types `plus_sign` and `minus_sign` indicate a plus/minus sign.
+
+They are implicitly convertible to the integer `+1`/`-1`.
+
+TIP: The callback {{% docref "lexy::as_integer" %}} accepts an optional `plus_sign`/`minus_sign` object followed by an integer and returns the correctly signed integer.
+
+[#plus_sign]
+== Rule `lexy::dsl::plus_sign`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto plus_sign;
+}
+----
+
+[.lead]
+`plus_sign` is a rule that parses an optional `+` sign.
+
+Parsing::
+  Tries to match and consume {{% docref "lexy::dsl::lit_c" %}}`<'+'>`.
+  If that fails, succeeds without consuming anything.
+Errors::
+  None.
+Values::
+  If it matched a `+`, an object of type `lexy::plus_sign`.
+  Otherwise, no values.
+
+{{% playground-example plus_sign "A number with an optional plus sign" %}}
+
+[#minus_sign]
+== Rule `lexy::dsl::minus_sign`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto minus_sign;
+}
+----
+
+[.lead]
+`minus_sign` is a rule that parses an optional `-` sign.
+
+Parsing::
+  Tries to match and consume {{% docref "lexy::dsl::lit_c" %}}`<'-'>`.
+  If that fails, succeeds without consuming anything.
+Errors::
+  None.
+Values::
+  If it matched a `-`, an object of type `lexy::minus_sign`.
+  Otherwise, no values.
+
+{{% playground-example minus_sign "A number with an optional minus sign" %}}
+
+[#sign]
+== Rule `lexy::dsl::sign`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto sign;
+}
+----
+
+[.lead]
+`sign` is a rule that parses an optional sign.
+
+Parsing::
+  Tries to match and consume {{% docref "lexy::dsl::lit_c" %}}`<'+'>` or {{% docref "lexy::dsl::lit_c" %}}`<'-'>`.
+  If both fail, succeeds without consuming anything.
+Errors::
+  None.
+Values::
+  If it matched a `+`, an object of type `lexy::plus_sign`.
+  If it matched a `-`, an object of type `lexy::minus_sign`.
+  Otherwise, no values.
+
+{{% godbolt-example sign "A number with an optional plus/minus sign" %}}
+

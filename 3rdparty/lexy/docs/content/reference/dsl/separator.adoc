@@ -1,0 +1,94 @@
+---
+header: "lexy/dsl/separator.hpp"
+entities:
+  "separator": doc
+  "lexy::dsl::sep": sep
+  "lexy::dsl::trailing_sep": trailing_sep
+  "lexy::dsl::ignore_trailing_sep": ignore_trailing_sep
+---
+:toc: left
+
+[.lead]
+The `sep`, `trailing_sep` and `ignore_trailing_sep` separators.
+
+They are used with {{% docref "lexy::dsl::times" %}} and {{% docref "lexy::dsl::list" %}} (and variants thereof) and are not actually rules themselves.
+
+[#sep]
+== Separator `lexy::dsl::sep`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct unexpected_trailing_separator {};
+}
+
+namespace lexy::dsl
+{
+    struct _sep-dsl_ // models _separator_
+    {
+        template <typename Tag>
+        static constexpr _separator_ auto trailing_error;
+    };
+
+    constexpr _sep-dsl_ auto sep(_branch-rule_ rule);
+}
+----
+
+[.lead]
+`sep` indicates a separator between two items.
+
+If specified as a separator, it will parse `rule` between two items,
+but it is an error if `rule` is after the last item.
+In that case, a generic error with tag `lexy::unexpected_trailing_separator` is raised at the position where the separator begins.
+This tag can be overridden by specifying a different tag via `.trailing_error`.
+
+{{% godbolt-example list_sep "Parse a list of letters separated by commas" %}}
+
+NOTE: It is not always possible to check for the existence of a trailing separator.
+If it is not possible, parsing will continue as normal and (presumably) the next rule will fail due to the unexpected separator.
+
+[#trailing_sep]
+== Separator `lexy::dsl::trailing_sep`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _separator_ auto trailing_sep(_branch-rule_ rule);
+}
+----
+
+[.lead]
+`trailing_sep` indicates a separator between two items and optionally after the last item.
+
+If specified as a separator, it will parse `rule` between two items,
+or after the last item.
+If no separator is present after the last item, it is not an error.
+
+{{% godbolt-example times_tsep "Parse three integers separated by comma" %}}
+
+TIP: To create a separator that _must_ be present after every the last item (and every item before that),
+simply add the separator to the item itself.
+
+[#ignore_trailing_sep]
+== Separator `lexy::dsl::ignore_trailing_sep`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _separator_ auto ignore_trailing_sep(_branch-rule_ rule);
+}
+----
+
+[.lead]
+`ignore_trailing_sep` indicates a separator between two items and it can be ignored after the last item.
+
+It can only be used with {{% docref "lexy::dsl::times" %}}.
+If specified as a separator, it will parse `rule` between two items, but makes no attempt to parse it after the last item.
+
+{{% godbolt-example times_isep "Parse three integers separated by comma, twice" %}}
+
+TIP: Use it if the separator can also legally occur after the list.
+

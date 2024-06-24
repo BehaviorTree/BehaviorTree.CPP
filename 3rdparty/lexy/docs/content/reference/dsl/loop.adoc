@@ -1,0 +1,154 @@
+---
+header: "lexy/dsl/loop.hpp"
+entities:
+  "lexy::dsl::loop": loop
+  "lexy::dsl::break_": break_
+  "lexy::dsl::while_": while_
+  "lexy::dsl::while_one": while_one
+  "lexy::dsl::do_while": do_while
+---
+:toc: left
+
+[.lead]
+Rules that loop.
+
+[#loop]
+== Rule `lexy::dsl::loop`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto loop(_rule_ auto rule);
+}
+----
+
+[.lead]
+`loop` is a rule that matches `rule` repeatedly.
+
+Requires::
+  `rule` does not produce any values.
+Parsing::
+  Parses `rule` repeatedly until it either fails or `break_` is parsed.
+Errors::
+  All errors raised by `rule`.
+  It then fails if `rule` has failed.
+Values::
+  None.
+
+{{% playground-example loop "Repeatedly match a choice" %}}
+
+TIP: Use {{% docref "lexy::dsl::while_" %}} if there is a simple exit condition,
+{{% docref "lexy::dsl::list" %}} if the rule should produce values.
+
+WARNING: You must not use {{% docref "lexy::dsl::return_" %}} to exit from a loop.
+
+[#break_]
+== Branch rule `lexy::dsl::break_`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _branch-rule_ auto break_;
+}
+----
+
+[.lead]
+`break_` is a rule that exits from a `loop`.
+
+Requires::
+  It is used inside a `loop` rule.
+(Branch) Parsing::
+  Matches everything without consuming anything.
+  Exits the loop.
+Errors::
+  None.
+Values::
+  None.
+
+[#while_]
+== Rule `lexy::dsl::while_`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto while_(_branch-rule_ auto rule)
+    {
+        return loop(rule | break_);
+    }
+}
+----
+
+[.lead]
+`while_` is a rule that parses the {{% branch-rule %}} `rule` as often as possible.
+
+It is entirely equivalent to `loop(rule | break_)`.
+It can only fail, if `rule` can fail after it decided to select the branch.
+It can accept the empty string if `rule` backtracks on the first iteration.
+
+{{% playground-example while "Parse a word, which can be empty" %}}
+
+TIP: Use {{% docref "lexy::dsl::opt" %}} and {{% docref "lexy::dsl::list" %}} if `rule` produces values.
+
+WARNING: If `rule` does not consume any characters, `while_` will loop forever.
+
+CAUTION: If {{% docref whitespace %}} skipping is enabled, `while_` will skip whitespace after every token of `rule`.
+
+[#while_one]
+== Rule `lexy::dsl::while_one`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _branch-rule_ auto while_one(_branch-rule_ auto rule)
+    {
+        return rule >> while_(rule);
+    }
+}
+----
+
+[.lead]
+`while_one` is a rule that parses `rule` repeatedly, but at least once.
+
+It is entirely equivalent to `rule >> while_(rule)`.
+
+{{% playground-example while_one "Parse a word, which cannot be empty" %}}
+
+TIP: Use {{% docref "lexy::dsl::list" %}} if `rule` produces values.
+
+CAUTION: If {{% docref whitespace %}} skipping is enabled, `while_one` will skip whitespace after every token of `rule`.
+Consider {{% docref "lexy::dsl::identifier" %}}, which does not do that.
+
+[#do_while]
+== Rule `lexy::dsl::do_while`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto do_while(_rule_ auto then, _branch-rule_ auto condition)
+    {
+        return then + while_(condition >> then);
+    }
+
+    constexpr _branch-rule_ auto do_while(_branch-rule_ auto then,
+                                        _branch-rule_ auto condition)
+    {
+        return then >> while_(condition >> then);
+    }
+}
+----
+
+[.lead]
+`do_while` is a rule that parses `then` while `condition` matches, but checks `condition` after `then`.
+
+It is entirely equivalent to `then + while_(condition >> then)` if `then` is not a branch,
+and `then >> while_(condition >> then)` otherwise.
+
+{{% playground-example do_while "Parse a list of non-empty words separated by spaces" %}}
+
+TIP: Use {{% docref "lexy::dsl::list" %}} if `then` produces values with `condition` as separator.
+

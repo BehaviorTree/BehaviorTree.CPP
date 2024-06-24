@@ -1,0 +1,4 @@
+{{- $url := relref . "/reference/action/validate#error-callback" -}}
+{{- $.Page.Scratch.SetInMap "see-also" "rules" (printf "<a href=%s>error callback</a>" $url) -}}
+link:{{ $url }}[error callback]
+{{- printf "" -}}

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_UNTIL_HPP_INCLUDED
@@ -39,9 +39,9 @@ struct _until_eof : token_base<_until_eof<Condition>, unconditional_branch_base>
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr std::true_type try_parse(Reader reader)
         {
@@ -64,7 +64,7 @@ struct _until_eof : token_base<_until_eof<Condition>, unconditional_branch_base>
                 reader.bump();
             }
 
-            end = reader.position();
+            end = reader.current();
             return {};
         }
     };
@@ -76,9 +76,9 @@ struct _until : token_base<_until<Condition>>
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr bool try_parse(Reader reader)
         {
@@ -90,7 +90,7 @@ struct _until : token_base<_until<Condition>>
                 if (lexy::try_match_token(Condition{}, reader))
                 {
                     // It did match, we're done at that end.
-                    end = reader.position();
+                    end = reader.current();
                     return true;
                 }
 
@@ -100,7 +100,7 @@ struct _until : token_base<_until<Condition>>
                 if (reader.peek() == Reader::encoding::eof())
                 {
                     // It did, so we did not succeed.
-                    end = reader.position();
+                    end = reader.current();
                     return false;
                 }
 
@@ -117,7 +117,7 @@ struct _until : token_base<_until<Condition>>
             // We need to trigger the error `Condition` would.
             // As such, we try parsing it, which will report an error.
 
-            reader.set_position(end);
+            reader.reset(end);
             LEXY_ASSERT(reader.peek() == Reader::encoding::eof(),
                         "forgot to set end in try_parse()");
 

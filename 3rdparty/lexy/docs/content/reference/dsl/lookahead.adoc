@@ -1,0 +1,53 @@
+---
+header: "lexy/dsl/lookahead.hpp"
+entities:
+  "lexy::dsl::lookahead": lookahead
+---
+
+[#lookahead]
+== Branch rule `lexy::dsl::lookahead`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct lookahead_failure {};
+}
+
+namespace lexy::dsl
+{
+    struct lookahead // models _branch-rule_
+    {
+        template <typename Tag>
+        static constexpr _lookahead_ error;
+    };
+
+    constexpr _lookahead_ lookahead(auto needle, auto end);
+}
+----
+
+[.lead]
+`lookahead` is a {{% branch-rule %}} that checks if `needle` is found before `end`.
+
+Requires::
+  * The {{% encoding %}} of the input is a char encoding.
+  * `needle` and `end` are {{% literal-rule %}}s or {{% docref "lexy::dsl::literal_set" %}}.
+Parsing::
+  If it can match `needle` before `end` is matched or before EOF is reached, the branch is taken without having consumed any input.
+  Otherwise, it raises an error.
+Branch parsing::
+  Same as parsing, but backtracks instead of raising an error.
+Errors::
+  A generic error with the specified `Tag` or `lexy::lookahead_failure` at the position where it started to match the lookahead rule.
+  It then recovers without consuming additional input.
+Values::
+  None.
+
+{{% godbolt-example lookahead "Look for an `=` sign before deciding on a branch" %}}
+
+NOTE: Automatic {{% docref whitespace %}} skipping is disabled while parsing `needle` or `end`.
+
+CAUTION: This rule requires backtracking, which can slow down parsing.
+
+TIP: Use {{% docref "lexy::dsl::peek" %}} if you want to check that `needle` matches at the current position.
+

@@ -1,0 +1,193 @@
+---
+header: "lexy/input_location.hpp"
+entities:
+  "lexy::input_location": input_location
+  "lexy::input_location_anchor": get_input_location
+  "lexy::get_input_location": get_input_location
+  "lexy::code_unit_location_counting": counting
+  "lexy::code_point_location_counting": counting
+  "lexy::byte_location_counting": counting
+  "lexy::input_line_annotation": input_line_annotation
+  "lexy::get_input_line_annotation": input_line_annotation
+---
+:toc: left
+
+[.lead]
+Converts a position (iterator) into a human readable location (line/column number).
+
+[#input_location]
+== Class `lexy::input_location`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_input_ Input, typename Counting = _see-below_>
+    class input_location
+    {
+    public:
+        // Location of the beginning.
+        constexpr explicit input_location(const Input& input);
+
+        constexpr input_location_anchor<Input> anchor() const;
+
+        constexpr unsigned line_nr() const;
+        constexpr unsigned column_nr() const;
+
+        constexpr auto position() const
+          -> lexy::input_reader<Input>::iterator;
+
+        // operator==, operator!=, operator<, operator<=, operator>=, operator>
+    };
+}
+----
+
+[.lead]
+A human readable location in the input.
+
+It combines the iterator based position with line/column number, according to some `Counting` strategy.
+The `Counting` strategy defaults to {{% docref "lexy::code_unit_location_counting" %}} for text and {{% docref "lexy::byte_location_counting" %}} for bytes.
+
+The constructor constructs an input location for the beginning of the input.
+`anchor()` returns the latest anchor before that location to start the search.
+
+NOTE: Use {{% docref "lexy::get_input_location" %}} to create location objects.
+
+[#get_input_location]
+== Function `lexy::get_input_location`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_input_ Input>
+    class input_location_anchor
+    {
+    public:
+        // Anchor to the beginning.
+        constexpr explicit input_location_anchor(const Input& input);
+    };
+
+    template <typename Counting = _see-below_>
+    constexpr auto get_input_location(const _input_ auto& input,
+                                lexy::input_reader<_input_>::iterator position,
+                                input_location_anchor<_input_> anchor = _see-below_)
+        -> input_location<Input, Counting>;
+}
+----
+
+[.lead]
+Gets the {{% docref "lexy::input_location" %}} for a position.
+
+This is a linear search over the input that starts at the `anchor`.
+If none is provided, it starts at the beginning.
+As an optimization, pass an anchor of an existing location that is before `position`.
+
+The result will be the location for the position as determined by the `Counting` strategy.
+The `Counting` strategy defaults to {{% docref "lexy::code_unit_location_counting" %}} for text and {{% docref "lexy::byte_location_counting" %}} for bytes.
+Calling `position()` on the resulting location will be the beginning of the last column before `position`.
+
+NOTE: If `position` points inside a `\r\n` sequence, for example, the resulting `position()` will point to the initial `\r`.
+
+[#counting]
+== Counting strategies `lexy::{zwsp}code{zwsp}_unit{zwsp}_location{zwsp}_counting`, `lexy::{zwsp}code{zwsp}_point{zwsp}_location{zwsp}_counting`, `lexy::{zwsp}byte{zwsp}_location{zwsp}_counting`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct code_unit_location_counting {};
+    struct code_point_location_counting {};
+
+    template <std::size_t LineWidth = 16>
+    struct byte_location_counting {};
+}
+----
+
+[.lead]
+Strategies for counting column and line numbers.
+
+`code_unit_location_counting`::
+  Increments the column for every code unit; increments the line for every {{% docref "lexy::dsl::newline" %}}.
+  For example, UTF-8 encoded `"abä"` is a single line with four columns (two for each code unit of `ä`).
+  This is the default for text.
+`code_point_location_counting`::
+  Increments the column for every {{% docref "lexy::dsl::code_point" %}}; increments the line for every {{% docref "lexy::dsl::newline" %}}.
+  For example, UTF-8 encoded `"abä"` is a single line with three columns.
+`byte_location_counting`::
+  Increments the column for every byte (requires {{% docref "lexy::byte_encoding" %}}); increments the line for every `LineWidth` bytes.
+  This is the default for byte input.
+
+See https://www.foonathan.net/2021/02/column/[my blog post] for an in-depth discussion about the choice of column units.
+
+[#input_line_annotation]
+== Function `lexy::get_input_line_annotation`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_input_ Input>
+    struct input_line_annotation
+    {
+        lexy::lexeme_for<Input> before;
+        lexy::lexeme_for<Input> annotated;
+        lexy::lexeme_for<Input> after;
+
+        bool truncated_multiline;
+        bool rounded_end;
+    };
+
+    template <_input_ Input, typename Counting>
+    constexpr auto get_input_line_annotation(const Input& input,
+                                 const input_location<Input, Counting>& begin_location,
+                                 lexy::input_reader<Input>::iterator end)
+      -> input_line_annotation<Input>;
+
+    template <typename Input, typename Counting>
+    constexpr auto get_input_line_annotation(const Input& input,
+                                 const input_location<Input, Counting>& location,
+                                 std::size_t                            size)
+      -> input_line_annotation<Input>;
+    {
+        auto end = std::next(location.position(), size);
+        return get_input_line_annotation(input, location, end);
+    }
+}
+----
+
+[.lead]
+Computes the part of the input referenced by a `[begin_location.position(), end)` with surrounding input.
+
+The result is an object of type `input_line_annotation` with the following values:
+
+`before`::
+  A {{% docref "lexy::lexeme" %}} for the range `[line_begin, begin_location.position())`,
+  where `line_begin` is the beginning of the line of `begin_location`, as determined by `Counting`.
+
+`annotated`::
+  A {{% docref "lexy::lexeme" %}} for the range `[begin_location.position(), modified_end)`.
+  If `begin_location.position() == end`, `modified_end` is an incremented `end`:
+
+  * If `end` points to the beginning or inside of the newline, as determined by `Counting`,
+    it is set to the end of the newline.
+  * Otherwise, it is set to the end of the current code point.
+
++
+If `end` is on a different line then `begin_location`, `modified_end` is the end of the newline, as determined by `Counting`.
+Otherwise, `modified_end` is the end of the code point `end` points or multi character newline.
+
+`after`::
+  A {{% docref "lexy::lexeme" %}} for the range `[modified_end, line_end)`,
+  where `line_end` is either the position of the newline or the end of the newline to ensure `modified_end <= line_end`,
+  as determined by `Counting`.
+
+`truncated_multiline`::
+  `true` if `end` was on a different line than `begin_location`, `false` otherwise.
+`rounded_end`::
+  `true` if `end` points inside a code point and needed to be adjusted.
+
+TIP: Use this function for error message generation.
+Use {{% docref "lexy::visualize" %}} to print `before`, `annotated`, `after`;
+and {{% docref "lexy::visualization_display_width" %}} to compute the indent below `before` and the number of underline characters for `annotated`.
+

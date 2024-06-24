@@ -1,0 +1,80 @@
+---
+header: "lexy/callback/fold.hpp"
+entities:
+  "lexy::fold": fold
+  "lexy::fold_inplace": fold_inplace
+  "lexy::count": count
+---
+:toc: left
+
+[.lead]
+Sinks that fold over the items.
+
+[#fold]
+== Sink `lexy::fold`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T, typename Arg = T, typename ... Op>
+    constexpr _sink<>_ auto fold(Arg&& init, Op&& ... op);
+}
+----
+
+[.lead]
+Sink that folds over all arguments.
+
+When `sink()` is called, creates a `T result` by constructing it from `T(init)`, if that is well-formed, and invoking `init()` otherwise.
+Every time the sink callback is invoked, folds the arguments via `result = std::invoke(make-overloaded(op...), std::move(result), args...)`.
+The final value of `result` is returned by `finish()`.
+
+{{% godbolt-example "fold" "Parse a list of points and sum the x components" %}}
+
+NOTE: Usually with fold algorithms, `op` is a binary function.
+As the `operator()` of the sink callback can take arbitrary arguments, this is not necessarily the case here.
+The first argument will always be the current `result`, all other arguments are received from the sink callback.
+
+TIP: Use {{% docref "lexy::callback" %}} to use `fold` as a callback.
+
+[#fold_inplace]
+== Sink `lexy::fold_inplace`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T, typename Arg = T, typename ... Op>
+    constexpr _sink<>_ auto fold_inplace(Arg&& init, Op&& ... op);
+}
+----
+
+[.lead]
+Sink that folds over all arguments, modifying the current value.
+
+When `sink()` is called, creates a `T result` by constructing it from `T(init)`, if that is well-formed, and invoking `init()` otherwise.
+Every time the sink callback is invoked, folds the arguments via `std::invoke(make-overloaded(op...), result, args...)`,
+expecting that `op` modifies `result` to the new value.
+The final value of `result` is returned by `finish()`.
+
+{{% godbolt-example "fold_inplace" "Parse a list of numbers, but store them in reverse" %}}
+
+NOTE: `lexy::fold` accepts `operator+`, `lexy::fold_inplace` accepts `operator+=`.
+
+[#count]
+== Sink `lexy::count`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    constexpr _sink<>_ auto count =
+    = fold_inplace<std::size_t>(0, [](std::size_t& result, auto&&...) { ++result; });
+}
+----
+
+[.lead]
+Counts the number of invocation of the sink callback.
+
+It is entirely equivalent to the `lexy::fold_inplace` call specified above.
+

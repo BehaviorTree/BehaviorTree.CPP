@@ -1,0 +1,103 @@
+---
+header: "lexy/dsl/byte.hpp"
+entities:
+  "lexy::dsl::bit": doc
+  "lexy::dsl::bit::_0": bit01
+  "lexy::dsl::bit::_1": bit01
+  "lexy::dsl::bit::nibble": bit_nibble
+  "lexy::dsl::bit::_": bit_any
+  "lexy::dsl::bit::any": bit_any
+  "lexy::dsl::bits": bits
+---
+:toc: left
+
+[.lead]
+Rules that match specific bits.
+
+The inputs all work on byte boundaries, so it is not possible to match and consume individual bits.
+However, the {{% docref "lexy::dsl::bits" %}} rule allows consuming 8 (specific) bits at a time.
+To specify bit value, there are special bit rules in namespace `lexy::dsl::bit`.
+
+[#bit01]
+== Bit rules `lexy::dsl::bit::_0` and `lexy::dsl::bit::_1`
+
+{{% interface %}}
+----
+namespace lexy::dsl::bit
+{
+    constexpr _bit-rule_ auto _0;
+    constexpr _bit-rule_ auto _1;
+}
+----
+
+[.lead]
+`_0` and `_1` are bit rules that match a zero/one bit.
+
+They specify one bit each.
+
+[#bit_nibble]
+== Bit rule `lexy::dsl::bit::nibble`
+
+{{% interface %}}
+----
+namespace lexy::dsl::bit
+{
+    template <unsigned Value>
+    constexpr _bit-rule_ auto nibble;
+}
+----
+
+[.lead]
+`nibble` is a bit rule that matches a specific nibble.e. four bits.
+
+It requires that `0 <= Value <= 0xF`.
+It then matches the specified four bits of `Value`.
+
+[#bit_any]
+== Bit rules `lexy::dsl::bit::any` and `lexy::dsl::bit::_`
+
+{{% interface %}}
+----
+namespace lexy::dsl::bit
+{
+    template <unsigned N>
+    constexpr _bit-rule_ auto any;
+
+    constexpr _bit-rule_ auto _ = any<1>;
+}
+----
+
+[.lead]
+`any` is a bit rule that matches `N > 0` bits of arbitrary value.
+
+It specifies `N` bits.
+
+== Token rule `lexy::dsl::bits`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _token-rule_ auto bits(_bit-rule_ auto ... bits);
+}
+----
+
+[.lead]
+`bits` is a {{% token-rule %}} that matches a byte with the specified bit values.
+
+Requires::
+  In total, `bits` specify exactly eight bit values.
+  The {{% encoding %}} is `lexy::byte_encoding`.
+Matching::
+  Matches and consumes one byte.
+  It then checks that the byte has the specified bits, by applying each bit rule in turn.
+  From left to right, bit rules specify the most significant bit (e.g. the sign bit) down to the least significant bit (e.g. the even/odd bit).
+Errors::
+  {{% docref "lexy::expected_char_class" %}} (`"bits"`):
+  if the input was at EOF or the byte value does not match the pattern specified by the bits.
+  The rule then fails.
+
+{{% godbolt-example bits "Manually match a UTF-8 code point" %}}
+
+TIP: Combine it with e.g. {{% docref "lexy::dsl::bint8" %}} to match an integer with specified bits set.
+

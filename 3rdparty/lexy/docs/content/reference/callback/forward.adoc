@@ -1,0 +1,32 @@
+---
+header: "lexy/callback/forward.hpp"
+entities:
+  "lexy::forward": forward
+---
+
+[#forward]
+== Callback `lexy::forward`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    constexpr _callback_ auto forward;
+
+    template <>
+    constexpr _callback_ auto forward<void>;
+}
+----
+
+[.lead]
+`lexy::forward` is a callback that forwards an existing object.
+
+The primary template accepts `const T&` and `T&&` and forwards them as a `T`.
+
+The specialization for `void` is both a callback and a sink.
+As a callback it accepts no arguments or a single argument of type {{% docref "lexy::nullopt" %}}, and does nothing to return `void`.
+As a sink, it can be invoked multiple times with the same arguments, doing nothing and finally returning `void`.
+
+{{% godbolt-example "true_false" "Forward the value of child productions" %}}
+

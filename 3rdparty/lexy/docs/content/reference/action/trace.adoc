@@ -1,0 +1,110 @@
+---
+header: "lexy/action/trace.hpp"
+entities:
+  "lexy::trace_to": trace
+  "lexy::trace": trace
+  "lexy::dsl::debug": debug
+  "LEXY_DEBUG": debug
+---
+:toc: left
+
+[.lead]
+Visualize the parsing process.
+
+[#parse]
+== Action `lexy::trace` and `lexy::trace_to`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename State, typename Input, typename OutputIt, typename TokenKind = void>
+    struct trace_action;
+
+    template <_production_ Production, typename TokenKind = void,
+              std::output_iterator<char> OutputIt>
+    OutputIt trace_to(OutputIt out, const auto _input_& input,
+                      visualization_options opts = {});
+
+    template <_production_ Production, typename TokenKind = void,
+              std::output_iterator<char> OutputIt, typename ParseState>
+    OutputIt trace_to(OutputIt out, const auto _input_& input,
+                      ParseState& parse_state,
+                      visualization_options opts = {});
+    template <_production_ Production, typename TokenKind = void,
+              std::output_iterator<char> OutputIt, typename ParseState>
+    OutputIt trace_to(OutputIt out, const auto _input_& input,
+                      const ParseState& parse_state,
+                      visualization_options opts = {});
+
+    template <_production_ Production, typename TokenKind = void>
+    void trace(std::FILE* file, const auto _input_& input,
+               visualization_options opts = {});
+
+    template <_production_ Production, typename TokenKind = void,
+              typename ParseState>
+    void trace(std::FILE* file, const auto _input_& input,
+               ParseState& parse_state,
+               visualization_options opts = {});
+    template <_production_ Production, typename TokenKind = void,
+              typename ParseState>
+    void trace(std::FILE* file, const auto _input_& input,
+               const ParseState& parse_state,
+               visualization_options opts = {});
+}
+----
+
+[.lead]
+An action that traces the events of parsing `Production` on `input` and visualizes them.
+
+The first two overloads write the events to `out`; the last two to `file`.
+Like {{% docref "lexy::visualize_to" %}}, the output is meant to be human-readable only.
+It is not documented exactly and subject to change.
+
+The events it reports are:
+
+* Whenever parsing of a production starts or is finished.
+* Whenever parsing of a production starts in a branch condition and is then canceled as the branch couldn't be taken.
+* Whenever a token is parsed.
+* Whenever parsing needs to backtrack to an earlier position.
+* Whenever an error is encountered.
+* Whenever non-trivial error recovery starts, finishes or fails,
+  e.g. by a {{% docref "lexy::dsl::try_" %}} rule.
+* Whenever a {{% docref "lexy::dsl::debug" %}} rule is matched.
+
+For each event, the line and column information in the input is given.
+Events are structured in a hierarchy like {{% docref "lexy::parse_tree" %}}.
+
+{{% playground-example "trace" "Trace parsing of a grammar" "trace" %}}
+
+[#debug]
+== Rule `lexy::dsl::debug`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <auto Str>
+    constexpr _rule_ auto debug;
+}
+
+#define LEXY_DEBUG(Str) lexy::dsl::debug<Str>
+----
+
+[.lead]
+Creates a debug event for {{% docref "lexy::trace" %}}.
+
+Parsing::
+  Always succeeds without consuming anything.
+Errors::
+  None.
+Values::
+  None.
+
+It generates a debug event at the current input position with the associated message `Str`.
+This is only meaningful for {{% docref "lexy::trace" %}} and is ignored otherwise.
+See an example there.
+
+The macro `LEXY_DEBUG(Str)` is equivalent to `debug<Str>`, except that it also works on older compilers that do not support C++20's extended NTTPs.
+Use this instead of `debug<Str>` if you need to support them.
+

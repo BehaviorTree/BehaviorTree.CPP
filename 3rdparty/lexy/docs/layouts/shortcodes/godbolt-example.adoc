@@ -1,0 +1,38 @@
+{{ $id      := .Get 0 }}
+{{ $source  := ($id | printf "examples/%s.cpp"   | resources.Get).Content | chomp }}
+
+{{ $input          := "" }}
+{{ $input_resource := ($id | printf "examples/%s.input" | resources.Get) }}
+{{ if $input_resource }}
+  {{ $input = $input_resource.Content | chomp }}
+{{ end }}
+
+{{ $full_source   := $source | replaceRE "//({|})\\n?" "" }}
+{{ $inline_source := $source | replaceRE "(?s:.*//{\n(.*)//}.*)" "$1"}}
+
+{{ $lexy        := dict "id" "lexy" "version" "trunk" }}
+{{ $compiler    := dict "id" "clang_trunk" "libs" (slice $lexy) "options" "-std=c++20" }}
+
+{{ $executor := "" }}
+{{ if findRE "^ARGV:" $input }}
+  {{ $executor = dict "compiler" $compiler "arguments" (replaceRE "^ARGV:" "" $input ) "argumentsVisible" true }}
+{{ else }}
+  {{ $executor = dict "compiler" $compiler "stdin" $input "stdinVisible" (ne $input "") }}
+{{ end }}
+
+{{ $session     := dict "id" 1 "language" "c++" "source" $full_source "compilers" (slice) "executors" (slice $executor) }}
+{{ $clientstate := dict "sessions" (slice $session) }}
+
+{{ $clientstate_b64 := replace ($clientstate | jsonify | base64Encode) "/" "%2F" }}
+
+.{{ .Get 1 }}
+====
+
+[.godbolt-example]
+.+++<a href="https://godbolt.org/clientstate/{{ $clientstate_b64 }}", title="Try it online">{{ (resources.Get "icons/play.svg").Content | safeHTML }}</a>+++
+[source,cpp]
+----
+{{ $inline_source | safeHTML }}
+----
+====
+

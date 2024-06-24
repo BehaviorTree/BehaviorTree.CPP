@@ -1,0 +1,140 @@
+---
+header: "lexy/dsl/parse_tree_node.hpp"
+experimental: true
+entities:
+  "lexy::dsl::tnode": tnode
+  "lexy::dsl::pnode": pnode
+---
+:toc: left
+
+[.lead]
+Rules for parsing a {{% docref "lexy::parse_tree_input" %}}.
+
+{{% godbolt-example "parse_tree_parsing" "Re-parse a parse tree" %}}
+
+[#tnode]
+== Rule DSL `lexy::dsl::tnode` {{< experimental >}}
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct expected_token_end {};
+}
+
+namespace lexy::dsl
+{
+    class _tnode-dsl_ // models _token-rule_
+    {
+    public:
+        constexpr _branch-rule_ operator()(_rule_ auto lexeme_rule) const;
+    };
+
+    template <auto TokenKind>
+    constexpr auto tnode = _tnode-dsl_{};
+}
+----
+
+[.lead]
+`tnode` is a {{% token-rule %}} and DSL to match a token node in a {{% docref "lexy::parse_tree_input" %}}.
+
+If used in the form `tnode<TokenKind>`, it is a token rule that matches a token node with the given kind.
+If used in the form `tnode<TokenKind>(lexeme_rule)`, it is a {{% branch-rule %}} that also matches the lexeme.
+
+=== Token rule `lexy::dsl::tnode`
+
+{{% interface %}}
+----
+template <auto TokenKind>
+constexpr auto tnode = _tnode-dsl_{};
+----
+
+Matching::
+  If the current parse tree node in the input is a token node with the specified `TokenKind`, consumes it.
+  Otherwise, fails.
+Errors::
+  {{% docref "lexy::expected_char_class" %}} with the name of the token kind, at the starting reader position.
+Parse tree::
+  A single token node that contains the node of the input parse tree with the same token kind.
+
+=== Branch rule `lexy::dsl::tnode(lexeme_rule)`
+
+{{% interface %}}
+----
+constexpr _branch-rule_ operator()(_rule_ auto lexeme_rule) const;
+----
+
+Parsing::
+  Parses the corresponding `lexy::dsl::tnode` token rule, then `lexeme_rule` on the lexeme of that token node.
+Branch parsing::
+  Tries to parse the corresponding `lexy::dsl::tnode` token rule and backtracks if that backtracks.
+  Then parses `lexeme_rule` on the lexeme of that token node.
+Errors::
+  * {{% docref "lexy::expected_char_class" %}} with the name of the token kind, at the starting reader position during non-branch parsing when the node did not match. The rule then fails.
+  * All errors raised when parsing `lexeme_rule` on the lexeme. The rule then recovers by doing nothing, as the lexeme of the node is not part of the input anyway.
+  * `lexy::expected_token_end` if `lexeme_rule` did not consume the entire lexeme of the node. The rule then recovers by doing nothing.
+
+NOTE: `lexeme_rule` matches characters, not other nodes.
+
+[#pnode]
+== Rule DSL `lexy::dsl::pnode` {{< experimental >}}
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct expected_production_end {};
+}
+
+namespace lexy::dsl
+{
+    class _pnode-dsl_ // models _token-rule_
+    {
+    public:
+        constexpr _branch-rule_ operator()(_rule_ auto child_rule) const;
+    };
+
+    template <_production_ Production>
+    constexpr auto pnode = _pnode-dsl_{};
+}
+----
+
+[.lead]
+`pnode` is a {{% token-rule %}} and DSL to match a production node in a {{% docref "lexy::parse_tree_input" %}}.
+
+If used in the form `pnode<Production>`, it is a token rule that matches a `Production` node.
+If used in the form `pnode<Production>(child_rule)`, it is a {{% branch-rule %}} that also matches the children of the node.
+
+=== Token rule `lexy::dsl::pnode`
+
+{{% interface %}}
+----
+template <typename Production>
+constexpr auto pnode = _pnode-dsl_{};
+----
+
+Matching::
+  If the current parse tree node in the input is a production node for `Production`, consumes it.
+  Otherwise, fails.
+Errors::
+  {{% docref "lexy::expected_char_class" %}} with the name of the production, at the starting reader position.
+
+=== Branch rule `lexy::dsl::pnode(child_rule)`
+
+{{% interface %}}
+----
+constexpr _branch-rule_ operator()(_rule_ auto child_rule) const;
+----
+
+Parsing::
+  Parses the corresponding `lexy::dsl::pnode` token rule, then `child_rule` on the children of that production node.
+Branch parsing::
+  Tries to parse the corresponding `lexy::dsl::pnode` token rule and backtracks if that backtracks.
+  Then parses `child_rule` on the children of that production node.
+Errors::
+  * {{% docref "lexy::expected_char_class" %}} with the name of the production, at the starting reader position during non-branch parsing when the node did not match. The rule then fails.
+  * All errors raised when parsing `child_rule` on the children. The rule then recovers by doing nothing, as the children of the node are not part of the input anyway.
+  * `lexy::expected_production_end` if `child_rule` did not consume all children of the node. The rule then recovers by doing nothing.
+
+NOTE: `child_rule` is executed on another `lexy::parse_tree_input` with the matched node as root.
+

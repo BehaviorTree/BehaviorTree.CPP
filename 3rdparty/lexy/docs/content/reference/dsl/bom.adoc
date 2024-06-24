@@ -1,0 +1,46 @@
+---
+header: "lexy/dsl/bom.hpp"
+entities:
+  "lexy::dsl::bom": bom
+---
+
+[#bom]
+== Literal rule `lexy::dsl::bom`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <typename Encoding, lexy::encoding_endianness Endianness>
+    constexpr _literal-rule_ auto bom;
+}
+----
+
+[.lead]
+`bom` is a {{% literal-rule %}} that matches the https://en.wikipedia.org/wiki/Byte_order_mark[byte order mark (BOM)] of the given {{% encoding %}} in the given {{% docref "lexy::encoding_endianness" %}}.
+
+It is equivalent to the {{% docref "lexy::dsl::lit_b" %}} rule given in the table above.
+If the combination of `Encoding` and `Endianness` is not listed, it succeeds without matching anything.
+
+[%collapsible]
+.The possible BOMs
+====
+|===
+| Encoding | Endianness | BOM
+
+| UTF-8    | _ignored_  | `lit_b<0xEF, 0xBB, 0xBF>`
+| UTF-16   | little     | `lit_b<0xFF, 0xFE>`
+| UTF-16   | big        | `lit_b<0xFE, 0xFF>`
+| UTF-32   | little     | `lit_b<0xFF, 0xFE, 0x00, 0x00>`
+| UTF-32   | big        | `lit_b<0x00, 0x00, 0xFE, 0xFF>`
+
+|===
+====
+
+{{% godbolt-example bom "Skip an optional UTF-8 BOM" %}}
+
+CAUTION: As a token rule, it matches whitespace immediately following the BOM.
+As such, the rule is best used in contexts where automatic whitespace skipping is disabled.
+
+NOTE: When using `lexy::read_file()` as input, BOM has been taken care of by default.
+

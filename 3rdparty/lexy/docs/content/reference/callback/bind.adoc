@@ -1,0 +1,176 @@
+---
+header: "lexy/callback/bind.hpp"
+entities:
+  "lexy::values": values
+  "lexy::nth_value": nth_value
+  "lexy::placeholders": nth_value
+  "lexy::parse_state": parse_state
+  "lexy::bind": bind
+  "lexy::bind_sink": bind_sink
+---
+:toc: left
+
+[.lead]
+Bind parameters of a callback or sink.
+
+[#values]
+== Placeholder `lexy::values`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    constexpr auto values;
+}
+----
+
+[.lead]
+A placeholder that expands to all values produced by a rule unchanged.
+
+In a bound call of the form `bound[state](args...)`, expands to `args...`.
+The arguments are forwarded unchanged and in the same order.
+This happens in addition to any {{% docref "lexy::nth_value" %}} expansion.
+
+{{% godbolt-example "bind-values" "Emulate `std::bind_front()`" %}}
+
+[#nth_value]
+== Placeholder `lexy::nth_value`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct _nth_value-impl_
+    {
+        template <typename Fn>
+        constexpr _nth_value-impl_ map(Fn&& fn) const;
+
+        template <typename Arg>
+        constexpr _nth_value-impl_ or_(Arg&& fallback) const;
+        template <typename Arg>
+        constexpr _nth_value-impl_ operator||(Arg&& fallback) const;
+
+        constexpr _nth_value-impl_ or_default() const;
+    };
+
+    template <std::size_t N>
+    constexpr _nth_value-impl_ nth_value;
+
+    inline namespace placeholders
+    {
+        constexpr auto _1 = nth_value<1>;
+        …
+        constexpr auto _8 = nth_value<8>;
+    }
+}
+----
+
+[.lead]
+A placeholder that expands to the Nth value produced by a rule.
+
+In a bound call of the form `bound[state](args...)`, expands to the Nth argument (1-indexed).
+It is ill-formed if there are fewer than N arguments.
+For convenience, placeholders 1 through 8 are pre-defined.
+
+The member function `map()` takes an invocable `fn` and returns a placeholder that expands to the transformed value.
+In a bound call of the form `bound[state](args...)`, expands to the `std::invoke(fn, arg)`, where `arg` is the Nth argument.
+
+The member function `or_()` or the `operator||` overload (which can be invoked as `lexy::_1 || fallback` and `lexy::_1 or fallback`) take a `fallback` value and return a placeholder that expands to the Nth value or `fallback`.
+In a bound call of the form `bound[state](args...)` with fewer than N arguments,
+expands to `fallback`.
+In a bound call of the form `bound[state](args...)` where the Nth argument is of type {{% docref "lexy::nullopt" %}}, expands to `fallback`.
+Otherwise, expands to the Nth argument.
+
+The member function `or_default()` returns a placeholder that expands to the Nth value or a default-constructed object.
+It is equivalent to `or_()` with a fallback value that is implicitly convertible to any other type by default constructing it.
+
+`map()` and one of `or_()`, `operator||`, and `or_default()` can be combined.
+If that is the case, the fallback value is not transformed by `fn` but produced as specified.
+
+{{% godbolt-example "bind-reorder-map" "Reorder and map arguments" %}}
+
+{{% godbolt-example "bind-fallback" "Produce a different value from `lexy::opt`" %}}
+
+[#parse_state]
+== Placeholder `lexy::parse_state`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct _parse_state-impl_
+    {
+        template <typename Fn>
+        constexpr auto map(Fn&& fn) const;
+    };
+
+    constexpr _parse_state-impl_ parse_state;
+}
+----
+
+[.lead]
+A placeholder that expands to the parse state.
+
+In a bound call of the form `bound[state](args...)`, expands to `state`.
+It is ill-formed if no `state` was provided to the callback.
+
+The member function `map()` takes an invocable `fn` and returns a placeholder that expands to the transformed parse state.
+In a bound call of the form `bound[state](args...)`, expands to the `std::invoke(fn, state)`.
+
+{{% godbolt-example "bind-parse_state" "Access additional state in a callback" %}}
+
+[#bind]
+== Callback `lexy::bind`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename ... BoundArgs>
+    constexpr _callback_ auto bind(_callback_ auto callback, BoundArgs&&... args);
+}
+----
+
+[.lead]
+Bind parameters or transform and reorder arguments of a callback.
+
+When invoked as `bound[state](args...)` it invokes `callback` with the bound arguments.
+If the bound argument is a placeholder, it is expanded as described there.
+Otherwise, the bound argument is forwarded as-is.
+
+{{% godbolt-example "bind-constant" "Bind all parameters" %}}
+
+CAUTION: Arguments to the bound callback are silently discarded if they're not needed by a placeholder.
+
+[#bind_sink]
+== Sink `lexy::bind_sink`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename ... SinkArgs, typename ... BoundArgs>
+    constexpr _sink_<> auto bind_sink(_sink_<SinkArgs...> auto sink, BoundArgs&&... args);
+}
+----
+
+[.lead]
+Bind parameters of the `.sink()` member function.
+
+It returns a sink whose `sink()` member function forwards to `sink` and returns the same sink callback.
+However, `sink.sink()` is invoked by the bound arguments.
+
+A call to `bound.sink()` results in a call to `sink.sink(args...)`, where no argument must be a placeholder.
+A call to `bound.sink(state)` results in a call to `sink.sink()` with the expanded arguments:
+If the argument is a placeholder, it is expanded as described there but note that there are no values, only a state parameter.
+Otherwise, the bound argument is forwarded as-is.
+
+A call to `bound(...)` will be forwarded as-is onto `sink(...)`, allowing a bound sink to be used with rules like `opt_list` from {{% docref "lexy::dsl::terminator" %}}.
+
+{{% godbolt-example "bind_sink-parse_state" "Construct the list of integers with a custom allocator" %}}
+
+TIP: Specifically for passing allocators to {{% docref "lexy::as_list" %}} or {{% docref "lexy::as_collection" %}}, use its `.allocator()` function instead.
+This also uses the allocator if used as a callback.
+
+NOTE: The bound arguments must either be constants or {{% docref "lexy::parse_state" %}}; other placeholder make no sense as the call does not have any values.
+

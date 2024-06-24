@@ -1,0 +1,32 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main, fix/*]
+  schedule:
+    - cron: '30 1 * * 2'
+
+jobs:
+  codeql:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install ninja
+      run: sudo apt-get -qq update && sudo apt-get install -y ninja-build
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: cpp
+
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE
+    - name: Build
+      working-directory: build/
+      run: cmake --build .
+    - name: Perform CodeQL analysis
+      uses: github/codeql-action/analyze@v2
+

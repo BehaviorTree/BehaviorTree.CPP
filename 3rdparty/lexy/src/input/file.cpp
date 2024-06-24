@@ -1,6 +1,7 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
+#include <cstddef>
 #include <lexy/input/file.hpp>
 
 #include <cerrno>
@@ -56,8 +57,8 @@ lexy::file_error get_file_error() noexcept
     }
 }
 
-constexpr std::size_t small_file_size  = 4 * 1024;
-constexpr std::size_t medium_file_size = 32 * 1024;
+constexpr std::size_t small_file_size  = std::size_t(4) * 1024;
+constexpr std::size_t medium_file_size = std::size_t(32) * 1024;
 } // namespace
 
 lexy::file_error lexy::_detail::read_file(const char* path, file_callback cb, void* user_data)

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_CODE_POINT_HPP_INCLUDED
@@ -7,10 +7,6 @@
 #include <cstdint>
 #include <lexy/_detail/assert.hpp>
 #include <lexy/_detail/config.hpp>
-
-#ifndef LEXY_HAS_UNICODE_DATABASE
-#    define LEXY_HAS_UNICODE_DATABASE 0
-#endif
 
 #if LEXY_HAS_UNICODE_DATABASE
 #    define LEXY_UNICODE_CONSTEXPR constexpr
@@ -89,7 +85,7 @@ public:
         LEXY_UNICODE_CATEGORY(Lo, other_letter),
 
         LEXY_UNICODE_CATEGORY(Mn, nonspacing_mark),
-        LEXY_UNICODE_CATEGORY(Mc, spaing_mark),
+        LEXY_UNICODE_CATEGORY(Mc, spacing_mark),
         LEXY_UNICODE_CATEGORY(Me, enclosing_mark),
 
         LEXY_UNICODE_CATEGORY(Nd, decimal_number),

@@ -1,0 +1,354 @@
+{{ define "main" }}
+
+<section id="playground">
+
+<section id="toolbar">
+    <div class="toolbar-editor-options">
+        <select id="toolbar-examples">
+            <option selected disabled hidden>Load example</option>
+            {{ range (resources.Match "playground/*.cpp") }}
+                <option value="{{ .RelPermalink }}">
+                    {{ .Name | replaceRE "/playground/(.*)\\.cpp" "$1" }}
+                </option>
+            {{ end }}
+        </select>
+
+        <button id="toolbar-permalink" title="Create a permalink to this example.">Permalink</button>
+
+        <input type="checkbox" id="toolbar-vim"/>
+        <label for="toolbar-vim" title="Enable/disable vim bindings.">Vim</label>
+
+        <input type="checkbox" id="toolbar-wrap" checked />
+        <label for="toolbar-wrap" title="Enable/disable word wrap.">Wrap</label>
+    </div>
+
+    <div class="toolbar-run-options">
+        <label for="toolbar-production">Entry production:</label>
+        <select id="toolbar-production"></select>
+
+        <select id="toolbar-mode">
+            <option value="tree" selected>Parse Tree</option>
+            <option value="trace">Trace</option>
+        </select>
+
+        <button id="toolbar-run" type="button">Run</button>
+        <button id="toolbar-godbolt" type="button">
+            <img src="https://godbolt.org/favicon.ico" alt="CE logo" title="View on Compiler Explorer.">
+        </button>
+    </div>
+</section>
+
+<section id="editors">
+    <div class="editor-container">
+        <div class="editor" id="editor-grammar"></div>
+    </div>
+    <div class="editor-container">
+        <div class="editor" id="editor-input"></div>
+    </div>
+</section>
+
+<section id="output">
+    <div class="output-container" id="output-graph"></div>
+    <div class="output-container" id="output-text"></div>
+</section>
+
+<section>
+    {{ .Content }}
+</section>
+
+{{ $style := resources.Get "css/playground.scss" | resources.ToCSS | resources.Minify }}
+<style>{{ $style.Content | safeCSS }}</style>
+
+{{ $playground := resources.Get "js/playground.js" | resources.ExecuteAsTemplate "playground.js" .  | resources.Minify }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ext-language_tools.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
+<script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/drudru/ansi_up@v5.0.1/ansi_up.js"></script>
+<script type="module">
+import * as playground from "{{ $playground.RelPermalink }}";
+
+const toolbar_examples   = document.getElementById("toolbar-examples");
+const toolbar_permalink  = document.getElementById("toolbar-permalink");
+const toolbar_vim        = document.getElementById("toolbar-vim");
+const toolbar_wrap       = document.getElementById("toolbar-wrap");
+const toolbar_production = document.getElementById("toolbar-production");
+const toolbar_mode       = document.getElementById("toolbar-mode");
+const toolbar_run        = document.getElementById("toolbar-run");
+const toolbar_godbolt    = document.getElementById("toolbar-godbolt");
+
+const editor_grammar = ace.edit("editor-grammar");
+const editor_input   = ace.edit("editor-input");
+
+const output_text  = document.getElementById("output-text");
+const output_graph = document.getElementById("output-graph");
+
+function update_toolbar_production(selected_production)
+{
+    const source      = editor_grammar.getValue();
+    const productions = playground.list_of_productions(source);
+
+    if (selected_production === undefined)
+    {
+        if (productions.includes(toolbar_production.value))
+            selected_production = toolbar_production.value;
+        else
+            selected_production = productions[productions.length - 1];
+    }
+
+    // Clear and re-populate selection.
+    toolbar_production.innerHTML = '';
+    for (var prod of productions)
+    {
+        var option = document.createElement("option");
+        option.value = prod;
+        option.innerHTML = `<code>${prod}</code>`;
+        option.selected = (prod == selected_production);
+
+        toolbar_production.appendChild(option);
+    }
+}
+
+async function load()
+{
+    const storage = window.sessionStorage;
+    const params = new URLSearchParams(window.location.search);
+
+    var result = {};
+
+    const id      = params.get('id');
+    const example = params.get('example');
+    if (id !== null)
+    {
+        result = await playground.load_godbolt_url(id);
+    }
+    else if (example !== null)
+    {
+        for (var option of toolbar_examples.options)
+        {
+            if (option.text !== example)
+                continue;
+
+            option.selected = true;
+            result = await playground.load_example(option.value);
+            break;
+        }
+    }
+    else if (toolbar_examples.selectedIndex > 0)
+    {
+        result = await playground.load_example(toolbar_examples.value);
+    }
+    else
+    {
+        // Load session entry or default.
+        var def = await playground.load_example("{{ (resources.Get "playground/default.cpp").RelPermalink }}");
+        result.grammar    = storage.getItem('editor-grammar') || def.grammar;
+        result.input      = storage.getItem('editor-input') || def.input;
+        result.production = storage.getItem('toolbar-production') || def.production;
+    }
+
+    const mode = params.get('mode');
+    result.mode = mode || storage.getItem('toolbar-mode') || 'tree';
+
+    editor_grammar.setValue(result.grammar, 1);
+    editor_input.setValue(result.input, 1);
+    update_toolbar_production(result.production);
+    toolbar_mode.value = result.mode;
+}
+
+function save()
+{
+    const storage = window.sessionStorage;
+
+    // Remove any parameters that would indicate a shared example.
+    window.history.replaceState({}, document.title, {{ .Permalink }});
+    toolbar_examples.selectedIndex = 0;
+
+    // Remember the current settings.
+    storage.setItem('editor-grammar', editor_grammar.getValue());
+    storage.setItem('editor-input', editor_input.getValue());
+    storage.setItem('toolbar-production', toolbar_production.value);
+    storage.setItem('toolbar-mode', toolbar_mode.value);
+}
+
+function toggle_vim()
+{
+    for (var editor of [editor_grammar, editor_input])
+    {
+        if (toolbar_vim.checked)
+            editor.setKeyboardHandler("ace/keyboard/vim");
+        else
+            editor.setKeyboardHandler("");
+    }
+}
+function toggle_wrap()
+{
+    for (var editor of [editor_grammar, editor_input])
+        editor.getSession().setUseWrapMode(toolbar_wrap.checked);
+}
+
+async function run()
+{
+    toolbar_run.disabled = true;
+
+    const source = await playground.preprocess_source('playground', editor_grammar.getValue(), toolbar_production.value);
+    const input  = editor_input.getValue();
+    const mode = toolbar_mode.value;
+
+    const result = await playground.compile_and_run(source, input, mode);
+    const ansi_up = new AnsiUp;
+    if (result.success)
+    {
+        if (mode == 'tree')
+        {
+            if (result.code == 0) // no error
+            {
+                d3.select(output_graph).graphviz().renderDot(result.stdout);
+                output_text.style.display = "none";
+                output_graph.style.display = "block";
+            }
+            else if (result.code == 1) // recovered error
+            {
+                d3.select(output_graph).graphviz().renderDot(result.stdout);
+                output_text.innerHTML = ansi_up.ansi_to_html(result.stderr);
+                output_text.style.display = "block";
+                output_graph.style.display = "block";
+            }
+            else  // fatal error
+            {
+                output_text.innerHTML = ansi_up.ansi_to_html(result.stderr);
+                output_text.style.display = "block";
+                output_graph.style.display = "none";
+            }
+        }
+        else
+        {
+            output_text.innerHTML = ansi_up.ansi_to_html(result.stdout);
+            output_text.style.display = "block";
+            output_graph.style.display = "none";
+        }
+    }
+    else
+    {
+        output_text.innerHTML = ansi_up.ansi_to_html(result.message);
+        output_text.style.display = "block";
+        output_graph.style.display = "none";
+    }
+
+    toolbar_run.disabled = false;
+}
+
+function debounce(func, delay)
+{
+    var timeout;
+    return function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(func, delay);
+    };
+}
+
+window.addEventListener('load', async() => {
+    const doc_entities = await (await fetch("/reference/index.json")).json();
+    ace.require("ace/ext/language_tools");
+
+    editor_grammar.session.setMode("ace/mode/c_cpp", function() {
+        var session = editor_grammar.session;
+
+        // Add custom highlighting rule for things that look like DSL entities.
+        var rules = session.$mode.$highlightRules.getRules();
+        rules['start'].unshift({
+            token: 'dsl',
+            // regex with three cases
+            // first case is something like dsl::name or dsl::name::name
+            // second case is something like LEXY_NAME
+            regex: '(lexy::(dsl::)?|dsl::)[a-z0-9_]+(::[a-z0-9_]+)*|LEXY_[A-Z0-9_]+'
+        });
+
+        // Force recreation of tokenizer.
+        session.$mode.$tokenizer = null;
+        session.bgTokenizer.setTokenizer(session.$mode.getTokenizer());
+    });
+    editor_grammar.setShowPrintMargin(false);
+    editor_grammar.setOptions({
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true
+    });
+    editor_grammar.completers.push({
+        getCompletions: function(editor, session, pos, prefix, callback) {
+            var completions = [];
+            for (let name in doc_entities) {
+                if (name.startsWith("lexy::dsl"))
+                    completions.push({ value: name.replace(/^lexy::/, ''), meta: 'lexy' });
+                else if (name.startsWith("lexy::"))
+                    completions.push({ value: name, meta: 'lexy' });
+                else if (name.startsWith("lexy_"))
+                    completions.push({ value: name.toUpperCase(), meta: 'lexy' });
+            }
+            callback(null, completions);
+        }
+    });
+    editor_grammar.renderer.on('afterRender', function(){
+        const dsl_identifiers = document.querySelectorAll('span.ace_dsl');
+        for (let span of dsl_identifiers)
+        {
+            const text = span.innerText;
+            const identifier = text.toLowerCase();
+            const url = doc_entities[identifier] ?? doc_entities['lexy::' + identifier];
+            if (url)
+            {
+                var link = document.createElement('a');
+                link.appendChild(span.cloneNode(true));
+                link.title = "Documentation";
+                link.href = url;
+                link.target = "_blank";
+
+                span.replaceWith(link);
+            }
+        }
+    });
+
+    editor_input.session.setMode("ace/mode/text");
+    editor_input.setShowPrintMargin(false);
+
+    // Auto save on changes to grammar, input, or selected production.
+    editor_grammar.getSession().on('change', debounce(save, 1000));
+    editor_input.getSession().on('change', debounce(save, 1000));
+    toolbar_production.addEventListener('change', save);
+
+    // Update the toolbar when the grammar changes.
+    editor_grammar.getSession().on('change', debounce(update_toolbar_production, 1000));
+
+    // Run automatically when grammar, input, or production changes.
+    editor_grammar.getSession().on('change', debounce(run, 1000));
+    editor_input.getSession().on('change', debounce(run, 1000));
+    toolbar_production.addEventListener('change', run);
+
+    // Make the toolbar work.
+    toolbar_examples.addEventListener('change', load);
+    toolbar_permalink.addEventListener('click', async() => {
+        const source = await playground.preprocess_source('godbolt', editor_grammar.getValue(), toolbar_production.value);
+        const input  = editor_input.getValue();
+
+        const url = await playground.get_godbolt_permalink(source, input);
+        const id = url.substring(url.lastIndexOf('/') + 1);
+        window.history.replaceState({}, document.title, "{{ .Permalink }}?id=" + id + "&mode=" + toolbar_mode.value);
+    });
+    toolbar_vim.addEventListener('click', toggle_vim);
+    toolbar_wrap.addEventListener('click', toggle_wrap);
+    toolbar_run.addEventListener('click', run);
+    toolbar_godbolt.addEventListener('click', async() => {
+        const source = await playground.preprocess_source('godbolt', editor_grammar.getValue(), toolbar_production.value);
+        const input  = editor_input.getValue();
+        window.location.href = await playground.get_godbolt_url(source, input);
+    });
+
+    // Run.
+    await load();
+    toggle_vim();
+    toggle_wrap();
+    run();
+});
+</script>
+
+{{ end }}

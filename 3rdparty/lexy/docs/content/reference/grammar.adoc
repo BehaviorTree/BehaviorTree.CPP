@@ -1,0 +1,260 @@
+---
+header: "lexy/grammar.hpp"
+entities:
+  "lexy::token_production": token_production
+  "lexy::transparent_production": transparent_production
+  "lexy::production_name": production_name
+  "lexy::production_info": production_info
+  "lexy::production_rule": production_rule
+  "lexy::production_whitespace": production_whitespace
+  "lexy::production_value_callback": production_value_callback
+  "lexy::max_recursion_depth": max_recursion_depth
+---
+:toc: left
+
+[.lead]
+Traits and definitions for the grammar.
+
+== Grammar traits
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    constexpr bool is_production;  <1>
+
+    template <typename T>
+    constexpr bool is_rule;        <2>
+    template <typename T>
+    constexpr bool is_branch_rule; <3>
+    template <typename T>
+    constexpr bool is_unconditional_branch_rule; <4>
+    template <typename T>
+    constexpr bool is_token_rule;  <5>
+
+    template <typename T>
+    constexpr bool is_literal_rule; <6>
+    template <typename T>
+    constexpr bool is_literal_set_rule; <7>
+    template <typename T>
+    constexpr bool is_char_class_rule; <8>
+
+    template <typename T>
+    constexpr bool is_separator; <9>
+    template <typename T>
+    constexpr bool is_operation; <10>
+}
+----
+<1> Whether or not `T` is a production, i.e. it has a `::rule` member.
+<2> Whether or not `T` is a {{% rule %}}.
+<3> Whether or not `T` is a {{% branch-rule %}}.
+<4> Whether or not `T` is an unconditional {{% branch-rule %}} (e.g. {{% docref "lexy::dsl::else_" %}}).
+<5> Whether or not `T` is a {{% token-rule %}}.
+<6> Whether or not `T` is a {{% literal-rule %}}.
+<7> Whether or not `T` is a {{% docref "lexy::dsl::literal_set" %}} rule.
+<8> Whether or not `T` is a {{% char-class-rule %}}.
+<9> Whether or not `T` is a separator ({{% docref "lexy::dsl::sep" %}} and {{% docref "lexy::dsl::trailing_sep" %}}).
+<10> Whether or not `T` is an operation (see {{% docref "expression" %}}).
+
+[#token_production]
+== Class `lexy::token_production`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct token_production
+    {};
+
+    template <_production_ Production>
+    constexpr bool is_token_production = std::is_base_of_v<token_production, Production>;
+}
+----
+
+[.lead]
+Base class to indicate that a production is conceptually a token.
+This inhibits whitespace skipping (directly) inside the production.
+
+[#transparent_production]
+== Class `lexy::transparent_production`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct transparent_production
+    {};
+
+    template <_production_ Production>
+    constexpr bool is_transparent_production = std::is_base_of_v<transparent_production, Production>;
+}
+----
+
+[.lead]
+Base class to indicate that this production should not show up in the parse tree or diagnostics.
+
+In the {{% docref "lexy::parse_tree" %}}, there will be no separate node for `Production`.
+Instead, all child nodes of `Production` are added to its parent node.
+
+In the {{% docref "lexy::error_context" %}}, transparent production will not be listed.
+Instead, the next non-transparent parent is used.
+
+[#production_name]
+== Function `lexy::production_name`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_production_ Production>
+    consteval const char* production_name();
+}
+----
+
+[.lead]
+Returns the name of the production.
+
+By default, it is the type name of `Production` after removing the top-level namespace.
+This can be overridden by `Production::name()` or `Production::name`.
+
+[#production_info]
+== Struct `lexy::production_info`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct production_info
+    {
+        const void* id;             <1>
+        const char* name;           <2>
+        bool        is_token;       <3>
+        bool        is_transparent; <4>
+
+        production_info(_production_ auto production);
+        production_info(_operation_ auto operation);
+
+        friend bool operator==(production_info lhs, production_info rhs);
+        friend bool operator!=(production_info lhs, production_info rhs);
+    };
+}
+----
+<1> A unique id identifying the production.
+<2> {{% docref "lexy::production_name" %}}
+<3> `lexy::is_token_production`
+<4> `lexy::is_transparent_production`
+
+[.lead]
+A collection of type-erased information about a production (or operation, see {{% docref "expression" %}}).
+
+For an operation, `is_token` and `is_transparent` will always be `false`.
+It is considered like a production here, because it behaves like one in the {{% docref "lexy::parse_tree" %}}.
+
+[#production_rule]
+== Trait `lexy::production_rule`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_production_ Production>
+    using production_rule = std::decay_t<decltype(Production::rule)>;
+}
+----
+
+[.lead]
+Returns the type of the {{% rule %}} of production, i.e. the type of `Production::rule`.
+
+[#production_whitespace]
+== Trait `lexy::production_whitespace`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_production_ Production, _production_ WhitespaceProduction>
+    using production_whitespace = _see-below_;
+}
+----
+
+[.lead]
+Returns the type of the {{% docref "whitespace" %}} rule of `Production` given its last parent `WhitespaceProduction`.
+
+It is determined as follows:
+
+1. If `Production::whitespace` is valid, returns the decayed type of that.
+2. If `WhitespaceProduction::whitespace` is valid, returns the decayed type of that.
+3. Otherwise, returns `void`.
+
+This is used by {{% docref "lexy::dsl::whitespace" %}} during automatic whitespace skipping.
+
+[#production_value_callback]
+== Callback `lexy::production_value_callback`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_production_ Production, typename ParseState = void>
+    constexpr bool production_has_value_callback;
+
+    template <_production_ Production, typename ParseState = void>
+    class production_value_callback
+    {
+    public:
+        constexpr explicit production_value_callback(const ParseState&);
+
+        using return_type = _see-below_;
+
+        constexpr _sink_ auto sink() const;
+
+        template <typename ... Args>
+        constexpr return_type operator()(Args&&... args);
+    };
+}
+----
+
+[.lead]
+A callback and sink for the specified `Production`.
+
+It wraps an underlying callback/sink, which is determined as follows:
+
+1. `ParseState` is non-void and the call `state.value_of(Production{})` is well-formed.
+   It will use the result as the underlying callback/sink.
+2. `ParseState` is non-void but `state.value_of(Production{})` is ill-formed.
+   It will use `Production::value` as the underlying callback/sink, passing the parse state to `.sink()` and as state parameter to the callback.
+3. `ParseState` is void.
+   It will use `Production::value` as the underlying callback/sink.
+
+If `state.value_of(Production{})` or `Production::value` is well-formed, `production_has_value_callback<Production, ParseState>` is `true`, `false` otherwise.
+
+The behavior of the member functions depends on three cases:
+
+1. If the underlying callback/sink is a link:{{< relref "callback#callback" >}}[callback], `return_type` is its return type, `.sink()` is ill-formed and `operator()` forwards to `Production::value.operator()`.
+2. If the underlying callback/sink is a link:{{< relref "callback#sink" >}}[sink],
+`return_type` is its return type, `.sink()` forwards to `Production::value.sink()`, and `operator()` accepts the return type of the sink and forwards it unchanged.
+3. If the underlying callback/sink is both a callback and a sink, `return_type` is the return type of the callback, `.sink()` forwards to the sink, and `operator()` to the callback.
+
+TIP: Use {{% docref "lexy::operator>>" %}} to combine a sink and a callback in one `Production::value`.
+
+[#max_recursion_depth]
+== Function `lexy::max_recursion_depth`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_production_ EntryProduction>
+    consteval std::size_t max_recursion_depth();
+}
+----
+
+[.lead]
+Returns the maximum recursion depth of a grammar given its entry production.
+
+If the entry production has a `static std::size_t` member named `max_recursion_depth` (i.e. `EntryProduction::max_recursion_depth` is well-formed), returns that value.
+Otherwise returns an implementation-defined "big" value (currently 1024).
+
+If the recursion depth of {{% docref "lexy::dsl::recurse" %}} exceeds this value, an error is raised.
+

@@ -1,0 +1,35 @@
+---
+header: "lexy/dsl/return.hpp"
+entities:
+  "lexy::dsl::return_": return_
+---
+
+[#return_]
+== Rule `lexy::dsl::return_`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto return_;
+}
+----
+
+[.lead]
+`return_` is a rule that terminates parsing of the current production early.
+
+Requires::
+  It is not used inside loops (e.g. {{% docref "lexy::dsl::loop" %}}, {{% docref "lexy::dsl::while_" %}}, {{% docref "lexy::dsl::list" %}}).
+Parsing::
+  Always succeeds without consuming any input.
+  Parsing of the current production is then finished.
+Errors::
+  None.
+Values::
+  None; but all existing values are immediately parsed to the context,
+  e.g. the callback is immediately invoked if `lexy::parse()` is used.
+
+{{% playground-example return "Parse a (simplified) XML element, which can be empty" %}}
+
+NOTE: See {{< github-example xml >}} for a more complete XML parser.
+

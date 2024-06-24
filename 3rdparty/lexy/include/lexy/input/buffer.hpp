@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_INPUT_BUFFER_HPP_INCLUDED
@@ -21,6 +21,16 @@ public:
     using encoding = Encoding;
     using iterator = const typename Encoding::char_type*;
 
+    struct marker
+    {
+        iterator _it;
+
+        constexpr iterator position() const noexcept
+        {
+            return _it;
+        }
+    };
+
     explicit _br(iterator begin) noexcept : _cur(begin) {}
 
     auto peek() const noexcept
@@ -39,9 +49,13 @@ public:
         return _cur;
     }
 
-    void set_position(iterator new_pos) noexcept
+    marker current() const noexcept
     {
-        _cur = new_pos;
+        return {_cur};
+    }
+    void reset(marker m) noexcept
+    {
+        _cur = m._it;
     }
 
 private:
@@ -80,13 +94,14 @@ namespace lexy
 template <typename Encoding = default_encoding, typename MemoryResource = void>
 class buffer
 {
+    static_assert(lexy::is_char_encoding<Encoding>);
     static constexpr auto _has_sentinel
         = std::is_same_v<typename Encoding::char_type, typename Encoding::int_type>;
 
 public:
     using encoding  = Encoding;
     using char_type = typename encoding::char_type;
-    static_assert(std::is_trivial_v<char_type>);
+    static_assert(std::is_trivially_copyable_v<char_type>);
 
     //=== constructors ===//
     /// Allows the creation of an uninitialized buffer that is then filled by the user.
@@ -118,6 +133,17 @@ public:
     private:
         buffer _buffer;
     };
+
+    static buffer adopt(const char_type* data, std::size_t size,
+                        MemoryResource* resource = _detail::get_memory_resource<MemoryResource>())
+    {
+        buffer result(resource);
+        // We can cast away the const-ness, since we require that `data` came from a buffer
+        // origionally, where it wasn't const.
+        result._data = const_cast<char_type*>(data);
+        result._size = size;
+        return result;
+    }
 
     constexpr buffer() noexcept : buffer(_detail::get_memory_resource<MemoryResource>()) {}
 
@@ -225,6 +251,14 @@ public:
     std::size_t size() const noexcept
     {
         return _size;
+    }
+
+    const char_type* release() && noexcept
+    {
+        auto result = _data;
+        _data       = nullptr;
+        _size       = 0;
+        return result;
     }
 
     //=== input ===//

@@ -1,0 +1,111 @@
+---
+header: "lexy/dsl/context_identifier.hpp"
+entities:
+  "lexy::dsl::context_identifier": context_identifier
+---
+
+[#context_identifier]
+== Rule DSL `lexy::dsl::context_identifier`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct different_identifier {};
+}
+
+namespace lexy::dsl
+{
+    struct _context_identifier-dsl_ // note: not a rule itself
+    {
+        constexpr _rule_ auto create() const;
+
+        constexpr _branch-rule_ auto capture() const;
+
+        constexpr _see-below_ rematch() const;
+    };
+
+    template <typename Id>
+    constexpr _context_identifier-dsl_ context_identifier(_identifier-dsl_ identifier);
+}
+----
+
+[.lead]
+`context_identifier` is not a rule, but a DSL for specifying rules that manipulate an {{% docref "lexy::dsl::identifier" %}} variable of the current context.
+
+{{% playground-example "context_identifier" "Parse the same word twice" %}}
+
+=== Rule `.create()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto create() const;
+----
+
+[.lead]
+`.create()` returns a rule that creates the identifier variable.
+
+Parsing::
+  Matches everything, without consuming anything.
+  As a side effect, it creates an identifier with name `Id` inside the current context.
+  If a context variable (of any) type with that name already exists, it is shadowed.
+  This identifier is initialized to the empty string; it's underlying type is {{% docref "lexy::lexeme" %}}.
+Errors::
+  None.
+Values::
+  None.
+
+=== Rule `.capture()`
+
+{{% interface %}}
+----
+constexpr _branch-rule_ auto capture() const;
+----
+
+[.lead]
+`.capture()` returns a {{% branch-rule %}} that parses an identifier and stores it in the variable.
+
+Requires::
+  The identifier with the name `Id` has been created in the current context,
+  i.e. `.create()` has been parsed earlier.
+(Branch) Parsing::
+  Parses `identifier`.
+  As a side effect, it sets the identifier with the name `Id` to contain the {{% docref "lexy::lexeme" %}} also produced by the {{% docref "lexy::dsl::identifier" %}} rule.
+Errors::
+  All errors raised by parsing `identifier`.
+  The rule then fails if `identifier` has failed.
+Values::
+  The value produced by parsing `identifier`, which is the same as the one stored in the variable.
+
+=== Rule `.rematch()`
+
+{{% interface %}}
+----
+struct _rematch-dsl_ // models _branch-rule_
+{
+    template <typename Tag>
+    static constexpr _rematch-dsl_ auto error;
+};
+
+constexpr _rematch-dsl_ rematch() const;
+----
+
+[.lead]
+`.rematch()` returns a {{% branch-rule %}} that matches the stored identifier again..
+
+Requires::
+  The identifier with the name `Id` has been created in the current context,
+  i.e. `.create()` has been parsed earlier.
+Parsing::
+  Parses `identifier` and checks it against the one stored in the variable.
+Branch parsing::
+  Parses `identifier` and backtracks when that fails.
+  Also backtracks when the new identifier does not match the old one.
+Errors::
+  * All errors raised by parsing `identifier`.
+    The rule then fails if `identifier` has failed.
+  * A generic error with the specified `Tag` or `lexy::different_identifier` if the new identifier does not match the identifier stored in the variable with name `Id` of the current context.
+    Its range covers everything consumed by `identifier` and the rule then fails.
+Values::
+  None; discards the value produced by `identifier`.
+

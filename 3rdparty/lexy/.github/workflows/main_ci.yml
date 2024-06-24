@@ -1,0 +1,107 @@
+name: Main CI
+
+on:
+  push:
+    branches: [main, fix/*]
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - "gcc:7"
+          - "gcc:8"
+          - "gcc:9"
+          - "gcc:10"
+          - "gcc:11"
+          - "gcc:12"
+          - "clang:6"
+          - "clang:7"
+          - "clang:8"
+          - "clang:9"
+          - "clang:10"
+          - "clang:11"
+          - "clang:12"
+          - "clang:13"
+          - "clang:14"
+          - "clang:15"
+          - "clang:16"
+        build_type: [Debug, Release]
+
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/foonathan/${{matrix.image}}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+    - name: Build
+      working-directory: build/
+      run: cmake --build .
+    - name: Test
+      working-directory: build/
+      run: ctest --output-on-failure
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode:
+            - '11'
+            - '12'
+            - '13'
+        build_type: [Debug, Release]
+
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: ${{matrix.xcode}}
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+    - name: Install ninja
+      run: brew install ninja
+
+    - name: Configure
+      working-directory: build/
+      run: cmake -GNinja $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+    - name: Build
+      working-directory: build/
+      run: cmake --build .
+    - name: Test
+      working-directory: build/
+      run: ctest --output-on-failure
+
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        toolset: ['v142', 'ClangCL']
+        build_type: [Debug, Release]
+
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create Build Environment
+      run: cmake -E make_directory build
+
+    - name: Configure
+      shell: bash
+      working-directory: build/
+      run: cmake $GITHUB_WORKSPACE -G"Visual Studio 16 2019" -T ${{matrix.toolset}}
+    - name: Build
+      working-directory: build/
+      run: cmake --build . --config ${{matrix.build_type}} -j 2
+    - name: Test
+      working-directory: build/
+      run: ctest -C ${{matrix.build_type}} --output-on-failure
+

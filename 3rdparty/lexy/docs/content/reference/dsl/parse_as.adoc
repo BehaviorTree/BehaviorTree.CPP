@@ -1,0 +1,36 @@
+---
+header: "lexy/dsl/parse_as.hpp"
+entities:
+  "lexy::dsl::parse_as": parse_as
+---
+
+[#parse_as]
+== Branch rule `lexy::dsl::parse_as`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <typename T>
+    constexpr _rule_ auto parse_as(_rule_ auto rule);
+    template <typename T>
+    constexpr _branch-rule_ auto parse_as(_branch-rule_ auto rule);
+}
+----
+
+[.lead]
+`parse_as` is a {{% branch-rule %}} that parses the rule and ensures that it always produces a value.
+
+(Branch) Parsing::
+  Parses `rule` unchanged.
+Errors::
+  All errors raised by `rule`.
+  The rule then fails if `rule` has failed.
+Values::
+  Value production is done as if the parse action {{% docref "lexy::parse" %}} was used,
+  regardless of the actual parse action used in the top-level.
+  If `rule` parses a child production `P`, it invokes the `P::value` callback as necessary to produce a value.
+  When the rule succeeds, all arguments produced by `rule` are passed to `lexy::construct<T>` and produces that as its single value.
+
+TIP: Use this rule as a branch condition for a {{% docref "lexy::scan_production" %}}.
+

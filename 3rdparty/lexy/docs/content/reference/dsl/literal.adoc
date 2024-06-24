@@ -1,0 +1,196 @@
+---
+header: "lexy/dsl/literal.hpp"
+entities:
+  "literal-rule": doc
+  "lexy::dsl::lit": lit
+  "LEXY_LIT": lit
+  "lexy::dsl::lit_c": lit_c
+  "lexy::dsl::lit_b": lit_b
+  "lexy::dsl::lit_cp": lit_cp
+  "lexy::dsl::literal_set": literal_set
+  "LEXY_LITERAL_SET": literal_set
+  "lexy::dsl::operator/ (literal)": literal_set
+---
+:toc: left
+
+[.lead]
+Token rules that match exact characters.
+
+{{% interface %}}
+----
+template <typename T>
+concept _literal-rule_ = _token-rule_<T> && …;
+----
+
+A _literal rule_ is a special {{% token-rule %}} that matches a specified sequence of code units.
+They include {{% docref "lexy::dsl::lit" %}} and variants, but also {{% docref "lexy::dsl::keyword" %}}.
+
+Each literal rule has the same parsing behavior, unless otherwise specified:
+
+Requires::
+  * The {{% encoding %}} of the input is a char encoding and compatible with the char type of the rule:
+    Either the char type is the same as the char type of the encoding, or the literal rule matches only ASCII characters.
+  * If it attempts to match a non-ASCII character, the encoding must be UTF-8, UTF-16, or UTF-32.
+Matching::
+  * If the char type of the rule is the same as the char type of the encoding,
+    compares each code unit in the sequence with the current code unit of the input in order.
+    If they match, one code unit is consumed and the process is repeated.
+  * If the char type of the rule is not the same as the char type of the encoding,
+    all code units in the sequence are ASCII characters.
+    They are transcoded to the target encoding by a `static_cast`, then it behaves the same as in the case above.
+Errors::
+  {{% docref "lexy::expected_literal" %}}: if one code unit did not compare equal or the reader reached the end of the input.
+  Its `.string()` is the code unit sequence, its `.index()` is the index of the code unit where the mismatch/missing one occurred, and its `.position()` is the reader position where it started to match the literal.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::literal_token_kind`.
+
+NOTE: As they are token rule, literal rules try to skip whitespace directly following the literal.
+Use {{% docref "lexy::dsl::no_whitespace" %}} to prevent that.
+
+CAUTION: It is not checked whether the code unit sequence is a well-formed string (e.g. that it contains no https://en.wikipedia.org/wiki/UTF-8#Invalid_sequences_and_error_handling[ill-formed UTF-8]), and no https://en.wikipedia.org/wiki/Unicode_equivalence#Normalization[normalization] or other https://en.wikipedia.org/wiki/Unicode_equivalence[equivalence checking] is done while matching.
+It is also not checked whether the input contains actual well-formed code units, they are simply compared one by one.
+
+[#lit_c]
+== Literal rule `lexy::dsl::lit_c`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <auto C>
+    constexpr _literal-rule_ auto lit_c;
+}
+----
+
+[.lead]
+`lit_c<C>`, where `C` is a character type, is a {{% literal-rule %}} that matches the single code unit `C`.
+
+TIP: Literals that match common {{% docref punctuators %}} are pre-defined.
+
+[#lit]
+== Literal rule `lexy::dsl::lit`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <auto Str>
+    constexpr _literal-rule_ auto lit;
+}
+
+#define LEXY_LIT(Str) lexy::dsl::lit<Str>
+----
+
+[.lead]
+`lit` is a {{% literal-rule %}} that matches the specified sequence of code units.
+
+The macro `LEXY_LIT(Str)` is equivalent to `lit<Str>`, except that it also works on older compilers that do not support C++20's extended NTTPs.
+Use this instead of `lit<Str>` if you need to support them.
+
+{{% playground-example lit "Hello World!" %}}
+
+{{% playground-example lit_ascii "A different character type, but only ASCII characters" %}}
+
+{{% playground-example lit_utf8 "UTF-8 encoded string literal" %}}
+
+TIP: When using non-ASCII characters in a `lit<Str>` rule, it is best to specify code points with the `\uXXXX` escape sequences and normalize the input before passing it to `lexy`.
+
+NOTE: While `lit<"int">` would happily consume a prefix of `"integer"`, {{% docref "lexy::dsl::keyword" %}}`<"int">(id)`, for a matching `id`, would not.
+Similar, `lit<"=">` would also consume a prefix of `==`, {{% docref "lexy::dsl::not_followed_by" %}} can be used to prevent that.
+
+[#lit_b]
+== Literal rule `lexy::dsl::lit_b`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <unsigned char ... C>
+    constexpr _literal-rule_ auto lit_b;
+}
+----
+
+[.lead]
+`lit_b<C...>` is a {{% literal-rule %}} that matches the specified sequence of bytes.
+
+Unless all bytes are also valid ASCII characters, it requires that the input {{% encoding %}} is {{% docref "lexy::byte_encoding" %}}.
+
+TIP: Use {{% docref "lexy::dsl::bom" %}} to match a byte-order mark.
+
+[#lit_cp]
+== Literal rule `lexy::dsl::lit_cp`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <char32_t ... CodePoint>
+    constexpr _literal-rule_ auto lit_cp;
+}
+----
+
+[.lead]
+`lit_cp` is a {{% literal-rule %}} that matches the specific `CodePoint` sequences expressed as a sequence of code units in the {{% encoding %}} of the input.
+
+It behaves identical to {{% docref "lexy::dsl::lit" %}} where `Str` is determined by encoding all `CodePoint`s in the encoding of the input.
+
+{{% playground-example "lit_cp" "Match a smiley face" %}}
+
+[#literal_set]
+== Token rule `lexy::dsl::literal_set`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct expected_literal_set {};
+}
+
+namespace lexy::dsl
+{
+    constexpr _literal-set_ literal_set(_literal-rule_ auto ... literals);
+
+    template <typename T>
+    constexpr _literal-set_ literal_set(_symbol-table_<T> symbols);
+
+    constexpr _literal-set_ operator/(_literal-set_ lhs, _literal-rule_ auto rhs);
+    constexpr _literal-set_ operator/(_literal-set_ lhs, _literal-set_ auto rhs);
+}
+
+#define LEXY_LITERAL_SET(...)
+----
+
+[.lead]
+`literal_set` is a {{% token-rule %}} that matches one of the specified literals.
+
+Requires::
+  * Each argument is a {{% literal-rule %}}.
+  * If one literal rule uses case folding (e.g. {{% docref "lexy::dsl::ascii::case_folding" %}}),
+    the other rules either do not use it, or use the same case folding rule;
+    different case foldings cannot be mixed.
+Matching::
+  Tries to match each literal rule.
+  If case folding is used, it applies to *all* rules in the set.
+  Succeeds, if one of the matched, consuming the longest one.
+Errors::
+  `lexy::expected_literal_set`: if none of the literal rules matched; at the original reader position.
+  The rule then fails without consuming anything.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::literal_token_kind`.
+
+The second overload creates a literal set that matches all the symbols of the specified {{% docref "lexy::symbol_table" %}}.
+It ignores their respective values.
+
+`operator/` can be used to extend a literal set and add more literal rules to it.
+The resulting literal set matches everything already matched by `lhs`, as well as `rhs`.
+
+The macro `LEXY_LITERAL_SET(args)` is equivalent to `literal_set(args)`, except the type of the individual rules is erased.
+This can shorten type names in error messages.
+
+{{% playground-example literal_set "Match one of the given literals" %}}
+
+NOTE: The implementation uses a https://en.wikipedia.org/wiki/Trie[trie] to match them efficiently,
+instead of trying one after the other.
+
+TIP: If you want to match a set of literals but also get information about which one matched, use {{% docref "lexy::dsl::symbol" %}} instead.
+

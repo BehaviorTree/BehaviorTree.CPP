@@ -1,0 +1,175 @@
+---
+header: "lexy/dsl/char_class.hpp"
+entities:
+  "char-class-rule": doc
+  "literal-char-class-rule": doc
+  "LEXY_CHAR_CLASS": macro
+  "lexy::dsl::operator/ (char class)": union
+  "lexy::dsl::operator- (unary)": complement
+  "lexy::dsl::operator-": minus
+  "lexy::dsl::operator&": intersection
+---
+:toc: left
+
+[.lead]
+Char class builders and combinators.
+
+{{% interface %}}
+----
+template <typename T>
+concept _char-class-rule_ = _token-rule_<T> && …;
+----
+
+A _char class rule_ is a special {{% token-rule %}} that matches a single code point from a given set, the _char class_.
+Each char class rule has the same parsing behavior:
+
+Requires::
+  The {{% encoding %}} of the input is a char encoding.
+Matching::
+  * If the current code unit is an ASCII character, matches and consumes it.
+    Checks if that character is part of the char class.
+  * Otherwise, if the char class contains non-ASCII characters, matches and consumes all code points that form a code point in this encoding.
+    For ASCII, UTF-32, {{% docref "lexy::default_encoding" %}} and {{% docref "lexy::byte_encoding" %}}, this is always a single code unit, for UTF-8, this is up to 4 code units, and for UTF-16, this is up to 2 code units.
+    Checks if that code point is part of the char class.
+Errors::
+  {{% docref "lexy::expected_char_class" %}} with the name of the char class, at the starting reader position if
+  * the current code unit is ASCII but not part of the char class, or
+  * the current code point is not part of the char class, or
+  * the current code unit(s) do not form a valid code point.
+    This includes surrogates, overlong UTF-8 sequences, or out of range code points.
+  The rule then fails.
+
+For a char class rule, {{% docref ".error" %}} and {{% docref ".kind" %}} are overridden to ensure the resulting token rule is still a char class rule.
+In the case of `.error`, the corresponding error type is raised instead.
+
+{{% interface %}}
+----
+template <typename T>
+concept _literal-char-class-rule_;
+----
+
+A _literal char class rule_ is a rule that can behave like a char class.
+Those are
+
+* a {{% docref "lexy::dsl::lit" %}} (or {{% docref "lexy::dsl::lit_c" %}}) rule matching a single ASCII character,
+* a {{% docref "lexy::dsl::lit" %}} (or {{% docref "lexy::dsl::lit_c" %}}) rule whose char type is `char32_t` matching a single character,
+* a {{% docref "lexy::dsl::lit_b" %}} rule matching an arbitrary byte,
+* a {{% docref "lexy::dsl::lit_cp" %}} rule, and
+* {{% docref "lexy::dsl::operator/ (char class)" %}} combinations of the above.
+
+Literal char class rules can be used with the char class operators.
+If they specify a non-ASCII character, the input {{% encoding %}} must be ASCII, UTF-8, UTF-16, or UTF-32 (if it is ASCII, the character will never be matched).
+The exception is {{% docref "lexy::dsl::lit_b" %}} where the encoding must be {{% docref "lexy::default_encoding" %}} or {{% docref "lexy::byte_encoding" %}}.
+
+[#macro]
+== Char class `LEXY_CHAR_CLASS`
+
+{{% interface %}}
+----
+#define LEXY_CHAR_CLASS(Name, CharClassRule)
+----
+
+[.lead]
+`LEXY_CHAR_CLASS` is a {{% char-class-rule %}} that is a (re)named version of `CharClassRule`.
+
+It is equivalent to `CharClassRule`, but overrides its name (in the error) to be the string literal `Name`.
+It also type-erases the type of `CharClassRule` to shorten it, which can improve error messages and compilation times.
+
+{{% playground-example char_class_macro "Match an atom of an email address" %}}
+
+[#union]
+== Char class union `lexy::dsl::operator/ (char class)`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _char-class-rule_ auto operator/(_char-class-rule_ auto lhs,
+                                             _char-class-rule_ auto rhs);
+    constexpr _char-class-rule_ auto operator/(_char-class-rule_ auto lhs,
+                                             _literal-char-class-rule_ auto rhs);
+    constexpr _char-class-rule_ auto operator/(_literal-char-class-rule_ auto lhs,
+                                             _char-class-rule_ auto rhs);
+}
+----
+
+[.lead]
+`operator/` (char class union) is a {{% char-class-rule %}} that matches a union of char classes.
+
+It matches all characters that are contained in at least one of the char classes.
+Its name is `union`.
+
+{{% playground-example char_class_union "Match an identifier consisting of upper case characters or digits" %}}
+
+[#complement]
+== Char class complement `lexy::dsl::operator- (unary)`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _char-class-rule_ auto operator-(_char-class-rule_ auto rule);
+    constexpr _char-class-rule_ auto operator-(_literal-char-class-rule_ auto rule);
+}
+----
+
+[.lead]
+`operator-` (char class complement) is a {{% char-class-rule %}} that matches the complement of another char class.
+
+It matches all characters that are not part of the char class `rule`.
+Its name is `complement`.
+
+{{% playground-example quoted "Match non-control characters in a string literal" %}}
+
+NOTE: For most char classes, `operator-` does not work with the {{% encoding %}} `lexy::default_encoding`:
+For example,`-dsl::ascii::control` could either mean non-control ASCII characters or non-control Unicode characters.
+You need to explicitly pick one interpretation with `lexy::ascii_encoding` or `lexy::utf8_encoding`.
+
+[#minus]
+== Char class minus `lexy::dsl::operator-`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _char-class-rule_ auto operator-(_char-class-rule_ auto set,
+                                             _char-class-rule_ auto minus);
+    constexpr _char-class-rule_ auto operator-(_char-class-rule_ auto set,
+                                             _literal-char-class-rule_ auto minus);
+}
+----
+
+[.lead]
+`operator-` (char class minus) is a {{% char-class-rule %}} that removes characters from another char class.
+
+It matches all characters that are part of `set` but not part of `minus`.
+Its name is `minus`.
+
+{{% playground-example char_class_minus "Match upper case characters except for `X`" %}}
+
+[#intersection]
+== Char class intersection `lexy::dsl::operator&`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _char-class-rule_ auto operator&(_char-class-rule_ auto lhs,
+                                             _char-class-rule_ auto rhs);
+    constexpr _char-class-rule_ auto operator&(_char-class-rule_ auto lhs,
+                                             _literal-char-class-rule_ auto rhs);
+    constexpr _char-class-rule_ auto operator&(_literal-char-class-rule_ auto lhs,
+                                             _char-class-rule_ auto rhs);
+    constexpr _char-class-rule_ auto operator&(_literal-char-class-rule_ auto lhs,
+                                             _literal-char-class-rule_ auto rhs);
+}
+----
+
+[.lead]
+`operator&` (char class intersection) is a {{% char-class-rule %}} that matches an intersection of char classes.
+
+It matches all characters that are contained in all of the char classes.
+Its name is `intersection`.
+
+{{% playground-example char_class_intersection "Match all printable space characters" %}}
+

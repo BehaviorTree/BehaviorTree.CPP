@@ -1,0 +1,70 @@
+---
+header: "lexy/dsl/newline.hpp"
+entities:
+  "lexy::dsl::newline": newline
+  "lexy::dsl::eol": eol
+---
+:toc: left
+
+[.lead]
+The `newline` and `eol` token rules.
+
+[#newline]
+== Token rule `lexy::dsl::newline`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct expected_newline {};
+}
+
+namespace lexy::dsl
+{
+    constexpr _token-rule_ auto newline;
+}
+----
+
+[.lead]
+`newline` is a {{% token-rule %}} that matches a newline.
+
+It is entirely equivalent to {{% docref "lexy::dsl::literal_set" %}}` containing of the literals `"\r\n"` and `"\n"`,
+where the error has been overridden to `lexy::expected_newline`.
+
+{{% playground-example newline "Match a newline at the end" %}}
+
+CAUTION: As a token rule, it matches {{% docref whitespace %}} immediately following the newline.
+As such, the rule is best used in contexts where automatic whitespace skipping is disabled,
+or where it doesn't include newline characters.
+
+CAUTION: Differentiate between {{% docref "lexy::dsl::ascii::newline" %}},  which matches `\r` or `\n`, and `lexy::dsl::newline`, which matches `\r\n` or `\n`!
+
+[#eol]
+== Branch rule `lexy::dsl::eol`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _branch-rule_ auto eol;
+}
+----
+
+[.lead]
+`eol` is a {{% branch-rule %}} that matches the end of a line.
+
+Requires::
+  The {{% encoding %}} of the input is a char encoding.
+(Branch) Parsing::
+  If at EOF, succeeds without consuming anything.
+  Otherwise, forwards to {{% docref "lexy::dsl::newline" %}}
+Errors::
+  `lexy::expected_newline`: if it could match neither EOF nor a newline; at the starting reader position.
+Parse tree::
+  If at EOF, single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::eof_token_kind` whose range is empty.
+  Otherwise, the token node created by {{% docref "lexy::dsl::newline" %}}.
+
+{{% playground-example eol "Match a newline or EOF at the end" %}}
+
+CAUTION: The same caveat about {{% docref whitespace %}} as for `newline` applies here as well.
+

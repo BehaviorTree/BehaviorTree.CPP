@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_OPERATOR_HPP_INCLUDED
@@ -75,8 +75,8 @@ struct op_lit_list
 template <typename Reader>
 struct parsed_operator
 {
-    typename Reader::iterator pos;
-    std::size_t               idx;
+    typename Reader::marker cur;
+    std::size_t             idx;
 };
 
 template <typename OpList, typename Reader>
@@ -85,7 +85,7 @@ constexpr auto parse_operator(Reader& reader)
     using encoding   = typename Reader::encoding;
     using op_matcher = lexy::_detail::lit_trie_matcher<OpList::template trie<encoding>, 0>;
 
-    auto begin = reader.position();
+    auto begin = reader.current();
     auto op    = op_matcher::try_match(reader);
     return parsed_operator<Reader>{begin, op};
 }
@@ -95,6 +95,11 @@ namespace lexyd
 {
 template <typename Tag, typename Reader>
 using _detect_op_tag_ctor = decltype(Tag(LEXY_DECLVAL(Reader).position()));
+
+template <typename Tag, typename Reader, typename Context>
+using _detect_op_tag_ctor_with_state
+    = decltype(Tag(*LEXY_DECLVAL(Context).control_block->parse_state,
+                   LEXY_DECLVAL(Reader).position()));
 
 template <typename TagType, typename Literal, typename... R>
 struct _op : branch_base
@@ -107,15 +112,20 @@ struct _op : branch_base
                                            lexy::_detail::parsed_operator<Reader> op,
                                            Args&&... args)
     {
-        context.on(_ev::token{}, typename Literal::token_type{}, op.pos, reader.position());
+        context.on(_ev::token{}, typename Literal::token_type{}, op.cur.position(),
+                   reader.position());
 
         using continuation
             = lexy::whitespace_parser<Context, lexy::parser_for<_seq_impl<R...>, NextParser>>;
         if constexpr (std::is_void_v<TagType>)
             return continuation::parse(context, reader, LEXY_FWD(args)...);
+        else if constexpr (lexy::_detail::is_detected<_detect_op_tag_ctor_with_state, op_tag_type,
+                                                      Reader, Context>)
+            return continuation::parse(context, reader, LEXY_FWD(args)...,
+                                       op_tag_type(*context.control_block->parse_state, op.pos));
         else if constexpr (lexy::_detail::is_detected<_detect_op_tag_ctor, op_tag_type, Reader>)
             return continuation::parse(context, reader, LEXY_FWD(args)...,
-                                       op_tag_type(reader.position()));
+                                       op_tag_type(op.cur.position()));
         else
             return continuation::parse(context, reader, LEXY_FWD(args)..., op_tag_type{});
     }
@@ -144,6 +154,12 @@ struct _op : branch_base
 
             if constexpr (std::is_void_v<TagType>)
                 return impl.template finish<continuation>(context, reader, LEXY_FWD(args)...);
+            else if constexpr (lexy::_detail::is_detected<_detect_op_tag_ctor_with_state,
+                                                          op_tag_type, Reader, Context>)
+                return impl
+                    .template finish<continuation>(context, reader, LEXY_FWD(args)...,
+                                                   op_tag_type(*context.control_block->parse_state,
+                                                               reader.position()));
             else if constexpr (lexy::_detail::is_detected<_detect_op_tag_ctor, op_tag_type, Reader>)
                 return impl.template finish<continuation>(context, reader, LEXY_FWD(args)...,
                                                           op_tag_type(reader.position()));
@@ -165,6 +181,10 @@ struct _op : branch_base
                 = lexy::parser_for<Literal, lexy::parser_for<_seq_impl<R...>, NextParser>>;
             if constexpr (std::is_void_v<TagType>)
                 return continuation::parse(context, reader, LEXY_FWD(args)...);
+            else if constexpr (lexy::_detail::is_detected<_detect_op_tag_ctor_with_state,
+                                                          op_tag_type, Reader, Context>)
+                return continuation::parse(context, reader, LEXY_FWD(args)...,
+                                           op_tag_type(*context.control_block->parse_state, pos));
             else if constexpr (lexy::_detail::is_detected<_detect_op_tag_ctor, op_tag_type, Reader>)
                 return continuation::parse(context, reader, LEXY_FWD(args)..., op_tag_type(pos));
             else
@@ -246,12 +266,12 @@ struct _opc : branch_base
     struct bp
     {
         lexy::_detail::parsed_operator<Reader> op;
-        typename Reader::iterator              end;
+        typename Reader::marker                end;
 
         constexpr auto try_parse(const void*, Reader reader)
         {
             op  = lexy::_detail::parse_operator<op_literals>(reader);
-            end = reader.position();
+            end = reader.current();
             return op.idx < op_literals::size;
         }
 
@@ -262,7 +282,7 @@ struct _opc : branch_base
         template <typename NextParser, typename Context, typename... Args>
         LEXY_PARSER_FUNC bool finish(Context& context, Reader& reader, Args&&... args)
         {
-            reader.set_position(end);
+            reader.reset(end);
             return op_finish<NextParser>(context, reader, op, LEXY_FWD(args)...);
         }
     };
@@ -276,7 +296,7 @@ struct _opc : branch_base
             bp<Reader> impl{};
             if (!impl.try_parse(context.control_block, reader))
             {
-                auto err = lexy::error<Reader, lexy::expected_literal_set>(impl.op.pos);
+                auto err = lexy::error<Reader, lexy::expected_literal_set>(impl.op.cur.position());
                 context.on(_ev::error{}, err);
                 return false;
             }
@@ -311,4 +331,3 @@ constexpr auto operator/(_opc<O1...>, _opc<O2...>)
 } // namespace lexyd
 
 #endif // LEXY_DSL_OPERATOR_HPP_INCLUDED
-

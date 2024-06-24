@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_BRACKETS_HPP_INCLUDED
@@ -100,7 +100,8 @@ struct _brackets
 template <typename Open, typename Close>
 constexpr auto brackets(Open, Close)
 {
-    static_assert(lexy::is_branch_rule<Open> && lexy::is_branch_rule<Close>);
+    LEXY_REQUIRE_BRANCH_RULE(Open, "brackets()");
+    LEXY_REQUIRE_BRANCH_RULE(Close, "brackets()");
     return _brackets<Open, Close>{};
 }
 

@@ -1,0 +1,342 @@
+---
+header: "lexy/dsl/expression.hpp"
+entities:
+  "expression": doc
+  "lexy::expression_production": expression_production
+  "lexy::subexpression_production": subexpression_production
+  "lexy::dsl::atom": expression_production
+  "lexy::dsl::groups": groups
+  "lexy::dsl::infix_op_left": infix_op_left
+  "lexy::dsl::infix_op_right": infix_op_right
+  "lexy::dsl::infix_op_list": infix_op_list
+  "lexy::dsl::infix_op_single": infix_op_single
+  "lexy::dsl::postfix_op": postfix_op
+  "lexy::dsl::prefix_op": prefix_op
+---
+:toc: left
+
+[.lead]
+Support for operator precedence parsing.
+
+Some terminology:
+
+Operator::
+  A {{% docref "lexy::dsl::op" %}} rule (or multiple composed with {{% docref "lexy::dsl::operator/ (operator)" %}}).
+Operand::
+  The objects manipulated by an operator.
+Operation::
+  An operator together with arity, associativity and operands.
+  Its binding power (precedence) is determined implicitly by its relation to other operations in its operand.
+Chain::
+  The same operation applied multiple times in direct sequence.
+Expression::
+  Multiple chains of different operations, potentially nested.
+
+[#expression_production]
+== Class `lexy::expression_production`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct max_operator_nesting_exceeded {};
+    struct operator_chain_error {};
+    struct operator_group_error {};
+
+    struct expression_production
+    {
+        using operator_nesting_error = lexy::max_operator_nesting_exceeded;
+        using operator_chain_error   = lexy::operator_chain_error;
+        using operator_group_error   = lexy::operator_group_error;
+
+        static constexpr std::size_t max_operator_nesting;
+
+        static constexpr auto rule = _see-below_;
+    };
+}
+
+namespace lexy::dsl
+{
+    struct atom {};
+}
+----
+
+[.lead]
+`expression_production` is a base class of a production that wants to parse an expression.
+
+[source,cpp,subs="+quotes"]
+----
+struct _operation_ : _operation-base_
+{
+    static constexpr auto op = _operator-rule_;
+    using operand = _operation-or-dsl::atom_;
+};
+
+struct _expression_ : lexy::expression_production
+{
+    static constexpr auto atom = _rule_;
+    using operation = _operation_;
+};
+----
+
+The derived class must have the same members as `Expression` shown above.
+Optionally, it can shadow each member of `lexy::expression_production` indicated in the interface, except for `rule`, to override them to custom values.
+`atom` specifies the rule that is used to parse an atomic operand, i.e. one that isn't another operation in turn.
+`operation` specifies the top-level operation, i.e. the one with the lowest binding power.
+It is a type with the same members as `Operation` shown above:
+the operator rule ({{% docref "lexy::dsl::op" %}} or {{% docref "lexy::dsl::operator/ (operator)" %}}) and the operand,
+which is either another `Operation`, {{% docref "lexy::dsl::groups" %}}, or `dsl::atom`, which indicates that the operand is the rule described in the `atom` member.
+
+The behavior of the generated `rule` of the production is as follows:
+
+Parsing::
+  Parses an arbitrary operation chain consisting of the operators mentioned in the expression (by starting with the root `operation` and following the `operands`).
+  The rules for operation parsing are described in the individual base classes ({{% docref "lexy::dsl::infix_op_left" %}}, {{% docref "lexy::dsl::infix_op_right" %}}, {{% docref "lexy::dsl::infix_op_single" %}}, {{% docref "lexy::dsl::infix_op_list" %}}, {{% docref "lexy::dsl::postfix_op" %}}, {{% docref "lexy::dsl::prefix_op" %}}).
+  If the input does not contain any operator, parses a single `atom`.
+  If there is a trailing operator, it will attempt to parse a following operand greedily.
+Errors::
+  * All errors raised by parsing `atom` or an operator (only possible if the operator is a branch rule).
+  * `Expression::operator_nesting_error`: if the nesting level of operators exceeds `Expression::max_operator_nesting_exceeded`, at the location of the operator that first exceeds it.
+    The rule then fails.
+  * `Expression::operator_chain_error`: see {{% docref "lexy::dsl::infix_op_single" %}}.
+  * `Expression::operator_group_error`: see {{% docref "lexy::dsl::groups" %}}.
+Values::
+  As the rule is the only rule of the entire production, it does not lazily produce values like the other rules, but passes them directly to the callback of the production.
+  * For each instance of the atomic rule, all values it produces are passed to the callback.
+  * For an operation, the value of the operands and of the operator are passed to the callback.
+    The value of an operand is always the result of another callback invocation.
+Parse tree::
+  * An operation creates a production node labeled with the type of the operation, its children are the operands and operator nodes.
+  * The atomic operand creates its nodes as it normally would.
+
+{{% playground-example expr "Parse a simple mathematical expression" %}}
+
+{{% godbolt-example op-choice "Parse and evaluate an even simpler mathematical expression" %}}
+
+TIP: See {{< github-example calculator >}} for a bigger example.
+
+CAUTION: If two operators at different binding powers share a common prefix (e.g. `*` and `**` or `=` and `==`),
+it might be necessary to use {{% docref "lexy::dsl::not_followed_by" %}}.
+
+[#subexpression_production]
+== Class `lexy::subexpression_production`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <_expression_ Expr, _operation_ RootOperation>
+    struct subexpression_production { … };
+}
+----
+
+[.lead]
+`subexpression_production` is a base class of a production that wants to parse a subexpression.
+
+It will parse the same expression as `Expr`, but instead of starting with `Expr::operation`, it starts with `RootOperation`, which must be an operation of the expression.
+All operators with a binding power lower than `RootOperation` are not recognized.
+
+[#groups]
+== Operation `lexy::dsl::groups`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <_operation_... Operands>
+    struct groups
+    {};
+}
+----
+
+[.lead]
+`groups` is a special operation that selects one of the specified operations as operand.
+
+Parsing::
+  When attempting to parse an operand in the current operation, it will parse one of the specified `Operands` (a "group"),
+  which can be other operations with their own operators.
+  Parsing fails, if operators from distinct groups are mixed.
+Errors::
+  * All errors raised by regular expression parsing.
+  * `Expression::operator_group_error`: if an operator from group B was parsed after an operator from group 1, at the position of operator B.
+
+{{% playground-example expr_groups "Parse either a math or a bit operation" %}}
+
+NOTE: `groups` can be used in the top-level `operation` of an expression as well.
+
+[#infix_op_left]
+== Operation base `lexy::dsl::infix_op_left`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct infix_op_left {};
+}
+----
+
+[.lead]
+`infix_op_left` is an operation base that specifies a left-associative infix operator.
+
+Parsing::
+  It will parse the chain `operand op operand`.
+  `a op b op c` is treated as `(a op b) op c`.
+Errors::
+  All errors raised by parsing the operand or operator.
+Values::
+  It will invoke the callback with the value of the left operand, followed by the values of the operator, followed by the value of the right operand.
+  In `a op b op c`, it will invoke `callback(callback(a, op, b), op, c)`.
+Parse tree::
+  A production node labeled with the type of the operation.
+  Its children are all nodes created from the left operand, followed by the nodes for the operator, followed by the nodes from the right operand.
+
+{{% playground-example infix_op_left "Parse a left-associative infix operator" %}}
+
+[#infix_op_right]
+== Operation base `lexy::dsl::infix_op_right`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct infix_op_right {};
+}
+----
+
+[.lead]
+`infix_op_right` is an operation base that specifies a right-associative infix operator.
+
+Parsing::
+  It will parse the chain `operand op operand`.
+  `a op b op c` is treated as `a op (b op c)`.
+Errors::
+  All errors raised by parsing the operand or operator.
+Values::
+  It will invoke the callback with the value of the left operand, followed by the values of the operator, followed by the value of the right operand.
+  In `a op b op c`, it will invoke `callback(a, op, callback(b, op, c))`.
+Parse tree::
+  A production node labeled with the type of the operation.
+  Its children are all nodes created from the left operand, followed by the nodes for the operator, followed by the nodes from the right operand.
+
+{{% playground-example infix_op_right "Parse a right-associative infix operator" %}}
+
+[#infix_op_single]
+== Operation base `lexy::dsl::infix_op_single`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct infix_op_single {};
+}
+----
+
+[.lead]
+`infix_op_single` is an operation base that specifies a non-associative infix operator.
+
+Parsing::
+  It will parse the chain `operand op operand`.
+  `a op b op c` is an error.
+Errors::
+  * All errors raised by parsing the operand or operator.
+  * `Expression::operator_chain_error`: if the operator occurs multiple times in the chain, at the second location.
+    It then recovers, treating it as a left-associative operator.
+Values::
+  It will invoke the callback with the value of the left operand, followed by the values of the operator, followed by the value of the right operand.
+Parse tree::
+  A production node labeled with the type of the operation.
+  Its children are all nodes created from the left operand, followed by the nodes for the operator, followed by the nodes from the right operand.
+
+{{% playground-example infix_op_single "Parse a non-associative infix operator" %}}
+
+[#infix_op_list]
+== Operation base `lexy::dsl::infix_op_list`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct infix_op_list {};
+}
+----
+
+[.lead]
+`infix_op_list` is an operation base that specifies an associative infix operator.
+
+Requires::
+  The callback of the expression production is a sink.
+Parsing::
+  It will parse the chain `operand op operand`.
+  `a op b op c` is treated as `a op b op c`, i.e. no implicit grouping occurs.
+Errors::
+  All errors raised by parsing the operand or operator.
+Values::
+  It will use the callback as a sink.
+  The sink is passed the value of the initial operand, then it is passed all values of the first operator,
+  the value of the next operand, all values of the second operator, and so on.
+  In `a op b op c`, it will invoke `sink(a), sink(op), sink(b), sink(op), sink(c)`.
+Parse tree::
+  A production node labeled with the type of the operation.
+  Its children are all nodes created from the initial operand, followed by the nodes for the first operator, followed by the nodes from the next operand,
+  followed by all nodes from the second operator, and so on.
+
+{{% playground-example infix_op_list "Parse an associative infix operator" %}}
+
+TIP: This can be used to implement chained comparisons, as seen in {{< github-example calculator >}}.
+
+[#postfix_op]
+== Operation base `lexy::dsl::postfix_op`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct postfix_op {};
+}
+----
+
+[.lead]
+`postfix_op` is an operation base that specifies a postfix operator.
+
+Parsing::
+  It will parse the chain `operand op`.
+  `a op op c` is treated as `(a op) op`.
+Errors::
+  All errors raised by parsing the operand or operator.
+Values::
+  It will invoke the callback with the value of the operand, followed by the values of the operator.
+  In `a op op`, it will invoke `callback(callback(a, op), op)`.
+Parse tree::
+  A production node labeled with the type of the operation.
+  Its children are all nodes created from the operand, followed by the nodes for the operator.
+
+{{% playground-example postfix_op "Parse a postfix operator" %}}
+
+[#prefix_op]
+== Operation base `lexy::dsl::prefix_op`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct prefix_op {};
+}
+----
+
+[.lead]
+`prefix_op` is an operation base that specifies a prefix operator.
+
+Parsing::
+  It will parse the chain `op operand`.
+  `op op a` is treated as `op (op a)`.
+Errors::
+  All errors raised by parsing the operand or operator.
+Values::
+  It will invoke the callback with the value of the operator, followed by the value of the operand.
+  In `op op a`, it will invoke `callback(op, callback(op, a))`.
+Parse tree::
+  A production node labeled with the type of the operation.
+  Its children are the nodes for the operator, followed by the nodes from the operand.
+
+{{% playground-example prefix_op "Parse a prefix operator" %}}
+

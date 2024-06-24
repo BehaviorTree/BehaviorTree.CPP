@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_LAZY_INIT_HPP_INCLUDED
@@ -6,6 +6,7 @@
 
 #include <lexy/_detail/assert.hpp>
 #include <lexy/_detail/config.hpp>
+#include <lexy/_detail/std.hpp>
 
 namespace lexy::_detail
 {
@@ -25,6 +26,12 @@ struct _lazy_init_storage_trivial
     constexpr _lazy_init_storage_trivial(int, Args&&... args)
     : _init(true), _value(LEXY_FWD(args)...)
     {}
+
+    template <typename... Args>
+    constexpr void _construct(Args&&... args)
+    {
+        *this = _lazy_init_storage_trivial(0, LEXY_FWD(args)...);
+    }
 };
 
 template <typename T>
@@ -40,24 +47,29 @@ struct _lazy_init_storage_non_trivial
     constexpr _lazy_init_storage_non_trivial() noexcept : _init(false), _empty() {}
 
     template <typename... Args>
-    constexpr _lazy_init_storage_non_trivial(int, Args&&... args)
-    : _init(true), _value(LEXY_FWD(args)...)
-    {}
+    LEXY_CONSTEXPR_DTOR void _construct(Args&&... args)
+    {
+        _detail::construct_at(&_value, LEXY_FWD(args)...);
+        _init = true;
+    }
 
-    ~_lazy_init_storage_non_trivial() noexcept
+    // Cannot add noexcept due to https://github.com/llvm/llvm-project/issues/59854.
+    LEXY_CONSTEXPR_DTOR ~_lazy_init_storage_non_trivial() /* noexcept */
     {
         if (_init)
             _value.~T();
     }
 
-    _lazy_init_storage_non_trivial(_lazy_init_storage_non_trivial&& other) noexcept
+    LEXY_CONSTEXPR_DTOR _lazy_init_storage_non_trivial(
+        _lazy_init_storage_non_trivial&& other) noexcept
     : _init(other._init), _empty()
     {
         if (_init)
-            ::new (static_cast<void*>(&_value)) T(LEXY_MOV(other._value));
+            _detail::construct_at(&_value, LEXY_MOV(other._value));
     }
 
-    _lazy_init_storage_non_trivial& operator=(_lazy_init_storage_non_trivial&& other) noexcept
+    LEXY_CONSTEXPR_DTOR _lazy_init_storage_non_trivial& operator=(
+        _lazy_init_storage_non_trivial&& other) noexcept
     {
         if (_init && other._init)
             _value = LEXY_MOV(other._value);
@@ -68,7 +80,7 @@ struct _lazy_init_storage_non_trivial
         }
         else if (!_init && other._init)
         {
-            ::new (static_cast<void*>(&_value)) T(LEXY_MOV(other._value));
+            _detail::construct_at(&_value, LEXY_MOV(other._value));
             _init = true;
         }
         else
@@ -104,9 +116,11 @@ public:
     template <typename... Args>
     constexpr T& emplace(Args&&... args)
     {
-        LEXY_PRECONDITION(!*this);
+        if (*this)
+            this->_value = T(LEXY_FWD(args)...);
+        else
+            this->_construct(LEXY_FWD(args)...);
 
-        *this = lazy_init(0, LEXY_FWD(args)...);
         return this->_value;
     }
 
@@ -169,7 +183,6 @@ public:
 
     constexpr T& emplace(T& ref)
     {
-        LEXY_PRECONDITION(!*this);
         _ptr = &ref;
         return ref;
     }
@@ -210,7 +223,6 @@ public:
 
     constexpr void emplace()
     {
-        LEXY_PRECONDITION(!*this);
         _init = true;
     }
     template <typename Fn, typename... Args>

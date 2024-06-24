@@ -1,0 +1,155 @@
+---
+header: "lexy/dsl/recover.hpp"
+entities:
+  "error recovery": doc
+  "lexy::dsl::try_": try_
+  "lexy::dsl::recover": recover
+  "lexy::dsl::find": find
+---
+:toc: left
+
+[.lead]
+The `try_`, `recover` and `find` rules for error recovery.
+
+Unless otherwise specified, lexy will cancel parsing on the first error.
+This cancellation propagates outward until either the entire parsing fails, or a `try_` rule is reached.
+This is similar to how an exception will perform stack unwinding until the entire program is terminated or a `try` block reached.
+`try_` allows recovering from the error so parsing can continue after the first error.
+
+[#try_]
+== Rule `lexy::dsl::try_`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto try_(_rule_ auto rule);
+    constexpr _rule_ auto try_(_rule_ auto rule, _rule_ auto recovery_rule);
+
+    constexpr _branch-rule_ auto try_(_branch-rule_ auto rule);
+    constexpr _branch-rule_ auto try_(_branch-rule_ auto rule, _rule_ auto recovery_rule);
+}
+----
+
+[.lead]
+`try` is a rule that catches any errors raised during parsing of `rule` and recovers from them, so parsing can continue.
+
+Parsing::
+  Parses `rule`.
+Branch parsing::
+  Tries to parse `rule` and succeeds if that succeeds.
+  If `rule` backtracks, this is not considered a situation where recovery needs to happen, and it also backtracks.
+  Only recovers if `rule` fails, failure of recovery (see below) do not lead to a backtrack;
+  at this point the branch has been committed.
+Errors::
+  All errors raised by `rule`.
+  If `rule` has not already recovered, recovers for it:
+  * The single argument overload does it by skipping whitespace but otherwise consuming nothing;
+    parsing then simply continues as if nothing happened.
+  * The two argument overload does it by parsing `recovery_rule` and then skipping whitespace.
+    If that succeeds, recovery is finished.
+    Otherwise, raises all errors from it unchanged and cancels.
+Values::
+  If `rule` succeeded, all values produced by `rule`.
+  Otherwise, all values produced by `recovery_rule`.
+  In particular, the values of `rule` are _not_ produced in that case.
+
+The single argument overload useful if `rule` matches something that is not technically necessary for parsing, but just there for redundancy.
+The two argument overload accepts a `recovery_rule` whose purpose is to bring the parser into a known state.
+This is useful to skip bad input until a well-known synchronization point is reached, like a statement separator.
+If `recovery_rule` fails, it requires a `try_` rule at a higher level.
+
+The behavior of `try_` is analogous to a C++ `try` block.
+If an error is raised during `rule`, it is caught by the `recovery_rule`, which corresponds to a `catch (...)` block.
+If `recovery_rule` succeeds, this corresponds to a `catch` block that is executed without error.
+If `recovery_rule` raises an error, this corresponds to a `catch` block whose execution raises another exception.
+`recovery_rule` can also fail without raising an error; this corresponds to a `throw;` statement that re-throws the exception.
+
+{{% godbolt-example try "Recover from missing version numbers" %}}
+
+NOTE: See {{< github-example config >}} for a more complete version number parser.
+
+[#find]
+== Rule `lexy::dsl::find`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _find-dsl_ // models _rule_
+    {
+        _rule_ auto limit(auto ... limits);
+    };
+
+    constexpr _find-dsl_ find(auto ... literals);
+}
+----
+
+[.lead]
+`find` is a recovery rule that skips input until a synchronization {{% token-rule %}} is reached.
+
+Requires::
+  * The {{% encoding %}} of the input is a char encoding.
+  * `literals` and `limits` are {{% literal-rule %}}s or {{% docref "lexy::dsl::literal_set" %}}.
+Parsing::
+  Tries to match {{% docref "lexy::dsl::lookahead" %}}`(literal_set, limit_set)`,
+  where `literals` and `limits` have been collected into a single literal set.
+  If that was successful, consumes everything until the beginning of the found literal and succeeds.
+  Otherwise, fails after consuming everything until the beginning of the found limit (or EOF).
+Errors::
+  None. It can fail, but does so without raising errors.
+Values::
+  None.
+Parse tree::
+  A single token node whose range covers everything consumed before the token that was found.
+  Its {{% docref "lexy::predefined_token_kind" %}} is `lexy::error_token_kind`.
+
+If recovery is successful, the reader has been advanced to the position just before the first of the `tokens`.
+Parsing can then continue from this known state, e.g. from a statement separator.
+If recovery fails, no additional error is raised but parsing is canceled, to try recovery at a higher level.
+
+{{% playground-example find "Parse a list of declarations with error recovery using `find()`" %}}
+
+[#recover]
+== Rule `lexy::dsl::recover`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _recover-dsl_ // models _rule_
+    {
+        _rule_ auto limit(auto ... limits);
+    };
+
+    constexpr _recover-dsl_ recover(_branch-rule_ auto ... branches);
+}
+----
+
+[.lead]
+`recover` is a recovery rule that skip input until a follow-up {{% branch-rule %}} can be parsed.
+
+Requires::
+  `limits` are {{% literal-rule %}}s or {{% docref "lexy::dsl::literal_set" %}}.
+Parsing::
+  Tries to parse any of `branches` anywhere in the remaining input;
+  consumes everything before the selected branch and then the branch itself.
+  Fails if EOF is reached first or one of `limits` matches,
+  if they were specified.
+Errors::
+  * All errors raised by parsing the selected branch.
+    The rule fails if the selected branch fails.
+  * A failed recovery does not raise an error.
+Values::
+  All values produced by the selected branch.
+Parse tree::
+  A single token node whose range covers everything consumed before the token.
+  Its {{% docref "lexy::predefined_token_kind" %}} is `lexy::error_token_kind`.
+
+Unlike `find`, `recover` directly continues with one rule.
+If recovery has been successful, it has parsed the selected rule.
+Parsing can then continue as it would normally do a after that rule.
+If recovery fails, no additional error is raised but parsing is canceled, to try recovery at a higher level.
+
+{{% playground-example recover "Parse a list of declarations with error recovery using `recover()`" %}}
+

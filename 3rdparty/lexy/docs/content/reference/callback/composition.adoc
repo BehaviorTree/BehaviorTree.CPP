@@ -1,0 +1,57 @@
+---
+header: "lexy/callback/composition.hpp"
+entities:
+  "lexy::operator|": compose-callback
+  "lexy::operator>>": compose-sink
+---
+:toc: left
+
+[.lead]
+Compose callbacks and sinks.
+
+[#compose-callback]
+== Callback `lexy::operator|`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    constexpr _callback_ auto operator|(_callback_ auto first, _callback_ auto second);
+}
+----
+
+[.lead]
+Composes two callbacks.
+
+The result is a callback that forwards all arguments to `first`, then forwards that result to `second.`
+If either `first` or `second` is a callback with a state argument, the result is as well and it will forward the state.
+
+{{% godbolt-example "compose-callback" "Compose two callbacks" %}}
+
+[#compose-sink]
+== Callback and sink `lexy::operator>>`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename ... Args>
+    constexpr auto operator>>(_sink<Args...>_ auto sink, _callback_ auto callback);
+}
+----
+
+[.lead]
+Combines a sink and a callback.
+
+The result is both a sink and a callback.
+As a sink, it forwards to the `sink`.
+As a callback, it forwards all arguments to `callback`.
+If the callback accepts a state, the result does as well and will forward it.
+
+{{% godbolt-example "compose-sink" "Compose a sink and a callback" %}}
+
+TIP: If you have a production that produces both a list and some other values,
+using `sink >> callback` would work and the `callback` is called with the final list and the other values.
+However, it is better to split the list part into a separate production that needs only a sink.
+Use `operator>>` only if you need to post-process the result of a sink.
+

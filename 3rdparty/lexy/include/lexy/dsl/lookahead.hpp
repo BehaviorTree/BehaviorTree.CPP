@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_LOOKAHEAD_HPP_INCLUDED
@@ -50,6 +50,8 @@ struct _look : branch_base
     template <typename Reader>
     struct bp
     {
+        static_assert(lexy::is_char_encoding<typename Reader::encoding>);
+
         typename Reader::iterator begin;
         typename Reader::iterator end;
 
@@ -102,6 +104,7 @@ struct _look : branch_base
         template <typename Context, typename Reader, typename... Args>
         LEXY_PARSER_FUNC static bool parse(Context& context, Reader& reader, Args&&... args)
         {
+            static_assert(lexy::is_char_encoding<typename Reader::encoding>);
             bp<Reader> impl{};
             if (!impl.try_parse(context.control_block, reader))
             {

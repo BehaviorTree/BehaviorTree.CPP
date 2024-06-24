@@ -1,0 +1,168 @@
+---
+header: "lexy/dsl/byte.hpp"
+entities:
+  "lexy::dsl::byte": bytes
+  "lexy::dsl::bytes": bytes
+  "lexy::dsl::padding_bytes": bytes
+  "lexy::dsl::bint8": int
+  "lexy::dsl::bint16": int
+  "lexy::dsl::little_bint16": int
+  "lexy::dsl::big_bint16": int
+  "lexy::dsl::bint32": int
+  "lexy::dsl::little_bint32": int
+  "lexy::dsl::big_bint32": int
+  "lexy::dsl::bint64": int
+  "lexy::dsl::little_bint64": int
+  "lexy::dsl::big_bint64": int
+---
+:toc: left
+
+[.lead]
+Rules that match one or more bytes.
+
+[#bytes]
+== Token rule `lexy::dsl::byte` and `lexy::dsl::bytes`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    class _bytes-dsl_ // models _token-rule_
+    {
+    public:
+        template <typename Predicate>
+        constexpr _token-rule_ auto if_() const;
+
+        template <unsigned char ... Bytes>
+        constexpr _token-rule_ auto set() const;
+        template <unsigned char Low, unsigned char High>
+        constexpr _token-rule_ auto range() const;
+
+        constexpr _token-rule_ auto ascii() const;
+    };
+
+    template <std::size_t N>
+    constexpr _bytes-dsl auto bytes;
+
+    constexpr _bytes-dsl_ auto byte = bytes<1>;
+}
+----
+
+[.lead]
+`bytes` is a {{% token-rule %}} that matches `N` bytes from a specified set.
+
+Requires::
+  The {{% encoding %}} of the input is `lexy::byte_encoding`.
+Matching::
+  Matches and consumes `N` bytes:
+    * By default, it matches arbitrary bytes in the range `[0x00, 0xFF]` (both sides inclusive).
+      Its name is `byte`.
+    * `.if_()`: matches bytes where the predicate returns true.
+      It must have a `constexpr bool operator()(unsigned char)`.
+      Its name is the type name of `Predicate`.
+    * `.set()`: matches the specified bytes.
+      Its name is `byte.set`.
+    * `.range()`: matches the bytes in the range `[Low, High]` (both sides inclusive).
+      Its name is `byte.range`.
+    * `.ascii()`: matches bytes that are also ASCII characters; i.e. in the range `[0x00, 0x7F]` (both sides inclusive).
+      Its name is `byte.ASCII`.
+Errors::
+  {{% docref "lexy::expected_char_class" %}} (with the name as above):
+  if a mismatched byte or EOF was encountered early; at the position of the last byte it could consume.
+  The rule then fails.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::any_token_kind` (default) or `lexy::unknown_token_kind` (with predicate/range).
+
+CAUTION: Combining {{% docref "lexy::dsl::capture" %}} with `bytes` does not do any endianness conversion.
+
+[#padding_bytes]
+== Branch rule `lexy::dsl::padding_bytes`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <std::size_t N, unsigned char Value = 0>
+    constexpr _branch-rule_ auto padding_bytes;
+}
+----
+
+[.lead]
+`padding_bytes` is a {{% branch-rule %}} that matches `N` padding bytes.
+
+Padding bytes are bytes whose value doesn't matter:
+they're only expected to have a certain value, but it's okay, if they don't.
+
+Requires::
+  The {{% encoding %}} of the input is `lexy::byte_encoding`.
+(Branch) parsing::
+  (Branch) parses {{% docref "lexy::dsl::bytes" %}}.
+  If that succeeds, the branch is taken.
+  It then checks if the `N` consumed bytes have the given `Value`.
+Errors::
+  * All errors raised by parsing `bytes`, if not branch parsing.
+    The rule then fails.
+  * {{% docref "lexy::expected_literal" %}} if a byte did not have `Value`.
+    The rule then recovers.
+
+NOTE: Branch parsing will not backtrack if the padding bytes do not have the given `Value`.
+
+[#int]
+== Binary integer branch rules
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct mismatched_byte_count {};
+}
+
+namespace lexy::dsl
+{
+    struct _binary-integer-dsl__ // models _branch-rule_
+    {
+        constexpr _branch-rule_ operator()(_token-rule_ bytes) const;
+    };
+
+    constexpr _binary-integer-dsl_ bint8;
+
+    constexpr _binary-integer-dsl_ bint16;
+    constexpr _binary-integer-dsl_ little_bint16;
+    constexpr _binary-integer-dsl_ big_bint16;
+
+    constexpr _binary-integer-dsl_ bint32;
+    constexpr _binary-integer-dsl_ little_bint32;
+    constexpr _binary-integer-dsl_ big_bint32;
+
+    constexpr _binary-integer-dsl_ bint64;
+    constexpr _binary-integer-dsl_ little_bint64;
+    constexpr _binary-integer-dsl_ big_bint64;
+}
+----
+
+[.lead]
+`[little/big_]bintN` is a {{% branch-rule %}} that converts `N / 8` bytes into an `N` bit integer.
+
+Each rule has the associated bit width `N` and endianness:
+for the prefixed ones it is little/big endian, for the unprefixed ones it is the native endianness.
+The endianness doesn't matter for `bint8`.
+
+They delegate to the associated `bytes` rule, which can be specified using the function call operator.
+If none has been specified, they default to {{% docref "lexy::dsl::bytes" %}}.
+
+Requires::
+  The {{% encoding %}} of the input is `lexy::byte_encoding`.
+(Branch) parsing::
+  (Branch) parses `bytes`.
+  If that succeeds, the branch is taken.
+  It then checks that `N / 8` bytes have been consumed.
+Errors::
+  * All errors raised by parsing `bytes`.
+    The rule then fails.
+  * `lexy::mismatched_byte_count`: if `bytes` succeeded but did not consume `N / 8` bytes;
+    its range covers everything consumed by `bytes`.
+    The rule then fails.
+Values::
+  A `std::uint_leastN_t` which results in reading `N / 8` bytes in the specified endianness.
+  This conversion can never fail.
+

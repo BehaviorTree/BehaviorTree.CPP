@@ -1,0 +1,172 @@
+---
+title: Branching, backtracking and making decisions — lexy is not declarative
+---
+:toc: left
+
+While lexy's DSL can look similar to formal grammars such as EBNF or regex, it is not actually comparable.
+Traditional grammars describe _what_ valid input looks like, lexy's DSL describes _how_ input is parsed.
+That way, you have full control over all backtracking that happens during parsing.
+
+== lexy is not declarative
+
+To illustrate the difference, consider the regex `a|ab`, which matches `a` or `ab`.
+Writing the same rule in lexy using the {{% docref "LEXY_LIT" %}} primitive rule and the {{% docref choice %}} combinator, results in this:
+
+{{% playground-example choice_bad "Attempt to match `a` or `ab`" %}}
+
+However, as you will see when you try the example on the playground, it never actually matches `ab`, only `a`!
+
+The reason for this is simple: in lexy, choice `lhs | rhs` is essentially syntax sugar for code like this:
+
+```cpp
+if (match(lhs))
+    consume(lhs);
+else if (match(rhs))
+    consume(rhs);
+else
+    error();
+```
+
+In other words, choice attempts to match each rule in the order they were specified in.
+As `a` matches on `ab`, it will always take the first branch without considering `ab`.
+The correct way to write it would thus be `LEXY_LIT("ab") | LEXY_LIT("a")`.
+
+****
+Alternatively, in this particular case of matching one of multiple literals,
+you can also use {{% docref "lexy::dsl::literal_set" %}}.
+This rule tries to find the longest literal that matches.
+****
+
+Likewise, translating the regex `a*a`, which matches arbitrary many `a`s and then one additional one (i.e. `a`, `aa`, `aaa`, ...), using {{% docref "lexy::dsl::while_" %}} directly, doesn't work either:
+
+{{% playground-example while_bad "Attempt to match `a*a`" %}}
+
+Again, `while_()` does what it says in the name: it attempts to match the rule as often as possible and only stops matching when that isn't possible anymore.
+However, this means the last `dsl::lit_c<'a'>` can never succeed.
+
+```cpp
+while (match('a'))
+  consume('a');
+match_and_consume('a'); // can never succeed
+```
+
+This behavior is a good thing, as it gives you full control over the parsing algorithm.
+While a naive regex engine might need to resort to backtracking to match `a*a`, lexy will only backtrack if you've instructed it to.
+
+The DSL is just syntax sugar for a hand-written parser.
+
+== Decisions are made using branches
+
+Both {{% docref choice %}} and {{% docref "lexy::dsl::while_" %}} need to make a decision during parsing (which alternative to parse/should I parse another iteration?).
+A simple way to make a decision is to just guess one, see what happens, and backtrack when it didn't work out.
+However, lexy does not do implicit backtracking.
+
+Instead, all rules that make decision require {{% branch-rule %}}s:
+special rules where it can be easily checked whether or not they match at an input.
+Those include:
+
+* {{% token-rule %}}s such as {{% docref "lexy::dsl::lit" %}}, {{% docref "lexy::dsl::ascii::alpha" %}}, {{% docref "lexy::dsl::digits" %}} (i.e. one token lookahead)
+* branch conditions such as {{% docref "lexy::dsl::peek" %}}, {{% docref "lexy::dsl::else_" %}}
+* the branch combinator {{% docref "lexy::dsl::operator>>" %}}
+
+So the choice above `LEXY_LIT("ab") | LEXY_LIT("a")` compiled because both alternatives are literal rules, which can be efficiently checked.
+However, if we were to match between more complex alternatives, we need to manually specify how lexy should make a decision.
+
+Let's extend our previous color parser to also allow the function call syntax `rgb(255,0,255)`:
+
+```cpp
+struct channel_hex { … }; <1>
+
+struct channel_dec
+{
+    static constexpr auto rule = dsl::integer<std::uint8_t>; <2>
+};
+
+struct color
+{
+    static constexpr auto rule = []{
+        auto hex_color = dsl::hash_sign + dsl::times<3>(dsl::p<channel_hex>); <3>
+
+        auto dec_channels = dsl::times<3>(dsl::p<channel_dec>, dsl::sep(dsl::comma)); <4>
+        auto fnc_color = LEXY_LIT("rgb") + dsl::parenthesized(dec_channels); <5>
+
+        return hex_color | fnc_color; <6>
+    }();
+};
+```
+<1> We've renamed the old `channel` to `channel_hex`.
+<2> A decimal channel just parses an integer, the default matcher for {{% docref "lexy::dsl::integer" %}} is {{% docref "lexy::dsl::digits" %}}, which defaults to decimal.
+<3> The hex rule, as before.
+<4> We want three decimal channels, but separated by comma, which is specified in the second argument to {{% docref "lexy::dsl::times" %}}.
+<5> We want to parse `rgb` followed by the parenthesized decimal channels, which can be easily done using {{% docref "lexy::dsl::parenthesized" %}}.
+<6> We want to match either a hex color or a function call color, but this doesn't compile.
+
+This code doesn't compile, because the specified alternatives of the choice aren't branch rules:
+lexy has no idea how it should make a decision between them.
+As such, we need to manually tell it by using the branch combinator {{% docref "lexy::dsl::operator>>" %}}:
+its left-hand side is an existing branch rule, and the right-hand side an arbitrary rule.
+The result is a branch rule that will use the LHS to make a decision about whether the branch is taken.
+
+In our case, we want to match a hex color when we see a hash sign, and a function call color when we see the literal `rgb`:
+
+{{% playground-example color_function "Parse a hex color or function call color" %}}
+
+Note that in a lucky coincidence of operator precedence, the syntax `condition1 >> rule1a + rule 1b | condition2 >> rule2a + rule2b | ...` has exactly the semantics we want here.
+
+Also note that once a decision to take a branch has been made using the branch condition, lexy will never backtrack again -- even if the branch later fails.
+For example, consider a call to `dsl::while_(LEXY_LIT("a") >> LEXY_LIT("b") + LEXY_LIT("c"))`.
+We've instructed lexy to try another iteration when it sees an `a`: it doesn't matter what comes after it.
+
+[source]
+----
+abcabcabd
+^ start, try to match the condition
+
+abcabcabd
+-^ condition matched, we take the branch
+
+abcabcabd
+---^ branch matched, try to match condition of the next iteration
+
+abcabcabd
+----^ condition matched, we take the branch
+
+abcabcabd
+------^ branch matched, try to match condition of the next iteration
+
+abcabcabd
+-------^ condition matched, we take the branch
+
+abcabcabd
+--------^ error: expected `c` not `d`, however we no longer bracktrack!
+----
+
+== Convenience rules to get automatic branch conditions
+
+Specifying a branch condition every time lexy needs to make a decision, can be pretty annoying.
+Luckily, there are many situations where that isn't necessary:
+
+* {{% docref "lexy::dsl::p" %}} is a branch condition if the rule of the production is a branch (and the production does not specify custom {{% docref "whitespace" %}}).
+  In that case, it is convenient to specify a condition in the rule of a production.
+  link:/playground?example=choice_production[Try it online].
+* {{% docref "lexy::dsl::else_" %}} is a branch condition that is always taken.
+  As such, if you have a choice between `N` alternatives, you only need to provide conditions for `N - 1`, and can use `else_ >>` for the last one.
+  However, it needs to be the last alternative listed in the choice, as branches are tried in order!
+* {{% docref "lexy::dsl::list" %}} parses a list of things and just like {{% docref "lexy::dsl::while_" %}} requires a branch condition.
+  However, when you're parsing a list of things with a mandatory separator like a comma between them, it doesn't actually require one:
+  after parsing the mandatory first item, if the next thing is a separator, lexy knows that it needs to parse another item.
+* Often, a list of things is surrounded and/or terminated by some specific token.
+  For example, arguments in a function call are surrounded by parenthesis, so we can decide whether we want another argument by checking whether we've reached the closing parenthesis.
+  In lexy, this can be accomplished by specifying your own {{% docref "lexy::dsl::brackets" %}} or {{% docref "lexy::dsl::terminator" %}},
+  or using existing one like {{% docref "lexy::dsl::parenthesized" %}}.
+  As a bonus, you get really sophisticated error recovery for free.
+  link:/playground?example=parenthesized[Try it online].
+* {{% docref "lexy::dsl::delimited" %}} parses a string literal surrounded by the given delimiters.
+  It automatically takes care of checking the closing delimiter for you.
+
+Of course, sometimes you need to specify your own branch condition and there isn't a single token you can use to make a decision.
+Then you can use backtracking using {{% docref "lexy::dsl::peek" %}} or {{% docref "lexy::dsl::lookahead" %}},
+which look at the next input and decide about taking a branch without consuming anything.
+
+{{% playground-example peek "Peek ahead to see whether we have a number" %}}
+

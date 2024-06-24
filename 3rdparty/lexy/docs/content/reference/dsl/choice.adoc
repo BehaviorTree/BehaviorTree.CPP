@@ -1,0 +1,62 @@
+---
+header: "lexy/dsl/choice.hpp"
+entities:
+  "lexy::dsl::operator|": choice
+  "choice": choice
+---
+:toc: left
+
+[#choice]
+== Rule `lexy::dsl::operator|`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct exhausted_choice {};
+}
+
+namespace lexy::dsl
+{
+    struct _choice_ {}; // models _rule_, and sometimes _branch-rule_
+
+    constexpr _choice_ operator|(_branch-rule_ auto lhs, _branch-rule_ auto rhs);
+
+    constexpr _choice_ operator|(_choice_ lhs, _branch-rule_ auto rhs);
+    constexpr _choice_ operator|(_branch-rule_ auto lhs, _choice_ rhs);
+    constexpr _choice_ operator|(_choice_ lhs, _choice_ rhs);
+}
+----
+
+[.lead]
+`operator|` (choice) is a rule that parses one of the specified {{% branch-rule %}}s.
+
+Parsing::
+  Tries to parse `lhs`, then tries to parse `rhs`.
+Branch parsing::
+  It is a branch rule if neither `lhs` nor `rhs` are unconditional branches (e.g. {{% docref "lexy::dsl::else_" %}}).
+  Tries to parse `lhs`, then tries to parse `rhs`.
+  Backtracks instead of failing for an exhausted choice.
+Errors::
+  * `lexy::exhausted_choice`: if neither `lhs` nor `rhs` could be parsed, at the starting reader position. The rule then fails.
+  * All errors raised by `lhs` or `rhs` during branch parsing.
+    The rule then fails if they have failed.
+Values::
+  All values produced by the selected branch.
+
+`operator|` can be chained:
+`a | (b | c)` is equivalent to `a | lexy::dsl::else_ >> (b | c)`, and likewise for the other cases.
+
+{{% playground-example choice "Parse a greeting" %}}
+{{% playground-example choice_error "Raise a different error if no greeting matches" %}}
+{{% playground-example choice_else "Do something differently if no greeting matches" %}}
+
+{{% playground-example choice_production "Branches can be arbitrarily complex" %}}
+
+{{% playground-example choice_branch "Only the branch condition is checked" %}}
+
+TIP: Use {{% docref "lexy::dsl::operator>>" %}} to turn a rule into a branch by giving it a condition.
+Use {{% docref "lexy::dsl::peek" %}} or {{% docref "lexy::dsl::lookahead" %}} as conditions if there is no simple token rule to check the beginning of the branch.
+
+NOTE: If one of the branches is always taken (e.g. because it uses {{% docref "lexy::dsl::else_" %}}), the `lexy::exhausted_choice` error is never raised.
+

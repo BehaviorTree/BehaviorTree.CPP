@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ENCODING_HPP_INCLUDED
@@ -253,13 +253,35 @@ struct _deduce_encoding<std::byte>
 };
 } // namespace lexy
 
+//=== encoding traits ===//
+namespace lexy
+{
+template <typename Encoding>
+constexpr auto is_unicode_encoding
+    = std::is_same_v<Encoding, ascii_encoding> || std::is_same_v<Encoding, utf8_encoding>
+      || std::is_same_v<Encoding, utf8_char_encoding> || std::is_same_v<Encoding, utf16_encoding>
+      || std::is_same_v<Encoding, utf32_encoding>;
+
+template <typename Encoding>
+constexpr auto is_text_encoding
+    = is_unicode_encoding<Encoding> || std::is_same_v<Encoding, default_encoding>;
+
+template <typename Encoding>
+constexpr auto is_byte_encoding = std::is_same_v<Encoding, byte_encoding>;
+
+template <typename Encoding>
+constexpr auto is_char_encoding = is_text_encoding<Encoding> || is_byte_encoding<Encoding>;
+
+template <typename Encoding>
+constexpr auto is_node_encoding = false;
+} // namespace lexy
+
 //=== impls ===//
 namespace lexy::_detail
 {
 template <typename Encoding, typename CharT>
-constexpr bool is_compatible_char_type
-    = std::is_same_v<typename Encoding::char_type,
-                     CharT> || Encoding::template is_secondary_char_type<CharT>();
+constexpr bool is_compatible_char_type = std::is_same_v<typename Encoding::char_type, CharT>
+                                         || Encoding::template is_secondary_char_type<CharT>();
 
 template <typename Encoding, typename CharT>
 using require_secondary_char_type

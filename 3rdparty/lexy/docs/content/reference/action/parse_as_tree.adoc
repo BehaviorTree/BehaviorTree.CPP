@@ -1,0 +1,59 @@
+---
+header: "lexy/action/parse_as_tree.hpp"
+entities:
+  "lexy::parse_as_tree": parse_as_tree
+---
+:toc: left
+
+[#parse_as_tree]
+== Action `lexy::parse_as_tree`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename State, typename Input, typename ErrorCallback,
+              typename TokenKind = void, typename MemoryResource = _default-resource_>
+    struct parse_as_tree_action;
+
+    template <_production_ Production,
+              typename TK, typename MemRes,
+              _input_ Input>
+    auto parse_as_tree(parse_tree<lexy::input_reader<Input>, TK, MemRes>& tree,
+                       const Input& input, _error-callback_ auto error_callback)
+        -> validate_result<decltype(error_callback)>;
+
+    template <_production_ Production,
+              typename TK, typename MemRes,
+              _input_ Input, typename ParseState>
+    auto parse_as_tree(parse_tree<lexy::input_reader<Input>, TK, MemRes>& tree,
+                       const Input& input, ParseState& parse_state, _error-callback_ auto error_callback)
+        -> validate_result<decltype(error_callback)>;
+    template <_production_ Production,
+              typename TK, typename MemRes,
+              _input_ Input, typename ParseState>
+    auto parse_as_tree(parse_tree<lexy::input_reader<Input>, TK, MemRes>& tree,
+                       const Input& input, const ParseState& parse_state, _error-callback_ auto error_callback)
+        -> validate_result<decltype(error_callback)>;
+}
+----
+
+[.lead]
+An action that parses `Production` on `input` and produces a {{% docref "lexy::parse_tree" %}}.
+
+It parses `Production` on `input`.
+All values produced during parsing are discarded;
+all errors raised are forwarded to the {{% error-callback %}}.
+Returns the {{% docref "lexy::validate_result" %}} containing the result of the error callback.
+
+During parsing, `tree` is cleared and replaced by a new tree that represents the parse tree of the input:
+it will have a production node for each production, and a token node for each tokens as indicated by the {{% rule %}}s.
+If a production is a {{% docref "lexy::transparent_production" %}}, it will not get its own node in the parse tree,
+but the would-be children instead added to the currently active node.
+If a token rule has an ignorable {{% docref "lexy::token_kind" %}} and matches without having consumed any input, it will not be added to the parse tree.
+
+The resulting parse tree is a lossless representation of the input:
+Traversing all token nodes of the tree and concatenating their {{% docref "lexy::lexeme" %}}s will yield the same input back.
+Any remaining input that was not parsed by the production is stored in the tree's `remaining_input()` {{% docref "lexy::lexeme" %}};
+if the remaining input is empty, both iterators will point to the end of the input.
+

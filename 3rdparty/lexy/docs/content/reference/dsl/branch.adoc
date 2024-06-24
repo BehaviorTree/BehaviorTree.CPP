@@ -1,0 +1,91 @@
+---
+header: "lexy/dsl/branch.hpp"
+entities:
+  "branch-rule": doc
+  "lexy::dsl::operator>>": branch
+  "branch": branch
+  "lexy::dsl::else_": else_
+---
+:toc: left
+
+[.lead]
+The `operator>>` overload for rules and `else_` branch rule.
+
+{{% interface %}}
+----
+template <typename T>
+concept _branch-rule_ = _rule_<T> && …;
+----
+
+A _branch rule_ is a rule that has an associated condition.
+The parsing algorithm can efficiently check whether the condition would match at the current reader position.
+As such, they are used to make decisions:
+once a branch condition matches, the branch is taken without backtracking.
+
+[#branch]
+== Branch rule `lexy::dsl::operator>>`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _branch_ {}; // models _branch-rule_
+
+    constexpr _branch_ operator>>(_branch-rule_ auto condition, _rule_ auto then);
+}
+----
+
+[.lead]
+`operator>>` (branch) turns a rule into a branch rule by giving it another branch rule as condition.
+
+Parsing::
+  Parses `condition` and `then` in {{% docref sequence %}}.
+Branch parsing::
+  Tries to parse `condition` and backtracks if that backtracks.
+  Then parses `then`.
+Errors::
+  All errors raised by `condition` and `then`.
+  The rule then fails if they have failed.
+Values::
+  All values produced by `condition` followed by all values of `then`.
+
+If the result of `operator>>` is used in the beginning of a {{% docref sequence %}} with a rule, i.e. as `(condition >> rule1) + rule2`,
+this is equivalent to `condition >> rule1 + rule2`, i.e. the original branch is extended.
+`rule1 + (condition >> rule2)`, on the other hand, is equivalent to `rule1 + condition + rule2`.
+
+{{% playground-example if "Only parse a fraction if preceded by a dot" %}}
+
+NOTE: A branch rule is only parsed as a branch if its required.
+If you just use it by itself, the branch condition does not matter.
+Use {{% docref "lexy::dsl::if_" %}} to conditionally execute a branch.
+
+CAUTION: If `then` is also a branch rule, it will still only use `condition` as the condition.
+
+[#else_]
+== Branch rule `lexy::dsl::else_`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _else_ // note: not a _rule_ itself
+    {
+        friend constexpr _branch-rule_ operator>>(_else_, _rule_ auto rule);
+    };
+
+    constexpr _else_ else_;
+}
+----
+
+[.lead]
+`else_` is a tag that can be used as the condition for link:#branch[`operator>>`] to indicate that the rule should always be taken.
+
+(Branch) Parsing::
+  Parses `rule` without every backtracking.
+Errors::
+  All errors raised by parsing `rule`.
+Values::
+  All values produced by `rule`.
+
+{{% playground-example choice_else "If it is not a known greeting, require that the empty is empty" %}}
+

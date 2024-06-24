@@ -1,0 +1,137 @@
+---
+header: "lexy/dsl/unicode.hpp"
+entities:
+  "lexy::dsl::unicode": doc
+  "lexy::dsl::unicode::control": class
+  "lexy::dsl::unicode::blank": class
+  "lexy::dsl::unicode::newline": class
+  "lexy::dsl::unicode::other_space": class
+  "lexy::dsl::unicode::space": class
+  "lexy::dsl::unicode::digit": class
+  "lexy::dsl::unicode::lower": class
+  "lexy::dsl::unicode::upper": class
+  "lexy::dsl::unicode::alpha": class
+  "lexy::dsl::unicode::alpha_digit": class
+  "lexy::dsl::unicode::alnum": class
+  "lexy::dsl::unicode::word": class
+  "lexy::dsl::unicode::graph": class
+  "lexy::dsl::unicode::print": class
+  "lexy::dsl::unicode::character": class
+  "lexy::dsl::unicode::xid_start": identifier
+  "lexy::dsl::unicode::xid_start_underscore": identifier
+  "lexy::dsl::unicode::xid_continue": identifier
+---
+:toc: left
+
+[.lead]
+Char class rules for matching Unicode char classes.
+
+[#class]
+== Unicode char classes
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    namespace unicode
+    {
+        constexpr _char-class-rule_ auto control;
+
+        constexpr _char-class-rule_ auto blank;
+        constexpr _char-class-rule_ auto newline;
+        constexpr _char-class-rule_ auto other_space;
+        constexpr _char-class-rule_ auto space;
+
+        constexpr _char-class-rule_ auto digit;
+
+        constexpr _char-class-rule_ auto lower;
+        constexpr _char-class-rule_ auto upper;
+        constexpr _char-class-rule_ auto alpha;
+
+        constexpr _char-class-rule_ auto alpha_digit;
+        constexpr _char-class-rule_ auto alnum = alpha_digit;
+
+        constexpr _char-class-rule_ auto word;
+
+        constexpr _char-class-rule_ auto graph;
+        constexpr _char-class-rule_ auto print;
+
+        constexpr _char-class-rule_ auto character;
+    }
+}
+----
+
+[.lead]
+These {{% char-class-rule %}}s match one Unicode code point from a char class, as specified in the table below.
+
+Each class is a superset of the corresponding rule in {{% docref "lexy::dsl::ascii" %}}.
+They require the Unicode database.
+
+[%collapsible]
+.The char classes
+====
+|===
+| Token Rule                | Char Class
+
+| `control`                 | link:https://unicode.org/reports/tr18/#cntrl[`Cc` (Other, control)]
+| `blank`                   | link:https://unicode.org/reports/tr18/#blank[`Zs` (Separator, space) or `\t`]
+| `newline`                 | `\r`, `\n`, `NEL`, `LINE SEPARATOR`, or `PARAGRAPH SEPARATOR`
+| `other_space`             | `\f` or `\v`
+| `space`                   | link:https://unicode.org/reports/tr18/#space[`Whitespace`], which is `blank`, `newline` or `other_space`
+| `digit`                   | link:https://unicode.org/reports/tr18/#digit[`Nd` (Number, decimal digit)]
+| `lower`                   | link:https://unicode.org/reports/tr18/#lower[`Lowercase`]
+| `upper`                   | link:https://unicode.org/reports/tr18/#upper[`Uppercase`]
+| `alpha`                   | link:https://unicode.org/reports/tr18/#alpha[`Alphabetic`]
+| `alpha_digit`             | link:https://unicode.org/reports/tr18/#alnum[`alpha`, `digit`]
+| `word`                    | link:https://unicode.org/reports/tr18/#word[`alpha`, `digit`, `M` (Mark), `Pc` (Punctuation, connector), join control]
+| `graph`                   | link:https://unicode.org/reports/tr18/#graph[everything but `space`, `control`, `Cs` (Other, surrogate), `Cn` (Other, not assigned)]
+| `print`                   | link:https://unicode.org/reports/tr18/#graph[`graph` or `blank` but without `control`]
+| `character`               | any code point that is assigned (i.e. not `Cn` (Other, not assigned))
+|===
+====
+
+CAUTION: Unlike in the ASCII case, `alpha` is *not* `lower` or `upper`: there are alphabetic characters that don't have a case.
+
+CAUTION: Differentiate between `lexy::dsl::unicode::newline`, which matches `\r` or `\n` and others, and {{% docref "lexy::dsl::newline" %}}, which matches `\r\n` or `\n`!
+
+CAUTION: As token rules, they match {{% docref whitespace whitespace %}} immediately following the character.
+As such, the rule is best used in contexts where automatic whitespace skipping is disabled.
+They can safely be used as part of the whitespace definition.
+
+NOTE: There is no `dsl::unicode::punct`.
+The Unicode standard defines it as general category `P` (Punctuation), which is unsatisfactory as it does not include e.g. `$` unlike `dsl::ascii::punct` (it's a currency symbol instead).
+POSIX includes `$` as well as other non-alphabetic symbols, which is unsatisfactory as `dsl::unicode::punct` would include characters Unicode does not consider punctuation.
+
+[#identifier]
+== Unicode identifier classes
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    namespace unicode
+    {
+        constexpr _char-class-rule_ auto xid_start;
+        constexpr _char-class-rule_ auto xid_start_underscore;
+        constexpr _char-class-rule_ auto xid_continue;
+    }
+}
+----
+
+[.lead]
+These {{% char-class-rule %}}s match one Unicode code point from the link:https://unicode.org/reports/tr31/[`XID_Start`/`XID_Continue`] character classes.
+They are used to parse Unicode-aware {{% docref "lexy::dsl::identifier" %}}.
+
+* `xid_start` matches any Unicode character that can occur at the beginning of an identifier.
+  It is a superset of {{% docref "lexy::dsl::ascii::alpha" %}}.
+* `xid_start_underscore` matches `xid_start` or `_` (underscore.
+  It is a superset of {{% docref "lexy::dsl::ascii::alpha_underscore" %}}.
+* `xid_continue` matches any Unicode character that can occur after the initial character of an identifier.
+  It is a superset of {{% docref "lexy::dsl::ascii::alpha_digit_underscore" %}}.
+
+They require the Unicode database.
+
+{{% playground-example identifier-unicode "Parse a Unicode-aware C-like identifier" %}}
+
+WARNING: `xid_start` does not include `_` (underscore)!
+

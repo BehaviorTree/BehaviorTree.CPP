@@ -1,0 +1,299 @@
+---
+header: "lexy/dsl/symbol.hpp"
+entities:
+  "lexy::symbol_table": "symbol_table"
+  "lexy::dsl::symbol": "symbol"
+---
+:toc: left
+
+[.lead]
+The `symbol` rule.
+
+[#symbol_table]
+== `lexy::symbol_table<T>`
+
+{{% interface %}}
+----
+ namespace lexy
+{
+    template <typename T>
+    class _symbol-table_
+    {
+    public:
+        using char_type   = ...;
+        using key_type    = char_type;
+        using mapped_type = T;
+
+        struct value_type
+        {
+            const char_type*   symbol;
+            const mapped_type& value;
+        };
+
+        //=== modifiers ===//
+        template <typename CaseFoldingDSL>
+        consteval _symbol-table_ case_folding(CaseFoldingDSL) const;
+
+        template <auto SymbolString, typename... Args>
+        consteval _symbol-table_ map(Args&&... args) const;
+
+        template <auto C, typename... Args>
+        consteval _symbol-table_ map(Args&&... args) const;
+
+        template <typename ... Args>
+        consteval _symbol-table_ map(_literal-rule_ auto lit, Args&& args) const;
+
+        //=== access ===//
+        static constexpr bool empty() noexcept;
+
+        static constexpr std::size_t size() noexcept;
+
+        class iterator;
+
+        constexpr iterator begin() const noexcept;
+        constexpr iterator end() const noexcept;
+
+        class key_index;
+
+        template <typename Reader>
+        constexpr key_index try_parse(Reader& reader) const;
+        template <_input_ Input>
+        constexpr key_index parse(const Input& input) const;
+
+        constexpr const T& operator[](key_index idx) const noexcept;
+    };
+
+    template <typename T>
+    constexpr auto symbol_table = _symbol-table_<T>();
+}
+----
+
+[.lead]
+Defines a compile-time mapping of strings to objects of some type `T`.
+
+It is initially empty.
+
+=== Modifiers: `case_folding`
+
+{{% interface %}}
+----
+template <typename CaseFoldingDSL>
+consteval _symbol-table_ case_folding(CaseFoldingDSL) const;
+----
+
+[.lead]
+Specifies case folding for the symbol table.
+
+`CaseFoldingDSL` is a function object that specifies a case folding like {{% docref "lexy::dsl::ascii::case_folding" %}} or {{% docref "lexy::dsl::unicode::simple_case_folding" %}}.
+It will be used on the input to parse a symbol.
+
+CAUTION: As with the literal rules, the symbols in the symbol table must only contain lowercase characters if case folding is used.
+This is because all input is case folded prior to matching which makes matching of uppercase characters impossible.
+
+=== Modifiers: `map`
+
+{{% interface %}}
+----
+template <auto SymbolString, typename... Args>
+consteval _symbol-table_ map(Args&&... args) const;
+
+template <auto C, typename... Args>
+consteval _symbol-table_ map(Args&&... args) const;
+
+// `lit` must be a `dsl::lit` rule
+template <typename ... Args>
+consteval _symbol-table_ map(_literal-rule_ auto lit, Args&& args) const;
+----
+
+[.lead]
+Adds a mapping to the symbol table.
+
+The result is a new symbol table that contains all the current mappings,
+as well as a new mapping of `SymbolString`/`C` to `T(std::forward<Args>(args)...)`.
+
+If your compiler does not support C++20's extended NTTPs,
+use `LEXY_SYMBOL("Str")` instead of `"Str"` as the template parameter for `SymbolString`.
+
+=== Access
+
+{{% interface %}}
+----
+static constexpr bool empty() noexcept;        <1>
+
+static constexpr std::size_t size() noexcept;  <2>
+----
+<1> Whether or not the table is empty.
+<2> The number of mappings in the table.
+
+{{% interface %}}
+----
+class iterator;
+
+constexpr iterator begin() const noexcept;
+constexpr iterator end() const noexcept;
+----
+
+[.lead]
+Iterates over all the mappings.
+
+`iterator` is a forward iterator whose value type is `value_type`.
+
+{{% interface %}}
+----
+class key_index
+{
+public:
+    constexpr key_index() noexcept;
+    constexpr explicit key_index(std::size_t idx) noexcept;
+
+    constexpr explicit operator bool() const noexcept;
+
+    friend constexpr bool operator==(key_index lhs, key_index rhs) noexcept;
+    friend constexpr bool operator!=(key_index lhs, key_index rhs) noexcept;
+};
+----
+
+[.lead]
+An index into the table.
+
+It is a small wrapper over a `std::size_t`.
+An index is valid if its less than `size()`, this can be checked with its `operator bool`.
+Two indices can be compared for equality.
+
+{{% interface %}}
+----
+template <typename Reader>
+constexpr key_index try_parse(Reader& reader) const;
+----
+
+[.lead]
+Matches one of the strings in the table using a reader.
+
+If `reader` begins with one of the strings in the table, consumes them and returns a `key_index` to that entry.
+Otherwise, returns an invalid key index and consumes nothing.
+
+{{% interface %}}
+----
+template <_input_ Input>
+constexpr key_index parse(const Input& input) const;
+----
+
+[.lead]
+Matches one of the strings in the table against the input.
+
+If `input` is one of the strings, returns a `key_index` to that entry.
+Otherwise, returns an invalid key index.
+
+If `input` only begins with one of the strings but then is followed by other characters,
+it does not match.
+
+{{% interface %}}
+----
+constexpr const T& operator[](key_index idx) const noexcept;
+----
+
+[.lead]
+Returns the value of the entry at the `key_index`.
+
+Requires that `idx` is valid.
+
+[#symbol]
+== Rule `lexy::dsl::symbol`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct unknown_symbol {};
+}
+
+namespace lexy::dsl
+{
+    struct _symbol-dsl_ // models _branch-rule_
+    {
+        template <typename Tag>
+        static constexpr _branch-rule_ auto error;
+    };
+
+    template <const _symbol-table_& SymbolTable>
+    constexpr _symbol-dsl_ symbol;
+
+    template <const _symbol-table_& SymbolTable>
+    constexpr _symbol-dsl_ symbol(_token-rule_ auto token);
+    template <const _symbol-table_& SymbolTable>
+    constexpr _symbol-dsl_ symbol(_identifier-dsl_ identifier);
+}
+----
+
+[.lead]
+`symbol` is a {{% branch-rule %}} that parses one symbol of `SymbolTable`.
+
+=== Version without argument
+
+{{% interface %}}
+----
+template <const _symbol-table_& SymbolTable>
+constexpr _symbol-dsl_ symbol;
+----
+
+Requires::
+  The {{% encoding %}} of the input is a char encoding.
+Parsing::
+  Matches the longest symbol of the `SymbolTable` by consuming characters beginning at the current input.
+  If necessary, performs case folding on the input first.
+  Fails if no symbol matches.
+  It skips implicit whitespace afterwards.
+Branch Parsing::
+  As a branch, it parses exactly the same input as before.
+  However, instead of failing (for any reason), it backtracks without raising an error.
+Errors::
+  `lexy::unknown_symbol`: if it could not produce a symbol;
+  its range covers the entire partial input.
+  The rule then fails.
+  The tag can be overridden by specifying a different `Tag` with `.error`.
+Values::
+  The value of the symbol table that corresponds to the partial input.
+Parse tree::
+  A single token node covering the symbol.
+  Its {{% docref "lexy::predefined_token_kind" %}} is `lexy::identifier_token_kind`, which cannot be overridden.
+
+NOTE: This version behaves like the other version if passed a non-deterministic token rule that always consumes as much input as is necessary to match the symbol.
+
+=== Version with argument
+
+{{% interface %}}
+----
+template <const _symbol-table_& SymbolTable>
+constexpr _symbol-dsl_ symbol(_token-rule_ auto token);
+
+template <const _symbol-table_& SymbolTable>
+constexpr _symbol-dsl_ symbol(_identifier-dsl_ identifier);
+----
+
+Requires::
+  * The {{% encoding %}} of the input is a char encoding.
+  * The {{% docref "lexy::dsl::identifier" %}} of the second overload has no reserved identifiers.
+Parsing::
+  * The first overload parses the {{% token-rule %}} `token`.
+  * The second overload parses `identifier.pattern()`.
+  In either case, it then creates a partial input that covers the (non-whitespace) code units consumed by that parsing.
+  If necessary, performs case folding on the partial input.
+  If the contents of that partial input exactly matches one of the strings in the symbol table,
+  the rule succeeds.
+Branch Parsing::
+  As a branch, it parses exactly the same input as before.
+  However, instead of failing (for any reason), it backtracks without raising an error.
+Errors::
+  * All errors raised by parsing `token` or `identifier.pattern()`.
+    The rule then fails, as recovery cannot produce a valid symbol.
+  * `lexy::unknown_symbol`: if it could not produce a symbol;
+    its range covers the entire partial input.
+    The rule then fails.
+    The tag can be overridden by specifying a different `Tag` with `.error`.
+Values::
+  The value of the symbol table that corresponds to the partial input.
+
+{{% godbolt-example symbol "Parse one of the predefined XML entities" %}}
+
+NOTE: See {{< github-example xml >}} for an XML parser.
+

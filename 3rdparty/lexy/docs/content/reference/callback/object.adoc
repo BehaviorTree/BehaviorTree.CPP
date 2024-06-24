@@ -1,0 +1,58 @@
+---
+header: "lexy/callback/object.hpp"
+entities:
+  "lexy::construct": construct
+  "lexy::new_": new_
+---
+:toc: left
+
+[.lead]
+Construct objects.
+
+[#construct]
+== Callback `lexy::construct`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    constexpr _callback_ auto construct;
+
+    template <>
+    constexpr _callback_ auto construct<void>;
+}
+----
+
+[.lead]
+Construct an object of type `T`.
+
+The primary template accepts arbitrary arguments and returns `T(std::forward<Args>(args)...)` if that is well-formed,
+otherwise `T{std::forward<Args>(args)...}`.
+The specialization for `void` accepts no arguments and does nothing to return `void`.
+
+{{% godbolt-example "point" "Construct a point from two integers" %}}
+
+NOTE: `construct` supports both types with constructor as well as aggregates or built-in types.
+
+[#new_]
+== Callback `lexy::new_`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T, typename PtrT = T*>
+    constexpr _callback_ auto new_;
+}
+----
+
+[.lead]
+Construct an object of type `T` on the heap.
+
+It accepts arbitrary arguments and calls `new T(std::forward<Args>(args)...)` if that is well-formed,
+otherwise `new T{std::forward<Args>(args)...}`.
+Then returns a pointer of the specified type as the result.
+
+{{% godbolt-example "new" "Construct a point on the heap and returns a `std::unique_ptr`" %}}
+

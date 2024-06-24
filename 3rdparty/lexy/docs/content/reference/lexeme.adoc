@@ -1,0 +1,89 @@
+---
+header: "lexy/lexeme.hpp"
+entities:
+  "lexy::lexeme": lexeme
+  "lexy::lexeme_for": lexeme
+---
+:toc: left
+
+[#lexeme]
+== Class `lexy::lexeme`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_reader_ Reader>
+    class lexeme
+    {
+    public:
+        using encoding  = typename Reader::encoding;
+        using char_type = typename encoding::char_type;
+        using iterator  = typename Reader::iterator;
+
+        //=== constructors ===//
+        constexpr lexeme() noexcept;
+        constexpr lexeme(iterator begin, iterator end) noexcept;
+        constexpr lexeme(iterator pos, std::size_t size) noexcept;
+        constexpr explicit lexeme(const Reader& reader, iterator begin) noexcept;
+
+        template <_reader_ OtherReader>
+        constexpr operator lexeme<OtherReader>() const noexcept;
+
+        //=== access ===//
+        constexpr bool empty() const noexcept;
+
+        constexpr iterator begin() const noexcept;
+        constexpr iterator end() const noexcept;
+
+        //=== iterator-specific access ===//
+        constexpr const char_type* data() const noexcept;
+        constexpr std::size_t size() const noexcept;
+        constexpr char_type operator[](std::size_t idx) const noexcept;
+    };
+
+    template <_input_ Input>
+    using lexeme_for = lexeme<input_reader<Input>>;
+}
+----
+
+[.lead]
+The class `lexeme` represents a sub-range of the input.
+
+It is a lightweight, non-owning type.
+It is templated on the reader of an input, which minimizes code bloat.
+The alias `lexeme_for` instantiates the `lexeme` with the reader type of an input.
+
+=== Constructors
+
+{{% interface %}}
+----
+constexpr lexeme() noexcept;                                              <1>
+constexpr lexeme(iterator begin, iterator end) noexcept;                  <2>
+  constexpr lexeme(iterator pos, std::size_t size) noexcept;              <3>
+constexpr explicit lexeme(const Reader& reader, iterator begin) noexcept; <4>
+
+template <_reader_ OtherReader>
+constexpr operator lexeme<OtherReader>() const noexcept; <5>
+----
+<1> Creates a lexeme for the empty range.
+<2> Creates a lexeme for the range `[begin, end)`.
+<3> Creates a lexeme for the range `[pos, pos + size)` (even for forward iterators).
+<4> Creates a lexeme for the range `[begin, reader.cur())`, i.e. from `begin` until the current position of the reader.
+<5> Converts a lexeme to a lexeme of a different reader type. Requires that the iterator type is the same.
+
+=== Iterator-specific access
+
+{{% interface %}}
+----
+constexpr const char_type* data() const noexcept;               <1>
+constexpr std::size_t size() const noexcept;                    <2>
+constexpr char_type operator[](std::size_t idx) const noexcept; <3>
+----
+<1> Returns a pointer to the first code unit of the range.
+    Requires that the iterator type is a pointer.
+<2> Returns the size of the range.
+    Requires that the iterator type has an `operator-`.
+<3> Returns the code unit at the specific index.
+    Requires that the iterator is a random access iterator.
+

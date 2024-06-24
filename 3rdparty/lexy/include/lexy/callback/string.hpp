@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_CALLBACK_STRING_HPP_INCLUDED
@@ -149,39 +149,39 @@ struct _as_string
         using return_type = String;
 
         template <typename CharT, typename = decltype(LEXY_DECLVAL(String).push_back(CharT()))>
-        void operator()(CharT c)
+        constexpr void operator()(CharT c)
         {
             _result.push_back(c);
         }
 
-        void operator()(String&& str)
+        constexpr void operator()(String&& str)
         {
             _result.append(LEXY_MOV(str));
         }
 
         template <typename Str = String, typename Iterator>
-        auto operator()(Iterator begin, Iterator end)
+        constexpr auto operator()(Iterator begin, Iterator end)
             -> decltype(void(LEXY_DECLVAL(Str).append(begin, end)))
         {
             _result.append(begin, end);
         }
 
         template <typename Reader>
-        void operator()(lexeme<Reader> lex)
+        constexpr void operator()(lexeme<Reader> lex)
         {
             static_assert(lexy::char_type_compatible_with_reader<Reader, _char_type>,
                           "cannot convert lexeme to this string type");
             _result.append(lex.begin(), lex.end());
         }
 
-        void operator()(code_point cp)
+        constexpr void operator()(code_point cp)
         {
             typename Encoding::char_type buffer[4] = {};
             auto size = _detail::encode_code_point<Encoding>(cp.value(), buffer, 4);
             _result.append(buffer, buffer + size);
         }
 
-        String&& finish() &&
+        constexpr String&& finish() &&
         {
             return _case_folding(LEXY_MOV(_result));
         }

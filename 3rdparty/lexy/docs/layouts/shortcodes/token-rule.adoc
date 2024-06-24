@@ -1,0 +1,4 @@
+{{- $url := relref . "/reference/dsl/token#doc" -}}
+{{- $.Page.Scratch.SetInMap "see-also" "token rules" (printf "<a href=%s>token rules</a>" $url) -}}
+link:{{ $url }}[token rule]
+{{- printf "" -}}

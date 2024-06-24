@@ -1,0 +1,77 @@
+---
+header: "lexy/dsl/follow.hpp"
+entities:
+  "lexy::dsl::followed_by": followed_by
+  "lexy::dsl::not_followed_by": not_followed_by
+---
+:toc: left
+
+[.lead]
+The `followed_by` and `not_followed_by` literal rules.
+
+[#followed_by]
+== Literal rule `lexy::dsl::followed_by`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _literal-rule_ auto followed_by(_literal-rule_ lit,
+                                          _char-class-rule_ auto cc)
+    {
+        return not_followed_by(lit, -cc);
+    }
+
+    constexpr _literal-rule_ auto followed_by(_literal-rule_ lit,
+                                          _literal-char-class-rule_ auto cc)
+    {
+        return not_followed_by(lit, -cc);
+    }
+}
+----
+
+[.lead]
+`followed_by` is a {{% literal-rule %}} that ensures another {{% literal-rule %}} is followed by a {{% char-class-rule %}}.
+
+It is just syntax sugar for the primary form, {{% docref "lexy::dsl::not_followed_by" %}}.
+
+[#not_followed_by]
+== Literal rule `lexy::dsl::not_followed_by`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct follow_restriction
+    {};
+}
+
+namespace lexy::dsl
+{
+    constexpr _literal-rule_ auto not_followed_by(_literal-rule_ lit,
+                                                _char-class-rule_ auto cc);
+    constexpr _literal-rule_ auto not_followed_by(_literal-rule_ lit,
+                                                _literal-char-class-rule_ auto cc);
+}
+----
+
+[.lead]
+`not_followed_by` is a {{% literal-rule %}} that ensures another {{% literal-rule %}} is not followed by a {{% char-class-rule %}}.
+
+Requires::
+  `lit` is not a {{% docref "lexy::dsl::keyword" %}} rule.
+Matching::
+  Matches and consumes `lit`.
+  Otherwise, tries to match `cc` without consuming it and fails if it does.
+  If `lit` uses case folding (e.g. {{% docref "lexy::dsl::ascii::case_folding" %}}), it also applies to `cc`.
+Errors::
+  * All errors raised by `lit` when it fails.
+  * `lexy::follow_restriction`: if `cc` matches; at the position where it matched.
+    The rule then fails.
+Parse tree::
+  The single token node created by `lit`.
+
+{{% playground-example not_followed_by "Match `=` but not `==`" %}}
+
+TIP: Use {{% docref "lexy::dsl::keyword" %}} for the common case of parsing a literal that is not a valid identifier.
+

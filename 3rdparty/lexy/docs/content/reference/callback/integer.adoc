@@ -1,0 +1,31 @@
+---
+header: "lexy/callback/integer.hpp"
+entities:
+  "lexy::as_integer": as_integer
+---
+
+[#as_integer]
+== Callback `lexy::as_integer`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    constexpr _callback_ auto as_integer;
+}
+----
+
+[.lead]
+Creates an integer of type `T`.
+
+It is a callback with three overloads:
+
+`(const auto& value)`:: returns `T(value)`.
+`(lexy::plus_sign, const auto& value)`:: returns `T(value)`.
+`(lexy::minus_sign, const auto& value)`:: returns `T(-value)`.
+
+It is best used together with {{% docref "lexy::dsl::integer" %}} and {{% docref "lexy::dsl::sign" %}}.
+
+{{% godbolt-example sign "A number with an optional plus/minus sign" %}}
+

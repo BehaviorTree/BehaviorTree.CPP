@@ -1,0 +1,37 @@
+---
+header: "lexy/dsl/effect.hpp"
+entities:
+  "lexy::dsl::effect": effect
+---
+
+[#effect]
+== Rule `lexy::dsl::effect`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <auto Fn>
+    constexpr _rule_ auto effect;
+}
+----
+
+[.lead]
+`effect` is a {{% rule %}} that always succeeds but invokes `Fn` for its side-effect.
+
+Parsing::
+  Succeeds without consuming anything.
+Errors::
+  No errors.
+Values::
+  Invokes `Fn`, either with no arguments or the provided parse state.
+  If it returns a non-void value, produces it.
+  Otherwise, produces nothing.
+
+NOTE: Since this is not a branch rule, it will never backtrack.
+The side-effects of `Fn` do not need to be undone.
+
+TIP: Use this rule to trigger semantic actions during the grammar.
+
+NOTE: If you need access to values for the semantic action, write a production that produces them and trigger the side-effect in the value callback.
+

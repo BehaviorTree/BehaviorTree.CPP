@@ -1,0 +1,255 @@
+---
+header: "lexy/error.hpp"
+entities:
+  "lexy::error": error
+  "lexy::error_for": error
+  "lexy::expected_literal": expected_literal
+  "lexy::expected_keyword": expected_keyword
+  "lexy::expected_char_class": expected_char_class
+  "lexy::error_context": error_context
+---
+:toc: left
+
+[.lead]
+Classes to store information about parse errors.
+
+[#error]
+== Class `lexy::error`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_reader_ Reader, typename Tag>
+    class error;
+
+    template <_reader_ Reader>
+    class error<Reader, void>;
+
+    struct expected_literal {};
+    template <_reader_ Reader>
+    class error<Reader, expected_literal>;
+
+    struct expected_keyword {};
+    template <_reader_ Reader>
+    class error<Reader, expected_keyword>;
+
+    struct expected_char_class {};
+    template <_reader_ Reader>
+    class error<Reader, expected_char_class>;
+
+    template <_input_ Input, typename Tag>
+    using error_for = error<input_reader<Input>, Tag>;
+}
+----
+
+[.lead]
+Represents a parse error.
+
+Different kinds of errors are identified by the `Tag`, which is an empty tag type.
+The error type is specialized for three tags.
+
+An `error<R1, T>` is implicitly convertible to an `error<R2, T>` as long as the `R1::iterator` and `R2::iterator` are the same type.
+
+=== Generic error (primary template, `void`)
+
+{{% interface %}}
+----
+template <_reader_ Reader, typename Tag>
+class error : public error<Reader, void>
+{
+    using _iterator_ = typename Reader::iterator;
+
+public:
+    constexpr explicit error(_iterator_ begin, _iterator_ end) noexcept;
+    constexpr explicit error(_iterator_ pos) noexcept;
+};
+
+template <_reader_ Reader>
+class error<void>
+{
+    using _iterator_ = typename Reader::iterator;
+
+public:
+    constexpr explicit error(_iterator_ begin, _iterator_ end, const char* msg) noexcept;
+    constexpr explicit error(_iterator_ pos, const char* msg) noexcept
+    : error(pos, pos)
+    {}
+
+    constexpr _iterator_ position() const noexcept
+    {
+        return begin();
+    }
+
+    constexpr _iterator_ begin() const noexcept;
+    constexpr _iterator_ end() const noexcept;
+
+    constexpr const char* message() const noexcept;
+
+    template <typename Tag>
+    constexpr bool is(Tag) const noexcept;
+};
+----
+
+[.lead]
+A generic error without additional data.
+
+`position()` is the position where the error occurred, while `begin()` and `end()` return the entire range.
+For some errors, this range is empty.
+
+`message()` is determined by `Tag` (if typed) or the constructor argument (if type-erased).
+By default, it is the type name of `Tag` after removing the top-level namespace.
+This can be overridden by `Tag::name()` or `Tag::name`.
+
+{{% playground-example "exhausted_choice" "Choice raises generic error at a single position" %}}
+
+{{% playground-example "reserved_identifier" "Identifier rules raise a generic error spanning a sub-range" %}}
+
+[#expected_literal]
+=== `lexy::expected_literal` error
+
+{{% interface %}}
+----
+struct expected_literal {};
+
+template <_reader_ Reader>
+class error<Reader, expected_literal>
+{
+    using _iterator_  = typename Reader::iterator;
+    using _char_type_ = typename Reader::encoding::char_type;
+
+public:
+    constexpr explicit error(_iterator_ pos,
+                             const _char_type_* string,
+                             std::size_t index, std::size_t length) noexcept;
+
+    constexpr _iterator_ position() const noexcept;
+
+    constexpr const _char_type_* string() const noexcept;
+    constexpr std::size_t index() const noexcept;
+    constexpr std::size_t length() const noexcept;
+
+    constexpr _char_type_ character() const noexcept
+    {
+        return string()[index()];
+    }
+};
+----
+
+[.lead]
+An error where a given literal string was expected.
+
+The error can be raised while trying to parse `string()` with `length()` beginning at `position()`;
+the code unit at `std::next(position(), index())` did not match `character()`.
+If the remaining input contained fewer code units than `string()`, `index()` indicates the first code unit that was missing.
+
+It is raised by {{% docref "lexy::dsl::lit" %}} and related rules.
+
+{{% playground-example "expected_literal" "`LEXY_LIT()` raises an expected literal error" %}}
+
+[#expected_keyword]
+=== `lexy::expected_keyword` error
+
+{{% interface %}}
+----
+struct expected_keyword {};
+
+template <_reader_ Reader>
+class error<Reader, expected_keyword>
+{
+    using _iterator_  = typename Reader::iterator;
+    using _char_type_ = typename Reader::encoding::char_type;
+
+public:
+    constexpr explicit error(_iterator_ begin, _iterator_ end,
+                             const _char_type_* string, std::size_t length) noexcept;
+
+    constexpr _iterator_ position() const noexcept;
+
+    constexpr _iterator_ begin() const noexcept;
+    constexpr _iterator_ end() const noexcept;
+
+    constexpr const _char_type_* string() const noexcept;
+    constexpr std::size_t length() const noexcept;
+};
+----
+
+[.lead]
+An error where a given keyword was expected.
+
+The error can be raised while trying to parse the keyword `string()` with `length()` against the identifier `[begin(), end())`,
+but it was a different identifier.
+The `position()` is also `begin()`.
+
+It is raised by {{% docref "lexy::dsl::keyword" %}}.
+
+{{% playground-example "keyword" "`LEXY_KEYWORD()` raises an expected keyword error" %}}
+
+[#expected_char_class]
+=== `lexy::expected_char_class` error
+
+{{% interface %}}
+----
+struct expected_char_class {};
+
+template <_reader_ Reader>
+class error<Reader, expected_keyword>
+{
+    using _iterator_  = typename Reader::iterator;
+
+public:
+    constexpr explicit error(_iterator_ pos, const char* name) noexcept;
+
+    constexpr _iterator_ position() const noexcept;
+
+    constexpr const char* name() const noexcept;
+};
+----
+
+[.lead]
+An error where one character from a character class was expected.
+
+The error can be raised while trying to parse the character class with the human-readable name `character_class()` at `position()`.
+This happens in rules like {{% docref "lexy::dsl::ascii" %}} or {{% docref "lexy::dsl::digit" %}}.
+
+{{% playground-example "expected_char_class" "`dsl::digit` raises an expected char class error" %}}
+
+[#error_context]
+== Class `lexy::error_context`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_input_ Input>
+    class error_context
+    {
+        using _iterator_  = typename input_reader<Reader>::iterator;
+
+    public:
+        constexpr explicit error_context(production_info production,
+                                         const Input& input,
+                                         _iterator_ pos) noexcept;
+
+        const char* production() const noexcept;
+
+        constexpr const Input& input() const noexcept;
+
+        constexpr _iterator_ position() const noexcept;
+    };
+}
+----
+
+[.lead]
+Contains additional information about an error.
+
+`input()`::
+  The entire input where the error occurred; all positions are iterators into that input.
+  If the input is {{% docref "lexy::lexeme_input" %}}, returns the parent input instead.
+  This allows correct computation of the {{% docref "lexy::input_location" %}}.
+`production()`::
+  The name of the production where the error occurred, i.e. {{% docref "lexy::production_name" %}}.
+  This is the first non-{{% docref "lexy::transparent_production" %}} parent of the current production.
+`position()`::
+  The position where it started to parse the production.
+

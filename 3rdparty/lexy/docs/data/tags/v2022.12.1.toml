@@ -1,0 +1,5 @@
+name = "Release 2022.12.1"
+url = "https://github.com/foonathan/lexy/releases/tag/v2022.12.1"
+download = "https://github.com/foonathan/lexy/releases/download/v2022.12.1/lexy-src.zip"
+date = "2023-01-04T11:19:11Z"
+prerelease = false

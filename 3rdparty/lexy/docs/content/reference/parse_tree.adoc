@@ -1,0 +1,541 @@
+---
+header: "lexy/parse_tree.hpp"
+entities:
+  "lexy::parse_tree": parse_tree
+  "lexy::parse_tree::builder": builder
+  "lexy::parse_tree::node_kind": node_kind
+  "lexy::parse_tree::node": node
+  "lexy::parse_tree_for": parse_tree
+---
+:toc: left
+
+[#parse_tree]
+== Class `lexy::parse_tree`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_reader_ Reader, typename TokenKind = void,
+              typename MemoryResource = _default-resource_>
+    class parse_tree
+    {
+    public:
+        //=== construction ===//
+        class builder;
+
+        constexpr parse_tree();
+        constexpr explicit parse_tree(MemoryResource* resource);
+
+        parse_tree(const parse_tree&) = delete;
+        parse_tree& operator=(const parse_tree&) = delete;
+
+        parse_tree(parse_tree&&);
+        parse_tree& operator=(parse_tree&&);
+
+        //=== container interface ===//
+        bool empty() const noexcept;
+
+        std::size_t size() const noexcept;
+        std::size_t depth() const noexcept;
+
+        void clear() noexcept;
+
+        //=== nodes ===//
+        class node;
+        class node_kind;
+
+        node root() const noexcept;
+
+        //=== traversal ===//
+        class traverse_range;
+
+        traverse_range traverse(node n) const noexcept;
+        traverse_range traverse() const noexcept;
+
+        //=== remaining input ===//
+        lexy::lexeme<Reader> remaining_input() const noexcept
+    };
+
+    template <_input_ Input, typename TokenKind = void,
+              typename MemoryResource = _default-resource_>
+    using parse_tree_for
+      = lexy::parse_tree<input_reader<Input>, TokenKind, MemoryResource>;
+}
+----
+
+[.lead]
+A lossless, untyped, immutable parse tree.
+
+It is an ordered, rooted tree that represents the structure of the parsed inputs.
+It has two kinds of nodes: token nodes and production nodes.
+Token nodes represent individual tokens of the input:
+they store the {{% docref "lexy::lexeme" %}} and the {{% docref "lexy::token_kind" %}} and do not have children.
+Production nodes represent productions of the input:
+they are identified by the {{% docref "lexy::production_name" %}} and have zero or more child nodes for the tokens and child productions of the production.
+The root node of a non-empty tree is always the production node for the top-level production of the grammar.
+
+The tree is parametrized on the `Reader`, which determines the type of {{% docref "lexy::lexeme" %}} stored by token nodes,
+and the `TokenKind` of {{% docref "lexy::token_kind" %}}.
+The latter is `void` by default, which means integers are used to identify tokens.
+
+The tree is immutable: once constructed, the nodes cannot be modified in any way;
+changing a tree is only possible by re-assigning it.
+It is not copyable, but moveable.
+
+All memory allocation for the tree is done via a `MemoryResource` object,
+which must be a class with the same interface as `std::pmr::memory_resource`.
+By default, it uses `new` and `delete`.
+The memory resource object passed to the constructor does not propagate during copy/move/swap.
+
+Internally, the nodes of the tree are stored in big chunks of continuous memory.
+Each node has the size of three pointers and they form a linked list.
+
+TIP: Use {{% docref "lexy::parse_as_tree" %}} to build a parse tree for an input.
+
+CAUTION: The parse tree does not own the contents of token nodes, so make sure the input stays alive as long as the tree does.
+
+=== Construction: Constructors
+
+{{% interface %}}
+----
+constexpr parse_tree();
+constexpr explicit parse_tree(MemoryResource* resource);
+----
+
+[.lead]
+Construct an empty parse tree without any nodes.
+
+The default constructor is only valid for the _`default-resource`_ and uses the default resource for memory allocation.
+The second overload assigns the specified `resource`, which is not changed by further assignment.
+
+[#builder]
+=== Construction: `lexy::{zwsp}parse{zwsp}_tree::{zwsp}builder`
+
+{{% interface %}}
+----
+class parse_tree::builder
+{
+    using _iterator_ = typename Reader::iterator;
+
+public:
+    struct marker
+    {
+        marker();
+    };
+
+    //=== root node ===//
+    explicit builder(parse_tree&& tree, _production_ auto root);
+    explicit builder(_production_ auto root)
+    : builder(parse_tree{}, root)
+    {}
+
+    parse_tree&& finish(typename Reader::iterator end) && { return finish({end, end}); }
+    parse_tree&& finish(lexy::lexeme<Reader> remaining_input) &&;
+
+    //=== production node ===//
+    marker start_production(_production_ auto production);
+
+    void finish_production(marker&& m);
+    void cancel_production(marker&& m);
+
+    //=== container node ===//
+    marker start_container();
+
+    void set_container_production(_production_ auto production);
+
+    void finish_container(marker&& m);
+    void cancel_container(marker&& m);
+
+    //=== token node ===//
+    void token(token_kind<TokenKind> kind, _iterator_ begin, _iterator _end);
+
+    //=== accessors ===//
+    std::size_t current_child_count() const noexcept;
+};
+----
+
+[.lead]
+Manually builds a non-empty parse tree.
+
+The constructor can optionally take an existing parse tree, which will be `clear()`ed.
+This allows re-using already allocated memory or a custom memory resource.
+The root node of the tree will be a production node for the specified `root` production,
+which is the active node (see below).
+
+Then the tree can be built using the following methods:
+
+`finish`::
+  Finishes the construction of the entire tree and returns it.
+  The active node must be the root node.
+  It also sets `.remaining_input()`, whose `.begin()` should be the `.end()` of the last token in the tree.
+
+`start_production`::
+  Start construction for a new production node for `production` and pushes it to the active node's list of children.
+  It returns a `marker` object, which must eventually be passed to `finish_production` or `cancel_production`.
+  The new production node will be the active node.
++
+If `production` is a {{% docref "lexy::transparent_production" %}}, no new node is created.
+However, the `marker` object must still be passed to `finish_production` or `cancel_production`.
+
+`finish_production`::
+  Finishes the production node of the corresponding `marker` object,
+  which must be the active node.
+  The parent node will become active node again.
+
+`cancel_production`::
+  Cancels construction of the production node of the corresponding `marker` object,
+  which must be the active node.
+  The node and all children already added to it will be removed from the parse tree;
+  it is returned to the same state it had before the corresponding `start_production` call.
+
+`start_container`::
+  Starts a container of more nodes.
+  This can then later be turned into a production node, if desired.
+  It returns a `marker` object, which must eventually be passed to `finish_container` or `cancel_container`.
+  The container will be the active node.
+
+`set_container_production`::
+  If the passed production is transparent, does nothing.
+  Otherwise, creates a new production node and adds all children from the currently active container to it.
+  It then creates a new container whose only child is the newly added production node.
+  The new container will be the active node, everything added to it will become a sibling of the production node.
+
+`finish_container`::
+  Finishes a container of the corresponding `marker` object, which must be the active node.
+  Adds all child nodes to the parent without adding an intermediate node.
+  This results in the same tree as if `start_container()` had never been called, and all children just added directly.
+  The parent node will become active node again.
+
+`cancel_container`::
+  Cancels construction of a container of the corresponding `marker` object, which must be the active node.
+  All children of the container will be removed from the parse tree;
+  it is returned to the same state it had before the corresponding `cancel_container` call.
+
+`token`::
+  Construct a new token node and push it to the active node's list of children.
+  The node will have the specified {{% docref "lexy::token_kind" %}} and the lexeme `[begin, end)` of the input.
++
+If `kind.ignore_if_empty() == true` and `begin == end`, no token node is constructed.
+
+`current_child_count`::
+  Returns the child nodes already added to the node that is currently being built.
+
+=== Container interface
+
+{{% interface %}}
+----
+bool empty() const noexcept; <1>
+
+std::size_t size() const noexcept;  <2>
+std::size_t depth() const noexcept; <3>
+
+void clear() noexcept;              <4>
+----
+<1> Returns `true` if the tree is empty, `false` otherwise.
+    An empty tree does not have any nodes.
+<2> Returns the total number of nodes of the tree, including the root node.
+<3> Returns the maximum depth of all nodes in the tree,
+    which is the number of times you need to call `node.parent()` to reach the root.
+    The depth of an empty tree is not defined.
+<4> Clears the tree by removing all nodes, but without deallocating memory.
+
+An empty tree has `size() == 0` and undefined `depth()`.
+A tree that consists only of  the root node has `size() == 1` and `depth() == 0`.
+A shallow tree, where all nodes are children of the root node, has `depth() == 1`.
+A completely nested tree, where each node has exactly one child, has `depth() == size() - 1`.
+
+[#node_kind]
+=== Nodes: `lexy::{zwsp}parse{zwsp}_tree::{zwsp}node{zwsp}_kind`
+
+{{% interface %}}
+----
+class parse_tree::node_kind
+{
+public:
+    //=== access ===//
+    bool is_token() const noexcept;
+    bool is_production() const noexcept;
+
+    bool is_root() const noexcept;
+    bool is_token_production() const noexcept;
+
+    const char* name() const noexcept;
+
+    //=== comparison ===//
+    friend bool operator==(node_kind lhs, node_kind rhs);
+    friend bool operator!=(node_kind lhs, node_kind rhs);
+
+    friend bool operator==(node_kind nk, token_kind<TokenKind> tk);
+    friend bool operator==(token_kind<TokenKind> tk, node_kind nk);
+    friend bool operator!=(node_kind nk, token_kind<TokenKind> tk);
+    friend bool operator!=(token_kind<TokenKind> tk, node_kind nk);
+
+    friend bool operator==(node_kind nk, production_info info);
+    friend bool operator==(production_info info, node_kind nk);
+    friend bool operator!=(node_kind nk, production_info info);
+    friend bool operator!=(production_info info, node_kind nk);
+};
+----
+
+[.lead]
+Information about the kind of a node.
+
+`is_token`::
+  `true` if the node is a token node, `false` otherwise.
+  `is_token() == !is_production()`.
+`is_production`::
+  `true` if the node is a production node, `false` otherwise.
+  `is_production() == !is_token()`.
+`is_root`::
+  `true` if the node is the root node of the tree, `false` otherwise.
+  The root node is always a production node.
+`is_token_production`::
+  `true` if the node is a production node that is a {{% docref "lexy::token_production" %}}, `false` otherwise.
+`name`::
+  For a production node, returns {{% docref "lexy::production_name" %}}.
+  For a token node, returns `.name()` of its {{% docref "lexy::token_kind" %}}.
+
+Node kinds can be compared with equality with each other, {{% docref "lexy::token_kind" %}} and productions.
+Two node kinds are equal if they are either both token nodes with the same token nodes, or both production nodes for the same production.
+A node kind and a token kind is equal, if the node kind is a token node with that kind,
+and a node kind and a production is equal, if it is a production node for that production.
+
+[#node]
+=== Nodes: `lexy::{zwsp}parse{zwsp}_tree::{zwsp}node`
+
+{{% interface %}}
+----
+class parse_tree::node
+{
+public:
+    //=== properties ===//
+    void* address() const noexcept;
+
+    node_kind kind() const noexcept;
+
+    lexy::lexeme<Reader>           lexeme() const noexcept;
+    lexy::token<Reader, TokenKind> token()  const noexcept;
+
+    iterator position() const noexcept;
+    lexy::lexeme<Reader> covering_lexeme() const noexcept;
+
+    //=== relationships ===//
+    node parent() const noexcept;
+
+    class children_range;
+    children_range children() const noexcept;
+
+    class sibling_range;
+    sibling_range siblings() const noexcept;
+
+    bool is_last_child() const noexcept;
+
+    //=== comparison ===//
+    friend bool operator==(node lhs, node rhs) noexcept;
+    friend bool operator!=(node lhs, node rhs) noexcept;
+};
+----
+
+[.lead]
+A reference to node in the parse tree.
+
+Internally, this is just a pointer to the node data structure.
+
+.Properties:
+`address`::
+  The address of the referenced node in memory.
+  It uniquely identifies the node.
+`kind`::
+  The {{% docref "lexy::parse_tree::node_kind" %}} of the node.
+`lexeme`::
+  For a token node, returns the {{% docref "lexy::lexeme" %}} of the node.
+  For a production node, returns an empty lexeme.
+`token`::
+  Requires that the node is a token node; returns the stored {{% docref "lexy::token" %}} of the node.
+`position`::
+  Equivalent to `covering_lexeme().begin()`.
+`covering_lexeme`::
+  For a token node, returns the {{% docref "lexy::lexeme" %}} of the node.
+  For a production node, returns a lexeme that covers all token descendants of the production node.
+
+Two node references can be compared for equality, which compares their addresses.
+
+CAUTION: `covering_lexeme()` and `position()` require that every production node has at least one child and that `tree.remaining_input().begin()` is `.end()` of the last token descendant of the root node (in particular, it is not `iterator()`).
+All parse trees created by {{% docref "lexy::parse_as_tree" %}} have that property.
+
+==== Node relationships: Parent
+
+{{% interface %}}
+----
+node parse_tree::node::parent() const noexcept;
+----
+
+[.lead]
+Returns a reference to its parent node.
+
+For the root node, which does not have a parent node, returns `*this`.
+
+This operation is `O(number of siblings)`.
+
+==== Node relationships: Children
+
+{{% interface %}}
+----
+class parse_tree::node::children_range
+{
+public:
+    class iterator; // value_type = node
+
+    iterator begin() const noexcept;
+    iterator end()   const noexcept;
+
+    bool empty() const noexcept;
+    std::size_t size() const noexcept;
+};
+
+children_range parse_tree::node::children() const noexcept;
+----
+
+[.lead]
+A sized range that iterates over all direct children of the referenced node in order.
+
+For a token node, this is always an empty range.
+
+==== Node relationships: Siblings
+
+{{% interface %}}
+----
+class parse_tree::node::sibling_range
+{
+public:
+    class iterator; // value_type = node
+
+    iterator begin() const noexcept;
+    iterator end() const noexcept;
+};
+
+sibling_range parse_tree::node::siblings() const noexcept;
+----
+
+[.lead]
+A range that iterates over all siblings of the referenced node.
+
+The siblings of a node are all other child nodes of its parent.
+Iteration begins with the child that is following the referenced node and continues until the last child of the parent node.
+It then wraps around to the first child and ends when it reaches the referenced node again.
+The referenced node is not included; no node is its own sibling.
+
+For the root node, this is always an empty range.
+
+---
+
+=== Nodes: Root node
+
+{{% interface %}}
+----
+node parse_tree::root() const noexcept;
+----
+
+[.lead]
+A reference to the root node of the tree.
+
+The tree must not be empty.
+
+=== Traversal
+
+{{% interface %}}
+----
+namespace lexy
+{
+    enum class traverse_event
+    {
+        enter,
+        exit,
+        leaf,
+    };
+}
+----
+
+{{% interface %}}
+----
+class parse_tree::traverse_range
+{
+public:
+    using event = traverse_event;
+    class iterator; // struct value_type { traverse_event event; node node; };
+
+    iterator begin() const noexcept;
+    iterator end()   const noexcept;
+
+    bool empty() const noexcept;
+};
+
+traverse_range parse_tree::traverse(node n) const noexcept;
+
+traverse_range parse_tree::traverse() const noexcept;
+----
+
+[.lead]
+A range that traverses all descendants of a node.
+
+The first overload traverses all descendants of the node `n`, which includes `n` itself.
+The second overload traverses all nodes in the parse tree.
+For a non-empty tree, it is equivalent to `traverse(root())`.
+For an empty tree, it returns the empty range.
+
+The value type of the traverse range's iterator is a pair of `lexy::traverse_event` and `node`.
+The traverse event indicates why a node is visited, and `node` is the reference to the current node.
+
+For a token node `n`, `traverse(n)` is a one element range whose value is `n` itself with the `traverse_event::leaf`.
+
+For a production node `n`, `traverse(n)` is at least a two element range.
+The first element is `n` itself with the `traverse_event::enter`.
+It then recursively traverses all direct children of `n`.
+The final element is again `n` with the `traverse_event::exit.`
+
+.Print a tree
+====
+[source,cpp]
+----
+auto depth = 0;
+for (auto [event, node] : tree.traverse())
+{
+    switch (event)
+    {
+    case lexy::traverse_event::enter:
+        ++depth;
+        indent(depth);
+        print_node(node);
+        break;
+    case lexy::traverse_event::exit:
+        --depth;
+        break;
+
+    case lexy::traverse_event::leaf:
+        indent(depth);
+        print_node(node);
+        break;
+    }
+}
+----
+====
+
+NOTE: Traversing the parse tree is an optimized operation that does not involve dynamic memory allocation or recursion.
+Instead, each iteration step simply follows a pointer.
+
+=== Remaining input
+
+{{% interface %}}
+----
+lexy::lexeme<Reader> remaining_input() const noexcept
+----
+
+[.lead]
+Returns the remaining input, i.e. everything that has not been turned into the parse tree.
+
+Unless it has been set in `finish()`, it is empty.
+
+CAUTION: The position of an empty remaining input is not necessarily at the end of the input.
+{{% docref "lexy::parse_as_tree" %}} guarantees it, however.
+

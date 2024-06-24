@@ -1,0 +1,43 @@
+---
+header: "lexy/dsl/eof.hpp"
+entities:
+  "lexy::dsl::eof": eof
+---
+
+[#eof]
+== Branch rule `lexy::dsl::eof`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct expected_eof {};
+}
+
+namespace lexy::dsl
+{
+    constexpr _branch-rule_ auto eof;
+}
+----
+
+[.lead]
+`eof` is a {{% branch-rule %}} that matches the end of input (EOF).
+
+(Branch) Parsing::
+  Succeeds if the reader is at the end of the input, without consuming anything.
+Errors::
+  `lexy::expected_eof`: at the unchanged reader position. It then recovers immediately.
+Parse tree::
+  Single token node whose range is empty with the {{% docref "lexy::predefined_token_kind" %}} `lexy::eof_token_kind`.
+
+Parsing `eof` multiple times in sequence has no additional effect:
+they all succeed if the first one succeeded and they all fail if the first one failed.
+
+{{% playground-example eof "Match the empty input" %}}
+
+{{% playground-example no_trailing "Prevent trailing characters" %}}
+
+CAUTION: Without `eof`, `lexy` will happily match the prefix of an input only, ignoring any junk characters after it is finished.
+
+NOTE: It does not skip whitespace before checking for EOF. Use {{% docref "whitespace" "`lexy::dsl::whitespace + eof`" %}} to do that.
+

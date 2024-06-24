@@ -1,0 +1,52 @@
+---
+header: "lexy/dsl/XXX.hpp"
+entities:
+  "lexy::dsl::XXX": XXX
+---
+:toc: left
+
+[.lead]
+One line description of the header.
+
+[#XXX]
+== Rule `lexy::dsl::XXX`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto XXX;
+}
+----
+
+[.lead]
+`XXX` is a rule that does something.
+
+Requires::
+  Any additional requirements not seen in the interface.
+Matching::
+  Describe what is being matched and consumed without producing values.
+  Use "match" to refer to an operation that can raise errors;
+  "try match" to refer to an operation that cannot raise errors.
+Parsing::
+  Describe what is being matched and consumed while producing values.
+  Use either "matching" or "parsing".
+Branch parsing::
+  Describe what differs when the rule is parsed as a branch.
+  Use only in combination with "parsing".
+Errors::
+  * `Tag`: when this error is raised and at what position.
+    When the error is raised can be omitted if there is only one error and it is obvious what can fail.
+    Say the rule fails if parsing does not continue after the error.
+    Say the rule recovers and describe what is being consumed otherwise.
+Values::
+  Describe all values that are produced.
+Parse tree::
+  If something special happens with the parse tree, mention it here.
+
+Anything else that does not fit the things above.
+
+{{% playground_example default "Some example" %}}
+
+NOTE: Any notes.
+

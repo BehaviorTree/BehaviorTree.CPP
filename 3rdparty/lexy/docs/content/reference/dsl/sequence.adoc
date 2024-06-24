@@ -1,0 +1,31 @@
+---
+header: "lexy/dsl/sequence.hpp"
+entities:
+  "lexy::dsl::operator+": sequence
+  "sequence": sequence
+---
+
+[#sequence]
+== Rule `lexy::dsl::operator+`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto operator+(_rule_ auto lhs, _rule_ auto rhs);
+}
+----
+
+[.lead]
+`operator+` (sequence) is a rule that parses multiple rules one after the other.
+
+Parsing::
+  Parses `lhs`, then parses `rhs`.
+Errors::
+  All errors raised by `lhs` and/or `rhs`.
+  The rule fails if either of them has failed.
+Values::
+  All values produced from `rhs` followed by all values produced by `rhs`.
+
+{{% playground-example default "Sequence rule is used practically all the time" %}}
+

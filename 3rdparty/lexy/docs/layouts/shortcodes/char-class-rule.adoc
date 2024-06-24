@@ -1,0 +1,4 @@
+{{- $url := relref . "/reference/dsl/char_class#doc" -}}
+{{- $.Page.Scratch.SetInMap "see-also" "char class rules" (printf "<a href=%s>char class rules</a>" $url) -}}
+link:{{ $url }}[char class rule]
+{{- printf "" -}}

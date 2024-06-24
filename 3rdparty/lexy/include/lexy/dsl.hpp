@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_HPP_INCLUDED
@@ -59,6 +59,10 @@
 #include <lexy/dsl/unicode.hpp>
 #include <lexy/dsl/until.hpp>
 #include <lexy/dsl/whitespace.hpp>
+
+#if LEXY_EXPERIMENTAL
+#    include <lexy/dsl/parse_tree_node.hpp>
+#endif
 
 #endif // LEXY_DSL_HPP_INCLUDED
 

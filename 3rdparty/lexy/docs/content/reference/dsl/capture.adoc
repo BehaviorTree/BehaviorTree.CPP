@@ -1,0 +1,37 @@
+---
+header: "lexy/dsl/capture.hpp"
+entities:
+  "lexy::dsl::capture": capture
+---
+
+[#capture]
+== Branch rule `lexy::dsl::capture`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _branch-rule_ auto capture(_rule_ auto rule);
+}
+----
+
+[.lead]
+`capture` is a {{% branch-rule %}} that parses `rule` capturing everything it has consumed but excluding whitespace as a value.
+
+Requires::
+ `rule` is either a {{% token-rule %}} or {{% docref "lexy::dsl::p" %}} where the production is a token production.
+(Branch) Parsing::
+  Parses `rule` unchanged.
+Errors::
+  All errors raised by `rule`.
+  The rule then fails if `rule` has failed.
+Values::
+  A {{% docref "lexy::lexeme" %}} whose range covers everything consumed by `token` except any trailing whitespace.
+  Then all values produced by `rule`.
+
+{{% godbolt-example capture "Get a single code point" %}}
+
+TIP: Use the callback {{% docref "lexy::as_string" %}} to convert the {{% docref "lexy::lexeme" %}} to a string.
+
+TIP: In most cases, you should prefer {{% docref "lexy::dsl::identifier" %}} instead.
+

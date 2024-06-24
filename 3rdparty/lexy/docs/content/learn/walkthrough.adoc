@@ -1,0 +1,705 @@
+---
+title: Walkthrough — parser for custom package format
+---
+:toc: left
+:toclevels: 1
+
+Let's apply everything to a more complex example.
+Our goal is to parse some simple configuration file of a software package.
+
+A sample input file can look like this:
+
+.`package.config`
+----
+name    = lexy
+version = 0.0.0
+authors = ["Jonathan Müller"]
+----
+
+And we want to parse it into the following C++ data structure using `lexy`:
+
+.`PackageConfig`
+[source,cpp]
+----
+struct PackageVersion
+{
+    int major;
+    int minor;
+    int patch;
+};
+
+struct PackageConfig
+{
+    std::string              name;
+    PackageVersion           version;
+    std::vector<std::string> authors;
+};
+----
+
+The full source code can be found at {{< github-example config >}}.
+
+Following the three steps outlined in the {{< relref "learn/warmup" >}}[warmup], our program has the following structure:
+
+[source,cpp]
+----
+#include <string>
+#include <vector>
+
+<1>
+struct PackageVersion { … };
+struct PackageConfig { … };
+
+//=== grammar ===//
+#include <lexy/callback.hpp>
+#include <lexy/dsl.hpp>
+
+namespace grammar <2>
+{
+    namespace dsl = lexy::dsl;
+
+    …
+
+    struct config { … };
+}
+
+//=== parsing ===//
+#include <lexy/input/file.hpp>
+#include <lexy/action/parse.hpp>
+#include <lexy_ext/report_error.hpp>
+
+int main()
+{
+    auto file = lexy::read_file<lexy::utf8_encoding>(filename); <3>
+    if (!file)
+    { … }
+
+    auto result = lexy::parse<grammar::config>(file.buffer(), lexy_ext::report_error.path(filename)); <4>
+    if (!result) <5>
+    { … }
+
+    if (result.has_value()) <6>
+    {
+        PackageConfig config = result.value();
+        …
+    }
+}
+----
+<1> The user code that defines the C++ data structures.
+    It does not need to know anything about `lexy`.
+<2> The grammar. It contains multiple productions, but the entry production is `grammar::config`.
+    This is the production we're parsing.
+<3> We want to read the config from a file, so we use {{% docref "lexy::read_file" %}}.
+    We specify that the file uses UTF-8 as the input encoding.
+    Reading a file can fail, so we need to handle that (not shown here).
+<4> Then we can parse our entry production using the action {{% docref "lexy::parse" %}}.
+    We give it the buffer of our file and a callback to invoke on errors.
+<5> If parsing produced any errors, handle them somehow.
+<6> If parsing was able to give as a value (i.e. the input was either well-formed or lexy could recover from all errors that happened),
+    use that value.
+    If you don't care about error recovery, you just need the `!result` check.
+
+== Parsing the package name
+
+We will create a separate production for each of the fields (name, version, authors).
+Let's start with the production for the name, as that is the simplest one.
+
+.Package name
+----
+name = lexy
+----
+
+Here, we're only concerned with the part after the equal sign, so the `lexy` in the example above.
+A package name follows the same rules as a C++ identifier, except that leading underscores are not allowed.
+As a regex, a name is described by `[a-zA-Z][a-zA-Z_0-9]*`, so one alpha character, followed by zero or more alphanumeric characters or underscores.
+
+In lexy, we can use the pre-defined {{% char-class-rule %}}s {{% docref "lexy::dsl::ascii::alpha" %}} and {{% docref "lexy::dsl::ascii::word" %}}.
+We can then combine them in {{% docref sequence %}} with a {{% docref "lexy::dsl::while_" %}} rule:
+
+```cpp
+struct name
+{
+    static constexpr auto rule = dsl::ascii::alpha + dsl::while_(dsl::ascii::word);
+};
+```
+
+However, this doesn't produce a value; we need to wrap everything in the {{% docref "lexy::dsl::capture" %}} rule,
+which matches something and produces a {{% docref "lexy::lexeme" %}} (think string view) over the part of the input that was consumed by it.
+But this specific pattern is so common that lexy provides a built-in rule for it {{% docref "lexy::dsl::identifier" %}}:
+
+```cpp
+struct name
+{
+    static constexpr auto rule = [] {
+        auto lead_char     = dsl::ascii::alpha;
+        auto trailing_char = dsl::ascii::word;
+        return dsl::identifier(lead_char, trailing_char); <1>
+    }();
+
+    static constexpr auto value = lexy::as_string<std::string>; <2>
+};
+```
+<1> Match an identifier whose leading char is `dsl::ascii::alpha` and all trailing chars are `dsl::ascii::word`.
+    Everything consumed is captured.
+<2> Convert the captured lexeme into a `std::string` using the callback {{% docref "lexy::as_string" %}}.
+
+First field done, let's move on to the next one.
+
+== Parsing the package version
+
+The next field is the version.
+
+.Package version
+----
+version = 0.0.0
+----
+
+Again, we're only concerned with the value after the equal sign for now.
+It consists of three numbers separated by dots, where a number is a non-empty sequence of digits.
+
+We can parse decimal numbers using {{% docref "lexy::dsl::integer" %}}, and as we've seen {{% docref "lexy::dsl::times" %}} can parse something `N` times with an optional separator:
+
+[source,cpp]
+----
+struct version
+{
+    static constexpr auto rule = []{
+        auto number = dsl::integer<int>;
+        auto dot    = dsl::period;
+        return dsl::times<3>(number, dsl::sep(dot));
+    }();
+
+    static constexpr auto value = lexy::construct<PackageVersion>;
+};
+----
+
+Let's also allow the special value `unreleased` as an alternate spelling for `0.0.0`.
+For that, we need to use a {{% docref choice %}} between the previous `dsl::times` rule and {{% docref "LEXY_LIT" %}}`("unreleased")`.
+As discussed in the {{< relref "learn/branching" >}}[branching tutorial], we need to use {{% branch-rule %}}s to let lexy know how to make a decision.
+Luckily, `LEXY_LIT` is already a branch rule, so we can turn the number part into one by using {{% docref "lexy::dsl::else_" %}}:
+
+[source,cpp]
+----
+struct version
+{
+    static constexpr auto rule = []{
+        auto number      = dsl::integer<int>;
+        auto dot         = dsl::period;
+        auto dot_version = dsl::times<3>(number, dsl::sep(dot));
+
+        auto unreleased = LEXY_LIT("unreleased");
+
+        return unreleased | dsl::else_ >> dot_version; <1>
+    }();
+
+    static constexpr auto value = lexy::construct<PackageVersion>; <2>
+};
+----
+<1> We're trying to match the literal `unreleased`, if that doesn't work, we unconditionally parse a dotted version.
+<2> If we're matching `unreleased`, no value is produced.
+    However, in that case {{% docref "lexy::construct" %}} will value construct a `PackageVersion`, which produces `{0, 0, 0}` anyway,
+    which is actually what we want.
+    To get a different value, we either need to write our own overloaded callback using {{% docref "lexy::callback" %}},
+    or by using {{% docref "lexy::bind" %}}.
+
+Alternatively, we could have turned `dot_version` into a branch by adding a condition that checks for a digit using {{% docref "lexy::dsl::digit" %}},
+and wrapping it in {{% docref "lexy::dsl::peek" %}} to ensure the digit is not consumed.
+
+== Parsing the package author
+
+Continuing on, we want to parse the author of the package:
+
+.Package author
+----
+authors = ["Jonathan Müller"]
+----
+
+It is a comma-separated list of strings surrounded by square brackets.
+
+We could manually build something that parses a string by using {{% docref "lexy::dsl::while_" %}} and {{% docref "lexy::dsl::capture" %}} again;
+we just need to be careful to match string characters that are not quotes.
+However, again lexy provides built-in support in the form of {{% docref "lexy::dsl::delimited" %}}, which parses zero or more occurrences of a char class surrounded by a specified delimiter.
+As we want quotation marks, we can use {{% docref "lexy::dsl::quoted" %}} directly:
+
+[source,cpp]
+----
+struct author <1>
+{
+    static constexpr auto rule = dsl::quoted(dsl::code_point); <2>
+
+    static constexpr auto value = lexy::as_string<std::string>; <3>
+};
+----
+<1> The production that parses a single author.
+<2> Parse a string literal that contains arbitrary characters using {{% docref "lexy::dsl::code_point" %}}.
+<3> Convert it into a `std::string` using {{% docref "lexy::as_string" %}}.
+    Note that the callback is used as a {{% docref sink %}} here:
+    it will be repeatedly invoked to accumulate each character of the string.
+
+This works, but we need to make two improvements.
+First, we don't want control characters such as newline in our string.
+For that, we can subtract the char class {{% docref "lexy::dsl::ascii::control" %}} from `dsl::code_point`,
+or, as that is the default, just use {{% docref "lexy::dsl::operator- (unary)" %}}.
+Second, we have no way to embed quotes in the author's name, as they terminate the string.
+This can be solved by adding escape sequences, which {{% docref "lexy::dsl::delimited" %}} supports out-of-the box:
+
+[source,cpp]
+----
+struct author
+{
+    static constexpr auto rule = [] {
+        auto cp     = -dsl::ascii::control; <1>
+        auto escape = dsl::backslash_escape                                <2>
+                          .rule(dsl::lit_c<'u'> >> dsl::code_point_id<4>)  <3>
+                          .rule(dsl::lit_c<'U'> >> dsl::code_point_id<8>);
+
+        return dsl::quoted(cp, escape); <4>
+    }();
+
+    static constexpr auto value = lexy::as_string<std::string, lexy::utf8_encoding>; <5>
+};
+----
+<1> Allow anything that is not a control character.
+<2> We use `\` as the escape character using {{% docref "lexy::dsl::backslash_escape" %}},
+    which is just an alias for {{% docref "lexy::dsl::escape" %}} using a backslah.
+<3> These two lines define `\uXXXX` and `\uXXXXXXXX` to specify character codes.
+    {{% docref "lexy::dsl::code_point_id" %}} is a convenience alias for {{% docref "lexy::dsl::integer" %}}
+    which parses a code point using `N` hex digits.
+<4> The `\u` and `\U` rules all produce a {{% docref "lexy::code_point" %}}.
+    `lexy::as_string` can only convert it back into a string, if we tell it the encoding we want.
+    So we add `lexy::utf8_encoding` as the second optional argument to enable that.
+
+The traditional escape sequences such as `\"`, `\n`, and so on, can be implemented by providing a {{% docref "lexy::symbol_table" %}} that defines a mapping for escape characters to their replacement value.
+See {{< github-example json >}} for an example.
+
+Now we just need to parse a list of authors.
+{{% docref "lexy::dsl::list" %}} can be used like that:
+it parses the item once and then as often as it matches.
+But unlike {{% docref "lexy::dsl::while_" %}} it allows the item to produce a value and will collect them all in a {{% docref sink %}} like {{% docref "lexy::as_list" %}}.
+Like {{% docref "lexy::dsl::times" %}}, we can also specify a separator, in which case item does not need to be {{% branch-rule %}} as lexy can make a decision just based on the existence of a separator.
+
+However, as the list here is surrounded by square brackets, we can use `.list()` of {{% docref "lexy::dsl::square_bracketed" %}} instead.
+It is a special case of the generic {{% docref "lexy::dsl::brackets" %}}, which in turn is a wrapper over {{% docref "lexy::dsl::terminator" %}}.
+As discussed in the {{< relref "learn/branching" >}}[tutorial about branching], they allow parsing things without requiring a branch condition.
+
+[source,cpp]
+----
+struct author_list
+{
+    static constexpr auto rule
+        = dsl::square_bracketed.list(dsl::p<author>, dsl::sep(dsl::comma)); <1>
+
+    static constexpr auto value = lexy::as_list<std::vector<std::string>>; <2>
+};
+----
+<1> Parse the comma-separated list of authors surrounded by square brackets.
+<2> Each call to {{% docref "lexy::dsl::p" %}} produces a `std::string`, the sink {{% docref "lexy::as_list" %}} collects them all into the specified container.
+
+== Putting it together
+
+Parsing the entire config is now very straightforward:
+
+[source,cpp]
+----
+struct config
+{
+    static constexpr auto rule = []{
+        auto make_field = [](auto name, auto rule) {              <1>
+            return name + dsl::lit_c<'='> + rule + dsl::newline;  <2>
+        };
+
+        auto name_field    = make_field(LEXY_LIT("name"), dsl::p<name>); <3>
+        auto version_field = make_field(LEXY_LIT("version"), dsl::p<version>);
+        auto authors_field
+            = make_field(LEXY_LIT("authors"), dsl::p<author_list>);
+
+        return name_field + version_field + authors_field; <4>
+    }();
+
+    static constexpr auto value = lexy::construct<PackageConfig>; <5>
+};
+----
+<1> We define a little helper function that builds a rule that parses a field given its name and value.
+<2> Each field consists of the name, an equal sign, the value rule, and a newline matched by the {{% docref "lexy::dsl::newline" %}} token.
+<3> Define each field using the productions we've built above.
+<4> Match them all in order.
+<5> Construct the package config from the resulting `std::string`, `PackageVersion` and `std::vector<std::string>`.
+
+This works!
+
+We can now almost parse the sample input I've given above:
+
+.`package.config`
+----
+name=lexy
+version=0.0.0
+authors=["Jonathan Müller"]
+----
+
+We don't support whitespace between the elements.
+We want to support ASCII blank characters (space and tab) surrounding the equal sign and the brackets and comma of the author list.
+This can be done either manually or automatically.
+
+To parse whitespace manually, we can use {{% docref "lexy::dsl::whitespace" %}}.
+It behaves like {{% docref "lexy::dsl::while_" %}} and parses a specified rule zero or more times, but treats the matched content as whitespace.
+We then need to insert it everywhere we want to skip whitespace:
+
+[source,cpp]
+----
+constexpr auto ws = dsl::whitespace(dsl::ascii::blank). <1>
+
+struct config
+{
+    static constexpr auto rule = []{
+        auto make_field = [](auto name, auto rule) {
+            return name + ws + dsl::lit_c<'='> + ws + rule + ws + dsl::newline; <2>
+        };
+
+        …
+    }();
+};
+
+…
+----
+<1> Define the whitespace globally. {{% docref "lexy::dsl::ascii::blank" %}} is a char class that matches space or tab.
+<2> Insert it everywhere we want to allow whitespace.
+
+However, this is a lot of work.
+In this particular case, it is easier to use {{% docref "whitespace" "automatic whitespace skipping" %}}.
+This is done by adding a `static constexpr` member called `whitespace` to the *root* production (and only the root production):
+
+[source,cpp]
+----
+struct config
+{
+    static constexpr auto whitespace = dsl::ascii::blank; <1>
+
+    static constexpr auto rule = [] { … } (); <2>
+    static constexpr auto value = lexy::construct<PackageConfig>;
+};
+----
+<1> Define what whitespace is for our grammar.
+<2> Nothing needs to change in any of the rules here!
+
+That is all! Now lexy will automatically skip whitespace after every {{% token-rule %}} in the grammar.
+
+However, that can be a bit much.
+For example, it will now skip whitespace after each component of the version number, so something like `version = 0   .   0   . 0` is fine.
+There are to ways to prevent that.
+The first is to use {{% docref "lexy::dsl::no_whitespace" %}} which parses a rule but disables whitespace skipping.
+This is used internally by {{% docref "lexy::dsl::identifier" %}} and {{% docref "lexy::dsl::delimited" %}}, so those cases are fine.
+The second is to have the `version` production inherit {{% docref "lexy::token_production" %}}.
+This instructs lexy to treat the entire production as a token for the purposes of whitespace skipping:
+it will not skip whitespace while parsing the production and all child productions, but instead only once when it's done:
+
+[source,cpp]
+----
+struct version : lexy::token_production <1>
+{
+    …
+};
+----
+<1> Disable automatic whitespace skipping inside the `version`.
+
+Now we can parse the input shown in the beginning!
+
+== Polish: Arbitrary ordering of fields
+
+To make usability nicer, let's support arbitrary ordering of the fields in our config file.
+This can be done using {{% docref "lexy::dsl::combination" %}}, which parses each rule specified once, but in arbitrary order.
+The values produced during parsing are not passed to a callback, as that will require `N!` overloads, but instead it uses a sink.
+That's a problem though: how can we know which value should be assigned to which field?
+
+The solution is to use the {{% docref "lexy::as_aggregate" %}} callback together with {{% docref "LEXY_MEM" %}}.
+Using `LEXY_MEM(name) = rule` in the DSL assigns the value of `rule` to the member `name`,
+`lexy::as_aggregate<T>` then constructs `T` by collecting the values of all members:
+
+[source,cpp]
+----
+struct config
+{
+    static constexpr auto whitespace = dsl::ascii::blank;
+
+    static constexpr auto rule = [] {
+        auto make_field = [](auto name, auto rule) {
+            return name >> dsl::lit_c<'='> + rule + dsl::newline; <1>
+        };
+
+        auto name_field    = make_field(LEXY_LIT("name"), LEXY_MEM(name) = dsl::p<name>); <2>
+        auto version_field
+            = make_field(LEXY_LIT("version"), LEXY_MEM(version) = dsl::p<version>);
+        auto authors_field
+            = make_field(LEXY_LIT("authors"), LEXY_MEM(authors) = dsl::p<author_list>);
+
+        return dsl::combination(name_field, version_field, authors_field) + dsl::eof; <3>
+    }();
+
+    static constexpr auto value = lexy::as_aggregate<PackageConfig>; <4>
+};
+----
+<1> {{% docref "lexy::dsl::combination" %}} requires a {{% branch-rule %}} to know which rule to parse.
+    Luckily, we can use the name of the field for that.
+<2> Each rule now contains the assignment to the appropriate member using {{% docref "LEXY_MEM" %}}.
+<3> Instead of a sequence, we now have `dsl::combination()`.
+    We also added {{% docref "lexy::dsl::eof" %}} to ensure that there are no trailing fields at the end.
+<4> We use {{% docref "lexy::as_aggregate" %}} as our sink.
+
+This will match each field exactly once, but in any order.
+
+== Polish: Better error messages
+
+Out of the box, lexy already gives pretty good error messages.
+The {{% docref "error callback" %}} passed to {{% docref "lexy::parse" %}} is invoked with some context information like the current production stored in {{% docref "lexy::error_context" %}} as well the actual {{% docref "lexy::error" %}}.
+Using `lexy_ext::report_error`, they are then nicely formatted:
+
+.Name that starts with an underscore.
+----
+error: while parsing name
+     |
+ 1: 8| name = _lexy
+     |        ^ expected 'ASCII.alpha' character
+----
+
+.Missing version number
+----
+error: while parsing version
+     |
+ 2:11| version = 0.0
+     |           ~~~^ expected '.'
+----
+
+.Author name not quoted.
+----
+error: while parsing author_list
+     |
+ 3:12| authors = [Jonathan Müller]
+     |            ^ expected '"'
+----
+
+=== More specific error messages
+
+However, some of the generic errors are a bit confusing for end users.
+For example, if we have control characters in a string we just get a cryptic "expected complement char" error message,
+as that's the error given by `-char`.
+We can change the error of a {{% token-rule %}} using its {{% docref ".error" %}} member:
+
+[source,cpp]
+----
+struct author
+{
+    struct invalid_character <1>
+    {
+        static constexpr auto name = "invalid string character"; <2>
+    };
+
+    static constexpr auto rule = [] {
+        auto cp = (-dsl::ascii::control).error<invalid_character>; <3>
+
+        …
+    }();
+
+    …
+};
+----
+<1> The tag that will be associated with the error.
+<2> We override the default message (which would be `author::invalid_character`) to the more friendly `invalid string character`.
+<3> We specify that on token failure, we want an error with the given tag.
+
+Likewise, if we specify the same field twice we get the generic "combination duplicate" error message.
+Additionally, if we add an unknown field we get the generic "exhausted choice" error.
+Both issues can be improved by specifying custom tags in our {{% docref "lexy::dsl::combination" %}} call.
+
+[source,cpp]
+----
+struct config
+{
+    struct unknown_field <1>
+    {
+        static constexpr auto name = "unknown config field"; <2>
+    };
+    struct duplicate_field <1>
+    {
+        static constexpr auto name = "duplicate config field"; <2>
+    };
+
+    static constexpr auto rule = [] {
+        …
+
+        auto combination = dsl::combination(name_field, version_field, authors_field)
+                               .missing_error<unknown_field>.duplicate_error<duplicate_field>; <3>
+        return combination + dsl::eof;
+    }();
+};
+----
+<1> Define the tags.
+<2> Override the default message, which is the type name.
+<3> Specify the error on failure.
+    The missing error is the one triggered when no field condition matched, the duplicate one if we had a field twice.
+
+Now an invalid string character is reported as `invalid string character` and a duplicated config field as `duplicate config field`:
+
+.Missing closing string delimiter
+----
+error: while parsing author
+     |
+ 3:28| authors = ["Jonathan Müller]
+     |              ~~~~~~~~~~~~~~~^ invalid string character
+----
+
+.Duplicate config field error
+----
+error: while parsing config
+     |
+ 1: 1| name = lexy
+     | ^ beginning here
+     |
+ 3: 1| version = 0.0.0
+     | ^^^^^^^^^^^^^^^ duplicate config field
+----
+
+=== Expecting common mistakes
+
+The package name must not contain hyphens as in `my-package`.
+If a user attempts to use such a name, {{% docref "lexy::dsl::identifier" %}} stops parsing at the first hyphen, and the error is about an expected newline.
+We can improve that by requiring that there is whitespace following the identifier.
+If that is not the case, the identifier contains invalid characters.
+
+For that, we can use {{% docref "lexy::dsl::peek" %}}, which checks whether a rule would match at the current position, without consuming anything.
+It also has a `.error` member that can be used to specify a custom tag:
+
+[source,cpp]
+----
+struct name
+{
+    struct invalid_character <1>
+    {
+        static constexpr auto name = "invalid name character"; <2>
+    };
+
+    static constexpr auto rule = [] {
+        …
+
+        return dsl::identifier(lead_char, trailing_char)
+               + dsl::peek(dsl::ascii::space).error<invalid_character>; <3>
+    }();
+};
+----
+<1> Define a tag.
+<2> Give it a custom message.
+<3> Issue the error unless the name is followed by the required space character (either trailing whitespace or the newline).
+
+Now the error message tells exactly what is going on:
+
+.Invalid name character error
+----
+error: while parsing name
+     |
+ 1:10| name = my-package
+     |        ~~^ invalid name character
+----
+
+Likewise, we can use {{% docref "lexy::dsl::peek_not" %}}, which fails if a rule would match, if we were to specify a build string in our version:
+
+[source,cpp]
+----
+struct version
+{
+    struct forbidden_build_string <1>
+    {
+        static constexpr auto name = "build string not supported"; <2>
+    };
+
+    static constexpr auto rule = [] {
+        …
+
+        auto dot_version = dsl::times<3>(number, dsl::sep(dot))
+                           + dsl::peek_not(dsl::lit_c<'-'> + dsl::while_(dsl::ascii::alnum))
+                                 .error<forbidden_build_string>; <3>
+
+        …
+    }();
+};
+----
+<1> Define a tag.
+<2> Give it a custom message.
+<3> Raise the error when we encounter a build string.
+    We then consume it and recover.
+
+.Forbidden build string
+----
+error: while parsing version
+     |
+ 2:16| version = 0.0.0-alpha
+     |           ~~~~~^^^^^^ build string not supported
+----
+
+== Polish: Better error recovery
+
+lexy also provides error recovery out of the box.
+For example, if we're missing a comma in our author list `["author 1" "author 2"]`, lexy will correctly report an error yet recovers and produces a list containing the two authors.
+This is possible since we're using {{% docref "lexy::dsl::brackets" %}}, so it knows when the list is supposed to end.
+
+Yet there are more cases where we can recover, we just need to teach lexy about it.
+This can be done using {{% docref "lexy::dsl::try_" %}}.
+This rule parses a rule and on failure, attempts to recover by parsing an optional recovery rule.
+Parsing can then continue.
+
+For example, consider the rule that parses a config field:
+
+[source,cpp]
+----
+auto make_field = [](auto name, auto rule) {
+    return name >> dsl::lit_c<'='> + rule + dsl::newline;
+};
+----
+
+Note that the `=` sign between the name and the value is not required to be able to parse it; something like `version 1.0.0` is not ambiguous.
+So instead of specifying `dsl::lit_c<'='>`, we can use `dsl::try_(dsl::lit_c<'='>)`:
+this tries to parse an `=` sign and issues an error if there isn't one, but then it just continues as if nothing happens.
+So `version 1.0.0` will lead to an error message complaining about the missing `=`, but still give you the appropriate config object.
+Note that this is unlike {{% docref "lexy::dsl::if_" %}}`(dsl::lit_c<'='>)` which would not raise an error if there is no `=`, as there the `=` is optional.
+
+Also consider the case of `name = my-package` again.
+We're correctly getting an error about the invalid character in the package name.
+But as a failure on {{% docref "lexy::dsl::peek" %}} doesn't affect subsequent rules (it wouldn't have consumed anything anyway),
+parsing continues and tries to parse {{% docref "lexy::dsl::newline" %}}, which then fails.
+A recovery strategy would be to discard anything until you've reached the end of line:
+
+[source,cpp]
+----
+auto make_field = [](auto name, auto rule) {
+    auto end = dsl::try_(dsl::newline, dsl::until(dsl::newline)); <1>
+    return name >> dsl::try_(dsl::lit_c<'='>) + rule + end;
+};
+----
+<1> If we don't have a newline immediately, we discard everything until we have consumed one to recover.
+    When parsing continues, we're at the next line.
+
+Now parsing `name = my-package` will complain about the `-` in the name, a missing newline, but then recovers to produce a package called `my`.
+
+Another place were we can use recovery is a missing version number like `version = 1.0`.
+For that, we wrap every number and period in `dsl::try_`:
+
+[source,cpp]
+----
+struct version : lexy::token_production
+{
+    static constexpr auto rule = [] {
+        auto number      = dsl::try_(dsl::integer<int>, dsl::nullopt); <1>
+        auto dot         = dsl::try_(dsl::period); <2>
+        auto dot_version = dsl::times<3>(number, dsl::sep(dot))
+                           + dsl::peek_not(dsl::lit_c<'-'>).error<forbidden_build_string>;
+
+        …
+    }();
+
+    static constexpr auto value
+        = lexy::bind(lexy::construct<PackageVersion>, lexy::_1 or 0, lexy::_2 or 0, lexy::_3 or 0); <3>
+};
+----
+<1> If we don't have an integer, we recover by parsing {{% docref "lexy::dsl::nullopt" %}} which just produces the tag value {{% docref "lexy::nullopt" %}}.
+<2> If we don't have a dot, we do nothing.
+<3> As we now recover from input like `1.0` by producing the values `1, 0, lexy::nullopt{}`, we need to ensure we're still producing a correct `PackageVersion`.
+   For that we use the {{% docref "lexy::bind" %}} callback, and specify that if any arguments are `lexy::nullopt`, we want `0` instead.
+
+Now we recover from version strings like `1.0` or `1..0`, where missing fields are treated as zeroes.
+

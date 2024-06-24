@@ -1,0 +1,110 @@
+---
+header: "lexy/dsl/subgrammar.hpp"
+entities:
+  "subgrammar": definition
+  "lexy::dsl::subgrammar": rule
+---
+
+[.lead]
+Rule for parsing a subgrammar, which is a grammar that is defined in a separate file.
+
+[#definition]
+== Subgrammar definition
+
+{{% interface %}}
+----
+#define LEXY_DECLARE_SUBGRAMMAR(Production)
+
+#define LEXY_DEFINE_SUBGRAMMAR(Production)
+#define LEXY_INSTANTIATE_SUBGRAMMAR(Production, Action)
+----
+
+[.lead]
+Declares and defines a subgrammar by specifying its entry production.
+
+`LEXY_DECLARE_SUBGRAMMAR`::
+  This is used in the header file where `Production` is an incomplete type.
+`LEXY_DEFINE_SUBGRAMMAR`::
+  This is used in the source file where `Production` is defined.
+`LEXY_INSTANTIATE_SUBGRAMMAR`::
+  This is used in the source file where `Production` is defined.
+  It instantiates it for the specified `Action`, which is a one of the `XXX_action` types.
+  `Action` is a variadic argument, so commas in the template arguments aren't an issue.
+
+{{% docref "lexy::dsl::subgrammar" %}} can be used in all files that include the header, 
+and with all parse actions that have been instantiated.
+
+CAUTION: The macros must be used at global scope.
+
+[#rule]
+== Rule `lexy::dsl::subgrammar`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <typename Production, typename T>
+    constexpr _rule_ auto subgrammar;
+}
+----
+
+[.lead]
+`subgrammar` is a {{% rule %}} that parses the entry production `Production` of a subgrammar.
+
+Requires::
+  * `LEXY_DECLARE_SUBGRAMMAR(Production)` has been specified in the file.
+  * A different source file contains `LEXY_DEFINE_SUBGRAMMAR(Production)` and `LEXY_INSTANTIATE_SUBGRAMMAR(Production, Action)` for the action that is also used to parse `subgrammar`.
+  * `T` is the type of the value produced by using {{% docref "lexy::parse" %}} on the `Production`.
+    If `lexy::parse` is never used, it can be `void`.
+Parsing::
+  Parses `Production` as-if it was the top level action.
+  Unlike {{% docref "lexy::dsl::p" %}}, the context is not retained: whitespace rules and parse variables get reset.
+Errors::
+  All errors raised by parsing `Production`.
+  The rule then fails if it has failed.
+Values::
+  The single value of type `T` produced by parsing `Production`.
+
+.Split a grammar into multiple files.
+====
+[source,cpp]
+----
+//=== grammar.hpp ===//
+struct child_production;
+LEXY_DECLARE_SUBGRAMMAR(child_production)
+
+//=== grammar.cpp ===//
+#include "grammar.hpp"
+
+struct root_production
+{
+    static constexpr auto rule = dsl::subgrammar<child_production, int>;
+    static constexpr auto value = lexy::forward<int>;
+};
+
+//=== grammar_child.cpp ===//
+#include "grammar.hpp"
+
+struct child_production
+{
+    static constexpr auto rule  = dsl::integer<int>;
+    static constexpr auto value = lexy::forward<int>;
+};
+
+LEXY_DEFINE_SUBGRAMMAR(child_production)
+
+// We want to support matching on a string input without parse state.
+LEXY_INSTANTIATE_SUBGRAMMAR(child_production,
+    lexy::match_action<void, lexy::string_input<>>)
+
+// And we want to support parsing on a buffer using a custom parse state.
+LEXY_INSTANTIATE_SUBGRAMMAR(child_production,
+    lexy::parse_action<my_parse_state, lexy::buffer<>,
+                       std::decay_t<decltype(lexy_ext::report_error)>>)
+----
+====
+
+NOTE: If you forgot a `LEXY_INSTANTIATE_SUBGRAMMAR` call or make an error with the type of the action, you will get linker errors.
+
+CAUTION: If the subgrammar wants automatic whitespace skipping, it needs to specify a `whitespace` in the entry production again.
+

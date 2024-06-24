@@ -1,0 +1,136 @@
+---
+layout: single
+title: "Reference"
+menu:
+  main:
+    name: "Reference"
+    weight: 2
+outputs: [html, json]
+---
+:toc: left
+
+To use lexy, you need three things:
+
+1. Define a link:#grammar[grammar] using the rule DSL and callbacks.
+2. Create an link:#input[input] object that represents the input you want to parse.
+3. Call an link:#action[action] that will parse the grammar on the input.
+
+lexy is designed to work with your own types and data structures.
+As such, its usage can be hidden away in the implementation of a parse function whose interface does not mention lexy specific types.
+Nevertheless, lexy defines some link:#infrastructure[infrastructure] types that can be used as vocabulary types in your project interfaces.
+
+[#infrastructure]
+== Infrastructure
+
+{{% headerref "code_point" %}}::
+  A Unicode code point, and related algorithms.
+{{% headerref "lexeme" %}}::
+  A lexeme, i.e. a subrange of the input.
+{{% headerref "token" %}}::
+  Identify and store tokens, i.e. concrete realization of {{% token-rule %}}s.
+{{% headerref "parse_tree" %}}::
+  A parse tree.
+{{% headerref "error" %}}::
+  The parse errors.
+{{% headerref "input_location" %}}::
+  Compute human readable line/column numbers for a position of the input.
+{{% headerref "visualize" %}}::
+  Visualize the data structures.
+
+[#input]
+== Inputs and Encodings
+
+[source,cpp]
+----
+template <typename T>
+concept reader = …;
+
+template <typename T>
+concept input = requires(const T& obj) {
+  { obj.reader() } -> reader;
+};
+----
+
+An input defines the input that will be parsed by lexy.
+It has a corresponding {{% encoding %}} that controls, among other things, its character type and whether certain rules are available.
+The input itself is unchanging and it produces a reader which remembers the current position of the input during parsing.
+
+.The supported encodings of {{% headerref "encoding" %}}:
+{{% docref "lexy::default_encoding" %}}::
+  An unknown single byte encoding.
+{{% docref "lexy::ascii_encoding" %}}::
+  ASCII
+{{% docref "lexy::utf8_encoding" %}}, {{% docref "lexy::utf16_encoding" %}}, {{% docref "lexy::utf32_encoding" %}}::
+  UTF-8, UTF-16, UTF-32
+{{% docref "lexy::byte_encoding" %}}::
+  Bytes, not text.
+{{% docref "lexy::parse_tree_encoding" %}}::
+  Parse tree nodes, not characters.
+
+.The pre-defined inputs:
+{{% headerref "range_input" %}}::
+  Use a generic iterator range as input.
+{{% headerref "string_input" %}}::
+  Use a string as input.
+{{% headerref "buffer" %}}::
+  Create a buffer that contains the input.
+{{% headerref "file" %}}::
+  Use a file as input.
+{{% headerref "argv_input" %}}::
+  Use the command-line arguments as input.
+{{% headerref "lexeme_input" %}}::
+  Use a subset of an existing input while computing correct line/column information.
+{{% headerref "parse_tree_input" %}}::
+  Use a parse tree as input.
+
+[#grammar]
+== The grammar DSL
+
+[source,cpp]
+----
+template <typename T>
+concept production = requires {
+      { T::production } -> rule;
+      { T::whitespace } -> rule;        // optional
+      { T::value } -> callback-or-sink; // optional
+};
+----
+
+The grammar is specified by _productions_: classes with a `::rule` member that specifies the {{% rule %}}.
+They can optionally have a `::whitespace` member that controls {{% docref "whitespace" "automatic whitespace skipping" %}}.
+Both of those are specified in a C++ DSL.
+The action {{% docref "lexy::parse" %}} also needs a `::value` member that controls the value produced by parsing the production.
+It is specified using callbacks, special function objects, and sinks.
+
+{{% headerref "grammar" %}}::
+  Type traits for defining and interacting with the grammar.
+{{% headerref "dsl" %}}::
+  The DSL for specifying parse rules.
+{{% headerref "callback" %}}::
+  The predefined callbacks and sinks for specifying the value.
+
+TIP: It is a recommended to put all the productions into a separate namespace.
+
+[#action]
+== Actions
+
+Actions take a grammar and an input, and do something with the grammar on that input.
+
+They also optionally take a parse state argument.
+If provided, it will be forwarded as state parameter to the callbacks,
+and to rules such as {{% docref "lexy::dsl::scan" %}}.
+It can be used to pass additional meta data or allocators etc. to the grammar.
+
+{{% headerref "action/match" %}}::
+  Matches a grammar on an input and return a `true`/`false` result.
+{{% headerref "action/validate" %}}::
+  Validates that a grammar matches on an input, and returns the errors if it does not.
+{{% headerref "action/parse" %}}::
+  Parses a grammar on an input and returns its value.
+{{% headerref "action/parse_as_tree" %}}::
+  Parses a grammar on an input and returns the parse tree.
+{{% headerref "action/scan" %}}::
+  Parses a grammar manually by dispatching to other rules.
+{{% headerref "action/trace" %}}::
+  Traces parse events to visualize and debug the parsing process.
+

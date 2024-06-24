@@ -1,0 +1,318 @@
+---
+header: "lexy/token.hpp"
+entities:
+  "lexy::predefined_token_kind": predefined_token_kind
+  "lexy::token_kind": token_kind
+  "lexy::token_kind_map": token_kind_map
+  "lexy::token_kind_map_for": token_kind_map
+  "lexy::token": token
+  "lexy::token_for": token
+---
+:toc: left
+
+[.lead]
+Identifying and storing tokens of the input.
+
+[#predefined_token_kind]
+== Enum `lexy::predefined_token_kind`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    enum predefined_token_kind
+    {
+        unknown_token_kind,
+
+        error_token_kind,
+        whitespace_token_kind,
+        any_token_kind,
+
+        literal_token_kind,
+        position_token_kind,
+        eof_token_kind,
+
+        identifier_token_kind,
+        digits_token_kind,
+    };
+}
+----
+
+[.lead]
+Predefined token kinds for special token rules, as given in the table below.
+
+[%collapsible]
+.The predefined token kinds
+====
+|===
+| Token Kind                    | Token Rule
+
+| `lexy::unknown_token_kind`    | all token rules by default
+| `lexy::error_token_kind`      | tokens produced during the "discard input" phase of error recovery, e.g. by {{% docref "lexy::dsl::find" %}} or {{% docref "lexy::dsl::recover" %}}
+| `lexy::whitespace_token_kind` | {{% docref "lexy::dsl::whitespace" %}} (not actually a token rule)
+| `lexy::any_token_kind`        | {{% docref "lexy::dsl::any" %}}, {{% docref "lexy::dsl::code_point" %}} (without predicate), {{% docref "lexy::dsl::until" %}}
+| `lexy::literal_token_kind`    | {{% docref "lexy::dsl::lit" %}}, {{% docref "lexy::dsl::code_point" %}} (literal version), and other tokens that are fully identified by their spelling
+| `lexy::position_token_kind`   | {{% docref "lexy::dsl::position" %}} (not actually a token rule)
+| `lexy::eof_token_kind`        | {{% docref "lexy::dsl::eof" %}}
+| `lexy::identifier_token_kind` | {{% docref "lexy::dsl::identifier" %}} and {{% docref "lexy::dsl::symbol" %}}
+| `lexy::digits_token_kind`     | {{% docref "lexy::dsl::digit" %}}, {{% docref "lexy::dsl::digits" %}}, and other rules parsing digits
+|===
+====
+
+[#token_kind]
+== Class `lexy::token_kind`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename TokenKind = void>
+    class token_kind
+    {
+        using _underlying-type_
+          = std::conditional_t<std::is_void_v<TokenKind>, int, TokenKind>;
+
+    public:
+        //=== constructors ===//
+        constexpr token_kind() noexcept;
+        constexpr token_kind(predefined_token_kind value) noexcept;
+
+        constexpr token_kind(_underlying-type_ value) noexcept;
+
+        constexpr token_kind(_token-rule_ auto token_rule) noexcept;
+
+        //== access ===//
+        constexpr explicit operator bool() const noexcept;
+        constexpr bool is_predefined() const noexcept;
+        constexpr bool ignore_if_empty() const noexcept;
+
+        constexpr _underlying-type_ get() const noexcept;
+
+        constexpr const char* name() const noexcept;
+
+        static constexpr std::uint_least16_t to_raw(token_kind kind) noexcept;
+        static constexpr token_kind from_raw(std::uint_least16_t kind) noexcept;
+
+        friend constexpr bool operator==(token_kind lhs, token_kind rhs) noexcept;
+        friend constexpr bool operator!=(token_kind lhs, token_kind rhs) noexcept;
+    };
+}
+----
+
+[.lead]
+Identifies a {{% docref "token-rule" %}}.
+
+It either stores a `lexy::predefined_token_kind` or a user-defined token kind given by `TokenKind`.
+If `TokenKind` is `void` (the default), the assumes a user-defined token type is `int`.
+Otherwise, `TokenKind` must be an enumeration type.
+
+Token rules are associated with their kind using {{% docref ".kind" %}} or by specializing {{% docref "lexy::token_kind_map_for" %}}.
+Some token rules that require special behavior in the parse tree have a {{% docref "lexy::predefined_token_kind" %}}.
+For all others, the token kind is unknown by default.
+
+Internally, all values are stored as a `std::uint_least16_t`.
+
+=== Constructors
+
+{{% interface %}}
+----
+constexpr token_kind() noexcept
+: token_kind(lexy::unknown_token_kind)
+{}
+
+constexpr token_kind(predefined_token_kind value) noexcept;
+----
+
+Initialize with the given {{% docref "lexy::predefined_token_kind" %}}.
+
+{{% interface %}}
+----
+constexpr token_kind(_underlying-type_ value) noexcept;
+
+template <typename T>
+    requires std::is_enum_v<T>
+token_kind(T value)                  -> token_kind<T>;
+token_kind(std::integral auto value) -> token_kind<void>;
+----
+
+Initialize with the given user-defined token kind.
+If `TokenKind` is `void`, it accepts an `int`, otherwise `TokenKind` itself.
+`value` must fit in a 15bit unsigned integer.
+
+If CTAD is used and the argument is an integer, deduces `void` for `TokenKind`.
+Otherwise, deduces the specified information type.
+
+{{% interface %}}
+----
+constexpr token_kind(_token-rule_ auto token_rule) noexcept;
+----
+
+Initialize with the token kind of the given {{% token-rule %}}.
+
+This is determined as follows:
+
+1. If {{% docref "lexy::token_kind_map_for" %}} instantiated with `TokenKind` contains a token kind for `token_rule`, uses that.
+2. Otherwise, if `token_rule` has been assigned a {{% docref "lexy::predefined_token_kind" %}} by lexy, uses that.
+3. Otherwise, if `token_rule` has been assigned a user-defined token kind by {{% docref ".kind" %}},
+   whose type is compatible, uses that.
+   If `TokenKind == void`, a user-defined token kind is compatible if it is an integral value;
+   else, a user-defined token kind is compatible if it has the same enumeration type.
+4. Otherwise, uses `lexy::unknown_token_kind`.
+
+Cases 2 and 3 are subject to the same range restrictions as the constructor that takes a user-defined value directly.
+
+=== Access
+
+{{% interface %}}
+----
+constexpr explicit operator bool() const noexcept; <1>
+
+constexpr bool is_predefined() const noexcept;     <2>
+
+constexpr bool ignore_if_empty() const noexcept;   <3>
+----
+<1> Returns `true` if the token kind is not `lexy::unknown_token_kind`, `false` otherwise.
+<2> Returns `true` if the token kind is user-defined (including unknown), `false` otherwise.
+<3> Returns `true` if an empty token of that kind should be ignored by {{% docref "lexy::parse_tree" %}} and related, `false` otherwise.
+    It currently returns `true` for `lexy::unknown_token_kind`, `lexy::error_token_kind`, `lexy::whitespace_token_kind`.
+
+{{% interface %}}
+----
+constexpr _underlying-type_ get() const noexcept;
+----
+
+Returns the value of the token kind.
+
+If `TokenKind` is `void`, the return type is `int`.
+Otherwise, it is `TokenKind`.
+
+If the token kind is user-defined, returns its value unchanged.
+If the token kind is predefined, returns an implementation defined value.
+This value is guaranteed to uniquely identify the predefined token kind and distinguish it from all user-defined token types,
+but it must not be passed to the constructor taking a user-defined token kind.
+
+{{% interface %}}
+----
+constexpr const char* name() const noexcept;
+----
+
+Returns the name of the token kind.
+
+If the token kind is `lexy::unknown_token_kind`, the name is `"token"`.
+If the token kind is some other predefined token kind, the name is a nice version of the enumeration name (e.g. `"EOF"` for `lexy::eof_token_kind`).
+If the token kind is user-defined and the ADL call `token_kind_name(get())` resolves to a `const char*`, returns that.
+Otherwise, returns `"token"` for user-defined token kinds.
+
+NOTE: ADL only works if the `TokenKind` is an enumeration and not `void`.
+
+[#token_kind_map]
+== `lexy::token_kind_map`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    class _token-kind-map_
+    {
+    public:
+        template <auto TokenKind>
+        consteval _token-kind-map_ map(_token-rule_ auto token_rule) const;
+    };
+
+    constexpr auto token_kind_map = _token-kind-map_();
+
+    template <typename TokenKind>
+    constexpr auto token_kind_map_for = token_kind_map;
+}
+----
+
+[.lead]
+Defines a compile-time mapping of {{% token-rule %}}s to a user-defined `TokenKind` enum.
+
+It is initially empty.
+A mapping is added by calling `.map()` which associates `TokenKind` with the `token_rule`;
+its result is a map that contains this mapping in addition to all previous mappings.
+`TokenKind` must always have the same type.
+
+The mapping is associated with the user-defined `TokenKind` enum by specializing `token_kind_map_for`;
+the default specialization is the empty mapping for all token kinds.
+This specialization is used by the {{% docref "lexy::token_kind" %}} constructor that takes a token rule.
+
+{{% godbolt-example "token_kind_map" "Associate custom token kinds with the default playground example" %}}
+
+CAUTION: Token rules are identified based on type.
+If two token rules are equivalent but have different types, they're token kind is not going to be picked up.
+
+TIP: It is usually better to specify the token kind inline in the grammar using {{% docref ".kind" %}}.
+
+[#token]
+== Class `lexy::token`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_reader_ Reader, typename TokenKind = void>
+    class token
+    {
+    public:
+        using encoding  = typename Reader::encoding;
+        using char_type = typename encoding::char_type;
+        using iterator  = typename Reader::iterator;
+
+        //=== constructors ===//
+        explicit constexpr token(token_kind<TokenKind> kind,
+                                 lexy::lexeme<Reader> lexeme) noexcept;
+        explicit constexpr token(token_kind<TokenKind> kind,
+                                 iterator begin, iterator end) noexcept;
+
+        //=== access ===//
+        constexpr token_kind<TokenKind> kind()   const noexcept;
+        constexpr lexy::lexeme<Reader>  lexeme() const noexcept;
+
+        constexpr const char* name() const noexcept
+        {
+            return kind().name();
+        }
+
+        constexpr iterator position() const noexcept
+        {
+            return lexeme().begin();
+        }
+    };
+
+    template <_input_ Input, typename TokenKind = void>
+    using token_for = token<input_reader<Input>, TokenKind>;
+}
+----
+
+[.lead]
+Stores a token as a pair of {{% docref "lexy::token_kind" %}} and {{% docref "lexy::lexeme" %}}.
+
+A _token_ is not to be confused with a {{% token-rule %}}:
+the latter describes what sort of input constitutes a token (e.g. a sequence of decimal digits or the keyword `int`),
+while the former is the concrete realization of the rule (e.g. the number `123` at offset 10, or the keyword `int` at offset 23).
+
+=== Constructors
+
+{{% interface %}}
+----
+explicit constexpr token(token_kind<TokenKind> kind,
+                         lexy::lexeme<Reader> lexeme) noexcept;
+explicit constexpr token(token_kind<TokenKind> kind,
+                         iterator begin, iterator end) noexcept;
+
+template <typename TokenKind, typename Reader>
+token(token_kind<TokenKind>, lexy::lexeme<Reader>) -> token<Reader, TokenKind>;
+template <typename T, typename Reader>
+    requires std::is_enum_v<T>
+token(T kind, lexy::lexeme<Reader>) -> token<Reader, T>;
+template <typename T, typename Reader>
+token(std::integral auto kind, lexy::lexeme<Reader>) -> token<Reader, void>;
+----
+
+[.lead]
+Constructs the token from `kind` and `lexeme`.
+
+If CTAD is used, the arguments can be deduced for the first overload.
+

@@ -1,0 +1,321 @@
+---
+layout: single
+header: "lexy/dsl.hpp"
+entities:
+  "rule": doc
+---
+:toc: left
+
+[.lead]
+The rule DSL for specifying the grammar.
+
+[source,cpp,subs="+quotes"]
+----
+template <typename T>
+concept _rule_ = …;
+----
+
+The grammar in lexy is specified in several productions, where each one defines an associated _rule_.
+This rule is an object built from the objects and functions of namespace `lexy::dsl` that defines some (implementation-defined) parsing function.
+Parsing a rule takes the reader, which remembers the current position of the input, and the context, which stores information about the current production and whitespace rules, and is responsible for handling errors and values.
+
+Parsing can have one of the following results:
+
+* Parsing can succeed.
+  Then it consumes some input by advancing the reader position and produces zero or more values.
+* Parsing can fail.
+  Then it reports an error, potentially after having consumed some input but without producing values.
+  The parent rule can react to the failure by recovering from it or they fail itself.
+* Parsing can fail, but then recover.
+  Then it has reported an error, but now it has consumed enough input to be in a known good state and parsing continues normally.
+  See {{% docref "error recovery" %}} for details.
+
+A {{% branch-rule %}} is a special kind of rule that has an easy to check condition.
+They are used to guide decisions in the parsing algorithm.
+Every branch rule defines some (implementation defined) branch parsing function.
+It mostly behaves the same as the normal parse rule, but can have one additional result:
+branch parsing can _backtrack_.
+If it backtracks, it hasn't consumed any input, raised errors or produced values.
+The parsing algorithm is then free to try another branch.
+
+NOTE: The idea is that a branch rule can relatively quickly decide whether or not it should backtrack.
+If a branch rule does not backtrack, but fails instead, this failure is propagated and the parsing algorithm does not try another branch.
+
+A {{% token-rule %}} is a special kind of rule that describes the atomic elements.
+Parsing them never produces any values and can happen easily,
+as such they're also branch rules where the entire rule is used as the condition.
+Because they're atomic elements of the input, they also participate in {{% docref "whitespace" "automatic whitespace skipping" %}}:
+after every token, lexy will automatically skip whitespace, if one has been defined.
+
+The parse context stores state that can be accessed during parsing.
+This includes things like the current recursion depth, see {{% docref "lexy::dsl::recurse" %}},
+whether or not automatic whitespace skipping is currently enabled, see {{% docref whitespace "whitespace skipping" %}},
+but also arbitrary user-defined variables, see {{% docref "lexy::dsl::context_flag" %}}, {{% docref "lexy::dsl::context_counter" %}}, and {{% docref "lexy::dsl::context_identifier" %}}.
+
+When a rule modifies the context during parsing, by adding an additional context variable for example,
+this modification is available for all following rules in the current production and all child productions.
+In particular, the modification is no longer visible in any parent production.
+If a rule is parsed in a loop, e.g. by {{% docref "lexy::dsl::loop" %}} or {{% docref "lexy::dsl::list" %}},
+any context modification does not persist between loop iterations, and is also not available outside the loop.
+
+== How to read the DSL documentation footnote:[link:https://xkcd.com/1343[obligatory XKCD]]
+
+The behavior of a rule is described by the following sections.
+
+Matching/parsing::
+  This section describes what input is matched for the rule to succeed, and what is consumed.
+  For token rules it is called "matching", otherwise "parsing".
++
+It often delegates to the behavior of other rules:
+Here, the term "parsing" refers to the parsing operation of a rule,
+"branch parsing" or "try to parse" refers to the special parsing operation of a branch rule, which can backtrack,
+"matching" refers to the parsing operation of a token rule, which cannot produce values,
+and "try matching" refers to the branch parsing operation of a token rule, which cannot produce values or raise errors.
+Branch parsing::
+  This section describes what input is matched, consumed, and leads to a backtracking for a branch rule.
+  Note that a rule can parse something different here than during non-branch parsing.
+Errors::
+  This section describes what errors are raised, when, and where.
+  It also describes whether the rule can recover after the error.
+Values::
+  This section describes what values are produced during a successful parsing operation.
+  It is omitted for token rules, which never produce values.
+Parse tree::
+  This section describes what nodes are created in the `lexy::parse_tree`.
+  If omitted, a token rule creates a single token node covering everything consumed,
+  and a rule produces no extra nodes besides the ones created by the other rules it parses.
+
+If a rule parses another rule in a new context (e.g. {{% docref "lexy::dsl::peek" %}}),
+the other rule does not have access to context variables, and any context modification is not visible outside of the rule.
+
+== The rule DSL
+
+[%collapsible]
+.Primitive rules
+====
+{{% docref "lexy::dsl::any" %}}::
+  match anything
+{{% docref "lexy::dsl::eof" %}}::
+  match EOF
+{{% docref "lexy::dsl::newline" %}} and {{% docref "lexy::dsl::eol" %}}::
+  match the end of a line
+====
+
+[%collapsible]
+.Literal rules
+====
+{{% docref "lexy::dsl::lit_c" %}}::
+  match a single character
+{{% docref "lexy::dsl::lit" %}} and {{% docref "LEXY_LIT" %}}::
+  match character sequences
+{{% docref "lexy::dsl::lit_b" %}}::
+  match a sequence of bytes
+{{% docref "lexy::dsl::lit_cp" %}}::
+  match a code point with the specified value
+{{% docref "punctuators" %}}::
+  match common punctuation
+{{% docref "lexy::dsl::literal_set" %}} and {{% docref "LEXY_LITERAL_SET" %}}::
+  match one of the specified literals
+{{% docref "lexy::dsl::followed_by" %}} and {{% docref "lexy::dsl::not_followed_by" %}}::
+  ensure a literal is (not) followed by a char class
+{{% docref "lexy::dsl::ascii::case_folding" %}} and {{% docref "lexy::dsl::unicode::simple_case_folding" %}}::
+  match a literal case-insensitively
+====
+
+[%collapsible]
+.Char classes
+====
+{{% docref "lexy::dsl::code_point" %}}::
+  match specific Unicode code points
+{{% docref "lexy::dsl::ascii" %}}::
+  match ASCII char classes
+{{% docref "lexy::dsl::unicode" %}}::
+  match Unicode char classes
+{{% docref "lexy::dsl::operator/ (char class)" %}}, {{% docref "lexy::dsl::operator- (unary)" %}}, {{% docref "lexy::dsl::operator-" %}}, {{% docref "lexy::dsl::operator&" %}}::
+  combine char classes
+{{% docref "LEXY_CHAR_CLASS" %}}::
+  create a named char class
+====
+
+[%collapsible]
+.Branch conditions
+====
+{{% docref "lexy::dsl::operator>>" %}}::
+  add a branch condition to a rule
+{{% docref "lexy::dsl::else_" %}}::
+  branch condition that is always taken
+{{% docref "lexy::dsl::peek" %}} and {{% docref "lexy::dsl::peek_not" %}}::
+  check whether something matches without consuming it
+{{% docref "lexy::dsl::lookahead" %}}::
+  check whether something matches somewhere in the input without consuming it
+====
+
+[%collapsible]
+.Combinators
+=====
+{{% docref "lexy::dsl::token" %}}::
+  turn a rule into a token
+{{% docref "lexy::dsl::operator+" %}}::
+  parse a sequence of rules
+{{% docref "lexy::dsl::operator|" %}}::
+  parse one of the specified (branch) rules
+{{% docref "lexy::dsl::combination" %}} and {{% docref "lexy::dsl::partial_combination" %}}::
+  parse all (some) of the (branch) rules in arbitrary order
+{{% docref "lexy::dsl::if_" %}} and {{% docref "lexy::dsl::opt" %}}::
+  parse a branch rule if its condition matches
+{{% docref "lexy::dsl::loop" %}}::
+  parse a rule repeatedly
+{{% docref "lexy::dsl::while_" %}} and {{% docref "lexy::dsl::while_one" %}}::
+  parse a branch rule while its condition matches
+{{% docref "lexy::dsl::list" %}}::
+  parse a list of things
+{{% docref "lexy::dsl::times" %}} and {{% docref "lexy::dsl::repeat" %}}::
+  parse a rule `N` times
+{{% docref "lexy::dsl::until" %}}::
+  skip everything until a rule matches
+=====
+
+
+[%collapsible]
+.Brackets and delimited
+=====
+{{% docref "lexy::dsl::terminator" %}}::
+  parse something that ends with a terminator
+{{% docref "lexy::dsl::brackets" %}}::
+  parse something surrounded by brackets
+{{% docref "lexy::dsl::delimited" %}} and {{% docref "lexy::dsl::escape" %}}::
+  parse everything between two delimiters, with optional escape sequences
+=====
+
+[%collapsible]
+.Productions
+====
+{{% docref "lexy::dsl::p" %}} and {{% docref "lexy::dsl::recurse" %}}::
+  parse another production
+{{% docref "lexy::dsl::inline_" %}}::
+  parse another production's rule inline
+{{% docref "lexy::dsl::return_" %}}::
+  exit early from parsing a production
+{{% docref "lexy::dsl::subgrammar" %}}::
+  parse a production defined in a different source file
+====
+
+[%collapsible]
+.Values
+=====
+{{% docref "lexy::dsl::capture" %}}::
+  capture everything consumed by a token rule
+{{% docref "lexy::dsl::position" %}}::
+  produce the current input position
+{{% docref "lexy::dsl::nullopt" %}}::
+  produce an empty placeholder value
+{{% docref "lexy::dsl::member" %}}::
+  parse something into a member variable
+{{% docref "lexy::dsl::scan" %}}::
+  parse a completely user-defined rule
+{{% docref "lexy::dsl::parse_as" %}}::
+  parses a rule ensuring it always produces a specific value
+=====
+
+[%collapsible]
+.Errors and error recovery
+=====
+{{% docref "lexy::dsl::error" %}}::
+  explicitly raise an error
+{{% docref "lexy::dsl::must" %}}::
+  raise an error if a branch backtracks
+{{% docref "lexy::dsl::try_" %}}::
+  recover from a failed rule
+{{% docref "lexy::dsl::recover" %}}::
+  recover by looking and then continuing with some other rule
+{{% docref "lexy::dsl::find" %}}::
+  recover by looking for synchronization tokens
+=====
+
+[%collapsible]
+.Whitespace
+====
+{{% docref "lexy::dsl::whitespace" %}}::
+  explicitly skip whitespace
+{{% docref "lexy::dsl::no_whitespace" %}}::
+  do not skip whitespace
+====
+
+[%collapsible]
+.Identifiers
+====
+{{% docref "lexy::dsl::identifier" %}}::
+  parse an identifier
+{{% docref "lexy::dsl::keyword" %}}::
+  parse a keyword
+{{% docref "lexy::dsl::symbol" %}}::
+  parse one of the specified symbols and produce their value
+{{% docref "lexy::dsl::flag" %}} and {{% docref "lexy::dsl::flags" %}}::
+  parses (multiple) symbols representing enum flags in any order
+====
+
+[%collapsible]
+.Numbers
+====
+{{% docref "lexy::dsl::zero" %}}::
+  parse zero
+{{% docref "lexy::dsl::digit" %}}::
+  parse a digit
+{{% docref "lexy::dsl::digits" %}}::
+  parse one or more digits
+{{% docref "lexy::dsl::n_digits" %}}::
+  parse N digits
+{{% docref "lexy::dsl::integer" %}}::
+  convert digits to an integer
+{{% docref "lexy::dsl::sign" %}}, {{% docref "lexy::dsl::plus_sign" %}} and {{% docref "lexy::dsl::minus_sign" %}}::
+  parse a sign
+{{% docref "lexy::dsl::code_point_id" %}}::
+  convert N digits into a code point
+====
+
+[%collapsible]
+.Operator precedence parsing
+====
+{{% docref "lexy::dsl::op" %}}::
+  parse an operator
+{{% docref "lexy::dsl::operator/ (operator)" %}}::
+  parse one of multiple operators
+{{% docref "expression" %}}::
+  parse an expression consisting of multiple operators
+====
+
+[%collapsible]
+.Context-sensitive parsing
+====
+{{% docref "lexy::dsl::context_flag" %}}::
+  a boolean flag
+{{% docref "lexy::dsl::context_counter" %}}::
+  an integer counter
+{{% docref "lexy::dsl::context_identifier" %}}::
+  an identifier variable
+====
+
+[%collapsible]
+.Byte input
+====
+{{% docref "lexy::dsl::bytes" %}} and {{% docref "lexy::dsl::padding_bytes" %}}::
+  parse `N` bytes
+{{% docref "lexy::dsl::bint8" %}}, {{% docref "lexy::dsl::bint16" %}}, ... ::
+  parse a little/big endian integer
+{{% docref "lexy::dsl::bits" %}}::
+  parse a byte with specific bit patterns
+{{% docref "lexy::dsl::bom" %}}::
+  parse a byte-order mark (BOM)
+====
+
+[%collapsible]
+.Input and action specific rules
+====
+{{% docref "lexy::dsl::argv_separator" %}}::
+  match the argument separator of a {{% docref "lexy::argv_input" %}}
+{{% docref "lexy::dsl::tnode" %}} and {{% docref "lexy::dsl::pnode" %}}::
+  match a node of a {{% docref "lexy::parse_tree_input" %}}
+{{% docref "lexy::dsl::debug" %}}::
+  generate a debug event that is visualized by {{% docref "lexy::trace" %}}
+====
+

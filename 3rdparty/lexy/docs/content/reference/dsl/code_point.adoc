@@ -1,0 +1,83 @@
+---
+header: "lexy/dsl/code_point.hpp"
+entities:
+  "lexy::dsl::code_point": code_point
+---
+
+[#code_point]
+== Char class rule `lexy::dsl::code_point`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    class _code-point-dsl_ // models _char-class-rule_
+    {
+    public:
+        template <typename Predicate>
+        constexpr _token-rule_ auto if_() const;
+
+        template <char32_t ... CPs>
+        constexpr _token-rule_ auto set() const;
+        template <char32_t Low, char32_t High>
+        constexpr _token-rule_ auto range() const;
+
+        constexpr _token-rule_ auto ascii() const;
+        constexpr _token-rule_ auto bmp() const;
+        constexpr _token-rule_ auto noncharacter() const;
+
+        template <lexy::code_point::general_category_t Category>
+        constexpr _token-rule_ auto general_category() const;
+        template <lexy::code_point::_gc-group_ CategoryGroup>
+        constexpr _token-rule_ auto general_category() const;
+    };
+
+    constexpr _code-point-dsl_ auto code_point;
+}
+----
+
+[.lead]
+`code_point` is a {{% char-class-rule %}} that matches a specified set of Unicode code points.
+
+`code_point`::
+  matches an arbitrary scalar code point
+  Its char class name is `code-point`.
+`code_point.if_()`::
+  matches all code points where the predicate returns `true`.
+  The predicate must have a `constexpr bool operator()(lexy::code_point)`.
+  Its char class name is the type name of `P`.
+`code_point.set()`::
+  matches the specified code points.
+  Its name is `code-point.set`.
+`code_point.range()`::
+  matches the code points in the range `[Low, High]` (both sides inclusive).
+  Its name is `code-point.range`.
+`code_point.ascii()`::
+  matches all ASCII code points.
+  Its name is `code-point.ASCII`.
+`code_point.bmp()`::
+  matches all code points in the BMP.
+  Its name is `code-point.BMP`.
+`code_point.noncharacter()`::
+  matches all non-character code points.
+  Its name is `code-point.noncharacter`.
+`code_point.general_category()`::
+  matches all code points with the specified category or category group.
+  Its name is the name of the category.
+  This requires the Unicode database, except for `Cc`, `Cs`, and `Co`, which are fixed.
+
+{{% playground-example code_point "Parse one code point in the inputs encoding" %}}
+
+{{% playground-example code_point_if "Parse even code points only" %}}
+
+CAUTION: As a token rule, it matches {{% docref whitespace whitespace %}} immediately following the code point.
+As such, the rule is best used in contexts where automatic whitespace skipping is disabled.
+
+NOTE: See {{% docref "lexy::dsl::unicode" %}} for common predefined predicates.
+
+NOTE: `.ascii()`, `.bmp()`, and `.noncharacter()` corresponds to the corresponding member function of {{% docref "lexy::code_point" %}}.
+The other classification functions don't have rules:
+* `cp.is_valid()` and `cp.is_scalar()` is always `true`; `cp.is_surrogate()` is never `true`.
+* `cp.is_control()` is general category `Cc`.
+* `cp.is_private_use()` is general category `Co`.
+

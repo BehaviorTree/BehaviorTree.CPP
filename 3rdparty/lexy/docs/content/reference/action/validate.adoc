@@ -1,0 +1,158 @@
+---
+header: "lexy/action/validate.hpp"
+entities:
+  "lexy::validate_result": validate_result
+  "lexy::validate": validate
+  "error callback": error-callback
+---
+:toc: left
+
+[.lead]
+Validate input.
+
+[#error-callback]
+== Error callback
+
+[source,cpp,subs="+quotes"]
+----
+template <typename T>
+concept _error-callback_ = _callback_<T> || _sink_<T>;
+----
+
+[.lead]
+The callback types used for error reporting.
+
+If it is a link:{{< relref "callback#sink" >}}[sink], it must not return `void`.
+Its sink callback must have the signature
+[source,cpp,subs="+quotes"]
+----
+template <_input_ Input, typename Tag>
+void operator()(const lexy::error_context<Input>& context,
+                const lexy::error_for<Input, Tag>& error);
+----
+It will be invoked for each {{% docref "lexy::error" %}} object with the corresponding {{% docref "lexy::error_context" %}};
+errors with generic tag are type-erased prior to invocation.
+The final result of the sink, the error list, is then made available.
+
+If it is a link:{{< relref "callback#callback" >}}[callback], it must return `void` with the same signature.
+{{% docref "lexy::collect" %}} is used to turn into a sink that counts the invocations of the callback.
+As such, it's final value is a `std::size_t`.
+
+TIP: Use the extension `lexy_ext::report_error` of `lexy_ext/report_error.hpp` for a simple error callback that formats the error nicely and prints it to `stderr`.
+
+TIP: Use the other overload of {{% docref "lexy::collect" %}} to turn a non-`void` returning callback into a sink that collects all values into the specified container.
+
+[#validate_result]
+== Class `lexy::validate_result`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename ErrorCallback>
+    class validate_result
+    {
+    public:
+        using error_callback = ErrorCallback;
+        using error_type     = _see-below_;
+
+        //=== status ===//
+        constexpr explicit operator bool() const noexcept
+        {
+            return is_success();
+        }
+
+        constexpr bool is_success()         const noexcept;
+        constexpr bool is_error()           const noexcept;
+        constexpr bool is_recovered_error() const noexcept;
+        constexpr bool is_fatal_error()     const noexcept;
+
+        //=== error list ===//
+        constexpr std::size_t error_count() const noexcept;
+
+        constexpr const error_type& errors() const& noexcept;
+        constexpr error_type&&      errors() &&     noexcept;
+    };
+}
+----
+
+[.lead]
+The result of {{% docref "lexy::validate" %}} and {{% docref "lexy::parse_as_tree" %}}.
+
+It stores the status of the action and the final error list of the {{% error-callback %}}, which has type `error_type`.
+
+=== Status
+
+{{% interface %}}
+----
+constexpr explicit operator bool() const noexcept
+{
+    return is_success();
+}
+
+constexpr bool is_success()         const noexcept; <1>
+constexpr bool is_error()           const noexcept; <2>
+constexpr bool is_recovered_error() const noexcept; <3>
+constexpr bool is_fatal_error()     const noexcept; <4>
+----
+<1> Returns `true` if parsing succeeded without raising any errors, `false` otherwise.
+<2> Returns `true` if at least one error occurred during parsing, `false` otherwise.
+<3> Returns `true` if at least one error occurred during parsing but it could recover from all of them, `false` otherwise.
+<4> Returns `true` if at least one error occurred during parsing that could not be recovered, `false` otherwise.
+
+NOTE: `is_error()` is equivalent to `is_recovered_error() || is_fatal_error()`, and `is_success()` is `!is_error()`.
+
+== Error list
+
+{{% interface %}}
+----
+constexpr std::size_t error_count() const noexcept; <1>
+
+constexpr const error_type& errors() const& noexcept; <2>
+constexpr error_type&&      errors() &&     noexcept; <2>
+----
+<1> If `error_type` is `std::size_t`, returns `errors()`.
+    Otherwise, returns `errors().size()`.
+<2> The final value of the `ErrorCallback`, unchanged.
+
+If `is_success() == true`, `error_count() == 0` and `errors()` returns the result of the sink callback that is finished without ever invoking it.
+
+[#validate]
+== Action `lexy::validate`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename State, typename Input, typename ErrorCallback>
+    struct validate_action;
+
+    template <_production_ Production>
+    constexpr auto validate(const _input_ auto& input,
+                            _error-callback_ auto error_callback)
+      -> validate_result<decltype(error_callback)>;
+
+    template <_production_ Production, typename ParseState>
+    constexpr auto validate(const _input_ auto& input,
+                            ParseState& state,
+                            _error-callback_ auto error_callback)
+      -> validate_result<decltype(error_callback)>;
+    template <_production_ Production, typename ParseState>
+    constexpr auto validate(const _input_ auto& input,
+                            const ParseState& state,
+                            _error-callback_ auto error_callback)
+      -> validate_result<decltype(error_callback)>;
+}
+----
+
+[.lead]
+An action that validates `input` according to `Production`.
+
+It parses `Production` on input.
+All values produced during parsing are discarded;
+all errors raised are forwarded to the {{% error-callback %}}.
+Returns the {{% docref "lexy::validate_result" %}} containing the result of the error callback.
+
+NOTE: `Production` does not need to match the entire `input` to succeed.
+Use {{% docref "lexy::dsl::eof" %}} if it should fail when it didn't consume the entire input.
+

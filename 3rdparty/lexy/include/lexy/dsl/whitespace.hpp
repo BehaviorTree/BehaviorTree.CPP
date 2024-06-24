@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_WHITESPACE_HPP_INCLUDED
@@ -137,7 +137,8 @@ constexpr auto skip_whitespace(ws_handler<Handler>&& handler, Reader& reader)
         {
             // Without SWAR, we just repeatedly skip the whitespace rule.
             while (lexy::try_match_token(WhitespaceRule{}, reader))
-            {}
+            {
+            }
         }
 
         handler.real_on(lexy::parse_events::token{}, lexy::whitespace_token_kind, begin,

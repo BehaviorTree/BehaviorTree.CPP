@@ -1,0 +1,108 @@
+---
+header: "lexy/dsl/error.hpp"
+entities:
+  "lexy::dsl::error": error
+  "lexy::dsl::must": must
+---
+:toc: left
+
+[.lead]
+Rules that generate errors.
+
+[#error]
+== Rule `lexy::dsl::error`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <typename Tag>
+    constexpr _branch-rule_ auto error;
+
+    template <typename Tag>
+    constexpr _branch-rule_ auto error(_rule_ auto rule);
+}
+----
+
+[.lead]
+`error` is a rule that always fails and reports an error.
+
+Parsing::
+  The first overload fails immediately without consuming anything.
+  The second overload first tries to match `rule` in a new context.
+  The rule then still fails unconditionally without consuming anything.
+Branch parsing::
+  In a branch, `error` fails in the same way, but the branch has been considered taken and no backtracking occurs.
+Errors::
+  A generic error with the specified `Tag`.
+  For the first overload, it is raised at the unchanged reader position.
+  For the second overload, its range covers everything matched by `rule`.
+  The rule then fails.
+Values::
+  None.
+
+{{% playground-example choice_error "Generate a custom error for an unknown greeting" %}}
+
+{{% playground-example choice_error_range "Generate a custom error for an unknown greeting with range" %}}
+
+TIP: Use `error` in error production: if a certain ill-formed input is common, create a separate rule for it.
+If it is parsed, a custom error is always raised.
+
+NOTE: Automatic {{% docref whitespace %}} skipping is disabled while parsing `rule`.
+
+WARNING: `rule` does not have access to any context variables created by the context-sensitive parsing facilities and it can't use recursion.
+
+[#must]
+== Branch rule `lexy::dsl::must`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    class _must-dsl_ // note: not a _rule_ itself
+    {
+    public:
+        template <typename Tag>
+        static constexpr _branch-rule_ auto error;
+
+        template <typename Tag>
+        constexpr _branch-rule_ auto error(_rule_ auto capture);
+    };
+
+    constexpr _must-dsl_ must(_branch-rule_ auto rule);
+}
+----
+
+[.lead]
+`must` is a {{% branch-rule %}} that tries to parse another branch rule and raises a specific error if that backtracks.
+
+If `must(rule).error<Tag>` is used, the associated error rule `e` is `lexy::dsl::error<Tag>`.
+Otherwise, if `must(rule).error<Tag>(capture)` is used, the associated error rule `e` is `lexy::dsl::error<Tag>(capture)`.
+
+Requires::
+  `rule` is a branch rule that is not unconditionally taken (e.g. not {{% docref "lexy::dsl::else_" %}}).
+Parsing::
+  Parses the {{% docref choice %}} `rule |  e`, where `e` is the associated error rule,
+  i.e. it tries to parse `rule` and raises a specific error if that fails.
+Branch parsing::
+  Tries to parse `rule` and produces the same result.
+Errors::
+  * All errors raised by branch parsing of `rule`.
+    The rule then fails if `rule` has failed.
+  * A generic error with the specified `Tag`:
+    if the rule backtracks during non-branch parsing.
+    Its range covers anything consumed by the optional `capture` rule, just like `lexy::dsl::error`.
+
+{{% playground-example must "Parse a very basic echo command" %}}
+
+NOTE: See {{< github-example shell >}} for a more complete shell parser.
+
+TIP: Use `must(rule).error<Tag>` if you sometimes need to parse `rule` unconditionally with a specific error, and sometimes as a branch rule.
+
+NOTE: The difference between `must(rule).error<Tag>` and the {{% docref choice %}} `rule | lexy::dsl::error<Tag>` is that the former is still a branch condition.
+The choice is not a branch condition, as it is unconditionally: it will either parse `rule` and succeed, or fail, but never backtrack.
+`must` on the other hand will behave exactly the same as `rule` during branch parsing.
+That way, something like {{% docref "lexy::dsl::if_" %}}`(must(rule).error<Tag>)` is equivalent to `lexy::dsl::if_(rule)`.
+
+NOTE: If `rule` is a {{% token-rule %}}, `must(rule).error<Tag>` is equivalent to `rule.error<Tag>`.
+

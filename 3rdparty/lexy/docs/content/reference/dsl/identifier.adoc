@@ -1,0 +1,203 @@
+---
+header: "lexy/dsl/identifier.hpp"
+entities:
+  "lexy::dsl::identifier": identifier
+  "lexy::dsl::keyword": keyword
+  "LEXY_KEYWORD": keyword
+---
+:toc: left
+
+[.lead]
+The `identifier` and `keyword` rules.
+
+[#identifier]
+== Rule `lexy::dsl::identifier`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct reserved_identifier {};
+}
+
+namespace lexy::dsl
+{
+    struct _identifier-dsl_ // models _branch-rule_
+    {
+        //=== modifiers ===//
+        constexpr _identifier-dsl_ reserve(auto ... rules) const;
+        constexpr _identifier-dsl_ reserve_prefix(auto ... rules) const;
+        constexpr _identifier-dsl_ reserve_containing(auto ... rules) const;
+        constexpr _identifier-dsl_ reserve_suffix(auto ... rules) const;
+
+        //=== sub-rules ===//
+        constexpr _token-rule_ auto pattern() const;
+
+        constexpr _token-rule_ auto leading_pattern() const;
+        constexpr _token-rule_ auto trailing_pattern() const;
+    };
+
+    constexpr _identifier-dsl_ identifier(_char-class-rule_ auto leading,
+                                        _char-class-rule_ auto trailing);
+
+    constexpr _identifier-dsl_ identifier(_char-class-rule_ auto c)
+    {
+        return identifier(c, c);
+    }
+
+}
+----
+
+[.lead]
+`identifier` is a rule that parses an identifier.
+
+It can be created using two overloads.
+The first overload takes a {{% char-class-rule %}} that matches the `leading` character of the identifier,
+and one that matches all `trailing` characters after the first.
+The second overload takes just one {{% char-class-rule %}} and uses it both as `leading` and `trailing` characters.
+
+Requires::
+  The {{% encoding %}} of the input is a char encoding.
+Parsing::
+  Matches and consumes the token `.pattern()` (see below).
+  Then verifies that the lexeme formed from `.pattern()` (excluding any trailing whitespace), is not reserved (see below).
+Branch parsing::
+  Tries to match and consume the token `.pattern()` (see below), backtracking if that fails.
+  Otherwise it checks for reserved identifiers and backtracks if it was reserved.
+  As such, branch parsing only raises errors due to the implicit whitespace skipping.
+Errors::
+  * All errors raised by `.pattern()`. The rule then fails if not during branch parsing.
+  * `lexy::reserved_identifier`: if the identifier is reserved; its range covers the identifier.
+    The rule then recovers.
+Values::
+  A single {{% docref "lexy::lexeme" %}} that is the parsed identifier (excluding any trailing whitespace).
+Parse tree::
+  The single token node created by `.pattern()` (see below).
+  Its kind cannot be overridden.
+
+{{% playground-example identifier "Parse a C-like identifier" %}}
+
+{{% playground-example identifier-unicode "Parse a Unicode-aware C-like identifier" %}}
+
+{{% godbolt-example identifier_case_folded "Parse a case-insensitive identifier" %}}
+
+TIP: Use the character classes from {{% docref "lexy::dsl::ascii" %}} for simple identifier matching as seen in the example.
+
+TIP: Use the callback {{% docref "lexy::as_string" %}} to convert the {{% docref "lexy::lexeme" %}} to a string.
+
+=== Reserving identifiers
+
+{{% interface %}}
+----
+constexpr _identifier-dsl_ reserve(auto ... rules) const; <1>
+constexpr _identifier-dsl_ reserve_prefix(auto ... rules) const; <2>
+constexpr _identifier-dsl_ reserve_containing(auto ... rules) const; <3>
+constexpr _identifier-dsl_ reserve_suffix(auto ... rules) const; <4>
+----
+
+[.lead]
+Reserves an identifier.
+
+Initially, no identifier is reserved.
+Identifiers are reserved by calling `.reserve()` or its variants passing it a {{% literal-rule %}} or {{% docref "lexy::dsl::literal_set" %}}.
+If this has happened, parsing the `identifier` rule creates a partial input from the lexeme and matches it against the specified rules as follows:
+
+* (1) `.reserve()`: All rules specified here are matched against the partial input.
+  If they match the entire partial input, the identifier is reserved.
+* (2) `.reserve_prefix()`: All rules specified here are matched against the partial input.
+  If they match a prefix of the partial input, the identifier is reserved.
+* (3) `.reserve_containing()`: All rules specified here are matched against the partial input.
+  If they match somewhere in the partial input, the identifier is reserved.
+* (4) `.reserve_suffix()`: All rules specified here are matched against the partial input.
+  If they match a suffix of the partial input, the identifier is reserved.
+
+If one `rule` passed to a `.reserve()` call or variant uses case folding (e.g. {{% docref "lexy::dsl::ascii::case_folding" %}}), all other rules in the same call also use that case folding, but not rules in a different call.
+This is because internally each call creates a fresh {{% docref "lexy::dsl::literal_set" %}}, which has that behavior.
+
+{{% playground-example reserved_identifier "Parse a C like identifier that is not reserved" %}}
+
+{{% playground-example reserved_identifier_case_folding "Parse a C like identifier with case-insensitive keywords" %}}
+
+CAUTION: The `identifier` rule doesn't magically learn about the keywords you have created.
+They are only reserved if you actually pass them to `.reserve()`.
+This design allows you to use a different set of reserved identifiers in different places in the grammar.
+
+=== Token rule `.pattern()`
+
+{{% interface %}}
+----
+constexpr _token-rule_ auto pattern() const;
+----
+
+[.lead]
+`.pattern()` is a {{% token-rule %}} that matches the basic form of the identifier without checking for reserved identifiers.
+
+Matching::
+  Matches and consumes `leading`,
+  then matches and consumes {{% docref "lexy::dsl::while_" %}}`(trailing)`,
+  where `leading` and `trailing` are the arguments passed to `identifier()`.
+  Whitespace skipping is disabled inside the `pattern()`,
+  but it will be skipped after `pattern()`.
+Errors::
+  All errors raised by matching `leading`.
+  The rule then fails.
+Parse tree::
+  A single token node whose range covers everything consumed.
+  Its {{% docref "lexy::predefined_token_kind" %}} is `lexy::identifier_token_kind`.
+
+=== Token rules `.leading_pattern()`, `.trailing_pattern()`
+
+{{% interface %}}
+----
+constexpr _token-rule_ auto leading_pattern() const;
+constexpr _token-rule_ auto trailing_pattern() const;
+----
+
+[.lead]
+They simply return `leading`/`trailing` from the arguments passed to `identifier()`.
+
+[#keyword]
+== Literal rule `lexy::dsl::keyword`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <auto Char>
+    constexpr _literal-rule_ auto keyword(_identifier-dsl_ identifier);
+    template <auto Str>
+    constexpr _literal-rule_ auto keyword(_identifier-dsl_ identifier);
+}
+
+#define LEXY_KEYWORD(Str, Identifier) lexy::dsl::keyword<Str>(Identifier)
+----
+
+[.lead]
+`keyword` is a {{% literal-rule %}} that matches a keyword.
+
+Matching::
+  Tries to match and consume `identifier.pattern()`,
+  i.e. the basic pattern of an identifier ignoring any reserved identifiers.
+  Then creates a partial input that covers everything just consumed (without the trailing whitespace)
+  and matches {{% docref "lexy::dsl::lit" %}}`<Str>` on that input.
+  Succeeds only if that consumes the entire partial input.
+Errors::
+  {{% docref "lexy::expected_keyword" %}}: if either `identifier.pattern()` or the `lit` rule failed.
+  Its range covers the everything consumed by `identifier.pattern()` and its `.string()` is `Str`.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::literal_token_kind`.
+
+The macro `LEXY_KEYWORD(Str, Identifier)` is equivalent to `keyword<Str>(Identifier)`,
+except that it also works on older compilers that do not support C++20's extended NTTPs.
+Use this instead of `keyword<Str>(identifier)` if you need to support them.
+
+{{% playground-example keyword "Parse a keyword" %}}
+
+NOTE: While {{% docref "lexy::dsl::lit" %}}`<"int">` would happily consume a prefix of `"integer"`, `keyword<"int">(id)`, for a matching `id`, would not.
+
+NOTE: A keyword does not necessarily need to be a reserved identifier or vice-versa.
+
+NOTE: The {{% encoding %}} caveats of {{% literal-rule %}}s apply here as well.
+
+TIP: Use {{% docref "lexy::dsl::ascii::case_folding" %}} or its Unicode variants to parse a case insensitive keyword.
+

@@ -1,0 +1,167 @@
+---
+header: "lexy/encoding.hpp"
+entities:
+  "encoding": doc
+  "lexy::default_encoding": encoding
+  "lexy::ascii_encoding": encoding
+  "lexy::utf8_encoding": encoding
+  "lexy::utf8_char_encoding": encoding
+  "lexy::utf16_encoding": encoding
+  "lexy::utf32_encoding": encoding
+  "lexy::byte_encoding": encoding
+  "lexy::deduce_encoding": deduce_encoding
+  "lexy::encoding_endianness": encoding_endianness
+---
+:toc: left
+
+[.lead]
+Facilities for handling the encoding of an input.
+
+[source,cpp]
+----
+template <typename T>
+concept encoding = …;
+----
+
+An _encoding_ determines the value type of the input and how it is interpreted by the rules.
+Some {{% docref "rule" %}}s require a certain encoding.
+For example, {{% docref "lexy::dsl::code_point" %}} does not work with {{% docref "lexy::default_encoding" %}}.
+lexy supports two kinds of encodings: char encodings and node encodings.
+
+A _char encoding_ is an encoding where the input is a sequence of characters.
+Its _primary character type_ `::char_type` is the actual character type an input gives you,
+but it can also have _secondary character types_ which are also accepted but then internally normalized to the primary character type.
+Its _integer type_ `::int_type` is an integer type which can store any valid character type or a special EOF value.
+If this is the same type as the primary character type, some optimizations are possible.
+Char encodings are further divided into _text encodings_ (the input is human readable text) and _byte encodings_ (the input contains arbitrary bytes).
+
+A _node encoding_ is an encoding where the input is already parsed into a {{% docref "lexy::parse_tree" %}}.
+Its _value type_ `::value_type` is the type of the nodes in the parse tree, and its `::char_encoding` is the underlying char encoding of the parse tree.
+For details about node encodings, see {{% docref "lexy::parse_tree_input" %}}.
+
+[#encoding]
+== Supported char encodings
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct default_encoding {}; // any 8-bit encoding
+
+    struct ascii_encoding {};       // ASCII
+    struct utf8_encoding  {};       // UTF-8, char8_t
+    struct utf8_char_encoding  {};  // UTF-8, char
+    struct utf16_encoding {};       // UTF-16
+    struct utf32_encoding {};       // UTF-32
+
+    struct byte_encoding {}; // not text
+}
+----
+
+[.lead]
+Tag types for the char encodings supported by lexy.
+
+[%collapsible]
+.The character types
+====
+|===
+| Encoding            | Primary character type | Secondary character type(s)
+
+| `default_encoding`  | `char`                 | none
+| `ascii_encoding`    | `char`                 | none
+| `utf8_encoding`     | `char8_t`              | `char`
+| `utf8_char_encoding`| `char`                 | `char8_t`
+| `utf16_encoding`    | `char16_t`             | `wchar_t` (Windows only)
+| `utf32_encoding`    | `char32_t`             | `wchar_t` (Linux and related systems)
+| `byte_encoding`     | `unsigned char`        | `char`, `std::byte`
+|===
+====
+
+Each tag type corresponds to the encoding indicated and it uses the character types defined in the table above.
+If an encoding is specified, lexy assumes that the input is valid for this encoding and will not perform any checking unless otherwise indicated.
+If the input contains invalid code units or invalid sequences of code units,
+lexy may or may not generate bogus parse errors.
+
+NOTE: For example, if the input contains the byte sequence lexy uses to encode EOF,
+which is never a valid code unit for the encoding, lexy will raise an unexpected EOF error before the actual end of the input.
+
+`default_encoding` is used as fallback if no encoding is specified or could be deduced.
+This encoding works with any 8-bit encoding where the code units `0x00-0x7F` correspond to the ASCII characters (ASCII, UTF-8, Windows code pages, etc.).
+Rules that require knowledge about the actual encoding like {{% docref "lexy::dsl::code_point" %}} do not work and some optimizations are impossible, as lexy has to assume that every 8-bit value is valid code unit.
+
+TIP: If you know that your input is ASCII or UTF-8, use `ascii_encoding`/`utf8_encoding` instead.
+
+`byte_encoding` is used to indicate that the input does not contain actual text but arbitrary bytes.
+It can also be used if you're parsing text consisting of a mix of different encodings.
+
+[#deduce_encoding]
+== Alias template `lexy::deduce_encoding`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename CharT>
+    using deduce_encoding = …;
+}
+----
+
+[.lead]
+Deduces a char encoding from the character type of a string.
+
+[%collapsible]
+.Deduced encoding
+====
+|===
+| Character type | Encoding
+
+| `char`         | `lexy::default_encoding`
+| `char8_t`      | `lexy::utf8_encoding`
+| `char16_t`     | `lexy::utf16_encoding`
+| `char32_t`     | `lexy::utf32_encoding`
+| `unsigned char`| `lexy::byte_encoding`
+| `std::byte`    | `lexy::byte_encoding`
+|===
+====
+
+What encoding is deduced from a character type is specified in the table above.
+If `CharT` is not listed there, the alias is ill-formed.
+
+The encoding corresponding to `char` can be overridden by defining the macro `LEXY_ENCODING_OF_CHAR` to one of `lexy::default_encoding`, `lexy::ascii_encoding`, `lexy::utf8_encoding`, and `lexy::utf8_char_encoding`.
+
+[#encoding_endianness]
+== Enum class `lexy::encoding_endianness`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    enum class encoding_endianness
+    {
+        little,
+        big,
+        bom,
+    };
+}
+----
+
+[.lead]
+Defines the endianness of a multi-byte char encoding when necessary.
+
+In memory, UTF-16 and UTF-32 can be either encoded in big or little endian.
+If raw bytes need to be interpreted as code units in those encodings,
+as is necessary by `lexy::read_file`, the desired endianness can be specified using `encoding_endianness`.
+
+`little`::
+  The input is stored in little endian. For single-byte encodings, this has no effect.
+`big`::
+  The input is stored in big endian. For single-byte encodings, this has no effect.
+`bom`::
+  The input is stored in the endianness specified by the link:https://en.wikipedia.org/wiki/Byte_order_mark[byte order mark (BOM)] at the beginning of the input.
+  This option has an effect only for UTF-8, UTF-16, and UTF-32.
+  For UTF-8, it will skip an optional BOM, but it has otherwise no effect.
+  If no BOM is present, it defaults to big endian.
+
+{{% docref "lexy::make_buffer_from_raw" %}} and {{% docref "lexy::read_file" %}} use this enum to handle the endianness of the raw memory,
+and the rule {{% docref "lexy::dsl::bom" %}} uses it to specify a given BOM.
+

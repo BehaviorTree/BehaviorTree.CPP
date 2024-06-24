@@ -1,0 +1,20 @@
+{{- $name := .Get 0 | lower -}}
+{{- $text := .Get 1 | default (printf "`%s`" (.Get 0)) -}}
+{{- $found := false -}}
+{{- range where .Site.Pages "Section" "reference" -}}
+  {{- if isset (.Params.entities | default (dict "" "")) $name -}}
+      {{- $url := printf "%s#%s" .RelPermalink (index .Params.entities $name) -}}
+      {{- if ne $.Page.Permalink .Permalink -}}
+        {{- $.Page.Scratch.SetInMap "see-also" $name (printf "<a href=%s><code>%s</code></a>" $url $name) -}}
+      {{- end -}}
+      link:{{ $url }}[{{ $text }}{nbsp}
+      {{- if (index .Params "experimental" | default false) -}}
+          +++{{- (resources.Get "icons/beta.svg").Content | safeHTML -}}+++
+      {{- end -}}
+      ]
+      {{- $found = true -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $found -}}
+  {{- warnf "%q: Entity %s not found" .Page.File.Path $name -}}
+{{- end -}}

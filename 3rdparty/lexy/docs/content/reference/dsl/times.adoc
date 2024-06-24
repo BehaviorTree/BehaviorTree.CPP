@@ -1,0 +1,68 @@
+---
+header: "lexy/dsl/times.hpp"
+entities:
+  "lexy::dsl::times": times
+  "lexy::dsl::twice": twice
+---
+:toc: left
+
+[.lead]
+The `times` and `twice` rules.
+
+[#times]
+== Rule `lexy::dsl::times`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <std::size_t N>
+    constexpr _rule_ auto times(_rule_ auto rule);
+
+    template <std::size_t N>
+    constexpr _rule_ auto times(_rule_ auto rule, _separator_ auto sep);
+}
+----
+
+[.lead]
+`times` is a rule that parses `rule` exactly `N` times in sequence, with an optional separator in between.
+
+Parsing::
+  Parses `rule` exactly `N` times in {{% docref sequence %}}.
+  If a {{% docref separator %}} has been specified, parses it in between.
+  After the last rule, handles a trailing separator as necessary.
+Errors::
+  * All errors raised by parsing `rule` or `sep`.
+    The rule then fails.
+  * `lexy::unexpected_trailing_separator`: if a trailing separator can be matched after the last item and that is not allowed;
+    at the position of the separator.
+    It then recovers by simply consuming the separator.
+Values::
+  All values produced by each `rule` invocation in order.
+
+{{% godbolt-example times_tsep "Parse and sum three integers separated by comma" %}}
+
+NOTE: See {{% docref "lexy::dsl::repeat" %}} if the number of repetitions should be determined by the input.
+
+[#twice]
+== Rule `lexy::dsl::twice`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_ auto twice(_rule_ auto rule)
+    {
+        return times<2>(rule);
+    }
+
+    constexpr _rule_ auto twice(_rule_ auto rule, _separator_ auto sep)
+    {
+        return times<2>(rule, sep);
+    }
+}
+----
+
+[.lead]
+`twice` is a rule that is an alias for `times` where `N == 2`.
+

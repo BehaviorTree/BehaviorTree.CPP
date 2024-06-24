@@ -1,0 +1,202 @@
+---
+header: "lexy/dsl/digit.hpp"
+entities:
+  "bases": bases
+  "lexy::dsl::binary": bases
+  "lexy::dsl::octal": bases
+  "lexy::dsl::hex_lower": bases
+  "lexy::dsl::hex_upper": bases
+  "lexy::dsl::hex": bases
+  "lexy::dsl::zero": zero
+  "lexy::dsl::digit": digit
+  "lexy::dsl::digits": digits
+  "lexy::dsl::n_digits": n_digits
+  "lexy::dsl::digit_sep_underscore": digit-sep
+  "lexy::dsl::digit_sep_tick": digit-sep
+---
+:toc: left
+
+[.lead]
+Token rules that match individual digits or sequence of digits.
+
+[#bases]
+== Bases
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct binary {};
+    struct octal {};
+    struct decimal {};
+
+    struct hex_lower {};
+    struct hex_upper {};
+    struct hex {};
+}
+----
+
+[.lead]
+The tag types `binary`, `octal`, `decimal`, `hex_lower`, `hex_upper`, and `hex` indicate the base of a number and what digits are allowed.
+
+[%collapsible]
+.The bases
+====
+|===
+| Tag         | Radix | Digits
+
+| `binary`    | 2     | `01`
+| `octal`     | 8     | `01234567`
+| `decimal`   | 10    | `0123456789`
+| `hex_lower` | 16    | `0123456789`, `abcdef`
+| `hex_upper` | 16    | `0123456789`, `ABCDEF`
+| `hex`       | 16    | `0123456789`, `abcdef`, `ABCDEF`
+
+|===
+====
+
+[#zero]
+== Char class rule `lexy::dsl::zero`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _char-class-rule_ auto zero;
+}
+----
+
+[.lead]
+`zero` is a {{% char-class-rule %}} that matches `0`.
+
+Its name is `digit.zero`.
+In the parse tree, it creates a single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::digit_token_kind`.
+
+{{% playground-example zero "The number zero" %}}
+
+[#digit]
+== Char class rule `lexy::dsl::digit`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    template <typename Base = decimal>
+    constexpr _char-class-rule_ auto digit;
+}
+----
+
+[.lead]
+`digit` is a {{% char-class-rule %}} that matches one digit of the specified `Base`.
+
+Its name is `digit.<base>`.
+In the parse tree, it creates a single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::digit_token_kind`.
+
+{{% playground-example digit "A hexadecimal digit, upper-case letters only" %}}
+
+NOTE: The only difference between `lexy::dsl::digit<decimal>` and {{% docref "lexy::dsl::ascii::digit" %}} is the name of the char class.
+
+[#digits]
+== Token rule `lexy::dsl::digits`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    struct forbidden_leading_zero {};
+}
+
+namespace lexy::dsl
+{
+    class _digits-dsl_ // models _token-rule_
+    {
+    public:
+        constexpr _digit-dsl_ sep(_token-rule_ auto s) const;
+
+        constexpr _digit-dsl_ no_leading_zero() const;
+    };
+
+    template <typename Base = decimal>
+    constexpr _digits-dsl_ auto digits;
+}
+----
+
+[.lead]
+`digits` is a {{% token-rule %}} that matches one or more digits of the specified `Base` with optional separator.
+
+Matching::
+  Matches and consumes `digit<Base>` once, then tries to match and consume it again until it no longer matches.
+  If a separator has been specified using `.sep()`, it tries to match it after every digit.
+  If it succeeds, matches `digit<Base>` immediately afterwards.
+Errors::
+  * `lexy::forbidden_leading_zero`: if `.no_leading_zero()` was called and it matches `zero` as its first digit, which is then followed by a digit or separator.
+    The error is raised at the position of the zero.
+    The rule then fails without consuming additional input.
+  * All errors raised by matching the initial digit.
+    The rule then fails.
+  * All errors raised by matching a digit after a separator to prevent trailing separators.
+    The rule then fails.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::digit_token_kind`.
+
+{{% playground-example digits "Decimal digits with digit separator but without leading zeroes" %}}
+
+NOTE: If a digit separator is specified, it can be between any two digits.
+lexy does not enforce the use of thousands separators only, or other conventions.
+
+NOTE: `digits` does not produce the value of the number it parsed.
+Use {{% docref "lexy::dsl::integer" %}} for that.
+
+[#n_digits]
+== Token rule `lexy::dsl::n_digits`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    class _n_digits-dsl_ // models _token-rule_
+    {
+    public:
+        constexpr _n_digits-dsl_ sep(_token-rule_ auto s) const;
+    };
+
+    template <std::size_t N, typename Base = decimal>
+    constexpr _n_digits-dsl_ auto n_digits;
+}
+----
+
+[.lead]
+`n_digits` is a {{% token-rule %}} that matches exactly `N` digits of the specified `Base` with optional separator.
+
+Matching::
+  Matches and consumes `digit<Base>` `N` times; any additional trailing digits are ignored.
+  If a digit separator has been specified using `.sep()`, it tries to match it after every digit except the last one.
+  This does not count towards the number of digits.
+Errors::
+  All errors raised by matching `digit<Base>`. The rule then fails.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::digit_token_kind`.
+
+{{% playground-example n_digits "A `\x` escape sequence" %}}
+
+NOTE: If a digit separator is specified, it can be between any two digits.
+lexy does not enforce the use of thousands separators only, or other conventions.
+
+NOTE: `n_digits` does not produce the value of the number it parsed.
+Use {{% docref "lexy::dsl::integer" %}} or {{% docref "lexy::dsl::code_point_id" %}} for that.
+
+[#digit-sep]
+== Pre-defined digit separators
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _token-rule_ auto digit_sep_underscore = lit_c<'_'>;
+    constexpr __token-rule__ auto digit_sep_tick       = lit_c<'\''>; // note: single character
+}
+----
+
+[.lead]
+The {{% token-rule %}}s `digit_sep_underscore` and `digit_sep_tick` are two convenience aliases for {{% docref "lexy::dsl::lit_c" %}} that match common digit separators.
+

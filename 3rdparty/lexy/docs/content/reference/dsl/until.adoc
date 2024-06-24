@@ -1,0 +1,55 @@
+---
+header: "lexy/dsl/until.hpp"
+entities:
+  "lexy::dsl::until": until
+---
+:toc: left
+
+[#until]
+== Token rule `lexy::dsl::until`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    class _until-dsl_ // models _token-rule_
+    {
+    public:
+        constexpr _token-rule_ auto or_eof() const;
+    };
+
+    constexpr _until-dsl_ until(_token-rule_ auto condition);
+}
+----
+
+[.lead]
+`until` is a {{% token-rule %}} that matches all input until and including a terminating condition.
+
+Matching::
+  Tries to match `condition` anywhere in the remaining input, then consumes it.
+  If `.or_eof()` has been used, succeeds when it reaches EOF without matching `condition`.
+  Otherwise, fails when it reaches EOF.
+Errors::
+  All errors raised by matching `condition` at EOF, if `.or_eof()` has not been used.
+  It then fails.
+  If `.or_eof()` has been used, it can never fail.
+Parse tree::
+  A single token node that contains everything consumed before `condition` and everything consumed by `condition`.
+  It has the {{% docref "lexy::predefined_token_kind" %}} `lexy::any_token_kind`.
+
+`until(condition)` aggressively discards input to find a match for `condition`.
+It doesn't matter what the input is.
+`until(condition).or_eof()` behaves just like `until(condition /` {{% docref "lexy::dsl::eof" %}} `)`,
+i.e. the end of the input is also considered to be a terminating condition.
+If `.or_eof()` was used, the rule never fails, but it may consume the rest of the input.
+
+{{% playground-example cpp_comment "A C++-style comment" %}}
+
+CAUTION: `until()` does not care what input it consumes to find `condition`; it can be {{% docref "lexy::dsl::any" %}}thing, including ill-formed Unicode.
+To restrict the input that is allowed before `condition`, use {{% docref "lexy::dsl::loop" %}}`(condition >> dsl::break_ | before)`.
+
+WARNING: If the `condition` is missing, `until(condition).or_eof()` will happily discard the rest of the input.
+This is similar to the behavior of an unterminated `/*` comment.
+
+NOTE: `until` will include `condition`.
+

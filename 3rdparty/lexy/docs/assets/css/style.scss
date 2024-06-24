@@ -1,0 +1,531 @@
+@import "base";
+
+//=== general style ===//
+html {
+    position: relative;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+
+}
+body {
+    font-family: $serif-font;
+    font-size: 18px;
+    color: $default-color;
+    background-color: $background-color;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+main {
+    @extend %limited-width;
+    margin-bottom: $footer-offset;
+    display: flex;
+    justify-content: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: $sans-font;
+    font-weight: bold;
+    line-height: 1.15em;
+    color: $heading-color;
+    margin: 0 0 0.4em 0;
+    hyphens: auto;
+}
+h1 {
+    font-size: 2em;
+}
+h2 {
+    font-size: 1.75em;
+}
+h3 {
+    font-size: 1.5em;
+}
+h4 {
+    font-size: 1.25em;
+}
+h5 {
+    font-size: 1.15em;
+}
+h6 {
+    font-size: 1.1em;
+}
+
+a, a svg, button svg {
+    color: $link-color;
+    fill: $link-color;
+    stroke: $link-color;
+    transition: color ease 0.3s;
+}
+a:hover, button:hover {
+    color: $highlight-color;
+    svg {
+        color: $highlight-color;
+        fill: $highlight-color;
+        stroke: $highlight-color;
+    }
+}
+a:focus, button:focus {
+    outline: none;
+}
+
+br {
+    margin: 1em;
+}
+
+article {
+    @extend %content-width;
+    flex: 1;
+    min-width: 0;
+}
+article p,
+article ul,
+article ol,
+article dl,
+article td {
+    hyphens: auto;
+    text-align: justify;
+}
+
+//=== menu ===//
+nav#menu {
+    width: 100%;
+    padding: 0px;
+
+    background-color: $white;
+    border-bottom: 2px solid $highlight-color;
+
+    font-family: $sans-font;
+    font-size: 1.3em;
+
+    div.menu-container {
+        @extend %limited-width;
+        display: flex;
+
+        ul {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            padding: 0px;
+
+            list-style: none;
+
+            li {
+                a {
+                    text-decoration: none;
+
+                    svg {
+                        height: 1em;
+                    }
+                }
+                a.active {
+                    border-width: 0 0 2px;
+                    border-style: solid;
+                    border-color: $highlight-color;
+                }
+            }
+        }
+        ul#home {
+            padding-left: 0px;
+            padding-right: 10px;
+
+            .title {
+                font-weight: bold;
+            }
+        }
+        ul#main {
+            margin-left: auto;
+            li {
+                padding-left: 20px;
+            }
+        }
+        @media (max-width: 600px) {
+            ul#main {
+                flex-direction: column;
+                align-items: flex-end;
+                margin: 5px 10px 0 auto;
+            }
+        }
+    }
+}
+
+//=== footer ===//
+footer#page-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2em;
+
+    display: flex;
+    justify-content: space-between;
+
+    font-size: .8em;
+    font-weight: 200;
+    line-height: 1em;
+    border-top: 1px solid #ccc;
+
+    section {
+        padding-left: 1em;
+        padding-right: 1em;
+        padding-top: .5em;
+        width: 100%;
+    }
+    .copyright {
+        text-align: left;
+    }
+    .poweredby {
+        text-align: right;
+    }
+
+    @media (max-width: 450px) {
+        flex-direction: column;
+        align-items: flex-start;
+        section {
+            text-align: initial !important;
+            width: initial;
+        }
+    }
+}
+
+//=== TOC ===//
+aside.toc {
+    display: none;
+}
+
+@media (min-width: 1100px) {
+    aside.toc {
+        display: initial;
+
+        position: sticky;
+        top: 0em;
+        min-width: 200px;
+        max-width: 350px;
+        padding-right: 1em;
+        align-self: flex-start;
+        hyphens: auto;
+
+        header {
+            margin-top: 1em;
+            font-weight: bold;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            ul {
+                padding-left: 1em;
+                padding-bottom: .2em;
+            }
+            li {
+                padding-bottom: .2em;
+            }
+        }
+        a {
+            text-decoration: none;
+        }
+    }
+}
+
+//=== body ===//
+article {
+    form svg, a svg, i svg {
+        height: 1em;
+        position: relative;
+        top: 2px;
+        padding-right: 3px;
+    }
+    p svg:not(:first-child) {
+        padding-left: .25em;
+    }
+
+    header {
+        margin-top: 1em;
+        margin-bottom: 1em;
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+
+            a {
+                text-decoration: none;
+                padding-right: 7px;
+            }
+
+            form.search {
+                @media(min-width: 700px) {
+                    margin-left: auto;
+                }
+
+                input[type=search] {
+                    padding: 2px;
+                    width: 250px;
+                }
+                input[type=search]:focus {
+                    border-color: $highlight-color;
+                    outline: solid $highlight-color 1px;
+                }
+                button[type=submit] {
+                    margin-left: -25px;
+                    border: none;
+                    background: initial;
+                }
+            }
+        }
+    }
+
+    .lead p {
+        font-weight: 500;
+        font-size: 1.1em;
+    }
+
+    .admonitionblock {
+        margin-bottom: 1em;
+
+        td.icon {
+            font-weight: bold;
+        }
+        td.content {
+            div:first-child p {
+                margin-top: 0;
+            }
+            div:last-child p {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            tr {
+                display: block;
+                float: left;
+                padding-left: .5em;
+                padding-right: .5em;
+
+                td {
+                    display: block;
+                }
+            }
+        }
+        @media (min-width: 600px) {
+            td.icon {
+                width: 75px;
+                text-align: center;
+                border-right: 1px solid $gray-highlight-color;
+            }
+            td.content {
+                padding-left: .5em;
+            }
+        }
+    }
+
+    .exampleblock {
+        margin-top: 1em;
+        margin-bottom: 1em;
+
+        .title {
+            font-style: italic;
+        }
+    }
+
+    a.github-example {
+        text-decoration: none;
+        svg {
+            height: .8em;
+            position: relative;
+            top: 2px;
+        }
+    }
+
+    // the try it online link
+    .playground-example .title, .godbolt-example .title {
+        position: relative;
+        a {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+
+            svg {
+                height: 1em;
+            }
+        }
+    }
+
+    details {
+        margin-bottom: 1em;
+        summary {
+            font-style: italic;
+        }
+    }
+
+    // list
+    ul, ol {
+        p {
+            margin: .2em;
+        }
+    }
+    // no margin if it has a title
+    div ul:not(:first-child), div ol:not(:first-child) {
+        margin-top: 0;
+    }
+
+    // definition list
+    dl {
+        dt {
+            margin-top: .5em;
+            font-weight: bold;
+        }
+        dd p, dd div:only-child ul {
+            margin: 0;
+            padding: 0;
+        }
+    }
+    // no margin if it has a title
+    div dl:not(:first-child) {
+        margin-top: 0;
+    }
+
+    // table
+    table.tableblock {
+        background: $white;
+        margin: 0 auto;
+        border-collapse: collapse;
+        td, th {
+            border: 1px solid $gray-highlight-color;
+            padding: 5px;
+
+            text-align: left;
+            p {
+                margin: 0;
+            }
+        }
+    }
+
+    // sidebar
+    div.sidebarblock {
+        border: 1px solid $gray-highlight-color;
+        padding: .75em;
+        margin: 1em;
+
+        p {
+            margin: 0;
+        }
+    }
+
+    // inline code and code blocks
+    code {
+        font-family: $code-font;
+    }
+    // code blocks
+    pre {
+        margin-top: 0;
+        overflow: auto;
+        padding: 10px;
+        background: $white;
+        border: 1px solid $gray-highlight-color;
+        line-height: 1.1;
+    }
+
+    // callouts
+    .colist {
+        margin-top: -.5em;
+
+        ol {
+            counter-reset: list;
+
+            li {
+                counter-increment: list;
+                padding-left: 1em;
+            }
+            ::marker {
+                content: "(" counter(list) ")";
+                font-weight: bold;
+            }
+        }
+
+        p {
+            margin: 0;
+        }
+    }
+}
+
+// code highlight
+.highlight, .ace_editor {
+    // comment
+    .tok-c, .tok-cm, .tok-cp, .tok-c1, .tok-cs {
+        color: #999988;
+        font-style: italic;
+        font-weight: initial;
+    }
+
+    // keyword
+    .tok-k, .tok-kc, .tok-kd, .tok-kp, .tok-kr, .tok-kt,
+    .ace_storage, .ace_keyword, {
+        color: #445588;
+        font-style: initial;
+        font-weight: bold;
+    }
+    // operator, punctuator
+    .tok-o, .tok-p,
+    .ace_keyword.ace_operator, .ace_paren, .ace_punctuation {
+        color: #ff0000;
+        font-style: initial;
+        font-weight: initial;
+    }
+
+    // DSL entity
+    .ace_dsl {
+        pointer-events: auto;
+    }
+
+    // number
+    .tok-m, .tok-mf, .tok-mh, .tok-mi, .tok-mo,
+    .ace_constant {
+        color: #FF8000;
+        font-style: initial;
+        font-weight: initial;
+    }
+    // string
+    .tok-s, .tok-sb, .tok-sc, .tok-sd, .tok-s2, .tok-s3,
+    .tok-sh, .tok-si, .tok-sx, .tok-sr, .tok-s1, .tok-ss, .tok-se,
+    .ace_string {
+        color: #008000;
+        font-style: initial;
+        font-weight: initial;
+    }
+    // preprocessor
+    .tok-cp, .tok-cpf {
+        color: #008000;
+        font-style: initial;
+        font-weight: bold;
+    }
+
+    // error
+    .tok-err,
+    .ace_invalid {
+        color: #ff0000;
+        font-style: initial;
+        font-weight: initial;
+    }
+
+    // hack to allow asterisk:
+    // we don't style strong in a special way, and manually add back the asterisk
+    strong {
+        font-weight: initial;
+    }
+    strong:not(:empty)::before {
+        content: "*";
+        color: #ff0000;
+    }
+    strong:not(:empty)::after {
+        content: "*";
+        color: #ff0000;
+    }
+}
+

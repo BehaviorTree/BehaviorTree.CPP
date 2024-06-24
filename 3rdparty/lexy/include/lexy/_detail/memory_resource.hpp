@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_MEMORY_RESOURCE_HPP_INCLUDED
@@ -29,7 +29,7 @@ public:
     static void* allocate(std::size_t bytes, std::size_t alignment)
     {
         if (alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
-            return ::operator new (bytes, std::align_val_t{alignment});
+            return ::operator new(bytes, std::align_val_t{alignment});
         else
             return ::operator new(bytes);
     }
@@ -47,14 +47,14 @@ public:
 
 #ifdef __cpp_sized_deallocation
         if (alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
-            ::operator delete (ptr, bytes, std::align_val_t{alignment});
+            ::operator delete(ptr, bytes, std::align_val_t{alignment});
         else
             ::operator delete(ptr, bytes);
 #else
         (void)bytes;
 
         if (alignment > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
-            ::operator delete (ptr, std::align_val_t{alignment});
+            ::operator delete(ptr, std::align_val_t{alignment});
         else
             ::operator delete(ptr);
 #endif
@@ -140,9 +140,8 @@ using memory_resource_ptr
                 _memory_resource_ptr<MemoryResource>>>;
 // clang-format on
 
-template <typename MemoryResource,
-          typename
-          = std::enable_if_t<std::is_void_v<MemoryResource> || std::is_empty_v<MemoryResource>>>
+template <typename MemoryResource, typename = std::enable_if_t<std::is_void_v<MemoryResource>
+                                                               || std::is_empty_v<MemoryResource>>>
 constexpr MemoryResource* get_memory_resource()
 {
     return nullptr;

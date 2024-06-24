@@ -1,0 +1,3 @@
+<a class="github-example" href="{{ .Site.Params.github_src_prefix }}/examples/{{ .Get 0 }}.cpp">
+    {{ (resources.Get "icons/github.svg").Content | safeHTML }}<code>{{ .Get 0 }}.cpp</code>
+</a>

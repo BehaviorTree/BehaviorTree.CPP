@@ -1,0 +1,100 @@
+{{ define "title" }}
+{{ if (isset .Params "header") }}
+    {{ .Params.header }} — {{ .Site.Title }}
+{{ else }}
+    {{ .Page.Title }} - {{ .Site.Title }}
+{{ end }}
+{{ end }}
+
+{{ define "main" }}
+<main>
+
+{{ if ne .TableOfContents "" }}
+<aside class="toc">
+    <header><a href="#">Table of Contents</a></header>
+</aside>
+{{ end }}
+
+<article id="doc">
+    <header>
+        <h1>
+        {{ if (isset .Params "header") }}
+            Header <code>{{ .Params.header }}</code>
+        {{ else }}
+            {{ .Page.Title }}
+        {{ end }}
+        {{ if (index .Params "experimental" | default false) }}
+            <i>{{ (resources.Get "icons/beta.svg").Content | safeHTML }}</i>
+        {{ end }}
+        </h1>
+        <nav>
+            <a href="{{ .Site.Params.github_src_prefix }}/include/{{ .Params.header }}">
+                {{ (resources.Get "icons/github.svg").Content | safeHTML }} View source
+            </a>
+            <a href="{{ .Site.Params.github }}/issues/new?title={{ .Params.header | urlize }}">
+                {{ (resources.Get "icons/bug.svg").Content | safeHTML }} Report an issue
+            </a>
+            <a href="{{ .Site.Params.github_edit_prefix }}/docs/content/{{ .File.Path }}">
+                {{ (resources.Get "icons/edit.svg").Content | safeHTML }} Edit this page
+            </a>
+
+            <form class="search" id="dsl-goto-form">
+                <input type="search" id="dsl-goto-search" placeholder="Go to..." list="dsl-goto-data" autocomplete="off">
+                <button type="submit" title="Go">{{ (resources.Get "icons/arrow-right.svg").Content | safeHTML }}</button>
+            </form>
+        </nav>
+    </header>
+
+    <section>
+    {{ .Content }}
+    </section>
+
+    {{- if and (ne .Kind "section") (.Scratch.Get "see-also") -}}
+    <section id="see-also">
+        <h2>See also</h2>
+        <ul>
+        {{- range $link := (.Scratch.GetSortedMapValues "see-also") -}}
+            <li>{{ $link | safeHTML }}</li>
+        {{- end -}}
+        </ul>
+    </section>
+    {{- end -}}
+</article>
+
+<datalist id="dsl-goto-data"></datalist>
+
+<script>
+window.addEventListener('load', async function(){
+    var goto_data = await (await fetch("/reference/index.json")).json();
+
+    var goto_data_list = document.getElementById('dsl-goto-data');
+    var goto_form      = document.getElementById('dsl-goto-form');
+    var goto_search    = document.getElementById('dsl-goto-search');
+
+    // build datalist
+    for (let name in goto_data) {
+        let option = document.createElement('option');
+        if (name.startsWith("lexy_"))
+            option.value = name.toUpperCase(); // macro
+        else
+            option.value = name;
+        goto_data_list.appendChild(option);
+    }
+
+    // handle form submit
+    goto_form.addEventListener('submit', function(event){
+        event.preventDefault();
+
+        let url = goto_data[goto_search.value.toLowerCase()];
+        if (url)
+            window.location.href = url;
+        else
+            goto_search.value = "";
+
+        return false;
+    });
+});
+</script>
+
+</main>
+{{ end }}

@@ -1,0 +1,223 @@
+---
+header: "lexy/code_point.hpp"
+entities:
+  "lexy::code_point": code_point
+  "lexy::code_point::general_category_t": general_category
+  "lexy::simple_case_fold": simple_case_fold
+---
+:toc: left
+
+[.lead]
+Vocabulary types for code points, and simple Unicode algorithms.
+
+[#code_point]
+== Class `lexy::code_point`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    class code_point
+    {
+    public:
+        constexpr code_point() noexcept;
+        constexpr explicit code_point(char32_t value) noexcept;
+
+        constexpr char32_t value() const noexcept;
+
+        //=== classification ===//
+        constexpr bool is_ascii() const noexcept;
+        constexpr bool is_bmp() const noexcept;
+        constexpr bool is_valid() const noexcept;
+
+        constexpr bool is_control() const noexcept;
+        constexpr bool is_surrogate() const noexcept;
+        constexpr bool is_private_use() const noexcept;
+        constexpr bool is_noncharacter() const noexcept;
+
+        constexpr bool is_scalar() const noexcept;
+
+        //=== general category ===//
+        enum general_category_t;
+
+        constexpr general_category_t general_category() const;
+
+        struct _gc-group_;
+        // _gc-group_ constants, see below.
+
+        //=== comparison ===//
+        friend constexpr bool operator==(code_point lhs, code_point rhs) noexcept;
+        friend constexpr bool operator!=(code_point lhs, code_point rhs) noexcept;
+    };
+}
+----
+
+[.lead]
+A single Unicode https://en.wikipedia.org/wiki/Code_point[code point].
+
+It is a simple wrapper over a `char32_t`.
+
+=== Constructors
+
+{{% interface %}}
+----
+constexpr code_point() noexcept;                        <1>
+constexpr explicit code_point(char32_t value) noexcept; <2>
+----
+<1> Creates an invalid code point.
+<2> Creates the code point with the specified value.
+
+=== Classification
+
+{{% interface %}}
+----
+constexpr bool is_ascii() const noexcept; <1>
+constexpr bool is_bmp() const noexcept;   <2>
+constexpr bool is_valid() const noexcept; <3>
+----
+<1> Returns `true` if the code point is ASCII (`0x00-0x7F`), `false` otherwise.
+<2> Returns `true` if the code point is in the link:https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane[Unicode BMP] (`0x0000-0xFFFF`), `false` otherwise.
+<3> Returns `true` if the code point is a value in the Unicode codespace (`<= 0x10'FFFF`), `false` otherwise.
+
+{{% interface %}}
+----
+constexpr bool is_control() const noexcept;      <1>
+constexpr bool is_surrogate() const noexcept;    <2>
+constexpr bool is_private_use() const noexcept;  <3>
+constexpr bool is_noncharacter() const noexcept; <4>
+----
+<1> Returns `true` if the code point's general category is `Cc` (control), `false` otherwise.
+<2> Returns `true` if the code point's general category is `Cs` (surrogate), `false` otherwise.
+<3> Returns `true` if the code point's general category is `Co` (private-use), `false` otherwise.
+<4> Returns `true` if the code point's general category is `Cn` (not assigned) and the code point is not reserved, `false` otherwise.
+
+NOTE: Those are all of the link:https://en.wikipedia.org/wiki/Unicode_character_property#General_Category[general categories] that are stable.
+As such, they are available without the Unicode database.
+
+{{% interface %}}
+----
+constexpr bool is_scalar() const noexcept
+{
+    return is_valid() && !is_surrogate();
+}
+----
+
+[.lead]
+Returns `true` if the code point is valid and not a surrogate, `false` otherwise.
+
+[#general_category]
+=== General Category
+
+{{% interface %}}
+----
+enum general_category_t
+{
+    // Enum values written in the same line are aliases.
+
+    Lu, uppercase_letter,
+    Ll, lowercase_letter,
+    Lt, titlecase_letter,
+    Lm, modifier_letter,
+    Lo, other_letter,
+
+    Mn, nonspacing_mark,
+    Mc, spacing_mark,
+    Me, enclosing_mark,
+
+    Nd, decimal_number,
+    Nl, letter_number,
+    No, other_number,
+
+    Pc, connector_punctuation,
+    Pd, dash_punctuation,
+    Ps, open_punctuation,
+    Pe, closing_punctuation,
+    Pi, initial_puncutation,
+    Pf, final_puncutation,
+    Po, other_punctuation,
+
+    Sm, math_symbol,
+    Sc, currency_symbol,
+    Sk, modifier_symbol,
+    So, other_symbol,
+
+    Zs, space_separator,
+    Zl, line_separator,
+    Zp, paragraph_separator,
+
+    Cc, control,
+    Cf, format,
+    Cs, surrogate,
+    Co, private_use,
+    Cn, unassigned,
+};
+
+constexpr general_category_t general_category() const;
+----
+
+[.lead]
+Returns the link:https://en.wikipedia.org/wiki/Unicode_character_property#General_Category[general category] of the code point.
+
+This function requires the Unicode database.
+
+{{% interface %}}
+----
+struct _gc-group_
+{
+    friend constexpr bool operator==(_gc-group_ group, general_category_t cat);
+    friend constexpr bool operator==(general_category_t cat, _gc-group_ group);
+
+    friend constexpr bool operator!=(_gc-group_ group, general_category_t cat);
+    friend constexpr bool operator!=(general_category_t cat, _gc-group_ group);
+};
+
+static constexpr _gc-group_ LC;                 // LC = Lu, Ll, Lt
+static constexpr _gc-group_ cased_letter = LC;
+
+static constexpr _gc-group_ L;                  // L = Lu, Ll, Lt, Lm, Lo
+static constexpr _gc-group_ letter = L;
+
+static constexpr _gc-group_ M;                  // M = Mn, Mc, Me
+static constexpr _gc-group_ mark = M;
+
+static constexpr _gc-group_ N;                  // N = Nd, Nl, No
+static constexpr _gc-group_ number = N;
+
+static constexpr _gc-group_ P;                  // P = Pc, Pd, Ps, Pe, Pi, Pf, Po
+static constexpr _gc-group_ punctuation = P;
+
+static constexpr _gc-group_ Z;                  // Z = Zs, Zl, Zp
+static constexpr _gc-group_ separator = Z;
+
+static constexpr _gc-group_ C;                  // C = Cc, Cf, Cs, Co, Cn
+static constexpr _gc-group_ other = C;
+----
+
+[.lead]
+Tag objects to check for a specific Unicode category.
+They have an overloaded `operator==` and `operator!=` with the `general_category_t` and can be used to check that a code point category is in the group.
+
+This can be done without the Unicode database, but the category of a code point requires the Unicode database.
+
+[#simple_case_fold]
+== Function `lexy::simple_case_fold`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    constexpr code_point simple_case_fold(code_point cp) noexcept;
+}
+----
+
+[.lead]
+Returns the code point after performing Unicode simple https://unicode.org/faq/casemap_charprop.html#2[case folding].
+
+Informally, it converts `cp` to its lower case variant if it is a letter with casing, and returns `cp` unchanged otherwise (there are exceptions where a character is case folded to an upper case letter instead).
+This is used for case-insensitive comparison.
+
+Unlike full case folding, simple case folding will always map one code point to another code point.
+This causes different behavior in some situations.
+For example, under full case folding `ẞ` (U+1E9E, LATIN CAPITAL LETTER SHARP S) is folded to `ss`, but to `ß` (U+00DF, LATIN CAPITAL LETTER SMALL S) under simple case folding.
+As such, using full case folding `Maß` and `MASS` are identical, but not under simple case folding.
+

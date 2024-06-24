@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_EXPRESSION_HPP_INCLUDED
@@ -197,7 +197,7 @@ struct operation_list
         (void)((cur_idx <= op.idx && op.idx < cur_idx + op_of<Operations>::op_literals::size
                     ? (result
                        = Continuation<Operations>::parse(context, reader,
-                                                         parsed_operator<Reader>{op.pos,
+                                                         parsed_operator<Reader>{op.cur,
                                                                                  op.idx - cur_idx},
                                                          LEXY_FWD(args)...),
                        true)
@@ -309,7 +309,7 @@ struct _expr : rule_base
                         if (op.idx >= op_rule::op_literals::size)
                         {
                             // The list ends at this point.
-                            reader.set_position(op.pos);
+                            reader.reset(op.cur);
                             break;
                         }
 
@@ -381,10 +381,11 @@ struct _expr : rule_base
                         if (op.idx < op_rule::op_literals::size)
                         {
                             using tag = typename Context::production::operator_chain_error;
-                            auto err  = lexy::error<Reader, tag>(op.pos, reader.position());
+                            auto err
+                                = lexy::error<Reader, tag>(op.cur.position(), reader.position());
                             context.on(_ev::error{}, err);
                         }
-                        reader.set_position(op.pos);
+                        reader.reset(op.cur);
                     }
                 }
                 else if constexpr (binding_power.is_postfix())
@@ -416,11 +417,11 @@ struct _expr : rule_base
             if (state.cur_nesting_level++ >= production::max_operator_nesting)
             {
                 using tag = typename production::operator_nesting_error;
-                auto err  = lexy::error<Reader, tag>(op.pos, reader.position());
+                auto err  = lexy::error<Reader, tag>(op.cur.position(), reader.position());
                 context.on(_ev::error{}, err);
 
                 // We do not recover, to prevent stack overflow.
-                reader.set_position(op.pos);
+                reader.reset(op.cur);
                 return false;
             }
 
@@ -437,7 +438,7 @@ struct _expr : rule_base
                 {
                     // Operators can't be grouped.
                     using tag = typename production::operator_group_error;
-                    auto err  = lexy::error<Reader, tag>(op.pos, reader.position());
+                    auto err  = lexy::error<Reader, tag>(op.cur.position(), reader.position());
                     context.on(_ev::error{}, err);
                     // Trivially recover, but don't update group:
                     // let the first one stick.
@@ -470,11 +471,11 @@ struct _expr : rule_base
             if (op.idx >= op_list::ops::size)
             {
                 // We don't have a prefix operator, so it must be an atom.
-                reader.set_position(op.pos);
+                reader.reset(op.cur);
                 return atom_parser::parse(context, reader);
             }
 
-            auto start_event = context.on(_ev::operation_chain_start{}, op.pos);
+            auto start_event = context.on(_ev::operation_chain_start{}, op.cur.position());
             auto result      = op_list::template apply<_continuation>(context, reader, op, state);
             context.on(_ev::operation_chain_finish{}, LEXY_MOV(start_event), reader.position());
             return result;
@@ -507,7 +508,7 @@ struct _expr : rule_base
                 auto op = parse_operator<typename op_list::ops>(reader);
                 if (op.idx >= op_list::ops::size)
                 {
-                    reader.set_position(op.pos);
+                    reader.reset(op.cur);
                     break;
                 }
 

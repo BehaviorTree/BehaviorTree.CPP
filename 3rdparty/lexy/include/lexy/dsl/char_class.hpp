@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_CHAR_CLASS_HPP_INCLUDED
@@ -204,17 +204,19 @@ struct char_class_base : token_base<Derived>, _char_class_base
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr bool try_parse(Reader reader)
         {
+            static_assert(lexy::is_char_encoding<typename Reader::encoding>);
+
             using matcher = lexy::_detail::ascii_set_matcher<_cas<Derived>>;
             if (matcher::template match<typename Reader::encoding>(reader.peek()))
             {
                 reader.bump();
-                end = reader.position();
+                end = reader.current();
                 return true;
             }
 
@@ -223,25 +225,7 @@ struct char_class_base : token_base<Derived>, _char_class_base
             {
                 return false;
             }
-            else if constexpr (std::is_same_v<typename Reader::encoding, lexy::default_encoding> //
-                               || std::is_same_v<typename Reader::encoding, lexy::byte_encoding>)
-            {
-                static_assert(!Derived::char_class_unicode(),
-                              "cannot use this character class with default/byte_encoding");
-
-                if (reader.peek() == Reader::encoding::eof())
-                    return false;
-
-                auto cp = static_cast<char32_t>(reader.peek());
-                reader.bump();
-
-                if (!Derived::char_class_match_cp(cp))
-                    return false;
-
-                end = reader.position();
-                return true;
-            }
-            else
+            else if constexpr (lexy::is_unicode_encoding<typename Reader::encoding>)
             {
                 static_assert(Derived::char_class_unicode(),
                               "cannot use this character class with Unicode encoding");
@@ -255,6 +239,23 @@ struct char_class_base : token_base<Derived>, _char_class_base
                     return false;
 
                 end = result.end;
+                return true;
+            }
+            else
+            {
+                static_assert(!Derived::char_class_unicode(),
+                              "cannot use this character class with non-Unicode char encodings");
+
+                if (reader.peek() == Reader::encoding::eof())
+                    return false;
+
+                auto cp = static_cast<char32_t>(reader.peek());
+                reader.bump();
+
+                if (!Derived::char_class_match_cp(cp))
+                    return false;
+
+                end = reader.current();
                 return true;
             }
         }
@@ -361,8 +362,8 @@ constexpr auto _make_char_class(C c)
     return c;
 }
 template <typename CharT, CharT C,
-          typename = std::enable_if_t<
-              C <= 0x7F || std::is_same_v<CharT, char32_t> || std::is_same_v<CharT, unsigned char>>>
+          typename = std::enable_if_t<C <= 0x7F || std::is_same_v<CharT, char32_t>
+                                      || std::is_same_v<CharT, unsigned char>>>
 constexpr auto _make_char_class(_lit<CharT, C>)
 {
     if constexpr (std::is_same_v<CharT, unsigned char>)
@@ -411,8 +412,8 @@ struct _calt : char_class_base<_calt<Cs...>>
 
     static constexpr auto char_class_match_cp(char32_t cp)
     {
-        if constexpr ((std::is_same_v<decltype(Cs::char_class_match_cp(cp)),
-                                      std::false_type> && ...))
+        if constexpr ((std::is_same_v<decltype(Cs::char_class_match_cp(cp)), std::false_type>
+                       && ...))
             return std::false_type{};
         else
             return (Cs::char_class_match_cp(cp) || ...);
@@ -572,8 +573,8 @@ struct _cand : char_class_base<_cand<Cs...>>
 
     static constexpr auto char_class_match_cp(char32_t cp)
     {
-        if constexpr ((std::is_same_v<decltype(Cs::char_class_match_cp(cp)),
-                                      std::false_type> && ...))
+        if constexpr ((std::is_same_v<decltype(Cs::char_class_match_cp(cp)), std::false_type>
+                       && ...))
             return std::false_type{};
         else
             return (Cs::char_class_match_cp(cp) && ...);

@@ -1,0 +1,45 @@
+name: Release
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create build environment
+        run: cmake -E make_directory build
+      - name: Configure
+        working-directory: build/
+        run: cmake $GITHUB_WORKSPACE -DLEXY_BUILD_EXAMPLES=OFF -DLEXY_BUILD_TESTS=OFF
+      - name: Package source code
+        working-directory: build/
+        run: cmake --build . --target lexy_package
+
+      - name: Write data file for release
+        run: |
+          echo "name = \"${{ github.event.release.name }}\"" > docs/data/tags/${{ github.event.release.tag_name }}.toml
+          echo "url = \"${{ github.event.release.html_url }}\"" >> docs/data/tags/${{ github.event.release.tag_name }}.toml
+          echo "download = \"https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name}}/lexy-src.zip\"" >> docs/data/tags/${{ github.event.release.tag_name }}.toml
+          echo "date = \"${{ github.event.release.published_at }}\"" >> docs/data/tags/${{ github.event.release.tag_name }}.toml
+          echo "prerelease = ${{ github.event.release.prerelease }}" >> docs/data/tags/${{ github.event.release.tag_name }}.toml
+
+      - name: Add packaged source code to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/lexy-src.zip
+          tag: ${{ github.ref }}
+      - name: Create post PR for this release
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: Post-release ${{ github.event.release.tag_name }}
+          commit-message: Post-release ${{ github.event.release.tag_name }}
+          add-paths: docs/data/tags/*.toml
+          base: main

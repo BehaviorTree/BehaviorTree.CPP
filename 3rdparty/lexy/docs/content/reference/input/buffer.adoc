@@ -1,0 +1,263 @@
+---
+header: "lexy/input/buffer.hpp"
+entities:
+  "lexy::buffer": buffer
+  "lexy::make_buffer_from_raw": make_buffer_from_raw
+  "lexy::make_buffer_from_input": make_buffer_from_input
+  "lexy::buffer_lexeme": typedefs
+  "lexy::buffer_error": typedefs
+  "lexy::buffer_error_context": typedefs
+---
+:toc: left
+
+[.lead]
+Inputs that read from a buffer in memory.
+
+[#buffer]
+== Input `lexy::buffer`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding       = default_encoding,
+              typename MemoryResource = _default-resource_>
+    class buffer
+    {
+    public:
+        using encoding  = Encoding;
+        using char_type = typename encoding::char_type;
+
+        //=== construction ===//
+        class builder;
+
+        static buffer adopt(const char_type* data, std::size_t size,
+                            MemoryResource* resource = _default-resource_);
+
+        constexpr buffer() noexcept;
+        constexpr explicit buffer(MemoryResource* resource) noexcept;
+
+        template <typename CharT>
+        explicit buffer(const CharT* data, std::size_t size,
+                        MemoryResource* resource = _default-resource_);
+        template <typename CharT>
+        explicit buffer(const CharT* begin, const CharT* end,
+                        MemoryResource* resource = _default-resource_);
+        template <typename View>
+        explicit buffer(const View&     view,
+                        MemoryResource* resource = _default-resource_);
+
+        buffer(const buffer& other, MemoryResource* resource);
+
+        //=== access ===//
+        const char_type* data() const noexcept;
+        std::size_t      size() const noexcept;
+
+        const char_type* release() && noexcept;
+
+        _reader_ auto reader() const& noexcept;
+    };
+}
+----
+
+[.lead]
+The class `buffer` is an immutable, owning variant of {{% docref "lexy::string_input" %}}.
+
+All memory allocation is done via a `MemoryResource` object,
+which must be a class with the same interface as `std::pmr::memory_resource`.
+By default, it uses `new` and `delete`.
+The memory resource object passed to the constructor does not propagate during copy/move/swap.
+
+{{% godbolt-example "buffer" "Build a buffer that contains the input" %}}
+
+TIP: As the buffer owns the input, it can terminate it with the EOF character for encodings that have the same character and integer type.
+This eliminates a branch during parsing, because there is no need to check for the end of the buffer.
+It also enables the use of https://en.wikipedia.org/wiki/SWAR[SWAR] techniques for faster parsing.
+
+=== Empty constructors
+
+{{% interface %}}
+----
+constexpr buffer() noexcept;
+constexpr explicit buffer(MemoryResource* resource) noexcept;
+----
+
+Both overloads construct an empty buffer.
+The first one requires that `MemoryResource` is the `_default-resource_` and uses that one;
+the second one uses the specified `resource`.
+
+Once the resource is set, it cannot be changed;
+assignment will only update the memory contents, not the resource.
+
+=== Pointer constructors
+
+{{% interface %}}
+----
+template <typename CharT>
+explicit buffer(const CharT* data, std::size_t size,
+                MemoryResource* resource = _default-resource_); <1>
+template <typename CharT>
+explicit buffer(const CharT* begin, const CharT* end,
+                MemoryResource* resource = _default-resource_); <2>
+
+template <typename CharT>
+buffer(const CharT* data, std::size_t size)
+  -> buffer<deduce_encoding<CharT>>;
+template <typename CharT>
+buffer(const CharT* begin, const CharT* end)
+  -> buffer<deduce_encoding<CharT>>;
+----
+<1> Use the contiguous range `[data, data + size)` as input.
+<2> Use the contiguous range `[begin, end)` as input.
+
+`CharT` must be the primary or secondary character type of the {{% encoding %}}.
+Both overloads use `resource` for memory allocation.
+CTAD can be used to deduce the encoding from the character type.
+
+=== View constructor
+
+{{% interface %}}
+----
+template <typename View>
+    requires requires (View view) {
+        view.data();
+        view.size();
+    }
+explicit buffer(const View&     view,
+                MemoryResource* resource = _default-resource_);
+
+template <typename View>
+buffer(const View&)
+  -> buffer<_deduce-encoding_>;
+----
+
+Use the contiguous range `[view.data(), view.data() + view.size())` as input.
+Its character type must be the primary or secondary character type of the {{% encoding %}}.
+It uses `resource` for memory allocation.
+CTAD can be used to deduce the encoding from the character type.
+
+=== Builder
+
+{{% interface %}}
+----
+class buffer::builder
+{
+public:
+    explicit builder(std::size_t     size,
+                     MemoryResource* resource = _default-resource_);
+
+    char_type*  data() const noexcept;
+    std::size_t size() const noexcept;
+
+    buffer finish() && noexcept;
+};
+----
+
+[.lead]
+Write the buffer contents incrementally.
+
+The constructor allocates memory for `size` code units using `resource`, but does not initialize them.
+Content can then be written into the memory range `[data(), data() + size())`.
+Once everything has been initialized, `finish()` returns the finalized (and from now on immutable) buffer.
+
+=== Adoption
+
+{{% interface %}}
+----
+static buffer adopt(const char_type* data, std::size_t size,
+                    MemoryResource* resource = _default-resource_);
+
+const char_type* release() && noexcept;
+----
+
+`release()` returns a pointer to the data of the buffer and relinquishes ownership over it;
+`adopt()` reconstructs a buffer object.
+
+NOTE: `data` must be the pointer returned by an earlier call to `release()`, with `size` and `resource` matching the original buffer object.
+
+[#make_buffer_from_raw]
+== Function `lexy::make_buffer_from_raw`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding, encoding_endianness Endianness>
+    struct _make-buffer-from-raw_
+    {
+        auto operator()(const void* memory, std::size_t size) const
+          -> buffer<Encoding, Endianness>;
+
+        template <typename MemoryResource>
+        auto operator()(const void* memory, std::size_t size,
+                        MemoryResource* resource) const
+          -> buffer<Encoding, Endianness, MemoryResource>;
+    };
+
+    template <_encoding_ Encoding, encoding_endianness Endianness>
+    constexpr auto make_buffer_from_raw = _make-buffer-from-raw_{};
+}
+----
+
+[.lead]
+Create a buffer from raw memory, handling endianness conversion if necessary.
+
+It returns a buffer object that contains the input of the range `[memory, memory + size)`, allocated using `resource`,
+but reinterpreted as code units of the specified {{% encoding %}} and in the specified {{% docref "lexy::encoding_endianness" %}}:
+
+* If `Endianness` is `lexy::encoding_endianness::little`/`lexy::encoding_endianness::big`,
+  it will reinterpret the memory as an array of code units of `Encoding`, performing a byte swap if necessary.
+  For single byte encodings, this doesn't do anything special.
+* If `Endianness` is `lexy::encoding_endianness::bom`,
+  `Encoding` must be UTF-8, UTF-16, or UTF-32.
+  It will skip an optional BOM to determine the endianness, defaulting to big, if none was specified.
+  Then behaves like the other overload.
+
+{{% godbolt-example "make_buffer" "Treat a memory mapped file as little endian UTF-16" %}}
+
+[#make_buffer_from_input]
+== Function `lexy::make_buffer_from_input`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_input_ Input, typename MemoryResource = _default-resource_>
+    auto make_buffer_from_input(const Input& input, MemoryResource* resource = _default-resource_)
+      -> buffer<_encoding-of-input_<Input>, MemoryResource>;
+}
+----
+
+[.lead]
+Returns a buffer that contains the same characters as the specified input.
+
+The result is a copy of the existing input allocated using the specified resource.
+
+NOTE: Using a buffer as input as opposed can make parsing more efficient,
+as lexy can use specialized algorithms that exploit guarantees the buffer makes.
+
+[#typedefs]
+== Convenience typedefs
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding = default_encoding,
+              typename MemoryResource = _default-resource_>
+    using buffer_lexeme = lexeme_for<buffer<Encoding, MemoryResource>>;
+
+    template <typename Tag,
+              _encoding_ Encoding = default_encoding,
+              typename MemoryResource = _default-resource_>
+    using buffer_error = error_for<buffer<Encoding, MemoryResource>, Tag>;
+
+    template <_encoding_ Encoding = default_encoding
+              typename MemoryResource = _default-resource_>
+    using buffer_error_context = error_context<buffer<Encoding, MemoryResource>>;
+}
+----
+
+[.lead]
+Convenience typedefs for buffer.
+

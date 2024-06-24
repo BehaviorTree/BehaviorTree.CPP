@@ -1,0 +1,26 @@
+---
+header: "lexy/callback/constant.hpp"
+entities:
+  "lexy::constant": constant
+---
+:toc: left
+
+[#constant]
+== Callback `lexy::constants`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Args>
+    consteval _callback_ auto constant(Arg&& arg);
+}
+----
+
+[.lead]
+Produces a constant value.
+
+It is a callback that accepts zero arguments and produces a copy of the constant.
+
+{{% godbolt-example "true_false" "Produce constant values" %}}
+

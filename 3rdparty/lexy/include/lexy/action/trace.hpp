@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_TRACE_HPP_INCLUDED
@@ -318,6 +318,10 @@ public:
 
     public:
         constexpr event_handler(production_info info) : _info(info) {}
+
+        void on(_th&, parse_events::grammar_start, iterator) {}
+        void on(_th&, parse_events::grammar_finish, lexy::input_reader<Input>&) {}
+        void on(_th&, parse_events::grammar_cancel, lexy::input_reader<Input>&) {}
 
         void on(_th& handler, parse_events::production_start, iterator pos)
         {

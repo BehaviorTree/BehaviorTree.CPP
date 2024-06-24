@@ -1,0 +1,55 @@
+---
+header: "lexy/input/range_input.hpp"
+entities:
+  "lexy::range_input": range_input
+---
+
+[#range_input]
+== Input `lexy::range_input`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <_encoding_ Encoding,
+              typename Iterator, typename Sentinel = Iterator>
+    class range_input
+        requires std::forward_iterator<Iterator>
+              && std::sentinel_for<Sentinel, Iterator>
+    {
+    public:
+        using encoding  = Encoding;
+        using char_type = typename encoding::char_type;
+
+        using iterator = Iterator;
+        using sentinel = Sentinel;
+
+        //=== constructors ===//
+        constexpr range_input() noexcept;
+        constexpr range_input(iterator begin, sentinel end) noexcept;
+
+        //=== access ===//
+        constexpr iterator begin() const noexcept;
+        constexpr iterator end()   const noexcept;
+
+        constexpr _reader_ auto reader() const& noexcept;
+    };
+
+    template <typename Iterator, typename Sentinel>
+    range_input(Iterator begin, Sentinel end)
+      -> range_input<_deduce-encoding_, Iterator, Sentinel>;
+}
+----
+
+[.lead]
+The class `range_input` uses the forward range `[begin, end)` as input.
+
+It is a lightweight view and does not own any data.
+If no template arguments are specified, CTAD is used to deduce the encoding from the value type of the iterator.
+
+{{% godbolt-example "range_input" "Use a `std::list` as input" %}}
+
+TIP: If the iterators are pointers, use {{% docref "lexy::string_input" %}} instead.
+
+TIP: If you're parsing a subset of an input, use `lexy::lexeme_input` instead.
+

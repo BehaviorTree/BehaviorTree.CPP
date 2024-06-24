@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_LOOP_HPP_INCLUDED
@@ -94,7 +94,7 @@ struct _whl : rule_base
 template <typename Rule>
 constexpr auto while_(Rule)
 {
-    static_assert(lexy::is_branch_rule<Rule>, "while() requires a branch condition");
+    LEXY_REQUIRE_BRANCH_RULE(Rule, "while()");
     return _whl<Rule>{};
 }
 } // namespace lexyd
@@ -105,7 +105,7 @@ namespace lexyd
 template <typename Rule>
 constexpr auto while_one(Rule rule)
 {
-    static_assert(lexy::is_branch_rule<Rule>, "while_one() requires a branch condition");
+    LEXY_REQUIRE_BRANCH_RULE(Rule, "while_one()");
     return rule >> while_(rule);
 }
 } // namespace lexyd

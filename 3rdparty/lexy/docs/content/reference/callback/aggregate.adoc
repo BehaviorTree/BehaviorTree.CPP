@@ -1,0 +1,46 @@
+---
+header: "lexy/callback/aggregate.hpp"
+entities:
+  "lexy::as_aggregate": as_aggregate
+---
+
+[#as_aggregate]
+== Callback and sink `lexy::as_aggregate`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename T>
+    constexpr auto as_aggregate;
+}
+----
+
+[.lead]
+Callback and sink to construct the aggregate `T` from the {{% docref "lexy::member" %}} and value pairs produced by {{% docref "lexy::dsl::member" %}}.
+
+As a callback it has the following overloads:
+
+`(lexy::nullopt)`::
+  Returns a value constructed `T`.
+`(T&& t)`::
+  Forwards an existing object unchanged.
+`(Args&& ... args)`::
+  Requires that the arguments are pairs of {{% docref "lexy::member" %}} instantiations and arbitrary types.
+  It will create a value constructed `T` and repeatedly invoke the function of the `lexy::member` object on the aggregate object and the value.
+  The result is an aggregate where all members specified as the first argument of pair are set to the value of the second argument;
+  if the same member is given multiple times, it is repeatedly updated.
+  This is then returned.
+`(T&& result, Args&&... args)`::
+  Same as the overload above, but it starts with `result` instead of a new object.
+  This allows other rules to set/override members of `result`.
+
+As a sink, it value initializes an object of type `T`.
+The sink callback has only one overload that accepts a {{% docref "lexy::member" %}} object and value;
+it will invoke the associated function on the result object and the value.
+The final aggregate is returned at the end.
+
+{{% godbolt-example member "Parse a point" %}}
+
+TIP: See {{< github-example "email" >}} (productions `fields` and `message`) for a complex example that makes use of `as_aggregate`.
+

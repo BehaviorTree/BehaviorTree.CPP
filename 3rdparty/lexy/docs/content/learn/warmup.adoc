@@ -1,0 +1,200 @@
+---
+title: Warming up — the first parser
+---
+:toc: left
+
+Using lexy takes three steps:
+
+1. Define the grammar.
+2. Create an input.
+3. Call a parse action.
+
+Let's apply it to parse HTML colors such as `#FF00FF` into the following struct:
+
+```cpp
+struct Color
+{
+    std::uint8_t r, g, b;
+}:
+```
+
+## 1. Define the grammar
+
+A _grammar_ consists of _productions_.
+Each production defines a _rule_, which controls what is being parsed, and produces a _value_.
+In lexy, productions are structs with a `static constexpr` member called `rule`.
+The rule is defined by the DSL: lexy provides simple rules that can be composed to parse more complex things.
+A grammar consists of multiple of those structs; it is recommended to put them all in a separate namespace:
+
+```cpp
+#include <lexy/dsl.hpp> <1>
+
+namespace
+{
+namespace grammar <2>
+{
+    namespace dsl = lexy::dsl; <3>
+
+    struct color { … }; <4>
+}
+}
+```
+<1> All DSL objects are defined in `lexy/dsl.hpp`.
+<2> We use a designated namespace to define our grammar.
+    Since the grammar isn't meant to be visible outside the current translation unit, we also put it in an anonymous namespace.
+    This can encourage the compiler to do more aggressive inlining during parsing.
+<3> For convenience, we alias the namespace of the DSL objects.
+<4> Productions are structs.
+
+Let's start simple by parsing a single color channel, that is, two hex digits.
+For that, there is the rule {{% docref "lexy::dsl::n_digits" %}}:
+it parses `N` digits in the specified base.
+As such, a production that parses two hex digits looks like so:
+
+```cpp
+struct channel <1>
+{
+    static constexpr auto rule = dsl::n_digits<2, dsl::hex>; <2>
+};
+```
+<1> We define a new production `channel`...
+<2> ... that matches 2 hex digits.
+
+A color then consists of a hash sign followed by three channels.
+A hash sign can be parsed by {{% docref "lexy::dsl::hash_sign" %}} (which is just a convenience alias for the general {{% docref "lexy::dsl::lit" %}} rule which parses a fixed string);
+the channel can be parsed by {{% docref "lexy::dsl::p" %}}, which parses another production.
+If we want to parse two or more rules in sequence we can use {{% docref "lexy::dsl::operator+" %}}:
+
+```cpp
+struct color
+{
+    static constexpr auto rule = dsl::hash_sign + dsl::p<channel> + dsl::p<channel> + dsl::p<channel>;
+};
+```
+
+That's a lot of repetition, so we can use {{% docref "lexy::dsl::times" %}}, which parses another rule `N` times in sequence.
+The grammar as written also allows arbitrary stuff after the last channel, such as `#FF00FF Hello World!`.
+To prevent that, we need to match {{% docref "lexy::dsl::eof" %}} after the last channel, which only succeeds if we are at EOF.
+
+```cpp
+struct color
+{
+    static constexpr auto rule = dsl::hash_sign + dsl::times<3>(dsl::p<channel>) + dsl::eof;
+};
+```
+
+Putting it together, we have a simple grammar that parses an HTML color.
+
+{{% playground-example color "Parse an HTML color" %}}
+
+## 2. Create an input
+
+You can't just directly parse something; you have to use one of the provided input classes.
+They also take care of {{% encoding %}} if necessary.
+
+Strings ({{% docref "lexy::string_input" %}})::
+```cpp
+#include <lexy/input/string_input.hpp>
+
+auto literal = lexy::zstring_input("#FF00FF");
+auto str = lexy::string_input(some_string);
+```
+
+Files ({{% docref "lexy::read_file" %}})::
+```cpp
+#include <lexy/input/file.hpp>
+
+auto file = lexy::read_file<lexy::utf8_encoding>(path);
+if (!file) { … }
+auto input = file.buffer();
+```
+
+Command-line arguments ({{% docref "lexy::argv_input" %}})::
+```cpp
+#include <lexy/input/argv_input.hpp>
+
+auto input = lexy::argv_input(argc, argv);
+```
+
+Iterator ranges ({{% docref "lexy::range_input" %}})::
+```cpp
+#include <lexy/input/range_input.hpp>
+
+auto input = lexy::range_input<lexy::ascii_encoding>(begin, end);
+```
+
+## 3. Call a parse action
+
+Once you have defined a grammar and an input, you invoke an action that reads the input and processes it according to the grammar.
+
+The simplest action is {{% docref "lexy::match" %}}, which just gives you `true` if the input matches the grammar and `false` otherwise:
+
+```cpp
+auto good = lexy::zstring_input("#FF00FF");
+CHECK(lexy::match<grammar::color>(good) == true);
+
+auto bad = lexy::zstring_input("#FFF");
+CHECK(lexy::match<grammar::color>(bad) == false);
+```
+
+If you want to figure out _why_ it didn't match, you can use {{% docref "lexy::validate" %}}.
+It takes an additional {{% docref "error callback" %}} that is invoked with the error, which you can use to print additional information to the user.
+The extension library provides a callback that formats the error message nicely and prints it to stderr:
+
+```cpp
+auto bad = lexy::zstring_input("#FFF");
+auto result = lexy::validate<grammar::color>(bad, lexy_ext::report_error);
+CHECK(result.is_error());
+```
+
+There are also actions to parse the input into a {{% docref "lexy::parse_tree" %}} ({{% docref "lexy::parse_as_tree" %}}) and to trace the parsing algorithm for debugging purposes ({{% docref "lexy::trace" %}}).
+Both of those are available to play with in the link:/playground?example=color[online playground].
+
+What we really want to do though, is parse the input into our `Color` struct.
+For that, we need to use the action {{% docref "lexy::parse" %}}:
+it parses the input, reports error to the error callback, and produces a user-defined value.
+This values is controlled by adding an additional `static constexpr` member to each production of the grammar called `value`.
+It specifies a {{% docref "callback" %}} that is invoked with all values produced during parsing of the rule;
+lexy provides common callbacks by including `lexy/callback.hpp`.
+
+So what values are produced by parsing the rules?
+
+Well, right now: none.
+None of the primitive rules we've used produce any values, they just match input.
+The exception is {{% docref "lexy::dsl::p" %}} which produces the result of parsing the child production,
+but as that doesn't produce a value currently either, nothing happens.
+
+So instead of just blindly matching the digits, we have to convert them into an integer and produce them.
+This can be done by wrapping the {{% docref "lexy::dsl::n_digits" %}} rule into a call to the {{% docref "lexy::dsl::integer" %}} rule,
+and providing an appropriate callback:
+
+```cpp
+struct channel
+{
+    static constexpr auto rule = dsl::integer<std::uint8_t>(dsl::n_digits<2, dsl::hex>); <1>
+    static constexpr auto value = lexy::forward<std::uint8_t>; <2>
+};
+```
+<1> We want to convert the matched digits into a `std::uint8_t`, which is then produced by parsing the rule.
+<2> The callback uses {{% docref "lexy::forward" %}}, which just forwards the produced value as the result of parsing the production.
+
+Now each call to {{% docref "lexy::dsl::p" %}} in the `color` production will result in a single `std::uint8_t`, which are then passed to the provided callback:
+
+```cpp
+struct color
+{
+    static constexpr auto rule = dsl::hash_sign + dsl::times<3>(dsl::p<channel>) + dsl::eof;
+    static constexpr auto value = lexy::construct<Color>; <1>
+};
+```
+<1> Accept the three integers and construct our `Color` struct from them using {{% docref "lexy::construct" %}}.
+
+## Putting it all together
+
+Combining everything, we have the full example for parsing the HTML color into our struct `Color`:
+
+{{% godbolt-example color "Parse an HTML color" %}}
+
+Note how we're checking whether parsing produced a value with `.has_value()`, and not whether there were any parse errors `.is_error()`, `operator bool()`.
+This is because lexy implements error recovery: certain errors can be recovered during parsing.
+

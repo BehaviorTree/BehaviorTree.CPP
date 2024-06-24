@@ -1,0 +1,21 @@
+title = "lexy"
+baseURL = "https://lexy.foonathan.net/"
+languageCode = "en-us"
+copyright = "2020-2024 Jonathan Müller and lexy contributors"
+
+disableKinds = ["RSS", "taxonomy"]
+
+[markup.tableOfContents]
+endLevel = 3
+[markup.asciidocExt.attributes]
+source-highlighter = "pygments"
+
+[security.exec]
+allow = ['^asciidoctor$']
+
+[params]
+tagline = "C++ parsing DSL"
+github = "https://github.com/foonathan/lexy"
+github_src_prefix = "https://github.com/foonathan/lexy/blob/main"
+github_edit_prefix = "https://github.com/foonathan/lexy/edit/main"
+

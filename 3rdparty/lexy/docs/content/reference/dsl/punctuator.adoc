@@ -1,0 +1,71 @@
+---
+header: "lexy/dsl/punctuator.hpp"
+entities:
+  punctuators: doc
+  "lexy::dsl::period": doc
+  "lexy::dsl::comma": doc
+  "lexy::dsl::colon": doc
+  "lexy::dsl::double_colon": doc
+  "lexy::dsl::semicolon": doc
+  "lexy::dsl::exclamation_mark": doc
+  "lexy::dsl::question_mark": doc
+  "lexy::dsl::hyphen": doc
+  "lexy::dsl::slash": doc
+  "lexy::dsl::backslash": doc
+  "lexy::dsl::apostrophe": doc
+  "lexy::dsl::ampersand": doc
+  "lexy::dsl::caret": doc
+  "lexy::dsl::asterisk": doc
+  "lexy::dsl::tilde": doc
+  "lexy::dsl::vbar": doc
+  "lexy::dsl::hash_sign": doc
+  "lexy::dsl::dollar_sign": doc
+  "lexy::dsl::at_sign": doc
+  "lexy::dsl::percent_sign": doc
+  "lexy::dsl::equal_sign": doc
+---
+:toc: left
+
+[.lead]
+Predefined punctuators.
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _token-rule_ auto period       = lit<".">;
+    constexpr _token-rule_ auto comma        = lit<",">;
+    constexpr _token-rule_ auto colon        = lit<":">;
+    constexpr _token-rule_ auto double_colon = lit<"::">;
+    constexpr _token-rule_ auto semicolon    = lit<";">;
+
+
+    constexpr _token-rule_ auto exclamation_mark = lit<"!">;
+    constexpr _token-rule_ auto question_mark    = lit<"?">;
+
+    constexpr _token-rule_ auto hyphen      = lit<"-">;
+    constexpr _token-rule_ auto slash       = lit<"/">;
+    constexpr _token-rule_ auto backslash   = lit<"\\">; // note: single character
+    constexpr _token-rule_ auto apostrophe  = lit<"'">;
+    constexpr _token-rule_ auto ampersand   = lit<"&">;
+    constexpr _token-rule_ auto caret       = lit<"^">;
+    constexpr _token-rule_ auto asterisk    = lit<"*">;
+    constexpr _token-rule_ auto tilde       = lit<"~">;
+    constexpr _token-rule_ auto vbar        = lit<"|">;
+
+    constexpr _token-rule_ auto hash_sign    = lit<"#">;
+    constexpr _token-rule_ auto dollar_sign  = lit<"$">;
+    constexpr _token-rule_ auto at_sign      = lit<"@">;
+    constexpr _token-rule_ auto percent_sign = lit<"%">;
+    constexpr _token-rule_ auto equal_sign   = lit<"=">;
+}
+----
+
+[.lead]
+The various punctuator {{% literal-rule %}}s are convenience aliases for {{% docref "lexy::dsl::lit" %}}.
+
+****
+A _punctuator_ is a token that is used as a delimiter in the grammar without having any actual meaning in the program, like an operator (e.g. `+`) would.
+In lexy, they are limited to ASCII punctuation characters that are not only used as operators and aren't quotation or brackets.
+****
+

@@ -1,0 +1,84 @@
+---
+header: "lexy/callback/adapter.hpp"
+entities:
+  "lexy::callback": callback
+  "lexy::callback_with_state": callback_with_state
+  "lexy::mem_fn": mem_fn
+---
+:toc: left
+
+[.lead]
+Adapt a function object or sink into a callback.
+
+[#callback]
+== Callback `lexy::callback` and `lexy::callback_with_state`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename ReturnType = _see-below_, typename ... Fns>
+    constexpr _callback_ auto callback(Fns&&... fns);
+
+    template <typename ReturnType = _see-below_, typename ... Fns>
+    constexpr _callback_ auto callback_with_state(Fns&&... fns);
+}
+----
+
+[.lead]
+Turns a regular invocable into a callback by specifying the return type, or creates an overload set of existing callbacks.
+
+The returned callback will take arbitrary arguments and perform overload resolution on the `fns`,
+which must be invocables.
+The result must return an object of the specified `ReturnType`.
+
+If no `ReturnType` is specified and all `fns` are itself _callbacks_, it will be the common type of all their return types.
+Otherwise, it defaults to `void`.
+
+`callback_with_state` will also pass the state passed via `operator[]` as the first argument to all calls to `fns`.
+`lexy::callback_with_state(fn)` is equivalent to {{% docref "lexy::bind" %}}`(lexy::callback(fn), lexy::parse_state, lexy::values)`.
+
+{{% godbolt-example "callback" "Build a callback from lambdas" %}}
+
+[#callback-sink]
+== Callback `lexy::callback` (sink overload)
+
+{{% interface %}}
+----
+namespace lexy
+{
+    constexpr _callback_ auto callback(_sink_<> auto&& sink);
+}
+----
+
+[.lead]
+Turns a sink into a callback.
+
+The resulting callback will take arbitrary arguments.
+It will first obtain the sink callback of `sink`, then pass each argument to it in a separate invocation.
+The finished result is returned by the callback.
+
+{{% godbolt-example "callback-fold" "Turn a sink into a callback" %}}
+
+NOTE: See {{% docref "lexy::collect" %}} for the inverse operation that turns a callback into a sink.
+
+[#mem_fn]
+== Callback `lexy::mem_fn`
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Member, typename ClassT>
+    constexpr _callback_ auto mem_fn(Member ClassT::* mem_ptr);
+}
+----
+
+[.lead]
+Turns a member function or data pointer into a callback.
+
+It is equivalent to `lexy::callback<ReturnType>(mem_ptr)`, where `ReturnType` is deduced from the type of `mem_ptr`.
+
+NOTE: `mem_fn` is not necessary for passing a member function pointer to e.g. {{% docref "lexy::callback" %}};
+they all use INVOKE internally.
+

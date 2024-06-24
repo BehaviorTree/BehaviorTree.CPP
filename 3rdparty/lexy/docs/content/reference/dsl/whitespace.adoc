@@ -1,0 +1,127 @@
+---
+header: "lexy/dsl/whitespace.hpp"
+entities:
+  "whitespace": doc
+  "lexy::dsl::whitespace": whitespace
+  "lexy::dsl::no_whitespace": no_whitespace
+---
+:toc: left
+
+[.lead]
+Facilities for skipping whitespace.
+
+By default, lexy does not treat whitespace in any particular way and it has to be parsed just like anything else in the input.
+However, as there are grammars that allow whitespace in a lot of places, it is often convenient to have it taken care of.
+lexy can be instructed to handle whitespace, using either manual or automatic whitespace skipping.
+
+Manual whitespace skipping is done using {{% docref "lexy::dsl::whitespace" %}}.
+It skips zero or more of whitespace defined by `ws` and can be inserted everywhere you want to skip over whitespace.
+This method is recommended where whitespace is an essential part of the grammar.
+See {{< github-example email >}} or {{< github-example xml >}} for examples of manual whitespace skipping.
+
+link:#whitespace-auto[Automatic whitespace] skipping is done by adding a `static constexpr auto whitespace` member to the *root* production.
+This is a rule that defines default whitespace for the entire grammar, as the `ws` argument did in the manual example.
+lexy then skips zero or more occurrences of whitespace after every token rule in the grammar, unless it has been manually disabled (see below).
+This method is recommend where whitespace is not important and is just there to format the input nicely.
+See {{< github-example config >}} or {{< github-example json >}} for examples of automatic whitespace skipping.
+
+NOTE: "Whitespace" does not mean literal whitespace characters. It can also include comments (or whatever else you want).
+
+[#whitespace]
+== Rule `lexy::dsl::whitespace`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    class _ws-rule_ // models _rule_
+    {};
+
+    constexpr _ws-rule_ whitespace(_rule_ auto ws);
+
+    constexpr _ws-rule_ operator|(_ws-rule_ rhs, _rule_ auto lhs) const;
+    constexpr _ws-rule_ operator|(_rule_ auto rhs, _ws-rule_ lhs) const;
+}
+----
+
+[.lead]
+The manual `whitespace` overload is a rule that skips whitespace as defined by its argument.
+
+Requires::
+  * `ws` is either a {{% branch-rule %}} or a {{% docref choice %}} that does not produce any values.
+  * `ws` does not contain {{% docref "lexy::dsl::p" %}} or {{% docref "lexy::dsl::recurse" %}} rule.
+Parses::
+  Parses {{% docref "lexy::dsl::loop" %}}`(ws | lexy::dsl::else_ >> lexy::dsl::break_)` in a context where whitespace skipping is disabled.
+Errors::
+  All errors raised during parsing of `ws | lexy::dsl::else_ >> lexy::dsl::break_`.
+  The rule then fails if `ws` has failed; even if in a branch context.
+Parse tree::
+  A single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::whitespace_token_kind` whose range covers everything consumed;
+  all individual token nodes of the whitespace rules are merged into this one.
+  It is only added to the parse tree if it is not empty.
+
+For convenience, `operator|` are overloaded for the whitespace rule.
+Here, `whitespace(a) | b` is entirely equivalent to `whitespace(a | b)`, and likewise for the other overloads.
+They simply allow adding more whitespace to a rule after it has already been wrapped in `whitespace`.
+
+{{% playground-example manual_whitespace "Simple manual whitespace skipping" %}}
+
+TIP: Use {{% docref "lexy::dsl::ascii::space" %}} to skip all ASCII whitespace characters.
+
+[#whitespace-auto]
+== Automatic whitespace skipping
+
+For automatic whitespace skipping lexy inserts a {{% docref "lexy::dsl::whitespace" %}}`(ws)` rule after every {{% token-rule %}}, a {{% docref "lexy::dsl::p" %}} or {{% docref "lexy::dsl::recurse" %}} rule that parses a production inheriting from {{% docref "lexy::token_production" %}}, or after a {{% docref "lexy::dsl::no_whitespace" %}} rule;
+or when starting to parse a production that defines a new whitespace rule.
+
+Here `ws` is determined as follows:
+
+1. If automatic whitespace skipping has been disabled (e.g. by using `lexy::dsl::no_whitespace()`),
+   `ws` is the rule that matches the empty string.
+   As such, no automatic whitespace skipping takes place.
+2. If {{% docref "lexy::production_whitespace" %}} for the current production and the whitespace production is non-void, `ws` is that rule.
+   Here, the whitespace production is determined by following any `lexy::dsl::p` or `lexy::dsl::recurse` calls backwards,
+   until a production that defines a `::whitespace` member, the top-level production originally passed to a parse function, or a production inheriting from {{% docref "lexy::token_production" %}} is reached.
+3. Otherwise (if it is `void`), `ws` is the rule that matches the empty string and no whitespace skipping takes place.
+
+{{% playground-example whitespace "Simple automatic whitespace skipping" %}}
+
+{{% playground-example whitespace_comment "Comments can be whitespace too" %}}
+
+{{% playground-example whitespace_determination "How whitespace is determined" true %}}
+
+CAUTION: If e.g. a token production defines a new whitespace rule, this is skipped after the last token of the production.
+Then the whitespace rule of the parent production is skipped as well, as seen in the example.
+
+TIP: Use {{% docref "lexy::dsl::ascii::space" %}} to skip all ASCII whitespace characters.
+
+[#no_whitespace]
+== Rule `lexy::dsl::no_whitespace`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _rule_        no_whitespace(_rule_ auto rule);
+    constexpr _branch-rule_ no_whitespace(_branch-rule_ auto rule);
+}
+----
+
+[.lead]
+`no_whitespace` is a rule that parses `rule` without automatic whitespace skipping.
+
+(Branch) Parsing::
+  Parses `rule` in a context where there is no current whitespace rule and link:#whitespace-automatic[`lexy::dsl::whitespace`] does nothing.
+Errors::
+  All errors raised by `rule`.
+  The rule then fails if `rule` has failed.
+Values::
+  All values produced by `rule`.
+
+{{% playground-example no_whitespace "Disable whitespace between two tokens" %}}
+
+TIP: In most situations, you should prefer a {{% docref "lexy::token_production" %}} instead.
+`no_whitespace` is mostly used as implementation detail for rules that should never have whitespace skipping, like {{% docref "lexy::dsl::delimited" %}}.
+
+CAUTION: When `r` contains a {{% docref "lexy::dsl::p" %}} or {{% docref "lexy::dsl::recurse" %}} rule, whitespace skipping is re-enabled while parsing the production.
+

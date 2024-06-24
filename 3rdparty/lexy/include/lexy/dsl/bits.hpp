@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_BITS_HPP_INCLUDED
@@ -104,13 +104,13 @@ struct _bits : token_base<_bits<Mask, Value>>
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr bool try_parse(Reader reader)
         {
-            static_assert(std::is_same_v<typename Reader::encoding, lexy::byte_encoding>);
+            static_assert(lexy::is_byte_encoding<typename Reader::encoding>);
 
             auto byte = reader.peek();
             if (byte == Reader::encoding::eof()
@@ -118,14 +118,14 @@ struct _bits : token_base<_bits<Mask, Value>>
                 return false;
 
             reader.bump();
-            end = reader.position();
+            end = reader.current();
             return true;
         }
 
         template <typename Context>
         constexpr void report_error(Context& context, const Reader&)
         {
-            auto err = lexy::error<Reader, lexy::expected_char_class>(end, "bits");
+            auto err = lexy::error<Reader, lexy::expected_char_class>(end.position(), "bits");
             context.on(_ev::error{}, err);
         }
     };

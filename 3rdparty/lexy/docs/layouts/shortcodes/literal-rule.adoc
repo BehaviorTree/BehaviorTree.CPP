@@ -1,0 +1,4 @@
+{{- $url := relref . "/reference/dsl/literal#doc" -}}
+{{- $.Page.Scratch.SetInMap "see-also" "literal rules" (printf "<a href=%s>literal rules</a>" $url) -}}
+link:{{ $url }}[literal rule]
+{{- printf "" -}}

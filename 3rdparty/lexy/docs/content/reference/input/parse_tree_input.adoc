@@ -1,0 +1,113 @@
+---
+header: "lexy/input/parse_tree_input.hpp"
+experimental: true
+entities:
+  "lexy::parse_tree_encoding": parse_tree_encoding
+  "lexy::parse_tree_input": parse_tree_input
+  "lexy::parse_tree_lexeme": typedefs
+  "lexy::parse_tree_error": typedefs
+  "lexy::parse_tree_error_context": typedefs
+---
+:toc: left
+
+[.lead]
+Inputs that read a {{% docref "lexy::parse_tree" %}}.
+
+[#parse_tree_encoding]
+== Encoding `lexy::parse_tree_encoding` {{< experimental >}}
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Node>
+    struct parse_tree_encoding {};
+}
+----
+
+[.lead]
+The {{% encoding %}} of a {{% docref "lexy::parse_tree_input" %}}.
+It is a node encoding of the specified `Node` type, which must be a `lexy::parse_tree::node`.
+
+[#parse_tree_input]
+== Input `lexy::parse_tree_input` {{< experimental >}}
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Node>
+    class parse_tree_input
+    {
+    public:
+        using encoding = parse_tree_encoding<Node>;
+        using value_type = Node;
+
+        //=== constructors ===//
+        constexpr parse_tree_input();
+        constexpr explicit parse_tree_input(const Node& node) noexcept;
+        template <typename ParseTree>
+        constexpr explicit parse_tree_input(const ParseTree& tree) noexcept;
+
+        //=== access ===//
+        constexpr const Node& root() const noexcept;
+    };
+
+    template <typename ParseTree>
+    parse_tree_input(const ParseTree&) -> parse_tree_input<typename ParseTree::node>;
+}
+----
+
+[.lead]
+The class `parse_tree_input` uses a {{% docref "lexy::parse_tree::node" %}} as an input.
+
+It is a lightweight view and does not own the node.
+It is used in combination with the {{% docref "lexy::dsl::tnode" %}} and {{% docref "lexy::dsl::pnode" %}} rules.
+
+{{% godbolt-example "parse_tree_parsing" "Re-parse a parse tree" %}}
+
+=== Constructors
+
+{{% interface %}}
+----
+constexpr parse_tree_input();                                        <1>
+constexpr explicit parse_tree_input(const Node& node) noexcept;      <2>
+template <typename ParseTree>
+constexpr explicit parse_tree_input(const ParseTree& tree) noexcept; <3>
+----
+<1> Creates an empty input.
+<2> Creates an input that contains all descendants of `node`.
+<3> Creates an input that contains all descendants of `tree.root()`.
+
+NOTE: The input never contains `node` itself.
+
+=== Access
+
+{{% interface %}}
+----
+constexpr const Node& root() const noexcept;
+----
+
+Returns the root node of the input, passed to the constructor.
+
+[#typedefs]
+== Typedefs
+
+{{% interface %}}
+----
+namespace lexy
+{
+    template <typename Node>
+    using parse_tree_lexeme = lexeme_for<parse_tree_input<Node>>;
+
+    template <typename Tag, typename Node>
+    using parse_tree_error = error_for<parse_tree_input<Node>, Tag>;
+
+    template <typename Node>
+    using parse_tree_error_context = error_context_for<parse_tree_input<Node>>;
+}
+----
+
+[.lead]
+Convenience typedefs for parse tree inputs.
+

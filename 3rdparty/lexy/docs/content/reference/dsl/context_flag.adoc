@@ -1,0 +1,129 @@
+---
+header: "lexy/dsl/context_flag.hpp"
+entities:
+  "lexy::dsl::context_flag": context_flag
+---
+
+[#context_flag]
+== Rule DSL `lexy::dsl::context_flag`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    struct _context_flag-dsl_ // note: not a rule itself
+    {
+        template <bool InitialValue = false>
+        constexpr _rule_ auto create() const;
+
+        constexpr _rule_ auto set() const;
+        constexpr _rule_ auto reset() const;
+        constexpr _rule_ auto toggle() const;
+
+        constexpr _branch-rule_ auto is_set() const;
+        constexpr _branch-rule_ auto is_reset() const;
+
+        constexpr _rule_ auto value() const;
+    };
+
+    template <typename Id>
+    constexpr _context_flag-dsl_ context_flag;
+}
+----
+
+[.lead]
+`context_flag` is not a rule, but a DSL for specifying rules that manipulate a boolean variable of the current context.
+
+{{% playground-example context_flag "Parse `(a|b|c)*` where the first b must occur after the first a" %}}
+
+=== Rule `.create()`
+
+{{% interface %}}
+----
+template <bool InitialValue = false>
+constexpr _rule_ auto create() const;
+----
+
+[.lead]
+`.create()` returns a rule that creates the boolean.
+
+Parsing::
+  Matches everything, without consuming anything.
+  As a side effect, it creates a boolean with name `Id` inside the current context.
+  If a context variable (of any) type with that name already exists, it is shadowed.
+  This boolean is initialized to `InitialValue`.
+Errors::
+  None.
+Values::
+  None.
+
+=== Rules `.set()`, `.reset()`, `.toggle()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto set() const;
+constexpr _rule_ auto reset() const;
+constexpr _rule_ auto toggle() const;
+----
+
+[.lead]
+`.set()`, `.reset()`, `.toggle()` return rules that change the value of the boolean variable.
+
+Requires::
+  A boolean with the name `Id` has been created in the current context,
+  i.e. `.create()` has been parsed earlier.
+Parsing::
+  Matches everything, without consuming anything.
+  As a side effect, it modifies the boolean with name `Id` of the current context:
+  * `.set()` sets it to `true`.
+  * `.reset()` sets it to `false`.
+  * `.toggle()` changes its value from `true` to `false` or from `false` to `true`.
+Errors::
+  None.
+Values::
+  None.
+
+=== Branch rules `.is_set()`, `.is_reset()`
+
+{{% interface %}}
+----
+constexpr _branch-rule_ auto is_set() const;
+constexpr _branch-rule_ auto is_reset() const;
+----
+
+[.lead]
+`.is_set()` and `.is_reset()` return {{% branch-rule %}}s that check the value of the boolean variable.
+
+Requires::
+  A boolean with the name `Id` has been created in the current context,
+  i.e. `.create()` has been parsed earlier.
+Parsing::
+  Matches everything, without consuming anything.
+Branch parsing::
+  Backtracks unless the value of the boolean with name `Id` of the current context is `true` (`.is_set()`) or `false` (`.is_reset()`).
+  Then matches everything without consuming anything.
+Errors::
+  None.
+Values::
+  None.
+
+=== Rule `.value()`
+
+{{% interface %}}
+----
+constexpr _rule_ auto value() const;
+----
+
+[.lead]
+`.value()` is a rule that returns the value of the boolean variable.
+
+Requires::
+  A boolean with the name `Id` has been created in the current context,
+  i.e. `.create()` has been parsed earlier.
+Parsing::
+  Matches everything, without consuming anything.
+Errors::
+  None.
+Values::
+  The current value of the boolean with name `Id` of the current context.
+

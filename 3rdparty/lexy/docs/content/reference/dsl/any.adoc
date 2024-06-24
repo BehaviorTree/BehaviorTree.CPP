@@ -1,0 +1,34 @@
+---
+header: "lexy/dsl/any.hpp"
+entities:
+  "lexy::dsl::any": any
+---
+
+[#any]
+== Token rule `lexy::dsl::any`
+
+{{% interface %}}
+----
+namespace lexy::dsl
+{
+    constexpr _token-rule_ auto any;
+}
+----
+
+[.lead]
+`any` is a {{% token-rule %}} that matches anything.
+
+Matching::
+  Consumes the entire input.
+  If the rule is matched in a context where the reader has been artificially delimited,
+  consumes only until the end of the partial input is reached.
+Errors::
+  None.
+Parse tree::
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::any_token_kind`.
+
+{{% playground-example any "Match literally any input" %}}
+
+CAUTION: `any` does not care what input it consumes; it can be anything, including ill-formed Unicode.
+To restrict the input that is consumed, use {{% docref "lexy::dsl::while_" %}} instead.
+
