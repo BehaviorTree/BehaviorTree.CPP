@@ -378,7 +378,7 @@ struct _report_error
 };
 
 /// An error callback that uses diagnostic_writer to print to stderr (by default).
-constexpr auto report_error = _report_error<>{};
+auto report_error = _report_error<>{};
 } // namespace lexy_ext
 
 #endif // LEXY_EXT_REPORT_ERROR_HPP_INCLUDED
