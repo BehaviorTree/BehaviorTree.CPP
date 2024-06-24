@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_EXPRESSION_HPP_INCLUDED
@@ -20,8 +20,8 @@
 //=== dsl ===//
 namespace lexyd
 {
-/// Operation that just parses the atomic rule.
-struct atom : _operation_base
+/// Tag type to indicate that the operand of an operation is the atom rule.
+struct atom
 {
     static LEXY_CONSTEVAL auto name()
     {
@@ -29,24 +29,24 @@ struct atom : _operation_base
     }
 };
 
-/// Operation that selects between multiple ones.
+/// Tag type to indicate that the operand of an operation is one of multiple.
 template <typename... Operands>
-struct groups : _operation_base
+struct groups
 {};
 
-struct infix_op_left : _operation_base // a ~ b ~ c == (a ~ b) ~ c
+struct infix_op_left // a ~ b ~ c == (a ~ b) ~ c
 {};
-struct infix_op_right : _operation_base // a ~ b ~ c == a ~ (b ~ c)
+struct infix_op_right // a ~ b ~ c == a ~ (b ~ c)
 {};
-struct infix_op_list : _operation_base // a ~ b ~ c kept as-is
+struct infix_op_list // a ~ b ~ c kept as-is
 {};
-struct infix_op_single : _operation_base // a ~ b ~ c is an error
-{};
-
-struct postfix_op : _operation_base
+struct infix_op_single // a ~ b ~ c is an error
 {};
 
-struct prefix_op : _operation_base
+struct postfix_op
+{};
+
+struct prefix_op
 {};
 } // namespace lexyd
 
@@ -197,7 +197,7 @@ struct operation_list
         (void)((cur_idx <= op.idx && op.idx < cur_idx + op_of<Operations>::op_literals::size
                     ? (result
                        = Continuation<Operations>::parse(context, reader,
-                                                         parsed_operator<Reader>{op.cur,
+                                                         parsed_operator<Reader>{op.pos,
                                                                                  op.idx - cur_idx},
                                                          LEXY_FWD(args)...),
                        true)
@@ -226,21 +226,19 @@ struct _operation_list_of
     {
         constexpr auto bp = get_binding_power<Operation>(0, CurLevel);
 
-        auto           tail      = get<CurLevel + 1>(typename Operation::operand{});
-        constexpr auto is_prefix = std::is_base_of_v<lexyd::prefix_op, Operation>;
-        if constexpr (is_prefix == Pre
-                      && ((is_prefix && bp.rhs >= MinBindingPower)
-                          || (!is_prefix && bp.lhs >= MinBindingPower)))
+        auto tail = get<CurLevel + 1>(typename Operation::operand{});
+        if constexpr (std::is_base_of_v<lexyd::prefix_op, Operation> == Pre
+                      && (bp.is_prefix() || bp.lhs >= MinBindingPower))
             return tail + Operation{};
         else
             return tail;
     }
 };
 
-// prefix operations
-template <typename Expr, unsigned MinBindingPower>
-using pre_operation_list_of = decltype(_operation_list_of<true, MinBindingPower>::template get<1>(
-    typename Expr::operation{}));
+// prefix operations: don't care about binding power
+template <typename Expr>
+using pre_operation_list_of
+    = decltype(_operation_list_of<true, 0>::template get<1>(typename Expr::operation{}));
 
 // infix and postfix operations
 template <typename Expr, unsigned MinBindingPower>
@@ -251,7 +249,6 @@ using post_operation_list_of = decltype(_operation_list_of<false, MinBindingPowe
 //=== expression rule ===//
 namespace lexyd
 {
-template <typename RootOperation>
 struct _expr : rule_base
 {
     struct _state
@@ -309,7 +306,7 @@ struct _expr : rule_base
                         if (op.idx >= op_rule::op_literals::size)
                         {
                             // The list ends at this point.
-                            reader.reset(op.cur);
+                            reader.set_position(op.pos);
                             break;
                         }
 
@@ -381,11 +378,10 @@ struct _expr : rule_base
                         if (op.idx < op_rule::op_literals::size)
                         {
                             using tag = typename Context::production::operator_chain_error;
-                            auto err
-                                = lexy::error<Reader, tag>(op.cur.position(), reader.position());
+                            auto err  = lexy::error<Reader, tag>(op.pos, reader.position());
                             context.on(_ev::error{}, err);
                         }
-                        reader.reset(op.cur);
+                        reader.set_position(op.pos);
                     }
                 }
                 else if constexpr (binding_power.is_postfix())
@@ -417,11 +413,11 @@ struct _expr : rule_base
             if (state.cur_nesting_level++ >= production::max_operator_nesting)
             {
                 using tag = typename production::operator_nesting_error;
-                auto err  = lexy::error<Reader, tag>(op.cur.position(), reader.position());
+                auto err  = lexy::error<Reader, tag>(op.pos, reader.position());
                 context.on(_ev::error{}, err);
 
                 // We do not recover, to prevent stack overflow.
-                reader.reset(op.cur);
+                reader.set_position(op.pos);
                 return false;
             }
 
@@ -438,7 +434,7 @@ struct _expr : rule_base
                 {
                     // Operators can't be grouped.
                     using tag = typename production::operator_group_error;
-                    auto err  = lexy::error<Reader, tag>(op.cur.position(), reader.position());
+                    auto err  = lexy::error<Reader, tag>(op.pos, reader.position());
                     context.on(_ev::error{}, err);
                     // Trivially recover, but don't update group:
                     // let the first one stick.
@@ -450,12 +446,12 @@ struct _expr : rule_base
         }
     };
 
-    template <unsigned MinBindingPower, typename Context, typename Reader>
+    template <typename Context, typename Reader>
     static constexpr bool _parse_lhs(Context& context, Reader& reader, _state& state)
     {
         using namespace lexy::_detail;
 
-        using op_list = pre_operation_list_of<typename Context::production, MinBindingPower>;
+        using op_list = pre_operation_list_of<typename Context::production>;
         using atom_parser
             = lexy::parser_for<LEXY_DECAY_DECLTYPE(Context::production::atom), final_parser>;
 
@@ -471,11 +467,11 @@ struct _expr : rule_base
             if (op.idx >= op_list::ops::size)
             {
                 // We don't have a prefix operator, so it must be an atom.
-                reader.reset(op.cur);
+                reader.set_position(op.pos);
                 return atom_parser::parse(context, reader);
             }
 
-            auto start_event = context.on(_ev::operation_chain_start{}, op.cur.position());
+            auto start_event = context.on(_ev::operation_chain_start{}, op.pos);
             auto result      = op_list::template apply<_continuation>(context, reader, op, state);
             context.on(_ev::operation_chain_finish{}, LEXY_MOV(start_event), reader.position());
             return result;
@@ -491,12 +487,12 @@ struct _expr : rule_base
         if constexpr (op_list::size == 0)
         {
             // We don't have any post operators, so we only parse the left-hand-side.
-            return _parse_lhs<MinBindingPower>(context, reader, state);
+            return _parse_lhs(context, reader, state);
         }
         else
         {
             auto start_event = context.on(_ev::operation_chain_start{}, reader.position());
-            if (!_parse_lhs<MinBindingPower>(context, reader, state))
+            if (!_parse_lhs(context, reader, state))
             {
                 context.on(_ev::operation_chain_finish{}, LEXY_MOV(start_event), reader.position());
                 return false;
@@ -508,7 +504,7 @@ struct _expr : rule_base
                 auto op = parse_operator<typename op_list::ops>(reader);
                 if (op.idx >= op_list::ops::size)
                 {
-                    reader.reset(op.cur);
+                    reader.set_position(op.pos);
                     break;
                 }
 
@@ -532,19 +528,8 @@ struct _expr : rule_base
         {
             static_assert(std::is_same_v<NextParser, lexy::_detail::final_parser>);
 
-            using production             = typename Context::production;
-            constexpr auto binding_power = lexy::_detail::binding_power_of<production>(
-                lexy::_detail::type_or<RootOperation, typename production::operation>{});
-            // The MinBindingPower is determined by the root operation.
-            // The initial operand is always on the left, so we use the left binding power.
-            // However, for a prefix operator it is zero, but then it's a right operand so we use
-            // that.
-            constexpr auto min_binding_power
-                = binding_power.is_prefix() ? binding_power.rhs : binding_power.lhs;
-
             _state state;
-            _parse<min_binding_power>(context, reader, state);
-
+            _parse<0>(context, reader, state);
             // Regardless of parse errors, we can recover if we already had a value at some point.
             return !!context.value;
         }
@@ -587,13 +572,7 @@ struct expression_production
     using operator_chain_error = lexy::operator_chain_error;
     using operator_group_error = lexy::operator_group_error;
 
-    static constexpr auto rule = lexyd::_expr<void>{};
-};
-
-template <typename Expr, typename RootOperation>
-struct subexpression_production : Expr
-{
-    static constexpr auto rule = lexyd::_expr<RootOperation>{};
+    static constexpr auto rule = lexyd::_expr{};
 };
 } // namespace lexy
 

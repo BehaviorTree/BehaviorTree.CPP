@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/_detail/tuple.hpp>
@@ -26,12 +26,12 @@ TEST_CASE("_detail::tuple")
         CHECK(std::is_same_v<decltype(tuple), lexy::_detail::tuple<int&, int&&, const int&>>);
 
         CHECK(std::is_same_v<decltype(tuple.get<0>()), int&>);
-        CHECK(std::is_same_v<decltype(tuple.get<1>()), int&&>);
+        CHECK(std::is_same_v<decltype(tuple.get<1>()), int&>);
         CHECK(std::is_same_v<decltype(tuple.get<2>()), const int&>);
 
         const auto& ctuple = tuple;
         CHECK(std::is_same_v<decltype(ctuple.get<0>()), int&>);
-        CHECK(std::is_same_v<decltype(ctuple.get<1>()), int&&>);
+        CHECK(std::is_same_v<decltype(ctuple.get<1>()), int&>);
         CHECK(std::is_same_v<decltype(ctuple.get<2>()), const int&>);
     }
 }

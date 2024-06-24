@@ -1,7 +1,6 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
-#include <cstddef>
 #include <lexy/input/file.hpp>
 
 #include <cerrno>
@@ -21,7 +20,7 @@ class raii_fd
 public:
     explicit raii_fd(int file) noexcept : _file(file) {}
 
-    raii_fd(const raii_fd&)            = delete;
+    raii_fd(const raii_fd&) = delete;
     raii_fd& operator=(const raii_fd&) = delete;
 
     ~raii_fd() noexcept
@@ -57,8 +56,8 @@ lexy::file_error get_file_error() noexcept
     }
 }
 
-constexpr std::size_t small_file_size  = std::size_t(4) * 1024;
-constexpr std::size_t medium_file_size = std::size_t(32) * 1024;
+constexpr std::size_t small_file_size  = 4 * 1024;
+constexpr std::size_t medium_file_size = 32 * 1024;
 } // namespace
 
 lexy::file_error lexy::_detail::read_file(const char* path, file_callback cb, void* user_data)
@@ -117,7 +116,7 @@ class raii_file
 public:
     explicit raii_file(std::FILE* file) noexcept : _file(file) {}
 
-    raii_file(const raii_file&)            = delete;
+    raii_file(const raii_file&) = delete;
     raii_file& operator=(const raii_file&) = delete;
 
     ~raii_file() noexcept

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/branch.hpp>
@@ -44,13 +44,7 @@ TEST_CASE("dsl::operator>>")
         auto abc = LEXY_VERIFY("abc");
         CHECK(abc.status == test_result::recovered_error);
         CHECK(abc.value == 1);
-        CHECK(abc.trace
-              == test_trace() //
-                     .literal("abc")
-                     .position()
-                     .expected_literal(3, "!", 0)
-                     .recovery());
-
+        CHECK(abc.trace == test_trace().literal("abc").position().expected_literal(3, "!", 0));
         auto abc_mark = LEXY_VERIFY("abc!");
         CHECK(abc_mark.status == test_result::success);
         CHECK(abc_mark.value == 1);
@@ -72,13 +66,7 @@ TEST_CASE("dsl::operator>>")
         auto abc = LEXY_VERIFY("abc");
         CHECK(abc.status == test_result::recovered_error);
         CHECK(abc.value == 1);
-        CHECK(abc.trace
-              == test_trace() //
-                     .literal("abc")
-                     .position()
-                     .expected_literal(3, "!", 0)
-                     .recovery());
-
+        CHECK(abc.trace == test_trace().literal("abc").position().expected_literal(3, "!", 0));
         auto abc_mark = LEXY_VERIFY("abc!");
         CHECK(abc_mark.status == test_result::success);
         CHECK(abc_mark.value == 1);

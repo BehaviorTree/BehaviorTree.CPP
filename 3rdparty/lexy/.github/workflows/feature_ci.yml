@@ -10,14 +10,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ["gcc:7", "gcc:13", "clang:6", "clang:16"]
+        image: ["gcc:7", "gcc:12", "clang:6", "clang:13"]
 
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/foonathan/${{matrix.image}}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
     - name: Create Build Environment
       run: cmake -E make_directory build
 

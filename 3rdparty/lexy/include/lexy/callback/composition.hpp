@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_CALLBACK_COMPOSITION_HPP_INCLUDED
@@ -11,8 +11,8 @@ namespace lexy
 template <typename Cb, typename State, typename = void>
 struct _compose_state
 {
-    const Cb& _cb;
-    State&    _state;
+    const Cb&    _cb;
+    const State& _state;
 
     using return_type = typename Cb::return_type;
 
@@ -25,8 +25,8 @@ struct _compose_state
 template <typename Cb, typename State>
 struct _compose_state<Cb, State, std::enable_if_t<lexy::is_callback_state<Cb, State>>>
 {
-    const Cb& _cb;
-    State&    _state;
+    const Cb&    _cb;
+    const State& _state;
 
     using return_type = typename Cb::return_type;
 
@@ -52,7 +52,7 @@ struct _compose_cb
     template <typename State,
               typename = std::enable_if_t<lexy::is_callback_state<First, State> //
                                           || lexy::is_callback_state<Second, State>>>
-    constexpr auto operator[](State& state) const
+    constexpr auto operator[](const State& state) const
     {
         auto first  = _compose_state<First, State>{_first, state};
         auto second = _compose_state<Second, State>{_second, state};
@@ -82,7 +82,7 @@ struct _compose_s
     }
 
     template <typename State, typename = std::enable_if_t<lexy::is_callback_state<Callback, State>>>
-    constexpr auto operator[](State& state) const
+    constexpr auto operator[](const State& state) const
     {
         return _compose_state<Callback, State>{_callback, state};
     }

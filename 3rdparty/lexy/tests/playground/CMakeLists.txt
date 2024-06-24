@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 set(doc_assets ${PROJECT_SOURCE_DIR}/docs/assets)
@@ -15,7 +15,7 @@ target_link_libraries(lexy_test_godbolt PRIVATE lexy_test_base)
 #===
 # Compile-only godbolt example tests.
 add_library(lexy_test_godbolt_examples OBJECT)
-target_link_libraries(lexy_test_godbolt_examples PRIVATE lexy_test_base foonathan::lexy::experimental)
+target_link_libraries(lexy_test_godbolt_examples PRIVATE lexy_test_base)
 target_compile_definitions(lexy_test_godbolt_examples PRIVATE LEXY_DISABLE_FILE)
 target_precompile_headers(lexy_test_godbolt_examples PRIVATE
         <lexy/dsl.hpp> <lexy/callback.hpp> <lexy_ext/report_error.hpp> <lexy_ext/compiler_explorer.hpp>)

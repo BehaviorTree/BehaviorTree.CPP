@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
     - name: Install ninja
       run: sudo apt-get -qq update && sudo apt-get install -y ninja-build
 
@@ -32,15 +32,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
     - name: Create Build Environment
       run: cmake -E make_directory build
     - name: Install ninja and clang-tidy
-      run: sudo apt-get -qq update && sudo apt-get install -y ninja-build clang-tidy-14
+      run: sudo apt-get -qq update && sudo apt-get install -y ninja-build clang-tidy-12
 
     - name: Configure
       working-directory: build/
-      run: cmake -GNinja $GITHUB_WORKSPACE -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14;-extra-arg=-Wno-unknown-warning-option"
+      run: cmake -GNinja $GITHUB_WORKSPACE -DCMAKE_CXX_CLANG_TIDY="clang-tidy-12;-extra-arg=-Wno-unknown-warning-option"
     - name: Build
       working-directory: build/
       run: cmake --build . --target lexy_test lexy_ext_test
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
     - name: Create Build Environment
       run: cmake -E make_directory build
     - name: Install ninja

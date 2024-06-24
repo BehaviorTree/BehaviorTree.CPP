@@ -1,8 +1,7 @@
-# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 set(tests
-        detail/any_ref.cpp
         detail/buffer_builder.cpp
         detail/integer_sequence.cpp
         detail/invoke.cpp
@@ -11,7 +10,6 @@ set(tests
         detail/stateless_lambda.cpp
         detail/std.cpp
         detail/string_view.cpp
-        detail/swar.cpp
         detail/tuple.cpp
         detail/type_name.cpp
 
@@ -59,11 +57,9 @@ set(tests
         dsl/context_identifier.cpp
         dsl/delimited.cpp
         dsl/digit.cpp
-        dsl/effect.cpp
         dsl/eof.cpp
         dsl/error.cpp
         dsl/expression.cpp
-        dsl/flags.cpp
         dsl/follow.cpp
         dsl/list.cpp
         dsl/literal.cpp
@@ -77,7 +73,6 @@ set(tests
         dsl/operator.cpp
         dsl/option.cpp
         dsl/parse_as.cpp
-        dsl/parse_tree_node.cpp
         dsl/peek.cpp
         dsl/position.cpp
         dsl/production.cpp
@@ -89,8 +84,6 @@ set(tests
         dsl/sequence.cpp
         dsl/separator.cpp
         dsl/sign.cpp
-        dsl/subgrammar.cpp
-        dsl/subgrammar_other.cpp
         dsl/symbol.cpp
         dsl/terminator.cpp
         dsl/trace.cpp
@@ -105,7 +98,6 @@ set(tests
         input/buffer.cpp
         input/file.cpp
         input/lexeme_input.cpp
-        input/parse_tree_input.cpp
         input/range_input.cpp
         input/string_input.cpp
 
@@ -122,5 +114,5 @@ set(tests
     )
 
 add_executable(lexy_test ${tests})
-target_link_libraries(lexy_test PRIVATE lexy_test_base foonathan::lexy::experimental)
+target_link_libraries(lexy_test PRIVATE lexy_test_base)
 

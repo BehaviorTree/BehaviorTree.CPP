@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ENCODING_HPP_INCLUDED
@@ -104,30 +104,6 @@ struct utf8_encoding
     }
 };
 
-/// An encoding where the input is assumed to be valid UTF-8, but the char type is char.
-struct utf8_char_encoding
-{
-    using char_type = char;
-    using int_type  = char;
-
-    template <typename OtherCharType>
-    static constexpr bool is_secondary_char_type()
-    {
-        return std::is_same_v<OtherCharType, LEXY_CHAR8_T>;
-    }
-
-    static LEXY_CONSTEVAL int_type eof()
-    {
-        // 0xFF is not part of valid UTF-8.
-        return int_type(0xFF);
-    }
-
-    static constexpr int_type to_int_type(char_type c)
-    {
-        return int_type(c);
-    }
-};
-
 /// An encoding where the input is assumed to be valid UTF-16.
 struct utf16_encoding
 {
@@ -215,8 +191,7 @@ struct _deduce_encoding<char>
     using type = LEXY_ENCODING_OF_CHAR;
     static_assert(std::is_same_v<type, default_encoding>      //
                       || std::is_same_v<type, ascii_encoding> //
-                      || std::is_same_v<type, utf8_encoding>  //
-                      || std::is_same_v<type, utf8_char_encoding>,
+                      || std::is_same_v<type, utf8_encoding>,
                   "invalid value for LEXY_ENCODING_OF_CHAR");
 #else
     using type = default_encoding; // Don't know the exact encoding.
@@ -253,35 +228,13 @@ struct _deduce_encoding<std::byte>
 };
 } // namespace lexy
 
-//=== encoding traits ===//
-namespace lexy
-{
-template <typename Encoding>
-constexpr auto is_unicode_encoding
-    = std::is_same_v<Encoding, ascii_encoding> || std::is_same_v<Encoding, utf8_encoding>
-      || std::is_same_v<Encoding, utf8_char_encoding> || std::is_same_v<Encoding, utf16_encoding>
-      || std::is_same_v<Encoding, utf32_encoding>;
-
-template <typename Encoding>
-constexpr auto is_text_encoding
-    = is_unicode_encoding<Encoding> || std::is_same_v<Encoding, default_encoding>;
-
-template <typename Encoding>
-constexpr auto is_byte_encoding = std::is_same_v<Encoding, byte_encoding>;
-
-template <typename Encoding>
-constexpr auto is_char_encoding = is_text_encoding<Encoding> || is_byte_encoding<Encoding>;
-
-template <typename Encoding>
-constexpr auto is_node_encoding = false;
-} // namespace lexy
-
 //=== impls ===//
 namespace lexy::_detail
 {
 template <typename Encoding, typename CharT>
-constexpr bool is_compatible_char_type = std::is_same_v<typename Encoding::char_type, CharT>
-                                         || Encoding::template is_secondary_char_type<CharT>();
+constexpr bool is_compatible_char_type
+    = std::is_same_v<typename Encoding::char_type,
+                     CharT> || Encoding::template is_secondary_char_type<CharT>();
 
 template <typename Encoding, typename CharT>
 using require_secondary_char_type

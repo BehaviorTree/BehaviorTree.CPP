@@ -29,7 +29,7 @@ namespace lexy
 
         constexpr bool is_success()         const noexcept;
         constexpr bool is_error()           const noexcept;
-        constexpr bool is_recovered_error() const noexcept;
+        constexpr bool is_recovered_error() const neoxcept;
         constexpr bool is_fatal_error()     const noexcept;
 
         //=== value ===//
@@ -66,7 +66,7 @@ constexpr explicit operator bool() const noexcept
 
 constexpr bool is_success()         const noexcept; <1>
 constexpr bool is_error()           const noexcept; <2>
-constexpr bool is_recovered_error() const noexcept; <3>
+constexpr bool is_recovered_error() const neoxcept; <3>
 constexpr bool is_fatal_error()     const noexcept; <4>
 ----
 <1> Returns `true` if parsing succeeded without raising any errors, `false` otherwise.
@@ -118,18 +118,11 @@ If `is_success() == true`, `error_count() == 0` and `errors()` returns the resul
 ----
 namespace lexy
 {
-    template <typename State, typename Input, typename ErrorCallback>
-    struct parse_action;
-
     template <_production_ Production>
     constexpr auto parse(const _input_ auto& input,
                          _error-callback_ auto error_callback)
       -> parse_result<_see-below_, decltype(error_callback)>;
 
-    template <_production_ Production, typename ParseState>
-    constexpr auto parse(const _input_ auto& input, ParseState& parse_state,
-                         _error-callback_ auto error_callback)
-      -> parse_result<_see-below_, decltype(error_callback)>;
     template <_production_ Production, typename ParseState>
     constexpr auto parse(const _input_ auto& input, const ParseState& parse_state,
                          _error-callback_ auto error_callback)

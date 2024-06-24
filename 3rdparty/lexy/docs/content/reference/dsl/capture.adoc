@@ -16,7 +16,7 @@ namespace lexy::dsl
 ----
 
 [.lead]
-`capture` is a {{% branch-rule %}} that parses `rule` capturing everything it has consumed but excluding whitespace as a value.
+`capture_token` is a {{% branch-rule %}} that parses `rule` capturing everything it has consumed but excluding whitespace as a value.
 
 Requires::
  `rule` is either a {{% token-rule %}} or {{% docref "lexy::dsl::p" %}} where the production is a token production.

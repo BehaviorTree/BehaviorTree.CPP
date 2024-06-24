@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef TESTS_LEXY_DSL_VERIFY_HPP_INCLUDED
@@ -10,10 +10,7 @@
 #include <lexy/callback/adapter.hpp>
 #include <lexy/callback/fold.hpp>
 #include <lexy/dsl/any.hpp>
-#include <lexy/input/buffer.hpp>
-#include <lexy/input/parse_tree_input.hpp>
 #include <lexy/input/string_input.hpp>
-#include <lexy/parse_tree.hpp>
 #include <lexy/token.hpp>
 #include <lexy/visualize.hpp>
 
@@ -88,8 +85,8 @@ namespace lexy_test
 template <typename RuleA, typename RuleB>
 constexpr bool equivalent_rules(RuleA, RuleB)
 {
-    return std::is_same_v<RuleA, RuleB> || std::is_base_of_v<RuleA, RuleB>
-           || std::is_base_of_v<RuleB, RuleA>;
+    return std::is_same_v<
+               RuleA, RuleB> || std::is_base_of_v<RuleA, RuleB> || std::is_base_of_v<RuleB, RuleA>;
 }
 } // namespace lexy_test
 
@@ -342,30 +339,14 @@ public:
       _last_token(_begin)
     {}
 
+    template <typename Production>
     class event_handler
     {
     public:
-        constexpr event_handler(lexy::production_info info) : _name(info.name) {}
-
-        void on(test_handler& handler, lexy::parse_events::grammar_start, iterator pos)
-        {
-            CHECK(handler._last_token == pos);
-        }
-        void on(test_handler&              handler, lexy::parse_events::grammar_finish,
-                lexy::input_reader<Input>& reader)
-        {
-            CHECK(handler._last_token == reader.position());
-        }
-        void on(test_handler&              handler, lexy::parse_events::grammar_cancel,
-                lexy::input_reader<Input>& reader)
-        {
-            CHECK(handler._last_token == reader.position());
-        }
-
         void on(test_handler& handler, lexy::parse_events::production_start, iterator pos)
         {
             CHECK(handler._last_token == pos);
-            handler._trace.production(_name);
+            handler._trace.production(lexy::production_name<Production>());
         }
         void on(test_handler& handler, lexy::parse_events::production_finish, iterator pos)
         {
@@ -495,9 +476,6 @@ public:
             CHECK(handler._last_token == pos);
             handler._trace.token("debug", str);
         }
-
-    private:
-        const char* _name;
     };
 
     template <typename Production, typename State>
@@ -506,9 +484,9 @@ public:
         static_assert(std::is_same_v<State, test_handler>);
 
     public:
-        constexpr explicit value_callback(State* handler) : _handler(handler) {}
+        constexpr explicit value_callback(const State* handler) : _handler(handler) {}
 
-        using return_type = std::conditional_t<is_test_production<Production>, int, Production*>;
+        using return_type = std::conditional_t<is_test_production<Production>, int, Production>;
 
         constexpr auto sink() const
         {
@@ -524,14 +502,14 @@ public:
             if constexpr (is_test_production<Production>)
                 return _handler->_cb(_handler->_begin, LEXY_FWD(args)...);
             else
-                return nullptr;
+                return Production{};
         }
 
     private:
-        test_handler* _handler;
+        const test_handler* _handler;
     };
 
-    template <typename>
+    template <typename T>
     constexpr auto get_result(bool rule_parse_result, int result) &&
     {
         if (rule_parse_result)
@@ -560,17 +538,6 @@ private:
     iterator _begin, _last_token;
 };
 
-template <typename Input, typename Callback>
-struct test_action
-{
-    using handler = test_handler<Input, Callback>;
-    using input   = Input;
-    using state   = handler;
-
-    template <typename>
-    using result_type = test_result;
-};
-
 constexpr auto token_callback = [](auto) { return 0; };
 
 template <typename Production, typename Input, typename Callback>
@@ -580,36 +547,12 @@ test_result verify(const Input& input, Callback cb)
         auto                                                         reader = input.reader();
         lexy::token_parser_for<decltype(dsl::any), decltype(reader)> parser(reader);
         parser.try_parse(reader);
-        return parser.end.position();
+        return parser.end;
     }()));
 
-    auto result = [&] {
-        test_handler<Input, Callback> handler(input, cb);
-        auto                          reader = input.reader();
-        return lexy::do_action<
-            Production, test_action<Input, Callback>::template result_type>(LEXY_MOV(handler),
-                                                                            &handler, reader);
-    }();
-
-    if constexpr (lexy::is_char_encoding<typename lexy::input_reader<Input>::encoding>
-                  && std::is_pointer_v<decltype(input.reader().position())>)
-    {
-        auto buffer        = lexy::make_buffer_from_input(input);
-        auto buffer_result = [&] {
-            test_handler<decltype(buffer), Callback> handler(buffer, cb);
-            auto                                     reader = buffer.reader();
-            return lexy::do_action<
-                Production,
-                test_action<decltype(buffer), Callback>::template result_type>(LEXY_MOV(handler),
-                                                                               &handler, reader);
-        }();
-
-        REQUIRE(result.status == buffer_result.status);
-        REQUIRE(result.value == buffer_result.value);
-        REQUIRE(result.trace == buffer_result.trace);
-    }
-
-    return result;
+    test_handler<Input, Callback> handler(input, cb);
+    auto                          reader = input.reader();
+    return lexy::do_action<Production>(LEXY_MOV(handler), &handler, reader);
 }
 
 template <typename Rule, typename Input, typename Callback>
@@ -670,7 +613,7 @@ constexpr auto _get_input(Encoding, CharT... cs)
             size = static_cast<std::size_t>(ptr - array);
         }
 
-        input(const input&)            = delete;
+        input(const input&) = delete;
         input& operator=(const input&) = delete;
 
         constexpr auto reader() const&
@@ -680,11 +623,6 @@ constexpr auto _get_input(Encoding, CharT... cs)
     };
 
     return input(cs...);
-}
-template <typename Reader, typename TokenKind>
-auto _get_input(const lexy::parse_tree<Reader, TokenKind>& tree)
-{
-    return lexy::parse_tree_input(tree);
 }
 } // namespace lexy_test
 

@@ -162,22 +162,13 @@ NOTE: Use {{% docref "lexy::trace" %}} to visualize the parsing process itself.
 ----
 namespace lexy
 {
-    class cfile_output_iterator
-    {
-    public:
-        explicit cfile_output_iterator(std::FILE* file);
-
-        // OutputIterator members
-    };
-
-    class stdout_output_iterator { … };
-    class stderr_output_iterator { … };
+    struct cfile_output_iterator;
 
     template <typename T>
     void visualize(std::FILE* file, const T& obj,
                    visualization_options opts = {})
     {
-        visualize_to(cfile_output_iterator(file), obj, opts);
+        visualize_to(cfile_output_iterator{file}, obj, opts);
     }
 }
 ----
@@ -186,7 +177,6 @@ namespace lexy
 Visualizes a data structure by writing it to `file`.
 
 It uses `cfile_output_iterator`, which is an output iterator that repeatedly calls `std::fputc`, and then forwards to {{% docref "lexy::visualize_to" %}}.
-`stdout_output_iterator` and `stderr_output_iterator` are default-constructible output iterators that always write to `stdout`/stderr` respectively.
 
 {{% godbolt-example "visualize" "Visualize a `lexy::parse_tree`" %}}
 

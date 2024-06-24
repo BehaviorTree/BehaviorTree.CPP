@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/digit.hpp>
@@ -46,16 +46,6 @@ TEST_CASE("dsl::digit")
             CHECK(result.trace == test_trace().token("digits", doctest::String(&digit, 1).c_str()));
             CHECK(rule.digit_value(digit) == value);
             ++value;
-
-            if (digit <= '9')
-            {
-                auto swar = lexy::_detail::swar_fill(char(digit));
-                CHECK(rule.template swar_matches<char>(swar));
-
-                // If we just look at the lower byte, it might appears to be a digit.
-                auto swar_utf32 = lexy::_detail::swar_fill(char32_t(0xAB | digit));
-                CHECK(!rule.template swar_matches<char32_t>(swar_utf32));
-            }
         }
     };
     auto check_invalid = [&](auto rule, const char* name, auto... _digits) {
@@ -66,9 +56,6 @@ TEST_CASE("dsl::digit")
             CHECK(result.status == test_result::fatal_error);
             CHECK(result.trace == test_trace().expected_char_class(0, name).cancel());
             CHECK(rule.digit_value(digit) >= rule.digit_radix);
-
-            auto swar = lexy::_detail::swar_fill(char(digit));
-            CHECK(!rule.template swar_matches<char>(swar));
         }
     };
 
@@ -191,10 +178,6 @@ TEST_CASE("dsl::digits<>")
     auto utf16 = LEXY_VERIFY(u"11");
     CHECK(utf16.status == test_result::success);
     CHECK(utf16.trace == test_trace().token("digits", "11"));
-
-    auto swar = LEXY_VERIFY(lexy::utf8_encoding{}, LEXY_CHAR8_STR("123456789123456789"));
-    CHECK(swar.status == test_result::success);
-    CHECK(swar.trace == test_trace().token("digits", "123456789123456789"));
 }
 
 TEST_CASE("dsl::digits<>.no_leading_zero()")
@@ -229,10 +212,6 @@ TEST_CASE("dsl::digits<>.no_leading_zero()")
     auto utf16 = LEXY_VERIFY(u"11");
     CHECK(utf16.status == test_result::success);
     CHECK(utf16.trace == test_trace().token("digits", "11"));
-
-    auto swar = LEXY_VERIFY(lexy::utf8_encoding{}, LEXY_CHAR8_STR("123456789123456789"));
-    CHECK(swar.status == test_result::success);
-    CHECK(swar.trace == test_trace().token("digits", "123456789123456789"));
 }
 
 TEST_CASE("dsl::digits<>.sep()")
@@ -278,10 +257,6 @@ TEST_CASE("dsl::digits<>.sep()")
     auto utf16 = LEXY_VERIFY(u"11");
     CHECK(utf16.status == test_result::success);
     CHECK(utf16.trace == test_trace().token("digits", "11"));
-
-    auto swar = LEXY_VERIFY(lexy::utf8_encoding{}, LEXY_CHAR8_STR("123456789123456789"));
-    CHECK(swar.status == test_result::success);
-    CHECK(swar.trace == test_trace().token("digits", "123456789123456789"));
 }
 
 TEST_CASE("dsl::digits<>.sep().no_leading_zero")
@@ -333,10 +308,6 @@ TEST_CASE("dsl::digits<>.sep().no_leading_zero")
     auto utf16 = LEXY_VERIFY(u"11");
     CHECK(utf16.status == test_result::success);
     CHECK(utf16.trace == test_trace().token("digits", "11"));
-
-    auto swar = LEXY_VERIFY(lexy::utf8_encoding{}, LEXY_CHAR8_STR("123456789123456789"));
-    CHECK(swar.status == test_result::success);
-    CHECK(swar.trace == test_trace().token("digits", "123456789123456789"));
 }
 
 TEST_CASE("digit separators")

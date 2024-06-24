@@ -121,7 +121,7 @@ enum general_category_t
     Lo, other_letter,
 
     Mn, nonspacing_mark,
-    Mc, spacing_mark,
+    Mc, spaing_mark,
     Me, enclosing_mark,
 
     Nd, decimal_number,

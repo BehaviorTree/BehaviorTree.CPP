@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/code_point.hpp>
@@ -148,21 +148,21 @@ TEST_CASE("code_point - general category")
 {
     // Update this test case when a new Unicode version comes out.
     // https://en.wikipedia.org/wiki/Unicode_character_property#General_Category
-    REQUIRE(LEXY_UNICODE_DATABASE_VERSION == doctest::String("15.0.0"));
+    REQUIRE(LEXY_UNICODE_DATABASE_VERSION == doctest::String("14.0.0"));
 
     CHECK(count_code_points(lexy::code_point::Lu) == 1831);
-    CHECK(count_code_points(lexy::code_point::Ll) == 2233);
+    CHECK(count_code_points(lexy::code_point::Ll) == 2227);
     CHECK(count_code_points(lexy::code_point::Lt) == 31);
-    CHECK(count_code_points(lexy::code_point::Lm) == 397);
-    CHECK(count_code_points(lexy::code_point::Lo) == 131612);
+    CHECK(count_code_points(lexy::code_point::Lm) == 334);
+    CHECK(count_code_points(lexy::code_point::Lo) == 127333);
 
-    CHECK(count_code_points(lexy::code_point::Mn) == 1985);
-    CHECK(count_code_points(lexy::code_point::Mc) == 452);
+    CHECK(count_code_points(lexy::code_point::Mn) == 1950);
+    CHECK(count_code_points(lexy::code_point::Mc) == 445);
     CHECK(count_code_points(lexy::code_point::Me) == 13);
 
-    CHECK(count_code_points(lexy::code_point::Nd) == 680);
+    CHECK(count_code_points(lexy::code_point::Nd) == 660);
     CHECK(count_code_points(lexy::code_point::Nl) == 236);
-    CHECK(count_code_points(lexy::code_point::No) == 915);
+    CHECK(count_code_points(lexy::code_point::No) == 895);
 
     CHECK(count_code_points(lexy::code_point::Pc) == 10);
     CHECK(count_code_points(lexy::code_point::Pd) == 26);
@@ -170,24 +170,24 @@ TEST_CASE("code_point - general category")
     CHECK(count_code_points(lexy::code_point::Pe) == 77);
     CHECK(count_code_points(lexy::code_point::Pi) == 12);
     CHECK(count_code_points(lexy::code_point::Pf) == 10);
-    CHECK(count_code_points(lexy::code_point::Po) == 628);
+    CHECK(count_code_points(lexy::code_point::Po) == 605);
 
     CHECK(count_code_points(lexy::code_point::Sm) == 948);
     CHECK(count_code_points(lexy::code_point::Sc) == 63);
     CHECK(count_code_points(lexy::code_point::Sk) == 125);
-    CHECK(count_code_points(lexy::code_point::So) == 6634);
+    CHECK(count_code_points(lexy::code_point::So) == 6605);
 
     CHECK(count_code_points(lexy::code_point::Zs) == 17);
     CHECK(count_code_points(lexy::code_point::Zl) == 1);
     CHECK(count_code_points(lexy::code_point::Zp) == 1);
 
     CHECK(count_code_points(lexy::code_point::Cc) == 65);
-    CHECK(count_code_points(lexy::code_point::Cf) == 170);
+    CHECK(count_code_points(lexy::code_point::Cf) == 163);
     CHECK(count_code_points(lexy::code_point::Cs) == 2048);
     CHECK(count_code_points(lexy::code_point::Co) == 137468);
 
     // Need to include the noncharacters in the count_code_points.
-    CHECK(count_code_points(lexy::code_point::Cn) == 825279 + 66);
+    CHECK(count_code_points(lexy::code_point::Cn) == 829768 + 66);
 }
 
 TEST_CASE("lexy::simple_case_fold")

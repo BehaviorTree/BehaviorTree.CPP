@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy_ext/parse_tree_algorithm.hpp>
@@ -21,9 +21,7 @@ struct child_p
 };
 
 struct root_p
-{
-    static constexpr auto rule = 0; // Need a rule to identify as production.
-};
+{};
 } // namespace
 
 TEST_CASE("tokens()")
@@ -46,7 +44,7 @@ TEST_CASE("tokens()")
         child = builder.start_production(child_p{});
         builder.finish_production(LEXY_MOV(child));
 
-        return LEXY_MOV(builder).finish(input.data() + 11);
+        return LEXY_MOV(builder).finish();
     }();
     CHECK(!tree.empty());
 
@@ -115,7 +113,7 @@ TEST_CASE("find_covering_node()")
         child = builder.start_production(child_p{});
         builder.finish_production(LEXY_MOV(child));
 
-        return LEXY_MOV(builder).finish(input.data() + 11);
+        return LEXY_MOV(builder).finish();
     }();
     CHECK(!tree.empty());
 
@@ -149,7 +147,7 @@ TEST_CASE("children()")
         child = builder.start_production(child_p{});
         builder.finish_production(LEXY_MOV(child));
 
-        return LEXY_MOV(builder).finish(input.data() + 11);
+        return LEXY_MOV(builder).finish();
     }();
     CHECK(!tree.empty());
 
@@ -220,34 +218,25 @@ TEST_CASE("child()")
         child = builder.start_production(child_p{});
         builder.finish_production(LEXY_MOV(child));
 
-        return LEXY_MOV(builder).finish(input.data() + 11);
+        return LEXY_MOV(builder).finish();
     }();
     CHECK(!tree.empty());
 
     auto token_a = lexy_ext::child(tree, tree.root(), token_kind::a);
     CHECK(token_a);
-    if (token_a)
-    {
-        CHECK(token_a->kind() == token_kind::a);
-        CHECK(token_a->lexeme().begin() == input.data());
-    }
+    CHECK(token_a->kind() == token_kind::a);
+    CHECK(token_a->lexeme().begin() == input.data());
 
     auto child_p = lexy_ext::child(tree, tree.root(), ::child_p{});
     CHECK(child_p);
-    if (child_p)
-    {
-        CHECK(child_p->kind() == ::child_p{});
+    CHECK(child_p->kind() == ::child_p{});
 
-        auto token_c = lexy_ext::child(tree, *child_p, token_kind::c);
-        CHECK(token_c);
-        if (token_c)
-        {
-            CHECK(token_c->kind() == token_kind::c);
-        }
+    auto token_c = lexy_ext::child(tree, *child_p, token_kind::c);
+    CHECK(token_c);
+    CHECK(token_c->kind() == token_kind::c);
 
-        auto empty = lexy_ext::child(tree, *child_p, token_kind::a);
-        CHECK(!empty);
-    }
+    auto empty = lexy_ext::child(tree, *child_p, token_kind::a);
+    CHECK(!empty);
 }
 
 TEST_CASE("node_position()")
@@ -280,7 +269,7 @@ TEST_CASE("node_position()")
         builder.finish_production(LEXY_MOV(child2));
         builder.finish_production(LEXY_MOV(child));
 
-        return LEXY_MOV(builder).finish(input.data() + 11);
+        return LEXY_MOV(builder).finish();
     }();
     CHECK(!tree.empty());
 

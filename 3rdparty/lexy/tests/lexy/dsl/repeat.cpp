@@ -1,10 +1,9 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/repeat.hpp>
 
 #include "verify.hpp"
-#include <lexy/callback/forward.hpp>
 #include <lexy/dsl/if.hpp>
 #include <lexy/dsl/integer.hpp>
 #include <lexy/dsl/position.hpp>

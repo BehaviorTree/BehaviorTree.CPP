@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/unicode.hpp>
@@ -46,14 +46,6 @@ TEST_CASE("dsl::unicode::control")
     CHECK(lexy::is_token_rule<decltype(rule)>);
 
     test("code-point.control", rule, dsl::ascii::control);
-}
-
-TEST_CASE("-dsl::unicode::control")
-{
-    constexpr auto rule = -dsl::unicode::control;
-    CHECK(lexy::is_token_rule<decltype(rule)>);
-
-    test("code-point.non-control", rule, -dsl::ascii::control);
 }
 
 TEST_CASE("dsl::unicode::blank")

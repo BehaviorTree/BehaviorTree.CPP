@@ -7,11 +7,7 @@
       {{- if ne $.Page.Permalink .Permalink -}}
         {{- $.Page.Scratch.SetInMap "see-also" $name (printf "<a href=%s><code>%s</code></a>" $url $name) -}}
       {{- end -}}
-      link:{{ $url }}[{{ $text }}{nbsp}
-      {{- if (index .Params "experimental" | default false) -}}
-          +++{{- (resources.Get "icons/beta.svg").Content | safeHTML -}}+++
-      {{- end -}}
-      ]
+      link:{{ $url }}[{{ $text }}]
       {{- $found = true -}}
   {{- end -}}
 {{- end -}}

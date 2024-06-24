@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy_ext/report_error.hpp>
@@ -14,7 +14,6 @@ namespace
 struct production
 {
     static constexpr auto name = "production";
-    static constexpr auto rule = 0; // Need a rule member to make it a production.
 };
 
 struct error_tag
@@ -27,7 +26,7 @@ TEST_CASE("_detail::write_error")
 {
     auto write = [](const auto& context, const auto& error) {
         std::string str;
-        lexy_ext::_detail::write_error(std::back_insert_iterator(str), context, error, {}, nullptr);
+        lexy_ext::_detail::write_error(std::back_insert_iterator(str), context, error, {});
         return str;
     };
 

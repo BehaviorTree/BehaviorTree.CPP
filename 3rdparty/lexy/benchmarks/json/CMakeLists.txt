@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 include(FetchContent)
@@ -24,7 +24,7 @@ fetch_data(twitter.json https://raw.githubusercontent.com/miloyip/nativejson-ben
 # Benchmarking executable.
 add_executable(lexy_benchmark_json)
 target_sources(lexy_benchmark_json PRIVATE main.cpp baseline.cpp lexy.cpp)
-target_link_libraries(lexy_benchmark_json PRIVATE foonathan::lexy::dev foonathan::lexy::file foonathan::lexy::unicode nanobench)
+target_link_libraries(lexy_benchmark_json PRIVATE foonathan::lexy::dev foonathan::lexy::file nanobench)
 target_compile_definitions(lexy_benchmark_json PRIVATE LEXY_BENCHMARK_DATA="${CMAKE_CURRENT_BINARY_DIR}/data/")
 set_target_properties(lexy_benchmark_json PROPERTIES OUTPUT_NAME "json")
 

@@ -113,8 +113,7 @@ constexpr _rule_ auto operator()(_char-class-rule_ c, _escape-dsl_ ... escapes) 
 with optional `escape` sequences.
 
 Requires::
-  * The {{% encoding %}} of the input is a char encoding.
-  * Each escape sequence `escapes` must begin with a distinct escape character (e.g. one with backslash and one with dollar).
+  Each escape sequence `escapes` must begin with a distinct escape character (e.g. one with backslash and one with dollar).
 Parsing::
   Parses `open()`, then enters a loop where it repeatedly does the following in order:
   1. Tries parsing `close()`. If that succeeds, finishes.

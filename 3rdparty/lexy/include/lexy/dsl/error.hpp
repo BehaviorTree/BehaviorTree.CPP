@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_ERROR_HPP_INCLUDED
@@ -25,7 +25,7 @@ struct _err : unconditional_branch_base
             {
                 lexy::token_parser_for<decltype(lexyd::token(Rule{})), Reader> parser(reader);
                 parser.try_parse(reader);
-                end = parser.end.position();
+                end = parser.end;
             }
 
             auto err = lexy::error<Reader, Tag>(begin, end);
@@ -102,7 +102,7 @@ struct _must_dsl
 template <typename Branch>
 constexpr auto must(Branch)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Branch, "must()");
+    static_assert(lexy::is_branch_rule<Branch>);
     static_assert(!lexy::is_unconditional_branch_rule<Branch>);
     return _must_dsl<Branch>{};
 }

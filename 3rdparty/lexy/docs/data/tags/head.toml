@@ -1,0 +1,4 @@
+name = "Latest development version"
+url = "https://github.com/foonathan/lexy"
+download = "https://lexy.foonathan.net/download/lexy-src.zip"
+prerelease = true

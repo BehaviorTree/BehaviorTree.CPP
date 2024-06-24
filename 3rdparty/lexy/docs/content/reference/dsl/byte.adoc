@@ -27,51 +27,26 @@ Rules that match one or more bytes.
 ----
 namespace lexy::dsl
 {
-    class _bytes-dsl_ // models _token-rule_
-    {
-    public:
-        template <typename Predicate>
-        constexpr _token-rule_ auto if_() const;
-
-        template <unsigned char ... Bytes>
-        constexpr _token-rule_ auto set() const;
-        template <unsigned char Low, unsigned char High>
-        constexpr _token-rule_ auto range() const;
-
-        constexpr _token-rule_ auto ascii() const;
-    };
-
     template <std::size_t N>
-    constexpr _bytes-dsl auto bytes;
+    constexpr _token-rule_ auto bytes;
 
-    constexpr _bytes-dsl_ auto byte = bytes<1>;
+    constexpr _token-rule_ auto byte = bytes<1>;
 }
 ----
 
 [.lead]
-`bytes` is a {{% token-rule %}} that matches `N` bytes from a specified set.
+`bytes` is a {{% token-rule %}} that matches `N` arbitrary bytes.
 
 Requires::
-  The {{% encoding %}} of the input is `lexy::byte_encoding`.
+  The input {{% encoding %}} is `lexy::byte_encoding`.
 Matching::
-  Matches and consumes `N` bytes:
-    * By default, it matches arbitrary bytes in the range `[0x00, 0xFF]` (both sides inclusive).
-      Its name is `byte`.
-    * `.if_()`: matches bytes where the predicate returns true.
-      It must have a `constexpr bool operator()(unsigned char)`.
-      Its name is the type name of `Predicate`.
-    * `.set()`: matches the specified bytes.
-      Its name is `byte.set`.
-    * `.range()`: matches the bytes in the range `[Low, High]` (both sides inclusive).
-      Its name is `byte.range`.
-    * `.ascii()`: matches bytes that are also ASCII characters; i.e. in the range `[0x00, 0x7F]` (both sides inclusive).
-      Its name is `byte.ASCII`.
+  Matches and consumes `N` bytes.
 Errors::
-  {{% docref "lexy::expected_char_class" %}} (with the name as above):
-  if a mismatched byte or EOF was encountered early; at the position of the last byte it could consume.
+  {{% docref "lexy::expected_char_class" %}} (`"byte"`):
+  if EOF was encountered early; at the position of the last byte it could consume.
   The rule then fails.
 Parse tree::
-  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::any_token_kind` (default) or `lexy::unknown_token_kind` (with predicate/range).
+  Single token node with the {{% docref "lexy::predefined_token_kind" %}} `lexy::any_token_kind`.
 
 CAUTION: Combining {{% docref "lexy::dsl::capture" %}} with `bytes` does not do any endianness conversion.
 
@@ -93,8 +68,6 @@ namespace lexy::dsl
 Padding bytes are bytes whose value doesn't matter:
 they're only expected to have a certain value, but it's okay, if they don't.
 
-Requires::
-  The {{% encoding %}} of the input is `lexy::byte_encoding`.
 (Branch) parsing::
   (Branch) parses {{% docref "lexy::dsl::bytes" %}}.
   If that succeeds, the branch is taken.
@@ -150,8 +123,6 @@ The endianness doesn't matter for `bint8`.
 They delegate to the associated `bytes` rule, which can be specified using the function call operator.
 If none has been specified, they default to {{% docref "lexy::dsl::bytes" %}}.
 
-Requires::
-  The {{% encoding %}} of the input is `lexy::byte_encoding`.
 (Branch) parsing::
   (Branch) parses `bytes`.
   If that succeeds, the branch is taken.

@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
     - name: Install ninja
       run: sudo apt-get -qq update && sudo apt-get install -y ninja-build
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v1
       with:
         languages: cpp
 
@@ -28,5 +28,5 @@ jobs:
       working-directory: build/
       run: cmake --build .
     - name: Perform CodeQL analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v1
 

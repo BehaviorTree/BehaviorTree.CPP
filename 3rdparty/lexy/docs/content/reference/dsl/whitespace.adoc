@@ -19,11 +19,11 @@ It skips zero or more of whitespace defined by `ws` and can be inserted everywhe
 This method is recommended where whitespace is an essential part of the grammar.
 See {{< github-example email >}} or {{< github-example xml >}} for examples of manual whitespace skipping.
 
-link:#whitespace-auto[Automatic whitespace] skipping is done by adding a `static constexpr auto whitespace` member to the *root* production.
+link:#whitespace-auto[Automatic whitespace] skipping is done by adding a `static constexpr auto whitespace` member to the root production.
 This is a rule that defines default whitespace for the entire grammar, as the `ws` argument did in the manual example.
 lexy then skips zero or more occurrences of whitespace after every token rule in the grammar, unless it has been manually disabled (see below).
 This method is recommend where whitespace is not important and is just there to format the input nicely.
-See {{< github-example config >}} or {{< github-example json >}} for examples of automatic whitespace skipping.
+See {{< github-example tutorial >}} or {{< github-example json >}} for examples of automatic whitespace skipping.
 
 NOTE: "Whitespace" does not mean literal whitespace characters. It can also include comments (or whatever else you want).
 

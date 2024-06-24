@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/_detail/string_view.hpp>
@@ -39,7 +39,7 @@ constexpr auto fn()
 
 TEST_CASE("make_cstr")
 {
-    constexpr auto str = lexy::_detail::make_cstr<&fn>;
+    constexpr auto str = lexy::_detail::make_cstr<+fn>;
     REQUIRE(str == lexy::_detail::string_view("ab"));
 }
 

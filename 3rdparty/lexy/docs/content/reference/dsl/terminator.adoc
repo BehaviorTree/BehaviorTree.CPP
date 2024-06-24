@@ -125,8 +125,7 @@ Errors::
   It can recover from a failed `rule` by parsing `recovery_rule()`.
   It does not recover from a failed `terminator()`.
 Values::
-  * All values produced by `rule` followed by all values produced by `terminator()`.
-  * After error recovery, it only produces the values by `terminator()`.
+  All values produced by `rule` followed by all values produced by `terminator()`.
 
 {{% playground-example terminator_try "Parse a statement; recover on failure" %}}
 
@@ -150,7 +149,6 @@ Errors::
 Values::
   * An object of type {{% docref "lexy::dsl::nullopt" "`lexy::nullopt`" %}} followed by all values produced by `terminator()` in the first case.
   * All values produced by `rule` followed by all values produced by `terminator()` in the second case.
-  * After error recovery, it only produces the values by `terminator()`.
 
 {{% playground-example terminator_opt "Parse a (null) statement" %}}
 
@@ -200,7 +198,6 @@ Values::
   All items produced by `item` and `sep` are forwarded to it;
   there are separate calls for every iteration and for `item` and `sep`.
   The value of the finished sink is then produced followed by all values of `terminator()`.
-  After error recovery, it only produces the values by `terminator()`.
 
 {{% playground-example terminator_list "Parse a list of things terminated by a period" %}}
 
@@ -228,7 +225,6 @@ Values::
   * a `lexy::nullopt` object in the first case,
   * The result of the `.list()` rule in the second case.
   It is then followed by all values produced by `terminator()`.
-  After error recovery, it only produces the values by `terminator()`.
 
 NOTE: This is different from `term.opt(term.list(r))` as that would parse the terminator twice: once by `.list()` and once by `.opt()`.
 Apart from that, it behaves identically.

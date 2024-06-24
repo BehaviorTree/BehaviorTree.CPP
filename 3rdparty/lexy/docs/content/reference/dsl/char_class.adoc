@@ -23,8 +23,6 @@ concept _char-class-rule_ = _token-rule_<T> && …;
 A _char class rule_ is a special {{% token-rule %}} that matches a single code point from a given set, the _char class_.
 Each char class rule has the same parsing behavior:
 
-Requires::
-  The {{% encoding %}} of the input is a char encoding.
 Matching::
   * If the current code unit is an ASCII character, matches and consumes it.
     Checks if that character is part of the char class.
@@ -120,10 +118,6 @@ It matches all characters that are not part of the char class `rule`.
 Its name is `complement`.
 
 {{% playground-example quoted "Match non-control characters in a string literal" %}}
-
-NOTE: For most char classes, `operator-` does not work with the {{% encoding %}} `lexy::default_encoding`:
-For example,`-dsl::ascii::control` could either mean non-control ASCII characters or non-control Unicode characters.
-You need to explicitly pick one interpretation with `lexy::ascii_encoding` or `lexy::utf8_encoding`.
 
 [#minus]
 == Char class minus `lexy::dsl::operator-`

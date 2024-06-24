@@ -26,9 +26,6 @@ namespace lexy
     class input_location
     {
     public:
-        // Location of the beginning.
-        constexpr explicit input_location(const Input& input);
-
         constexpr input_location_anchor<Input> anchor() const;
 
         constexpr unsigned line_nr() const;
@@ -48,7 +45,6 @@ A human readable location in the input.
 It combines the iterator based position with line/column number, according to some `Counting` strategy.
 The `Counting` strategy defaults to {{% docref "lexy::code_unit_location_counting" %}} for text and {{% docref "lexy::byte_location_counting" %}} for bytes.
 
-The constructor constructs an input location for the beginning of the input.
 `anchor()` returns the latest anchor before that location to start the search.
 
 NOTE: Use {{% docref "lexy::get_input_location" %}} to create location objects.

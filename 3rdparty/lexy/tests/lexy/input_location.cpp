@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/input_location.hpp>
@@ -12,7 +12,7 @@ TEST_CASE("get_input_location()")
         = [](const auto& loc, auto line, unsigned line_nr, auto column, unsigned column_nr) {
               CHECK(loc.line_nr() == line_nr);
               CHECK(loc.column_nr() == column_nr);
-              CHECK(loc.anchor()._line_begin.position() == line);
+              CHECK(loc.anchor()._line_begin == line);
               CHECK(loc.position() == column);
           };
 
@@ -26,7 +26,6 @@ TEST_CASE("get_input_location()")
             return lexy::get_input_location(input, input.data() + offset);
         };
 
-        verify(lexy::input_location(input), input.data(), 1, input.data(), 1);
         for (auto offset = 0u; offset < 7; ++offset)
         {
             auto loc = get_location(offset);
@@ -74,8 +73,6 @@ TEST_CASE("get_input_location()")
                                                                                     + offset);
         };
 
-        verify(lexy::input_location<decltype(input), lexy::code_point_location_counting>(input),
-               input.data(), 1, input.data(), 1);
         for (auto offset = 0u; offset < 7; ++offset)
         {
             auto loc = get_location(offset);
@@ -128,7 +125,6 @@ TEST_CASE("get_input_location()")
             return lexy::get_input_location(input, input.data() + offset);
         };
 
-        verify(lexy::input_location(input), input.data(), 1, input.data(), 1);
         for (auto offset = 0u; offset < 16; ++offset)
         {
             auto loc = get_location(offset);
@@ -166,15 +162,14 @@ TEST_CASE("_detail::get_input_line()")
                                      "Line 3");
 
     auto first_line
-        = lexy::_detail::get_input_line<lexy::code_unit_location_counting>(input, {input.data()});
+        = lexy::_detail::get_input_line<lexy::code_unit_location_counting>(input, input.data());
     CHECK(first_line.line.begin() == input.data());
     CHECK(first_line.line.end() == input.data() + 6);
     CHECK(first_line.newline.begin() == input.data() + 6);
     CHECK(first_line.newline.end() == input.data() + 7);
 
     auto second_line
-        = lexy::_detail::get_input_line<lexy::code_unit_location_counting>(input,
-                                                                           {input.data() + 7});
+        = lexy::_detail::get_input_line<lexy::code_unit_location_counting>(input, input.data() + 7);
     CHECK(second_line.line.begin() == input.data() + 7);
     CHECK(second_line.line.end() == input.data() + 13);
     CHECK(second_line.newline.begin() == input.data() + 13);
@@ -182,7 +177,7 @@ TEST_CASE("_detail::get_input_line()")
 
     auto third_line
         = lexy::_detail::get_input_line<lexy::code_unit_location_counting>(input,
-                                                                           {input.data() + 15});
+                                                                           input.data() + 15);
     CHECK(third_line.line.begin() == input.data() + 15);
     CHECK(third_line.line.end() == input.data() + 21);
     CHECK(third_line.newline.begin() == input.data() + 21);

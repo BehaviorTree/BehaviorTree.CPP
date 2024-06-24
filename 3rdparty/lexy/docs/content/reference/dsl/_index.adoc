@@ -196,8 +196,6 @@ the other rule does not have access to context variables, and any context modifi
   parse another production's rule inline
 {{% docref "lexy::dsl::return_" %}}::
   exit early from parsing a production
-{{% docref "lexy::dsl::subgrammar" %}}::
-  parse a production defined in a different source file
 ====
 
 [%collapsible]
@@ -250,8 +248,6 @@ the other rule does not have access to context variables, and any context modifi
   parse a keyword
 {{% docref "lexy::dsl::symbol" %}}::
   parse one of the specified symbols and produce their value
-{{% docref "lexy::dsl::flag" %}} and {{% docref "lexy::dsl::flags" %}}::
-  parses (multiple) symbols representing enum flags in any order
 ====
 
 [%collapsible]
@@ -313,8 +309,6 @@ the other rule does not have access to context variables, and any context modifi
 ====
 {{% docref "lexy::dsl::argv_separator" %}}::
   match the argument separator of a {{% docref "lexy::argv_input" %}}
-{{% docref "lexy::dsl::tnode" %}} and {{% docref "lexy::dsl::pnode" %}}::
-  match a node of a {{% docref "lexy::parse_tree_input" %}}
 {{% docref "lexy::dsl::debug" %}}::
   generate a debug event that is visualized by {{% docref "lexy::trace" %}}
 ====

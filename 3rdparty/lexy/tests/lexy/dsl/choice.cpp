@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/choice.hpp>
@@ -24,9 +24,7 @@ struct label
 TEST_CASE("dsl::operator|")
 {
     constexpr auto callback = lexy::callback<int>([](const char*) { return 42; },
-                                                  [](const char*, auto p) {
-                                                      return std::remove_pointer_t<decltype(p)>::id;
-                                                  });
+                                                  [](const char*, auto p) { return p.id; });
 
     SUBCASE("simple")
     {
@@ -52,11 +50,7 @@ TEST_CASE("dsl::operator|")
         CHECK(branch_error.status == test_result::recovered_error);
         CHECK(branch_error.value == 0);
         CHECK(branch_error.trace
-              == test_trace()
-                     .literal("abc")
-                     .production("label")
-                     .expected_literal(3, "!", 0)
-                     .recovery());
+              == test_trace().literal("abc").production("label").expected_literal(3, "!", 0));
     }
     SUBCASE("branches are ordered")
     {
@@ -77,11 +71,7 @@ TEST_CASE("dsl::operator|")
         CHECK(abc.status == test_result::recovered_error);
         CHECK(abc.value == 0);
         CHECK(abc.trace
-              == test_trace()
-                     .literal("a")
-                     .production("label")
-                     .expected_literal(1, "!", 0)
-                     .recovery());
+              == test_trace().literal("a").production("label").expected_literal(1, "!", 0));
     }
     SUBCASE("with else")
     {
@@ -93,8 +83,7 @@ TEST_CASE("dsl::operator|")
         auto empty = LEXY_VERIFY("");
         CHECK(empty.status == test_result::recovered_error);
         CHECK(empty.value == 2);
-        CHECK(empty.trace
-              == test_trace().production("label").expected_literal(0, "!", 0).recovery());
+        CHECK(empty.trace == test_trace().production("label").expected_literal(0, "!", 0));
 
         auto abc = LEXY_VERIFY("abc!");
         CHECK(abc.status == test_result::success);
@@ -110,11 +99,7 @@ TEST_CASE("dsl::operator|")
         CHECK(branch_error.status == test_result::recovered_error);
         CHECK(branch_error.value == 0);
         CHECK(branch_error.trace
-              == test_trace()
-                     .literal("abc")
-                     .production("label")
-                     .expected_literal(3, "!", 0)
-                     .recovery());
+              == test_trace().literal("abc").production("label").expected_literal(3, "!", 0));
     }
     SUBCASE("with error")
     {
@@ -149,11 +134,7 @@ TEST_CASE("dsl::operator|")
         CHECK(branch_error.status == test_result::recovered_error);
         CHECK(branch_error.value == 0);
         CHECK(branch_error.trace
-              == test_trace()
-                     .literal("abc")
-                     .production("label")
-                     .expected_literal(3, "!", 0)
-                     .recovery());
+              == test_trace().literal("abc").production("label").expected_literal(3, "!", 0));
     }
 
     SUBCASE("as branch")
@@ -181,11 +162,7 @@ TEST_CASE("dsl::operator|")
         CHECK(branch_error.status == test_result::recovered_error);
         CHECK(branch_error.value == 0);
         CHECK(branch_error.trace
-              == test_trace()
-                     .literal("abc")
-                     .production("label")
-                     .expected_literal(3, "!", 0)
-                     .recovery());
+              == test_trace().literal("abc").production("label").expected_literal(3, "!", 0));
     }
 }
 

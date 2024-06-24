@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/whitespace.hpp>
@@ -12,7 +12,7 @@ namespace
 {
 struct with_whitespace
 {
-    static constexpr auto whitespace = dsl::whitespace(LEXY_LIT("."));
+    static constexpr auto whitespace = LEXY_LIT(".");
 };
 } // namespace
 
@@ -181,10 +181,6 @@ TEST_CASE("dsl::whitespace")
         CHECK(three.status == test_result::success);
         CHECK(three.trace == test_trace().whitespace("---"));
 
-        auto swar = LEXY_VERIFY(lexy::utf8_char_encoding{}, "-------------");
-        CHECK(swar.status == test_result::success);
-        CHECK(swar.trace == test_trace().whitespace("-------------"));
-
         struct production : test_production_for<decltype(rule)>, with_whitespace
         {};
 
@@ -303,7 +299,7 @@ TEST_CASE("dsl::no_whitespace")
 
         auto ab = LEXY_VERIFY_P(production, "ab");
         CHECK(ab.status == test_result::recovered_error);
-        CHECK(ab.trace == test_trace().literal("ab").expected_literal(2, "c", 0).recovery());
+        CHECK(ab.trace == test_trace().literal("ab").expected_literal(2, "c", 0));
         auto abc = LEXY_VERIFY_P(production, "abc");
         CHECK(abc.status == test_result::success);
         CHECK(abc.trace == test_trace().literal("ab").literal("c"));
@@ -314,12 +310,7 @@ TEST_CASE("dsl::no_whitespace")
         auto inner_whitespace = LEXY_VERIFY_P(production, "ab..c");
         CHECK(inner_whitespace.status == test_result::recovered_error);
         CHECK(inner_whitespace.trace
-              == test_trace()
-                     .literal("ab")
-                     .expected_literal(2, "c", 0)
-                     .recovery()
-                     .finish()
-                     .whitespace(".."));
+              == test_trace().literal("ab").expected_literal(2, "c", 0).whitespace(".."));
         auto trailing_whitespace = LEXY_VERIFY_P(production, "abc..");
         CHECK(trailing_whitespace.status == test_result::success);
         CHECK(trailing_whitespace.trace
@@ -336,7 +327,7 @@ TEST_CASE("dsl::no_whitespace")
 
         auto ab = LEXY_VERIFY_P(production, "ab");
         CHECK(ab.status == test_result::recovered_error);
-        CHECK(ab.trace == test_trace().literal("ab").expected_literal(2, "c", 0).recovery());
+        CHECK(ab.trace == test_trace().literal("ab").expected_literal(2, "c", 0));
         auto abc = LEXY_VERIFY_P(production, "abc");
         CHECK(abc.status == test_result::success);
         CHECK(abc.trace == test_trace().literal("ab").literal("c"));
@@ -347,12 +338,7 @@ TEST_CASE("dsl::no_whitespace")
         auto inner_whitespace = LEXY_VERIFY_P(production, "ab..c");
         CHECK(inner_whitespace.status == test_result::recovered_error);
         CHECK(inner_whitespace.trace
-              == test_trace()
-                     .literal("ab")
-                     .expected_literal(2, "c", 0)
-                     .recovery()
-                     .finish()
-                     .whitespace(".."));
+              == test_trace().literal("ab").expected_literal(2, "c", 0).whitespace(".."));
         auto trailing_whitespace = LEXY_VERIFY_P(production, "abc..");
         CHECK(trailing_whitespace.status == test_result::success);
         CHECK(trailing_whitespace.trace

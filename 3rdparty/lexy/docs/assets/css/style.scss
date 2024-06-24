@@ -59,19 +59,12 @@ h6 {
 
 a, a svg, button svg {
     color: $link-color;
-    fill: $link-color;
-    stroke: $link-color;
     transition: color ease 0.3s;
 }
-a:hover, button:hover {
+a:hover, a svg:hover, button svg:hover {
     color: $highlight-color;
-    svg {
-        color: $highlight-color;
-        fill: $highlight-color;
-        stroke: $highlight-color;
-    }
 }
-a:focus, button:focus {
+a:focus, a svg:focus, button svg:focus {
     outline: none;
 }
 
@@ -181,6 +174,9 @@ footer#page-footer {
     .copyright {
         text-align: left;
     }
+    .patreon {
+        text-align: center;
+    }
     .poweredby {
         text-align: right;
     }
@@ -236,7 +232,7 @@ aside.toc {
 
 //=== body ===//
 article {
-    form svg, a svg, i svg {
+    svg {
         height: 1em;
         position: relative;
         top: 2px;

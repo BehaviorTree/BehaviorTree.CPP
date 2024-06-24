@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include "../../examples/ip_address.cpp" // NOLINT
@@ -36,34 +36,31 @@ auto recovered(const char* str)
 }
 } // namespace
 
-namespace
-{
 namespace ip
 {
-    bool operator==(ip_address lhs, ip_address rhs)
-    {
-        if (lhs.version != rhs.version)
+bool operator==(ip_address lhs, ip_address rhs)
+{
+    if (lhs.version != rhs.version)
+        return false;
+
+    for (auto i = 0; i < 8; ++i)
+        if (lhs.pieces[i] != rhs.pieces[i])
             return false;
 
-        for (auto i = 0; i < 8; ++i)
-            if (lhs.pieces[i] != rhs.pieces[i])
-                return false;
+    return true;
+}
 
-        return true;
-    }
-
-    doctest::String toString(ip_address addr)
+doctest::String toString(ip_address addr)
+{
+    doctest::String result;
+    for (auto piece : addr.pieces)
     {
-        doctest::String result;
-        for (auto piece : addr.pieces)
-        {
-            result += doctest::toString(piece);
-            result += " ";
-        }
-        return result;
+        result += doctest::toString(piece);
+        result += " ";
     }
+    return result;
+}
 } // namespace ip
-} // namespace
 
 TEST_CASE("IPv4")
 {

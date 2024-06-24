@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_IDENTIFIER_HPP_INCLUDED
@@ -36,34 +36,21 @@ struct _idp : token_base<_idp<Leading, Trailing>>
     template <typename Reader>
     struct tp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr bool try_parse(Reader reader)
         {
-            static_assert(lexy::is_char_encoding<typename Reader::encoding>);
-
             // Need to match Leading character.
             if (!lexy::try_match_token(Leading{}, reader))
                 return false;
 
             // Match zero or more trailing characters.
-            while (true)
-            {
-                if constexpr (lexy::_detail::is_swar_reader<Reader>)
-                {
-                    // If we have a swar reader, consume as much as possible at once.
-                    while (Trailing{}.template char_class_match_swar<typename Reader::encoding>(
-                        reader.peek_swar()))
-                        reader.bump_swar();
-                }
+            while (lexy::try_match_token(Trailing{}, reader))
+            {}
 
-                if (!lexy::try_match_token(Trailing{}, reader))
-                    break;
-            }
-
-            end = reader.current();
+            end = reader.position();
             return true;
         }
 
@@ -172,7 +159,7 @@ struct _id : branch_base
     template <typename Reader>
     struct bp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
         constexpr bool try_parse(const void*, const Reader& reader)
         {
@@ -183,8 +170,7 @@ struct _id : branch_base
             end = parser.end;
 
             // We only succeed if it's not a reserved identifier.
-            [[maybe_unused]] auto input
-                = lexy::partial_input(reader, reader.position(), end.position());
+            [[maybe_unused]] auto input = lexy::partial_input(reader, reader.position(), end);
             return !(ReservedPredicate::is_reserved(input) || ...);
         }
 
@@ -197,12 +183,12 @@ struct _id : branch_base
         {
             auto begin = reader.position();
 
-            context.on(_ev::token{}, lexy::identifier_token_kind, begin, end.position());
-            reader.reset(end);
+            context.on(_ev::token{}, lexy::identifier_token_kind, begin, end);
+            reader.set_position(end);
 
             using continuation = lexy::whitespace_parser<Context, NextParser>;
             return continuation::parse(context, reader, LEXY_FWD(args)...,
-                                       lexy::lexeme<Reader>(begin, end.position()));
+                                       lexy::lexeme<Reader>(begin, end));
         }
     };
 
@@ -324,14 +310,6 @@ struct _kw : token_base<_kw<Id, CharT, C...>>, _lit_base
 
     using lit_case_folding = void;
 
-    template <typename Encoding>
-    static constexpr auto lit_first_char() -> typename Encoding::char_type
-    {
-        typename Encoding::char_type result = 0;
-        (void)((result = lexy::_detail::transcode_char<decltype(result)>(C), true) || ...);
-        return result;
-    }
-
     template <typename Trie>
     static LEXY_CONSTEVAL std::size_t lit_insert(Trie& trie, std::size_t pos,
                                                  std::size_t char_class)
@@ -344,16 +322,16 @@ struct _kw : token_base<_kw<Id, CharT, C...>>, _lit_base
     template <typename Reader>
     struct tp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr bool try_parse(Reader reader)
         {
             // Need to match the literal.
-            if (!lexy::_detail::match_literal<0, CharT, C...>(reader))
+            if (!lexy::try_match_token(_lit<CharT, C...>{}, reader))
                 return false;
-            end = reader.current();
+            end = reader.position();
 
             // To qualify as a keyword, and not just the prefix of an identifier,
             // we must not have a trailing identifier character.

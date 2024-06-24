@@ -73,7 +73,7 @@ int main()
     if (!file)
     { … }
 
-    auto result = lexy::parse<grammar::config>(file.buffer(), lexy_ext::report_error.path(filename)); <4>
+    auto result = lexy::parse<grammar::config>(file.buffer(), lexy_ext::report_error); <4>
     if (!result) <5>
     { … }
 
@@ -365,7 +365,7 @@ struct config
 
 However, this is a lot of work.
 In this particular case, it is easier to use {{% docref "whitespace" "automatic whitespace skipping" %}}.
-This is done by adding a `static constexpr` member called `whitespace` to the *root* production (and only the root production):
+This is done by adding a `static constexpr` member called `whitespace` to the root production:
 
 [source,cpp]
 ----
@@ -612,8 +612,7 @@ struct version
         …
 
         auto dot_version = dsl::times<3>(number, dsl::sep(dot))
-                           + dsl::peek_not(dsl::lit_c<'-'> + dsl::while_(dsl::ascii::alnum))
-                                 .error<forbidden_build_string>; <3>
+                           + dsl::peek_not(dsl::lit_c<'-'>).error<forbidden_build_string>; <3>
 
         …
     }();
@@ -621,15 +620,14 @@ struct version
 ----
 <1> Define a tag.
 <2> Give it a custom message.
-<3> Raise the error when we encounter a build string.
-    We then consume it and recover.
+<3> Raise the error when the beginning of a build string is encountered.
 
 .Forbidden build string
 ----
 error: while parsing version
      |
  2:16| version = 0.0.0-alpha
-     |           ~~~~~^^^^^^ build string not supported
+     |           ~~~~~^ build string not supported
 ----
 
 == Polish: Better error recovery

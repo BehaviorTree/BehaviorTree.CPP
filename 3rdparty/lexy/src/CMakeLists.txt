@@ -1,10 +1,9 @@
-# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 get_filename_component(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include/lexy ABSOLUTE)
 get_filename_component(ext_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include/lexy_ext ABSOLUTE)
 set(header_files
-        ${include_dir}/_detail/any_ref.hpp
         ${include_dir}/_detail/assert.hpp
         ${include_dir}/_detail/buffer_builder.hpp
         ${include_dir}/_detail/code_point.hpp
@@ -19,7 +18,6 @@ set(header_files
         ${include_dir}/_detail/stateless_lambda.hpp
         ${include_dir}/_detail/std.hpp
         ${include_dir}/_detail/string_view.hpp
-        ${include_dir}/_detail/swar.hpp
         ${include_dir}/_detail/tuple.hpp
         ${include_dir}/_detail/type_name.hpp
 
@@ -64,12 +62,10 @@ set(header_files
         ${include_dir}/dsl/context_identifier.hpp
         ${include_dir}/dsl/delimited.hpp
         ${include_dir}/dsl/digit.hpp
-        ${include_dir}/dsl/effect.hpp
         ${include_dir}/dsl/eof.hpp
         ${include_dir}/dsl/error.hpp
         ${include_dir}/dsl/expression.hpp
         ${include_dir}/dsl/follow.hpp
-        ${include_dir}/dsl/flags.hpp
         ${include_dir}/dsl/identifier.hpp
         ${include_dir}/dsl/if.hpp
         ${include_dir}/dsl/integer.hpp
@@ -80,7 +76,6 @@ set(header_files
         ${include_dir}/dsl/option.hpp
         ${include_dir}/dsl/operator.hpp
         ${include_dir}/dsl/parse_as.hpp
-        ${include_dir}/dsl/parse_tree_node.hpp
         ${include_dir}/dsl/peek.hpp
         ${include_dir}/dsl/position.hpp
         ${include_dir}/dsl/production.hpp
@@ -92,7 +87,6 @@ set(header_files
         ${include_dir}/dsl/separator.hpp
         ${include_dir}/dsl/sequence.hpp
         ${include_dir}/dsl/sign.hpp
-        ${include_dir}/dsl/subgrammar.hpp
         ${include_dir}/dsl/symbol.hpp
         ${include_dir}/dsl/terminator.hpp
         ${include_dir}/dsl/times.hpp
@@ -106,7 +100,6 @@ set(header_files
         ${include_dir}/input/buffer.hpp
         ${include_dir}/input/file.hpp
         ${include_dir}/input/lexeme_input.hpp
-        ${include_dir}/input/parse_tree_input.hpp
         ${include_dir}/input/range_input.hpp
         ${include_dir}/input/string_input.hpp
 
@@ -151,16 +144,9 @@ if (LEXY_USER_CONFIG_HEADER)
     endif()
 endif()
 
-function(add_alias name target)
-    add_library(foonathan::${name} ALIAS ${target})
-    set_target_properties(${target} PROPERTIES EXPORT_NAME ${name})
-endfunction()
-
-include(GNUInstallDirs)
-
 # Core library.
 add_library(lexy_core INTERFACE)
-add_alias(lexy::core lexy_core)
+add_library(foonathan::lexy::core ALIAS lexy_core)
 target_link_libraries(lexy_core INTERFACE _lexy_base)
 target_include_directories(lexy_core SYSTEM INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
@@ -169,7 +155,7 @@ target_include_directories(lexy_core SYSTEM INTERFACE
 
 # Core library with warnings; for development only.
 add_library(lexy_dev INTERFACE)
-add_alias(lexy::dev lexy_dev)
+add_library(foonathan::lexy::dev ALIAS lexy_dev)
 target_link_libraries(lexy_dev INTERFACE _lexy_base)
 target_include_directories(lexy_dev INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
@@ -193,32 +179,27 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     # GCC's arry bounds, maybe uninitialized, and restrict warning seems to have false positives.
     target_compile_options(lexy_dev INTERFACE -Wno-array-bounds -Wno-maybe-uninitialized -Wno-restrict)
 elseif(MSVC)
-    target_compile_options(lexy_dev INTERFACE /WX /W3 /D _CRT_SECURE_NO_WARNINGS /wd5105 /utf-8)
+    target_compile_options(lexy_dev INTERFACE /WX /W3 /D _CRT_SECURE_NO_WARNINGS /wd5105)
 endif()
 
 # Link to have FILE I/O.
 add_library(lexy_file STATIC)
-add_alias(lexy::file lexy_file)
+add_library(foonathan::lexy::file ALIAS lexy_file)
 target_link_libraries(lexy_file PRIVATE foonathan::lexy::dev)
 target_sources(lexy_file PRIVATE input/file.cpp)
 
 # Link to enable unicode database.
 add_library(lexy_unicode INTERFACE)
-add_alias(lexy::unicode lexy_unicode)
+add_library(foonathan::lexy::unicode ALIAS lexy_unicode)
 target_compile_definitions(lexy_unicode INTERFACE LEXY_HAS_UNICODE_DATABASE=1)
 
 # Link to have extension headers.
 add_library(lexy_ext INTERFACE)
-add_alias(lexy::ext lexy_ext)
+add_library(foonathan::lexy::ext ALIAS lexy_ext)
 target_sources(lexy_ext INTERFACE ${ext_headers_files})
 
 # Umbrella target with all components.
 add_library(lexy INTERFACE)
-add_alias(lexy lexy)
+add_library(foonathan::lexy ALIAS lexy)
 target_link_libraries(lexy INTERFACE foonathan::lexy::core foonathan::lexy::file foonathan::lexy::unicode foonathan::lexy::ext)
-
-# Link to enable experimental features.
-add_library(lexy_experimental INTERFACE)
-add_alias(lexy::experimental lexy_experimental)
-target_compile_definitions(lexy_experimental INTERFACE LEXY_EXPERIMENTAL=1)
 

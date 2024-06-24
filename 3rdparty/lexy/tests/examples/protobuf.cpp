@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include "../../examples/protobuf.cpp" // NOLINT
@@ -40,28 +40,25 @@ TEST_CASE("varint")
     CHECK(!missing);
 }
 
-namespace
-{
 namespace ast
 {
-    bool operator==(field_varint lhs, field_varint rhs)
-    {
-        return lhs.value == rhs.value;
-    }
-    bool operator==(field_32 lhs, field_32 rhs)
-    {
-        return lhs.value == rhs.value;
-    }
-    bool operator==(field_64 lhs, field_64 rhs)
-    {
-        return lhs.value == rhs.value;
-    }
-    bool operator==(field_bytes lhs, field_bytes rhs)
-    {
-        return lexy::_detail::equal_lexemes(lhs.value, rhs.value);
-    }
+bool operator==(field_varint lhs, field_varint rhs)
+{
+    return lhs.value == rhs.value;
+}
+bool operator==(field_32 lhs, field_32 rhs)
+{
+    return lhs.value == rhs.value;
+}
+bool operator==(field_64 lhs, field_64 rhs)
+{
+    return lhs.value == rhs.value;
+}
+bool operator==(field_bytes lhs, field_bytes rhs)
+{
+    return lexy::_detail::equal_lexemes(lhs.value, rhs.value);
+}
 } // namespace ast
-} // namespace
 
 TEST_CASE("field")
 {

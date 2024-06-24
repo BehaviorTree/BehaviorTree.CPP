@@ -1,11 +1,10 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/action/validate.hpp>
 
 #include <doctest/doctest.h>
 #include <lexy/callback/adapter.hpp>
-#include <lexy/dsl/case_folding.hpp>
 #include <lexy/dsl/list.hpp>
 #include <lexy/dsl/literal.hpp>
 #include <lexy/dsl/production.hpp>
@@ -18,19 +17,12 @@ namespace
 struct prod_a
 {
     static constexpr auto name = "prod_a";
-    static constexpr auto rule = lexy::dsl::list(lexy::dsl::ascii::case_folding(LEXY_LIT("abc")));
+    static constexpr auto rule = list(LEXY_LIT("abc"));
 };
-
-struct prod_trans : lexy::transparent_production
-{
-    static constexpr auto name = "prod_trans";
-    static constexpr auto rule = lexy::dsl::p<prod_a>;
-};
-
 struct prod_b
 {
     static constexpr auto name = "prod_b";
-    static constexpr auto rule = LEXY_LIT("(") + lexy::dsl::p<prod_trans> + LEXY_LIT(")");
+    static constexpr auto rule = LEXY_LIT("(") + lexy::dsl::p<prod_a> + LEXY_LIT(")");
 };
 } // namespace
 
@@ -68,6 +60,7 @@ TEST_CASE("validate")
             constexpr auto callback = [](auto ctx, auto error) {
                 CHECK(ctx.production() == lexy::_detail::string_view("prod_a"));
                 CHECK(*error.position() == ')');
+                CHECK(error.string() == lexy::_detail::string_view("abc"));
             };
 
             auto result
@@ -79,6 +72,7 @@ TEST_CASE("validate")
             constexpr auto callback = [](auto ctx, auto error) {
                 CHECK(ctx.production() == lexy::_detail::string_view("prod_a"));
                 CHECK(*error.position() == 'a');
+                CHECK(error.string() == lexy::_detail::string_view("abc"));
             };
 
             auto result
@@ -90,6 +84,7 @@ TEST_CASE("validate")
             constexpr auto callback = [](auto ctx, auto error) {
                 CHECK(ctx.production() == lexy::_detail::string_view("prod_b"));
                 CHECK(*error.position() == ']');
+                CHECK(error.character() == ')');
             };
 
             auto result
@@ -99,28 +94,23 @@ TEST_CASE("validate")
     }
     SUBCASE("non-void callback")
     {
-        constexpr auto error = lexy::callback<int>(
-            [](lexy::string_error_context<> ctx, lexy::string_error<lexy::expected_literal> error) {
-                if (ctx.production() == doctest::String("prod_a"))
-                {
-                    if (error.string() != lexy::_detail::string_view("abc"))
-                        throw 0;
-                    return -1;
-                }
-                else if (ctx.production() == doctest::String("prod_b"))
-                {
-                    if (error.character() == '(')
-                        return -2;
-                    else if (error.character() == ')')
-                        return -3;
-                    else
-                        return -4;
-                }
-
+        constexpr auto prod_a_error = [](lexy::string_error_context<prod_a>,
+                                         lexy::string_error<lexy::expected_literal> error) {
+            if (error.string() != lexy::_detail::string_view("abc"))
                 throw 0;
-            },
-            [](lexy::string_error_context<>, auto) -> int { throw 0; });
-        constexpr auto callback = lexy::collect<std::vector<int>>(error);
+            return -1;
+        };
+        constexpr auto prod_b_error = [](lexy::string_error_context<prod_b>,
+                                         lexy::string_error<lexy::expected_literal> error) {
+            if (error.character() == '(')
+                return -2;
+            else if (error.character() == ')')
+                return -3;
+            else
+                return -4;
+        };
+        constexpr auto callback
+            = lexy::collect<std::vector<int>>(lexy::callback<int>(prod_a_error, prod_b_error));
 
         auto success = lexy::validate<prod_b>(lexy::zstring_input("(abc)"), callback);
         CHECK(success);

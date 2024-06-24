@@ -21,12 +21,12 @@ We promise:
   In particular, all DSL rules will continue to accept the same input as they have in the previous version, and produce the same values.
   This does _not_ apply to the behavior on invalid input, see below.
 * No removal of functionality unless it has been deprecated in a previous major release.
-* Few build breaking changes: whenever possible, we will add an alternative with a different spelling and deprecate the previous version instead.
+* No build breaking changes: whenever possible, we will add an alternative with a different spelling and deprecate the previous version instead.
 
 We reserve the right to:
 
 * Deprecate existing functionality and remove previously deprecated functionality.
-* Change anything that is not documented or explicitly marked as experimental (enabled by linking `foonathan::lexy::experimental`).
+* Change anything that is not documented.
   In particular, writing custom rules, readers, or parse actions is not guaranteed to work across major releases.
 * Change everything about the extension headers.
 * Change the behavior of rules on invalid input.

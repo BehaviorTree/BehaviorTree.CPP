@@ -87,7 +87,7 @@ Branch parsing::
   Same as parsing, but backtracks instead of raising an error.
 Errors::
   A generic error with the specified `Tag` or `lexy::unexpected` covering everything `rule` would have consumed.
-  It then recovers by consuming the peeked input that was matched.
+  It then recovers without having consumed any input.
 Values::
   None.
 

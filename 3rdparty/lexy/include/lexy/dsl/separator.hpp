@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_SEPARATOR_HPP_INCLUDED
@@ -90,7 +90,7 @@ struct _sep : _sep_base
 template <typename Branch>
 constexpr auto sep(Branch)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Branch, "sep");
+    static_assert(lexy::is_branch_rule<Branch>);
     return _sep<Branch, void>{};
 }
 
@@ -110,7 +110,7 @@ struct _tsep : _sep_base
 template <typename Branch>
 constexpr auto trailing_sep(Branch)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Branch, "trailing_sep");
+    static_assert(lexy::is_branch_rule<Branch>);
     return _tsep<Branch>{};
 }
 

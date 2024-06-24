@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_TYPE_NAME_HPP_INCLUDED
@@ -29,7 +29,6 @@ constexpr auto _full_type_name()
     auto function = string_view(__PRETTY_FUNCTION__);
     function.remove_prefix(prefix.length());
     function.remove_suffix(suffix.length());
-    function.try_remove_prefix("(anonymous namespace)::");
     return function;
 
 #elif defined(__GNUC__)
@@ -47,7 +46,6 @@ constexpr auto _full_type_name()
     auto function = string_view(__PRETTY_FUNCTION__);
     function.remove_prefix(prefix.length());
     function.remove_suffix(suffix.length());
-    function.try_remove_prefix("{anonymous}::");
     return function;
 
 #elif defined(_MSC_VER)
@@ -60,8 +58,12 @@ constexpr auto _full_type_name()
     auto function = string_view(__FUNCSIG__);
     function.remove_prefix(prefix.length());
     function.remove_suffix(suffix.length());
-    function.try_remove_prefix("struct ") || function.try_remove_prefix("class ");
-    function.try_remove_prefix("`anonymous-namespace'::");
+
+    if (auto s = string_view("struct "); function.starts_with(s))
+        function.remove_prefix(s.length());
+    else if (auto c = string_view("class "); function.starts_with(c))
+        function.remove_prefix(c.length());
+
     return function;
 
 #else
@@ -77,8 +79,8 @@ template <typename T, int NsCount>
 constexpr string_view _type_name()
 {
     auto name = _full_type_name<T>();
-    if (name.find('<') != string_view::npos && NsCount != 0)
-        return name;
+    LEXY_ASSERT(name.find('<') == string_view::npos || NsCount == 0,
+                "cannot strip namespaces from template instantiations");
 
     for (auto namespace_count = NsCount; namespace_count > 0; --namespace_count)
     {
@@ -103,25 +105,20 @@ constexpr const char* type_name()
         return "unknown-type";
 }
 
-template <typename T, int NsCount>
-inline constexpr const char* _type_id_holder = type_name<T, NsCount>();
-
-// Returns a unique address for each type.
-// For implementation reasons, it also doubles as the pointer to the name.
-template <typename T, int NsCount = 1>
-constexpr const char* const* type_id()
+template <typename T>
+constexpr const void* type_id()
 {
-    if constexpr (_detail::is_detected<_detect_name_v, T> //
-                  && !_detail::is_detected<_detect_name_f, T>)
-    {
-        // We can use the address of the static constexpr directly.
-        return &T::name;
-    }
+    // As different types have different type names, the compiler can't merge them,
+    // and we necessarily have different addresses.
+    if constexpr (_detail::is_detected<_detect_name_f, T>)
+        return T::name();
+    else if constexpr (_detail::is_detected<_detect_name_v, T>)
+        return T::name;
     else
     {
-        // We instantiate a variable template with a function unique by type.
-        // As the variable is inline, there should be a single address only.
-        return &_type_id_holder<T, NsCount>;
+        static_assert(LEXY_HAS_AUTOMATIC_TYPE_NAME,
+                      "you need to manuall add a ::name() or ::name to your type");
+        return _full_type_name<T>().data();
     }
 }
 } // namespace lexy::_detail

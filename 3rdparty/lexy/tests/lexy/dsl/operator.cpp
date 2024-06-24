@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/operator.hpp>
@@ -9,19 +9,6 @@
 
 // We can't use `lexy::op`, GCC 7 doesn't like it combined with function-local statics.
 #define LEXY_OP_OF(Rule) LEXY_DECAY_DECLTYPE(Rule)::op_tag_type
-
-namespace
-{
-struct tag_with_state
-{
-    const char* pos;
-
-    constexpr explicit tag_with_state(const char*) : pos(nullptr) {}
-    template <typename State>
-    constexpr explicit tag_with_state(const State&, const char* pos) : pos(pos)
-    {}
-};
-} // namespace
 
 TEST_CASE("dsl::op")
 {
@@ -80,31 +67,6 @@ TEST_CASE("dsl::op")
         };
         constexpr auto rule = dsl::op<tag>(dsl::square_bracketed(LEXY_LIT("0")));
         CHECK(std::is_same_v<LEXY_OP_OF(rule), tag>);
-
-        constexpr auto callback = [](const char* pos, LEXY_OP_OF(rule) t) {
-            CHECK(pos == t.pos);
-            return 0;
-        };
-
-        auto empty = LEXY_VERIFY("");
-        CHECK(empty.status == test_result::fatal_error);
-        CHECK(empty.value == -1);
-        CHECK(empty.trace == test_trace().expected_literal(0, "[", 0).cancel());
-
-        auto token_only = LEXY_VERIFY("[");
-        CHECK(token_only.status == test_result::fatal_error);
-        CHECK(token_only.value == -1);
-        CHECK(token_only.trace == test_trace().literal("[").expected_literal(1, "0", 0).cancel());
-
-        auto success = LEXY_VERIFY("[0]");
-        CHECK(success.status == test_result::success);
-        CHECK(success.value == 0);
-        CHECK(success.trace == test_trace().literal("[").literal("0").literal("]"));
-    }
-    SUBCASE("custom tag with state")
-    {
-        constexpr auto rule = dsl::op<tag_with_state>(dsl::square_bracketed(LEXY_LIT("0")));
-        CHECK(std::is_same_v<LEXY_OP_OF(rule), tag_with_state>);
 
         constexpr auto callback = [](const char* pos, LEXY_OP_OF(rule) t) {
             CHECK(pos == t.pos);
@@ -305,3 +267,4 @@ TEST_CASE("dsl::op choice")
         CHECK(double_minus.trace == test_trace().literal("-"));
     }
 }
+

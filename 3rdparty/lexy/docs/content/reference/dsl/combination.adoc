@@ -102,5 +102,3 @@ Values::
 
 NOTE: `partial_combination` can match the empty string.
 
-TIP: Use {{% docref "lexy::dsl::flags" %}} if you want to parse a combination of enum flags represented as {{% docref "lexy::dsl::symbol" %}}.
-

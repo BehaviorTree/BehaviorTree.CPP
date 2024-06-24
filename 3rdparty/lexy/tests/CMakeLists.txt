@@ -1,10 +1,10 @@
-# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 # Fetch doctest.
 message(STATUS "Fetching doctest")
 include(FetchContent)
-FetchContent_Declare(doctest URL https://github.com/doctest/doctest/archive/refs/tags/v2.4.9.zip DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+FetchContent_Declare(doctest URL https://github.com/doctest/doctest/archive/refs/tags/v2.4.9.zip)
 FetchContent_MakeAvailable(doctest)
 
 # A generic test target.
@@ -15,7 +15,7 @@ target_compile_definitions(lexy_test_base PUBLIC LEXY_TEST)
 if(MSVC AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     target_compile_options(lexy_test_base PUBLIC
         /Zc:preprocessor    # need a conforming preprocessor for stringifying escape characters
-        /bigobj             # some of the object files are really big for some reason
+        "/utf-8"            # use utf-8 instead of current code page
     )
 endif()
 
@@ -27,7 +27,6 @@ add_subdirectory(playground)
 
 add_test(NAME lexy_test COMMAND lexy_test)
 add_test(NAME lexy_ext_test COMMAND lexy_ext_test)
-add_test(NAME calculator COMMAND lexy_test_calculator)
 add_test(NAME email COMMAND lexy_test_email)
 add_test(NAME ip COMMAND lexy_test_ip_address)
 add_test(NAME json COMMAND lexy_test_json)

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_TOKEN_HPP_INCLUDED
@@ -46,7 +46,7 @@ struct token_base : _token_inherit<ImplOrTag>
     template <typename Reader>
     struct bp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
         constexpr auto try_parse(const void*, const Reader& reader)
         {
@@ -63,8 +63,8 @@ struct token_base : _token_inherit<ImplOrTag>
         template <typename NextParser, typename Context, typename... Args>
         LEXY_PARSER_FUNC bool finish(Context& context, Reader& reader, Args&&... args)
         {
-            context.on(_ev::token{}, Derived{}, reader.position(), end.position());
-            reader.reset(end);
+            context.on(_ev::token{}, Derived{}, reader.position(), end);
+            reader.set_position(end);
             return lexy::whitespace_parser<Context, NextParser>::parse(context, reader,
                                                                        LEXY_FWD(args)...);
         }
@@ -85,17 +85,16 @@ struct token_base : _token_inherit<ImplOrTag>
         {
             if (!parser.try_parse(reader))
             {
-                context.on(_ev::token{}, lexy::error_token_kind, reader.position(),
-                           parser.end.position());
+                context.on(_ev::token{}, lexy::error_token_kind, reader.position(), parser.end);
                 parser.report_error(context, reader);
-                reader.reset(parser.end);
+                reader.set_position(parser.end);
 
                 return false;
             }
         }
 
-        context.on(_ev::token{}, typename Derived::token_type{}, begin, parser.end.position());
-        reader.reset(parser.end);
+        context.on(_ev::token{}, typename Derived::token_type{}, begin, parser.end);
+        reader.set_position(parser.end);
 
         return true;
     }
@@ -131,19 +130,6 @@ struct _tokk : token_base<_tokk<Kind, Token>, Token>
 template <typename Tag, typename Token>
 struct _toke : token_base<_toke<Tag, Token>, Token>
 {
-    // If we're overriding the error for a char class rule, we also want to change its error
-    // reporting. Otherwise, rules such as `dsl::delimited()` building on char classes will generate
-    // the "wrong" error.
-    //
-    // If it's not a char class, adding this function doesn't hurt.
-    template <typename Reader, typename Context>
-    static constexpr void char_class_report_error(Context&                  context,
-                                                  typename Reader::iterator position)
-    {
-        auto err = lexy::error<Reader, Tag>(position, position);
-        context.on(_ev::error{}, err);
-    }
-
     template <typename Reader>
     struct tp : lexy::token_parser_for<Token, Reader>
     {
@@ -154,7 +140,7 @@ struct _toke : token_base<_toke<Tag, Token>, Token>
         constexpr void report_error(Context& context, const Reader& reader)
         {
             // Report a different error.
-            auto err = lexy::error<Reader, Tag>(reader.position(), this->end.position());
+            auto err = lexy::error<Reader, Tag>(reader.position(), this->end);
             context.on(_ev::error{}, err);
         }
     };
@@ -177,7 +163,6 @@ struct _token : token_base<_token<Rule>>
 {
     struct _production
     {
-        static constexpr auto name                = "<token>";
         static constexpr auto max_recursion_depth = 0;
         static constexpr auto rule                = Rule{};
     };
@@ -185,26 +170,23 @@ struct _token : token_base<_token<Rule>>
     template <typename Reader>
     struct tp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr bool try_parse(Reader reader)
         {
             // We match a dummy production that only consists of the rule.
-            auto success = lexy::do_action<
-                _production,
-                lexy::match_action<void, Reader>::template result_type>(lexy::_mh(),
-                                                                        lexy::no_parse_state,
-                                                                        reader);
-            end = reader.current();
+            auto success
+                = lexy::do_action<_production>(lexy::match_handler(), lexy::no_parse_state, reader);
+            end = reader.position();
             return success;
         }
 
         template <typename Context>
         constexpr void report_error(Context& context, const Reader& reader)
         {
-            auto err = lexy::error<Reader, lexy::missing_token>(reader.position(), end.position());
+            auto err = lexy::error<Reader, lexy::missing_token>(reader.position(), end);
             context.on(_ev::error{}, err);
         }
     };

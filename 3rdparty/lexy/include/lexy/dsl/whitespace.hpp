@@ -1,74 +1,52 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_WHITESPACE_HPP_INCLUDED
 #define LEXY_DSL_WHITESPACE_HPP_INCLUDED
 
-#include <lexy/_detail/swar.hpp>
 #include <lexy/action/base.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/choice.hpp>
 #include <lexy/dsl/loop.hpp>
 #include <lexy/dsl/token.hpp>
 
-namespace lexyd
-{
-template <typename Rule>
-struct _wsr;
-}
-
 //=== implementation ===//
 namespace lexy::_detail
 {
-// Parse this production to skip whitespace.
-template <typename WhitespaceRule>
+template <typename Rule>
 struct ws_production
 {
-    static constexpr auto name                = "<whitespace>";
     static constexpr auto max_recursion_depth = 0;
-    static constexpr auto rule = lexy::dsl::loop(WhitespaceRule{} | lexy::dsl::break_);
+    static constexpr auto rule                = lexy::dsl::loop(Rule{} | lexy::dsl::break_);
 };
-// If the whitespace rule itself uses `dsl::whitespace`, strip it to avoid infinite recursion.
-template <typename Rule>
-struct ws_production<lexyd::_wsr<Rule>> : ws_production<Rule>
-{};
 
 // A special handler for parsing whitespace.
-// It only forwards error events and ignores all others.
-template <typename Handler>
-class ws_handler
+// It only forwards errors to the context and ignores all other events.
+template <typename Context>
+class whitespace_handler
 {
 public:
-    constexpr explicit ws_handler(Handler& handler, typename Handler::event_handler& evh)
-    : _handler(&handler), _event_handler(&evh)
-    {}
-    template <typename Context>
-    constexpr explicit ws_handler(Context& context)
-    : ws_handler(context.control_block->parse_handler, context.handler)
-    {}
+    constexpr explicit whitespace_handler(Context& context) : _context(&context) {}
 
-    class event_handler
+    template <typename Production>
+    struct event_handler
+    {
+        static_assert(_detail::error<Production>,
+                      "whitespace rule must not contain `dsl::p` or `dsl::recurse`;"
+                      "use `dsl::inline_` instead");
+    };
+    template <typename Rule>
+    class event_handler<ws_production<Rule>>
     {
     public:
-        template <typename Rule>
-        constexpr event_handler(ws_production<Rule>)
-        {}
-        template <typename Production>
-        constexpr event_handler(Production)
-        {
-            static_assert(_detail::error<Production>,
-                          "whitespace rule must not contain `dsl::p` or `dsl::recurse`;"
-                          "use `dsl::inline_` instead");
-        }
-
         template <typename Error>
-        constexpr void on(ws_handler& handler, parse_events::error ev, const Error& error)
+        constexpr void on(whitespace_handler& handler, parse_events::error ev, Error&& error)
         {
-            handler._event_handler->on(*handler._handler, ev, error);
+            handler._context->on(ev, LEXY_FWD(error));
         }
 
         template <typename Event, typename... Args>
-        constexpr int on(ws_handler&, Event, const Args&...)
+        constexpr int on(whitespace_handler&, Event, const Args&...)
         {
             return 0; // an operation_start event returns something
         }
@@ -77,95 +55,61 @@ public:
     template <typename Production, typename State>
     using value_callback = _detail::void_value_callback;
 
-    template <typename>
-    constexpr bool get_result(bool rule_parse_result) &&
+    constexpr bool get_result_void(bool rule_parse_result) &&
     {
         return rule_parse_result;
     }
 
-    template <typename Event, typename... Args>
-    constexpr auto real_on(Event ev, Args&&... args)
-    {
-        return _event_handler->on(*_handler, ev, LEXY_FWD(args)...);
-    }
-
 private:
-    Handler*                         _handler;
-    typename Handler::event_handler* _event_handler;
+    Context* _context;
 };
-template <typename Context>
-ws_handler(Context& context) -> ws_handler<typename Context::handler_type>;
 
-template <typename>
-using ws_result = bool;
-
-template <typename WhitespaceRule>
-constexpr bool space_is_definitely_whitespace()
+template <typename Rule, typename NextParser>
+struct manual_ws_parser
 {
-    if constexpr (lexy::is_char_class_rule<WhitespaceRule>)
-        return WhitespaceRule::char_class_ascii().contains[int(' ')];
-    else
-        return false;
-}
-
-template <typename WhitespaceRule, typename Handler, typename Reader>
-constexpr auto skip_whitespace(ws_handler<Handler>&& handler, Reader& reader)
-{
-    auto begin = reader.position();
-
-    if constexpr (lexy::is_token_rule<WhitespaceRule>)
+    template <typename Context, typename Reader, typename... Args>
+    LEXY_PARSER_FUNC static bool parse(Context& context, Reader& reader, Args&&... args)
     {
-        // Parsing a token repeatedly cannot fail, so we can optimize it.
-
-        if constexpr (_detail::is_swar_reader<Reader> //
-                      && space_is_definitely_whitespace<WhitespaceRule>())
+        auto result = true;
+        auto begin  = reader.position();
+        if constexpr (lexy::is_token_rule<Rule>)
         {
-            while (true)
-            {
-                // Skip as many spaces as possible.
-                using char_type = typename Reader::encoding::char_type;
-                while (reader.peek_swar() == _detail::swar_fill(char_type(' ')))
-                    reader.bump_swar();
-
-                // We no longer have a space, skip the entire whitespace rule once.
-                if (!lexy::try_match_token(WhitespaceRule{}, reader))
-                    // If that fails, we definitely have no more whitespace.
-                    break;
-            }
+            // Parsing a token repeatedly cannot fail, so we can optimize it.
+            while (lexy::try_match_token(Rule{}, reader))
+            {}
         }
         else
         {
-            // Without SWAR, we just repeatedly skip the whitespace rule.
-            while (lexy::try_match_token(WhitespaceRule{}, reader))
-            {
-            }
+            // Parse the rule using a special handler that only forwards errors.
+            using production = ws_production<Rule>;
+            result = lexy::do_action<production>(whitespace_handler(context), lexy::no_parse_state,
+                                                 reader);
         }
+        auto end = reader.position();
 
-        handler.real_on(lexy::parse_events::token{}, lexy::whitespace_token_kind, begin,
-                        reader.position());
-        return std::true_type{};
+        if (result)
+        {
+            // Add a whitespace token node.
+            context.on(lexy::parse_events::token{}, lexy::whitespace_token_kind, begin, end);
+            // And continue.
+            return NextParser::parse(context, reader, LEXY_FWD(args)...);
+        }
+        else
+        {
+            // Add an error token node.
+            context.on(lexy::parse_events::token{}, lexy::error_token_kind, begin, end);
+            // And cancel.
+            return false;
+        }
     }
-    else if constexpr (!std::is_void_v<WhitespaceRule>)
-    {
-        using production = ws_production<WhitespaceRule>;
+};
+template <typename NextParser>
+struct manual_ws_parser<void, NextParser> : NextParser
+{};
 
-        // Parse the production using a special handler that only forwards errors.
-        auto result = lexy::do_action<production, ws_result>(LEXY_MOV(handler),
-                                                             lexy::no_parse_state, reader);
-
-        handler.real_on(lexy::parse_events::token{},
-                        result ? lexy::whitespace_token_kind : lexy::error_token_kind, begin,
-                        reader.position());
-        return result;
-    }
-    else
-    {
-        (void)handler;
-        (void)reader;
-        (void)begin;
-        return std::true_type{};
-    }
-}
+template <typename Context>
+using context_whitespace = lexy::production_whitespace<typename Context::production,
+                                                       typename Context::whitespace_production>;
 
 // Inherit from it in a continuation to disable automatic whitespace skipping.
 struct disable_whitespace_skipping
@@ -177,16 +121,18 @@ struct automatic_ws_parser
     template <typename Context, typename Reader, typename... Args>
     LEXY_PARSER_FUNC static bool parse(Context& context, Reader& reader, Args&&... args)
     {
-        if (!std::is_base_of_v<disable_whitespace_skipping, NextParser> //
-            && context.control_block->enable_whitespace_skipping)
+        if (!std::is_base_of_v<disable_whitespace_skipping,
+                               NextParser> && context.control_block->enable_whitespace_skipping)
         {
-            using whitespace = lexy::production_whitespace<typename Context::production,
-                                                           typename Context::whitespace_production>;
-            if (!skip_whitespace<whitespace>(ws_handler(context), reader))
-                return false;
+            // Skip the appropriate whitespace.
+            using rule = context_whitespace<Context>;
+            return manual_ws_parser<rule, NextParser>::parse(context, reader, LEXY_FWD(args)...);
         }
-
-        return NextParser::parse(context, reader, LEXY_FWD(args)...);
+        else
+        {
+            // Automatic whitespace skipping is disabled.
+            return NextParser::parse(context, reader, LEXY_FWD(args)...);
+        }
     }
 };
 } // namespace lexy::_detail
@@ -198,19 +144,7 @@ template <typename Rule>
 struct _wsr : rule_base
 {
     template <typename NextParser>
-    struct p
-    {
-        template <typename Context, typename Reader, typename... Args>
-        constexpr static bool parse(Context& context, Reader& reader, Args&&... args)
-        {
-            auto result
-                = lexy::_detail::skip_whitespace<Rule>(lexy::_detail::ws_handler(context), reader);
-            if (!result)
-                return false;
-
-            return NextParser::parse(context, reader, LEXY_FWD(args)...);
-        }
-    };
+    using p = lexy::_detail::manual_ws_parser<Rule, NextParser>;
 
     template <typename R>
     friend constexpr auto operator|(_wsr<Rule>, R r)
@@ -260,7 +194,7 @@ struct _wsn : _copy_base<Rule>
         constexpr auto try_parse(const ControlBlock* cb, const Reader& reader)
         {
             // Note that this can't skip whitespace as there is no way to access the whitespace
-            // rule. We thus don't need to disable anything.
+            // rule.
             return rule.try_parse(cb, reader);
         }
 
@@ -285,11 +219,9 @@ struct _wsn : _copy_base<Rule>
         template <typename Context, typename Reader, typename... Args>
         LEXY_PARSER_FUNC static bool parse(Context& context, Reader& reader, Args&&... args)
         {
-            using whitespace = lexy::production_whitespace<typename Context::production,
-                                                           typename Context::whitespace_production>;
-            if constexpr (std::is_void_v<whitespace>)
+            if constexpr (std::is_void_v<lexy::_detail::context_whitespace<Context>>)
             {
-                // No whitespace, just parse the rule normally.
+                // No whitespace, just parse the rule.
                 return lexy::parser_for<Rule, NextParser>::parse(context, reader,
                                                                  LEXY_FWD(args)...);
             }

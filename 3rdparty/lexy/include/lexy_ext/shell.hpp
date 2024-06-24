@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_EXT_SHELL_HPP_INCLUDED
@@ -168,16 +168,6 @@ public:
         using encoding = typename Prompt::encoding;
         using iterator = typename lexy::_detail::buffer_builder<char_type>::stable_iterator;
 
-        struct marker
-        {
-            iterator _it;
-
-            constexpr iterator position() const noexcept
-            {
-                return _it;
-            }
-        };
-
         auto reader() const&
         {
             return *this;
@@ -201,13 +191,9 @@ public:
             return iterator(_shell->_buffer, _idx);
         }
 
-        marker current() const noexcept
+        void set_position(iterator new_pos) noexcept
         {
-            return {position()};
-        }
-        void reset(marker m) noexcept
-        {
-            _idx = m._it.index();
+            _idx = new_pos.index();
         }
 
     private:
@@ -256,7 +242,7 @@ public:
     class writer
     {
     public:
-        writer(const writer&)            = delete;
+        writer(const writer&) = delete;
         writer& operator=(const writer&) = delete;
 
         ~writer() noexcept
@@ -414,8 +400,8 @@ using shell_lexeme = lexy::lexeme_for<shell<Prompt>>;
 template <typename Tag, typename Prompt = default_prompt<>>
 using shell_error = lexy::error_for<shell<Prompt>, Tag>;
 
-template <typename Prompt = default_prompt<>>
-using shell_error_context = lexy::error_context<shell<Prompt>>;
+template <typename Production, typename Prompt = default_prompt<>>
+using shell_error_context = lexy::error_context<Production, shell<Prompt>>;
 } // namespace lexy_ext
 
 #endif // LEXY_EXT_SHELL_HPP_INCLUDED

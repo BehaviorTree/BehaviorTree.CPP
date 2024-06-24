@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/callback/composition.hpp>
@@ -36,17 +36,8 @@ TEST_CASE("callback compose")
                                       lexy::parse_state, lexy::values);
 
         constexpr auto composed = a | b | c;
-        auto           state    = 2;
-        CHECK(composed[state](0) == 2 * 0);
-        CHECK(composed[state](8) == 2 * 16);
-    }
-    SUBCASE("callbacks returning void")
-    {
-        constexpr auto a = lexy::callback<int>([](int i) { return 2 * i; });
-        constexpr auto b = lexy::callback([](int) {});
-
-        constexpr auto composed = a | b;
-        composed(0);
+        CHECK(composed[2](0) == 2 * 0);
+        CHECK(composed[2](8) == 2 * 16);
     }
 
     SUBCASE("sink and callback")
@@ -94,8 +85,7 @@ TEST_CASE("callback compose")
         s(1);
         s(2);
         s(3);
-        auto state  = 2;
-        auto result = composed[state](LEXY_MOV(s).finish());
+        auto result = composed[2](LEXY_MOV(s).finish());
         CHECK(result == 2);
     }
 }

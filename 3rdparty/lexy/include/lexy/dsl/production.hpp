@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_PRODUCTION_HPP_INCLUDED
@@ -77,8 +77,10 @@ struct _prd
     template <typename Reader>
     struct bp
     {
-        lexy::production_branch_parser<Production, Reader> parser;
-        typename Reader::iterator                          begin;
+        using parser_t = lexy::branch_parser_for<lexy::production_rule<Production>, Reader>;
+
+        parser_t                  parser;
+        typename Reader::iterator begin;
 
         template <typename ControlBlock>
         constexpr auto try_parse(const ControlBlock* cb, const Reader& reader)
@@ -179,7 +181,7 @@ struct _recb : branch_base
     template <typename Reader>
     struct bp
     {
-        LEXY_REQUIRE_BRANCH_RULE(lexy::production_rule<Production>, "recurse_branch");
+        static_assert(lexy::is_branch_rule<lexy::production_rule<Production>>);
 
         using impl = lexy::branch_parser_for<_prd<Production>, Reader>;
         impl _impl;

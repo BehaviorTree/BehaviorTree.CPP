@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_LITERAL_HPP_INCLUDED
@@ -8,57 +8,8 @@
 #include <lexy/_detail/integer_sequence.hpp>
 #include <lexy/_detail/iterator.hpp>
 #include <lexy/_detail/nttp_string.hpp>
-#include <lexy/_detail/swar.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/token.hpp>
-
-//=== lit_matcher ===//
-namespace lexy::_detail
-{
-template <std::size_t CurCharIndex, typename CharT, CharT... Cs, typename Reader>
-constexpr auto match_literal(Reader& reader)
-{
-    static_assert(lexy::is_char_encoding<typename Reader::encoding>);
-    using char_type = typename Reader::encoding::char_type;
-    if constexpr (CurCharIndex >= sizeof...(Cs))
-    {
-        (void)reader;
-        return std::true_type{};
-    }
-    // We only use SWAR if the reader supports it and we have enough to fill at least one.
-    else if constexpr (is_swar_reader<Reader> && sizeof...(Cs) >= swar_length<char_type>)
-    {
-        // Try and pack as many characters into a swar as possible, starting at the current
-        // index.
-        constexpr auto pack = swar_pack<CurCharIndex>(transcode_char<char_type>(Cs)...);
-
-        // Do a single swar comparison.
-        if ((reader.peek_swar() & pack.mask) == pack.value)
-        {
-            reader.bump_swar(pack.count);
-
-            // Recurse with the incremented index.
-            return bool(match_literal<CurCharIndex + pack.count, CharT, Cs...>(reader));
-        }
-        else
-        {
-            auto partial = swar_find_difference<CharT>(reader.peek_swar() & pack.mask, pack.value);
-            reader.bump_swar(partial);
-            return false;
-        }
-    }
-    else
-    {
-        static_assert(CurCharIndex == 0);
-
-        // Compare each code unit, bump on success, cancel on failure.
-        return ((reader.peek() == transcode_int<typename Reader::encoding>(Cs)
-                     ? (reader.bump(), true)
-                     : false)
-                && ...);
-    }
-}
-} // namespace lexy::_detail
 
 //=== lit_trie ===//
 namespace lexy::_detail
@@ -185,11 +136,11 @@ struct _merge_case_folding<CurrentCaseFolding, H, T...>
                                          typename H::lit_case_folding, CurrentCaseFolding>,
                       T...>
 {
-    static_assert(std::is_same_v<CurrentCaseFolding,
-                                 typename H::lit_case_folding> //
-                      || std::is_void_v<CurrentCaseFolding>
-                      || std::is_void_v<typename H::lit_case_folding>,
-                  "cannot mix literals with different case foldings in a literal_set");
+    static_assert(
+        std::is_same_v<CurrentCaseFolding,
+                       typename H::lit_case_folding> //
+            || std::is_void_v<CurrentCaseFolding> || std::is_void_v<typename H::lit_case_folding>,
+        "cannot mix literals with different case foldings in a literal_set");
 };
 
 template <typename Reader>
@@ -273,7 +224,7 @@ struct lit_trie_matcher<Trie, CurNode>
 
             if constexpr (sizeof...(Idx) > 0)
             {
-                auto cur      = reader.current();
+                auto cur_pos  = reader.position();
                 auto cur_char = reader.peek();
 
                 auto next_value = Trie.node_no_match;
@@ -284,7 +235,7 @@ struct lit_trie_matcher<Trie, CurNode>
                     return next_value;
 
                 // We haven't found a longer match, return our match.
-                reader.reset(cur);
+                reader.set_position(cur_pos);
             }
 
             // But first, we might need to check that we don't match that nodes char class.
@@ -306,7 +257,6 @@ struct lit_trie_matcher<Trie, CurNode>
     template <typename Reader>
     LEXY_FORCE_INLINE static constexpr std::size_t try_match(Reader& _reader)
     {
-        static_assert(lexy::is_char_encoding<typename Reader::encoding>);
         if constexpr (std::is_same_v<CaseFolding<Reader>, Reader>)
         {
             return _impl<>::try_match(_reader);
@@ -315,7 +265,7 @@ struct lit_trie_matcher<Trie, CurNode>
         {
             CaseFolding<Reader> reader{_reader};
             auto                result = _impl<>::try_match(reader);
-            _reader.reset(reader.current());
+            _reader.set_position(reader.position());
             return result;
         }
     }
@@ -335,14 +285,6 @@ struct _lit
     static constexpr auto lit_char_classes   = lexy::_detail::char_class_list{};
     using lit_case_folding                   = void;
 
-    template <typename Encoding>
-    static constexpr auto lit_first_char() -> typename Encoding::char_type
-    {
-        typename Encoding::char_type result = 0;
-        (void)((result = lexy::_detail::transcode_char<decltype(result)>(C), true) || ...);
-        return result;
-    }
-
     template <typename Trie>
     static LEXY_CONSTEVAL std::size_t lit_insert(Trie& trie, std::size_t pos, std::size_t)
     {
@@ -352,15 +294,28 @@ struct _lit
     template <typename Reader>
     struct tp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr auto try_parse(Reader reader)
         {
-            auto result = lexy::_detail::match_literal<0, CharT, C...>(reader);
-            end         = reader.current();
-            return result;
+            if constexpr (sizeof...(C) == 0)
+            {
+                end = reader.position();
+                return std::true_type{};
+            }
+            else
+            {
+                auto result
+                    // Compare each code unit, bump on success, cancel on failure.
+                    = ((reader.peek() == lexy::_detail::transcode_int<typename Reader::encoding>(C)
+                            ? (reader.bump(), true)
+                            : false)
+                       && ...);
+                end = reader.position();
+                return result;
+            }
         }
 
         template <typename Context>
@@ -370,7 +325,7 @@ struct _lit
             constexpr auto str = lexy::_detail::type_string<CharT, C...>::template c_str<char_type>;
 
             auto begin = reader.position();
-            auto index = lexy::_detail::range_size(begin, end.position());
+            auto index = lexy::_detail::range_size(begin, this->end);
             auto err = lexy::error<Reader, lexy::expected_literal>(begin, str, index, sizeof...(C));
             context.on(_ev::error{}, err);
         }
@@ -423,12 +378,6 @@ struct _lcp : token_base<_lcp<Cp...>>, _lit_base
     static constexpr auto lit_char_classes   = lexy::_detail::char_class_list{};
     using lit_case_folding                   = void;
 
-    template <typename Encoding>
-    static constexpr auto lit_first_char() -> typename Encoding::char_type
-    {
-        return _string<Encoding>.data[0];
-    }
-
     template <typename Trie>
     static LEXY_CONSTEVAL std::size_t lit_insert(Trie& trie, std::size_t pos, std::size_t)
     {
@@ -447,17 +396,21 @@ struct _lcp : token_base<_lcp<Cp...>>, _lit_base
     template <typename Reader, std::size_t... Idx>
     struct tp<Reader, lexy::_detail::index_sequence<Idx...>>
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr bool try_parse(Reader reader)
         {
             using encoding = typename Reader::encoding;
 
-            auto result = lexy::_detail::match_literal<0, typename encoding::char_type,
-                                                       _string<encoding>.data[Idx]...>(reader);
-            end         = reader.current();
+            auto result
+                // Compare each code unit, bump on success, cancel on failure.
+                = ((reader.peek() == encoding::to_int_type(_string<encoding>.data[Idx])
+                        ? (reader.bump(), true)
+                        : false)
+                   && ...);
+            end = reader.position();
             return result;
         }
 
@@ -467,7 +420,7 @@ struct _lcp : token_base<_lcp<Cp...>>, _lit_base
             using encoding = typename Reader::encoding;
 
             auto begin = reader.position();
-            auto index = lexy::_detail::range_size(begin, end.position());
+            auto index = lexy::_detail::range_size(begin, end);
             auto err   = lexy::error<Reader, lexy::expected_literal>(begin, _string<encoding>.data,
                                                                    index, _string<encoding>.length);
             context.on(_ev::error{}, err);
@@ -539,9 +492,9 @@ struct _lset : token_base<_lset<Literals...>>, _lset_base
     template <typename Reader>
     struct tp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr bool try_parse(Reader reader)
         {
@@ -549,7 +502,7 @@ struct _lset : token_base<_lset<Literals...>>, _lset_base
             using matcher  = lexy::_detail::lit_trie_matcher<_t<encoding>, 0>;
 
             auto result = matcher::try_match(reader);
-            end         = reader.current();
+            end         = reader.position();
             return result != _t<encoding>.node_no_match;
         }
 

@@ -64,8 +64,6 @@ The input itself is unchanging and it produces a reader which remembers the curr
   UTF-8, UTF-16, UTF-32
 {{% docref "lexy::byte_encoding" %}}::
   Bytes, not text.
-{{% docref "lexy::parse_tree_encoding" %}}::
-  Parse tree nodes, not characters.
 
 .The pre-defined inputs:
 {{% headerref "range_input" %}}::
@@ -80,8 +78,6 @@ The input itself is unchanging and it produces a reader which remembers the curr
   Use the command-line arguments as input.
 {{% headerref "lexeme_input" %}}::
   Use a subset of an existing input while computing correct line/column information.
-{{% headerref "parse_tree_input" %}}::
-  Use a parse tree as input.
 
 [#grammar]
 == The grammar DSL

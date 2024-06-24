@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/integer.hpp>
@@ -83,15 +83,19 @@ namespace
 template <typename Parser>
 auto parse_int(Parser, const char* str)
 {
-    struct result_type : Parser::result_type
+    struct result_type
     {
+        typename Parser::result_type value;
+        bool                         success;
+
         bool operator==(int v) const
         {
-            return !this->overflow && this->value == typename Parser::traits::type(v);
+            return success && value == typename Parser::result_type(v);
         }
-    };
+    } result = {};
 
-    return result_type{Parser::parse(str, str + std::strlen(str))};
+    result.success = Parser::parse(result.value, str, str + std::strlen(str));
+    return result;
 }
 } // namespace
 
@@ -106,7 +110,7 @@ TEST_CASE("_integer_parser")
         for (auto i = 256; i < 512; ++i)
         {
             auto result = parse_int(parser, std::to_string(i).c_str());
-            CHECK(result.overflow);
+            CHECK(!result.success);
             CHECK(result.value == i / 10);
         }
 
@@ -114,7 +118,7 @@ TEST_CASE("_integer_parser")
         CHECK(parse_int(parser, "000000000000255") == 255);
 
         auto overflow_zeroes = parse_int(parser, "000000000000256");
-        CHECK(overflow_zeroes.overflow);
+        CHECK(!overflow_zeroes.success);
         CHECK(overflow_zeroes.value == 25);
 
         CHECK(parse_int(parser, "1'2'3") == 123);
@@ -129,7 +133,7 @@ TEST_CASE("_integer_parser")
         for (auto i = 128; i < 512; ++i)
         {
             auto result = parse_int(parser, std::to_string(i).c_str());
-            CHECK(result.overflow);
+            CHECK(!result.success);
             CHECK(result.value == i / 10);
         }
 
@@ -137,7 +141,7 @@ TEST_CASE("_integer_parser")
         CHECK(parse_int(parser, "000000000000127") == 127);
 
         auto overflow_zeroes = parse_int(parser, "000000000000128");
-        CHECK(overflow_zeroes.overflow);
+        CHECK(!overflow_zeroes.success);
         CHECK(overflow_zeroes.value == 12);
 
         CHECK(parse_int(parser, "1'2'3") == 123);
@@ -164,7 +168,7 @@ TEST_CASE("_integer_parser")
         CHECK(parse_int(parser, "00000000000065535") == 65535);
 
         auto overflow_zeroes = parse_int(parser, "00000000000065536");
-        CHECK(overflow_zeroes.overflow);
+        CHECK(!overflow_zeroes.success);
         CHECK(overflow_zeroes.value == 6553);
 
         CHECK(parse_int(parser, "1'2'3'4'5") == 12345);
@@ -192,7 +196,7 @@ TEST_CASE("_integer_parser")
 
         auto overflow_zeroes
             = parse_int(parser, ("000000000000" + std::to_string(INT_MAX + 1ll)).c_str());
-        CHECK(overflow_zeroes.overflow);
+        CHECK(!overflow_zeroes.success);
         CHECK(overflow_zeroes.value == INT_MAX / 10 * 10);
 
         CHECK(parse_int(parser, "1'2'3'4'5") == 12345);
@@ -223,11 +227,11 @@ TEST_CASE("_integer_parser")
         for (auto i = 0; i <= 42; ++i)
             CHECK(parse_int(parser, std::to_string(i).c_str()) == i);
         for (auto i = 43; i < 512; ++i)
-            CHECK(parse_int(parser, std::to_string(i).c_str()).overflow);
+            CHECK(!parse_int(parser, std::to_string(i).c_str()).success);
 
         CHECK(parse_int(parser, "000000000000") == 0);
         CHECK(parse_int(parser, "00000000000042") == 42);
-        CHECK(parse_int(parser, "00000000000043").overflow);
+        CHECK(!parse_int(parser, "00000000000043").success);
 
         CHECK(parse_int(parser, "1'2") == 12);
         CHECK(parse_int(parser, "0'0'0'0'0'0'1'2") == 12);
@@ -263,7 +267,7 @@ TEST_CASE("_integer_parser")
         CHECK(parse_int(parser, "00FF") == 0xFF);
 
         auto overflow_zeroes = parse_int(parser, "0100");
-        CHECK(overflow_zeroes.overflow);
+        CHECK(!overflow_zeroes.success);
         CHECK(overflow_zeroes.value == 0x10);
 
         CHECK(parse_int(parser, "0'0'F'F") == 255);

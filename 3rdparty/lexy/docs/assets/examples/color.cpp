@@ -5,8 +5,6 @@
 #include <lexy_ext/compiler_explorer.hpp>
 #include <lexy_ext/report_error.hpp>
 
-namespace
-{
 struct Color
 {
     std::uint8_t r, g, b;
@@ -14,21 +12,20 @@ struct Color
 
 namespace grammar
 {
-    namespace dsl = lexy::dsl;
+namespace dsl = lexy::dsl;
 
-    struct channel
-    {
-        static constexpr auto rule  = dsl::integer<std::uint8_t>(dsl::n_digits<2, dsl::hex>);
-        static constexpr auto value = lexy::forward<std::uint8_t>;
-    };
+struct channel
+{
+    static constexpr auto rule  = dsl::integer<std::uint8_t>(dsl::n_digits<2, dsl::hex>);
+    static constexpr auto value = lexy::forward<std::uint8_t>;
+};
 
-    struct color
-    {
-        static constexpr auto rule  = dsl::hash_sign + dsl::times<3>(dsl::p<channel>);
-        static constexpr auto value = lexy::construct<Color>;
-    };
+struct color
+{
+    static constexpr auto rule  = dsl::hash_sign + dsl::times<3>(dsl::p<channel>);
+    static constexpr auto value = lexy::construct<Color>;
+};
 } // namespace grammar
-} // namespace
 
 int main()
 {

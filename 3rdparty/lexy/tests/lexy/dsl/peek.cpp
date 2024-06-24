@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/peek.hpp>
@@ -102,7 +102,7 @@ TEST_CASE("dsl::peek_not()")
 
         auto ab = LEXY_VERIFY("ab");
         CHECK(ab.status == test_result::recovered_error);
-        CHECK(ab.trace == test_trace().error(0, 2, "unexpected").recovery().error_token("ab"));
+        CHECK(ab.trace == test_trace().error(0, 2, "unexpected").backtracked("ab"));
     }
     SUBCASE("as rule with .error")
     {
@@ -118,7 +118,7 @@ TEST_CASE("dsl::peek_not()")
 
         auto ab = LEXY_VERIFY("ab");
         CHECK(ab.status == test_result::recovered_error);
-        CHECK(ab.trace == test_trace().error(0, 2, "my error").recovery().error_token("ab"));
+        CHECK(ab.trace == test_trace().error(0, 2, "my error").backtracked("ab"));
     }
 
     SUBCASE("as branch")

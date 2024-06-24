@@ -1,10 +1,9 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_DELIMITED_HPP_INCLUDED
 #define LEXY_DSL_DELIMITED_HPP_INCLUDED
 
-#include <lexy/_detail/swar.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/capture.hpp>
 #include <lexy/dsl/char_class.hpp>
@@ -49,95 +48,25 @@ struct _del_chars
         begin = recover_end;
     }
 
-    template <typename Close, typename... Escs>
-    constexpr void parse_swar(Reader& reader, Close, Escs...)
-    {
-        using encoding = typename Reader::encoding;
-
-        // If we have a SWAR reader and the Close and Escape chars are literal rules,
-        // we can munch as much content as possible in a fast loop.
-        // We also need to efficiently check for the CharClass for it to make sense.
-        if constexpr (lexy::_detail::is_swar_reader<Reader> //
-                      && (lexy::is_literal_rule<Close> && ... && Escs::esc_is_literal)
-                      && !std::is_same_v<
-                          decltype(CharClass::template char_class_match_swar<encoding>({})),
-                          std::false_type>)
-        {
-            using char_type = typename encoding::char_type;
-            using lexy::_detail::swar_has_char;
-
-            while (true)
-            {
-                auto cur = reader.peek_swar();
-
-                // If we have an EOF or the initial character of the closing delimiter, we exit as
-                // we have no more content.
-                if (swar_has_char<char_type, encoding::eof()>(cur)
-                    || swar_has_char<char_type, Close::template lit_first_char<encoding>()>(cur))
-                    break;
-
-                // The same is true if we have the escape character.
-                if constexpr (sizeof...(Escs) > 0)
-                {
-                    if ((swar_has_char<char_type, Escs::template esc_first_char<encoding>()>(cur)
-                         || ...))
-                        break;
-                }
-
-                // We definitely don't have the end of the delimited content in the current SWAR,
-                // check if they all follow the char class.
-                if (!CharClass::template char_class_match_swar<encoding>(cur))
-                    // They don't or we need to look closer, exit the loop.
-                    break;
-
-                reader.bump_swar();
-            }
-        }
-    }
-
-    // Precondition: the next code unit definitely belongs to the content, not the delimiter.
     template <typename Context, typename Sink>
-    constexpr void parse_one(Context& context, Reader& reader, Sink& sink)
+    constexpr void parse(Context& context, Reader& reader, Sink& sink)
     {
-        using encoding = typename Reader::encoding;
-
         // First try to match the ASCII characters.
         using matcher = lexy::_detail::ascii_set_matcher<_cas<CharClass>>;
-        if (matcher::template match<encoding>(reader.peek()))
+        if (matcher::template match<typename Reader::encoding>(reader.peek()))
         {
             reader.bump();
         }
         else if constexpr (!std::is_same_v<decltype(CharClass::char_class_match_cp(char32_t())),
                                            std::false_type>)
         {
-            if constexpr (lexy::is_unicode_encoding<encoding>)
-            {
-                static_assert(CharClass::char_class_unicode(),
-                              "cannot use this character class with Unicode encoding");
-
-                auto result = lexy::_detail::parse_code_point(reader);
-                if (result.error == lexy::_detail::cp_error::success
-                    && CharClass::char_class_match_cp(result.cp))
-                {
-                    reader.reset(result.end);
-                }
-                else
-                {
-                    finish(context, sink, reader.position());
-
-                    auto recover_begin = reader.position();
-                    if (recover_begin == result.end.position())
-                        reader.bump();
-                    else
-                        reader.reset(result.end);
-                    _recover(context, recover_begin, reader.position());
-                }
-            }
-            else
+            // Try to match any code point in default_encoding or byte_encoding.
+            if constexpr (std::is_same_v<typename Reader::encoding, lexy::default_encoding> //
+                          || std::is_same_v<typename Reader::encoding, lexy::byte_encoding>)
             {
                 static_assert(!CharClass::char_class_unicode(),
-                              "cannot use this character class with non-Unicode char encoding");
-                LEXY_ASSERT(reader.peek() != encoding::eof(),
+                              "cannot use this character class with default/byte_encoding");
+                LEXY_ASSERT(reader.peek() != Reader::encoding::eof(),
                             "EOF should be checked before calling this");
 
                 auto recover_begin = reader.position();
@@ -150,12 +79,31 @@ struct _del_chars
                     _recover(context, recover_begin, reader.position());
                 }
             }
+            // Otherwise, try to match Unicode characters.
+            else
+            {
+                static_assert(CharClass::char_class_unicode(),
+                              "cannot use this character class with Unicode encoding");
+
+                auto result = lexy::_detail::parse_code_point(reader);
+                if (result.error == lexy::_detail::cp_error::success
+                    && CharClass::char_class_match_cp(result.cp))
+                {
+                    reader.set_position(result.end);
+                }
+                else
+                {
+                    finish(context, sink, reader.position());
+                    _recover(context, reader.position(), result.end);
+                    reader.set_position(result.end);
+                }
+            }
         }
         // It doesn't match Unicode characters.
         else
         {
             // We can just discard the invalid ASCII character.
-            LEXY_ASSERT(reader.peek() != encoding::eof(),
+            LEXY_ASSERT(reader.peek() != Reader::encoding::eof(),
                         "EOF should be checked before calling this");
             auto recover_begin = reader.position();
             reader.bump();
@@ -207,20 +155,12 @@ struct _del : rule_base
                                       _del_limit<Limit>, Limit>;
 
     template <typename CloseParser, typename Context, typename Reader, typename Sink>
-    LEXY_PARSER_FUNC static bool _loop(CloseParser& close, Context& context, Reader& reader,
-                                       Sink& sink)
+    static constexpr bool _loop(CloseParser& close, Context& context, Reader& reader, Sink& sink)
     {
         auto                     del_begin = reader.position();
         _del_chars<Char, Reader> cur_chars(reader);
-        while (true)
+        while (!close.try_parse(context.control_block, reader))
         {
-            // Parse as many content chars as possible.
-            // If it returns, we need to look closer at the next char.
-            cur_chars.parse_swar(reader, Close{}, Escapes{}...);
-
-            // Check for closing delimiter.
-            if (close.try_parse(context.control_block, reader))
-                break;
             close.cancel(context);
 
             // Check for missing delimiter.
@@ -236,12 +176,12 @@ struct _del : rule_base
             }
 
             // Check for escape sequences.
-            if ((Escapes::esc_try_parse(context, reader, sink, cur_chars) || ...))
+            if ((Escapes::_try_parse(context, reader, sink, cur_chars) || ...))
                 // We had an escape sequence, so do nothing in this iteration.
                 continue;
 
-            // It is actually a content char, consume it.
-            cur_chars.parse_one(context, reader, sink);
+            // Parse the next character.
+            cur_chars.parse(context, reader, sink);
         }
 
         // Finish the currently active character sequence.
@@ -255,7 +195,6 @@ struct _del : rule_base
         template <typename Context, typename Reader, typename... Args>
         LEXY_PARSER_FUNC static bool parse(Context& context, Reader& reader, Args&&... args)
         {
-            static_assert(lexy::is_char_encoding<typename Reader::encoding>);
             auto sink = context.value_callback().sink();
 
             // Parse characters until we have the closing delimiter.
@@ -284,7 +223,7 @@ struct _escape_base
 template <typename Open, typename Close, typename Limit = void>
 struct _delim_dsl
 {
-    /// Add char classes that will limit the delimited to detect a missing terminator.
+    /// Add literal tokens that will limit the delimited to detect a missing terminator.
     template <typename LimitCharClass>
     constexpr auto limit(LimitCharClass) const
     {
@@ -292,7 +231,7 @@ struct _delim_dsl
 
         return _delim_dsl<Open, Close, LimitCharClass>{};
     }
-    /// Add char classes that will limit the delimited and specify the error.
+    /// Add literal tokens that will limit the delimited and specify the error.
     template <typename Error, typename LimitCharClass>
     constexpr auto limit(LimitCharClass) const
     {
@@ -328,8 +267,7 @@ struct _delim_dsl
 template <typename Open, typename Close>
 constexpr auto delimited(Open, Close)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Open, "delimited()");
-    LEXY_REQUIRE_BRANCH_RULE(Close, "delimited()");
+    static_assert(lexy::is_branch_rule<Open> && lexy::is_branch_rule<Close>);
     return _delim_dsl<Open, Close>{};
 }
 
@@ -337,7 +275,7 @@ constexpr auto delimited(Open, Close)
 template <typename Delim>
 constexpr auto delimited(Delim)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Delim, "delimited()");
+    static_assert(lexy::is_branch_rule<Delim>);
     return _delim_dsl<Delim, Delim>{};
 }
 
@@ -367,16 +305,9 @@ namespace lexyd
 template <typename Escape, typename... Branches>
 struct _escape : _escape_base
 {
-    static constexpr bool esc_is_literal = lexy::is_literal_rule<Escape>;
-    template <typename Encoding>
-    static constexpr auto esc_first_char() -> typename Encoding::char_type
-    {
-        return Escape::template lit_first_char<Encoding>();
-    }
-
     template <typename Context, typename Reader, typename Sink, typename Char>
-    static constexpr bool esc_try_parse(Context& context, Reader& reader, Sink& sink,
-                                        _del_chars<Char, Reader>& cur_chars)
+    static constexpr bool _try_parse(Context& context, Reader& reader, Sink& sink,
+                                     _del_chars<Char, Reader>& cur_chars)
     {
         auto begin = reader.position();
 
@@ -428,7 +359,7 @@ struct _escape : _escape_base
     template <typename Branch>
     constexpr auto rule(Branch) const
     {
-        LEXY_REQUIRE_BRANCH_RULE(Branch, "escape()");
+        static_assert(lexy::is_branch_rule<Branch>);
         return _escape<Escape, Branches..., Branch>{};
     }
 
@@ -436,7 +367,7 @@ struct _escape : _escape_base
     template <typename Branch>
     constexpr auto capture(Branch branch) const
     {
-        LEXY_REQUIRE_BRANCH_RULE(Branch, "escape()");
+        static_assert(lexy::is_branch_rule<Branch>);
         return this->rule(lexy::dsl::capture(branch));
     }
 

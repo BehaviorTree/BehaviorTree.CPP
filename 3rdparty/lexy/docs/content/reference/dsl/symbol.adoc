@@ -236,8 +236,6 @@ template <const _symbol-table_& SymbolTable>
 constexpr _symbol-dsl_ symbol;
 ----
 
-Requires::
-  The {{% encoding %}} of the input is a char encoding.
 Parsing::
   Matches the longest symbol of the `SymbolTable` by consuming characters beginning at the current input.
   If necessary, performs case folding on the input first.
@@ -271,8 +269,7 @@ constexpr _symbol-dsl_ symbol(_identifier-dsl_ identifier);
 ----
 
 Requires::
-  * The {{% encoding %}} of the input is a char encoding.
-  * The {{% docref "lexy::dsl::identifier" %}} of the second overload has no reserved identifiers.
+  The {{% docref "lexy::dsl::identifier" %}} of the second overload has no reserved identifiers.
 Parsing::
   * The first overload parses the {{% token-rule %}} `token`.
   * The second overload parses `identifier.pattern()`.

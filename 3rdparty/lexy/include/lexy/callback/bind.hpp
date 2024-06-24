@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_CALLBACK_BIND_HPP_INCLUDED
@@ -16,7 +16,7 @@ template <typename T>
 constexpr auto is_placeholder = std::is_base_of_v<placeholder_base, T>;
 
 template <typename BoundArg, typename State, typename... Args>
-constexpr decltype(auto) expand_bound_arg(const BoundArg& bound, State& state,
+constexpr decltype(auto) expand_bound_arg(const BoundArg& bound, const State& state,
                                           const _detail::tuple<Args...>& actual_args)
 {
     if constexpr (is_placeholder<std::decay_t<BoundArg>>)
@@ -34,7 +34,7 @@ struct no_bind_state
 template <std::size_t Idx, typename Fn, typename... BoundArgs, typename State,
           typename... ActualArgs, std::size_t... ActualIdx, typename... ProducedArgs>
 constexpr decltype(auto) _invoke_bound(Fn&& fn, const _detail::tuple<BoundArgs...>& bound_args,
-                                       State&                               state,
+                                       const State&                         state,
                                        const _detail::tuple<ActualArgs...>& actual_args,
                                        _detail::index_sequence<ActualIdx...>,
                                        ProducedArgs&&... produced_args)
@@ -73,7 +73,7 @@ template <typename Fn, typename... BoundArgs, std::size_t... Idx, typename State
 constexpr decltype(auto) invoke_bound(Fn&&                                fn, //
                                       const _detail::tuple<BoundArgs...>& bound_args,
                                       _detail::index_sequence<Idx...>, //
-                                      State& state, Args&&... args)
+                                      const State& state, Args&&... args)
 {
     auto actual_args = _detail::forward_as_tuple(LEXY_FWD(args)...);
     if constexpr ((_detail::is_decayed_same<BoundArgs, _detail::all_values_placeholder> || ...))
@@ -117,7 +117,7 @@ struct _nth_value : _detail::placeholder_base // fallback + map
     LEXY_EMPTY_MEMBER Fn _fn;
 
     template <typename State, typename... Args>
-    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(State&,
+    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(const State&,
                                                           const _detail::tuple<Args...>& args) const
     {
         if constexpr (N > sizeof...(Args))
@@ -138,7 +138,7 @@ struct _nth_value<N, T, void> : _detail::placeholder_base // fallback only
     LEXY_EMPTY_MEMBER T _fallback;
 
     template <typename State, typename... Args>
-    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(State&,
+    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(const State&,
                                                           const _detail::tuple<Args...>& args) const
     {
         if constexpr (N > sizeof...(Args))
@@ -165,7 +165,7 @@ struct _nth_value<N, void, Fn> : _detail::placeholder_base // map only
     LEXY_EMPTY_MEMBER Fn _fn;
 
     template <typename State, typename... Args>
-    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(State&,
+    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(const State&,
                                                           const _detail::tuple<Args...>& args) const
     {
         static_assert(N <= sizeof...(Args), "not enough arguments for nth_value<N>");
@@ -195,7 +195,7 @@ struct _nth_value<N, void, void> : _detail::placeholder_base
     static_assert(N > 0, "values are 1-indexed");
 
     template <typename State, typename... Args>
-    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(State&,
+    LEXY_FORCE_INLINE constexpr decltype(auto) operator()(const State&,
                                                           const _detail::tuple<Args...>& args) const
     {
         static_assert(N <= sizeof...(Args), "not enough arguments for nth_value<N>");
@@ -247,7 +247,7 @@ struct _parse_state : _detail::placeholder_base
     LEXY_EMPTY_MEMBER Fn _fn;
 
     template <typename State, typename... Args>
-    constexpr decltype(auto) operator()(State& state, const _detail::tuple<Args...>&) const
+    constexpr decltype(auto) operator()(const State& state, const _detail::tuple<Args...>&) const
     {
         static_assert(!std::is_same_v<State, _detail::no_bind_state>,
                       "lexy::parse_state requires that a state is passed to lexy::parse()");
@@ -258,7 +258,7 @@ template <>
 struct _parse_state<void> : _detail::placeholder_base
 {
     template <typename State, typename... Args>
-    constexpr decltype(auto) operator()(State& state, const _detail::tuple<Args...>&) const
+    constexpr decltype(auto) operator()(const State& state, const _detail::tuple<Args...>&) const
     {
         static_assert(!std::is_same_v<State, _detail::no_bind_state>,
                       "lexy::parse_state requires that a state is passed to lexy::parse()");
@@ -290,7 +290,7 @@ struct _bound_cb
     struct _with_state
     {
         const _bound_cb& _bound;
-        State&           _state;
+        const State&     _state;
 
         template <typename... Args>
         constexpr return_type operator()(Args&&... args) const&&
@@ -302,7 +302,7 @@ struct _bound_cb
     };
 
     template <typename State>
-    constexpr auto operator[](State& state) const
+    constexpr auto operator[](const State& state) const
     {
         return _with_state<State>{*this, state};
     }
@@ -310,9 +310,8 @@ struct _bound_cb
     template <typename... Args>
     constexpr return_type operator()(Args&&... args) const
     {
-        auto state = _detail::no_bind_state{};
-        return _detail::invoke_bound(_callback, _bound_args, _bound_args.index_sequence(), state,
-                                     LEXY_FWD(args)...);
+        return _detail::invoke_bound(_callback, _bound_args, _bound_args.index_sequence(),
+                                     _detail::no_bind_state{}, LEXY_FWD(args)...);
     }
 };
 
@@ -355,13 +354,12 @@ struct _bound_sink
               typename   = std::enable_if_t<(!_detail::is_placeholder<BoundArgs> && ... && Dummy)>>
     constexpr auto sink() const
     {
-        auto state = _detail::no_bind_state{};
         return _detail::invoke_bound(_sink_wrapper<Sink>{_sink}, _bound, _bound.index_sequence(),
-                                     state);
+                                     _detail::no_bind_state{});
     }
 
     template <typename State>
-    constexpr auto sink(State& state) const
+    constexpr auto sink(const State& state) const
     {
         return _detail::invoke_bound(_sink_wrapper<Sink>{_sink}, _bound, _bound.index_sequence(),
                                      state);

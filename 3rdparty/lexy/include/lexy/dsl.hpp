@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_HPP_INCLUDED
@@ -22,11 +22,9 @@
 #include <lexy/dsl/context_identifier.hpp>
 #include <lexy/dsl/delimited.hpp>
 #include <lexy/dsl/digit.hpp>
-#include <lexy/dsl/effect.hpp>
 #include <lexy/dsl/eof.hpp>
 #include <lexy/dsl/error.hpp>
 #include <lexy/dsl/expression.hpp>
-#include <lexy/dsl/flags.hpp>
 #include <lexy/dsl/follow.hpp>
 #include <lexy/dsl/identifier.hpp>
 #include <lexy/dsl/if.hpp>
@@ -51,7 +49,6 @@
 #include <lexy/dsl/separator.hpp>
 #include <lexy/dsl/sequence.hpp>
 #include <lexy/dsl/sign.hpp>
-#include <lexy/dsl/subgrammar.hpp>
 #include <lexy/dsl/symbol.hpp>
 #include <lexy/dsl/terminator.hpp>
 #include <lexy/dsl/times.hpp>
@@ -59,10 +56,6 @@
 #include <lexy/dsl/unicode.hpp>
 #include <lexy/dsl/until.hpp>
 #include <lexy/dsl/whitespace.hpp>
-
-#if LEXY_EXPERIMENTAL
-#    include <lexy/dsl/parse_tree_node.hpp>
-#endif
 
 #endif // LEXY_DSL_HPP_INCLUDED
 

@@ -52,9 +52,6 @@ namespace lexy
 
         traverse_range traverse(node n) const noexcept;
         traverse_range traverse() const noexcept;
-
-        //=== remaining input ===//
-        lexy::lexeme<Reader> remaining_input() const noexcept
     };
 
     template <_input_ Input, typename TokenKind = void,
@@ -130,8 +127,7 @@ public:
     : builder(parse_tree{}, root)
     {}
 
-    parse_tree&& finish(typename Reader::iterator end) && { return finish({end, end}); }
-    parse_tree&& finish(lexy::lexeme<Reader> remaining_input) &&;
+    parse_tree&& finish() &&;
 
     //=== production node ===//
     marker start_production(_production_ auto production);
@@ -149,9 +145,6 @@ public:
 
     //=== token node ===//
     void token(token_kind<TokenKind> kind, _iterator_ begin, _iterator _end);
-
-    //=== accessors ===//
-    std::size_t current_child_count() const noexcept;
 };
 ----
 
@@ -168,7 +161,6 @@ Then the tree can be built using the following methods:
 `finish`::
   Finishes the construction of the entire tree and returns it.
   The active node must be the root node.
-  It also sets `.remaining_input()`, whose `.begin()` should be the `.end()` of the last token in the tree.
 
 `start_production`::
   Start construction for a new production node for `production` and pushes it to the active node's list of children.
@@ -217,9 +209,6 @@ However, the `marker` object must still be passed to `finish_production` or `can
   The node will have the specified {{% docref "lexy::token_kind" %}} and the lexeme `[begin, end)` of the input.
 +
 If `kind.ignore_if_empty() == true` and `begin == end`, no token node is constructed.
-
-`current_child_count`::
-  Returns the child nodes already added to the node that is currently being built.
 
 === Container interface
 
@@ -271,10 +260,10 @@ public:
     friend bool operator!=(node_kind nk, token_kind<TokenKind> tk);
     friend bool operator!=(token_kind<TokenKind> tk, node_kind nk);
 
-    friend bool operator==(node_kind nk, production_info info);
-    friend bool operator==(production_info info, node_kind nk);
-    friend bool operator!=(node_kind nk, production_info info);
-    friend bool operator!=(production_info info, node_kind nk);
+    friend bool operator==(node_kind nk, _production_ auto p);
+    friend bool operator==(_production_ auto p, node_kind nk);
+    friend bool operator!=(node_kind nk, _production_ auto p);
+    friend bool operator!=(_production_ auto p, node_kind nk);
 };
 ----
 
@@ -317,9 +306,6 @@ public:
     lexy::lexeme<Reader>           lexeme() const noexcept;
     lexy::token<Reader, TokenKind> token()  const noexcept;
 
-    iterator position() const noexcept;
-    lexy::lexeme<Reader> covering_lexeme() const noexcept;
-
     //=== relationships ===//
     node parent() const noexcept;
 
@@ -353,16 +339,8 @@ Internally, this is just a pointer to the node data structure.
   For a production node, returns an empty lexeme.
 `token`::
   Requires that the node is a token node; returns the stored {{% docref "lexy::token" %}} of the node.
-`position`::
-  Equivalent to `covering_lexeme().begin()`.
-`covering_lexeme`::
-  For a token node, returns the {{% docref "lexy::lexeme" %}} of the node.
-  For a production node, returns a lexeme that covers all token descendants of the production node.
 
 Two node references can be compared for equality, which compares their addresses.
-
-CAUTION: `covering_lexeme()` and `position()` require that every production node has at least one child and that `tree.remaining_input().begin()` is `.end()` of the last token descendant of the root node (in particular, it is not `iterator()`).
-All parse trees created by {{% docref "lexy::parse_as_tree" %}} have that property.
 
 ==== Node relationships: Parent
 
@@ -523,19 +501,4 @@ for (auto [event, node] : tree.traverse())
 
 NOTE: Traversing the parse tree is an optimized operation that does not involve dynamic memory allocation or recursion.
 Instead, each iteration step simply follows a pointer.
-
-=== Remaining input
-
-{{% interface %}}
-----
-lexy::lexeme<Reader> remaining_input() const noexcept
-----
-
-[.lead]
-Returns the remaining input, i.e. everything that has not been turned into the parse tree.
-
-Unless it has been set in `finish()`, it is empty.
-
-CAUTION: The position of an empty remaining input is not necessarily at the end of the input.
-{{% docref "lexy::parse_as_tree" %}} guarantees it, however.
 

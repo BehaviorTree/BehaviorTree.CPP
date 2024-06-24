@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/input/argv_input.hpp>
@@ -21,7 +21,7 @@ TEST_CASE("dsl::argv_separator")
     CHECK(abc.trace == test_trace().expected_char_class(0, "argv-separator").cancel());
 
     static constexpr char* argv[]     = {const_cast<char*>("IGNORED"), const_cast<char*>("abc"),
-                                         const_cast<char*>("de"), const_cast<char*>("f"), nullptr};
+                                     const_cast<char*>("de"), const_cast<char*>("f"), nullptr};
     constexpr auto         argv_begin = lexy::argv_begin(4, const_cast<char**>(argv));
     constexpr auto         argv_end   = lexy::argv_end(4, const_cast<char**>(argv));
 

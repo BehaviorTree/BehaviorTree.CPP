@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/action/parse.hpp>
@@ -219,7 +219,8 @@ struct string_pair_p
     static constexpr auto rule
         = dsl::parenthesized(dsl::p<string_p> + dsl::comma + dsl::p<string_p>);
 
-    static constexpr auto value = lexy::callback_with_state(lexy::construct<string_pair>);
+    static constexpr auto value
+        = lexy::bind(lexy::construct<string_pair>, lexy::parse_state, lexy::values);
 };
 
 using prod = string_pair_p;
@@ -249,3 +250,4 @@ TEST_CASE("parse with state")
         CHECK(abc_123.value().b == "123");
     }
 }
+

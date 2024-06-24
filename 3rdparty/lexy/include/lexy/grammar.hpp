@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_GRAMMAR_HPP_INCLUDED
@@ -33,9 +33,6 @@ struct _lit_base
 {};
 struct _sep_base
 {};
-
-struct _operation_base
-{};
 } // namespace lexyd
 
 namespace lexy
@@ -62,19 +59,7 @@ constexpr bool is_literal_set_rule = std::is_base_of_v<dsl::_lset_base, T>;
 
 template <typename T>
 constexpr auto is_separator = std::is_base_of_v<lexy::dsl::_sep_base, T>;
-
-template <typename T>
-constexpr auto is_operation = std::is_base_of_v<lexy::dsl::_operation_base, T>;
-
-template <typename... T>
-constexpr bool _require_branch_rule = (is_branch_rule<T> && ...);
 } // namespace lexy
-
-#define LEXY_REQUIRE_BRANCH_RULE(Rule, Name)                                                       \
-    static_assert(lexy::_require_branch_rule<Rule>, Name                                           \
-                  " requires a branch condition."                                                  \
-                  " You may need to use `>>` to specify the condition that is used for dispatch."  \
-                  " See https://lexy.foonathan.net/learn/branching/ for more information.")
 
 //=== predefined_token_kind ===//
 namespace lexy
@@ -97,12 +82,7 @@ enum predefined_token_kind : std::uint_least16_t
     _smallest_predefined_token_kind = digits_token_kind,
 };
 
-template <typename T>
-constexpr const char* token_kind_name(const T&) noexcept
-{
-    return "token";
-}
-constexpr const char* token_kind_name(predefined_token_kind kind) noexcept
+constexpr const char* _kind_name(predefined_token_kind kind) noexcept
 {
     switch (kind)
     {
@@ -185,33 +165,6 @@ LEXY_CONSTEVAL std::size_t max_recursion_depth()
     else
         return 1024; // Arbitrary power of two.
 }
-
-template <typename T>
-using _enable_production_or_operation = std::enable_if_t<is_production<T> || is_operation<T>>;
-
-struct production_info
-{
-    const char* const* id;
-    const char*        name;
-    bool               is_token;
-    bool               is_transparent;
-
-    template <typename Production, typename = _enable_production_or_operation<Production>>
-    constexpr production_info(Production)
-    : id(_detail::type_id<Production>()), name(production_name<Production>()),
-      is_token(is_token_production<Production>),
-      is_transparent(is_transparent_production<Production>)
-    {}
-
-    friend constexpr bool operator==(production_info lhs, production_info rhs)
-    {
-        return lhs.id == rhs.id;
-    }
-    friend constexpr bool operator!=(production_info lhs, production_info rhs)
-    {
-        return !(lhs == rhs);
-    }
-};
 } // namespace lexy
 
 namespace lexy
@@ -258,9 +211,6 @@ using _detect_value_of =
     // qualify value_of() (it causes a hard error instead of going to ::value).
     typename decltype(LEXY_DECLVAL(ParseState&).value_of(Production{}))::return_type;
 
-template <typename Production>
-using _detect_value = decltype(Production::value);
-
 template <typename Production, typename Sink>
 struct _sfinae_sink
 {
@@ -288,14 +238,9 @@ struct _sfinae_sink
 };
 
 template <typename Production, typename ParseState = void>
-constexpr bool production_has_value_callback
-    = lexy::_detail::is_detected<_detect_value_of, ParseState, Production>
-      || lexy::_detail::is_detected<_detect_value, Production>;
-
-template <typename Production, typename ParseState = void>
 class production_value_callback
 {
-    static constexpr auto _get_value([[maybe_unused]] ParseState* state)
+    static constexpr auto _get_value([[maybe_unused]] const ParseState* state)
     {
         if constexpr (lexy::_detail::is_detected<_detect_value_of, ParseState, Production>)
             return state->value_of(Production{});
@@ -308,28 +253,28 @@ class production_value_callback
     {
         if constexpr (lexy::is_callback<_type>)
             return _get_value(nullptr);
-        else if constexpr (lexy::is_sink<_type, std::add_lvalue_reference_t<ParseState>>)
-            return _get_value(nullptr).sink(LEXY_DECLVAL(ParseState&));
+        else if constexpr (lexy::is_sink<_type, ParseState>)
+            return _get_value(nullptr).sink(LEXY_DECLVAL(const ParseState&));
         else
             return _get_value(nullptr).sink();
     }
 
 public:
-    constexpr explicit production_value_callback(ParseState* state) : _state(state) {}
+    constexpr explicit production_value_callback(const ParseState* state) : _state(state) {}
 
     template <typename State = ParseState, typename = std::enable_if_t<std::is_void_v<State>>>
     constexpr production_value_callback() : _state(nullptr)
     {}
     template <typename State = ParseState,
               typename       = std::enable_if_t<std::is_same_v<State, ParseState>>>
-    constexpr explicit production_value_callback(State& state) : _state(&state)
+    constexpr explicit production_value_callback(const State& state) : _state(&state)
     {}
 
     using return_type = typename decltype(_return_type_callback())::return_type;
 
     constexpr auto sink() const
     {
-        if constexpr (lexy::is_sink<_type, std::add_lvalue_reference_t<ParseState>>)
+        if constexpr (lexy::is_sink<_type, ParseState>)
         {
             return _sfinae_sink(Production{}, _get_value(_state).sink(*_state));
         }
@@ -345,17 +290,14 @@ public:
     template <typename... Args>
     constexpr return_type operator()(Args&&... args) const
     {
-        if constexpr (lexy::is_callback_with_state_for<_type, ParseState, Args&&...>
-                      && !std::is_void_v<ParseState>)
+        if constexpr (lexy::is_callback_for<_type, Args&&...>)
         {
-            return _get_value(_state)[*_state](LEXY_FWD(args)...);
+            if constexpr (lexy::is_callback_state<_type, ParseState>)
+                return _get_value(_state)[*_state](LEXY_FWD(args)...);
+            else
+                return _get_value(_state)(LEXY_FWD(args)...);
         }
-        else if constexpr (lexy::is_callback_for<_type, Args&&...>)
-        {
-            return _get_value(_state)(LEXY_FWD(args)...);
-        }
-        else if constexpr ((lexy::is_sink<_type>                                              //
-                            || lexy::is_sink<_type, std::add_lvalue_reference_t<ParseState>>) //
+        else if constexpr ((lexy::is_sink<_type> || lexy::is_sink<_type, ParseState>) //
                            &&_is_convertible<return_type, Args&&...>)
         {
             // We don't have a matching callback, but it is a single argument that has
@@ -374,8 +316,9 @@ public:
     }
 
 private:
-    ParseState* _state;
+    const ParseState* _state;
 };
 } // namespace lexy
 
 #endif // LEXY_GRAMMAR_HPP_INCLUDED
+

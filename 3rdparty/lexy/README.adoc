@@ -113,9 +113,8 @@ Why should I use lexy over XYZ?::
 
   http://boost-spirit.com/home/[Boost.Spirit]:::
     The main difference: it is not a Boost library.
-    In addition, Boost.Spirit is quite old and doesn't support e.g. non-common ranges as input. 
-    Boost.Spirit also eagerly creates attributes from the rules, which can lead to nested tuples/variants while lexy uses callbacks which enables zero-copy parsing directly into your own data structure.
-    However, lexy's grammar is more verbose and designed to parser bigger grammars instead of the small one-off rules that Boost.Spirit is good at.
+    Otherwise, it is just a different implementation with a different flavor.
+    Use lexy if you like lexy more.
   https://github.com/taocpp/PEGTL[PEGTL]:::
     PEGTL is very similar and was a big inspiration.
     The biggest difference is that lexy uses an operator based DSL instead of inheriting from templated classes as PEGTL does;
@@ -135,7 +134,6 @@ that takes about 700ms.
 If we validate JSON only instead of parsing it, so remove the data structures and keep only the lexy specific parts, we're looking at about 840ms.
 +
 Keep in mind, that you can fully isolate lexy in a single translation unit that only needs to be touched when you change the parser.
-You can also split a lexy grammar into multiple translation units using the `dsl::subgrammar` rule.
 
 How bad are the {cpp} error messages if you mess something up?::
   They're certainly worse than the error message lexy gives you.

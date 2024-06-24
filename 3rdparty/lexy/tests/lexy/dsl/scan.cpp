@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/scan.hpp>
@@ -53,6 +53,23 @@ struct simple_scan : lexy::scan_production<int>, test_production
             scanner.fatal_error(lexy::expected_char_class{}, scanner.begin(), "digit");
             return 0;
         }
+    }
+};
+
+struct no_value_scan : lexy::scan_production<void>, test_production
+{
+    struct literal
+    {
+        static constexpr auto name = "literal";
+        static constexpr auto rule = LEXY_LIT("abc");
+        // note: no value
+    };
+
+    template <typename Reader, typename Context>
+    static constexpr scan_result scan(lexy::rule_scanner<Context, Reader>& scanner)
+    {
+        scanner.parse(dsl::p<literal>);
+        return true;
     }
 };
 
@@ -194,6 +211,19 @@ TEST_CASE("dsl::scan")
                      .token("digits", "42")
                      .finish()
                      .eof());
+    }
+    SUBCASE("void")
+    {
+        constexpr auto callback = token_callback;
+
+        auto empty = LEXY_VERIFY_P(no_value_scan, "");
+        CHECK(empty.status == test_result::recovered_error);
+        CHECK(empty.trace
+              == test_trace().production("literal").expected_literal(0, "abc", 0).cancel());
+
+        auto abc = LEXY_VERIFY_P(no_value_scan, "abc");
+        CHECK(abc.status == test_result::success);
+        CHECK(abc.trace == test_trace().production("literal").literal("abc"));
     }
     SUBCASE("with state")
     {

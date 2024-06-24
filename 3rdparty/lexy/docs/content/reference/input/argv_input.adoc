@@ -93,8 +93,8 @@ namespace lexy
     template <typename Tag, _encoding_ Encoding = default_encoding>
     using argv_error = error_for<argv_input<Encoding>, Tag>;
 
-    template <_encoding_ Encoding = default_encoding>
-    using argv_error_context = error_context<argv_input<Encoding>>;
+    template <typename Production, _encoding_ Encoding = default_encoding>
+    using argv_error_context = error_context<Production, argv_input<Encoding>>;
 }
 ----
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_CALLBACK_CONTAINER_HPP_INCLUDED
@@ -16,7 +16,7 @@ template <typename Container>
 constexpr auto _has_reserve = _detail::is_detected<_detect_reserve, Container>;
 
 template <typename Container>
-using _detect_append = decltype(LEXY_DECLVAL(Container&).append(LEXY_DECLVAL(Container&&)));
+using _detect_append = decltype(LEXY_DECLVAL(Container&).append(LEXY_DECLVAL(Container &&)));
 template <typename Container>
 constexpr auto _has_append = _detail::is_detected<_detect_append, Container>;
 } // namespace lexy
@@ -32,19 +32,18 @@ struct _list_sink
     using return_type = Container;
 
     template <typename C = Container, typename U>
-    constexpr auto operator()(U&& obj) -> decltype(LEXY_DECLVAL(C&).push_back(LEXY_FWD(obj)))
+    auto operator()(U&& obj) -> decltype(LEXY_DECLVAL(C&).push_back(LEXY_FWD(obj)))
     {
         return _result.push_back(LEXY_FWD(obj));
     }
 
     template <typename C = Container, typename... Args>
-    constexpr auto operator()(Args&&... args)
-        -> decltype(LEXY_DECLVAL(C&).emplace_back(LEXY_FWD(args)...))
+    auto operator()(Args&&... args) -> decltype(LEXY_DECLVAL(C&).emplace_back(LEXY_FWD(args)...))
     {
         return _result.emplace_back(LEXY_FWD(args)...);
     }
 
-    constexpr Container&& finish() &&
+    Container&& finish() &&
     {
         return LEXY_MOV(_result);
     }
@@ -60,7 +59,7 @@ struct _list_alloc
     template <typename State>
     struct _with_state
     {
-        State&         _state;
+        const State&   _state;
         const AllocFn& _alloc;
 
         constexpr Container operator()(Container&& container) const
@@ -86,13 +85,13 @@ struct _list_alloc
     };
 
     template <typename State>
-    constexpr auto operator[](State& state) const
+    constexpr auto operator[](const State& state) const
     {
         return _with_state<State>{state, _alloc};
     }
 
     template <typename State>
-    constexpr auto sink(State& state) const
+    constexpr auto sink(const State& state) const
     {
         return _list_sink<Container>{Container(_detail::invoke(_alloc, state))};
     }
@@ -172,19 +171,18 @@ struct _collection_sink
     using return_type = Container;
 
     template <typename C = Container, typename U>
-    constexpr auto operator()(U&& obj) -> decltype(LEXY_DECLVAL(C&).insert(LEXY_FWD(obj)))
+    auto operator()(U&& obj) -> decltype(LEXY_DECLVAL(C&).insert(LEXY_FWD(obj)))
     {
         return _result.insert(LEXY_FWD(obj));
     }
 
     template <typename C = Container, typename... Args>
-    constexpr auto operator()(Args&&... args)
-        -> decltype(LEXY_DECLVAL(C&).emplace(LEXY_FWD(args)...))
+    auto operator()(Args&&... args) -> decltype(LEXY_DECLVAL(C&).emplace(LEXY_FWD(args)...))
     {
         return _result.emplace(LEXY_FWD(args)...);
     }
 
-    constexpr Container&& finish() &&
+    Container&& finish() &&
     {
         return LEXY_MOV(_result);
     }
@@ -200,7 +198,7 @@ struct _collection_alloc
     template <typename State>
     struct _with_state
     {
-        State&         _state;
+        const State&   _state;
         const AllocFn& _alloc;
 
         constexpr Container operator()(Container&& container) const
@@ -226,13 +224,13 @@ struct _collection_alloc
     };
 
     template <typename State>
-    constexpr auto operator[](State& state) const
+    constexpr auto operator[](const State& state) const
     {
         return _with_state<State>{state, _alloc};
     }
 
     template <typename State>
-    constexpr auto sink(State& state) const
+    constexpr auto sink(const State& state) const
     {
         return _collection_sink<Container>{Container(_detail::invoke(_alloc, state))};
     }
@@ -357,7 +355,7 @@ struct _concat
 
         using return_type = Container;
 
-        constexpr void operator()(Container&& container)
+        void operator()(Container&& container)
         {
             if (_result.empty())
             {
@@ -391,7 +389,7 @@ struct _concat
             }
         }
 
-        constexpr Container&& finish() &&
+        Container&& finish() &&
         {
             return LEXY_MOV(_result);
         }

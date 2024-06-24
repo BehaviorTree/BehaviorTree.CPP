@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/byte.hpp>
@@ -10,82 +10,9 @@
 
 TEST_CASE("dsl::byte")
 {
-    static constexpr auto callback = token_callback;
-
-    auto check = [](auto rule, const char* kind, const char* name, int byte) {
-        auto result = LEXY_VERIFY_RUNTIME(lexy::byte_encoding{}, static_cast<unsigned char>(byte));
-        if (result.status == test_result::fatal_error)
-        {
-            CHECK(result.trace == test_trace().expected_char_class(0, name).cancel());
-            return false;
-        }
-        else
-        {
-            char spelling[10];
-            std::sprintf(spelling, "\\%02X", byte);
-            CHECK(result.trace == test_trace().token(kind, spelling));
-            return true;
-        }
-    };
-
-    SUBCASE("any")
-    {
-        constexpr auto rule = dsl::byte;
-        CHECK(lexy::is_token_rule<decltype(rule)>);
-        CHECK(equivalent_rules(rule, dsl::bytes<1>));
-
-        auto empty = LEXY_VERIFY(lexy::byte_encoding{});
-        CHECK(empty.status == test_result::fatal_error);
-        CHECK(empty.trace == test_trace().expected_char_class(0, "byte").cancel());
-
-        for (auto i = 0; i < 256; ++i)
-            CHECK(check(rule, "any", "byte", i));
-    }
-    SUBCASE("range")
-    {
-        constexpr auto rule = dsl::byte.range<0x00, 0x10>();
-        CHECK(lexy::is_token_rule<decltype(rule)>);
-        CHECK(equivalent_rules(rule, dsl::bytes<1>.range<0x00, 0x10>()));
-
-        auto empty = LEXY_VERIFY(lexy::byte_encoding{});
-        CHECK(empty.status == test_result::fatal_error);
-        CHECK(empty.trace == test_trace().expected_char_class(0, "byte.range").cancel());
-
-        for (auto i = 0x00; i <= 0x10; ++i)
-            CHECK(check(rule, "token", "byte.range", i));
-        for (auto i = 0x11; i < 256; ++i)
-            CHECK(!check(rule, "token", "byte.range", i));
-    }
-    SUBCASE("set")
-    {
-        constexpr auto rule = dsl::byte.set<0x0, 0x1, 0x2, 0x3>();
-        CHECK(lexy::is_token_rule<decltype(rule)>);
-        CHECK(equivalent_rules(rule, dsl::bytes<1>.set<0x0, 0x1, 0x2, 0x3>()));
-
-        auto empty = LEXY_VERIFY(lexy::byte_encoding{});
-        CHECK(empty.status == test_result::fatal_error);
-        CHECK(empty.trace == test_trace().expected_char_class(0, "byte.set").cancel());
-
-        for (auto i = 0x0; i <= 0x3; ++i)
-            CHECK(check(rule, "token", "byte.set", i));
-        for (auto i = 0x4; i < 256; ++i)
-            CHECK(!check(rule, "token", "byte.set", i));
-    }
-    SUBCASE("ascii")
-    {
-        constexpr auto rule = dsl::byte.ascii();
-        CHECK(lexy::is_token_rule<decltype(rule)>);
-        CHECK(equivalent_rules(rule, dsl::bytes<1>.ascii()));
-
-        auto empty = LEXY_VERIFY(lexy::byte_encoding{});
-        CHECK(empty.status == test_result::fatal_error);
-        CHECK(empty.trace == test_trace().expected_char_class(0, "byte.ASCII").cancel());
-
-        for (auto i = 0x00; i <= 0x7F; ++i)
-            CHECK(check(rule, "token", "byte.ASCII", i));
-        for (auto i = 0x80; i < 256; ++i)
-            CHECK(!check(rule, "token", "byte.ASCII", i));
-    }
+    constexpr auto rule = dsl::byte;
+    CHECK(lexy::is_token_rule<decltype(rule)>);
+    CHECK(equivalent_rules(rule, dsl::bytes<1>));
 }
 
 TEST_CASE("dsl::bytes")
@@ -381,3 +308,4 @@ TEST_CASE("dsl::bint")
         }
     }
 }
+

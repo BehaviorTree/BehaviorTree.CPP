@@ -3,7 +3,6 @@ header: "lexy/input/buffer.hpp"
 entities:
   "lexy::buffer": buffer
   "lexy::make_buffer_from_raw": make_buffer_from_raw
-  "lexy::make_buffer_from_input": make_buffer_from_input
   "lexy::buffer_lexeme": typedefs
   "lexy::buffer_error": typedefs
   "lexy::buffer_error_context": typedefs
@@ -31,9 +30,6 @@ namespace lexy
         //=== construction ===//
         class builder;
 
-        static buffer adopt(const char_type* data, std::size_t size,
-                            MemoryResource* resource = _default-resource_);
-
         constexpr buffer() noexcept;
         constexpr explicit buffer(MemoryResource* resource) noexcept;
 
@@ -53,8 +49,6 @@ namespace lexy
         const char_type* data() const noexcept;
         std::size_t      size() const noexcept;
 
-        const char_type* release() && noexcept;
-
         _reader_ auto reader() const& noexcept;
     };
 }
@@ -72,7 +66,6 @@ The memory resource object passed to the constructor does not propagate during c
 
 TIP: As the buffer owns the input, it can terminate it with the EOF character for encodings that have the same character and integer type.
 This eliminates a branch during parsing, because there is no need to check for the end of the buffer.
-It also enables the use of https://en.wikipedia.org/wiki/SWAR[SWAR] techniques for faster parsing.
 
 === Empty constructors
 
@@ -160,21 +153,6 @@ The constructor allocates memory for `size` code units using `resource`, but doe
 Content can then be written into the memory range `[data(), data() + size())`.
 Once everything has been initialized, `finish()` returns the finalized (and from now on immutable) buffer.
 
-=== Adoption
-
-{{% interface %}}
-----
-static buffer adopt(const char_type* data, std::size_t size,
-                    MemoryResource* resource = _default-resource_);
-
-const char_type* release() && noexcept;
-----
-
-`release()` returns a pointer to the data of the buffer and relinquishes ownership over it;
-`adopt()` reconstructs a buffer object.
-
-NOTE: `data` must be the pointer returned by an earlier call to `release()`, with `size` and `resource` matching the original buffer object.
-
 [#make_buffer_from_raw]
 == Function `lexy::make_buffer_from_raw`
 
@@ -215,27 +193,6 @@ but reinterpreted as code units of the specified {{% encoding %}} and in the spe
 
 {{% godbolt-example "make_buffer" "Treat a memory mapped file as little endian UTF-16" %}}
 
-[#make_buffer_from_input]
-== Function `lexy::make_buffer_from_input`
-
-{{% interface %}}
-----
-namespace lexy
-{
-    template <_input_ Input, typename MemoryResource = _default-resource_>
-    auto make_buffer_from_input(const Input& input, MemoryResource* resource = _default-resource_)
-      -> buffer<_encoding-of-input_<Input>, MemoryResource>;
-}
-----
-
-[.lead]
-Returns a buffer that contains the same characters as the specified input.
-
-The result is a copy of the existing input allocated using the specified resource.
-
-NOTE: Using a buffer as input as opposed can make parsing more efficient,
-as lexy can use specialized algorithms that exploit guarantees the buffer makes.
-
 [#typedefs]
 == Convenience typedefs
 
@@ -252,9 +209,11 @@ namespace lexy
               typename MemoryResource = _default-resource_>
     using buffer_error = error_for<buffer<Encoding, MemoryResource>, Tag>;
 
-    template <_encoding_ Encoding = default_encoding
+    template <typename Production,
+              _encoding_ Encoding = default_encoding
               typename MemoryResource = _default-resource_>
-    using buffer_error_context = error_context<buffer<Encoding, MemoryResource>>;
+    using buffer_error_context = error_context<Production,
+                                      buffer<Encoding, MemoryResource>>;
 }
 ----
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_SCAN_HPP_INCLUDED
@@ -33,13 +33,14 @@ class scanner : public _detail::scanner<scanner<ControlProduction, Input, State,
 {
     using _impl       = _detail::scanner<scanner<ControlProduction, Input, State, ErrorCallback>,
                                    lexy::input_reader<Input>>;
-    using _handler    = lexy::_vh<lexy::input_reader<Input>>;
+    using _handler    = lexy::validate_handler<Input, ErrorCallback>;
     using _production = _scp<ControlProduction>;
 
 public:
-    constexpr explicit scanner(const Input& input, State* state, const ErrorCallback& callback)
-    : _impl(input.reader()), _input(&input), _sink(_get_error_sink(callback)),
-      _cb(_handler(_input, _sink), state, max_recursion_depth<_production>()), _context(&_cb)
+    constexpr explicit scanner(const Input& input, const State* state,
+                               const ErrorCallback& callback)
+    : _impl(input.reader()),
+      _cb(_handler(input, callback), state, max_recursion_depth<_production>()), _context(&_cb)
     {
         _context.on(parse_events::production_start{}, this->position());
     }
@@ -58,8 +59,7 @@ public:
         else
             _context.on(parse_events::production_cancel{}, this->position());
 
-        return LEXY_MOV(_cb.parse_handler)
-            .template get_result<validate_result<ErrorCallback>>(parse_result);
+        return LEXY_MOV(_cb.parse_handler).get_result_void(parse_result);
     }
 
 private:
@@ -68,10 +68,8 @@ private:
         return _context;
     }
 
-    _detail::any_holder<const Input*>                     _input;
-    _detail::any_holder<_error_sink_t<ErrorCallback>>     _sink;
-    _detail::parse_context_control_block<_handler, State> _cb;
-    _pc<_handler, State, _production>                     _context;
+    _detail::parse_context_control_block<_handler> _cb;
+    _pc<_handler, State, _production>              _context;
 
     friend _impl;
 };
@@ -83,14 +81,9 @@ constexpr auto scan(const Input& input, const ErrorCallback& callback)
 }
 
 template <typename ControlProduction = void, typename Input, typename State, typename ErrorCallback>
-constexpr auto scan(const Input& input, State& state, const ErrorCallback& callback)
-{
-    return scanner<ControlProduction, Input, State, ErrorCallback>(input, &state, callback);
-}
-template <typename ControlProduction = void, typename Input, typename State, typename ErrorCallback>
 constexpr auto scan(const Input& input, const State& state, const ErrorCallback& callback)
 {
-    return scanner<ControlProduction, Input, const State, ErrorCallback>(input, &state, callback);
+    return scanner<ControlProduction, Input, State, ErrorCallback>(input, &state, callback);
 }
 } // namespace lexy
 

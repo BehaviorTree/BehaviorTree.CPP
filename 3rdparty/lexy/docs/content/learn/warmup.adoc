@@ -29,20 +29,15 @@ A grammar consists of multiple of those structs; it is recommended to put them a
 ```cpp
 #include <lexy/dsl.hpp> <1>
 
-namespace
-{
 namespace grammar <2>
 {
     namespace dsl = lexy::dsl; <3>
 
     struct color { … }; <4>
 }
-}
 ```
 <1> All DSL objects are defined in `lexy/dsl.hpp`.
 <2> We use a designated namespace to define our grammar.
-    Since the grammar isn't meant to be visible outside the current translation unit, we also put it in an anonymous namespace.
-    This can encourage the compiler to do more aggressive inlining during parsing.
 <3> For convenience, we alias the namespace of the DSL objects.
 <4> Productions are structs.
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/token.hpp>
@@ -34,8 +34,8 @@ const char* token_kind_name(token_kind k)
 } // namespace
 
 template <>
-constexpr auto lexy::token_kind_map_for<::token_kind>
-    = lexy::token_kind_map.map<::token_kind::c>(LEXY_LIT("."));
+constexpr auto lexy::token_kind_map_for<::token_kind> = lexy::token_kind_map.map<::token_kind::c>(
+    LEXY_LIT("."));
 
 TEST_CASE("token_kind")
 {

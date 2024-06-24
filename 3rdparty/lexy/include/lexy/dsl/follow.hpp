@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_FOLLOW_HPP_INCLUDED
@@ -30,12 +30,6 @@ struct _nf : token_base<_nf<Literal, CharClass>>, _lit_base
 
     using lit_case_folding = typename Literal::lit_case_folding;
 
-    template <typename Encoding>
-    static constexpr auto lit_first_char() -> typename Encoding::char_type
-    {
-        return Literal::template lit_first_char<Encoding>();
-    }
-
     template <typename Trie>
     static LEXY_CONSTEVAL std::size_t lit_insert(Trie& trie, std::size_t pos,
                                                  std::size_t char_class)
@@ -49,11 +43,11 @@ struct _nf : token_base<_nf<Literal, CharClass>>, _lit_base
     struct tp
     {
         lexy::token_parser_for<Literal, Reader> impl;
-        typename Reader::marker                 end;
+        typename Reader::iterator               end;
         bool                                    literal_success;
 
         constexpr explicit tp(const Reader& reader)
-        : impl(reader), end(reader.current()), literal_success(false)
+        : impl(reader), end(reader.position()), literal_success(false)
         {}
 
         constexpr bool try_parse(Reader reader)
@@ -67,7 +61,7 @@ struct _nf : token_base<_nf<Literal, CharClass>>, _lit_base
             literal_success = true;
 
             // To match, we must not match the char class now.
-            reader.reset(end);
+            reader.set_position(end);
             if constexpr (std::is_void_v<lit_case_folding>)
             {
                 return !lexy::try_match_token(CharClass{}, reader);
@@ -88,8 +82,7 @@ struct _nf : token_base<_nf<Literal, CharClass>>, _lit_base
             }
             else
             {
-                auto err
-                    = lexy::error<Reader, lexy::follow_restriction>(end.position(), end.position());
+                auto err = lexy::error<Reader, lexy::follow_restriction>(end, end);
                 context.on(_ev::error{}, err);
             }
         }

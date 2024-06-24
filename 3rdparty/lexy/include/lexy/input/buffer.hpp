@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_INPUT_BUFFER_HPP_INCLUDED
@@ -6,7 +6,6 @@
 
 #include <cstring>
 #include <lexy/_detail/memory_resource.hpp>
-#include <lexy/_detail/swar.hpp>
 #include <lexy/error.hpp>
 #include <lexy/input/base.hpp>
 #include <lexy/lexeme.hpp>
@@ -15,21 +14,11 @@ namespace lexy
 {
 // The reader used by the buffer if it can use a sentinel.
 template <typename Encoding>
-class _br : public _detail::swar_reader_base<_br<Encoding>>
+class _br
 {
 public:
     using encoding = Encoding;
     using iterator = const typename Encoding::char_type*;
-
-    struct marker
-    {
-        iterator _it;
-
-        constexpr iterator position() const noexcept
-        {
-            return _it;
-        }
-    };
 
     explicit _br(iterator begin) noexcept : _cur(begin) {}
 
@@ -49,13 +38,9 @@ public:
         return _cur;
     }
 
-    marker current() const noexcept
+    void set_position(iterator new_pos) noexcept
     {
-        return {_cur};
-    }
-    void reset(marker m) noexcept
-    {
-        _cur = m._it;
+        _cur = new_pos;
     }
 
 private:
@@ -66,7 +51,6 @@ private:
 // (i.e. where char_type == int_type).
 LEXY_INSTANTIATION_NEWTYPE(_bra, _br, lexy::ascii_encoding);
 LEXY_INSTANTIATION_NEWTYPE(_br8, _br, lexy::utf8_encoding);
-LEXY_INSTANTIATION_NEWTYPE(_brc, _br, lexy::utf8_char_encoding);
 LEXY_INSTANTIATION_NEWTYPE(_br32, _br, lexy::utf32_encoding);
 
 // Create the appropriate buffer reader.
@@ -77,8 +61,6 @@ constexpr auto _buffer_reader(const typename Encoding::char_type* data)
         return _bra(data);
     else if constexpr (std::is_same_v<Encoding, lexy::utf8_encoding>)
         return _br8(data);
-    else if constexpr (std::is_same_v<Encoding, lexy::utf8_char_encoding>)
-        return _brc(data);
     else if constexpr (std::is_same_v<Encoding, lexy::utf32_encoding>)
         return _br32(data);
     else
@@ -94,14 +76,13 @@ namespace lexy
 template <typename Encoding = default_encoding, typename MemoryResource = void>
 class buffer
 {
-    static_assert(lexy::is_char_encoding<Encoding>);
     static constexpr auto _has_sentinel
         = std::is_same_v<typename Encoding::char_type, typename Encoding::int_type>;
 
 public:
     using encoding  = Encoding;
     using char_type = typename encoding::char_type;
-    static_assert(std::is_trivially_copyable_v<char_type>);
+    static_assert(std::is_trivial_v<char_type>);
 
     //=== constructors ===//
     /// Allows the creation of an uninitialized buffer that is then filled by the user.
@@ -134,17 +115,6 @@ public:
         buffer _buffer;
     };
 
-    static buffer adopt(const char_type* data, std::size_t size,
-                        MemoryResource* resource = _detail::get_memory_resource<MemoryResource>())
-    {
-        buffer result(resource);
-        // We can cast away the const-ness, since we require that `data` came from a buffer
-        // origionally, where it wasn't const.
-        result._data = const_cast<char_type*>(data);
-        result._size = size;
-        return result;
-    }
-
     constexpr buffer() noexcept : buffer(_detail::get_memory_resource<MemoryResource>()) {}
 
     constexpr explicit buffer(MemoryResource* resource) noexcept
@@ -156,8 +126,7 @@ public:
     : _resource(resource), _size(size)
     {
         _data = allocate(size);
-        if (size > 0)
-            std::memcpy(_data, data, size * sizeof(char_type));
+        std::memcpy(_data, data, size * sizeof(char_type));
     }
     explicit buffer(const char_type* begin, const char_type* end,
                     MemoryResource* resource = _detail::get_memory_resource<MemoryResource>())
@@ -204,9 +173,7 @@ public:
             return;
 
         if constexpr (_has_sentinel)
-            _resource->deallocate(_data,
-                                  _detail::round_size_for_swar(_size + 1) * sizeof(char_type),
-                                  alignof(char_type));
+            _resource->deallocate(_data, (_size + 1) * sizeof(char_type), alignof(char_type));
         else
             _resource->deallocate(_data, _size * sizeof(char_type), alignof(char_type));
     }
@@ -253,14 +220,6 @@ public:
         return _size;
     }
 
-    const char_type* release() && noexcept
-    {
-        auto result = _data;
-        _data       = nullptr;
-        _size       = 0;
-        return result;
-    }
-
     //=== input ===//
     auto reader() const& noexcept
     {
@@ -274,21 +233,13 @@ private:
     char_type* allocate(std::size_t size) const
     {
         if constexpr (_has_sentinel)
-        {
-            auto mem_size = _detail::round_size_for_swar(size + 1);
-            auto memory   = static_cast<char_type*>(
-                _resource->allocate(mem_size * sizeof(char_type), alignof(char_type)));
+            ++size;
 
-            for (auto ptr = memory + size; ptr != memory + mem_size; ++ptr)
-                *ptr = encoding::eof();
-
-            return memory;
-        }
-        else
-        {
-            return static_cast<char_type*>(
-                _resource->allocate(size * sizeof(char_type), alignof(char_type)));
-        }
+        auto memory = static_cast<char_type*>(
+            _resource->allocate(size * sizeof(char_type), alignof(char_type)));
+        if constexpr (_has_sentinel)
+            memory[size - 1] = encoding::eof();
+        return memory;
     }
 
     LEXY_EMPTY_MEMBER _detail::memory_resource_ptr<MemoryResource> _resource;
@@ -386,25 +337,6 @@ struct _make_buffer<utf8_encoding, encoding_endianness::bom>
     }
 };
 template <>
-struct _make_buffer<utf8_char_encoding, encoding_endianness::bom>
-{
-    template <typename MemoryResource = void>
-    auto operator()(const void* _memory, std::size_t size,
-                    MemoryResource* resource = _detail::get_memory_resource<MemoryResource>()) const
-    {
-        auto memory = static_cast<const unsigned char*>(_memory);
-
-        // We just skip over the BOM if there is one, it doesn't matter.
-        if (size >= 3 && memory[0] == 0xEF && memory[1] == 0xBB && memory[2] == 0xBF)
-        {
-            memory += 3;
-            size -= 3;
-        }
-
-        return _make_buffer<utf8_char_encoding, encoding_endianness::big>{}(memory, size, resource);
-    }
-};
-template <>
 struct _make_buffer<utf16_encoding, encoding_endianness::bom>
 {
     template <typename MemoryResource = void>
@@ -452,46 +384,6 @@ struct _make_buffer<utf32_encoding, encoding_endianness::bom>
 template <typename Encoding, encoding_endianness Endianness>
 constexpr auto make_buffer_from_raw = _make_buffer<Encoding, Endianness>{};
 
-//=== make_buffer_from_input ===//
-template <typename Input>
-using _detect_input_data = decltype(LEXY_DECLVAL(Input&).data());
-
-template <typename Input, typename MemoryResource = void>
-constexpr auto make_buffer_from_input(const Input&    input,
-                                      MemoryResource* resource
-                                      = _detail::get_memory_resource<MemoryResource>())
-    -> buffer<typename input_reader<Input>::encoding, MemoryResource>
-{
-    using type = buffer<typename input_reader<Input>::encoding, MemoryResource>;
-    if constexpr (_detail::is_detected<_detect_input_data, Input>)
-    {
-        return type(input.data(), input.size(), resource);
-    }
-    else
-    {
-        auto reader = input.reader();
-        auto begin  = reader.position();
-        while (reader.peek() != input_reader<Input>::encoding::eof())
-            reader.bump();
-        auto end = reader.position();
-
-        if constexpr (std::is_pointer_v<decltype(begin)>)
-        {
-            return type(begin, end, resource);
-        }
-        else
-        {
-            auto                   size = _detail::range_size(begin, end);
-            typename type::builder builder(size, resource);
-            auto                   dest = builder.data();
-            for (auto cur = begin; cur != end; ++cur)
-                *dest++ = *cur; // NOLINT: clang-analyzer thinks this might access zero memory for
-                                // some reason?!
-            return LEXY_MOV(builder).finish();
-        }
-    }
-}
-
 //=== convenience typedefs ===//
 template <typename Encoding = default_encoding, typename MemoryResource = void>
 using buffer_lexeme = lexeme_for<buffer<Encoding, MemoryResource>>;
@@ -499,8 +391,8 @@ using buffer_lexeme = lexeme_for<buffer<Encoding, MemoryResource>>;
 template <typename Tag, typename Encoding = default_encoding, typename MemoryResource = void>
 using buffer_error = error_for<buffer<Encoding, MemoryResource>, Tag>;
 
-template <typename Encoding = default_encoding, typename MemoryResource = void>
-using buffer_error_context = error_context<buffer<Encoding, MemoryResource>>;
+template <typename Production, typename Encoding = default_encoding, typename MemoryResource = void>
+using buffer_error_context = error_context<Production, buffer<Encoding, MemoryResource>>;
 } // namespace lexy
 
 #endif // LEXY_INPUT_BUFFER_HPP_INCLUDED

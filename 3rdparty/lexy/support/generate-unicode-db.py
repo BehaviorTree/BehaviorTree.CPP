@@ -5,7 +5,7 @@
 # This compresses very well.
 # The generated arrays themselves are written as string literals, which are more efficiently represented in compilers.
 
-UNICODE_VERSION = '15.0.0'
+UNICODE_VERSION = '14.0.0'
 UCD_URL = f'https://www.unicode.org/Public/{UNICODE_VERSION}/ucd/'
 
 #=== Unicode Database ===#

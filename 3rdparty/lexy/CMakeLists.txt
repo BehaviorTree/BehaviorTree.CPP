@@ -1,8 +1,8 @@
-# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 cmake_minimum_required(VERSION 3.8)
-project(lexy VERSION 2022.12.1 LANGUAGES CXX)
+project(lexy VERSION 2022.05.1 LANGUAGES CXX)
 
 set(LEXY_USER_CONFIG_HEADER "" CACHE FILEPATH "The user config header for lexy.")
 option(LEXY_FORCE_CPP17     "Whether or not lexy should use C++17 even if compiler supports C++20." OFF)
@@ -19,7 +19,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     option(LEXY_ENABLE_INSTALL   "whether or not to enable the install rule" ON)
 
     if(LEXY_BUILD_PACKAGE)
-        set(package_files include/ src/ cmake/ CMakeLists.txt LICENSE)
+        set(package_files include/ src/ CMakeLists.txt LICENSE)
         add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lexy-src.zip
             COMMAND ${CMAKE_COMMAND} -E tar c ${CMAKE_CURRENT_BINARY_DIR}/lexy-src.zip --format=zip -- ${package_files}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -46,7 +46,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
         include(CMakePackageConfigHelpers)
         include(GNUInstallDirs)
 
-        install(TARGETS lexy lexy_core lexy_file lexy_unicode lexy_ext _lexy_base lexy_dev
+        install(TARGETS lexy_core lexy_file lexy_unicode lexy_ext _lexy_base lexy_dev
             EXPORT ${PROJECT_NAME}Targets
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

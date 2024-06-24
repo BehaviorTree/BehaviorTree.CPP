@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_LIST_HPP_INCLUDED
@@ -15,7 +15,7 @@ template <typename Item, typename Sep>
 struct _lst : _copy_base<Item>
 {
     template <typename Context, typename Reader, typename Sink>
-    LEXY_PARSER_FUNC static bool _loop(Context& context, Reader& reader, Sink& sink)
+    static constexpr bool _loop(Context& context, Reader& reader, Sink& sink)
     {
         while (true)
         {
@@ -132,7 +132,8 @@ struct _lst : _copy_base<Item>
 template <typename Item>
 constexpr auto list(Item)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Item, "list() without a separator");
+    static_assert(lexy::is_branch_rule<Item>,
+                  "list() without a separator requires a branch condition");
     return _lst<Item, void>{};
 }
 
@@ -147,7 +148,8 @@ constexpr auto list(Item, _sep<Sep, Tag>)
 template <typename Item, typename Sep>
 constexpr auto list(Item, _tsep<Sep>)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Item, "list() with a trailing separator");
+    static_assert(lexy::is_branch_rule<Item>,
+                  "list() without a trailing separator requires a branch condition");
     return _lst<Item, _tsep<Sep>>{};
 }
 
@@ -183,8 +185,8 @@ struct _lstt : rule_base
     };
 
     template <typename TermParser, typename Context, typename Reader, typename Sink>
-    LEXY_PARSER_FUNC static bool _loop(_state initial_state, TermParser& term, Context& context,
-                                       Reader& reader, Sink& sink)
+    static constexpr bool _loop(_state initial_state, TermParser& term, Context& context,
+                                Reader& reader, Sink& sink)
     {
         auto state = initial_state;
 

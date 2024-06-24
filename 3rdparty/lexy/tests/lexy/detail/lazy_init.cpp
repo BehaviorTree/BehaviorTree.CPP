@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/_detail/lazy_init.hpp>
@@ -8,9 +8,8 @@
 
 namespace
 {
-constexpr auto my_int       = 42;
-constexpr auto my_other_int = 17;
-} // namespace
+constexpr auto my_int = 42;
+}
 
 TEST_CASE("_detail::lazy_init")
 {
@@ -28,15 +27,6 @@ TEST_CASE("_detail::lazy_init")
         }();
         CHECK(emplaced);
         CHECK(*emplaced == 42);
-
-        constexpr auto emplaced_twice = [] {
-            lazy_init result;
-            result.emplace(42);
-            result.emplace(11);
-            return result;
-        }();
-        CHECK(emplaced_twice);
-        CHECK(*emplaced_twice == 11);
 
         constexpr auto emplaced_result = [] {
             lazy_init result;
@@ -61,16 +51,6 @@ TEST_CASE("_detail::lazy_init")
         CHECK(emplaced);
         CHECK(*emplaced == "aaaaa");
         CHECK(emplaced->size() == 5);
-
-        auto emplaced_twice = [] {
-            lazy_init result;
-            result.emplace(5u, 'a');
-            result.emplace(3u, 'b');
-            return result;
-        }();
-        CHECK(emplaced_twice);
-        CHECK(*emplaced_twice == "bbb");
-        CHECK(emplaced_twice->size() == 3);
 
         auto emplaced_result = [] {
             lazy_init result;
@@ -144,16 +124,6 @@ TEST_CASE("_detail::lazy_init")
         CHECK(&*emplaced == &my_int);
         CHECK(emplaced.operator->() == &my_int);
 
-        constexpr auto emplaced_twice = [] {
-            lazy_init result;
-            result.emplace(my_int);
-            result.emplace(my_other_int);
-            return result;
-        }();
-        CHECK(emplaced_twice);
-        CHECK(&*emplaced_twice == &my_other_int);
-        CHECK(emplaced_twice.operator->() == &my_other_int);
-
         constexpr auto emplaced_result = [] {
             lazy_init result;
             result.emplace_result([](int) -> const int& { return my_int; }, 21);
@@ -177,14 +147,6 @@ TEST_CASE("_detail::lazy_init")
             return result;
         }();
         CHECK(emplaced);
-
-        constexpr auto emplaced_twice = [] {
-            lazy_init result;
-            result.emplace();
-            result.emplace();
-            return result;
-        }();
-        CHECK(emplaced_twice);
     }
 }
 

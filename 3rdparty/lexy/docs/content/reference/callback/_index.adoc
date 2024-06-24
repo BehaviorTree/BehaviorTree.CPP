@@ -35,7 +35,7 @@ namespace lexy
 
     template <typename T, typename State, typename ... Args>
     concept _callback-with-state_ = callback<T>
-      && requires(const T& cb, State& state) {
+      && requires(const T& cb, const State& state) {
             { cb[state](std::forward<Args>(args)...) }
               -> std::same_as<typename T::return_type>;
          };

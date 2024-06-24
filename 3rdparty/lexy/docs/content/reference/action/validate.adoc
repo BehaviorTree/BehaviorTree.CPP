@@ -26,12 +26,11 @@ If it is a link:{{< relref "callback#sink" >}}[sink], it must not return `void`.
 Its sink callback must have the signature
 [source,cpp,subs="+quotes"]
 ----
-template <_input_ Input, typename Tag>
-void operator()(const lexy::error_context<Input>& context,
+template <_production_ Production, _input_ Input, typename Tag>
+void operator()(const lexy::error_context<Production, Input>& context,
                 const lexy::error_for<Input, Tag>& error);
 ----
-It will be invoked for each {{% docref "lexy::error" %}} object with the corresponding {{% docref "lexy::error_context" %}};
-errors with generic tag are type-erased prior to invocation.
+It will be invoked for each {{% docref "lexy::error" %}} object with the corresponding {{% docref "lexy::error_context" %}}.
 The final result of the sink, the error list, is then made available.
 
 If it is a link:{{< relref "callback#callback" >}}[callback], it must return `void` with the same signature.
@@ -64,7 +63,7 @@ namespace lexy
 
         constexpr bool is_success()         const noexcept;
         constexpr bool is_error()           const noexcept;
-        constexpr bool is_recovered_error() const noexcept;
+        constexpr bool is_recovered_error() const neoxcept;
         constexpr bool is_fatal_error()     const noexcept;
 
         //=== error list ===//
@@ -92,7 +91,7 @@ constexpr explicit operator bool() const noexcept
 
 constexpr bool is_success()         const noexcept; <1>
 constexpr bool is_error()           const noexcept; <2>
-constexpr bool is_recovered_error() const noexcept; <3>
+constexpr bool is_recovered_error() const neoxcept; <3>
 constexpr bool is_fatal_error()     const noexcept; <4>
 ----
 <1> Returns `true` if parsing succeeded without raising any errors, `false` otherwise.
@@ -124,19 +123,11 @@ If `is_success() == true`, `error_count() == 0` and `errors()` returns the resul
 ----
 namespace lexy
 {
-    template <typename State, typename Input, typename ErrorCallback>
-    struct validate_action;
-
     template <_production_ Production>
     constexpr auto validate(const _input_ auto& input,
                             _error-callback_ auto error_callback)
       -> validate_result<decltype(error_callback)>;
 
-    template <_production_ Production, typename ParseState>
-    constexpr auto validate(const _input_ auto& input,
-                            ParseState& state,
-                            _error-callback_ auto error_callback)
-      -> validate_result<decltype(error_callback)>;
     template <_production_ Production, typename ParseState>
     constexpr auto validate(const _input_ auto& input,
                             const ParseState& state,

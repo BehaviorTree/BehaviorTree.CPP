@@ -18,19 +18,11 @@ Visualize the parsing process.
 ----
 namespace lexy
 {
-    template <typename State, typename Input, typename OutputIt, typename TokenKind = void>
-    struct trace_action;
-
     template <_production_ Production, typename TokenKind = void,
               std::output_iterator<char> OutputIt>
     OutputIt trace_to(OutputIt out, const auto _input_& input,
                       visualization_options opts = {});
 
-    template <_production_ Production, typename TokenKind = void,
-              std::output_iterator<char> OutputIt, typename ParseState>
-    OutputIt trace_to(OutputIt out, const auto _input_& input,
-                      ParseState& parse_state,
-                      visualization_options opts = {});
     template <_production_ Production, typename TokenKind = void,
               std::output_iterator<char> OutputIt, typename ParseState>
     OutputIt trace_to(OutputIt out, const auto _input_& input,
@@ -41,11 +33,6 @@ namespace lexy
     void trace(std::FILE* file, const auto _input_& input,
                visualization_options opts = {});
 
-    template <_production_ Production, typename TokenKind = void,
-              typename ParseState>
-    void trace(std::FILE* file, const auto _input_& input,
-               ParseState& parse_state,
-               visualization_options opts = {});
     template <_production_ Production, typename TokenKind = void,
               typename ParseState>
     void trace(std::FILE* file, const auto _input_& input,

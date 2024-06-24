@@ -67,14 +67,14 @@ int main(int, char* argv[])
                     lexy::visualize_to(print_quoted_iterator{}, node.lexeme(),
                                        {lexy::visualize_use_unicode | lexy::visualize_use_symbols
                                         | lexy::visualize_space});
-                    std::printf("\", style=filled");
+                    std::puts("\", style=filled");
                 }
 
-                std::printf(", shape=ellipse");
+                std::puts("shape=box");
                 if (node.kind() == lexy::error_token_kind)
-                    std::printf(", fontcolor=red");
+                    std::puts(", fontcolor=red");
                 else if (node.kind() == lexy::whitespace_token_kind)
-                    std::printf(", fontcolor=gray30");
+                    std::puts(", fontcolor=gray30");
                 std::printf(", tooltip=\"%s\"", node.kind().name());
                 std::puts("];");
                 break;

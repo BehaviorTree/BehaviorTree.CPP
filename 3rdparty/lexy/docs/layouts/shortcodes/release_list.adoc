@@ -1,9 +1,10 @@
 {{ range sort $.Site.Data.tags "date" "desc" }}
-+++<h2> {{ .name }} {{ if .prerelease }} <i>{{ (resources.Get "icons/beta.svg").Content | safeHTML }} {{ end }}</i> </h2>+++
-+++<i>{{ (resources.Get "icons/calender.svg").Content | safeHTML }}</i>+++ {{ .date | time.Format "2006-01-02" }}
-+++<i>{{ (resources.Get "icons/github.svg").Content | safeHTML }}</i>+++ link:{{ .url }}[Github]
-+++<i>{{ (resources.Get "icons/download.svg").Content | safeHTML }}</i>+++ link:{{ .download }}[Download]
-+++<i>{{ (resources.Get "icons/license.svg").Content | safeHTML }}</i>+++ link:https://opensource.org/licenses/BSL-1.0/[BSL-1.0]
+== {{ .name }} +++{{ if .prerelease }} {{ (resources.Get "icons/beta.svg").Content | safeHTML }} {{ end }}+++
+
++++{{ (resources.Get "icons/calender.svg").Content | safeHTML }}+++ {{ default (now) .date | time.Format "2006-01-02" }}
++++{{ (resources.Get "icons/github.svg").Content | safeHTML }}+++ link:{{ .url }}[Github]
++++{{ (resources.Get "icons/download.svg").Content | safeHTML }}+++ link:{{ .download }}[Download]
++++{{ (resources.Get "icons/license.svg").Content | safeHTML }}+++ link:https://opensource.org/licenses/BSL-1.0/[BSL-1.0]
 
 ```cmake
 include(FetchContent)

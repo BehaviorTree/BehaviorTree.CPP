@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/production.hpp>
@@ -59,8 +59,7 @@ TEST_CASE("dsl::p")
                            .production("production")
                            .literal("a")
                            .position()
-                           .expected_literal(1, "bc", 0)
-                           .recovery();
+                           .expected_literal(1, "bc", 0);
         CHECK(a.status == test_result::recovered_error);
         CHECK(a.value == 1);
         CHECK(a.trace == a_trace);
@@ -70,8 +69,7 @@ TEST_CASE("dsl::p")
                             .literal("a")
                             .position()
                             .error_token("b")
-                            .expected_literal(1, "bc", 1)
-                            .recovery();
+                            .expected_literal(1, "bc", 1);
         CHECK(ab.status == test_result::recovered_error);
         CHECK(ab.value == 1);
         CHECK(ab.trace == ab_trace);
@@ -108,8 +106,7 @@ TEST_CASE("dsl::p")
                            .production("production")
                            .literal("a")
                            .position()
-                           .expected_literal(1, "bc", 0)
-                           .recovery();
+                           .expected_literal(1, "bc", 0);
         CHECK(a.status == test_result::recovered_error);
         CHECK(a.value == 1);
         CHECK(a.trace == a_trace);
@@ -119,8 +116,7 @@ TEST_CASE("dsl::p")
                             .literal("a")
                             .position()
                             .error_token("b")
-                            .expected_literal(1, "bc", 1)
-                            .recovery();
+                            .expected_literal(1, "bc", 1);
         CHECK(ab.status == test_result::recovered_error);
         CHECK(ab.value == 1);
         CHECK(ab.trace == ab_trace);
@@ -167,8 +163,7 @@ TEST_CASE("dsl::p")
                            .production("production")
                            .literal("a")
                            .position()
-                           .expected_literal(1, "bc", 0)
-                           .recovery();
+                           .expected_literal(1, "bc", 0);
         CHECK(a.status == test_result::recovered_error);
         CHECK(a.value == 1);
         CHECK(a.trace == a_trace);
@@ -179,8 +174,7 @@ TEST_CASE("dsl::p")
                             .literal("a")
                             .position()
                             .error_token("b")
-                            .expected_literal(1, "bc", 1)
-                            .recovery();
+                            .expected_literal(1, "bc", 1);
         CHECK(ab.status == test_result::recovered_error);
         CHECK(ab.value == 1);
         CHECK(ab.trace == ab_trace);
@@ -302,7 +296,7 @@ TEST_CASE("dsl::recurse")
         {};
 
         constexpr auto callback = lexy::callback<int>([](const char*) { return 0; },
-                                                      [](const char*, inner*) { return 1; });
+                                                      [](const char*, inner) { return 1; });
 
         auto empty = LEXY_VERIFY_P(production, "");
         CHECK(empty.status == test_result::success);
@@ -346,7 +340,7 @@ TEST_CASE("dsl::recurse")
         struct production : test_production_for<decltype(dsl::recurse<inner>)>, with_whitespace
         {};
 
-        constexpr auto callback = [](const char*, inner*) { return 0; };
+        constexpr auto callback = [](const char*, inner) { return 0; };
 
         auto empty = LEXY_VERIFY_P(production, "");
         CHECK(empty.status == test_result::fatal_error);
@@ -392,7 +386,7 @@ TEST_CASE("dsl::recurse")
         {};
 
         constexpr auto callback = lexy::callback<int>([](const char*) { return 0; },
-                                                      [](const char*, inner*) { return 1; });
+                                                      [](const char*, inner) { return 1; });
 
         auto empty = LEXY_VERIFY_P(production, "");
         CHECK(empty.status == test_result::success);

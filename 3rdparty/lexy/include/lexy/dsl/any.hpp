@@ -1,10 +1,9 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_ANY_HPP_INCLUDED
 #define LEXY_DSL_ANY_HPP_INCLUDED
 
-#include <lexy/_detail/swar.hpp>
 #include <lexy/dsl/base.hpp>
 #include <lexy/dsl/token.hpp>
 
@@ -15,24 +14,15 @@ struct _any : token_base<_any, unconditional_branch_base>
     template <typename Reader>
     struct tp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr std::true_type try_parse(Reader reader)
         {
-            using encoding = typename Reader::encoding;
-            if constexpr (lexy::_detail::is_swar_reader<Reader>)
-            {
-                while (!lexy::_detail::swar_has_char<typename encoding::char_type, encoding::eof()>(
-                    reader.peek_swar()))
-                    reader.bump_swar();
-            }
-
-            while (reader.peek() != encoding::eof())
+            while (reader.peek() != Reader::encoding::eof())
                 reader.bump();
-
-            end = reader.current();
+            end = reader.position();
             return {};
         }
     };

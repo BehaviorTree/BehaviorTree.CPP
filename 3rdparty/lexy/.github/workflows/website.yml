@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
     - name: Install asciidoctor
       run: sudo gem install asciidoctor pygments.rb
     - name: Install hugo

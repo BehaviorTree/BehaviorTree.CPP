@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/capture.hpp>
@@ -104,7 +104,7 @@ TEST_CASE("dsl::capture(token_production)")
         constexpr auto rule = dsl::capture(dsl::p<prod>);
         CHECK(lexy::is_branch_rule<decltype(rule)>);
 
-        constexpr auto callback = [](const char* begin, lexy::string_lexeme<> lex, prod*) {
+        constexpr auto callback = [](const char* begin, lexy::string_lexeme<> lex, prod) {
             CHECK(lex.begin() == begin);
             CHECK(lex.size() == 3);
             CHECK(lex[0] == 'a');
@@ -141,7 +141,7 @@ TEST_CASE("dsl::capture(token_production)")
 
         constexpr auto callback
             = lexy::callback<int>([](const char*) { return 0; },
-                                  [](const char* begin, lexy::string_lexeme<> lex, prod*) {
+                                  [](const char* begin, lexy::string_lexeme<> lex, prod) {
                                       CHECK(lex.begin() == begin);
                                       CHECK(lex.size() == 3);
                                       CHECK(lex[0] == 'a');

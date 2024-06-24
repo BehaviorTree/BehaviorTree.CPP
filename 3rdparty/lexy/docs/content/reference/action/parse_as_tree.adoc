@@ -12,10 +12,6 @@ entities:
 ----
 namespace lexy
 {
-    template <typename State, typename Input, typename ErrorCallback,
-              typename TokenKind = void, typename MemoryResource = _default-resource_>
-    struct parse_as_tree_action;
-
     template <_production_ Production,
               typename TK, typename MemRes,
               _input_ Input>
@@ -23,12 +19,6 @@ namespace lexy
                        const Input& input, _error-callback_ auto error_callback)
         -> validate_result<decltype(error_callback)>;
 
-    template <_production_ Production,
-              typename TK, typename MemRes,
-              _input_ Input, typename ParseState>
-    auto parse_as_tree(parse_tree<lexy::input_reader<Input>, TK, MemRes>& tree,
-                       const Input& input, ParseState& parse_state, _error-callback_ auto error_callback)
-        -> validate_result<decltype(error_callback)>;
     template <_production_ Production,
               typename TK, typename MemRes,
               _input_ Input, typename ParseState>
@@ -54,6 +44,4 @@ If a token rule has an ignorable {{% docref "lexy::token_kind" %}} and matches w
 
 The resulting parse tree is a lossless representation of the input:
 Traversing all token nodes of the tree and concatenating their {{% docref "lexy::lexeme" %}}s will yield the same input back.
-Any remaining input that was not parsed by the production is stored in the tree's `remaining_input()` {{% docref "lexy::lexeme" %}};
-if the remaining input is empty, both iterators will point to the end of the input.
 

@@ -1,11 +1,9 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/input/buffer.hpp>
 
 #include <doctest/doctest.h>
-#include <lexy/input/argv_input.hpp>
-#include <lexy/input/string_input.hpp>
 
 #if defined(__has_include) && __has_include(<memory_resource>)
 #    include <memory_resource>
@@ -200,19 +198,6 @@ TEST_CASE("buffer")
         CHECK(other.size() == 0);
     }
 
-    SUBCASE("release and adopt")
-    {
-        lexy::buffer buffer(str, 3);
-        verify(buffer);
-
-        auto data = buffer.data();
-        auto ptr  = LEXY_MOV(buffer).release();
-        CHECK(ptr == data);
-
-        buffer = decltype(buffer)::adopt(ptr, 3);
-        verify(buffer);
-    }
-
     SUBCASE("reader, no sentinel")
     {
         const lexy::buffer buffer(str, 3);
@@ -253,32 +238,9 @@ TEST_CASE("buffer")
         CHECK(reader.position() == buffer.data() + 3);
         CHECK(reader.peek() == lexy::ascii_encoding::eof());
     }
-    SUBCASE("reader, sentinel, swar")
-    {
-        REQUIRE(sizeof(lexy::_detail::swar_int) == 8);
-
-        const char str[]
-            = {'\x00', '\x11', '\x22', '\x33', '\x44', '\x55', '\x66', '\x77', '\x88', '\x99'};
-        const lexy::buffer<lexy::utf8_encoding> buffer(str, sizeof(str));
-
-        auto reader = buffer.reader();
-        CHECK(reader.position() == buffer.data());
-        CHECK(reader.peek() == 0x00);
-        CHECK(reader.peek_swar() == 0x7766554433221100);
-
-        reader.bump_swar();
-        CHECK(reader.position() == buffer.data() + 8);
-        CHECK(reader.peek() == 0x88);
-        CHECK(reader.peek_swar() == 0xFFFFFFFFFFFF9988);
-
-        reader.bump_swar();
-        CHECK(reader.position() == buffer.data() + 16);
-        CHECK(reader.peek() == 0xFF);
-        CHECK(reader.peek_swar() == 0xFFFFFFFFFFFFFFFF);
-    }
 }
 
-TEST_CASE("make_buffer_from_raw")
+TEST_CASE("make_buffer")
 {
     const unsigned char no_bom_str[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77};
 
@@ -458,75 +420,6 @@ TEST_CASE("make_buffer_from_raw")
                                                                          sizeof(big_bom_str));
         CHECK(big_bom.size() == 1);
         CHECK(big_bom.data()[0] == 0x00112233);
-    }
-}
-
-TEST_CASE("make_buffer_from_input")
-{
-    SUBCASE("input with data/size")
-    {
-        auto input = lexy::zstring_input("abc");
-
-        auto default_resource = lexy::make_buffer_from_input(input);
-        CHECK(default_resource.size() == 3);
-        CHECK(default_resource.data()[0] == 'a');
-        CHECK(default_resource.data()[1] == 'b');
-        CHECK(default_resource.data()[2] == 'c');
-
-#if LEXY_HAS_RESOURCE
-        auto resource = lexy::make_buffer_from_input(input, std::pmr::new_delete_resource());
-        CHECK(resource.size() == 3);
-        CHECK(resource.data()[0] == 'a');
-        CHECK(resource.data()[1] == 'b');
-        CHECK(resource.data()[2] == 'c');
-#endif
-    }
-    SUBCASE("pointer reader")
-    {
-        auto input = [&] {
-            auto input = lexy::zstring_input("abc");
-            return lexy::partial_input(input.reader(), input.data() + input.size());
-        }();
-
-        auto default_resource = lexy::make_buffer_from_input(input);
-        CHECK(default_resource.size() == 3);
-        CHECK(default_resource.data()[0] == 'a');
-        CHECK(default_resource.data()[1] == 'b');
-        CHECK(default_resource.data()[2] == 'c');
-
-#if LEXY_HAS_RESOURCE
-        auto resource = lexy::make_buffer_from_input(input, std::pmr::new_delete_resource());
-        CHECK(resource.size() == 3);
-        CHECK(resource.data()[0] == 'a');
-        CHECK(resource.data()[1] == 'b');
-        CHECK(resource.data()[2] == 'c');
-#endif
-    }
-    SUBCASE("input with custom iterator")
-    {
-        char  program[] = "IGNORED";
-        char  first[]   = "ab";
-        char  second[]  = "c";
-        char* argv[]    = {program, first, second, nullptr};
-        int   argc      = 3;
-
-        auto input = lexy::argv_input(argc, argv);
-
-        auto default_resource = lexy::make_buffer_from_input(input);
-        CHECK(default_resource.size() == 4);
-        CHECK(default_resource.data()[0] == 'a');
-        CHECK(default_resource.data()[1] == 'b');
-        CHECK(default_resource.data()[2] == '\0');
-        CHECK(default_resource.data()[3] == 'c');
-
-#if LEXY_HAS_RESOURCE
-        auto resource = lexy::make_buffer_from_input(input, std::pmr::new_delete_resource());
-        CHECK(resource.size() == 4);
-        CHECK(resource.data()[0] == 'a');
-        CHECK(resource.data()[1] == 'b');
-        CHECK(resource.data()[2] == '\0');
-        CHECK(resource.data()[3] == 'c');
-#endif
     }
 }
 

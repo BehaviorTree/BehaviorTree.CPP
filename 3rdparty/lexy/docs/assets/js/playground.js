@@ -26,7 +26,7 @@ export function list_of_productions(source)
 {
     var result = [];
 
-    const regex = /(struct|class|using) ([a-zA-Z0-9_]+)/g;
+    const regex = /(struct|class) ([a-zA-Z0-9_]+)/g;
     var match = undefined;
     while (match = regex.exec(source))
         result.push(match[2]);

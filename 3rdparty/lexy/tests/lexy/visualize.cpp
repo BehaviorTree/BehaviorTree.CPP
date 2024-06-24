@@ -1,11 +1,10 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/visualize.hpp>
 
 #include <doctest/doctest.h>
 #include <iterator>
-#include <lexy/dsl/any.hpp>
 #include <lexy/input/string_input.hpp>
 #include <lexy/parse_tree.hpp>
 #include <string>
@@ -175,12 +174,10 @@ const char* token_kind_name(token_kind k)
 struct child_p : lexy::token_production
 {
     static constexpr auto name = "child_p";
-    static constexpr auto rule = lexy::dsl::any;
 };
 struct root_p
 {
     static constexpr auto name = "root_p";
-    static constexpr auto rule = lexy::dsl::any;
 };
 } // namespace
 
@@ -207,7 +204,7 @@ TEST_CASE("visualize parse_tree")
 
         builder.token(lexy::eof_token_kind, input.data() + 14, input.data() + 14);
 
-        return LEXY_MOV(builder).finish(input.data() + 14);
+        return LEXY_MOV(builder).finish();
     }();
     CHECK(!tree.empty());
 

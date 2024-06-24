@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_TUPLE_HPP_INCLUDED
@@ -32,17 +32,6 @@ struct _nth_type<0, H, T...>
     using type = H;
 };
 
-template <typename T>
-struct _tuple_get_type
-{
-    using type = T&;
-};
-template <typename T>
-struct _tuple_get_type<T&&>
-{
-    using type = T&&;
-};
-
 template <typename Indices, typename... T>
 class _tuple;
 template <std::size_t... Idx, typename... T>
@@ -70,20 +59,16 @@ struct tuple : _tuple<index_sequence_for<T...>, T...>
     using element_type = typename _nth_type<N, T...>::type;
 
     template <std::size_t N>
-    constexpr decltype(auto) get() noexcept
+    constexpr auto get() noexcept -> element_type<N>&
     {
         // NOLINTNEXTLINE: this is fine.
-        auto&& holder = static_cast<_tuple_holder<N, element_type<N>>&>(*this);
-        // NOLINTNEXTLINE
-        return static_cast<typename _tuple_get_type<element_type<N>>::type>(holder.value);
+        return static_cast<_tuple_holder<N, element_type<N>>&>(*this).value;
     }
     template <std::size_t N>
-    constexpr decltype(auto) get() const noexcept
+    constexpr auto get() const noexcept -> const element_type<N>&
     {
         // NOLINTNEXTLINE: this is fine.
-        auto&& holder = static_cast<const _tuple_holder<N, element_type<N>>&>(*this);
-        // NOLINTNEXTLINE
-        return static_cast<typename _tuple_get_type<const element_type<N>>::type>(holder.value);
+        return static_cast<const _tuple_holder<N, element_type<N>>&>(*this).value;
     }
 
     static constexpr auto index_sequence()

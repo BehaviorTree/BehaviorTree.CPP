@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_INPUT_ARGV_INPUT_HPP_INCLUDED
@@ -121,9 +121,9 @@ class argv_input
 public:
     using encoding  = Encoding;
     using char_type = typename encoding::char_type;
-    static_assert(std::is_same_v<char_type, char>
-                      || Encoding::template is_secondary_char_type<char>(),
-                  "invalid encoding for argv");
+    static_assert(
+        std::is_same_v<char_type, char> || Encoding::template is_secondary_char_type<char>(),
+        "invalid encoding for argv");
 
     //=== constructors ===//
     constexpr argv_input() = default;
@@ -147,7 +147,7 @@ private:
     argv_iterator _begin, _end;
 };
 
-argv_input(int argc, char* argv[]) -> argv_input<>;
+argv_input(int argc, char* argv[])->argv_input<>;
 } // namespace lexy
 
 namespace lexy
@@ -158,8 +158,8 @@ using argv_lexeme = lexeme_for<argv_input<Encoding>>;
 template <typename Tag, typename Encoding = default_encoding>
 using argv_error = error_for<argv_input<Encoding>, Tag>;
 
-template <typename Encoding = default_encoding>
-using argv_error_context = error_context<argv_input<Encoding>>;
+template <typename Production, typename Encoding = default_encoding>
+using argv_error_context = error_context<Production, argv_input<Encoding>>;
 } // namespace lexy
 
 namespace lexyd
@@ -169,9 +169,9 @@ struct _argvsep : token_base<_argvsep>
     template <typename Reader>
     struct tp
     {
-        typename Reader::marker end;
+        typename Reader::iterator end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
 
         constexpr auto try_parse([[maybe_unused]] Reader reader)
         {
@@ -182,7 +182,7 @@ struct _argvsep : token_base<_argvsep>
                     return false;
 
                 reader.bump();
-                end = reader.current();
+                end = reader.position();
                 return true;
             }
             else

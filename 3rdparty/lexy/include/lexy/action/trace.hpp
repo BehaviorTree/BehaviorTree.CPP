@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_TRACE_HPP_INCLUDED
@@ -303,41 +303,37 @@ private:
 namespace lexy
 {
 template <typename OutputIt, typename Input, typename TokenKind = void>
-class _th
+class trace_handler
 {
 public:
-    explicit _th(OutputIt out, const Input& input, visualization_options opts = {}) noexcept
+    explicit trace_handler(OutputIt out, const Input& input,
+                           visualization_options opts = {}) noexcept
     : _writer(out, opts), _input(&input), _anchor(input)
     {
         LEXY_PRECONDITION(opts.max_tree_depth <= visualization_options::max_tree_depth_limit);
     }
 
+    template <typename Production>
     class event_handler
     {
         using iterator = typename lexy::input_reader<Input>::iterator;
 
     public:
-        constexpr event_handler(production_info info) : _info(info) {}
-
-        void on(_th&, parse_events::grammar_start, iterator) {}
-        void on(_th&, parse_events::grammar_finish, lexy::input_reader<Input>&) {}
-        void on(_th&, parse_events::grammar_cancel, lexy::input_reader<Input>&) {}
-
-        void on(_th& handler, parse_events::production_start, iterator pos)
+        void on(trace_handler& handler, parse_events::production_start, iterator pos)
         {
             auto loc = handler.get_location(pos);
-            handler._writer.write_production_start(loc, _info.name);
+            handler._writer.write_production_start(loc, lexy::production_name<Production>());
 
             // All events for the production are after the initial event.
             _previous_anchor.emplace(handler._anchor);
             handler._anchor = loc.anchor();
         }
-        void on(_th& handler, parse_events::production_finish, iterator pos)
+        void on(trace_handler& handler, parse_events::production_finish, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_finish(loc);
         }
-        void on(_th& handler, parse_events::production_cancel, iterator pos)
+        void on(trace_handler& handler, parse_events::production_cancel, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_cancel(loc);
@@ -346,68 +342,67 @@ public:
             handler._anchor = *_previous_anchor;
         }
 
-        int on(_th& handler, parse_events::operation_chain_start, iterator pos)
+        int on(trace_handler& handler, parse_events::operation_chain_start, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_production_start(loc, "operation chain");
             return 0; // need to return something
         }
         template <typename Operation>
-        void on(_th& handler, parse_events::operation_chain_op, Operation, iterator pos)
+        void on(trace_handler& handler, parse_events::operation_chain_op, Operation, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_operation(loc, lexy::production_name<Operation>());
         }
-        void on(_th& handler, parse_events::operation_chain_finish, int, iterator pos)
+        void on(trace_handler& handler, parse_events::operation_chain_finish, int, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_finish(loc);
         }
 
         template <typename TK>
-        void on(_th& handler, parse_events::token, TK kind, iterator begin, iterator end)
+        void on(trace_handler& handler, parse_events::token, TK kind, iterator begin, iterator end)
         {
             auto loc = handler.get_location(begin);
             handler._writer.write_token(loc, token_kind<TokenKind>(kind),
                                         lexeme_for<Input>(begin, end));
         }
-        void on(_th& handler, parse_events::backtracked, iterator begin, iterator end)
+        void on(trace_handler& handler, parse_events::backtracked, iterator begin, iterator end)
         {
             auto loc = handler.get_location(begin);
             handler._writer.write_backtrack(loc, lexeme_for<Input>(begin, end));
         }
 
         template <typename Error>
-        void on(_th& handler, parse_events::error, const Error& error)
+        void on(trace_handler& handler, parse_events::error, const Error& error)
         {
             auto loc = handler.get_location(error.position());
             handler._writer.write_error(loc, error);
         }
 
-        void on(_th& handler, parse_events::recovery_start, iterator pos)
+        void on(trace_handler& handler, parse_events::recovery_start, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_recovery_start(loc);
         }
-        void on(_th& handler, parse_events::recovery_finish, iterator pos)
+        void on(trace_handler& handler, parse_events::recovery_finish, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_finish(loc);
         }
-        void on(_th& handler, parse_events::recovery_cancel, iterator pos)
+        void on(trace_handler& handler, parse_events::recovery_cancel, iterator pos)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_cancel(loc);
         }
 
-        void on(_th& handler, parse_events::debug, iterator pos, const char* str)
+        void on(trace_handler& handler, parse_events::debug, iterator pos, const char* str)
         {
             auto loc = handler.get_location(pos);
             handler._writer.write_debug(loc, str);
         }
 
     private:
-        production_info _info;
         // The beginning of the previous production.
         // If the current production gets canceled, it needs to be restored.
         _detail::lazy_init<input_location_anchor<Input>> _previous_anchor;
@@ -416,8 +411,7 @@ public:
     template <typename Production, typename State>
     using value_callback = _detail::void_value_callback;
 
-    template <typename>
-    constexpr OutputIt get_result(bool) &&
+    constexpr OutputIt get_result_void(bool) &&
     {
         return LEXY_MOV(_writer).finish();
     }
@@ -434,66 +428,28 @@ private:
     input_location_anchor<Input> _anchor;
 };
 
-template <typename State, typename Input, typename OutputIt, typename TokenKind = void>
-struct trace_action
-{
-    OutputIt              _out;
-    visualization_options _opts;
-    State*                _state = nullptr;
-
-    using handler = _th<OutputIt, Input>;
-    using state   = State;
-    using input   = Input;
-
-    template <typename>
-    using result_type = OutputIt;
-
-    constexpr explicit trace_action(OutputIt out, visualization_options opts = {})
-    : _out(out), _opts(opts)
-    {}
-    template <typename U = State>
-    constexpr explicit trace_action(U& state, OutputIt out, visualization_options opts = {})
-    : _out(out), _opts(opts), _state(&state)
-    {}
-
-    template <typename Production>
-    constexpr auto operator()(Production, const Input& input) const
-    {
-        auto reader = input.reader();
-        return lexy::do_action<Production, result_type>(handler(_out, input, _opts), _state,
-                                                        reader);
-    }
-};
-
 template <typename Production, typename TokenKind = void, typename OutputIt, typename Input>
 OutputIt trace_to(OutputIt out, const Input& input, visualization_options opts = {})
 {
-    return trace_action<void, Input, OutputIt, TokenKind>(out, opts)(Production{}, input);
+    auto reader = input.reader();
+    return lexy::do_action<Production>(trace_handler<OutputIt, Input, TokenKind>(out, input, opts),
+                                       no_parse_state, reader);
 }
+
 template <typename Production, typename TokenKind = void, typename OutputIt, typename Input,
-          typename State>
-OutputIt trace_to(OutputIt out, const Input& input, State& state, visualization_options opts = {})
-{
-    return trace_action<State, Input, OutputIt, TokenKind>(state, out, opts)(Production{}, input);
-}
-template <typename Production, typename TokenKind = void, typename OutputIt, typename Input,
-          typename State>
-OutputIt trace_to(OutputIt out, const Input& input, const State& state,
+          typename ParseState>
+OutputIt trace_to(OutputIt out, const Input& input, const ParseState& state,
                   visualization_options opts = {})
 {
-    return trace_action<const State, Input, OutputIt, TokenKind>(state, out, opts)(Production{},
-                                                                                   input);
+    auto reader = input.reader();
+    return lexy::do_action<Production>(trace_handler<OutputIt, Input, TokenKind>(out, input, opts),
+                                       &state, reader);
 }
 
 template <typename Production, typename TokenKind = void, typename Input>
 void trace(std::FILE* file, const Input& input, visualization_options opts = {})
 {
     trace_to<Production, TokenKind>(cfile_output_iterator{file}, input, opts);
-}
-template <typename Production, typename TokenKind = void, typename Input, typename State>
-void trace(std::FILE* file, const Input& input, State& state, visualization_options opts = {})
-{
-    trace_to<Production, TokenKind>(cfile_output_iterator{file}, input, state, opts);
 }
 template <typename Production, typename TokenKind = void, typename Input, typename State>
 void trace(std::FILE* file, const Input& input, const State& state, visualization_options opts = {})

@@ -23,9 +23,6 @@ namespace lexy
     template <_reader_ Reader, typename Tag>
     class error;
 
-    template <_reader_ Reader>
-    class error<Reader, void>;
-
     struct expected_literal {};
     template <_reader_ Reader>
     class error<Reader, expected_literal>;
@@ -49,30 +46,18 @@ Represents a parse error.
 Different kinds of errors are identified by the `Tag`, which is an empty tag type.
 The error type is specialized for three tags.
 
-An `error<R1, T>` is implicitly convertible to an `error<R2, T>` as long as the `R1::iterator` and `R2::iterator` are the same type.
-
-=== Generic error (primary template, `void`)
+=== Generic error (primary template)
 
 {{% interface %}}
 ----
 template <_reader_ Reader, typename Tag>
-class error : public error<Reader, void>
+class error
 {
     using _iterator_ = typename Reader::iterator;
 
 public:
     constexpr explicit error(_iterator_ begin, _iterator_ end) noexcept;
-    constexpr explicit error(_iterator_ pos) noexcept;
-};
-
-template <_reader_ Reader>
-class error<void>
-{
-    using _iterator_ = typename Reader::iterator;
-
-public:
-    constexpr explicit error(_iterator_ begin, _iterator_ end, const char* msg) noexcept;
-    constexpr explicit error(_iterator_ pos, const char* msg) noexcept
+    constexpr explicit error(_iterator_ pos) noexcept
     : error(pos, pos)
     {}
 
@@ -85,9 +70,6 @@ public:
     constexpr _iterator_ end() const noexcept;
 
     constexpr const char* message() const noexcept;
-
-    template <typename Tag>
-    constexpr bool is(Tag) const noexcept;
 };
 ----
 
@@ -97,7 +79,7 @@ A generic error without additional data.
 `position()` is the position where the error occurred, while `begin()` and `end()` return the entire range.
 For some errors, this range is empty.
 
-`message()` is determined by `Tag` (if typed) or the constructor argument (if type-erased).
+`message()` is determined by `Tag`.
 By default, it is the type name of `Tag` after removing the top-level namespace.
 This can be overridden by `Tag::name()` or `Tag::name`.
 
@@ -221,17 +203,19 @@ This happens in rules like {{% docref "lexy::dsl::ascii" %}} or {{% docref "lexy
 ----
 namespace lexy
 {
-    template <_input_ Input>
+    template <_production_ Production, _input_ Input>
     class error_context
     {
         using _iterator_  = typename input_reader<Reader>::iterator;
 
     public:
-        constexpr explicit error_context(production_info production,
+        constexpr explicit error_context(const Input& input,
+                                         _iterator_ pos) noexcept;
+        constexpr explicit error_context(Production,
                                          const Input& input,
                                          _iterator_ pos) noexcept;
 
-        const char* production() const noexcept;
+        static consteval const char* production() noexcept;
 
         constexpr const Input& input() const noexcept;
 
@@ -249,7 +233,6 @@ Contains additional information about an error.
   This allows correct computation of the {{% docref "lexy::input_location" %}}.
 `production()`::
   The name of the production where the error occurred, i.e. {{% docref "lexy::production_name" %}}.
-  This is the first non-{{% docref "lexy::transparent_production" %}} parent of the current production.
 `position()`::
-  The position where it started to parse the production.
+  The position where it started to parse `Production`.
 

@@ -28,7 +28,7 @@ They include {{% docref "lexy::dsl::lit" %}} and variants, but also {{% docref "
 Each literal rule has the same parsing behavior, unless otherwise specified:
 
 Requires::
-  * The {{% encoding %}} of the input is a char encoding and compatible with the char type of the rule:
+  * The {{% encoding %}} of the input must be compatible with the char type of the rule:
     Either the char type is the same as the char type of the encoding, or the literal rule matches only ASCII characters.
   * If it attempts to match a non-ASCII character, the encoding must be UTF-8, UTF-16, or UTF-32.
 Matching::
@@ -191,6 +191,4 @@ This can shorten type names in error messages.
 
 NOTE: The implementation uses a https://en.wikipedia.org/wiki/Trie[trie] to match them efficiently,
 instead of trying one after the other.
-
-TIP: If you want to match a set of literals but also get information about which one matched, use {{% docref "lexy::dsl::symbol" %}} instead.
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_BASE_HPP_INCLUDED
@@ -12,19 +12,6 @@
 //=== parse_events ===//
 namespace lexy::parse_events
 {
-/// Parsing started.
-/// Arguments: position
-struct grammar_start
-{};
-/// Parsing finished succesfully.
-/// Arguments: the reader at the final parse position.
-struct grammar_finish
-{};
-/// Parsing finished unsuccesfully.
-/// Arguments: the reader at the final parse position.
-struct grammar_cancel
-{};
-
 /// Start of the current production.
 /// Arguments: position
 struct production_start
@@ -114,13 +101,6 @@ using parser_for = typename Rule::template p<NextParser>;
 
 template <typename BranchRule, typename Reader>
 using branch_parser_for = typename BranchRule::template bp<Reader>;
-
-template <typename Production, typename Reader>
-struct _pb : lexy::branch_parser_for<lexy::production_rule<Production>, Reader>
-{};
-// We create a new type here to shorten its name.
-template <typename Production, typename Reader>
-using production_branch_parser = _pb<Production, Reader>;
 
 /// A branch parser that takes a branch unconditionally and forwards to the regular parser.
 template <typename Rule, typename Reader>
@@ -250,7 +230,7 @@ LEXY_FORCE_INLINE constexpr auto try_match_token(TokenRule, Reader& reader)
     if constexpr (std::is_same_v<try_parse_result, std::true_type>)
     {
         parser.try_parse(reader);
-        reader.reset(parser.end);
+        reader.set_position(parser.end);
         return std::true_type{};
     }
     else if constexpr (std::is_same_v<try_parse_result, std::false_type>)
@@ -263,7 +243,7 @@ LEXY_FORCE_INLINE constexpr auto try_match_token(TokenRule, Reader& reader)
         if (!parser.try_parse(reader))
             return false;
 
-        reader.reset(parser.end);
+        reader.set_position(parser.end);
         return true;
     }
 }

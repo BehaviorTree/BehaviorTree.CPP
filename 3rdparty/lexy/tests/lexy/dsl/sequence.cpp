@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/sequence.hpp>
@@ -34,8 +34,6 @@ TEST_CASE("dsl::operator+")
                        .literal("a")
                        .position()
                        .expected_literal(1, "bc", 0)
-                       .recovery()
-                       .finish()
                        .expected_literal(1, "de", 0)
                        .cancel();
     CHECK(a.status == test_result::fatal_error);
@@ -47,8 +45,6 @@ TEST_CASE("dsl::operator+")
                         .position()
                         .error_token("b")
                         .expected_literal(1, "bc", 1)
-                        .recovery()
-                        .finish()
                         .expected_literal(2, "de", 0)
                         .cancel();
     CHECK(ab.status == test_result::fatal_error);
@@ -80,14 +76,9 @@ TEST_CASE("dsl::operator+")
     CHECK(abcdef.status == test_result::success);
     CHECK(abcdef.trace == abcdef_trace);
 
-    auto ade       = LEXY_VERIFY("ade");
-    auto ade_trace = test_trace()
-                         .literal("a")
-                         .position()
-                         .expected_literal(1, "bc", 0)
-                         .recovery()
-                         .finish()
-                         .literal("de");
+    auto ade = LEXY_VERIFY("ade");
+    auto ade_trace
+        = test_trace().literal("a").position().expected_literal(1, "bc", 0).literal("de");
     CHECK(ade.status == test_result::recovered_error);
     CHECK(ade.trace == ade_trace);
 }

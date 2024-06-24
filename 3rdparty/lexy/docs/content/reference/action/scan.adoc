@@ -112,13 +112,8 @@ namespace lexy
 
         template <typename Tag, typename .... Args>
         constexpr void error(Tag tag, Args&&... args);
-        template <typename .... Args>
-        constexpr void error(const char* msg, Args&&... args);
-
         template <typename Tag, typename .... Args>
         constexpr void fatal_error(Tag tag, Args&&... args);
-        template <typename .... Args>
-        constexpr void fatal_error(const char* msg, Args&&... args);
 
         //=== convenience ===//
         // Forwards to `parse(result, rule)` overload.
@@ -136,8 +131,10 @@ namespace lexy
         template <typename T>
         constexpr scan_result<T> integer(_ndigits-dsl_ digits);
 
-        // Forwards to `parse(result, dsl::capture(rule))`.
+        // Forwards to `parse(rule)` (without value!) and then returns a lexeme.
         constexpr scan_result<lexeme<Reader>> capture(_rule_ auto rule);
+        // Forwards to `parse(result, dsl::capture_token(rule))`.
+        constexpr scan_result<lexeme<Reader>> capture_token(_token-rule_ auto rule);
     };
 }
 ----
@@ -312,20 +309,16 @@ NOTE: It is meant to be called during error recovery only.
 ----
 template <typename Tag, typename .... Args>
 constexpr void error(Tag tag, Args&&... args);
-template <typename .... Args>
-constexpr void error(const char* msg, Args&&... args);
 
 template <typename Tag, typename .... Args>
 constexpr void fatal_error(Tag tag, Args&&... args);
-template <typename .... Args>
-constexpr void fatal_error(const char* msg, Args&&... args);
 ----
 
 [.lead]
 Raise a {{% docref "lexy::error" %}}.
 
-All overloads construct a `lexy::error` object from the specified arguments and forward it to the handler.
-The fatal overloads then puts the scanner in a failed state, the non-fatal overloads leaves the state unchanged.
+Both overloads construct a `lexy::error` object with the specified `Tag` from the specified arguments and forward it to the handler.
+The second overload then puts the scanner in a failed state, the first overload leaves the state unchanged.
 
 [#scan]
 == Action `lexy::scan`
@@ -349,10 +342,6 @@ namespace lexy
     constexpr scanner scan(const _input_ auto& input,
                            _error-callback_ auto error_callback);
 
-    template <_production_ ControlProduction = void, typename ParseState>
-    constexpr scanner scan(const _input_ auto& input,
-                           ParseState& parse_state,
-                           _error-callback_ auto error_callback);
     template <_production_ ControlProduction = void, typename ParseState>
     constexpr scanner scan(const _input_ auto& input,
                            const ParseState& parse_state,
@@ -390,3 +379,4 @@ NOTE: Use {{% docref "lexy::dsl::scan" %}} if you want to manually parse some pr
 
 CAUTION: The overload that takes a `parse_state` internally stores a pointer to it.
 As such, `parse_state` must live as long as the `lexy::scanner` object.
+

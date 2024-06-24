@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/expression.hpp>
@@ -7,9 +7,7 @@
 #include <lexy/action/parse_as_tree.hpp>
 #include <lexy/callback/composition.hpp>
 #include <lexy/callback/fold.hpp>
-#include <lexy/dsl/choice.hpp>
 #include <lexy/dsl/integer.hpp>
-#include <lexy/dsl/production.hpp>
 #include <lexy_ext/parse_tree_doctest.hpp>
 
 namespace
@@ -39,14 +37,7 @@ constexpr auto integer = dsl::integer<int>;
 
 namespace single_operation
 {
-struct op_tag
-{
-    const char* pos;
-
-    constexpr op_tag(const char* pos) : pos(pos) {}
-};
-
-constexpr auto op_minus = dsl::op<op_tag>(dsl::lit_c<'-'>);
+constexpr auto op_minus = dsl::op(dsl::lit_c<'-'>);
 
 struct infix_left : lexy::expression_production, test_production
 {
@@ -627,11 +618,9 @@ TEST_CASE("expression - single operation")
     {
         using prod = postfix;
 
-        auto callback = lexy::callback<int>([](const char*, int value) { return value; },
-                                            [](const char* input, int lhs, lexy::op<op_minus> op) {
-                                                CHECK(lhs == int(op.pos - input));
-                                                return lhs + 1;
-                                            });
+        auto callback
+            = lexy::callback<int>([](const char*, int value) { return value; },
+                                  [](const char*, int lhs, lexy::op<op_minus>) { return -lhs; });
 
         auto empty = LEXY_OP_VERIFY("");
         CHECK(empty.status == test_result::fatal_error);
@@ -653,13 +642,13 @@ TEST_CASE("expression - single operation")
 
         auto one = LEXY_OP_VERIFY("1-");
         CHECK(one.status == test_result::success);
-        CHECK(one.value == 2);
+        CHECK(one.value == -1);
         CHECK(one.trace == test_trace().operation_chain().digits("1").literal("-").operation("op"));
         CHECK(one.tree == test_tree(prod{}).production("op").digits("1").literal("-"));
 
         auto two = LEXY_OP_VERIFY("1--");
         CHECK(two.status == test_result::success);
-        CHECK(two.value == 3);
+        CHECK(two.value == 1);
         // clang-format off
         CHECK(two.trace == test_trace()
                  .operation_chain()
@@ -679,7 +668,7 @@ TEST_CASE("expression - single operation")
 
         auto three = LEXY_OP_VERIFY("1---");
         CHECK(three.status == test_result::recovered_error);
-        CHECK(three.value == 3);
+        CHECK(three.value == 1);
         // clang-format off
         CHECK(three.trace == test_trace()
                  .operation_chain()
@@ -712,7 +701,7 @@ TEST_CASE("expression - single operation")
 
         auto infix = LEXY_OP_VERIFY("1-2");
         CHECK(infix.status == test_result::success);
-        CHECK(infix.value == 2);
+        CHECK(infix.value == -1);
         CHECK(infix.trace
               == test_trace().operation_chain().digits("1").literal("-").operation("op"));
         CHECK(infix.tree == test_tree(prod{}).production("op").digits("1").literal("-"));
@@ -1383,208 +1372,5 @@ TEST_CASE("expression - groups")
                     .operation("op12"));
         // clang-format on
     }
-}
-
-namespace nested_operations
-{
-struct product_only : lexy::subexpression_production<sum_product, sum_product::product>
-{};
-} // namespace nested_operations
-
-TEST_CASE("subexpression")
-{
-    using namespace nested_operations;
-    auto callback
-        = lexy::callback<int>([](const char*, int value) { return value; },
-                              [](const char*, lexy::op<op_plus>, int rhs) { return rhs; },
-                              [](const char*, lexy::op<op_minus>, int rhs) { return -rhs; },
-                              [](const char*, int lhs, lexy::op<op_plus>, int rhs) {
-                                  return lhs + rhs;
-                              },
-                              [](const char*, int lhs, lexy::op<op_minus>, int rhs) {
-                                  return lhs - rhs;
-                              },
-                              [](const char*, int lhs, lexy::op<op_times>, int rhs) {
-                                  return lhs * rhs;
-                              },
-                              [](const char*, int lhs, lexy::op<op_div>, int rhs) {
-                                  return lhs / rhs;
-                              });
-
-    using prod = product_only;
-
-    auto empty = LEXY_OP_VERIFY("");
-    CHECK(empty.status == test_result::fatal_error);
-    CHECK(empty.value == -1);
-    // clang-format off
-        CHECK(empty.trace == test_trace()
-                .operation_chain()
-                   .expected_char_class(0, "digit.decimal")
-                   .finish()
-                .cancel());
-        CHECK(empty.tree == test_tree());
-    // clang-format on
-
-    auto atom = LEXY_OP_VERIFY("1");
-    CHECK(atom.status == test_result::success);
-    CHECK(atom.value == 1);
-    CHECK(atom.tree == test_tree(prod{}).digits("1"));
-
-    auto a = LEXY_OP_VERIFY("1+2");
-    CHECK(a.status == test_result::success);
-    CHECK(a.value == 1);
-    CHECK(a.tree == test_tree(prod{}).digits("1"));
-    auto m = LEXY_OP_VERIFY("2-1");
-    CHECK(m.status == test_result::success);
-    CHECK(m.value == 2);
-    CHECK(m.tree == test_tree(prod{}).digits("2"));
-    auto t = LEXY_OP_VERIFY("1*2");
-    CHECK(t.status == test_result::success);
-    CHECK(t.value == 2);
-    CHECK(t.tree == test_tree(prod{}).production("product").digits("1").literal("*").digits("2"));
-    auto d = LEXY_OP_VERIFY("4/2");
-    CHECK(d.status == test_result::success);
-    CHECK(d.value == 2);
-    CHECK(d.tree == test_tree(prod{}).production("product").digits("4").literal("/").digits("2"));
-
-    auto p = LEXY_OP_VERIFY("+1");
-    CHECK(p.status == test_result::success);
-    CHECK(p.value == 1);
-    CHECK(p.tree == test_tree(prod{}).production("prefix").literal("+").digits("1"));
-    auto n = LEXY_OP_VERIFY("-1");
-    CHECK(n.status == test_result::success);
-    CHECK(n.value == -1);
-    CHECK(n.tree == test_tree(prod{}).production("prefix").literal("-").digits("1"));
-
-    auto at = LEXY_OP_VERIFY("1+2*3");
-    CHECK(at.status == test_result::success);
-    CHECK(at.value == 1);
-    CHECK(at.tree == test_tree(prod{}).digits("1"));
-    auto ta = LEXY_OP_VERIFY("1*2+3");
-    CHECK(ta.status == test_result::success);
-    CHECK(ta.value == 2);
-    CHECK(ta.tree
-          == test_tree(prod{}).production("product").digits("1").literal("*").digits("2").finish());
-    // clang-format on
-
-    auto ata = LEXY_OP_VERIFY("1+2*3+4");
-    CHECK(ata.status == test_result::success);
-    CHECK(ata.value == 1);
-    CHECK(ata.tree == test_tree(prod{}).digits("1"));
-    auto tat = LEXY_OP_VERIFY("1*2+3*4");
-    CHECK(tat.status == test_result::success);
-    CHECK(tat.value == 2);
-    // clang-format off
-    CHECK(tat.tree == test_tree(prod{})
-            .production("product")
-                .digits("1")
-                .literal("*")
-                .digits("2"));
-    // clang-format on
-
-    auto tn = LEXY_OP_VERIFY("2*-1");
-    CHECK(tn.status == test_result::success);
-    CHECK(tn.value == -2);
-    // clang-format off
-    CHECK(tn.tree == test_tree(prod{})
-            .production("product")
-                .digits("2")
-                .literal("*")
-                .production("prefix")
-                    .literal("-")
-                    .digits("1"));
-    // clang-format on
-    auto mn = LEXY_OP_VERIFY("2--1");
-    CHECK(mn.status == test_result::success);
-    CHECK(mn.value == 2);
-    CHECK(mn.tree == test_tree(prod{}).digits("2"));
-}
-
-// Regression test for https://github.com/foonathan/lexy/issues/95.
-namespace transparent_atom
-{
-template <char C>
-struct atom_digit : lexy::transparent_production
-{
-    static constexpr auto name = "atom";
-    static constexpr auto rule = dsl::lit_c<C>;
-};
-
-struct prod : lexy::expression_production, test_production
-{
-    static constexpr auto atom = dsl::p<atom_digit<'0'>> | dsl::p<atom_digit<'1'>>;
-
-    struct operation : dsl::infix_op_left
-    {
-        static constexpr auto name = "sum";
-        static constexpr auto op   = dsl::op(dsl::lit_c<'+'>);
-        using operand              = dsl::atom;
-    };
-};
-} // namespace transparent_atom
-
-TEST_CASE("expression - transparent atom")
-{
-    using namespace transparent_atom;
-    auto callback
-        = lexy::callback<int>([](const char*, atom_digit<'0'>*) { return 0; },
-                              [](const char*, atom_digit<'1'>*) { return 1; },
-                              [](const char*, int lhs, auto, int rhs) { return lhs + rhs; });
-
-    auto empty = LEXY_OP_VERIFY("");
-    CHECK(empty.status == test_result::fatal_error);
-    CHECK(empty.value == -1);
-    // clang-format off
-    CHECK(empty.trace == test_trace()
-            .operation_chain()
-                .production("atom").cancel()
-                .production("atom").cancel()
-                .error(0, 0, "exhausted choice")
-                .finish()
-            .cancel());
-    CHECK(empty.tree == test_tree());
-    // clang-format on
-
-    auto zero = LEXY_OP_VERIFY("0");
-    CHECK(zero.status == test_result::success);
-    CHECK(zero.value == 0);
-    CHECK(zero.trace == test_trace().operation_chain().production("atom").literal("0"));
-    CHECK(zero.tree == test_tree().production("test_production").literal("0"));
-    auto one = LEXY_OP_VERIFY("1");
-    CHECK(one.status == test_result::success);
-    CHECK(one.value == 1);
-    // clang-format off
-    CHECK(one.trace == test_trace()
-            .operation_chain()
-                .production("atom")
-                    .cancel()
-                .production("atom")
-                    .literal("1"));
-    // clang-format on
-    CHECK(one.tree == test_tree().production("test_production").literal("1"));
-
-    auto sum = LEXY_OP_VERIFY("0+1");
-    CHECK(sum.status == test_result::success);
-    CHECK(sum.value == 1);
-    // clang-format off
-    CHECK(sum.trace == test_trace()
-             .operation_chain()
-                 .production("atom")
-                     .literal("0")
-                     .finish()
-                 .literal("+")
-                 .production("atom")
-                     .cancel()
-                 .production("atom")
-                     .literal("1")
-                     .finish()
-                 .operation("sum"));
-    CHECK(sum.tree == test_tree()
-             .production("test_production")
-                 .production("sum")
-                     .literal("0")
-                     .literal("+")
-                     .literal("1"));
-    // clang-format on
 }
 

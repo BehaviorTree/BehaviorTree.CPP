@@ -1,7 +1,7 @@
 {{ define "main" }}
 <main>
 
-{{ if ne .TableOfContents "" }}
+{{ if ne .TableOfContents "<nav id=\"TableOfContents\"></nav>" }}
 <aside class="toc">
     <header><a href="#">Table of Contents</a></header>
     {{ .TableOfContents }}

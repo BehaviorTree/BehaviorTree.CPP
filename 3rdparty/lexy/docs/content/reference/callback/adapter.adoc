@@ -2,7 +2,6 @@
 header: "lexy/callback/adapter.hpp"
 entities:
   "lexy::callback": callback
-  "lexy::callback_with_state": callback_with_state
   "lexy::mem_fn": mem_fn
 ---
 :toc: left
@@ -11,7 +10,7 @@ entities:
 Adapt a function object or sink into a callback.
 
 [#callback]
-== Callback `lexy::callback` and `lexy::callback_with_state`
+== Callback `lexy::callback`
 
 {{% interface %}}
 ----
@@ -19,9 +18,6 @@ namespace lexy
 {
     template <typename ReturnType = _see-below_, typename ... Fns>
     constexpr _callback_ auto callback(Fns&&... fns);
-
-    template <typename ReturnType = _see-below_, typename ... Fns>
-    constexpr _callback_ auto callback_with_state(Fns&&... fns);
 }
 ----
 
@@ -34,9 +30,6 @@ The result must return an object of the specified `ReturnType`.
 
 If no `ReturnType` is specified and all `fns` are itself _callbacks_, it will be the common type of all their return types.
 Otherwise, it defaults to `void`.
-
-`callback_with_state` will also pass the state passed via `operator[]` as the first argument to all calls to `fns`.
-`lexy::callback_with_state(fn)` is equivalent to {{% docref "lexy::bind" %}}`(lexy::callback(fn), lexy::parse_state, lexy::values)`.
 
 {{% godbolt-example "callback" "Build a callback from lambdas" %}}
 

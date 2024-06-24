@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_INPUT_BASE_HPP_INCLUDED
@@ -17,16 +17,6 @@ class _rr
 public:
     using encoding = Encoding;
     using iterator = Iterator;
-
-    struct marker
-    {
-        iterator _it;
-
-        constexpr iterator position() const noexcept
-        {
-            return _it;
-        }
-    };
 
     constexpr explicit _rr(Iterator begin, Sentinel end) noexcept : _cur(begin), _end(end)
     {
@@ -52,14 +42,10 @@ public:
         return _cur;
     }
 
-    constexpr marker current() const noexcept
+    constexpr void set_position(iterator new_pos) noexcept
     {
-        return {_cur};
-    }
-    constexpr void reset(marker m) noexcept
-    {
-        LEXY_PRECONDITION(lexy::_detail::precedes(m._it, _end));
-        _cur = m._it;
+        LEXY_PRECONDITION(lexy::_detail::precedes(new_pos, _end));
+        _cur = new_pos;
     }
 
 private:
@@ -74,7 +60,6 @@ LEXY_INSTANTIATION_NEWTYPE(_pr, _rr, Encoding, const typename Encoding::char_typ
 // Aliases for the most common encodings.
 LEXY_INSTANTIATION_NEWTYPE(_prd, _pr, lexy::default_encoding);
 LEXY_INSTANTIATION_NEWTYPE(_pr8, _pr, lexy::utf8_encoding);
-LEXY_INSTANTIATION_NEWTYPE(_prc, _pr, lexy::utf8_char_encoding);
 LEXY_INSTANTIATION_NEWTYPE(_prb, _pr, lexy::byte_encoding);
 
 template <typename Encoding, typename Iterator, typename Sentinel>
@@ -86,8 +71,6 @@ constexpr auto _range_reader(Iterator begin, Sentinel end)
             return _prd(begin, end);
         else if constexpr (std::is_same_v<Encoding, lexy::utf8_encoding>)
             return _pr8(begin, end);
-        else if constexpr (std::is_same_v<Encoding, lexy::utf8_char_encoding>)
-            return _prc(begin, end);
         else if constexpr (std::is_same_v<Encoding, lexy::byte_encoding>)
             return _prb(begin, end);
         else

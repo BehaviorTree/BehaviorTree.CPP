@@ -47,7 +47,6 @@ Values::
   * For overload 1, a unique type computed from the rule `r`.
   * For overload 2 and `Tag != void`, an object of the specified `Tag` type.
     If `Tag` is constructible from the iterator type of the input, it constructs it giving it the start position of the operator.
-    Similarly, it is also possible to construct the `Tag` from the parse state and the iterator.
     Otherwise, it uses the default constructor.
   * For overload 2 and `Tag == void`, no tag value is produced.
   * For overload 3, an object of implementation-defined type that is implicitly convertible to the type of `Tag`, returning that value.

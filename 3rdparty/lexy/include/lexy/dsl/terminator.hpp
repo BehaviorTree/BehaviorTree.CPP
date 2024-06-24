@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_TERMINATOR_HPP_INCLUDED
@@ -105,7 +105,7 @@ struct _term
 template <typename Branch>
 constexpr auto terminator(Branch)
 {
-    LEXY_REQUIRE_BRANCH_RULE(Branch, "terminator");
+    static_assert(lexy::is_branch_rule<Branch>);
     return _term<Branch>{};
 }
 } // namespace lexyd

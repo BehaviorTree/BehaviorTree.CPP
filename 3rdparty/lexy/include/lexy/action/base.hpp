@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_BASE_HPP_INCLUDED
@@ -58,47 +58,27 @@ namespace _detail
                     return static_cast<parse_context_var*>(cur)->value;
 
             LEXY_ASSERT(false, "context variable hasn't been created");
-            return static_cast<parse_context_var*>(cb->vars)->value;
+            return LEXY_DECLVAL(T&);
         }
     };
 
     template <typename Handler, typename State = void>
     struct parse_context_control_block
     {
-        using handler_type = Handler;
-        using state_type   = State;
-
         LEXY_EMPTY_MEMBER Handler parse_handler;
-        State*                    parse_state;
+        const State*              parse_state;
 
         parse_context_var_base* vars;
 
         int  cur_depth, max_depth;
         bool enable_whitespace_skipping;
 
-        constexpr parse_context_control_block(Handler&& handler, State* state,
+        constexpr parse_context_control_block(Handler&& handler, const State* state,
                                               std::size_t max_depth)
         : parse_handler(LEXY_MOV(handler)), parse_state(state), //
           vars(nullptr),                                        //
           cur_depth(0), max_depth(static_cast<int>(max_depth)), enable_whitespace_skipping(true)
         {}
-
-        template <typename OtherHandler>
-        constexpr parse_context_control_block(Handler&& handler,
-                                              parse_context_control_block<OtherHandler, State>* cb)
-        : parse_handler(LEXY_MOV(handler)), parse_state(cb->parse_state), //
-          vars(cb->vars), cur_depth(cb->cur_depth), max_depth(cb->max_depth),
-          enable_whitespace_skipping(cb->enable_whitespace_skipping)
-        {}
-
-        template <typename OtherHandler>
-        constexpr void copy_vars_from(parse_context_control_block<OtherHandler, State>* cb)
-        {
-            vars                       = cb->vars;
-            cur_depth                  = cb->cur_depth;
-            max_depth                  = cb->max_depth;
-            enable_whitespace_skipping = cb->enable_whitespace_skipping;
-        }
     };
 } // namespace _detail
 
@@ -108,27 +88,20 @@ template <typename Production>
 using _whitespace_production_of
     = std::conditional_t<_production_defines_whitespace<Production>, Production, void>;
 
-template <typename Handler, typename State, typename Production>
-using _production_value_type =
-    typename Handler::template value_callback<Production, State>::return_type;
-
 template <typename Handler, typename State, typename Production,
           typename WhitespaceProduction = _whitespace_production_of<Production>>
 struct _pc
 {
-    using handler_type = Handler;
-    using state_type   = State;
-
     using production            = Production;
     using whitespace_production = WhitespaceProduction;
-    using value_type            = _production_value_type<Handler, State, Production>;
+    using value_type = typename Handler::template value_callback<Production, State>::return_type;
 
-    typename Handler::event_handler                       handler;
+    typename Handler::template event_handler<Production>  handler;
     _detail::parse_context_control_block<Handler, State>* control_block;
     _detail::lazy_init<value_type>                        value;
 
     constexpr explicit _pc(_detail::parse_context_control_block<Handler, State>* cb)
-    : handler(Production{}), control_block(cb)
+    : control_block(cb)
     {}
 
     template <typename ChildProduction>
@@ -197,35 +170,8 @@ namespace lexy
 {
 constexpr void* no_parse_state = nullptr;
 
-template <typename Handler, typename State, typename Production, typename Reader>
-constexpr auto _do_action(_pc<Handler, State, Production>& context, Reader& reader)
-{
-    context.on(parse_events::grammar_start{}, reader.position());
-    context.on(parse_events::production_start{}, reader.position());
-
-    // We parse whitespace, theen the rule, then finish.
-    using parser = lexy::whitespace_parser<
-        LEXY_DECAY_DECLTYPE(context),
-        lexy::parser_for<lexy::production_rule<Production>, _detail::final_parser>>;
-    auto rule_result = parser::parse(context, reader);
-
-    if (rule_result)
-    {
-        context.on(parse_events::production_finish{}, reader.position());
-        context.on(parse_events::grammar_finish{}, reader);
-    }
-    else
-    {
-        context.on(parse_events::production_cancel{}, reader.position());
-        context.on(parse_events::grammar_cancel{}, reader);
-    }
-
-    return rule_result;
-}
-
-template <typename Production, template <typename> typename Result, typename Handler,
-          typename State, typename Reader>
-constexpr auto do_action(Handler&& handler, State* state, Reader& reader)
+template <typename Production, typename Handler, typename State, typename Reader>
+constexpr auto do_action(Handler&& handler, const State* state, Reader& reader)
 {
     static_assert(!std::is_reference_v<Handler>, "need to move handler in");
 
@@ -233,17 +179,27 @@ constexpr auto do_action(Handler&& handler, State* state, Reader& reader)
                                                        max_recursion_depth<Production>());
     _pc<Handler, State, Production>      context(&control_block);
 
-    auto rule_result = _do_action(context, reader);
+    context.on(parse_events::production_start{}, reader.position());
+
+    // We parse whitespace, theen the rule, then finish.
+    using parser = lexy::whitespace_parser<
+        decltype(context),
+        lexy::parser_for<lexy::production_rule<Production>, _detail::final_parser>>;
+    auto rule_result = parser::parse(context, reader);
+
+    if (rule_result)
+        context.on(parse_events::production_finish{}, reader.position());
+    else
+        context.on(parse_events::production_cancel{}, reader.position());
 
     using value_type = typename decltype(context)::value_type;
     if constexpr (std::is_void_v<value_type>)
-        return LEXY_MOV(control_block.parse_handler).template get_result<Result<void>>(rule_result);
+        return LEXY_MOV(control_block.parse_handler).get_result_void(rule_result);
     else if (context.value)
         return LEXY_MOV(control_block.parse_handler)
-            .template get_result<Result<value_type>>(rule_result, LEXY_MOV(*context.value));
+            .template get_result<value_type>(rule_result, LEXY_MOV(*context.value));
     else
-        return LEXY_MOV(control_block.parse_handler)
-            .template get_result<Result<value_type>>(rule_result);
+        return LEXY_MOV(control_block.parse_handler).template get_result<value_type>(rule_result);
 }
 } // namespace lexy
 

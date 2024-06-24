@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ERROR_HPP_INCLUDED
@@ -10,28 +10,16 @@
 
 namespace lexy
 {
+/// Generic failure.
 template <typename Reader, typename Tag>
-class error;
-
-/// Type erased generic failure.
-template <typename Reader>
-class error<Reader, void>
+class error
 {
 public:
-    constexpr explicit error(typename Reader::iterator pos, const char* msg) noexcept
-    : _pos(pos), _end(pos), _msg(msg)
+    constexpr explicit error(typename Reader::iterator pos) noexcept : _pos(pos), _end(pos) {}
+    constexpr explicit error(typename Reader::iterator begin,
+                             typename Reader::iterator end) noexcept
+    : _pos(begin), _end(end)
     {}
-    constexpr explicit error(typename Reader::iterator begin, typename Reader::iterator end,
-                             const char* msg) noexcept
-    : _pos(begin), _end(end), _msg(msg)
-    {}
-
-    template <typename OtherReader, typename = std::enable_if_t<std::is_same_v<
-                                        typename Reader::iterator, typename OtherReader::iterator>>>
-    constexpr operator error<OtherReader, void>() const noexcept
-    {
-        return error<OtherReader, void>(_pos, _end, _msg);
-    }
 
     constexpr auto position() const noexcept
     {
@@ -40,12 +28,7 @@ public:
 
     constexpr const char* message() const noexcept
     {
-        return _msg;
-    }
-    template <typename Tag>
-    constexpr bool is(Tag = {}) const noexcept
-    {
-        return _detail::string_view(_msg) == _detail::type_name<Tag>();
+        return _detail::type_name<Tag>();
     }
 
     constexpr auto begin() const noexcept
@@ -60,28 +43,6 @@ public:
 private:
     typename Reader::iterator _pos;
     typename Reader::iterator _end;
-    const char*               _msg;
-};
-
-/// Generic failure.
-template <typename Reader, typename Tag>
-class error : public error<Reader, void>
-{
-public:
-    constexpr explicit error(typename Reader::iterator pos) noexcept
-    : error<Reader, void>(pos, _detail::type_name<Tag>())
-    {}
-    constexpr explicit error(typename Reader::iterator begin,
-                             typename Reader::iterator end) noexcept
-    : error<Reader, void>(begin, end, _detail::type_name<Tag>())
-    {}
-
-    template <typename OtherReader, typename = std::enable_if_t<std::is_same_v<
-                                        typename Reader::iterator, typename OtherReader::iterator>>>
-    constexpr operator error<OtherReader, Tag>() const noexcept
-    {
-        return error<OtherReader, Tag>(this->begin(), this->end());
-    }
 };
 
 /// Expected the literal character sequence.
@@ -96,13 +57,6 @@ public:
                              std::size_t length) noexcept
     : _pos(pos), _str(str), _idx(index), _length(length)
     {}
-
-    template <typename OtherReader, typename = std::enable_if_t<std::is_same_v<
-                                        typename Reader::iterator, typename OtherReader::iterator>>>
-    constexpr operator error<OtherReader, expected_literal>() const noexcept
-    {
-        return error<OtherReader, expected_literal>(_pos, _str, _idx, _length);
-    }
 
     constexpr auto position() const noexcept
     {
@@ -148,13 +102,6 @@ public:
     : _begin(begin), _end(end), _str(str), _length(length)
     {}
 
-    template <typename OtherReader, typename = std::enable_if_t<std::is_same_v<
-                                        typename Reader::iterator, typename OtherReader::iterator>>>
-    constexpr operator error<OtherReader, expected_keyword>() const noexcept
-    {
-        return error<OtherReader, expected_keyword>(_begin, _end, _str, _length);
-    }
-
     constexpr auto position() const noexcept
     {
         return _begin;
@@ -197,13 +144,6 @@ public:
     : _pos(pos), _name(name)
     {}
 
-    template <typename OtherReader, typename = std::enable_if_t<std::is_same_v<
-                                        typename Reader::iterator, typename OtherReader::iterator>>>
-    constexpr operator error<OtherReader, expected_char_class>() const noexcept
-    {
-        return error<OtherReader, expected_char_class>(_pos, _name);
-    }
-
     constexpr auto position() const noexcept
     {
         return _pos;
@@ -228,14 +168,18 @@ namespace lexy
 template <typename Input>
 using _detect_parent_input = decltype(LEXY_DECLVAL(Input).parent_input());
 
-/// Contains information about the context of an error, production is type-erased.
-template <typename Input>
+/// Contains information about the context of an error.
+template <typename Production, typename Input>
 class error_context
 {
 public:
-    constexpr explicit error_context(lexy::production_info production, const Input& input,
+    constexpr explicit error_context(const Input&                           input,
                                      typename input_reader<Input>::iterator pos) noexcept
-    : _input(&input), _pos(pos), _production(production.name)
+    : _input(&input), _pos(pos)
+    {}
+    constexpr explicit error_context(Production, const Input& input,
+                                     typename input_reader<Input>::iterator pos) noexcept
+    : error_context(input, pos)
     {}
 
     /// The input.
@@ -248,9 +192,9 @@ public:
     }
 
     /// The name of the production where the error occurred.
-    const char* production() const noexcept
+    static LEXY_CONSTEVAL const char* production()
     {
-        return _production;
+        return production_name<Production>();
     }
 
     /// The starting position of the production.
@@ -262,7 +206,6 @@ public:
 private:
     const Input*                           _input;
     typename input_reader<Input>::iterator _pos;
-    const char*                            _production;
 };
 } // namespace lexy
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DETAIL_CONFIG_HPP_INCLUDED
@@ -17,19 +17,12 @@
 #    endif
 #endif
 
-#ifndef LEXY_HAS_UNICODE_DATABASE
-#    define LEXY_HAS_UNICODE_DATABASE 0
-#endif
-
-#ifndef LEXY_EXPERIMENTAL
-#    define LEXY_EXPERIMENTAL 0
-#endif
-
 //=== utility traits===//
 #define LEXY_MOV(...) static_cast<std::remove_reference_t<decltype(__VA_ARGS__)>&&>(__VA_ARGS__)
 #define LEXY_FWD(...) static_cast<decltype(__VA_ARGS__)>(__VA_ARGS__)
 
-#define LEXY_DECLVAL(...) lexy::_detail::declval<__VA_ARGS__>()
+#define LEXY_DECLVAL(...)                                                                          \
+    reinterpret_cast<::lexy::_detail::add_rvalue_ref<__VA_ARGS__>>(*reinterpret_cast<char*>(1024))
 
 #define LEXY_DECAY_DECLTYPE(...) std::decay_t<decltype(__VA_ARGS__)>
 
@@ -43,11 +36,11 @@
 
 namespace lexy::_detail
 {
+template <typename T>
+using add_rvalue_ref = T&&;
+
 template <typename... T>
 constexpr bool error = false;
-
-template <typename T>
-std::add_rvalue_reference_t<T> declval();
 
 template <typename T>
 constexpr void swap(T& lhs, T& rhs)
@@ -74,12 +67,6 @@ using type_or = std::conditional_t<std::is_void_v<T>, Fallback, T>;
 #    endif
 #endif
 
-#if LEXY_HAS_NTTP
-#    define LEXY_NTTP_PARAM auto
-#else
-#    define LEXY_NTTP_PARAM const auto&
-#endif
-
 //=== consteval ===//
 #ifndef LEXY_HAS_CONSTEVAL
 #    if defined(_MSC_VER) && !defined(__clang__)
@@ -96,21 +83,6 @@ using type_or = std::conditional_t<std::is_void_v<T>, Fallback, T>;
 #    define LEXY_CONSTEVAL consteval
 #else
 #    define LEXY_CONSTEVAL constexpr
-#endif
-
-//=== constexpr ===//
-#ifndef LEXY_HAS_CONSTEXPR_DTOR
-#    if __cpp_constexpr_dynamic_alloc
-#        define LEXY_HAS_CONSTEXPR_DTOR 1
-#    else
-#        define LEXY_HAS_CONSTEXPR_DTOR 0
-#    endif
-#endif
-
-#if LEXY_HAS_CONSTEXPR_DTOR
-#    define LEXY_CONSTEXPR_DTOR constexpr
-#else
-#    define LEXY_CONSTEXPR_DTOR
 #endif
 
 //=== char8_t ===//

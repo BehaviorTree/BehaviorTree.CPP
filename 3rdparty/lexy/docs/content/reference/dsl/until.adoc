@@ -46,7 +46,7 @@ If `.or_eof()` was used, the rule never fails, but it may consume the rest of th
 {{% playground-example cpp_comment "A C++-style comment" %}}
 
 CAUTION: `until()` does not care what input it consumes to find `condition`; it can be {{% docref "lexy::dsl::any" %}}thing, including ill-formed Unicode.
-To restrict the input that is allowed before `condition`, use {{% docref "lexy::dsl::loop" %}}`(condition >> dsl::break_ | before)`.
+To restrict the input that is allowed before `condition`, use {{% docref "lexy::dsl::terminator" %}}`(condition).while_(before)`.
 
 WARNING: If the `condition` is missing, `until(condition).or_eof()` will happily discard the rest of the input.
 This is similar to the behavior of an unterminated `/*` comment.

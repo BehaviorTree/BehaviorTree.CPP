@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include "../../examples/calculator.cpp" // NOLINT
@@ -9,12 +9,6 @@
 #include <lexy/action/parse_as_tree.hpp>
 #include <lexy/input/string_input.hpp>
 #include <lexy_ext/parse_tree_doctest.hpp>
-
-#if LEXY_HAS_CONSTEXPR_AUTOMATIC_TYPE_NAME
-#    define LEXY_TREE_CHECK(...) CHECK(__VA_ARGS__)
-#else
-#    define LEXY_TREE_CHECK(...) (void)0
-#endif
 
 namespace
 {
@@ -51,25 +45,22 @@ TEST_CASE("expression")
 
     auto int_decimal = eval_expr("42");
     CHECK(int_decimal.value == 42);
-    LEXY_TREE_CHECK(int_decimal.tree
-                    == lexy_ext::parse_tree_desc("expr").production("integer").digits("42"));
+    CHECK(int_decimal.tree == lexy_ext::parse_tree_desc("expr").production("integer").digits("42"));
     auto int_hex = eval_expr("0x42");
     CHECK(int_hex.value == 0x42);
-    LEXY_TREE_CHECK(
-        int_hex.tree
-        == lexy_ext::parse_tree_desc("expr").production("integer").literal("0x").digits("42"));
+    CHECK(int_hex.tree
+          == lexy_ext::parse_tree_desc("expr").production("integer").literal("0x").digits("42"));
 
     auto var = eval_expr("x");
     CHECK(var.value == 0);
-    LEXY_TREE_CHECK(
-        var.tree
-        == lexy_ext::parse_tree_desc("expr").production("name").token(lexy::identifier_token_kind,
-                                                                      "x"));
+    CHECK(var.tree
+          == lexy_ext::parse_tree_desc("expr").production("name").token(lexy::identifier_token_kind,
+                                                                        "x"));
 
     auto call = eval_expr("f(42)");
     CHECK(call.value == 0);
     // clang-format off
-    LEXY_TREE_CHECK(call.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(call.tree == lexy_ext::parse_tree_desc("expr")
              .production("name")
                  .token(lexy::identifier_token_kind, "f")
                  .finish()
@@ -85,7 +76,7 @@ TEST_CASE("expression")
     auto parens = eval_expr("(1)");
     CHECK(parens.value == 1);
     // clang-format off
-    LEXY_TREE_CHECK(parens.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(parens.tree == lexy_ext::parse_tree_desc("expr")
              .literal("(")
              .production("expr")
                  .production("integer")
@@ -98,7 +89,7 @@ TEST_CASE("expression")
     auto power = eval_expr("2**2**3");
     CHECK(power.value == 256);
     // clang-format off
-    LEXY_TREE_CHECK(power.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(power.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::math_power")
                 .production("integer")
                     .digits("2")
@@ -116,7 +107,7 @@ TEST_CASE("expression")
     auto math_prefix = eval_expr("--1");
     CHECK(math_prefix.value == 1);
     // clang-format off
-    LEXY_TREE_CHECK(math_prefix.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(math_prefix.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::math_prefix")
                 .literal("-")
                 .production("expr::math_prefix")
@@ -128,7 +119,7 @@ TEST_CASE("expression")
     auto product = eval_expr("2*6/3");
     CHECK(product.value == 4);
     // clang-format off
-    LEXY_TREE_CHECK(product.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(product.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::math_product")
                 .production("expr::math_product")
                     .production("integer")
@@ -147,7 +138,7 @@ TEST_CASE("expression")
     auto sum = eval_expr("1+2-3");
     CHECK(sum.value == 0);
     // clang-format off
-    LEXY_TREE_CHECK(sum.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(sum.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::math_sum")
                 .production("expr::math_sum")
                     .production("integer")
@@ -167,7 +158,7 @@ TEST_CASE("expression")
     auto bit_prefix = eval_expr("~~1");
     CHECK(bit_prefix.value == 1);
     // clang-format off
-    LEXY_TREE_CHECK(bit_prefix.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(bit_prefix.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::bit_prefix")
                 .literal("~")
                 .production("expr::bit_prefix")
@@ -178,7 +169,7 @@ TEST_CASE("expression")
     auto bit_and = eval_expr("6&3&2");
     CHECK(bit_and.value == 2);
     // clang-format off
-    LEXY_TREE_CHECK(bit_and.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(bit_and.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::bit_and")
                 .production("expr::bit_and")
                     .production("integer")
@@ -197,7 +188,7 @@ TEST_CASE("expression")
     auto bit_or = eval_expr("3|6^2");
     CHECK(bit_or.value == 5);
     // clang-format off
-    LEXY_TREE_CHECK(bit_or.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(bit_or.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::bit_or")
                 .production("expr::bit_or")
                     .production("integer")
@@ -220,7 +211,7 @@ TEST_CASE("expression")
     auto comparison = eval_expr("1<2==2");
     CHECK(comparison.value == 1);
     // clang-format off
-    LEXY_TREE_CHECK(comparison.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(comparison.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::comparison")
                 .production("integer")
                     .digits("1")
@@ -238,7 +229,7 @@ TEST_CASE("expression")
     auto conditional = eval_expr("1?2:3");
     CHECK(conditional.value == 2);
     // clang-format off
-    LEXY_TREE_CHECK(conditional.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(conditional.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::conditional")
                 .production("integer")
                     .digits("1")
@@ -259,7 +250,7 @@ TEST_CASE("expression")
     auto assignment = eval_expr("x=1");
     CHECK(assignment.value == 1);
     // clang-format off
-    LEXY_TREE_CHECK(assignment.tree == lexy_ext::parse_tree_desc("expr")
+    CHECK(assignment.tree == lexy_ext::parse_tree_desc("expr")
             .production("expr::assignment")
                 .production("name")
                     .token(lexy::identifier_token_kind, "x")

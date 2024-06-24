@@ -1,12 +1,14 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_SCAN_HPP_INCLUDED
 #define LEXY_DSL_SCAN_HPP_INCLUDED
 
+#include <lexy/_detail/lazy_init.hpp>
+#include <lexy/action/base.hpp>
 #include <lexy/callback/forward.hpp>
+#include <lexy/callback/object.hpp>
 #include <lexy/dsl/base.hpp>
-#include <lexy/dsl/parse_as.hpp>
 #include <lexy/error.hpp>
 #include <lexy/lexeme.hpp>
 
@@ -18,9 +20,7 @@ struct _prd;
 template <typename Rule, typename Tag>
 struct _peek;
 template <typename Token>
-struct _cap;
-template <typename Rule>
-struct _capr;
+struct _capt;
 template <typename T, typename Base>
 struct _int_dsl;
 
@@ -133,6 +133,98 @@ scan_result(_detail::lazy_init<T>&&) -> scan_result<T>;
 //=== scanner implementation ===//
 namespace lexy::_detail
 {
+template <typename Context>
+using _value_callback_for = lexy::production_value_callback<
+    typename Context::production,
+    std::remove_pointer_t<decltype(LEXY_DECLVAL(decltype(Context::control_block))->parse_state)>>;
+
+// The context used for a child production during scanning.
+// It forwards all events but overrides the value callback.
+template <typename RootContext, typename Context,
+          typename ValueCallback = _value_callback_for<Context>>
+struct spc_child
+{
+    using production            = typename Context::production;
+    using whitespace_production = typename Context::whitespace_production;
+    using value_type            = typename ValueCallback::return_type;
+
+    RootContext*                     root_context;
+    decltype(Context::handler)       handler;
+    decltype(Context::control_block) control_block;
+    _detail::lazy_init<value_type>   value;
+
+    constexpr explicit spc_child(RootContext& root, decltype(Context::control_block) cb)
+    : root_context(&root), control_block(cb)
+    {}
+    constexpr explicit spc_child(RootContext& root, const Context& context)
+    : root_context(&root), control_block(context.control_block)
+    {}
+
+    template <typename ChildProduction>
+    constexpr auto sub_context(ChildProduction child)
+    {
+        using sub_context_t = decltype(LEXY_DECLVAL(Context).sub_context(child));
+        if constexpr (std::is_same_v<ValueCallback, void_value_callback>)
+            return spc_child<RootContext, sub_context_t, void_value_callback>(*root_context,
+                                                                              control_block);
+        else
+            return spc_child<RootContext, sub_context_t>(*root_context, control_block);
+    }
+
+    constexpr auto value_callback()
+    {
+        return ValueCallback(control_block->parse_state);
+    }
+
+    template <typename Event, typename... Args>
+    constexpr auto on(Event ev, Args&&... args)
+    {
+        return handler.on(control_block->parse_handler, ev, LEXY_FWD(args)...);
+    }
+};
+
+// The context used for a top-level rule parsing during scanning.
+// It forwards all events but overrids the value callback to construct a T.
+template <typename T, typename Context>
+struct spc
+{
+    using production            = typename Context::production;
+    using whitespace_production = typename Context::whitespace_production;
+    using value_type            = T;
+
+    Context*                         root_context;
+    decltype(Context::handler)&      handler;
+    decltype(Context::control_block) control_block;
+    _detail::lazy_init<T>&           value;
+
+    constexpr explicit spc(_detail::lazy_init<T>& value, Context& context)
+    : root_context(&context), handler(context.handler), control_block(context.control_block),
+      value(value)
+    {}
+
+    template <typename ChildProduction>
+    constexpr auto sub_context(ChildProduction child)
+    {
+        using sub_context_t = decltype(LEXY_DECLVAL(Context).sub_context(child));
+        if constexpr (std::is_void_v<T>)
+            return spc_child<Context, sub_context_t, void_value_callback>(*root_context,
+                                                                          control_block);
+        else
+            return spc_child<Context, sub_context_t>(*root_context, control_block);
+    }
+
+    constexpr auto value_callback()
+    {
+        return lexy::construct<T>;
+    }
+
+    template <typename Event, typename... Args>
+    constexpr auto on(Event ev, Args&&... args)
+    {
+        return handler.on(control_block->parse_handler, ev, LEXY_FWD(args)...);
+    }
+};
+
 template <typename Reader>
 struct scanner_input
 {
@@ -144,23 +236,6 @@ struct scanner_input
     }
 };
 
-struct scan_final_parser
-{
-    template <typename Context, typename Reader, typename T>
-    LEXY_PARSER_FUNC static bool parse(Context&, Reader&, lazy_init<T>* dest, T&& value)
-    {
-        dest->emplace(LEXY_MOV(value));
-        return true;
-    }
-
-    template <typename Context, typename Reader>
-    LEXY_PARSER_FUNC static bool parse(Context&, Reader&, lazy_init<void>* dest)
-    {
-        dest->emplace();
-        return true;
-    }
-};
-
 // The common interface of all scanner types.
 template <typename Derived, typename Reader>
 class scanner
@@ -168,7 +243,7 @@ class scanner
 public:
     using encoding = typename Reader::encoding;
 
-    constexpr scanner(const scanner&) noexcept            = delete;
+    constexpr scanner(const scanner&) noexcept = delete;
     constexpr scanner& operator=(const scanner&) noexcept = delete;
 
     //=== status ===//
@@ -186,10 +261,6 @@ public:
     {
         return _reader.position();
     }
-    constexpr auto current() const noexcept -> typename Reader::marker
-    {
-        return _reader.current();
-    }
 
     constexpr auto remaining_input() const noexcept
     {
@@ -203,24 +274,63 @@ public:
         if (_state == _state_failed)
             return;
 
-        using parser = lexy::parser_for<lexyd::_pas<T, Rule>, scan_final_parser>;
-        auto success
-            = parser::parse(static_cast<Derived&>(*this).context(), _reader, &result._value);
+        _detail::spc context(result._value, static_cast<Derived&>(*this).context());
+
+        using parser = lexy::parser_for<Rule, lexy::_detail::final_parser>;
+        auto success = parser::parse(context, _reader);
         if (!success)
             _state = _state_failed;
     }
 
-    template <typename Production, typename = lexy::production_rule<Production>>
-    constexpr auto parse(Production = {})
+    template <typename Production, typename Rule = lexy::production_rule<Production>>
+    constexpr auto parse(Production production = {})
     {
-        using context_t = LEXY_DECAY_DECLTYPE(static_cast<Derived&>(*this).context());
-        using value_type =
-            typename lexy::production_value_callback<Production,
-                                                     typename context_t::state_type>::return_type;
+        // Directly create a child context from the production context.
+        auto& root_context = static_cast<Derived&>(*this).context();
+        auto  context      = _detail::spc_child(root_context, root_context.sub_context(production));
+        if (_state == _state_failed)
+            return scan_result(LEXY_MOV(context.value));
 
-        scan_result<value_type> result;
-        parse(result, lexyd::_prd<Production>{});
-        return result;
+        // We manually parse the rule of the production, so need to raise events.
+        context.on(lexy::parse_events::production_start{}, _reader.position());
+
+        if constexpr (lexy::_production_defines_whitespace<Production>)
+        {
+            // Skip initial whitespace of the production.
+            using whitespace_parser
+                = lexy::whitespace_parser<decltype(context), lexy::pattern_parser<>>;
+            if (!whitespace_parser::parse(context, _reader))
+            {
+                context.on(lexy::parse_events::production_cancel{}, _reader.position());
+                _state = _state_failed;
+                return scan_result(LEXY_MOV(context.value));
+            }
+        }
+
+        using parser = lexy::parser_for<Rule, lexy::_detail::final_parser>;
+        auto success = parser::parse(context, _reader);
+        if (!success)
+        {
+            context.on(lexy::parse_events::production_cancel{}, _reader.position());
+            _state = _state_failed;
+            return scan_result(LEXY_MOV(context.value));
+        }
+
+        context.on(lexy::parse_events::production_finish{}, _reader.position());
+
+        if constexpr (lexy::is_token_production<Production>)
+        {
+            // Skip trailing whitespace of the parent.
+            using whitespace_parser = lexy::whitespace_parser<LEXY_DECAY_DECLTYPE(root_context),
+                                                              lexy::pattern_parser<>>;
+            if (!whitespace_parser::parse(root_context, _reader))
+            {
+                _state = _state_failed;
+                return scan_result(LEXY_MOV(context.value));
+            }
+        }
+
+        return scan_result(LEXY_MOV(context.value));
     }
 
     template <typename Rule, typename = std::enable_if_t<lexy::is_rule<Rule>>>
@@ -234,20 +344,20 @@ public:
     template <typename T, typename Rule, typename = std::enable_if_t<lexy::is_rule<Rule>>>
     constexpr bool branch(scan_result<T>& result, Rule)
     {
-        LEXY_REQUIRE_BRANCH_RULE(Rule, "branch");
+        static_assert(lexy::is_branch_rule<Rule>);
         if (_state == _state_failed)
             return false;
 
-        auto& context = static_cast<Derived&>(*this).context();
-        lexy::branch_parser_for<lexyd::_pas<T, Rule>, Reader> parser{};
+        _detail::spc context(result._value, static_cast<Derived&>(*this).context());
+
+        lexy::branch_parser_for<Rule, Reader> parser{};
         if (!parser.try_parse(context.control_block, _reader))
         {
             parser.cancel(context);
             return false; // branch wasn't token
         }
 
-        auto success = parser.template finish<lexy::_detail::scan_final_parser>(context, _reader,
-                                                                                &result._value);
+        auto success = parser.template finish<lexy::_detail::final_parser>(context, _reader);
         if (!success)
             _state = _state_failed;
         return true; // branch was taken
@@ -270,7 +380,7 @@ public:
     class error_recovery_guard
     {
     public:
-        error_recovery_guard(const error_recovery_guard&)            = delete;
+        error_recovery_guard(const error_recovery_guard&) = delete;
         error_recovery_guard& operator=(const error_recovery_guard&) = delete;
 
         constexpr void cancel() &&
@@ -329,24 +439,10 @@ public:
         context.on(parse_events::error{}, lexy::error<Reader, Tag>(LEXY_FWD(args)...));
     }
 
-    template <typename... Args>
-    constexpr void error(const char* msg, Args&&... args)
-    {
-        auto& context = static_cast<Derived&>(*this).context();
-        context.on(parse_events::error{}, lexy::error<Reader, void>(LEXY_FWD(args)..., msg));
-    }
-
     template <typename Tag, typename... Args>
     constexpr void fatal_error(Tag tag, Args&&... args)
     {
         error(tag, LEXY_FWD(args)...);
-        _state = _state_failed;
-    }
-
-    template <typename... Args>
-    constexpr void fatal_error(const char* msg, Args&&... args)
-    {
-        error(msg, LEXY_FWD(args)...);
         _state = _state_failed;
     }
 
@@ -381,18 +477,25 @@ public:
         return result;
     }
 
-    template <typename Token>
-    constexpr auto capture(Token)
+    template <typename Rule>
+    constexpr auto capture(Rule rule) -> scan_result<lexeme<Reader>>
     {
-        scan_result<lexeme<Reader>> result;
-        parse(result, lexyd::_cap<Token>{});
-        return result;
+        static_assert(lexy::is_rule<Rule>);
+
+        auto begin = _reader.position();
+        parse(rule);
+        auto end = _reader.position();
+
+        if (*this)
+            return lexeme<Reader>(begin, end);
+        else
+            return scan_failed;
     }
-    template <typename Production>
-    constexpr auto capture(lexyd::_prd<Production>)
+    template <typename Token>
+    constexpr auto capture_token(Token)
     {
         scan_result<lexeme<Reader>> result;
-        parse(result, lexyd::_capr<lexyd::_prd<Production>>{});
+        parse(result, lexyd::_capt<Token>{});
         return result;
     }
 
@@ -471,7 +574,7 @@ struct _scan : rule_base
         LEXY_PARSER_FUNC static bool _parse(Scanner& scanner, Context& context, Reader& reader,
                                             Args&&... args)
         {
-            typename Context::production::scan_result result = [&] {
+            lexy::scan_result result = [&] {
                 if constexpr (lexy::_detail::is_detected<
                                   _detect_scan_state, Context, decltype(scanner),
                                   decltype(context.control_block->parse_state)>)
@@ -480,7 +583,7 @@ struct _scan : rule_base
                 else
                     return Context::production::scan(scanner, LEXY_FWD(args)...);
             }();
-            reader.reset(scanner.current());
+            reader.set_position(scanner.position());
             if (!result)
                 return false;
 
@@ -494,6 +597,15 @@ struct _scan : rule_base
         LEXY_PARSER_FUNC static bool parse(Context& context, Reader& reader, Args&&... args)
         {
             lexy::rule_scanner scanner(context, reader);
+            return _parse(scanner, context, reader, LEXY_FWD(args)...);
+        }
+        template <typename RootContext, typename Context, typename ValueCallback, typename Reader,
+                  typename... Args>
+        LEXY_PARSER_FUNC static bool parse(
+            lexy::_detail::spc_child<RootContext, Context, ValueCallback>& context, Reader& reader,
+            Args&&... args)
+        {
+            lexy::rule_scanner scanner(*context.root_context, reader);
             return _parse(scanner, context, reader, LEXY_FWD(args)...);
         }
     };

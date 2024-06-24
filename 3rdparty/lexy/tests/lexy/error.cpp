@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/error.hpp>
@@ -7,21 +7,16 @@
 #include <lexy/input/lexeme_input.hpp>
 #include <lexy/input/string_input.hpp>
 
-namespace
-{
-struct production
-{
-    static LEXY_CONSTEVAL auto name()
-    {
-        return "production";
-    }
-
-    static constexpr auto rule = 0; // Need a rule member to make it a production.
-};
-} // namespace
-
 TEST_CASE("error_context")
 {
+    struct production
+    {
+        static LEXY_CONSTEVAL auto name()
+        {
+            return "production";
+        }
+    };
+
     SUBCASE("normal input")
     {
         auto input   = lexy::zstring_input("abc");

@@ -53,8 +53,6 @@ namespace lexy::dsl
 [.lead]
 `eol` is a {{% branch-rule %}} that matches the end of a line.
 
-Requires::
-  The {{% encoding %}} of the input is a char encoding.
 (Branch) Parsing::
   If at EOF, succeeds without consuming anything.
   Otherwise, forwards to {{% docref "lexy::dsl::newline" %}}

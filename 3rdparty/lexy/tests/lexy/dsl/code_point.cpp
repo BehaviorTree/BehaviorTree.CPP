@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #include <lexy/dsl/code_point.hpp>
@@ -36,7 +36,7 @@ constexpr parse_result parse_cp(const typename Encoding::char_type* str)
     }
     else
     {
-        return {std::size_t(result.end.position() - input.data()), result.error, result.cp};
+        return {std::size_t(result.end - input.data()), result.error, result.cp};
     }
 }
 } // namespace

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2022 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_BOM_HPP_INCLUDED
@@ -15,10 +15,6 @@ struct _bom : _lit<unsigned char>
 {};
 template <lexy::encoding_endianness DontCare>
 struct _bom<lexy::utf8_encoding, DontCare> //
-: _lit<unsigned char, 0xEF, 0xBB, 0xBF>
-{};
-template <lexy::encoding_endianness DontCare>
-struct _bom<lexy::utf8_char_encoding, DontCare> //
 : _lit<unsigned char, 0xEF, 0xBB, 0xBF>
 {};
 template <>

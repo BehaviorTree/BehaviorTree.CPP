@@ -8,7 +8,7 @@
             <option selected disabled hidden>Load example</option>
             {{ range (resources.Match "playground/*.cpp") }}
                 <option value="{{ .RelPermalink }}">
-                    {{ .Name | replaceRE "/playground/(.*)\\.cpp" "$1" }}
+                    {{ .Name | replaceRE "playground/(.*)\\.cpp" "$1" }}
                 </option>
             {{ end }}
         </select>

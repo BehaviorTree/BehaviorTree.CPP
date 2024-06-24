@@ -101,7 +101,7 @@ struct color
 <5> We want to parse `rgb` followed by the parenthesized decimal channels, which can be easily done using {{% docref "lexy::dsl::parenthesized" %}}.
 <6> We want to match either a hex color or a function call color, but this doesn't compile.
 
-This code doesn't compile, because the specified alternatives of the choice aren't branch rules:
+This code doesn't compile, because the alternatives of a choice aren't branch rules:
 lexy has no idea how it should make a decision between them.
 As such, we need to manually tell it by using the branch combinator {{% docref "lexy::dsl::operator>>" %}}:
 its left-hand side is an existing branch rule, and the right-hand side an arbitrary rule.
@@ -146,7 +146,7 @@ abcabcabd
 Specifying a branch condition every time lexy needs to make a decision, can be pretty annoying.
 Luckily, there are many situations where that isn't necessary:
 
-* {{% docref "lexy::dsl::p" %}} is a branch condition if the rule of the production is a branch (and the production does not specify custom {{% docref "whitespace" %}}).
+* {{% docref "lexy::dsl::p" %}} is a branch condition if the rule of the production is a branch.
   In that case, it is convenient to specify a condition in the rule of a production.
   link:/playground?example=choice_production[Try it online].
 * {{% docref "lexy::dsl::else_" %}} is a branch condition that is always taken.

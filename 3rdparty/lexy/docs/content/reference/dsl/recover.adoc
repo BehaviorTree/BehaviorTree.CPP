@@ -44,9 +44,9 @@ Branch parsing::
 Errors::
   All errors raised by `rule`.
   If `rule` has not already recovered, recovers for it:
-  * The single argument overload does it by skipping whitespace but otherwise consuming nothing;
+  * The single argument overload does it by consuming nothing,
     parsing then simply continues as if nothing happened.
-  * The two argument overload does it by parsing `recovery_rule` and then skipping whitespace.
+  * The two argument overload does it by parsing `recovery_rule`.
     If that succeeds, recovery is finished.
     Otherwise, raises all errors from it unchanged and cancels.
 Values::
@@ -67,7 +67,7 @@ If `recovery_rule` raises an error, this corresponds to a `catch` block whose ex
 
 {{% godbolt-example try "Recover from missing version numbers" %}}
 
-NOTE: See {{< github-example config >}} for a more complete version number parser.
+NOTE: See {{< github-example tutorial >}} for a more complete version number parser.
 
 [#find]
 == Rule `lexy::dsl::find`
@@ -89,8 +89,7 @@ namespace lexy::dsl
 `find` is a recovery rule that skips input until a synchronization {{% token-rule %}} is reached.
 
 Requires::
-  * The {{% encoding %}} of the input is a char encoding.
-  * `literals` and `limits` are {{% literal-rule %}}s or {{% docref "lexy::dsl::literal_set" %}}.
+  `literals` and `limits` are {{% literal-rule %}}s or {{% docref "lexy::dsl::literal_set" %}}.
 Parsing::
   Tries to match {{% docref "lexy::dsl::lookahead" %}}`(literal_set, limit_set)`,
   where `literals` and `limits` have been collected into a single literal set.
@@ -122,7 +121,7 @@ namespace lexy::dsl
         _rule_ auto limit(auto ... limits);
     };
 
-    constexpr _recover-dsl_ recover(_branch-rule_ auto ... branches);
+    constexpr _recover-dsl_ find(_branch-rule_ auto ... branches);
 }
 ----
 
