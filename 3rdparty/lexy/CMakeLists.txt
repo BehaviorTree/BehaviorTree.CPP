@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.8)
 project(lexy VERSION 2022.05.1 LANGUAGES CXX)
 
 set(LEXY_USER_CONFIG_HEADER "" CACHE FILEPATH "The user config header for lexy.")
-option(LEXY_FORCE_CPP17     "Whether or not lexy should use C++17 even if compiler supports C++20." OFF)
+option(LEXY_FORCE_CPP17     "Whether or not lexy should use C++17 even if compiler supports C++20." ON)
 
 add_subdirectory(src)
 
