@@ -169,6 +169,7 @@ target_link_libraries(${BTCPP_LIBRARY}
         minitrace
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
+        stdc++fs
 )
 
 target_include_directories(${BTCPP_LIBRARY}
