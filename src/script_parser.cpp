@@ -3,13 +3,13 @@
 
 #include <lexy/action/parse.hpp>
 #include <lexy/action/validate.hpp>
-#include <lexy_ext/report_error.hpp>
+// #include <lexy_ext/report_error.hpp>
 #include <lexy/input/string_input.hpp>
 
 namespace BT
 {
 
-using ErrorReport = lexy_ext::_report_error<char*>;
+// using ErrorReport = lexy_ext::_report_error<char*>;
 
 Expected<ScriptFunction> ParseScript(const std::string& script)
 {
@@ -17,7 +17,8 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
 
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
   auto result =
-      lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
+      // lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
+      lexy::parse<BT::Grammar::stmt>(input, lexy::noop);
   if(result.has_value() && result.error_count() == 0)
   {
     try
@@ -73,7 +74,8 @@ Result ValidateScript(const std::string& script)
 
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
   auto result =
-      lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
+      // lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
+      lexy::parse<BT::Grammar::stmt>(input, lexy::noop);
   if(result.has_value() && result.error_count() == 0)
   {
     try
