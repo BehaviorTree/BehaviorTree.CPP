@@ -46,11 +46,11 @@ struct _xid_start_character : lexyd::char_class_base<_xid_start_character>
     return lexy::_detail::code_point_has_properties<LEXY_UNICODE_PROPERTY(xid_start)>(cp);
   }
 
-  template <typename Encoding>
-  static constexpr auto char_class_match_swar(lexy::_detail::swar_int c)
-  {
-    return lexyd::ascii::_alphau::template char_class_match_swar<Encoding>(c);
-  }
+  // template <typename Encoding>
+  // static constexpr auto char_class_match_swar(lexy::_detail::swar_int c)
+  // {
+  //   return lexyd::ascii::_alphau::template char_class_match_swar<Encoding>(c);
+  // }
 };
 inline constexpr auto xid_start_character = _xid_start_character{};
 
