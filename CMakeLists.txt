@@ -198,7 +198,9 @@ message( STATUS "BTCPP_LIB_DESTINATION:   ${BTCPP_LIB_DESTINATION} " )
 message( STATUS "BTCPP_INCLUDE_DESTINATION: ${BTCPP_INCLUDE_DESTINATION} " )
 message( STATUS "BTCPP_UNIT_TESTS:   ${BTCPP_UNIT_TESTS} " )
 
+if (BTCPP_UNIT_TESTS OR BTCPP_EXAMPLES) 
 add_subdirectory(sample_nodes)
+endif()
 
 ######################################################
 
