@@ -256,7 +256,7 @@ public:
   template <typename T>
   [[nodiscard]] Expected<T> getInput(const std::string& key) const
   {
-    T out;
+    T out{};
     auto res = getInput(key, out);
     return (res) ? Expected<T>(out) : nonstd::make_unexpected(res.error());
   }
