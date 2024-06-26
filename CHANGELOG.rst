@@ -2,6 +2,36 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Backport of some build-related flatbuffers changes (`#825 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/825>`_)
+  * From flatbuffers upstream: Fix compiler error
+  Original author of change: avaliente-bc
+  Backport/update from upstream flatbuffers repository.
+  Change taken from https://github.com/google/flatbuffers/pull/7227
+  * From flatbuffers upstream: Fix include of string_view with C++17 abseil
+  Original author of change: ocpalo
+  Backport/update from upstream flatbuffers repository.
+  Changes taken from https://github.com/google/flatbuffers/pull/7897.
+* Add in call to ament_export_targets. (`#826 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/826>`_)
+  That way downstream ament packages can use this
+  package as a CMake target.
+* Fixed `#810 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/810>`_ - halting of subsequent nodes in ReactiveSequence/Fallback (`#817 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/817>`_)
+  * ReactiveSequence and ReactiveFallback will behave more similarly to 3.8
+  * Reactive Sequence/Fallback defaulting to allow multiple async nodes
+  ---------
+  Co-authored-by: Davide Faconti <davide.faconti@gmail.com>
+  Co-authored-by: Matej Vargovcik <vargovcik@robotechvision.com>
+* Merge pull request `#769 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/769>`_ from bi0ha2ard/fewer_boost_dependencies
+  depend only on libboost-coroutine(-dev) for v3.8
+* fix(dependency): depend only on libboost-coroutine(-dev)
+  At least on Ubuntu, boost-all-dev depends on openmpi, which depends on a
+  fortran compiler and gcc. This is very heavy for Docker containers where
+  only exec dependencies are really needed.
+* alternative to `#719 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/719>`_
+* fix issue `#725 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/725>`_ : SetBlackboard can copy entries
+* Contributors: Chris Lalancette, Davide Faconti, Felix, Lars Toenning, afrixs
+
 3.8.5 (2023-08-14)
 ------------------
 
