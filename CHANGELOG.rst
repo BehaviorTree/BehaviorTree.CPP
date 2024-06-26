@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.6.2 (2024-06-26)
+------------------
 * Initialize template variable `T out` (`#839 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/839>`_)
 * Building with a recent compiler fails due incompatible expected library (`#833 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/833>`_)
   * nonstd::expected updated to 0.8
