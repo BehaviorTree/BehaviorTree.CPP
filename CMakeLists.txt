@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.6.1 LANGUAGES C CXX)
+project(behaviortree_cpp VERSION 4.6.2 LANGUAGES C CXX)
 
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
@@ -198,7 +198,7 @@ message( STATUS "BTCPP_LIB_DESTINATION:   ${BTCPP_LIB_DESTINATION} " )
 message( STATUS "BTCPP_INCLUDE_DESTINATION: ${BTCPP_INCLUDE_DESTINATION} " )
 message( STATUS "BTCPP_UNIT_TESTS:   ${BTCPP_UNIT_TESTS} " )
 
-if (BTCPP_UNIT_TESTS OR BTCPP_EXAMPLES) 
+if (BTCPP_UNIT_TESTS OR BTCPP_EXAMPLES)
 add_subdirectory(sample_nodes)
 endif()
 
