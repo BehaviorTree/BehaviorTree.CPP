@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.8.7 (2024-06-26)
+------------------
 * Backport of some build-related flatbuffers changes (`#825 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/825>`_)
   * From flatbuffers upstream: Fix compiler error
   Original author of change: avaliente-bc
