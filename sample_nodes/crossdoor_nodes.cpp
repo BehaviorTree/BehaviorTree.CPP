@@ -74,3 +74,11 @@ void CrossDoor::reset()
   _door_locked = true;
   _pick_attempts = 0;
 }
+
+// This function must be implemented in the .cpp file to create
+// a plugin that can be loaded at run-time
+BT_REGISTER_NODES(factory)
+{
+  static CrossDoor cross_door;
+  cross_door.registerNodes(factory);
+}

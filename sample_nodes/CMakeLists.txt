@@ -33,3 +33,15 @@ target_link_libraries(movebase_node_dyn PRIVATE ${BTCPP_LIBRARY})
 target_compile_definitions(movebase_node_dyn PRIVATE  BT_PLUGIN_EXPORT )
 set_target_properties(movebase_node_dyn PROPERTIES LIBRARY_OUTPUT_DIRECTORY
     ${BTCPP_BIN_DESTINATION} )
+
+######################################################
+# INSTALL plugins for other packages to load
+
+INSTALL(TARGETS
+    crossdoor_nodes_dyn
+    dummy_nodes_dyn
+    movebase_node_dyn
+    LIBRARY DESTINATION share/${PROJECT_NAME}/bt_plugins
+    ARCHIVE DESTINATION share/${PROJECT_NAME}/bt_plugins
+    RUNTIME DESTINATION share/${PROJECT_NAME}/bt_plugins
+)
