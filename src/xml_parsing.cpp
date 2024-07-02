@@ -262,7 +262,7 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       break;
     }
 
-#if __xx_cplusplus >= 202002L
+#if __bt_cplusplus >= 202002L
     auto file_path(incl_node->Attribute("path"));
 #else
     auto file_path(std::filesystem::u8path(incl_node->Attribute("path")));
