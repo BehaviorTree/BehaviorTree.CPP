@@ -19,10 +19,16 @@
 #include <string>
 #include <typeindex>
 
+#define __bt_cplusplus __cplusplus
+#if defined(_MSVC_LANG) && !defined(__clang__)
+#define __bt_cplusplus (_MSC_VER == 1900 ? 201103L : _MSVC_LANG)
+#endif
+
 #if defined(__linux) || defined(__linux__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
 #endif
+
 
 #include <map>
 #include "behaviortree_cpp/xml_parsing.h"
@@ -36,6 +42,8 @@
 #ifdef USING_ROS2
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
+
+#include <iso646.h>
 
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/tree_node.h"
@@ -254,7 +262,12 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       break;
     }
 
-    std::filesystem::path file_path(incl_node->Attribute("path"));
+#if __xx_cplusplus >= 202002L
+    auto file_path(incl_node->Attribute("path"));
+#else
+    auto file_path(std::filesystem::u8path(incl_node->Attribute("path")));
+#endif
+
     const char* ros_pkg_relative_path = incl_node->Attribute("ros_pkg");
 
     if(ros_pkg_relative_path)
