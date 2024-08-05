@@ -659,7 +659,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
                                     "] is found in the XML, but not in the "
                                     "providedPorts()"));
         }
-        else
+        else if(!port_value.empty())
         {
           const auto& port_model = port_model_it->second;
           bool is_blacbkboard = port_value.size() >= 3 && port_value.front() == '{' &&
