@@ -74,7 +74,6 @@ else()
     include(cmake/conan_build.cmake)
 endif()
 
-
 #############################################################
 # LIBRARY
 
@@ -187,6 +186,7 @@ target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAK
 target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
 if(MSVC)
+	target_compile_options(${BTCPP_LIBRARY} PRIVATE "/source-charset:utf-8")
 else()
     target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
 endif()
