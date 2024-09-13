@@ -56,7 +56,6 @@ public:
 private:
   int max_attempts_;
   int try_count_;
-  bool all_skipped_ = true;
 
   bool read_parameter_from_ports_;
   static constexpr const char* NUM_ATTEMPTS = "num_attempts";

@@ -363,3 +363,38 @@ TEST(Preconditions, Remapping)
   ASSERT_EQ(counters[0], 1);
   ASSERT_EQ(counters[1], 3);
 }
+
+
+TEST(Preconditions, WhileCallsOnHalt)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+
+    <BehaviorTree ID="Main">
+      <Sequence>
+        <KeepRunning _while="A==1" _onHalted="B=69" />
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("Main");
+
+  tree.rootBlackboard()->set("A", 1);
+  tree.rootBlackboard()->set("B", 0);
+  auto status = tree.tickOnce();
+
+  ASSERT_EQ(status, BT::NodeStatus::RUNNING);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 0);
+
+  // trigger halt
+  tree.rootBlackboard()->set("A", 0);
+  status = tree.tickOnce();
+
+  ASSERT_EQ(status, BT::NodeStatus::SKIPPED);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 69);
+}

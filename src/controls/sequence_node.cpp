@@ -18,7 +18,6 @@ namespace BT
 SequenceNode::SequenceNode(const std::string& name, bool make_async)
   : ControlNode::ControlNode(name, {})
   , current_child_idx_(0)
-  , all_skipped_(true)
   , asynch_(make_async)
 {
   if(asynch_)
@@ -39,7 +38,7 @@ NodeStatus SequenceNode::tick()
 
   if(status() == NodeStatus::IDLE)
   {
-    all_skipped_ = true;
+    skipped_count_ = 0;
   }
 
   setStatus(NodeStatus::RUNNING);
@@ -50,9 +49,6 @@ NodeStatus SequenceNode::tick()
 
     auto prev_status = current_child_node->status();
     const NodeStatus child_status = current_child_node->executeTick();
-
-    // switch to RUNNING state as soon as you find an active child
-    all_skipped_ &= (child_status == NodeStatus::SKIPPED);
 
     switch(child_status)
     {
@@ -81,6 +77,7 @@ NodeStatus SequenceNode::tick()
       case NodeStatus::SKIPPED: {
         // It was requested to skip this node
         current_child_idx_++;
+        skipped_count_++;
       }
       break;
 
@@ -97,7 +94,7 @@ NodeStatus SequenceNode::tick()
     current_child_idx_ = 0;
   }
   // Skip if ALL the nodes have been skipped
-  return all_skipped_ ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
+  return (skipped_count_ == children_count) ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
 }
 
 }  // namespace BT
