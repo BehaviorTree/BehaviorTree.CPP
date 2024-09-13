@@ -19,6 +19,12 @@
 #include <string>
 #include <typeindex>
 
+#if defined(_MSVC_LANG) && !defined(__clang__)
+#define __bt_cplusplus (_MSC_VER == 1900 ? 201103L : _MSVC_LANG)
+#else
+#define __bt_cplusplus __cplusplus
+#endif
+
 #if defined(__linux) || defined(__linux__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
@@ -254,7 +260,12 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       break;
     }
 
-    std::filesystem::path file_path(incl_node->Attribute("path"));
+#if __bt_cplusplus >= 202002L
+    auto file_path(std::filesystem::path(incl_node->Attribute("path")));
+#else
+    auto file_path(std::filesystem::u8path(incl_node->Attribute("path")));
+#endif
+
     const char* ros_pkg_relative_path = incl_node->Attribute("ros_pkg");
 
     if(ros_pkg_relative_path)
