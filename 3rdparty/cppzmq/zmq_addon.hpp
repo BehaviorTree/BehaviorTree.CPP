@@ -77,7 +77,7 @@ inline bool is_little_endian()
 inline void write_network_order(unsigned char *buf, const uint32_t value)
 {
     if (is_little_endian()) {
-        ZMQ_CONSTEXPR_VAR uint32_t mask = std::numeric_limits<std::uint8_t>::max();
+        ZMQ_CONSTEXPR_VAR uint32_t mask = (std::numeric_limits<std::uint8_t>::max)();
         *buf++ = static_cast<unsigned char>((value >> 24) & mask);
         *buf++ = static_cast<unsigned char>((value >> 16) & mask);
         *buf++ = static_cast<unsigned char>((value >> 8) & mask);
@@ -224,12 +224,12 @@ message_t encode(const Range &parts)
     // First pass check sizes
     for (const auto &part : parts) {
         const size_t part_size = part.size();
-        if (part_size > std::numeric_limits<std::uint32_t>::max()) {
+        if (part_size > (std::numeric_limits<std::uint32_t>::max)()) {
             // Size value must fit into uint32_t.
             throw std::range_error("Invalid size, message part too large");
         }
         const size_t count_size =
-          part_size < std::numeric_limits<std::uint8_t>::max() ? 1 : 5;
+          part_size < (std::numeric_limits<std::uint8_t>::max)() ? 1 : 5;
         mmsg_size += part_size + count_size;
     }
 
@@ -240,12 +240,12 @@ message_t encode(const Range &parts)
         const unsigned char *part_data =
           static_cast<const unsigned char *>(part.data());
 
-        if (part_size < std::numeric_limits<std::uint8_t>::max()) {
+        if (part_size < (std::numeric_limits<std::uint8_t>::max)()) {
             // small part
             *buf++ = (unsigned char) part_size;
         } else {
             // big part
-            *buf++ = std::numeric_limits<uint8_t>::max();
+            *buf++ = (std::numeric_limits<uint8_t>::max)();
             detail::write_network_order(buf, part_size);
             buf += sizeof(part_size);
         }
@@ -279,7 +279,7 @@ template<class OutputIt> OutputIt decode(const message_t &encoded, OutputIt out)
 
     while (source < limit) {
         size_t part_size = *source++;
-        if (part_size == std::numeric_limits<std::uint8_t>::max()) {
+        if (part_size == (std::numeric_limits<std::uint8_t>::max)()) {
             if (static_cast<size_t>(limit - source) < sizeof(uint32_t)) {
                 throw std::out_of_range(
                   "Malformed encoding, overflow in reading size");
@@ -343,10 +343,10 @@ class multipart_t
     multipart_t(message_t &&message) { add(std::move(message)); }
 
     // Move constructor
-    multipart_t(multipart_t &&other) { m_parts = std::move(other.m_parts); }
+    multipart_t(multipart_t &&other) ZMQ_NOTHROW { m_parts = std::move(other.m_parts); }
 
     // Move assignment operator
-    multipart_t &operator=(multipart_t &&other)
+    multipart_t &operator=(multipart_t &&other) ZMQ_NOTHROW
     {
         m_parts = std::move(other.m_parts);
         return *this;
