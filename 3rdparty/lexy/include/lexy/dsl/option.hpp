@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_OPTION_HPP_INCLUDED
@@ -80,7 +80,7 @@ struct _opt : rule_base
 template <typename Rule>
 constexpr auto opt(Rule)
 {
-    static_assert(lexy::is_branch_rule<Rule>, "opt() requires a branch condition");
+    LEXY_REQUIRE_BRANCH_RULE(Rule, "opt()");
     if constexpr (lexy::is_unconditional_branch_rule<Rule>)
         // Branch is always taken, so don't wrap in opt().
         return Rule{};

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_VISUALIZE_HPP_INCLUDED
@@ -363,32 +363,7 @@ OutputIt visualize_to(OutputIt out, lexy::lexeme<Reader> lexeme,
     };
 
     using encoding = typename Reader::encoding;
-    if constexpr (std::is_same_v<encoding, lexy::ascii_encoding> //
-                  || std::is_same_v<encoding, lexy::default_encoding>)
-    {
-        auto count = 0u;
-        for (char c : lexeme)
-        {
-            // If the character is in fact ASCII, visualize the code point.
-            // Otherwise, visualize as byte.
-            if (lexy::_detail::is_ascii(c))
-                out = visualize_to(out, lexy::code_point(static_cast<char32_t>(c)), opts);
-            else
-                out = write_escaped_byte(out, static_cast<unsigned char>(c));
-
-            ++count;
-            if (count == opts.max_lexeme_width)
-            {
-                out = _detail::write_ellipsis(out, opts);
-                break;
-            }
-        }
-        return out;
-    }
-    else if constexpr (std::is_same_v<encoding, lexy::utf8_encoding>         //
-                       || std::is_same_v<encoding, lexy::utf8_char_encoding> //
-                       || std::is_same_v<encoding, lexy::utf16_encoding>     //
-                       || std::is_same_v<encoding, lexy::utf32_encoding>)
+    if constexpr (lexy::is_unicode_encoding<encoding>)
     {
         // Parse the individual code points, and write them out.
         lexy::range_input<encoding, typename Reader::iterator> input(lexeme.begin(), lexeme.end());
@@ -406,7 +381,7 @@ OutputIt visualize_to(OutputIt out, lexy::lexeme<Reader> lexeme,
             else if (result.error == lexy::_detail::cp_error::success)
             {
                 // Consume and visualize.
-                reader.set_position(result.end);
+                reader.reset(result.end);
                 out = visualize_to(out, lexy::code_point(result.cp), opts);
             }
             else
@@ -461,7 +436,28 @@ OutputIt visualize_to(OutputIt out, lexy::lexeme<Reader> lexeme,
         }
         return out;
     }
-    else if constexpr (std::is_same_v<encoding, lexy::byte_encoding>)
+    else if constexpr (lexy::is_text_encoding<encoding>)
+    {
+        auto count = 0u;
+        for (char c : lexeme)
+        {
+            // If the character is in fact ASCII, visualize the code point.
+            // Otherwise, visualize as byte.
+            if (lexy::_detail::is_ascii(c))
+                out = visualize_to(out, lexy::code_point(static_cast<char32_t>(c)), opts);
+            else
+                out = write_escaped_byte(out, static_cast<unsigned char>(c));
+
+            ++count;
+            if (count == opts.max_lexeme_width)
+            {
+                out = _detail::write_ellipsis(out, opts);
+                break;
+            }
+        }
+        return out;
+    }
+    else if constexpr (lexy::is_byte_encoding<encoding>)
     {
         auto count = 0u;
         for (auto iter = lexeme.begin(); iter != lexeme.end(); ++iter)
@@ -479,6 +475,13 @@ OutputIt visualize_to(OutputIt out, lexy::lexeme<Reader> lexeme,
             }
         }
         return out;
+    }
+    else if constexpr (lexy::is_node_encoding<encoding>)
+    {
+        // Visualize as an iterator range of characters.
+        lexy::range_input<typename encoding::char_encoding, typename Reader::iterator>
+            input(lexeme.begin(), lexeme.end());
+        return visualize_to(out, lexy::lexeme_for<decltype(input)>(input.begin(), input.end()));
     }
     else
     {
@@ -618,6 +621,41 @@ struct cfile_output_iterator
     cfile_output_iterator& operator=(char c)
     {
         std::fputc(c, _file);
+        return *this;
+    }
+};
+
+struct stderr_output_iterator
+{
+    auto operator*() const noexcept
+    {
+        return *this;
+    }
+    auto operator++(int) const noexcept
+    {
+        return *this;
+    }
+
+    stderr_output_iterator& operator=(char c)
+    {
+        std::fputc(c, stderr);
+        return *this;
+    }
+};
+struct stdout_output_iterator
+{
+    auto operator*() const noexcept
+    {
+        return *this;
+    }
+    auto operator++(int) const noexcept
+    {
+        return *this;
+    }
+
+    stdout_output_iterator& operator=(char c)
+    {
+        std::fputc(c, stdout);
         return *this;
     }
 };

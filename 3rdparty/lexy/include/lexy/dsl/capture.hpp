@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_CAPTURE_HPP_INCLUDED
@@ -16,7 +16,7 @@ struct _cap : _copy_base<Token>
     template <typename Reader>
     struct bp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
         constexpr auto try_parse(const void*, const Reader& reader)
         {
@@ -35,12 +35,12 @@ struct _cap : _copy_base<Token>
         {
             auto begin = reader.position();
 
-            context.on(_ev::token{}, Token{}, begin, end);
-            reader.set_position(end);
+            context.on(_ev::token{}, Token{}, begin, end.position());
+            reader.reset(end);
 
             using continuation = lexy::whitespace_parser<Context, NextParser>;
             return continuation::parse(context, reader, LEXY_FWD(args)...,
-                                       lexy::lexeme<Reader>(begin, end));
+                                       lexy::lexeme<Reader>(begin, end.position()));
         }
     };
 

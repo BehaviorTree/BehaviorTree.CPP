@@ -20,6 +20,9 @@ using _subgrammar_for = _subgrammar<Production, typename Action::handler, typena
 #define LEXY_DECLARE_SUBGRAMMAR(Production)                                                        \
     namespace lexy                                                                                 \
     {                                                                                              \
+        template <typename ParseState>                                                             \
+        constexpr auto production_has_value_callback<Production, ParseState> = true;               \
+                                                                                                   \
         template <typename Handler, typename State, typename Reader>                               \
         struct _subgrammar<Production, Handler, State, Reader>                                     \
         {                                                                                          \
@@ -104,4 +107,3 @@ constexpr auto subgrammar = _subg<Production, T>{};
 } // namespace lexyd
 
 #endif // LEXY_DSL_SUBGRAMMAR_HPP_INCLUDED
-

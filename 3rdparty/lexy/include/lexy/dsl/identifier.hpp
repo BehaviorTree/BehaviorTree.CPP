@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_IDENTIFIER_HPP_INCLUDED
@@ -36,12 +36,14 @@ struct _idp : token_base<_idp<Leading, Trailing>>
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr bool try_parse(Reader reader)
         {
+            static_assert(lexy::is_char_encoding<typename Reader::encoding>);
+
             // Need to match Leading character.
             if (!lexy::try_match_token(Leading{}, reader))
                 return false;
@@ -61,7 +63,7 @@ struct _idp : token_base<_idp<Leading, Trailing>>
                     break;
             }
 
-            end = reader.position();
+            end = reader.current();
             return true;
         }
 
@@ -170,7 +172,7 @@ struct _id : branch_base
     template <typename Reader>
     struct bp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
         constexpr bool try_parse(const void*, const Reader& reader)
         {
@@ -181,7 +183,8 @@ struct _id : branch_base
             end = parser.end;
 
             // We only succeed if it's not a reserved identifier.
-            [[maybe_unused]] auto input = lexy::partial_input(reader, reader.position(), end);
+            [[maybe_unused]] auto input
+                = lexy::partial_input(reader, reader.position(), end.position());
             return !(ReservedPredicate::is_reserved(input) || ...);
         }
 
@@ -194,12 +197,12 @@ struct _id : branch_base
         {
             auto begin = reader.position();
 
-            context.on(_ev::token{}, lexy::identifier_token_kind, begin, end);
-            reader.set_position(end);
+            context.on(_ev::token{}, lexy::identifier_token_kind, begin, end.position());
+            reader.reset(end);
 
             using continuation = lexy::whitespace_parser<Context, NextParser>;
             return continuation::parse(context, reader, LEXY_FWD(args)...,
-                                       lexy::lexeme<Reader>(begin, end));
+                                       lexy::lexeme<Reader>(begin, end.position()));
         }
     };
 
@@ -341,16 +344,16 @@ struct _kw : token_base<_kw<Id, CharT, C...>>, _lit_base
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr bool try_parse(Reader reader)
         {
             // Need to match the literal.
             if (!lexy::_detail::match_literal<0, CharT, C...>(reader))
                 return false;
-            end = reader.position();
+            end = reader.current();
 
             // To qualify as a keyword, and not just the prefix of an identifier,
             // we must not have a trailing identifier character.

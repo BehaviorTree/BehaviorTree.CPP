@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_FLAGS_HPP_INCLUDED
@@ -126,8 +126,14 @@ struct _flag : rule_base
 template <auto If, auto Else = LEXY_DECAY_DECLTYPE(If){}, typename Rule>
 constexpr auto flag(Rule)
 {
-    static_assert(lexy::is_branch_rule<Rule>);
+    LEXY_REQUIRE_BRANCH_RULE(Rule, "flag()");
     return _flag<Rule, If, Else>{};
+}
+
+template <typename Rule>
+constexpr auto flag(Rule rule)
+{
+    return flag<true, false>(rule);
 }
 } // namespace lexyd
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_ANY_HPP_INCLUDED
@@ -15,9 +15,9 @@ struct _any : token_base<_any, unconditional_branch_base>
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr std::true_type try_parse(Reader reader)
         {
@@ -32,7 +32,7 @@ struct _any : token_base<_any, unconditional_branch_base>
             while (reader.peek() != encoding::eof())
                 reader.bump();
 
-            end = reader.position();
+            end = reader.current();
             return {};
         }
     };

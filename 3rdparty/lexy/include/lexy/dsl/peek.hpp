@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_PEEK_HPP_INCLUDED
@@ -37,7 +37,7 @@ struct _peek : branch_base
     struct bp
     {
         typename Reader::iterator begin;
-        typename Reader::iterator end;
+        typename Reader::marker   end;
 
         constexpr bool try_parse(const void*, Reader reader)
         {
@@ -54,13 +54,13 @@ struct _peek : branch_base
         template <typename Context>
         constexpr void cancel(Context& context)
         {
-            context.on(_ev::backtracked{}, begin, end);
+            context.on(_ev::backtracked{}, begin, end.position());
         }
 
         template <typename NextParser, typename Context, typename... Args>
         LEXY_PARSER_FUNC bool finish(Context& context, Reader& reader, Args&&... args)
         {
-            context.on(_ev::backtracked{}, begin, end);
+            context.on(_ev::backtracked{}, begin, end.position());
             return NextParser::parse(context, reader, LEXY_FWD(args)...);
         }
     };
@@ -76,13 +76,13 @@ struct _peek : branch_base
             {
                 // Report that we've failed.
                 using tag = lexy::_detail::type_or<Tag, lexy::peek_failure>;
-                auto err  = lexy::error<Reader, tag>(impl.begin, impl.end);
+                auto err  = lexy::error<Reader, tag>(impl.begin, impl.end.position());
                 context.on(_ev::error{}, err);
 
                 // But recover immediately, as we wouldn't have consumed anything either way.
             }
 
-            context.on(_ev::backtracked{}, impl.begin, impl.end);
+            context.on(_ev::backtracked{}, impl.begin, impl.end.position());
             return NextParser::parse(context, reader, LEXY_FWD(args)...);
         }
     };
@@ -98,7 +98,7 @@ struct _peekn : branch_base
     struct bp
     {
         typename Reader::iterator begin;
-        typename Reader::iterator end;
+        typename Reader::marker   end;
 
         constexpr bool try_parse(const void*, Reader reader)
         {
@@ -115,13 +115,13 @@ struct _peekn : branch_base
         template <typename Context>
         constexpr void cancel(Context& context)
         {
-            context.on(_ev::backtracked{}, begin, end);
+            context.on(_ev::backtracked{}, begin, end.position());
         }
 
         template <typename NextParser, typename Context, typename... Args>
         LEXY_PARSER_FUNC bool finish(Context& context, Reader& reader, Args&&... args)
         {
-            context.on(_ev::backtracked{}, begin, end);
+            context.on(_ev::backtracked{}, begin, end.position());
             return NextParser::parse(context, reader, LEXY_FWD(args)...);
         }
     };
@@ -137,20 +137,20 @@ struct _peekn : branch_base
             {
                 // Report that we've failed.
                 using tag = lexy::_detail::type_or<Tag, lexy::unexpected>;
-                auto err  = lexy::error<Reader, tag>(impl.begin, impl.end);
+                auto err  = lexy::error<Reader, tag>(impl.begin, impl.end.position());
                 context.on(_ev::error{}, err);
 
                 // And recover by consuming the input.
                 context.on(_ev::recovery_start{}, impl.begin);
-                context.on(_ev::token{}, lexy::error_token_kind, impl.begin, impl.end);
-                context.on(_ev::recovery_finish{}, impl.end);
+                context.on(_ev::token{}, lexy::error_token_kind, impl.begin, impl.end.position());
+                context.on(_ev::recovery_finish{}, impl.end.position());
 
-                reader.set_position(impl.end);
+                reader.reset(impl.end);
                 return NextParser::parse(context, reader, LEXY_FWD(args)...);
             }
             else
             {
-                context.on(_ev::backtracked{}, impl.begin, impl.end);
+                context.on(_ev::backtracked{}, impl.begin, impl.end.position());
                 return NextParser::parse(context, reader, LEXY_FWD(args)...);
             }
         }

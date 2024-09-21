@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_BASE_HPP_INCLUDED
@@ -200,6 +200,7 @@ constexpr void* no_parse_state = nullptr;
 template <typename Handler, typename State, typename Production, typename Reader>
 constexpr auto _do_action(_pc<Handler, State, Production>& context, Reader& reader)
 {
+    context.on(parse_events::grammar_start{}, reader.position());
     context.on(parse_events::production_start{}, reader.position());
 
     // We parse whitespace, theen the rule, then finish.
@@ -209,9 +210,15 @@ constexpr auto _do_action(_pc<Handler, State, Production>& context, Reader& read
     auto rule_result = parser::parse(context, reader);
 
     if (rule_result)
+    {
         context.on(parse_events::production_finish{}, reader.position());
+        context.on(parse_events::grammar_finish{}, reader);
+    }
     else
+    {
         context.on(parse_events::production_cancel{}, reader.position());
+        context.on(parse_events::grammar_cancel{}, reader);
+    }
 
     return rule_result;
 }

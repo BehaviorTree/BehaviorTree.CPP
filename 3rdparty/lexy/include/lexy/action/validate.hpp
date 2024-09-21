@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_VALIDATE_HPP_INCLUDED
@@ -196,27 +196,31 @@ public:
             handler._top = _prev;
         }
 
-        template <typename Tag>
-        constexpr void on(_vh& handler, parse_events::error, const error<Reader, Tag>& error)
+        template <typename R, typename Tag>
+        constexpr void on(_vh& handler, parse_events::error, const error<R, Tag>& error)
         {
             handler._cb.generic(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
-        constexpr void on(_vh& handler, parse_events::error, const error<Reader, void>& error)
+        template <typename R>
+        constexpr void on(_vh& handler, parse_events::error, const error<R, void>& error)
         {
             handler._cb.generic(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
-        constexpr void on(_vh&                                   handler, parse_events::error,
-                          const error<Reader, expected_literal>& error)
+        template <typename R>
+        constexpr void on(_vh&                              handler, parse_events::error,
+                          const error<R, expected_literal>& error)
         {
             handler._cb.literal(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
-        constexpr void on(_vh&                                   handler, parse_events::error,
-                          const error<Reader, expected_keyword>& error)
+        template <typename R>
+        constexpr void on(_vh&                              handler, parse_events::error,
+                          const error<R, expected_keyword>& error)
         {
             handler._cb.keyword(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }
-        constexpr void on(_vh&                                      handler, parse_events::error,
-                          const error<Reader, expected_char_class>& error)
+        template <typename R>
+        constexpr void on(_vh&                                 handler, parse_events::error,
+                          const error<R, expected_char_class>& error)
         {
             handler._cb.char_class(handler._cb.sink, get_info(), handler._cb.input, _begin, error);
         }

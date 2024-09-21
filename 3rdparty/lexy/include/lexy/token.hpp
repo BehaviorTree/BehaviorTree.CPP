@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_TOKEN_HPP_INCLUDED
@@ -88,9 +88,6 @@ inline constexpr auto token_kind_map_for<void> = token_kind_map;
 
 namespace lexy
 {
-template <typename TokenKind>
-using _detect_token_kind_name = decltype(token_kind_name(TokenKind{}));
-
 template <typename TokenRule>
 constexpr auto _has_special_token_kind = [] {
     using kind = LEXY_DECAY_DECLTYPE(lexy::token_kind_of<TokenRule>);
@@ -174,12 +171,13 @@ public:
     constexpr const char* name() const noexcept
     {
         if (is_predefined())
-            return _kind_name(static_cast<predefined_token_kind>(_value));
-        else if constexpr (lexy::_detail::is_detected<_detect_token_kind_name, TokenKind>)
-            return token_kind_name(get()); // ADL
+            return token_kind_name(static_cast<predefined_token_kind>(_value));
         else
-            // We only have a generic name.
-            return "token";
+            return token_kind_name(get()); // ADL
+    }
+    friend constexpr const char* token_kind_name(token_kind kind) noexcept
+    {
+        return kind.name();
     }
 
     constexpr _underlying_type get() const noexcept

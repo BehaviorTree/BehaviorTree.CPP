@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_CASE_FOLDING_HPP_INCLUDED
@@ -45,10 +45,10 @@ struct _cfl : token_base<_cfl<Literal, CaseFolding>>, _lit_base
     struct tp
     {
         lexy::token_parser_for<Literal, CaseFolding<Reader>> impl;
-        typename Reader::iterator                            end;
+        typename Reader::marker                              end;
 
         constexpr explicit tp(const Reader& reader)
-        : impl(CaseFolding<Reader>{reader}), end(reader.position())
+        : impl(CaseFolding<Reader>{reader}), end(reader.current())
         {}
 
         constexpr bool try_parse(Reader _reader)
@@ -84,6 +84,7 @@ struct _acfr // ascii case folding reader
 
     using encoding = typename Reader::encoding;
     using iterator = typename Reader::iterator;
+    using marker   = typename Reader::marker;
 
     constexpr auto peek() const -> typename encoding::int_type
     {
@@ -104,9 +105,13 @@ struct _acfr // ascii case folding reader
         return _impl.position();
     }
 
-    constexpr void set_position(iterator new_pos)
+    constexpr marker current() const noexcept
     {
-        _impl.set_position(new_pos);
+        return _impl.current();
+    }
+    constexpr void reset(marker m) noexcept
+    {
+        _impl.reset(m);
     }
 };
 } // namespace lexy
@@ -146,6 +151,7 @@ struct _sucfr32 // simple unicode case folding reader, UTF-32
 
     using encoding = typename Reader::encoding;
     using iterator = typename Reader::iterator;
+    using marker   = typename Reader::marker;
 
     constexpr auto peek() const -> typename encoding::int_type
     {
@@ -163,9 +169,13 @@ struct _sucfr32 // simple unicode case folding reader, UTF-32
         return _impl.position();
     }
 
-    constexpr void set_position(iterator new_pos)
+    constexpr marker current() const noexcept
     {
-        _impl.set_position(new_pos);
+        return _impl.current();
+    }
+    constexpr void reset(marker m) noexcept
+    {
+        _impl.reset(m);
     }
 };
 
@@ -174,22 +184,23 @@ struct _sucfrm // simple unicode case folding reader, UTF-8 and UTF-16
 {
     using encoding = typename Reader::encoding;
     using iterator = typename Reader::iterator;
+    using marker   = typename Reader::marker;
 
     Reader                       _impl;
-    typename Reader::iterator    _cur_pos;
+    typename Reader::marker      _cur_pos;
     typename encoding::char_type _buffer[4];
     unsigned char                _buffer_size;
     unsigned char                _buffer_cur;
 
     constexpr explicit _sucfrm(Reader impl)
-    : _impl(impl), _cur_pos(_impl.position()), _buffer{}, _buffer_size(0), _buffer_cur(0)
+    : _impl(impl), _cur_pos(_impl.current()), _buffer{}, _buffer_size(0), _buffer_cur(0)
     {
         _fill();
     }
 
     constexpr void _fill()
     {
-        _cur_pos = _impl.position();
+        _cur_pos = _impl.current();
 
         // We need to read the next code point at this point.
         auto result = lexy::_detail::parse_code_point(_impl);
@@ -200,13 +211,13 @@ struct _sucfrm // simple unicode case folding reader, UTF-8 and UTF-16
             _buffer_size = static_cast<unsigned char>(
                 lexy::_detail::encode_code_point<encoding>(folded.value(), _buffer, 4));
             _buffer_cur = 0;
-            _impl.set_position(result.end);
+            _impl.reset(result.end);
         }
         else
         {
             // Fill the buffer with the partial code point.
             _buffer_cur = _buffer_size = 0;
-            while (_impl.position() != result.end)
+            while (_impl.position() != result.end.position())
             {
                 _buffer[_buffer_size] = static_cast<typename encoding::char_type>(_impl.peek());
                 ++_buffer_size;
@@ -233,22 +244,23 @@ struct _sucfrm // simple unicode case folding reader, UTF-8 and UTF-16
 
     constexpr iterator position() const
     {
-        // We only report the position at a code point boundary.
+        return current().position();
+    }
+
+    constexpr marker current() const noexcept
+    {
+        // We only report a marker at a code point boundary.
         // This has two consequences:
         // 1. If we don't match a rule, the error token does not include any common start code
-        // units.
-        //    That's actually nice, and makes it unnecessary to handle that situation in the error
-        //    reporting. The only relevant difference is in the error token.
+        //    units. That's actually nice, and makes it unnecessary to handle that situation in the
+        //    error reporting. The only relevant difference is in the error token.
         // 2. If the user wants to match partial code unit sequences, the behavior can become buggy.
         //    However, that's not really something we should worry about.
         return _cur_pos;
     }
-
-    constexpr void set_position(iterator new_pos)
+    constexpr void reset(marker m) noexcept
     {
-        // It's a code point boundary, so reset.
-        _impl.set_position(new_pos);
-        _fill();
+        _impl.reset(m);
     }
 };
 

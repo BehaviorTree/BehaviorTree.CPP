@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_CALLBACK_BIT_CAST_HPP_INCLUDED
@@ -16,7 +16,7 @@
 
 #ifndef LEXY_HAS_BITCAST
 #    if defined(__has_include)
-#        if __has_include(<bit>)
+#        if __has_include(<bit>) && __cplusplus >= 202002L
 #            include <bit>
 #            ifdef __cpp_lib_bit_cast
 #                define LEXY_HAS_BITCAST 1

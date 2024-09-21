@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_INPUT_STRING_INPUT_HPP_INCLUDED
@@ -17,6 +17,8 @@ using _string_view_char_type = LEXY_DECAY_DECLTYPE(*LEXY_DECLVAL(View).data());
 template <typename Encoding = default_encoding>
 class string_input
 {
+    static_assert(lexy::is_char_encoding<Encoding>);
+
 public:
     using encoding  = Encoding;
     using char_type = typename encoding::char_type;

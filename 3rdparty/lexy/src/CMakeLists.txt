@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 # SPDX-License-Identifier: BSL-1.0
 
 get_filename_component(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include/lexy ABSOLUTE)
@@ -80,6 +80,7 @@ set(header_files
         ${include_dir}/dsl/option.hpp
         ${include_dir}/dsl/operator.hpp
         ${include_dir}/dsl/parse_as.hpp
+        ${include_dir}/dsl/parse_tree_node.hpp
         ${include_dir}/dsl/peek.hpp
         ${include_dir}/dsl/position.hpp
         ${include_dir}/dsl/production.hpp
@@ -105,6 +106,7 @@ set(header_files
         ${include_dir}/input/buffer.hpp
         ${include_dir}/input/file.hpp
         ${include_dir}/input/lexeme_input.hpp
+        ${include_dir}/input/parse_tree_input.hpp
         ${include_dir}/input/range_input.hpp
         ${include_dir}/input/string_input.hpp
 
@@ -191,7 +193,7 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     # GCC's arry bounds, maybe uninitialized, and restrict warning seems to have false positives.
     target_compile_options(lexy_dev INTERFACE -Wno-array-bounds -Wno-maybe-uninitialized -Wno-restrict)
 elseif(MSVC)
-    target_compile_options(lexy_dev INTERFACE /WX /W3 /D _CRT_SECURE_NO_WARNINGS /wd5105)
+    target_compile_options(lexy_dev INTERFACE /WX /W3 /D _CRT_SECURE_NO_WARNINGS /wd5105 /utf-8)
 endif()
 
 # Link to have FILE I/O.
@@ -214,3 +216,9 @@ target_sources(lexy_ext INTERFACE ${ext_headers_files})
 add_library(lexy INTERFACE)
 add_alias(lexy lexy)
 target_link_libraries(lexy INTERFACE foonathan::lexy::core foonathan::lexy::file foonathan::lexy::unicode foonathan::lexy::ext)
+
+# Link to enable experimental features.
+add_library(lexy_experimental INTERFACE)
+add_alias(lexy::experimental lexy_experimental)
+target_compile_definitions(lexy_experimental INTERFACE LEXY_EXPERIMENTAL=1)
+

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_INPUT_BASE_HPP_INCLUDED
@@ -17,6 +17,16 @@ class _rr
 public:
     using encoding = Encoding;
     using iterator = Iterator;
+
+    struct marker
+    {
+        iterator _it;
+
+        constexpr iterator position() const noexcept
+        {
+            return _it;
+        }
+    };
 
     constexpr explicit _rr(Iterator begin, Sentinel end) noexcept : _cur(begin), _end(end)
     {
@@ -42,10 +52,14 @@ public:
         return _cur;
     }
 
-    constexpr void set_position(iterator new_pos) noexcept
+    constexpr marker current() const noexcept
     {
-        LEXY_PRECONDITION(lexy::_detail::precedes(new_pos, _end));
-        _cur = new_pos;
+        return {_cur};
+    }
+    constexpr void reset(marker m) noexcept
+    {
+        LEXY_PRECONDITION(lexy::_detail::precedes(m._it, _end));
+        _cur = m._it;
     }
 
 private:

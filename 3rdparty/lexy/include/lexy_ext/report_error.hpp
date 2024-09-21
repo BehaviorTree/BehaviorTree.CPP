@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_EXT_REPORT_ERROR_HPP_INCLUDED
@@ -317,7 +317,7 @@ OutputIt write_error(OutputIt out, const lexy::error_context<Input>& context,
 
 namespace lexy_ext
 {
-template <typename OutputIterator = int>
+template <typename OutputIterator>
 struct _report_error
 {
     OutputIterator              _iter;
@@ -337,18 +337,14 @@ struct _report_error
         void operator()(const lexy::error_context<Input>& context,
                         const lexy::error<Reader, Tag>&   error)
         {
-            if constexpr (std::is_same_v<OutputIterator, int>)
-                _detail::write_error(lexy::cfile_output_iterator{stderr}, context, error, _opts,
-                                     _path);
-            else
-                _iter = _detail::write_error(_iter, context, error, _opts, _path);
+            _iter = _detail::write_error(_iter, context, error, _opts, _path);
             ++_count;
         }
 
         std::size_t finish() &&
         {
             if (_count != 0)
-                std::fputs("\n", stderr);
+                *_iter++ = '\n';
             return _count;
         }
     };
@@ -378,7 +374,7 @@ struct _report_error
 };
 
 /// An error callback that uses diagnostic_writer to print to stderr (by default).
-constexpr auto report_error = _report_error<>{};
+constexpr auto report_error = _report_error<lexy::stderr_output_iterator>{};
 } // namespace lexy_ext
 
 #endif // LEXY_EXT_REPORT_ERROR_HPP_INCLUDED

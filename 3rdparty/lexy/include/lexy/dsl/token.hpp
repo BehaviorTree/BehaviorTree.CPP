@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_TOKEN_HPP_INCLUDED
@@ -46,7 +46,7 @@ struct token_base : _token_inherit<ImplOrTag>
     template <typename Reader>
     struct bp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
         constexpr auto try_parse(const void*, const Reader& reader)
         {
@@ -63,8 +63,8 @@ struct token_base : _token_inherit<ImplOrTag>
         template <typename NextParser, typename Context, typename... Args>
         LEXY_PARSER_FUNC bool finish(Context& context, Reader& reader, Args&&... args)
         {
-            context.on(_ev::token{}, Derived{}, reader.position(), end);
-            reader.set_position(end);
+            context.on(_ev::token{}, Derived{}, reader.position(), end.position());
+            reader.reset(end);
             return lexy::whitespace_parser<Context, NextParser>::parse(context, reader,
                                                                        LEXY_FWD(args)...);
         }
@@ -85,16 +85,17 @@ struct token_base : _token_inherit<ImplOrTag>
         {
             if (!parser.try_parse(reader))
             {
-                context.on(_ev::token{}, lexy::error_token_kind, reader.position(), parser.end);
+                context.on(_ev::token{}, lexy::error_token_kind, reader.position(),
+                           parser.end.position());
                 parser.report_error(context, reader);
-                reader.set_position(parser.end);
+                reader.reset(parser.end);
 
                 return false;
             }
         }
 
-        context.on(_ev::token{}, typename Derived::token_type{}, begin, parser.end);
-        reader.set_position(parser.end);
+        context.on(_ev::token{}, typename Derived::token_type{}, begin, parser.end.position());
+        reader.reset(parser.end);
 
         return true;
     }
@@ -153,7 +154,7 @@ struct _toke : token_base<_toke<Tag, Token>, Token>
         constexpr void report_error(Context& context, const Reader& reader)
         {
             // Report a different error.
-            auto err = lexy::error<Reader, Tag>(reader.position(), this->end);
+            auto err = lexy::error<Reader, Tag>(reader.position(), this->end.position());
             context.on(_ev::error{}, err);
         }
     };
@@ -184,9 +185,9 @@ struct _token : token_base<_token<Rule>>
     template <typename Reader>
     struct tp
     {
-        typename Reader::iterator end;
+        typename Reader::marker end;
 
-        constexpr explicit tp(const Reader& reader) : end(reader.position()) {}
+        constexpr explicit tp(const Reader& reader) : end(reader.current()) {}
 
         constexpr bool try_parse(Reader reader)
         {
@@ -196,14 +197,14 @@ struct _token : token_base<_token<Rule>>
                 lexy::match_action<void, Reader>::template result_type>(lexy::_mh(),
                                                                         lexy::no_parse_state,
                                                                         reader);
-            end = reader.position();
+            end = reader.current();
             return success;
         }
 
         template <typename Context>
         constexpr void report_error(Context& context, const Reader& reader)
         {
-            auto err = lexy::error<Reader, lexy::missing_token>(reader.position(), end);
+            auto err = lexy::error<Reader, lexy::missing_token>(reader.position(), end.position());
             context.on(_ev::error{}, err);
         }
     };

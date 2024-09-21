@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_SCAN_HPP_INCLUDED
@@ -18,7 +18,9 @@ struct _prd;
 template <typename Rule, typename Tag>
 struct _peek;
 template <typename Token>
-struct _capt;
+struct _cap;
+template <typename Rule>
+struct _capr;
 template <typename T, typename Base>
 struct _int_dsl;
 
@@ -184,6 +186,10 @@ public:
     {
         return _reader.position();
     }
+    constexpr auto current() const noexcept -> typename Reader::marker
+    {
+        return _reader.current();
+    }
 
     constexpr auto remaining_input() const noexcept
     {
@@ -228,7 +234,7 @@ public:
     template <typename T, typename Rule, typename = std::enable_if_t<lexy::is_rule<Rule>>>
     constexpr bool branch(scan_result<T>& result, Rule)
     {
-        static_assert(lexy::is_branch_rule<Rule>);
+        LEXY_REQUIRE_BRANCH_RULE(Rule, "branch");
         if (_state == _state_failed)
             return false;
 
@@ -323,10 +329,24 @@ public:
         context.on(parse_events::error{}, lexy::error<Reader, Tag>(LEXY_FWD(args)...));
     }
 
+    template <typename... Args>
+    constexpr void error(const char* msg, Args&&... args)
+    {
+        auto& context = static_cast<Derived&>(*this).context();
+        context.on(parse_events::error{}, lexy::error<Reader, void>(LEXY_FWD(args)..., msg));
+    }
+
     template <typename Tag, typename... Args>
     constexpr void fatal_error(Tag tag, Args&&... args)
     {
         error(tag, LEXY_FWD(args)...);
+        _state = _state_failed;
+    }
+
+    template <typename... Args>
+    constexpr void fatal_error(const char* msg, Args&&... args)
+    {
+        error(msg, LEXY_FWD(args)...);
         _state = _state_failed;
     }
 
@@ -361,25 +381,18 @@ public:
         return result;
     }
 
-    template <typename Rule>
-    constexpr auto capture(Rule rule) -> scan_result<lexeme<Reader>>
-    {
-        static_assert(lexy::is_rule<Rule>);
-
-        auto begin = _reader.position();
-        parse(rule);
-        auto end = _reader.position();
-
-        if (*this)
-            return lexeme<Reader>(begin, end);
-        else
-            return scan_failed;
-    }
     template <typename Token>
-    constexpr auto capture_token(Token)
+    constexpr auto capture(Token)
     {
         scan_result<lexeme<Reader>> result;
-        parse(result, lexyd::_capt<Token>{});
+        parse(result, lexyd::_cap<Token>{});
+        return result;
+    }
+    template <typename Production>
+    constexpr auto capture(lexyd::_prd<Production>)
+    {
+        scan_result<lexeme<Reader>> result;
+        parse(result, lexyd::_capr<lexyd::_prd<Production>>{});
         return result;
     }
 
@@ -446,8 +459,9 @@ private:
 
 namespace lexyd
 {
-template <typename Context, typename Scanner, typename StatePtr>
-using _detect_scan_state = decltype(Context::production::scan(LEXY_DECLVAL(Scanner&), *StatePtr()));
+template <typename Context, typename Scanner, typename StatePtr, typename... Args>
+using _detect_scan_state = decltype(Context::production::scan(LEXY_DECLVAL(Scanner&), *StatePtr(),
+                                                              LEXY_DECLVAL(Args)...));
 
 struct _scan : rule_base
 {
@@ -458,16 +472,16 @@ struct _scan : rule_base
         LEXY_PARSER_FUNC static bool _parse(Scanner& scanner, Context& context, Reader& reader,
                                             Args&&... args)
         {
-            lexy::scan_result result = [&] {
+            typename Context::production::scan_result result = [&] {
                 if constexpr (lexy::_detail::is_detected<
                                   _detect_scan_state, Context, decltype(scanner),
-                                  decltype(context.control_block->parse_state)>)
+                                  decltype(context.control_block->parse_state), Args&&...>)
                     return Context::production::scan(scanner, *context.control_block->parse_state,
                                                      LEXY_FWD(args)...);
                 else
                     return Context::production::scan(scanner, LEXY_FWD(args)...);
             }();
-            reader.set_position(scanner.position());
+            reader.reset(scanner.current());
             if (!result)
                 return false;
 

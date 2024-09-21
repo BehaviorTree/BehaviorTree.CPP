@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_ACTION_PARSE_AS_TREE_HPP_INCLUDED
@@ -18,7 +18,7 @@ public:
     template <typename Input, typename Sink>
     explicit _pth(Tree& tree, const _detail::any_holder<const Input*>& input,
                   _detail::any_holder<Sink>& sink)
-    : _tree(&tree), _depth(0), _validate(input, sink), _reader(input.get()->reader())
+    : _tree(&tree), _depth(0), _validate(input, sink)
     {}
 
     class event_handler
@@ -28,40 +28,53 @@ public:
     public:
         event_handler(production_info info) : _validate(info) {}
 
+        void on(_pth& handler, parse_events::grammar_start, iterator)
+        {
+            LEXY_PRECONDITION(handler._depth == 0);
+
+            handler._builder.emplace(LEXY_MOV(*handler._tree), _validate.get_info());
+        }
+        void on(_pth& handler, parse_events::grammar_finish, Reader& reader)
+        {
+            LEXY_PRECONDITION(handler._depth == 0);
+
+            auto begin = reader.position();
+            lexy::try_match_token(dsl::any, reader);
+            auto end = reader.position();
+
+            *handler._tree = LEXY_MOV(*handler._builder).finish({begin, end});
+        }
+        void on(_pth& handler, parse_events::grammar_cancel, Reader&)
+        {
+            LEXY_PRECONDITION(handler._depth == 0);
+
+            handler._tree->clear();
+        }
+
         void on(_pth& handler, parse_events::production_start ev, iterator pos)
         {
-            if (handler._depth++ == 0)
-                handler._builder.emplace(LEXY_MOV(*handler._tree), _validate.get_info());
-            else
+            if (handler._depth++ > 0)
                 _marker = handler._builder->start_production(_validate.get_info());
 
             _validate.on(handler._validate, ev, pos);
         }
 
-        void on(_pth& handler, parse_events::production_finish, iterator pos)
+        void on(_pth& handler, parse_events::production_finish ev, iterator pos)
         {
-            if (--handler._depth == 0)
+            if (--handler._depth > 0)
             {
-                auto reader = handler._reader;
-                reader.set_position(pos);
-                lexy::try_match_token(dsl::any, reader);
-                auto end = reader.position();
-
-                *handler._tree = LEXY_MOV(*handler._builder).finish({pos, end});
-            }
-            else
-            {
+                if (handler._builder->current_child_count() == 0)
+                    handler._builder->token(lexy::position_token_kind, _validate.production_begin(),
+                                            _validate.production_begin());
                 handler._builder->finish_production(LEXY_MOV(_marker));
             }
+
+            _validate.on(handler._validate, ev, pos);
         }
 
-        void on(_pth& handler, parse_events::production_cancel, iterator pos)
+        void on(_pth& handler, parse_events::production_cancel ev, iterator pos)
         {
-            if (--handler._depth == 0)
-            {
-                handler._tree->clear();
-            }
-            else
+            if (--handler._depth > 0)
             {
                 // Cancelling the production removes all nodes from the tree.
                 // To ensure that the parse tree remains lossless, we add everything consumed by it
@@ -69,6 +82,8 @@ public:
                 handler._builder->cancel_production(LEXY_MOV(_marker));
                 handler._builder->token(lexy::error_token_kind, _validate.production_begin(), pos);
             }
+
+            _validate.on(handler._validate, ev, pos);
         }
 
         auto on(_pth& handler, lexy::parse_events::operation_chain_start, iterator)
@@ -130,7 +145,6 @@ private:
     int                                              _depth;
 
     _vh<Reader> _validate;
-    Reader      _reader;
 };
 
 template <typename State, typename Input, typename ErrorCallback, typename TokenKind = void,

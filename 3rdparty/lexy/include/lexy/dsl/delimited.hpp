@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jonathan Müller and lexy contributors
+// Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
 // SPDX-License-Identifier: BSL-1.0
 
 #ifndef LEXY_DSL_DELIMITED_HPP_INCLUDED
@@ -110,12 +110,33 @@ struct _del_chars
         else if constexpr (!std::is_same_v<decltype(CharClass::char_class_match_cp(char32_t())),
                                            std::false_type>)
         {
-            // Try to match any code point in default_encoding or byte_encoding.
-            if constexpr (std::is_same_v<encoding, lexy::default_encoding> //
-                          || std::is_same_v<encoding, lexy::byte_encoding>)
+            if constexpr (lexy::is_unicode_encoding<encoding>)
+            {
+                static_assert(CharClass::char_class_unicode(),
+                              "cannot use this character class with Unicode encoding");
+
+                auto result = lexy::_detail::parse_code_point(reader);
+                if (result.error == lexy::_detail::cp_error::success
+                    && CharClass::char_class_match_cp(result.cp))
+                {
+                    reader.reset(result.end);
+                }
+                else
+                {
+                    finish(context, sink, reader.position());
+
+                    auto recover_begin = reader.position();
+                    if (recover_begin == result.end.position())
+                        reader.bump();
+                    else
+                        reader.reset(result.end);
+                    _recover(context, recover_begin, reader.position());
+                }
+            }
+            else
             {
                 static_assert(!CharClass::char_class_unicode(),
-                              "cannot use this character class with default/byte_encoding");
+                              "cannot use this character class with non-Unicode char encoding");
                 LEXY_ASSERT(reader.peek() != encoding::eof(),
                             "EOF should be checked before calling this");
 
@@ -127,25 +148,6 @@ struct _del_chars
                 {
                     finish(context, sink, recover_begin);
                     _recover(context, recover_begin, reader.position());
-                }
-            }
-            // Otherwise, try to match Unicode characters.
-            else
-            {
-                static_assert(CharClass::char_class_unicode(),
-                              "cannot use this character class with Unicode encoding");
-
-                auto result = lexy::_detail::parse_code_point(reader);
-                if (result.error == lexy::_detail::cp_error::success
-                    && CharClass::char_class_match_cp(result.cp))
-                {
-                    reader.set_position(result.end);
-                }
-                else
-                {
-                    finish(context, sink, reader.position());
-                    _recover(context, reader.position(), result.end);
-                    reader.set_position(result.end);
                 }
             }
         }
@@ -253,6 +255,7 @@ struct _del : rule_base
         template <typename Context, typename Reader, typename... Args>
         LEXY_PARSER_FUNC static bool parse(Context& context, Reader& reader, Args&&... args)
         {
+            static_assert(lexy::is_char_encoding<typename Reader::encoding>);
             auto sink = context.value_callback().sink();
 
             // Parse characters until we have the closing delimiter.
@@ -325,7 +328,8 @@ struct _delim_dsl
 template <typename Open, typename Close>
 constexpr auto delimited(Open, Close)
 {
-    static_assert(lexy::is_branch_rule<Open> && lexy::is_branch_rule<Close>);
+    LEXY_REQUIRE_BRANCH_RULE(Open, "delimited()");
+    LEXY_REQUIRE_BRANCH_RULE(Close, "delimited()");
     return _delim_dsl<Open, Close>{};
 }
 
@@ -333,7 +337,7 @@ constexpr auto delimited(Open, Close)
 template <typename Delim>
 constexpr auto delimited(Delim)
 {
-    static_assert(lexy::is_branch_rule<Delim>);
+    LEXY_REQUIRE_BRANCH_RULE(Delim, "delimited()");
     return _delim_dsl<Delim, Delim>{};
 }
 
@@ -424,7 +428,7 @@ struct _escape : _escape_base
     template <typename Branch>
     constexpr auto rule(Branch) const
     {
-        static_assert(lexy::is_branch_rule<Branch>);
+        LEXY_REQUIRE_BRANCH_RULE(Branch, "escape()");
         return _escape<Escape, Branches..., Branch>{};
     }
 
@@ -432,7 +436,7 @@ struct _escape : _escape_base
     template <typename Branch>
     constexpr auto capture(Branch branch) const
     {
-        static_assert(lexy::is_branch_rule<Branch>);
+        LEXY_REQUIRE_BRANCH_RULE(Branch, "escape()");
         return this->rule(lexy::dsl::capture(branch));
     }
 
