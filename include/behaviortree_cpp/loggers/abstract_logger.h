@@ -61,6 +61,7 @@ private:
   std::vector<TreeNode::StatusChangeSubscriber> subscribers_;
   TimestampType type_;
   BT::TimePoint first_timestamp_ = {};
+  std::mutex callback_mutex_;
 };
 
 //--------------------------------------------
@@ -72,6 +73,7 @@ inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node)
 
   auto subscribeCallback = [this](TimePoint timestamp, const TreeNode& node,
                                   NodeStatus prev, NodeStatus status) {
+    std::unique_lock lk(callback_mutex_);
     if(enabled_ && (status != NodeStatus::IDLE || show_transition_to_idle_))
     {
       if(type_ == TimestampType::absolute)
