@@ -364,7 +364,6 @@ TEST(Preconditions, Remapping)
   ASSERT_EQ(counters[1], 3);
 }
 
-
 TEST(Preconditions, WhileCallsOnHalt)
 {
   static constexpr auto xml_text = R"(
