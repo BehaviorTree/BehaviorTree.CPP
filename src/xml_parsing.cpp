@@ -786,8 +786,10 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
 
           // special case related to convertFromString
           bool const string_input = (prev_info->type() == typeid(std::string));
+          // special case related to unwrapping vector<Any> objects.
+          bool const vec_any_input = (prev_info->type() == typeid(std::vector<Any>));
 
-          if(port_type_mismatch && !string_input)
+          if(port_type_mismatch && !string_input && !vec_any_input)
           {
             blackboard->debugMessage();
 

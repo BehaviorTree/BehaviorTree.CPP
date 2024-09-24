@@ -30,6 +30,12 @@
 
 namespace BT
 {
+// Helper trait to check if a type is a std::vector
+template <typename T>
+struct is_vector : std::false_type {};
+
+template <typename T, typename A>
+struct is_vector<std::vector<T, A>> : std::true_type {};
 
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
@@ -521,6 +527,26 @@ inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
 
       if(!entry->value.empty())
       {
+        // Support vector<Any> -> vector<typename T::value_type> conversion.
+        // Only want to compile this path when T is a vector type.
+        if constexpr (is_vector<T>::value)
+        {
+          if (!std::is_same_v<T, std::vector<Any>> && any_value.type() == typeid(std::vector<Any>))
+          {
+            // If the object was originally placed on the blackboard as a vector<Any>, attempt to unwrap the vector
+            // elements according to the templated type.
+            auto any_vec = any_value.cast<std::vector<Any>>();
+            if (!any_vec.empty() && any_vec.front().type() != typeid(typename T::value_type))
+            {
+              return nonstd::make_unexpected("Invalid cast requested from vector<Any> to vector<typename T::value_type>."
+                                             " Element type does not align.");
+            }
+            destination = T();
+            std::transform(any_vec.begin(), any_vec.end(), std::back_inserter(destination),
+                           [](Any &element) { return element.cast<typename T::value_type>(); });
+            return Timestamp{ entry->sequence_id, entry->stamp };
+          }
+        }
         if(!std::is_same_v<T, std::string> && any_value.isString())
         {
           destination = parseString<T>(any_value.cast<std::string>());
