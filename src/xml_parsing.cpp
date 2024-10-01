@@ -667,8 +667,10 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
         if(port_model_it == manifest->ports.end())
         {
           throw RuntimeError(StrCat("a port with name [", port_name,
-                                    "] is found in the XML, but not in the "
-                                    "providedPorts()"));
+                                    "] is found in the XML (<", element->Name(),
+                                    ">, line ", std::to_string(att->GetLineNum()),
+                                    ") but not in the providedPorts() of its "
+                                    "registered node type."));
         }
         else
         {
