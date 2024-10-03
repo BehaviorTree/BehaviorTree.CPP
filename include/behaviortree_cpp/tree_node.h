@@ -30,13 +30,6 @@
 
 namespace BT
 {
-// Helper trait to check if a type is a std::vector
-template <typename T>
-struct is_vector : std::false_type {};
-
-template <typename T, typename A>
-struct is_vector<std::vector<T, A>> : std::true_type {};
-
 /// This information is used mostly by the XMLParser.
 struct TreeNodeManifest
 {
@@ -619,7 +612,19 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
   }
 
   remapped_key = stripBlackboardPointer(remapped_key);
-  config().blackboard->set(static_cast<std::string>(remapped_key), value);
+
+  if constexpr(is_vector<T>::value && !std::is_same_v<T, std::vector<Any>>)
+  {
+    // If the object is a vector but not a vector<Any>, convert it to vector<Any> before placing it on the blackboard.
+    auto any_vec = std::vector<Any>();
+    std::transform(value.begin(), value.end(), std::back_inserter(any_vec),
+                   [](const auto &element) { return BT::Any(element); });
+    config().blackboard->set(static_cast<std::string>(remapped_key), any_vec);
+  }
+  else
+  {
+    config().blackboard->set(static_cast<std::string>(remapped_key), value);
+  }
 
   return {};
 }
