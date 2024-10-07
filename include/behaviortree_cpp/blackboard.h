@@ -257,8 +257,13 @@ inline void Blackboard::set(const std::string& key, const T& value)
 
     std::type_index previous_type = entry.info.type();
 
+    // Allow mismatch if going from vector -> vector<Any>.
+    bool previous_is_vector = std::string(previous_type.name()).find("vector") != std::string::npos;
+    bool new_is_vector_any = new_value.type() == typeid(std::vector<Any>);
+
     // check type mismatch
-    if(previous_type != std::type_index(typeid(T)) && previous_type != new_value.type())
+    if(previous_type != std::type_index(typeid(T)) && previous_type != new_value.type() &&
+       !(previous_is_vector && new_is_vector_any))
     {
       bool mismatching = true;
       if(std::is_constructible<StringView, T>::value)
