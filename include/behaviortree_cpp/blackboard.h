@@ -34,7 +34,7 @@ template <typename T, typename A>
 struct is_vector<std::vector<T, A>> : std::true_type {};
 
 // Helper function to check if a demangled type string is a std::vector<..>
-inline bool isVector(std::string type_name)
+inline bool isVector(const std::string& type_name)
 {
   return std::regex_match(type_name, std::regex(R"(^std::vector<.*>$)"));
 }
