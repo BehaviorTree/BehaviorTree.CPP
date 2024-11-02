@@ -204,6 +204,7 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     }
 
     const PreCond preID = PreCond(index);
+    bool onlyIfIsPresent = false;
 
     // Some preconditions are applied only when the node state is IDLE or SKIPPED
     if(_p->status == NodeStatus::IDLE || _p->status == NodeStatus::SKIPPED)
@@ -219,13 +220,21 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
         {
           return NodeStatus::SUCCESS;
         }
-        else if(preID == PreCond::SKIP_IF)
+        else if(preID == PreCond::ONLY_IF)
+        {
+          onlyIfIsPresent = true;
+        }
+        else if(preID == PreCond::SKIP_IF && onlyIfIsPresent)
         {
           return NodeStatus::SKIPPED;
         }
       }
       // if the conditions is false
       else if(preID == PreCond::WHILE_TRUE)
+      {
+        return NodeStatus::SKIPPED;
+      }
+      else if(preID == PreCond::ONLY_IF)
       {
         return NodeStatus::SKIPPED;
       }
@@ -472,6 +481,8 @@ std::string toStr<PreCond>(const PreCond& pre)
       return "_successIf";
     case PreCond::FAILURE_IF:
       return "_failureIf";
+    case PreCond::ONLY_IF:
+      return "_onlyIf";
     case PreCond::SKIP_IF:
       return "_skipIf";
     case PreCond::WHILE_TRUE:

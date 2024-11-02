@@ -47,6 +47,7 @@ enum class PreCond
   // order of the enums also tell us the execution order
   FAILURE_IF = 0,
   SUCCESS_IF,
+  ONLY_IF,
   SKIP_IF,
   WHILE_TRUE,
   COUNT_
