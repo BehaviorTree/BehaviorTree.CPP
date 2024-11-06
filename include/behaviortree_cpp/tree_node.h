@@ -522,21 +522,25 @@ inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
       {
         // Support vector<Any> -> vector<typename T::value_type> conversion.
         // Only want to compile this path when T is a vector type.
-        if constexpr (is_vector<T>::value)
+        if constexpr(is_vector<T>::value)
         {
-          if (!std::is_same_v<T, std::vector<Any>> && any_value.type() == typeid(std::vector<Any>))
+          if(!std::is_same_v<T, std::vector<Any>> &&
+             any_value.type() == typeid(std::vector<Any>))
           {
             // If the object was originally placed on the blackboard as a vector<Any>, attempt to unwrap the vector
             // elements according to the templated type.
             auto any_vec = any_value.cast<std::vector<Any>>();
-            if (!any_vec.empty() && any_vec.front().type() != typeid(typename T::value_type))
+            if(!any_vec.empty() &&
+               any_vec.front().type() != typeid(typename T::value_type))
             {
-              return nonstd::make_unexpected("Invalid cast requested from vector<Any> to vector<typename T::value_type>."
+              return nonstd::make_unexpected("Invalid cast requested from vector<Any> to "
+                                             "vector<typename T::value_type>."
                                              " Element type does not align.");
             }
             destination = T();
-            std::transform(any_vec.begin(), any_vec.end(), std::back_inserter(destination),
-                           [](Any &element) { return element.cast<typename T::value_type>(); });
+            std::transform(
+                any_vec.begin(), any_vec.end(), std::back_inserter(destination),
+                [](Any& element) { return element.cast<typename T::value_type>(); });
             return Timestamp{ entry->sequence_id, entry->stamp };
           }
         }
@@ -618,7 +622,7 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
     // If the object is a vector but not a vector<Any>, convert it to vector<Any> before placing it on the blackboard.
     auto any_vec = std::vector<Any>();
     std::transform(value.begin(), value.end(), std::back_inserter(any_vec),
-                   [](const auto &element) { return BT::Any(element); });
+                   [](const auto& element) { return BT::Any(element); });
     config().blackboard->set(static_cast<std::string>(remapped_key), any_vec);
   }
   else

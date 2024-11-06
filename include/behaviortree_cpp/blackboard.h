@@ -28,10 +28,14 @@ struct StampedValue
 
 // Helper trait to check if templated type is a std::vector
 template <typename T>
-struct is_vector : std::false_type {};
+struct is_vector : std::false_type
+{
+};
 
 template <typename T, typename A>
-struct is_vector<std::vector<T, A>> : std::true_type {};
+struct is_vector<std::vector<T, A>> : std::true_type
+{
+};
 
 // Helper function to check if a demangled type string is a std::vector<..>
 inline bool isVector(const std::string& type_name)
