@@ -541,6 +541,18 @@ void VerifyXML(const std::string& xml_text,
           ThrowError(line_number,
                      std::string("The node <") + name + "> must have 1 or more children");
         }
+        if (name == "ReactiveSequence")
+        {
+          const std::string child_name = node->FirstChildElement()->Name();
+          const auto child_search = registered_nodes.find(child_name);
+          auto child_type = child_search->second;
+          // TODO: what this really needs to check is if the child is async
+          if (child_type != NodeType::CONDITION)
+          {
+            ThrowError(line_number,
+                      std::string("The first child of a ReactiveSequence cannot be asynchronous"));
+          }
+        }
       }
     }
     //recursion
