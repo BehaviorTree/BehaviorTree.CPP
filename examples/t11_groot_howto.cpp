@@ -120,7 +120,7 @@ int main()
   // Both formats are compatible with Groot2
 
   // Logging with lightweight serialization
-  BT::FileLogger2 logger2(tree, "t12_logger2.btlog");
+  BT::FileLogger2 logger2(tree, "t11_groot_howto.btlog");
   BT::MinitraceLogger minilog(tree, "minitrace.json");
 
   while(1)
