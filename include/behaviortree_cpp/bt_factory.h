@@ -121,7 +121,7 @@ public:
   /// Sleep for a certain amount of time.
   /// This sleep could be interrupted by the method
   /// TreeNode::emitWakeUpSignal()
-  void sleep(std::chrono::system_clock::duration timeout);
+  bool sleep(std::chrono::system_clock::duration timeout);
 
   ~Tree();
 
