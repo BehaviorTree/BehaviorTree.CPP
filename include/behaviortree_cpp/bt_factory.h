@@ -118,10 +118,14 @@ public:
 
   [[nodiscard]] TreeNode* rootNode() const;
 
-  /// Sleep for a certain amount of time.
-  /// This sleep could be interrupted by the method
-  /// TreeNode::emitWakeUpSignal()
-  void sleep(std::chrono::system_clock::duration timeout);
+  /**
+    * @brief Sleep for a certain amount of time. This sleep could be interrupted by the method TreeNode::emitWakeUpSignal()
+    *
+    * @param timeout  duration of the sleep
+    * @return         true if the timeout was NOT reached and the signal was received.
+    *
+    * */
+  bool sleep(std::chrono::system_clock::duration timeout);
 
   ~Tree();
 

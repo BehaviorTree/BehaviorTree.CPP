@@ -586,9 +586,10 @@ TreeNode* Tree::rootNode() const
   return subtree_nodes.empty() ? nullptr : subtree_nodes.front().get();
 }
 
-void Tree::sleep(std::chrono::system_clock::duration timeout)
+bool Tree::sleep(std::chrono::system_clock::duration timeout)
 {
-  wake_up_->waitFor(std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
+  return wake_up_->waitFor(
+      std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
 }
 
 Tree::~Tree()
