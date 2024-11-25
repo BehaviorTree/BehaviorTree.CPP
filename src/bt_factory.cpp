@@ -588,7 +588,8 @@ TreeNode* Tree::rootNode() const
 
 bool Tree::sleep(std::chrono::system_clock::duration timeout)
 {
-  return wake_up_->waitFor(std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
+  return wake_up_->waitFor(
+      std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
 }
 
 Tree::~Tree()
