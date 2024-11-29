@@ -548,7 +548,7 @@ void VerifyXML(const std::string& xml_text,
           auto child_type = child_search->second;
           if(child_type == NodeType::CONTROL &&
              ((child_name == "ThreadedAction") || (child_name == "StatefulActionNode") ||
-              (child_name == "CoroActionNode")))
+              (child_name == "CoroActionNode") || (child_name == "AsyncSequence")))
           {
             ThrowError(line_number, std::string("The first child of a ReactiveSequence "
                                                 "cannot be asynchronous"));
