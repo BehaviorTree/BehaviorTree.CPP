@@ -549,7 +549,7 @@ void VerifyXML(const std::string& xml_text,
           {
             const std::string child_name = node->FirstChildElement()->Name();
             const auto child_search = registered_nodes.find(child_name);
-            auto child_type = child_search->second;
+            const auto child_type = child_search->second;
             if(child_type == NodeType::CONTROL &&
                ((child_name == "ThreadedAction") ||
                 (child_name == "StatefulActionNode") ||
