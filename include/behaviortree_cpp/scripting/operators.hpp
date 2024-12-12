@@ -796,9 +796,9 @@ struct Expression : lexy::expression_production
                                dsl::op<Ast::ExprComparison::greater_equal>(LEXY_LIT(">"
                                                                                     "="));
 
-    // The use of dsl::groups ensures that an expression can either contain math or bit
+    // The use of dsl::groups ensures that an expression can either contain math or bit or string
     // operators. Mixing requires parenthesis.
-    using operand = dsl::groups<math_sum, bit_or>;
+    using operand = dsl::groups<math_sum, bit_or, string_concat>;
   };
 
   // Logical operators,  || and &&
@@ -808,7 +808,7 @@ struct Expression : lexy::expression_production
         dsl::op<Ast::ExprBinaryArithmetic::logic_or>(LEXY_LIT("||")) /
         dsl::op<Ast::ExprBinaryArithmetic::logic_and>(LEXY_LIT("&&"));
 
-    using operand = dsl::groups<string_concat, comparison>;
+    using operand = comparison;
   };
 
   // x ? y : z
