@@ -23,6 +23,7 @@ def strtobool(val: typing.Union[str, int, bool]) -> bool:
 SCRIPT_DIRECTIVES = [
     "_successIf",
     "_failureIf",
+    "_onlyIf",
     "_skipIf",
     "_while",
     "_onSuccess",

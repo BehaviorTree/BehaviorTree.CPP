@@ -32,6 +32,33 @@ TEST(SkippingLogic, Sequence)
   ASSERT_EQ(counters[1], 1);
 }
 
+TEST(SkippingLogic, Order)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 3> counters;
+  RegisterTestTick(factory, "Test", counters);
+
+  const std::string xml_text = R"(
+
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <Script code = "A:=1"/>
+                <TestA _onlyIf="A==1" _skipIf="A==1"/>
+                <TestB _onlyIf="A==0" _skipIf="A==0"/>
+                <TestC _successIf="A==1" _onlyIf="A==1"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[1], 0);
+  ASSERT_EQ(counters[2], 0);
+}
+
 TEST(SkippingLogic, SkipAll)
 {
   BehaviorTreeFactory factory;
