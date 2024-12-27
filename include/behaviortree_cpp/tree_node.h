@@ -41,6 +41,7 @@ struct TreeNodeManifest
 };
 
 using PortsRemapping = std::unordered_map<std::string, std::string>;
+using OtherAttributes = std::unordered_map<std::string, std::string>;
 
 enum class PreCond
 {
@@ -83,6 +84,9 @@ struct NodeConfig
   PortsRemapping input_ports;
   // output ports
   PortsRemapping output_ports;
+
+  // Any other attributes found in the xml that are not parsed as ports (e.g. anything with a leading '_')
+  OtherAttributes other_attributes;
 
   const TreeNodeManifest* manifest = nullptr;
 

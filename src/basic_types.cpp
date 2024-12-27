@@ -433,11 +433,12 @@ bool IsAllowedPortName(StringView str)
   {
     return false;
   }
-  if(str == "name" || str == "ID")
-  {
-    return false;
-  }
-  return true;
+  return !IsNodeNameAttribute(str);
+}
+
+bool IsNodeNameAttribute(StringView str)
+{
+  return str == "name" || str == "ID";
 }
 
 Any convertFromJSON(StringView json_text, std::type_index type)
