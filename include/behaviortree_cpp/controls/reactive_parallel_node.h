@@ -73,16 +73,12 @@ private:
   int success_threshold_;
   int failure_threshold_;
 
-  size_t success_count_ = 0;
-  size_t failure_count_ = 0;
-
   bool read_parameter_from_ports_;
   static constexpr const char* THRESHOLD_SUCCESS = "success_count";
   static constexpr const char* THRESHOLD_FAILURE = "failure_count";
 
   virtual BT::NodeStatus tick() override;
 
-  void clear();
 };
 
 }  // namespace BT

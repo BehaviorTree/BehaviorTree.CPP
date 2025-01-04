@@ -67,6 +67,8 @@ NodeStatus ReactiveParallelNode::tick()
   setStatus(NodeStatus::RUNNING);
 
   size_t skipped_count = 0;
+  size_t success_count = 0;
+  size_t failure_count = 0;
 
   // Routing the tree according to the sequence node's logic:
   for(size_t i = 0; i < children_count; i++)
@@ -82,12 +84,12 @@ NodeStatus ReactiveParallelNode::tick()
     break;
 
     case NodeStatus::SUCCESS: {
-        success_count_++;
+        success_count++;
     }
     break;
 
     case NodeStatus::FAILURE: {
-        failure_count_++;
+        failure_count++;
     }
     break;
 
@@ -104,21 +106,19 @@ NodeStatus ReactiveParallelNode::tick()
   
   const size_t required_success_count = successThreshold();
 
-  if(success_count_ >= required_success_count ||
+  if(success_count >= required_success_count ||
       (success_threshold_ < 0 &&
-      (success_count_ + skipped_count) >= required_success_count))
+      (success_count + skipped_count) >= required_success_count))
   {
-    clear();
     resetChildren();
     return NodeStatus::SUCCESS;
   }
 
   // It fails if it is not possible to succeed anymore or if
   // number of failures are equal to failure_threshold_
-  if(((children_count - failure_count_) < required_success_count) ||
-      (failure_count_ == failureThreshold()))
+  if(((children_count - failure_count) < required_success_count) ||
+      (failure_count == failureThreshold()))
   {
-    clear();
     resetChildren();
     return NodeStatus::FAILURE;
   }
@@ -126,15 +126,8 @@ NodeStatus ReactiveParallelNode::tick()
   return (skipped_count == children_count) ? NodeStatus::SKIPPED : NodeStatus::RUNNING;
 }
 
-void ReactiveParallelNode::clear()
-{
-  success_count_ = 0;
-  failure_count_ = 0;
-}
-
 void ReactiveParallelNode::halt()
 {
-  clear();
   ControlNode::halt();
 }
 
