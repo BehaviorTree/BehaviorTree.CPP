@@ -41,6 +41,7 @@ struct TreeNodeManifest
 };
 
 using PortsRemapping = std::unordered_map<std::string, std::string>;
+using NonPortAttributes = std::unordered_map<std::string, std::string>;
 
 enum class PreCond
 {
@@ -50,6 +51,10 @@ enum class PreCond
   SKIP_IF,
   WHILE_TRUE,
   COUNT_
+};
+
+static const std::array<std::string, 4> PreCondNames = {  //
+  "_failureIf", "_successIf", "_skipIf", "_while"
 };
 
 enum class PostCond
@@ -62,11 +67,15 @@ enum class PostCond
   COUNT_
 };
 
-template <>
-[[nodiscard]] std::string toStr<BT::PostCond>(const BT::PostCond& status);
+static const std::array<std::string, 4> PostCondNames = {  //
+  "_onHalted", "_onFailure", "_onSuccess", "_post"
+};
 
 template <>
-[[nodiscard]] std::string toStr<BT::PreCond>(const BT::PreCond& status);
+[[nodiscard]] std::string toStr<BT::PostCond>(const BT::PostCond& cond);
+
+template <>
+[[nodiscard]] std::string toStr<BT::PreCond>(const BT::PreCond& cond);
 
 using ScriptingEnumsRegistry = std::unordered_map<std::string, int>;
 
@@ -83,6 +92,10 @@ struct NodeConfig
   PortsRemapping input_ports;
   // output ports
   PortsRemapping output_ports;
+
+  // Any other attributes found in the xml that are not parsed as ports
+  // or built-in identifier (e.g. anything with a leading '_')
+  NonPortAttributes other_attributes;
 
   const TreeNodeManifest* manifest = nullptr;
 
