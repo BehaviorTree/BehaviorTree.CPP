@@ -17,16 +17,13 @@ build = "mkdir -p build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Release && c
 
 [dependencies]
 cmake = ">=3.16.3"
-gmock = "1.12.*"
+gmock = "1.14.*"
 sqlite = "3.40.*"
 zeromq = "4.3.*"
-gtest = "1.12.*"
+gtest = "1.14.*"
+cxx-compiler = "*"
 
 pre-commit = "*"
 
-[target.win-64.dependencies]
-vs2022_win-64 = "19.*"
-
 [target.linux-64.dependencies]
-gxx = "13.*"
 make = "*"
