@@ -1,5 +1,11 @@
 #include "behaviortree_cpp/json_export.h"
 
+namespace
+{
+constexpr std::string_view kTypeField = "__type";
+constexpr std::string_view kValueField = "value";
+}  // namespace
+
 namespace BT
 {
 
@@ -16,19 +22,23 @@ bool JsonExporter::toJson(const Any& any, nlohmann::json& dst) const
 
   if(any.isString())
   {
-    dst = any.cast<std::string>();
+    dst[kTypeField] = "string";
+    dst[kValueField] = any.cast<std::string>();
   }
   else if(type == typeid(int64_t))
   {
-    dst = any.cast<int64_t>();
+    dst[kTypeField] = "int64_t";
+    dst[kValueField] = any.cast<int64_t>();
   }
   else if(type == typeid(uint64_t))
   {
-    dst = any.cast<uint64_t>();
+    dst[kTypeField] = "uint64_t";
+    dst[kValueField] = any.cast<uint64_t>();
   }
   else if(type == typeid(double))
   {
-    dst = any.cast<double>();
+    dst[kTypeField] = "double";
+    dst[kValueField] = any.cast<double>();
   }
   else
   {
@@ -51,33 +61,41 @@ JsonExporter::ExpectedEntry JsonExporter::fromJson(const nlohmann::json& source)
   {
     return nonstd::make_unexpected("json object is null");
   }
-  if(source.is_string())
+  if(!source.contains(kTypeField))
   {
-    return Entry{ BT::Any(source.get<std::string>()),
-                  BT::TypeInfo::Create<std::string>() };
-  }
-  if(source.is_number_unsigned())
-  {
-    return Entry{ BT::Any(source.get<uint64_t>()), BT::TypeInfo::Create<uint64_t>() };
-  }
-  if(source.is_number_integer())
-  {
-    return Entry{ BT::Any(source.get<int64_t>()), BT::TypeInfo::Create<int64_t>() };
-  }
-  if(source.is_number_float())
-  {
-    return Entry{ BT::Any(source.get<double>()), BT::TypeInfo::Create<double>() };
-  }
-  if(source.is_boolean())
-  {
-    return Entry{ BT::Any(source.get<bool>()), BT::TypeInfo::Create<bool>() };
+    return nonstd::make_unexpected("Missing field '" + std::string(kTypeField) + "'.");
   }
 
-  if(!source.contains("__type"))
+  const auto source_value_it = source.find(kValueField);
+  if(source_value_it != source.end())
   {
-    return nonstd::make_unexpected("Missing field '__type'");
+    if(source_value_it->is_string())
+    {
+      return Entry{ BT::Any(source_value_it->get<std::string>()),
+                    BT::TypeInfo::Create<std::string>() };
+    }
+    if(source_value_it->is_number_unsigned())
+    {
+      return Entry{ BT::Any(source_value_it->get<uint64_t>()),
+                    BT::TypeInfo::Create<uint64_t>() };
+    }
+    if(source_value_it->is_number_integer())
+    {
+      return Entry{ BT::Any(source_value_it->get<int64_t>()),
+                    BT::TypeInfo::Create<int64_t>() };
+    }
+    if(source_value_it->is_number_float())
+    {
+      return Entry{ BT::Any(source_value_it->get<double>()),
+                    BT::TypeInfo::Create<double>() };
+    }
+    if(source_value_it->is_boolean())
+    {
+      return Entry{ BT::Any(source_value_it->get<bool>()), BT::TypeInfo::Create<bool>() };
+    }
   }
-  auto type_it = type_names_.find(source["__type"]);
+
+  auto type_it = type_names_.find(source[kTypeField]);
   if(type_it == type_names_.end())
   {
     return nonstd::make_unexpected("Type not found in registered list");
