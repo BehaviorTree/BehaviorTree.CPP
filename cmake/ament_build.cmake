@@ -10,7 +10,7 @@ if(BTCPP_SQLITE_LOGGING)
     find_package(SQLite3 REQUIRED)
 endif()
 
-find_package(ament_index_cpp REQUIRED
+find_package(ament_index_cpp REQUIRED)
 
 set(BTCPP_EXTRA_INCLUDE_DIRS ${ZeroMQ_INCLUDE_DIRS}
                              ${SQLite3_INCLUDE_DIRS})
