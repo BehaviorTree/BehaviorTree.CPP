@@ -1,0 +1,9 @@
+<root BTCPP_format="4">
+        <BehaviorTree ID="MainTree">
+            <ReactiveSequence>
+                <AlwaysSuccess/>
+                <ForceSuccess/>
+                <ForceFailure/>
+            </ReactiveSequence>
+        </BehaviorTree>
+    </root>

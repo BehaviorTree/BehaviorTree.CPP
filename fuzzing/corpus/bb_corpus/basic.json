@@ -1,0 +1,6 @@
+{
+  "int_key": 42,
+  "double_key": 3.14159,
+  "string_key": "test_string",
+  "bool_key": true
+}

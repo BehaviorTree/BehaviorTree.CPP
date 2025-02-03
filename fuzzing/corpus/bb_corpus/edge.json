@@ -1,0 +1,7 @@
+{
+  "max_int": 2147483647,
+  "min_int": -2147483648,
+  "zero": 0,
+  "empty_string": "",
+  "null_value": null
+}

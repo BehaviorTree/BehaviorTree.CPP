@@ -1,0 +1,1 @@
+str:='hello'; len(str)
