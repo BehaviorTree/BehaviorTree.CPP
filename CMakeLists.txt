@@ -2,14 +2,22 @@ cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
 project(behaviortree_cpp VERSION 4.6.2 LANGUAGES C CXX)
 
-# Build configuration options
+#---- project configuration ----
+option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
+option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
+option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
+option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
+option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
+option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
+
+option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 option(ENABLE_FUZZING "Enable fuzzing builds" OFF)
 option(USE_AFLPLUSPLUS "Use AFL++ instead of libFuzzer" OFF)
 option(ENABLE_DEBUG "Enable debug build with full symbols" OFF)
+option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
 
 set(BASE_FLAGS "")
 
-# Debug build configuration
 if(ENABLE_DEBUG)
     list(APPEND BASE_FLAGS
         -g3
@@ -21,11 +29,31 @@ endif()
 
 # Fuzzing configuration
 if(ENABLE_FUZZING)
-    if(USE_AFLPLUSPLUS)
-        list(APPEND BASE_FLAGS -O3)
-    else()
-        list(APPEND BASE_FLAGS -O2)
+    if(CMAKE_C_COMPILER MATCHES ".*afl-.*" OR CMAKE_CXX_COMPILER MATCHES ".*afl-.*")
+        set(USE_AFLPLUSPLUS ON CACHE BOOL "Use AFL++ instead of libFuzzer" FORCE)
+        message(STATUS "AFL++ compiler detected - automatically enabling AFL++ mode")
     endif()
+
+    # When building for fuzzing, we still want static library by default
+    set(BTCPP_SHARED_LIBS OFF CACHE BOOL "Build static library for fuzzing" FORCE)
+
+    # Only apply static linking settings if explicitly requested
+    if(FORCE_STATIC_LINKING)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+        set(BUILD_SHARED_LIBS OFF)
+
+        # Force static linking for dependencies
+        if(BTCPP_GROOT_INTERFACE)
+            set(ZeroMQ_USE_STATIC_LIBS ON)
+            set(ZEROMQ_STATIC_LIBRARY ON)
+        endif()
+
+        if(BTCPP_SQLITE_LOGGING)
+            set(SQLite3_USE_STATIC_LIBS ON)
+        endif()
+    endif()
+
+    list(APPEND BASE_FLAGS -O2)
 
     if(USE_AFLPLUSPLUS)
         set(SANITIZER_FLAGS
@@ -41,33 +69,47 @@ if(ENABLE_FUZZING)
     # Apply sanitizer flags to the base library
     list(APPEND BASE_FLAGS ${SANITIZER_FLAGS})
 
-    # Apply base flags globally
     add_compile_options(${BASE_FLAGS})
     add_link_options(${BASE_FLAGS})
 
     function(apply_fuzzing_flags target)
-        if(USE_AFLPLUSPLUS)
-            # AFL++ specific flags
-            target_compile_options(${target} PRIVATE
+        target_compile_options(${target} PRIVATE
+        ${BASE_FLAGS}
+        ${SANITIZER_FLAGS}
+    )
+
+        if(FORCE_STATIC_LINKING)
+            if(USE_AFLPLUSPLUS)
+                target_link_options(${target} PRIVATE
                 ${BASE_FLAGS}
                 ${SANITIZER_FLAGS}
+                -static-libstdc++
+                -static-libgcc
+                -fsanitize=fuzzer
             )
-            target_link_options(${target} PRIVATE
+            else()
+                target_link_options(${target} PRIVATE
                 ${BASE_FLAGS}
-                -fsanitize=fuzzer,address,undefined
+                -fsanitize=fuzzer
+                ${SANITIZER_FLAGS}
+                -static-libstdc++
+                -static-libgcc
             )
+            endif()
         else()
-            # libFuzzer specific flags
-            target_compile_options(${target} PRIVATE
+            if(USE_AFLPLUSPLUS)
+                target_link_options(${target} PRIVATE
+                ${BASE_FLAGS}
+                ${SANITIZER_FLAGS}
+                -fsanitize=fuzzer
+            )
+            else()
+                target_link_options(${target} PRIVATE
                 ${BASE_FLAGS}
                 -fsanitize=fuzzer
                 ${SANITIZER_FLAGS}
             )
-            target_link_options(${target} PRIVATE
-                ${BASE_FLAGS}
-                -fsanitize=fuzzer
-                ${SANITIZER_FLAGS}
-            )
+            endif()
         endif()
     endfunction()
 
@@ -98,17 +140,6 @@ if(MSVC)
 else()
     add_definitions(-Wpedantic -fno-omit-frame-pointer)
 endif()
-
-
-#---- project configuration ----
-option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
-option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
-option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
-option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
-option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
-option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
-
-option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 
 if(USE_V3_COMPATIBLE_NAMES)
     add_definitions(-DUSE_BTCPP3_OLD_NAMES)
@@ -277,27 +308,31 @@ add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
 
 # Add fuzzing targets
 if(ENABLE_FUZZING)
-    add_executable(bt_fuzzer fuzzing/bt_fuzzer.cpp)
-    apply_fuzzing_flags(bt_fuzzer)
-    target_link_libraries(bt_fuzzer PRIVATE ${BTCPP_LIBRARY} ${BTCPP_EXTRA_LIBRARIES})
-
-    add_executable(script_fuzzer fuzzing/script_fuzzer.cpp)
-    apply_fuzzing_flags(script_fuzzer)
-    target_link_libraries(script_fuzzer PRIVATE ${BTCPP_LIBRARY} ${BTCPP_EXTRA_LIBRARIES})
-
-    add_executable(bb_fuzzer fuzzing/bb_fuzzer.cpp)
-    apply_fuzzing_flags(bb_fuzzer)
-    target_link_libraries(bb_fuzzer PRIVATE ${BTCPP_LIBRARY} ${BTCPP_EXTRA_LIBRARIES})
-
     foreach(fuzzer bt_fuzzer script_fuzzer bb_fuzzer)
+        add_executable(${fuzzer} fuzzing/${fuzzer}.cpp)
+        apply_fuzzing_flags(${fuzzer})
+
+        if(FORCE_STATIC_LINKING)
+            target_link_libraries(${fuzzer} PRIVATE
+                -static-libstdc++
+                -static-libgcc
+                ${BTCPP_LIBRARY}
+                ${BTCPP_EXTRA_LIBRARIES}
+            )
+        else()
+            target_link_libraries(${fuzzer} PRIVATE
+                ${BTCPP_LIBRARY}
+                ${BTCPP_EXTRA_LIBRARIES}
+            )
+        endif()
+
         set(CORPUS_DIR ${CMAKE_BINARY_DIR}/corpus/${fuzzer})
         file(MAKE_DIRECTORY ${CORPUS_DIR})
     endforeach()
 
-    file(GLOB BT_CORPUS_FILES "fuzzing/corpus/bt_fuzzer/*")
-    file(GLOB SCRIPT_CORPUS_FILES "fuzzing/corpus/script_fuzzer/*")
-    file(GLOB BB_CORPUS_FILES "fuzzing/corpus/bb_fuzzer/*")
-
+    file(GLOB BT_CORPUS_FILES "${CMAKE_SOURCE_DIR}/fuzzing/corpus/bt_corpus/*")
+    file(GLOB SCRIPT_CORPUS_FILES "${CMAKE_SOURCE_DIR}/fuzzing/corpus/script_corpus/*")
+    file(GLOB BB_CORPUS_FILES "${CMAKE_SOURCE_DIR}/fuzzing/corpus/bb_corpus/*")
     if(BT_CORPUS_FILES)
         file(COPY ${BT_CORPUS_FILES} DESTINATION ${CMAKE_BINARY_DIR}/corpus/bt_fuzzer)
     endif()
