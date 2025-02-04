@@ -1,1 +1,2 @@
-str:='hello'; len(str)
+str : = 'hello';
+len(str)
