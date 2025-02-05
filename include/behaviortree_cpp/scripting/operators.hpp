@@ -129,6 +129,11 @@ struct ExprUnaryArithmetic : ExprBase
         case negate:
           return Any(-rv);
         case complement:
+          if(rv > static_cast<double>(std::numeric_limits<int64_t>::max()) ||
+             rv < static_cast<double>(std::numeric_limits<int64_t>::min()))
+          {
+            throw RuntimeError("Number out of range for bitwise operation");
+          }
           return Any(static_cast<double>(~static_cast<int64_t>(rv)));
         case logical_not:
           return Any(static_cast<double>(!static_cast<bool>(rv)));
