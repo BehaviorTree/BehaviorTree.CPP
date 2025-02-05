@@ -12,6 +12,9 @@ endif()
 
 find_package(ament_index_cpp REQUIRED)
 
+set(BTCPP_EXTRA_INCLUDE_DIRS ${ZeroMQ_INCLUDE_DIRS}
+                             ${SQLite3_INCLUDE_DIRS})
+
 set( BTCPP_EXTRA_LIBRARIES
     $<BUILD_INTERFACE:ament_index_cpp::ament_index_cpp>
     $<BUILD_INTERFACE:${ZeroMQ_LIBRARIES}>
@@ -26,6 +29,7 @@ set( BTCPP_BIN_DESTINATION     bin )
 
 mark_as_advanced(
     BTCPP_EXTRA_LIBRARIES
+    BTCPP_EXTRA_INCLUDE_DIRS
     BTCPP_LIB_DESTINATION
     BTCPP_INCLUDE_DESTINATION
     BTCPP_BIN_DESTINATION )
