@@ -67,31 +67,72 @@ BT::Expected<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string
   }
 }
 
+class SafeErrorReport
+{
+  mutable std::string error_buffer;
+  mutable std::size_t count = 0;
+
+  struct _sink
+  {
+    std::string* buffer;
+    std::size_t* count;
+    using return_type = std::size_t;
+
+    template <typename Input, typename Reader, typename Tag>
+    void operator()(const lexy::error_context<Input>& context,
+                    const lexy::error<Reader, Tag>& error)
+    {
+      *buffer += "error: while parsing ";
+      *buffer += context.production();
+      *buffer += "\n";
+      (*count)++;
+    }
+
+    std::size_t finish() &&
+    {
+      return *count;
+    }
+  };
+
+public:
+  using return_type = std::size_t;
+
+  constexpr auto sink() const
+  {
+    return _sink{ &error_buffer, &count };
+  }
+  const std::string& get_errors() const
+  {
+    return error_buffer;
+  }
+};
+
 Result ValidateScript(const std::string& script)
 {
-  char error_msgs_buffer[2048];
-
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
-  auto result =
-      lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
-  if(result.has_value() && result.error_count() == 0)
+  SafeErrorReport error_report;  // Replace char buffer with our safe handler
+
+  auto result = lexy::parse<BT::Grammar::stmt>(input, error_report);
+
+  if(!result.has_value() || result.error_count() != 0)
   {
-    try
-    {
-      std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
-      if(exprs.empty())
-      {
-        return nonstd::make_unexpected("Empty Script");
-      }
-      // valid script
-      return {};
-    }
-    catch(std::runtime_error& err)
-    {
-      return nonstd::make_unexpected(err.what());
-    }
+    return nonstd::make_unexpected(error_report.get_errors());
   }
-  return nonstd::make_unexpected(error_msgs_buffer);
+
+  try
+  {
+    std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
+    if(exprs.empty())
+    {
+      return nonstd::make_unexpected("Empty Script");
+    }
+    // valid script
+    return {};
+  }
+  catch(std::runtime_error& err)
+  {
+    return nonstd::make_unexpected(err.what());
+  }
 }
 
 }  // namespace BT
