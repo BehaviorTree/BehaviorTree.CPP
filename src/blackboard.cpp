@@ -143,7 +143,7 @@ void Blackboard::createEntry(const std::string& key, const TypeInfo& info)
 {
   if(StartWith(key, '@'))
   {
-    rootBlackboard()->createEntryImpl(key.substr(1, key.size() - 1), info);
+    rootBlackboard()->createEntry(key.substr(1, key.size() - 1), info);
   }
   else
   {

@@ -654,3 +654,14 @@ TEST(BlackboardTest, TimestampedInterface)
   ASSERT_EQ(stamp_opt->seq, 2);
   ASSERT_GE(stamp_opt->time.count(), nsec_before);
 }
+
+TEST(BlackboardTest, EmptyKeyTest)
+{
+  auto bb = BT::Blackboard::create();
+  bb->set("", 2);
+  ASSERT_EQ(bb->get<int>(""), 2);
+  bb->set("@@", 3);
+  ASSERT_EQ(bb->get<int>("@@"), 3);
+  ASSERT_EQ(bb->get<int>("@"), 3);
+  ASSERT_EQ(bb->get<int>(""), 3);
+}
