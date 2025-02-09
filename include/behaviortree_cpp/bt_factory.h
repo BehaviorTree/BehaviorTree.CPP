@@ -109,8 +109,8 @@ public:
   Tree(const Tree&) = delete;
   Tree& operator=(const Tree&) = delete;
 
-  Tree(Tree&& other);
-  Tree& operator=(Tree&& other);
+  Tree(Tree&& other) = default;
+  Tree& operator=(Tree&& other) = default;
 
   void initialize();
 
@@ -215,8 +215,8 @@ public:
   BehaviorTreeFactory(const BehaviorTreeFactory& other) = delete;
   BehaviorTreeFactory& operator=(const BehaviorTreeFactory& other) = delete;
 
-  BehaviorTreeFactory(BehaviorTreeFactory&& other) noexcept;
-  BehaviorTreeFactory& operator=(BehaviorTreeFactory&& other) noexcept;
+  BehaviorTreeFactory(BehaviorTreeFactory&& other) noexcept = default;
+  BehaviorTreeFactory& operator=(BehaviorTreeFactory&& other) noexcept = default;
 
   /// Remove a registered ID.
   bool unregisterBuilder(const std::string& ID);

@@ -107,17 +107,6 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
   _p->scripting_enums = std::make_shared<std::unordered_map<std::string, int>>();
 }
 
-BehaviorTreeFactory::BehaviorTreeFactory(BehaviorTreeFactory&& other) noexcept
-{
-  this->_p = std::move(other._p);
-}
-
-BehaviorTreeFactory& BehaviorTreeFactory::operator=(BehaviorTreeFactory&& other) noexcept
-{
-  this->_p = std::move(other._p);
-  return *this;
-}
-
 BehaviorTreeFactory::~BehaviorTreeFactory()
 {}
 
@@ -531,21 +520,8 @@ BehaviorTreeFactory::substitutionRules() const
   return _p->substitution_rules;
 }
 
-Tree& Tree::operator=(Tree&& other)
-{
-  subtrees = std::move(other.subtrees);
-  manifests = std::move(other.manifests);
-  wake_up_ = other.wake_up_;
-  return *this;
-}
-
 Tree::Tree()
 {}
-
-Tree::Tree(Tree&& other)
-{
-  (*this) = std::move(other);
-}
 
 void Tree::initialize()
 {
