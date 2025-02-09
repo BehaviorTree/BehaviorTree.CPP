@@ -548,8 +548,13 @@ void VerifyXML(const std::string& xml_text,
           for(auto child = node->FirstChildElement(); child != nullptr;
               child = child->NextSiblingElement())
           {
-            const std::string child_name = node->FirstChildElement()->Name();
+            const std::string child_name = child->Name();
             const auto child_search = registered_nodes.find(child_name);
+            if(child_search == registered_nodes.end())
+            {
+              ThrowError(child->GetLineNum(),
+                         std::string("Unknown node type: ") + child_name);
+            }
             const auto child_type = child_search->second;
             if(child_type == NodeType::CONTROL &&
                ((child_name == "ThreadedAction") ||
