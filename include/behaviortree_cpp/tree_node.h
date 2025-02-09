@@ -598,7 +598,8 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
 
   if constexpr(std::is_same_v<BT::Any, T>)
   {
-    if(config().manifest->ports.at(key).type() != typeid(BT::Any))
+    auto port_type = config().manifest->ports.at(key).type();
+    if(port_type != typeid(BT::Any) && port_type != typeid(BT::AnyTypeAllowed))
     {
       throw LogicError("setOutput<Any> is not allowed, unless the port "
                        "was declared using OutputPort<Any>");
