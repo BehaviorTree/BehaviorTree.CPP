@@ -143,6 +143,10 @@ void Blackboard::createEntry(const std::string& key, const TypeInfo& info)
 {
   if(StartWith(key, '@'))
   {
+    if(key.find('@', 1) != std::string::npos)
+    {
+      throw LogicError("Character '@' used multiple times in the key");
+    }
     rootBlackboard()->createEntryImpl(key.substr(1, key.size() - 1), info);
   }
   else
