@@ -242,6 +242,10 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
   }
 
   const XMLElement* xml_root = doc->RootElement();
+  if(!xml_root)
+  {
+    throw RuntimeError("Invalid XML: missing root element");
+  }
 
   auto format = xml_root->Attribute("BTCPP_format");
   if(!format)
