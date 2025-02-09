@@ -245,7 +245,34 @@ private:
 template <typename SRC, typename TO>
 inline bool ValidCast(const SRC& val)
 {
-  return (val == static_cast<SRC>(static_cast<TO>(val)));
+  // First check numeric limits
+  if constexpr(std::is_arithmetic_v<SRC> && std::is_arithmetic_v<TO>)
+  {
+    // Handle conversion to floating point
+    if constexpr(std::is_floating_point_v<TO>)
+    {
+      if constexpr(std::is_integral_v<SRC>)
+      {
+        // For integral to float, check if we can represent the value exactly
+        TO as_float = static_cast<TO>(val);
+        SRC back_conv = static_cast<SRC>(as_float);
+        return back_conv == val;
+      }
+    }
+    // Handle conversion to integral
+    else if constexpr(std::is_integral_v<TO>)
+    {
+      if(val > static_cast<SRC>(std::numeric_limits<TO>::max()) ||
+         val < static_cast<SRC>(std::numeric_limits<TO>::lowest()))
+      {
+        return false;
+      }
+    }
+  }
+
+  TO as_target = static_cast<TO>(val);
+  SRC back_to_source = static_cast<SRC>(as_target);
+  return val == back_to_source;
 }
 
 template <typename T>
