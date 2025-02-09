@@ -13,6 +13,7 @@
 #pragma once
 
 #include <type_traits>
+#include <cmath>
 #include "simple_string.hpp"
 
 #undef max
@@ -88,9 +89,41 @@ inline void checkLowerLimit(const From& from)
 template <typename From, typename To>
 inline void checkTruncation(const From& from)
 {
-  if(from != static_cast<From>(static_cast<To>(from)))
+  // Handle integer to floating point
+  if constexpr(std::is_integral_v<From> && std::is_floating_point_v<To>)
   {
-    throw std::runtime_error("Floating point truncated");
+    // Check if value can be represented exactly in the target type
+    To as_float = static_cast<To>(from);
+    From back_conv = static_cast<From>(as_float);
+    if(back_conv != from)
+    {
+      throw std::runtime_error("Loss of precision in conversion to floating point");
+    }
+  }
+  // Handle floating point to integer
+  if constexpr(std::is_floating_point_v<From> && std::is_integral_v<To>)
+  {
+    if(from > static_cast<From>(std::numeric_limits<To>::max()) ||
+       from < static_cast<From>(std::numeric_limits<To>::lowest()) ||
+       from != std::nearbyint(from))
+    {
+      throw std::runtime_error("Invalid floating point to integer conversion");
+    }
+  }
+  // Handle other conversions
+  else
+  {
+    if(from > static_cast<From>(std::numeric_limits<To>::max()) ||
+       from < static_cast<From>(std::numeric_limits<To>::lowest()))
+    {
+      throw std::runtime_error("Value outside numeric limits");
+    }
+    To as_target = static_cast<To>(from);
+    From back_to_source = static_cast<From>(as_target);
+    if(from != back_to_source)
+    {
+      throw std::runtime_error("Value truncated in conversion");
+    }
   }
 }
 
