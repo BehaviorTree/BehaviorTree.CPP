@@ -1,0 +1,11 @@
+{
+  "outer_key": {
+    "inner_int": 100,
+    "inner_string": "nested"
+  },
+  "array_key": [
+    1,
+    2,
+    3
+  ]
+}

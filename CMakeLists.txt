@@ -2,27 +2,6 @@ cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
 project(behaviortree_cpp VERSION 4.6.2 LANGUAGES C CXX)
 
-set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
-
-set(BTCPP_LIBRARY ${PROJECT_NAME})
-
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE "Release" CACHE
-      STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
-
-if(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -DWIN32_LEAN_AND_MEAN)
-else()
-    add_definitions(-Wpedantic -fno-omit-frame-pointer)
-endif()
-
-
 #---- project configuration ----
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
 option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
@@ -32,6 +11,135 @@ option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
+option(ENABLE_FUZZING "Enable fuzzing builds" OFF)
+option(USE_AFLPLUSPLUS "Use AFL++ instead of libFuzzer" OFF)
+option(ENABLE_DEBUG "Enable debug build with full symbols" OFF)
+option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
+
+set(BASE_FLAGS "")
+
+if(ENABLE_DEBUG)
+    list(APPEND BASE_FLAGS
+        -g3
+        -ggdb3
+        -O0
+        -fno-omit-frame-pointer
+    )
+endif()
+
+# Fuzzing configuration
+if(ENABLE_FUZZING)
+    if(CMAKE_C_COMPILER MATCHES ".*afl-.*" OR CMAKE_CXX_COMPILER MATCHES ".*afl-.*")
+        set(USE_AFLPLUSPLUS ON CACHE BOOL "Use AFL++ instead of libFuzzer" FORCE)
+        message(STATUS "AFL++ compiler detected - automatically enabling AFL++ mode")
+    endif()
+
+    # When building for fuzzing, we still want static library by default
+    set(BTCPP_SHARED_LIBS OFF CACHE BOOL "Build static library for fuzzing" FORCE)
+
+    # Only apply static linking settings if explicitly requested
+    if(FORCE_STATIC_LINKING)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+        set(BUILD_SHARED_LIBS OFF)
+
+        # Force static linking for dependencies
+        if(BTCPP_GROOT_INTERFACE)
+            set(ZeroMQ_USE_STATIC_LIBS ON)
+            set(ZEROMQ_STATIC_LIBRARY ON)
+        endif()
+
+        if(BTCPP_SQLITE_LOGGING)
+            set(SQLite3_USE_STATIC_LIBS ON)
+        endif()
+    endif()
+
+    list(APPEND BASE_FLAGS -O2)
+
+    if(USE_AFLPLUSPLUS)
+        set(SANITIZER_FLAGS
+            -fsanitize=address,undefined
+        )
+    else()
+        # For libFuzzer, use fuzzer-no-link for the library
+        set(SANITIZER_FLAGS
+            -fsanitize=address,undefined,fuzzer-no-link
+        )
+    endif()
+
+    # Apply sanitizer flags to the base library
+    list(APPEND BASE_FLAGS ${SANITIZER_FLAGS})
+
+    add_compile_options(${BASE_FLAGS})
+    add_link_options(${BASE_FLAGS})
+
+    function(apply_fuzzing_flags target)
+        target_compile_options(${target} PRIVATE
+        ${BASE_FLAGS}
+        ${SANITIZER_FLAGS}
+    )
+
+        if(FORCE_STATIC_LINKING)
+            if(USE_AFLPLUSPLUS)
+                target_link_options(${target} PRIVATE
+                ${BASE_FLAGS}
+                ${SANITIZER_FLAGS}
+                -static-libstdc++
+                -static-libgcc
+                -fsanitize=fuzzer
+            )
+            else()
+                target_link_options(${target} PRIVATE
+                ${BASE_FLAGS}
+                -fsanitize=fuzzer
+                ${SANITIZER_FLAGS}
+                -static-libstdc++
+                -static-libgcc
+            )
+            endif()
+        else()
+            if(USE_AFLPLUSPLUS)
+                target_link_options(${target} PRIVATE
+                ${BASE_FLAGS}
+                ${SANITIZER_FLAGS}
+                -fsanitize=fuzzer
+            )
+            else()
+                target_link_options(${target} PRIVATE
+                ${BASE_FLAGS}
+                -fsanitize=fuzzer
+                ${SANITIZER_FLAGS}
+            )
+            endif()
+        endif()
+    endfunction()
+
+    set(BTCPP_EXAMPLES OFF CACHE BOOL "Disable examples during fuzzing" FORCE)
+    set(BTCPP_BUILD_TOOLS OFF CACHE BOOL "Disable tools during fuzzing" FORCE)
+    set(BTCPP_UNIT_TESTS OFF CACHE BOOL "Disable tests during fuzzing" FORCE)
+    set(BTCPP_SHARED_LIBS OFF CACHE BOOL "Build static library for fuzzing" FORCE)
+else()
+    # Apply base flags for non-fuzzing builds
+    add_compile_options(${BASE_FLAGS})
+    add_link_options(${BASE_FLAGS})
+endif()
+
+set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
+
+set(BTCPP_LIBRARY ${PROJECT_NAME})
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -DWIN32_LEAN_AND_MEAN)
+else()
+    add_definitions(-Wpedantic -fno-omit-frame-pointer)
+endif()
 
 if(USE_V3_COMPATIBLE_NAMES)
     add_definitions(-DUSE_BTCPP3_OLD_NAMES)
@@ -186,12 +294,55 @@ target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAK
 target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
 if(MSVC)
-	target_compile_options(${BTCPP_LIBRARY} PRIVATE "/source-charset:utf-8")
+    target_compile_options(${BTCPP_LIBRARY} PRIVATE "/source-charset:utf-8")
 else()
-    target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
+    if(ENABLE_DEBUG)
+        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra -g3 -ggdb3 -O0 -fno-omit-frame-pointer)
+    else()
+        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
+    endif()
 endif()
 
 add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
+
+
+# Add fuzzing targets
+if(ENABLE_FUZZING)
+    foreach(fuzzer bt_fuzzer script_fuzzer bb_fuzzer)
+        add_executable(${fuzzer} fuzzing/${fuzzer}.cpp)
+        apply_fuzzing_flags(${fuzzer})
+
+        if(FORCE_STATIC_LINKING)
+            target_link_libraries(${fuzzer} PRIVATE
+                -static-libstdc++
+                -static-libgcc
+                ${BTCPP_LIBRARY}
+                ${BTCPP_EXTRA_LIBRARIES}
+            )
+        else()
+            target_link_libraries(${fuzzer} PRIVATE
+                ${BTCPP_LIBRARY}
+                ${BTCPP_EXTRA_LIBRARIES}
+            )
+        endif()
+
+        set(CORPUS_DIR ${CMAKE_BINARY_DIR}/corpus/${fuzzer})
+        file(MAKE_DIRECTORY ${CORPUS_DIR})
+    endforeach()
+
+    file(GLOB BT_CORPUS_FILES "${CMAKE_SOURCE_DIR}/fuzzing/corpus/bt_corpus/*")
+    file(GLOB SCRIPT_CORPUS_FILES "${CMAKE_SOURCE_DIR}/fuzzing/corpus/script_corpus/*")
+    file(GLOB BB_CORPUS_FILES "${CMAKE_SOURCE_DIR}/fuzzing/corpus/bb_corpus/*")
+    if(BT_CORPUS_FILES)
+        file(COPY ${BT_CORPUS_FILES} DESTINATION ${CMAKE_BINARY_DIR}/corpus/bt_fuzzer)
+    endif()
+    if(SCRIPT_CORPUS_FILES)
+        file(COPY ${SCRIPT_CORPUS_FILES} DESTINATION ${CMAKE_BINARY_DIR}/corpus/script_fuzzer)
+    endif()
+    if(BB_CORPUS_FILES)
+        file(COPY ${BB_CORPUS_FILES} DESTINATION ${CMAKE_BINARY_DIR}/corpus/bb_fuzzer)
+    endif()
+endif()
 
 #############################################################
 message( STATUS "BTCPP_LIB_DESTINATION:   ${BTCPP_LIB_DESTINATION} " )
@@ -199,7 +350,7 @@ message( STATUS "BTCPP_INCLUDE_DESTINATION: ${BTCPP_INCLUDE_DESTINATION} " )
 message( STATUS "BTCPP_UNIT_TESTS:   ${BTCPP_UNIT_TESTS} " )
 
 if (BTCPP_UNIT_TESTS OR BTCPP_EXAMPLES)
-add_subdirectory(sample_nodes)
+    add_subdirectory(sample_nodes)
 endif()
 
 ######################################################

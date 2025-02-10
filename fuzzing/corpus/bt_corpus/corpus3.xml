@@ -1,0 +1,8 @@
+<root BTCPP_format="4">
+        <BehaviorTree ID="MainTree">
+            <Sequence name="root">
+                <SetBlackboard key="value" value="1"/>
+                <SubTree ID="SubTree" _autoremap="true"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>

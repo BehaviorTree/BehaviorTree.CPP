@@ -1,0 +1,2 @@
+str : = 'hello';
+len(str)

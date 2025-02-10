@@ -1,0 +1,14 @@
+<root BTCPP_format="4">
+        <BehaviorTree ID="MainTree">
+            <Fallback name="root_fallback">
+                <Sequence name="sequence">
+                    <Timeout name="timeout_node" timeout_ms="1000">
+                        <AlwaysSuccess name="action"/>
+                    </Timeout>
+                </Sequence>
+                <RetryUntilSuccessful num_attempts="3">
+                    <AlwaysFailure/>
+                </RetryUntilSuccessful>
+            </Fallback>
+        </BehaviorTree>
+    </root>
