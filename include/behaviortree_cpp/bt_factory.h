@@ -149,7 +149,7 @@ public:
   [[nodiscard]] Blackboard::Ptr rootBlackboard();
 
   //Call the visitor for each node of the tree.
-  void applyVisitor(const std::function<void(const TreeNode*)>& visitor);
+  void applyVisitor(const std::function<void(const TreeNode*)>& visitor) const;
 
   //Call the visitor for each node of the tree.
   void applyVisitor(const std::function<void(TreeNode*)>& visitor);
