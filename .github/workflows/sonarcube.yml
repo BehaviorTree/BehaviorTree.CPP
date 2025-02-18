@@ -1,8 +1,8 @@
-name: Build
+name: Sonarcube Scan
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
@@ -23,10 +23,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libzmq3-dev libsqlite3-dev
 
+      - name: Install googletest
+        uses: Bacondish2023/setup-googletest@v1
+        with:
+          tag: 'release-1.14.0'
+
       - name: Run Build Wrapper
         run: |
           mkdir build
-          cmake -S . -B build -DBTCPP_UNIT_TESTS=OFF
+          cmake -S . -B build
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Release
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
