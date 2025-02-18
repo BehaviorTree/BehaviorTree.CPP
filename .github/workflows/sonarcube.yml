@@ -17,10 +17,16 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install Build Wrapper
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libzmq3-dev libsqlite3-dev
+
       - name: Run Build Wrapper
         run: |
           mkdir build
-          cmake -S . -B build
+          cmake -S . -B build -DBTCPP_UNIT_TESTS=OFF
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Release
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v4
