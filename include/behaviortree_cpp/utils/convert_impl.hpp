@@ -101,7 +101,7 @@ inline void checkTruncation(const From& from)
     }
   }
   // Handle floating point to integer
-  if constexpr(std::is_floating_point_v<From> && std::is_integral_v<To>)
+  else if constexpr(std::is_floating_point_v<From> && std::is_integral_v<To>)
   {
     if(from > static_cast<From>(std::numeric_limits<To>::max()) ||
        from < static_cast<From>(std::numeric_limits<To>::lowest()) ||
