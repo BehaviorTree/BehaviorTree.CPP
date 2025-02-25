@@ -3,6 +3,12 @@
 #include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/basic_types.h"
 
+namespace
+{
+constexpr std::string_view kTypeField = "__type";
+constexpr std::string_view kValueField = "value";
+}  // namespace
+
 //----------- Custom types ----------
 
 namespace TestTypes
@@ -95,16 +101,27 @@ TEST_F(JsonTest, TwoWaysConversion)
   TestTypes::Pose3D pose = { { 1, 2, 3 }, { 4, 5, 6, 7 } };
 
   nlohmann::json json;
+  exporter.toJson(BT::Any("string_val"), json["string"]);
   exporter.toJson(BT::Any(69), json["int"]);
+  exporter.toJson(BT::Any(static_cast<uint64_t>(96)), json["uint"]);
   exporter.toJson(BT::Any(3.14), json["real"]);
   exporter.toJson(BT::Any(pose), json["pose"]);
 
   std::cout << json.dump(2) << std::endl;
 
-  ASSERT_EQ(json["int"], 69);
-  ASSERT_EQ(json["real"], 3.14);
+  ASSERT_EQ(json["string"][kTypeField], "string");
+  ASSERT_EQ(json["string"][kValueField], "string_val");
 
-  ASSERT_EQ(json["pose"]["__type"], "Pose3D");
+  ASSERT_EQ(json["int"][kTypeField], "int64_t");
+  ASSERT_EQ(json["int"][kValueField], 69);
+
+  ASSERT_EQ(json["uint"][kTypeField], "uint64_t");
+  ASSERT_EQ(json["uint"][kValueField], 96);
+
+  ASSERT_EQ(json["real"][kTypeField], "double");
+  ASSERT_EQ(json["real"][kValueField], 3.14);
+
+  ASSERT_EQ(json["pose"][kTypeField], "Pose3D");
   ASSERT_EQ(json["pose"]["pos"]["x"], 1);
   ASSERT_EQ(json["pose"]["pos"]["y"], 2);
   ASSERT_EQ(json["pose"]["pos"]["z"], 3);
@@ -126,8 +143,12 @@ TEST_F(JsonTest, TwoWaysConversion)
   ASSERT_EQ(pose.rot.y, pose2.rot.y);
   ASSERT_EQ(pose.rot.z, pose2.rot.z);
 
-  auto num = exporter.fromJson(json["int"])->first.cast<int>();
-  ASSERT_EQ(num, 69);
+  auto string_val = exporter.fromJson(json["string"])->first.cast<std::string>();
+  ASSERT_EQ(string_val, "string_val");
+  auto int_val = exporter.fromJson(json["int"])->first.cast<int>();
+  ASSERT_EQ(int_val, 69);
+  auto uint_val = exporter.fromJson(json["uint"])->first.cast<uint>();
+  ASSERT_EQ(uint_val, 96);
   auto real = exporter.fromJson(json["real"])->first.cast<double>();
   ASSERT_EQ(real, 3.14);
 }
