@@ -22,6 +22,9 @@ else()
     add_definitions(-Wpedantic -fno-omit-frame-pointer)
 endif()
 
+# create compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 #---- project configuration ----
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)

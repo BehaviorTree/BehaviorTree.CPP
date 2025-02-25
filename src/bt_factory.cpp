@@ -597,7 +597,7 @@ Blackboard::Ptr Tree::rootBlackboard()
   return {};
 }
 
-void Tree::applyVisitor(const std::function<void(const TreeNode*)>& visitor)
+void Tree::applyVisitor(const std::function<void(const TreeNode*)>& visitor) const
 {
   BT::applyRecursiveVisitor(static_cast<const TreeNode*>(rootNode()), visitor);
 }
