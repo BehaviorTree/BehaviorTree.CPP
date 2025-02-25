@@ -93,8 +93,17 @@ inline void checkTruncation(const From& from)
   if constexpr(std::is_integral_v<From> && std::is_floating_point_v<To>)
   {
     // Check if value can be represented exactly in the target type
-    constexpr auto max_exact = (1LL << std::numeric_limits<double>::digits) - 1;
-    if(from > max_exact || from < -max_exact)
+    constexpr uint64_t max_exact = (1LL << std::numeric_limits<double>::digits) - 1;
+    bool doesnt_fit = false;
+    if constexpr(!std::is_signed_v<From>)
+    {
+      doesnt_fit = static_cast<uint64_t>(from) > max_exact;
+    }
+    else
+    {
+      doesnt_fit = std::abs(static_cast<int64_t>(from)) > static_cast<int64_t>(max_exact);
+    }
+    if(doesnt_fit)
     {
       throw std::runtime_error("Loss of precision when converting a large integer number "
                                "to floating point:" +
