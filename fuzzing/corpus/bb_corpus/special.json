@@ -1,0 +1,6 @@
+{
+  "special@key": 123,
+  "key_with_underscore": "value",
+  "KeyWithCaps": true,
+  "123numeric_start": 456
+}

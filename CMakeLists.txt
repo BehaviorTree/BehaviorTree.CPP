@@ -2,29 +2,8 @@ cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
 project(behaviortree_cpp VERSION 4.6.2 LANGUAGES C CXX)
 
-set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH}  "${CMAKE_CURRENT_LIST_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
-
-set(BTCPP_LIBRARY ${PROJECT_NAME})
-
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE "Release" CACHE
-      STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
-
-if(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -DWIN32_LEAN_AND_MEAN)
-else()
-    add_definitions(-Wpedantic -fno-omit-frame-pointer)
-endif()
-
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 
 #---- project configuration ----
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
@@ -35,6 +14,48 @@ option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
+option(ENABLE_FUZZING "Enable fuzzing builds" OFF)
+option(USE_AFLPLUSPLUS "Use AFL++ instead of libFuzzer" OFF)
+option(ENABLE_DEBUG "Enable debug build with full symbols" OFF)
+option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
+
+set(BASE_FLAGS "")
+
+if(ENABLE_DEBUG)
+    list(APPEND BASE_FLAGS
+        -g3
+        -ggdb3
+        -O0
+        -fno-omit-frame-pointer
+    )
+endif()
+
+# Include fuzzing configuration if enabled
+if(ENABLE_FUZZING)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/fuzzing_build.cmake)
+else()
+    # Apply base flags for non-fuzzing builds
+    add_compile_options(${BASE_FLAGS})
+    add_link_options(${BASE_FLAGS})
+endif()
+
+set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
+
+set(BTCPP_LIBRARY ${PROJECT_NAME})
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -DWIN32_LEAN_AND_MEAN)
+else()
+    add_definitions(-Wpedantic -fno-omit-frame-pointer)
+endif()
 
 if(USE_V3_COMPATIBLE_NAMES)
     add_definitions(-DUSE_BTCPP3_OLD_NAMES)
@@ -189,12 +210,21 @@ target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAK
 target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
 if(MSVC)
-	target_compile_options(${BTCPP_LIBRARY} PRIVATE "/source-charset:utf-8")
+    target_compile_options(${BTCPP_LIBRARY} PRIVATE "/source-charset:utf-8")
 else()
-    target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
+    if(ENABLE_DEBUG)
+        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra -g3 -ggdb3 -O0 -fno-omit-frame-pointer)
+    else()
+        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
+    endif()
 endif()
 
 add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
+
+# Add fuzzing targets
+if(ENABLE_FUZZING)
+    add_fuzzing_targets()
+endif()
 
 #############################################################
 message( STATUS "BTCPP_LIB_DESTINATION:   ${BTCPP_LIB_DESTINATION} " )
@@ -202,7 +232,7 @@ message( STATUS "BTCPP_INCLUDE_DESTINATION: ${BTCPP_INCLUDE_DESTINATION} " )
 message( STATUS "BTCPP_UNIT_TESTS:   ${BTCPP_UNIT_TESTS} " )
 
 if (BTCPP_UNIT_TESTS OR BTCPP_EXAMPLES)
-add_subdirectory(sample_nodes)
+    add_subdirectory(sample_nodes)
 endif()
 
 ######################################################
