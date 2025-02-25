@@ -93,15 +93,16 @@ inline void checkTruncation(const From& from)
   if constexpr(std::is_integral_v<From> && std::is_floating_point_v<To>)
   {
     // Check if value can be represented exactly in the target type
-    To as_float = static_cast<To>(from);
-    From back_conv = static_cast<From>(as_float);
-    if(back_conv != from)
+    constexpr auto max_exact = (1LL << std::numeric_limits<double>::digits) - 1;
+    if(from > max_exact || from < -max_exact)
     {
-      throw std::runtime_error("Loss of precision in conversion to floating point");
+      throw std::runtime_error("Loss of precision when converting a large integer number "
+                               "to floating point:" +
+                               std::to_string(from));
     }
   }
   // Handle floating point to integer
-  if constexpr(std::is_floating_point_v<From> && std::is_integral_v<To>)
+  else if constexpr(std::is_floating_point_v<From> && std::is_integral_v<To>)
   {
     if(from > static_cast<From>(std::numeric_limits<To>::max()) ||
        from < static_cast<From>(std::numeric_limits<To>::lowest()) ||
