@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
 project(behaviortree_cpp VERSION 4.6.2 LANGUAGES C CXX)
 
+# create compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 #---- project configuration ----
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
 option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)

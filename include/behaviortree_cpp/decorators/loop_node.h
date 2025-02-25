@@ -60,7 +60,8 @@ public:
       // special case: the port contains a string that was converted to SharedQueue<T>
       if(static_queue_)
       {
-        current_queue_ = static_queue_;
+        current_queue_ = std::make_shared<std::deque<T>>();
+        *current_queue_ = *static_queue_;
       }
     }
 

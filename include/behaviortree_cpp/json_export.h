@@ -114,12 +114,12 @@ inline Expected<T> JsonExporter::fromJson(const nlohmann::json& source) const
   auto res = fromJson(source);
   if(!res)
   {
-    return nonstd::expected_lite::make_unexpected(res.error());
+    return nonstd::make_unexpected(res.error());
   }
   auto casted = res->first.tryCast<T>();
   if(!casted)
   {
-    return nonstd::expected_lite::make_unexpected(casted.error());
+    return nonstd::make_unexpected(casted.error());
   }
   return *casted;
 }

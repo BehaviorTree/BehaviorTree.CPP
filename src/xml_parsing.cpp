@@ -242,6 +242,10 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
   }
 
   const XMLElement* xml_root = doc->RootElement();
+  if(!xml_root)
+  {
+    throw RuntimeError("Invalid XML: missing root element");
+  }
 
   auto format = xml_root->Attribute("BTCPP_format");
   if(!format)
@@ -548,8 +552,13 @@ void VerifyXML(const std::string& xml_text,
           for(auto child = node->FirstChildElement(); child != nullptr;
               child = child->NextSiblingElement())
           {
-            const std::string child_name = node->FirstChildElement()->Name();
+            const std::string child_name = child->Name();
             const auto child_search = registered_nodes.find(child_name);
+            if(child_search == registered_nodes.end())
+            {
+              ThrowError(child->GetLineNum(),
+                         std::string("Unknown node type: ") + child_name);
+            }
             const auto child_type = child_search->second;
             if(child_type == NodeType::CONTROL &&
                ((child_name == "ThreadedAction") ||
