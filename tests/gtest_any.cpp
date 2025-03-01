@@ -249,4 +249,27 @@ TEST(Any, Cast)
     Any a(v);
     EXPECT_EQ(a.cast<std::vector<int>>(), v);
   }
+
+  // Upcasting.
+  {
+    // Base class
+    class Greeter
+    {
+      virtual void print_msg() const {};
+    };
+
+    // Derived class
+    class HelloGreeter : public Greeter
+    {
+      void print_msg() const override{};
+    };
+
+    auto hg = std::make_shared<HelloGreeter>();
+
+    Any a(hg);
+    EXPECT_NO_THROW(auto res = a.cast<std::shared_ptr<HelloGreeter>>());
+    EXPECT_NO_THROW(auto res = a.cast<std::shared_ptr<Greeter>>());
+    EXPECT_TRUE(a.castPtr<std::shared_ptr<HelloGreeter>>());
+    EXPECT_TRUE(a.castPtr<std::shared_ptr<Greeter>>());
+  }
 }
