@@ -654,3 +654,121 @@ TEST(BlackboardTest, TimestampedInterface)
   ASSERT_EQ(stamp_opt->seq, 2);
   ASSERT_GE(stamp_opt->time.count(), nsec_before);
 }
+
+// Base class
+class Greeter
+{
+public:
+  typedef std::shared_ptr<Greeter> Ptr;
+  virtual std::string show_msg() const
+  {
+    return "";
+  };
+};
+
+// Derived class
+class HelloGreeter : public Greeter
+{
+public:
+  typedef std::shared_ptr<HelloGreeter> Ptr;
+  std::string show_msg() const override
+  {
+    return "hello";
+  }
+  void setDerivedParameter(int n){};
+};
+
+class CreateHelloGreeter : public SyncActionNode
+{
+public:
+  CreateHelloGreeter(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    auto hello_greeter = std::make_shared<HelloGreeter>();
+    setOutput("out_derived", hello_greeter);
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::OutputPort<HelloGreeter::Ptr>("out_derived") };
+  }
+};
+
+class SetDerivedParameter : public SyncActionNode
+{
+public:
+  SetDerivedParameter(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    int n;
+    HelloGreeter::Ptr hello_greeter;
+
+    getInput("n", n);
+    getInput("in_derived", hello_greeter);
+
+    hello_greeter->setDerivedParameter(n);
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<int>("n"), BT::InputPort<HelloGreeter::Ptr>("in_derived") };
+  }
+};
+
+class ShowGreetMessage : public SyncActionNode
+{
+public:
+  ShowGreetMessage(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    Greeter::Ptr greeter;
+    getInput("in_base", greeter);
+
+    greeter->show_msg();
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<Greeter::Ptr>("in_base") };
+  }
+};
+
+TEST(BlackboardTest, Upcasting_Issue943)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <CreateHelloGreeter out_derived="{hello_greeter}" />
+          <SetDerivedParameter in_derived="{hello_greater}" n="2" />
+          <ShowGreetMessage in_base="{hello_greeter}" />
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<CreateHelloGreeter>("CreateHelloGreeter");
+  factory.registerNodeType<SetDerivedParameter>("SetDerivedParameter");
+  factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
+
+  auto tree = factory.createTreeFromText(xml_txt);
+
+  NodeStatus status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
