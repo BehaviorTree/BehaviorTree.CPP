@@ -4,6 +4,7 @@
 #include "behaviortree_cpp/bt_parser.h"
 
 #include <filesystem>
+#include <string>
 #include <unordered_map>
 
 namespace BT
@@ -26,10 +27,11 @@ public:
   XMLParser(XMLParser&& other) noexcept;
   XMLParser& operator=(XMLParser&& other) noexcept;
 
-  void loadFromFile(const std::filesystem::path& filename,
-                    bool add_includes = true) override;
+  std::string loadFromFile(const std::filesystem::path& filename,
+                           bool add_includes = true) override;
 
-  void loadFromText(const std::string& xml_text, bool add_includes = true) override;
+  std::string loadFromText(const std::string& xml_text,
+                           bool add_includes = true) override;
 
   [[nodiscard]] std::vector<std::string> registeredBehaviorTrees() const override;
 

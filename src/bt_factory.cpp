@@ -257,15 +257,15 @@ void BehaviorTreeFactory::registerFromROSPlugins()
 }
 #endif
 
-void BehaviorTreeFactory::registerBehaviorTreeFromFile(
-    const std::filesystem::path& filename)
+std::string
+BehaviorTreeFactory::registerBehaviorTreeFromFile(const std::filesystem::path& filename)
 {
-  _p->parser->loadFromFile(filename);
+  return _p->parser->loadFromFile(filename);
 }
 
-void BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string& xml_text)
+std::string BehaviorTreeFactory::registerBehaviorTreeFromText(const std::string& xml_text)
 {
-  _p->parser->loadFromText(xml_text);
+  return _p->parser->loadFromText(xml_text);
 }
 
 std::vector<std::string> BehaviorTreeFactory::registeredBehaviorTrees() const

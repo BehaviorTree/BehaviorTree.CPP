@@ -107,7 +107,7 @@ struct XMLParser::PImpl
   void getPortsRecursively(const XMLElement* element,
                            std::vector<std::string>& output_ports);
 
-  void loadDocImpl(XMLDocument* doc, bool add_includes);
+  std::string loadDocImpl(XMLDocument* doc, bool add_includes);
 
   std::list<std::unique_ptr<XMLDocument> > opened_documents;
   std::map<std::string, const XMLElement*> tree_roots;
@@ -156,7 +156,8 @@ XMLParser& XMLParser::operator=(XMLParser&& other) noexcept
 XMLParser::~XMLParser()
 {}
 
-void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_includes)
+std::string XMLParser::loadFromFile(const std::filesystem::path& filepath,
+                                    bool add_includes)
 {
   _p->opened_documents.emplace_back(new XMLDocument());
 
@@ -165,17 +166,17 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
 
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
 
-  _p->loadDocImpl(doc, add_includes);
+  return _p->loadDocImpl(doc, add_includes);
 }
 
-void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
+std::string XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
 {
   _p->opened_documents.emplace_back(new XMLDocument());
 
   XMLDocument* doc = _p->opened_documents.back().get();
   doc->Parse(xml_text.c_str(), xml_text.size());
 
-  _p->loadDocImpl(doc, add_includes);
+  return _p->loadDocImpl(doc, add_includes);
 }
 
 std::vector<std::string> XMLParser::registeredBehaviorTrees() const
@@ -232,7 +233,7 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
   }
 }
 
-void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
+std::string XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 {
   if(doc->Error())
   {
@@ -348,6 +349,23 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 
     tree_roots[tree_name] = bt_node;
   }
+
+  // Get the name of the tree to run (either explicit or single tree).
+  std::string main_tree_to_execute;
+  if(const auto main_tree_attribute = xml_root->Attribute("main_tree_to_execute"))
+  {
+    main_tree_to_execute = main_tree_attribute;
+  }
+  else if(xml_root->FirstChild() == xml_root->LastChild())
+  {
+    // special case: there is only one registered BT.
+    const auto& e = xml_root->FirstChildElement();
+    if(e->FindAttribute("ID"))
+    {
+      main_tree_to_execute = e->Attribute("ID");
+    }
+  }
+  return main_tree_to_execute;
 }
 
 void VerifyXML(const std::string& xml_text,
