@@ -78,7 +78,7 @@ private:
         config().blackboard->createEntry(output_key, src_entry->info);
         dst_entry = config().blackboard->getEntry(output_key);
       }
-      dst_entry->value = src_entry->value;
+      config().blackboard->set(output_key, src_entry->value);
     }
     else
     {

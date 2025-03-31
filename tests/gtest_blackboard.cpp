@@ -654,3 +654,75 @@ TEST(BlackboardTest, TimestampedInterface)
   ASSERT_EQ(stamp_opt->seq, 2);
   ASSERT_GE(stamp_opt->time.count(), nsec_before);
 }
+
+TEST(BlackboardTest, SetBlackboard_Upd_Ts_SeqId)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code="other_point:=first_point" />
+        <Sleep msec="5" />
+        <SetBlackboard value="{second_point}" output_key="other_point" />
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+  auto& blackboard = tree.subtrees.front()->blackboard;
+
+  const Point point1 = { 2, 2 };
+  const Point point2 = { 3, 3 };
+  blackboard->set("first_point", point1);
+  blackboard->set("second_point", point2);
+
+  tree.tickExactlyOnce();
+  const auto entry_ptr = blackboard->getEntry("other_point");
+  const auto ts1 = entry_ptr->stamp;
+  const auto seq_id1 = entry_ptr->sequence_id;
+  std::this_thread::sleep_for(std::chrono::milliseconds{5});
+  tree.tickExactlyOnce();
+  const auto ts2 = entry_ptr->stamp;
+  const auto seq_id2 = entry_ptr->sequence_id;
+  
+  ASSERT_GT(ts2.count(), ts1.count());
+  ASSERT_GT(seq_id2, seq_id1);
+}
+
+TEST(BlackboardTest, SetBlackboard_ChangeType)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <SetBlackboard value="{first_point}" output_key="other_point" />
+        <Sleep msec="5" />
+        <SetBlackboard value="{random_str}" output_key="other_point" />
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree");
+  auto& blackboard = tree.subtrees.front()->blackboard;
+
+  const Point point = { 2, 7 };
+  blackboard->set("first_point", point);
+  blackboard->set("random_str", "Hello!");
+
+  // First tick should succeed
+  ASSERT_NO_THROW(tree.tickExactlyOnce());
+  const auto entry_ptr = blackboard->getEntry("other_point");
+  std::this_thread::sleep_for(std::chrono::milliseconds{5});
+  // Second tick should throw due to type mismatch
+  EXPECT_THROW({
+    tree.tickExactlyOnce();
+  }, BT::LogicError);
+  // EXPECT_EQ();
+
+}
