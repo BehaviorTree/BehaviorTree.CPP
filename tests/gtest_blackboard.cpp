@@ -683,8 +683,7 @@ TEST(BlackboardTest, SetBlackboard_Upd_Ts_SeqId)
   const auto entry_ptr = blackboard->getEntry("other_point");
   const auto ts1 = entry_ptr->stamp;
   const auto seq_id1 = entry_ptr->sequence_id;
-  std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
-  tree.tickExactlyOnce();
+  tree.tickWhileRunning();
   const auto ts2 = entry_ptr->stamp;
   const auto seq_id2 = entry_ptr->sequence_id;
 
@@ -718,8 +717,7 @@ TEST(BlackboardTest, SetBlackboard_ChangeType)
   // First tick should succeed
   ASSERT_NO_THROW(tree.tickExactlyOnce());
   const auto entry_ptr = blackboard->getEntry("other_point");
-  std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
   // Second tick should throw due to type mismatch
-  EXPECT_THROW({ tree.tickExactlyOnce(); }, BT::LogicError);
+  EXPECT_THROW({ tree.tickWhileRunning(); }, BT::LogicError);
   // EXPECT_EQ();
 }
