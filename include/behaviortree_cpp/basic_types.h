@@ -350,6 +350,21 @@ public:
   template <typename T>
   static TypeInfo Create()
   {
+    // store the base class typeid if specialized
+    if constexpr(is_shared_ptr<T>::value)
+    {
+      using Elem = typename T::element_type;
+      using Base = typename any_cast_base<Elem>::type;
+
+      if constexpr(!std::is_same_v<Base, void>)
+      {
+        static_assert(std::is_polymorphic_v<Base>, "TypeInfo Base trait specialization "
+                                                   "must be "
+                                                   "polymorphic");
+        return TypeInfo{ typeid(std::shared_ptr<Base>),
+                         GetAnyFromStringFunctor<std::shared_ptr<Base>>() };
+      }
+    }
     return TypeInfo{ typeid(T), GetAnyFromStringFunctor<T>() };
   }
 
@@ -452,7 +467,8 @@ template <typename T = AnyTypeAllowed>
   }
   else
   {
-    out = { sname, PortInfo(direction, typeid(T), GetAnyFromStringFunctor<T>()) };
+    auto type_info = TypeInfo::Create<T>();
+    out = { sname, PortInfo(direction, type_info.type(), type_info.converter()) };
   }
   if(!description.empty())
   {
@@ -501,7 +517,6 @@ BidirectionalPort(StringView name, StringView description = {})
 
 namespace details
 {
-
 template <typename T = AnyTypeAllowed, typename DefaultT = T>
 [[nodiscard]] inline std::pair<std::string, PortInfo>
 PortWithDefault(PortDirection direction, StringView name, const DefaultT& default_value,
