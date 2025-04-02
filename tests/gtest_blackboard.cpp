@@ -15,6 +15,7 @@
 #include "behaviortree_cpp/blackboard.h"
 
 #include "../sample_nodes/dummy_nodes.h"
+#include "greeter_test.h"
 
 using namespace BT;
 
@@ -853,4 +854,115 @@ TEST(BlackboardTest, SetBlackboard_WithPortRemapping)
 
   // Tick till the end with no crashes
   ASSERT_NO_THROW(tree.tickWhileRunning(););
+}
+
+
+class CreateHelloGreeter : public SyncActionNode
+{
+public:
+  CreateHelloGreeter(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    auto hello_greeter = std::make_shared<HelloGreeter>();
+
+    setOutput("out_derived", hello_greeter);
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::OutputPort<HelloGreeter::Ptr>("out_derived") };
+  }
+};
+
+class SetDerivedParameter : public SyncActionNode
+{
+public:
+  SetDerivedParameter(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    int n;
+    HelloGreeter::Ptr hello_greeter{};
+
+    getInput("n", n);
+    getInput("in_derived", hello_greeter);
+
+    hello_greeter->setDerivedParameter(n);
+    hello_greeter->show_msg();
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<int>("n"), BT::InputPort<HelloGreeter::Ptr>("in_derived") };
+  }
+};
+
+class ShowGreetMessage : public SyncActionNode
+{
+public:
+  ShowGreetMessage(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    Greeter::Ptr greeter{};
+
+    getInput("in_base", greeter);
+    greeter->show_msg();
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<Greeter::Ptr>("in_base") };
+  }
+};
+
+TEST(BlackboardTest, Upcasting_Issue943)
+{
+  auto bb = BT::Blackboard::create();
+
+  auto hello_greeter = std::make_shared<HelloGreeter>();
+  bb->set("hello_greeter", hello_greeter);
+
+  std::shared_ptr<Greeter> g{};
+  ASSERT_TRUE(bb->get("hello_greeter", g));
+  ASSERT_STREQ("hello", g->show_msg().c_str());
+
+  std::shared_ptr<HelloGreeter> hg{};
+  ASSERT_TRUE(bb->get("hello_greeter", hg));
+  ASSERT_STREQ("hello", hg->show_msg().c_str());
+
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <CreateHelloGreeter out_derived="{hello_greeter}" />
+          <SetDerivedParameter in_derived="{hello_greeter}" n="2" />
+          <ShowGreetMessage in_base="{hello_greeter}" />
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<CreateHelloGreeter>("CreateHelloGreeter");
+  factory.registerNodeType<SetDerivedParameter>("SetDerivedParameter");
+  factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
+
+  auto tree = factory.createTreeFromText(xml_txt);
+
+  NodeStatus status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
