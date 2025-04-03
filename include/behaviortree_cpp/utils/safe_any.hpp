@@ -47,6 +47,33 @@ struct is_shared_ptr<std::shared_ptr<U>> : std::true_type
 {
 };
 
+// Trait to detect if a type is complete
+template <typename T, typename = void>
+struct is_complete : std::false_type
+{
+};
+
+template <typename T>
+struct is_complete<T, decltype(void(sizeof(T)))> : std::true_type
+{
+};
+
+// Trait to detect if a trait is complete and polymorphic
+template <typename T, typename = void>
+struct is_polymorphic_safe : std::false_type
+{
+};
+
+// Specialization only enabled if T is complete
+template <typename T>
+struct is_polymorphic_safe<T, std::enable_if_t<is_complete<T>::value>>
+  : std::integral_constant<bool, std::is_polymorphic<T>::value>
+{
+};
+
+template <typename T>
+inline constexpr bool is_polymorphic_safe_v = is_polymorphic_safe<T>::value;
+
 // Rational: since type erased numbers will always use at least 8 bytes
 // it is faster to cast everything to either double, uint64_t or int64_t.
 class Any
@@ -83,12 +110,12 @@ class Any
   };
 
   template <typename T>
-  struct IsPolymorphicSharedPtr<T, std::void_t<typename T::element_type>>
-    : std::integral_constant<
-          bool,
-          is_shared_ptr<T>::value && std::is_polymorphic_v<typename T::element_type> &&
-              !std::is_same_v<typename any_cast_base<typename T::element_type>::type,
-                              void>>
+  struct IsPolymorphicSharedPtr<
+      T,
+      std::enable_if_t<
+          is_shared_ptr<T>::value && is_polymorphic_safe_v<typename T::element_type> &&
+          !std::is_same_v<typename any_cast_base<typename T::element_type>::type, void>>>
+    : std::true_type
   {
   };
 
@@ -159,7 +186,7 @@ public:
     // store as base class if specialized
     if constexpr(!std::is_same_v<Base, void>)
     {
-      static_assert(std::is_polymorphic_v<Base>, "Any Base trait specialization must be "
+      static_assert(is_polymorphic_safe_v<Base>, "Any Base trait specialization must be "
                                                  "polymorphic");
       _any = std::static_pointer_cast<Base>(value);
     }
@@ -633,7 +660,7 @@ inline nonstd::expected<T, std::string> Any::tryCast() const
     using Derived = typename T::element_type;
     using Base = typename any_cast_base<Derived>::type;
 
-    if constexpr(std::is_polymorphic_v<Derived> && !std::is_same_v<Base, void>)
+    if constexpr(is_polymorphic_safe_v<Derived> && !std::is_same_v<Base, void>)
     {
       // Attempt to retrieve the stored shared_ptr<Base> from the Any container
       auto base_ptr = linb::any_cast<std::shared_ptr<Base>>(_any);

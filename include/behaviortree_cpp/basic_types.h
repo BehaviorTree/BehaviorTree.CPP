@@ -358,7 +358,7 @@ public:
 
       if constexpr(!std::is_same_v<Base, void>)
       {
-        static_assert(std::is_polymorphic_v<Base>, "TypeInfo Base trait specialization "
+        static_assert(is_polymorphic_safe_v<Base>, "TypeInfo Base trait specialization "
                                                    "must be "
                                                    "polymorphic");
         return TypeInfo{ typeid(std::shared_ptr<Base>),
