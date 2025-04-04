@@ -101,32 +101,6 @@ class Any
       typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_enum<T>::value &&
                               !std::is_same<T, std::string>::value>::type*;
 
-  // Helper: IsPolymorphicSharedPtr<T> is true if T is a shared pointer,
-  // its element_type exists, is polymorphic, and any_cast_base for that element
-  // is specialized (i.e. not void).
-  template <typename T, typename = void>
-  struct IsPolymorphicSharedPtr : std::false_type
-  {
-  };
-
-  template <typename T>
-  struct IsPolymorphicSharedPtr<
-      T,
-      std::enable_if_t<
-          is_shared_ptr<T>::value && is_polymorphic_safe_v<typename T::element_type> &&
-          !std::is_same_v<typename any_cast_base<typename T::element_type>::type, void>>>
-    : std::true_type
-  {
-  };
-
-  template <typename T>
-  using EnablePolymorphicSharedPtr =
-      std::enable_if_t<IsPolymorphicSharedPtr<T>::value, int*>;
-
-  template <typename T>
-  using EnableNonPolymorphicSharedPtr =
-      std::enable_if_t<!IsPolymorphicSharedPtr<T>::value, int*>;
-
   template <typename T>
   nonstd::expected<T, std::string> stringToNumber() const;
 
@@ -247,7 +221,10 @@ public:
   // Method to access the value by pointer.
   // It will return nullptr, if the user try to cast it to a
   // wrong type or if Any was empty.
-  template <typename T, typename = EnableNonPolymorphicSharedPtr<T>>
+  //
+  // WARNING: The returned pointer may alias internal cache and be invalidated by subsequent castPtr() calls.
+  // Do not store it long-term. Applies only to shared_ptr<Derived> where Derived is polymorphic and base-registered.
+  template <typename T>
   [[nodiscard]] T* castPtr()
   {
     static_assert(!std::is_same_v<T, float>, "The value has been casted internally to "
@@ -278,57 +255,53 @@ public:
                                                                                      "tea"
                                                                                      "d");
 
-    return _any.empty() ? nullptr : linb::any_cast<T>(&_any);
-  }
-
-  // Specialized version of castPtr() for shared_ptr<T> where T is a polymorphic type
-  // with a registered base class via any_cast_base.
-  //
-  // Returns a raw pointer to T::element_type (i.e., Derived*), or nullptr on failure.
-  //
-  // Note: This function intentionally does not return a std::shared_ptr<T>* because doing so
-  // would expose the internal ownership mechanism, which:
-  //   - Breaks encapsulation and may lead to accidental misuse (e.g., double-deletion, ref count tampering)
-  //   - Offers no real benefit, as the purpose of this function is to provide access
-  //     to the managed object, not the smart pointer itself.
-  //
-  // By returning a raw pointer to the object, we preserve ownership semantics and safely
-  // allow read-only access without affecting the reference count.
-  template <typename T, typename = EnablePolymorphicSharedPtr<T>>
-  [[nodiscard]] typename T::element_type* castPtr()
-  {
-    using Derived = typename T::element_type;
-    using Base = typename any_cast_base<Derived>::type;
-
-    try
+    // Special case: applies only when requesting shared_ptr<Derived> and Derived is polymorphic
+    // with a registered base via any_cast_base.
+    if constexpr(is_shared_ptr<T>::value)
     {
-      // Attempt to retrieve the stored shared_ptr<Base> from the Any container
-      auto base_ptr = linb::any_cast<std::shared_ptr<Base>>(&_any);
-      if(!base_ptr)
+      using Derived = typename T::element_type;
+      using Base = typename any_cast_base<Derived>::type;
+
+      if constexpr(is_polymorphic_safe_v<Derived> && !std::is_same_v<Base, void>)
+      {
+        try
+        {
+          // Attempt to retrieve the stored shared_ptr<Base> from the Any container
+          auto base_ptr = linb::any_cast<std::shared_ptr<Base>>(&_any);
+          if(!base_ptr)
+            return nullptr;
+
+          // Case 1: If Base and Derived are the same, no casting is needed
+          if constexpr(std::is_same_v<Base, Derived>)
+          {
+            return reinterpret_cast<T*>(base_ptr);
+          }
+
+          // Case 2: Originally stored as shared_ptr<Derived>
+          if(_original_type == typeid(std::shared_ptr<Derived>))
+          {
+            _cached_derived_ptr = std::static_pointer_cast<Derived>(*base_ptr);
+            return reinterpret_cast<T*>(&_cached_derived_ptr);
+          }
+
+          // Case 3: Fallback to dynamic cast
+          auto derived_ptr = std::dynamic_pointer_cast<Derived>(*base_ptr);
+          if(derived_ptr)
+          {
+            _cached_derived_ptr = derived_ptr;
+            return reinterpret_cast<T*>(&_cached_derived_ptr);
+          }
+        }
+        catch(...)
+        {
+          return nullptr;
+        }
+
         return nullptr;
-
-      // Case 1: If Base and Derived are the same, no casting is needed
-      if constexpr(std::is_same_v<Base, Derived>)
-      {
-        return base_ptr ? base_ptr->get() : nullptr;
       }
-
-      // Case 2: If the original stored type was shared_ptr<Derived>, we can safely static_cast
-      if(_original_type == typeid(std::shared_ptr<Derived>))
-      {
-        return std::static_pointer_cast<Derived>(*base_ptr).get();
-      }
-
-      // Case 3: Otherwise, attempt a dynamic cast from Base to Derived
-      auto derived_ptr = std::dynamic_pointer_cast<Derived>(*base_ptr);
-      return derived_ptr ? derived_ptr.get() : nullptr;
-    }
-    catch(...)
-    {
-      return nullptr;
     }
 
-    return nullptr;
+    return _any.empty() ? nullptr : linb::any_cast<T>(&_any);
   }
 
   // This is the original type
@@ -351,6 +324,7 @@ public:
 private:
   linb::any _any;
   std::type_index _original_type;
+  mutable std::shared_ptr<void> _cached_derived_ptr = nullptr;
 
   //----------------------------
 
