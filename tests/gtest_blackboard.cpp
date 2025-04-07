@@ -742,7 +742,7 @@ TEST(BlackboardTest, SetBlackboard_ChangeType1)
   const auto entry_ptr = blackboard->getEntry("other_point");
   std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
   // Second tick should throw due to type mismatch
-  EXPECT_THROW({ tree.tickExactlyOnce(); }, BT::LogicError);
+  EXPECT_THROW({ tree.tickWhileRunning(); }, BT::LogicError);
 }
 
 TEST(BlackboardTest, SetBlackboard_ChangeType2)
@@ -773,7 +773,7 @@ TEST(BlackboardTest, SetBlackboard_ChangeType2)
   const auto entry_ptr = blackboard->getEntry("other_point");
   std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
   // Second tick should throw due to type mismatch
-  EXPECT_THROW({ tree.tickExactlyOnce(); }, BT::LogicError);
+  EXPECT_THROW({ tree.tickWhileRunning(); }, BT::LogicError);
 }
 
 // Simple Action that updates an instance of Point in the blackboard
