@@ -57,12 +57,12 @@ BT_JSON_CONVERTER(Pose3D, v)
 }
 
 // specialized functions
-void jsonFromTime(const Time & t, nlohmann::json & j)
+void jsonFromTime(const Time& t, nlohmann::json& j)
 {
   j["stamp"] = double(t.sec) + 1e-9 * double(t.nsec);
 }
 
-void jsonToTime(const nlohmann::json & j, Time & t)
+void jsonToTime(const nlohmann::json& j, Time& t)
 {
   double sec = j["stamp"];
   t.sec = int(sec);
@@ -78,7 +78,7 @@ class JsonTest : public testing::Test
 protected:
   JsonTest()
   {
-    BT::JsonExporter & exporter = BT::JsonExporter::get();
+    BT::JsonExporter& exporter = BT::JsonExporter::get();
     exporter.addConverter<TestTypes::Pose3D>();
     exporter.addConverter<std::vector<TestTypes::Pose3D>>();
     exporter.addConverter<TestTypes::Vector3D>();
@@ -91,9 +91,9 @@ protected:
 
 TEST_F(JsonTest, TwoWaysConversion)
 {
-  BT::JsonExporter & exporter = BT::JsonExporter::get();
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
 
-  TestTypes::Pose3D pose = {{1, 2, 3}, {4, 5, 6, 7}};
+  TestTypes::Pose3D pose = { { 1, 2, 3 }, { 4, 5, 6, 7 } };
 
   nlohmann::json json;
   exporter.toJson(BT::Any(69), json["int"]);
@@ -135,9 +135,9 @@ TEST_F(JsonTest, TwoWaysConversion)
 
 TEST_F(JsonTest, CustomTime)
 {
-  BT::JsonExporter & exporter = BT::JsonExporter::get();
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
 
-  TestTypes::Time stamp = {3, 8000000};
+  TestTypes::Time stamp = { 3, 8000000 };
   nlohmann::json json;
   exporter.toJson(BT::Any(stamp), json);
   std::cout << json.dump() << std::endl;
@@ -180,7 +180,7 @@ TEST_F(JsonTest, BlackboardInOut)
   auto bb_in = BT::Blackboard::create();
   bb_in->set("int", 42);
   bb_in->set("real", 3.14);
-  bb_in->set("vect", TestTypes::Vector3D{1.1, 2.2, 3.3});
+  bb_in->set("vect", TestTypes::Vector3D{ 1.1, 2.2, 3.3 });
 
   auto json = ExportBlackboardToJSON(*bb_in);
   std::cout << json.dump(2) << std::endl;
@@ -199,7 +199,7 @@ TEST_F(JsonTest, BlackboardInOut)
 
 TEST_F(JsonTest, VectorOfCustomTypes)
 {
-  BT::JsonExporter & exporter = BT::JsonExporter::get();
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
 
   std::vector<TestTypes::Pose3D> poses(2);
   poses[0].pos.x = 1;
@@ -241,7 +241,7 @@ TEST_F(JsonTest, VectorOfCustomTypes)
 
   // check the two-ways transform, i.e. "from_json"
   auto poses2 =
-    exporter.fromJson(json["poses"])->first.cast<std::vector<TestTypes::Pose3D>>();
+      exporter.fromJson(json["poses"])->first.cast<std::vector<TestTypes::Pose3D>>();
   ASSERT_EQ(poses.size(), poses2.size());
   ASSERT_EQ(poses[0].pos.x, poses2[0].pos.x);
   ASSERT_EQ(poses[0].pos.y, poses2[0].pos.y);
