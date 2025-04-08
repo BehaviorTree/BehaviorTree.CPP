@@ -80,6 +80,7 @@ protected:
   {
     BT::JsonExporter& exporter = BT::JsonExporter::get();
     exporter.addConverter<TestTypes::Pose3D>();
+    exporter.addConverter<std::vector<TestTypes::Pose3D>>();
     exporter.addConverter<TestTypes::Vector3D>();
     exporter.addConverter<TestTypes::Quaternion3D>();
 
@@ -194,4 +195,65 @@ TEST_F(JsonTest, BlackboardInOut)
   ASSERT_EQ(vect_out.x, 1.1);
   ASSERT_EQ(vect_out.y, 2.2);
   ASSERT_EQ(vect_out.z, 3.3);
+}
+
+TEST_F(JsonTest, VectorOfCustomTypes)
+{
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
+
+  std::vector<TestTypes::Pose3D> poses(2);
+  poses[0].pos.x = 1;
+  poses[0].pos.y = 2;
+  poses[0].pos.z = 3;
+  poses[0].rot.w = 4;
+  poses[0].rot.x = 5;
+  poses[0].rot.y = 6;
+  poses[0].rot.z = 7;
+  poses[1].pos.x = 8;
+  poses[1].pos.y = 9;
+  poses[1].pos.z = 10;
+  poses[1].rot.w = 11;
+  poses[1].rot.x = 12;
+  poses[1].rot.y = 13;
+  poses[1].rot.z = 14;
+
+  nlohmann::json json;
+  exporter.toJson(BT::Any(poses), json["poses"]);
+
+  std::cout << json.dump(2) << std::endl;
+
+  ASSERT_EQ(json["poses"][0]["__type"], "Pose3D");
+  ASSERT_EQ(json["poses"][0]["pos"]["x"], 1);
+  ASSERT_EQ(json["poses"][0]["pos"]["y"], 2);
+  ASSERT_EQ(json["poses"][0]["pos"]["z"], 3);
+  ASSERT_EQ(json["poses"][0]["rot"]["w"], 4);
+  ASSERT_EQ(json["poses"][0]["rot"]["x"], 5);
+  ASSERT_EQ(json["poses"][0]["rot"]["y"], 6);
+  ASSERT_EQ(json["poses"][0]["rot"]["z"], 7);
+  ASSERT_EQ(json["poses"][1]["__type"], "Pose3D");
+  ASSERT_EQ(json["poses"][1]["pos"]["x"], 8);
+  ASSERT_EQ(json["poses"][1]["pos"]["y"], 9);
+  ASSERT_EQ(json["poses"][1]["pos"]["z"], 10);
+  ASSERT_EQ(json["poses"][1]["rot"]["w"], 11);
+  ASSERT_EQ(json["poses"][1]["rot"]["x"], 12);
+  ASSERT_EQ(json["poses"][1]["rot"]["y"], 13);
+  ASSERT_EQ(json["poses"][1]["rot"]["z"], 14);
+
+  // check the two-ways transform, i.e. "from_json"
+  auto poses2 = exporter.fromJson(json["poses"])->first.cast<std::vector<TestTypes::Pose3D>>();
+  ASSERT_EQ(poses.size(), poses2.size());
+  ASSERT_EQ(poses[0].pos.x, poses2[0].pos.x);
+  ASSERT_EQ(poses[0].pos.y, poses2[0].pos.y);
+  ASSERT_EQ(poses[0].pos.z, poses2[0].pos.z);
+  ASSERT_EQ(poses[0].rot.w, poses2[0].rot.w);
+  ASSERT_EQ(poses[0].rot.x, poses2[0].rot.x);
+  ASSERT_EQ(poses[0].rot.y, poses2[0].rot.y);
+  ASSERT_EQ(poses[0].rot.z, poses2[0].rot.z);
+  ASSERT_EQ(poses[1].pos.x, poses2[1].pos.x);
+  ASSERT_EQ(poses[1].pos.y, poses2[1].pos.y);
+  ASSERT_EQ(poses[1].pos.z, poses2[1].pos.z);
+  ASSERT_EQ(poses[1].rot.w, poses2[1].rot.w);
+  ASSERT_EQ(poses[1].rot.x, poses2[1].rot.x);
+  ASSERT_EQ(poses[1].rot.y, poses2[1].rot.y);
+  ASSERT_EQ(poses[1].rot.z, poses2[1].rot.z);
 }
