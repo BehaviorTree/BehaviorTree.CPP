@@ -38,7 +38,7 @@ set(TEST_DEPENDECIES
     foonathan::lexy
     bt_sample_nodes)
 
-if(ament_cmake_FOUND AND BUILD_TESTING)
+if(ament_cmake_FOUND)
 
     find_package(ament_cmake_gtest REQUIRED)
 
@@ -55,7 +55,7 @@ elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
         Threads::Threads
         ${catkin_LIBRARIES})
 
-elseif(NOT ament_cmake_FOUND AND NOT catkin_FOUND)
+else()
 
     find_package(GTest REQUIRED)
     enable_testing()
@@ -69,9 +69,5 @@ elseif(NOT ament_cmake_FOUND AND NOT catkin_FOUND)
 
 endif()
 
-if(TARGET ${BT_CPP_LIBRARY}_test)
-
-    target_include_directories(${BTCPP_LIBRARY}_test PRIVATE include ${PROJECT_SOURCE_DIR}/3rdparty)
-    target_compile_definitions(${BTCPP_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
-
-endif()
+target_include_directories(${BTCPP_LIBRARY}_test PRIVATE include ${PROJECT_SOURCE_DIR}/3rdparty)
+target_compile_definitions(${BTCPP_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
