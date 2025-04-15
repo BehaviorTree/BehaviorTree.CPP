@@ -55,7 +55,7 @@ elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
         Threads::Threads
         ${catkin_LIBRARIES})
 
-else()
+elseif(NOT ament_cmake_FOUND AND NOT catkin_FOUND)
 
     find_package(GTest REQUIRED)
     enable_testing()
