@@ -13,6 +13,12 @@
   <author>Davide Faconti</author>
 
   <build_depend>ros_environment</build_depend>
+  <build_depend>ament_cmake</build_depend>
+  <build_depend>gtest_vendor</build_depend>
+
+  <exec_depend>ament_cmake</exec_depend>
+  <exec_depend>gtest_vendor</exec_depend>
+
 
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
   <depend condition="$ROS_VERSION == 1">roslib</depend>

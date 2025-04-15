@@ -18,6 +18,8 @@ option(ENABLE_FUZZING "Enable fuzzing builds" OFF)
 option(USE_AFLPLUSPLUS "Use AFL++ instead of libFuzzer" OFF)
 option(ENABLE_DEBUG "Enable debug build with full symbols" OFF)
 option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
+find_package(ament_cmake REQUIRED)
+find_package(gtest_vendor REQUIRED)
 
 set(BASE_FLAGS "")
 
