@@ -69,5 +69,9 @@ elseif(NOT ament_cmake_FOUND AND NOT catkin_FOUND)
 
 endif()
 
-target_include_directories(${BTCPP_LIBRARY}_test PRIVATE include ${PROJECT_SOURCE_DIR}/3rdparty)
-target_compile_definitions(${BTCPP_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
+if(TARGET ${BT_CPP_LIBRARY}_test)
+
+    target_include_directories(${BTCPP_LIBRARY}_test PRIVATE include ${PROJECT_SOURCE_DIR}/3rdparty)
+    target_compile_definitions(${BTCPP_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
+
+endif()
