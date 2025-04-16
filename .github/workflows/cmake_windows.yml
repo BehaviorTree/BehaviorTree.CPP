@@ -39,12 +39,12 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DBUILD_TESTING=ON
 
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: cmake --build . --config ${{env.BUILD_TYPE}} -DBUILD_TESTING=ON
+      run: cmake --build . --config ${{env.BUILD_TYPE}}
 
     - name: run test (Windows)
       working-directory: ${{github.workspace}}/build

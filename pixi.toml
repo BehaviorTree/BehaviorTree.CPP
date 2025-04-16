@@ -13,7 +13,7 @@ test = "PATH=\"$PATH;build/Release\" build/tests/Release/behaviortree_cpp_test.e
 test = "./build/tests/behaviortree_cpp_test"
 
 [tasks]
-build = "mkdir -p build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel --config Release --DBUILD_TESTING=ON"
+build = "mkdir -p build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON && cmake --build . --parallel --config Release"
 
 [dependencies]
 cmake = ">=3.16.3"
