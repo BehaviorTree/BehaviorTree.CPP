@@ -281,7 +281,7 @@ public:
      * @throws If not compiled with ROS support or if the library cannot load for any reason
      *
      */
-  void registerFromROSPlugins();
+  [[deprecated]] void registerFromROSPlugins();
 
   /**
      * @brief registerBehaviorTreeFromFile.

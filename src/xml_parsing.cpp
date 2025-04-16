@@ -36,10 +36,6 @@
 #include "tinyxml2/tinyxml2.h"
 #include <filesystem>
 
-#ifdef USING_ROS
-#include <ros/package.h>
-#endif
-
 #ifdef USING_ROS2
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
@@ -283,9 +279,7 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       else
       {
         std::string ros_pkg_path;
-#ifdef USING_ROS
-        ros_pkg_path = ros::package::getPath(ros_pkg_relative_path);
-#elif defined USING_ROS2
+#if defined USING_ROS2
         ros_pkg_path =
             ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
 #else
