@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-24.04]
 
     steps:
     - uses: actions/checkout@v2
@@ -49,7 +49,7 @@ jobs:
     - name: Build
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${{env.BUILD_TYPE}}
+      run: cmake --build . --config ${{env.BUILD_TYPE}} -DBUILD_TESTING=ON
 
     - name: run test (Linux)
       working-directory: ${{github.workspace}}/build

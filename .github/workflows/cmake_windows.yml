@@ -44,7 +44,7 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
-      run: cmake --build . --config ${{env.BUILD_TYPE}}
+      run: cmake --build . --config ${{env.BUILD_TYPE}} -DBUILD_TESTING=ON
 
     - name: run test (Windows)
       working-directory: ${{github.workspace}}/build
