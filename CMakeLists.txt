@@ -237,7 +237,7 @@ endif()
 
 ######################################################
 
-if (BTCPP_UNIT_TESTS)
+if (BTCPP_UNIT_TESTS AND BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
