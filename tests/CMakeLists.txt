@@ -38,7 +38,7 @@ set(TEST_DEPENDECIES
     foonathan::lexy
     bt_sample_nodes)
 
-if(ament_cmake_FOUND AND BUILD_TESTING)
+if(ament_cmake_FOUND)
 
     find_package(ament_cmake_gtest REQUIRED)
 
