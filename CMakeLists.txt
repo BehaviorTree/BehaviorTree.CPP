@@ -9,7 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BTCPP_SHARED_LIBS "Build shared libraries" ON)
 option(BTCPP_BUILD_TOOLS "Build commandline tools" ON)
 option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
-option(BTCPP_UNIT_TESTS "Build the unit tests" ON)
+option(BUILD_TESTING "Build the unit tests" ON)
 option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
 
@@ -82,15 +82,6 @@ if ( ament_cmake_FOUND )
     message(STATUS "BehaviorTree is being built using AMENT.")
     message(STATUS "------------------------------------------")
     include(cmake/ament_build.cmake)
-
-elseif( CATKIN_DEVEL_PREFIX OR CATKIN_BUILD_BINARY_PACKAGE)
-
-    add_definitions( -DUSING_ROS )
-    message(STATUS "------------------------------------------")
-    message(STATUS "BehaviorTree is being built using CATKIN.")
-    message(STATUS "------------------------------------------")
-    include(cmake/catkin_build.cmake)
-    set(catkin_FOUND TRUE)
 else()
     message(STATUS "------------------------------------------")
     message(STATUS "BehaviorTree is being built with conan.")
@@ -229,15 +220,16 @@ endif()
 #############################################################
 message( STATUS "BTCPP_LIB_DESTINATION:   ${BTCPP_LIB_DESTINATION} " )
 message( STATUS "BTCPP_INCLUDE_DESTINATION: ${BTCPP_INCLUDE_DESTINATION} " )
-message( STATUS "BTCPP_UNIT_TESTS:   ${BTCPP_UNIT_TESTS} " )
 
-if (BTCPP_UNIT_TESTS OR BTCPP_EXAMPLES)
+if (BUILD_TESTING OR BTCPP_EXAMPLES)
     add_subdirectory(sample_nodes)
 endif()
 
 ######################################################
 
-if (BTCPP_UNIT_TESTS)
+include(CTest)
+message( STATUS "BUILD_TESTING:   ${BUILD_TESTING} " )
+if (BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 

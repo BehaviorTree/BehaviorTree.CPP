@@ -279,9 +279,8 @@ public:
   /**
      * @brief registerFromROSPlugins finds all shared libraries that export ROS plugins for behaviortree_cpp, and calls registerFromPlugin for each library.
      * @throws If not compiled with ROS support or if the library cannot load for any reason
-     *
      */
-  void registerFromROSPlugins();
+  [[deprecated("Removed support for ROS1")]] void registerFromROSPlugins();
 
   /**
      * @brief registerBehaviorTreeFromFile.

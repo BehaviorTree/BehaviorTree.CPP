@@ -17,10 +17,6 @@
 #include "behaviortree_cpp/xml_parsing.h"
 #include "wildcards/wildcards.hpp"
 
-#ifdef USING_ROS
-#include <ros/package.h>
-#endif
-
 namespace BT
 {
 
@@ -196,66 +192,12 @@ void BehaviorTreeFactory::registerFromPlugin(const std::string& file_path)
   }
 }
 
-#ifdef USING_ROS
-
-#ifdef _WIN32
-const char os_pathsep(';');  // NOLINT
-#else
-const char os_pathsep(':');  // NOLINT
-#endif
-
-// This function is a copy from the one in class_loader_imp.hpp in ROS pluginlib
-// package, licensed under BSD.
-// https://github.com/ros/pluginlib
-std::vector<std::string> getCatkinLibraryPaths()
-{
-  std::vector<std::string> lib_paths;
-  const char* env = std::getenv("CMAKE_PREFIX_PATH");
-  if(env)
-  {
-    const std::string env_catkin_prefix_paths(env);
-    std::vector<BT::StringView> catkin_prefix_paths =
-        splitString(env_catkin_prefix_paths, os_pathsep);
-    for(BT::StringView catkin_prefix_path : catkin_prefix_paths)
-    {
-      std::filesystem::path path(static_cast<std::string>(catkin_prefix_path));
-      std::filesystem::path lib("lib");
-      lib_paths.push_back((path / lib).string());
-    }
-  }
-  return lib_paths;
-}
-
-void BehaviorTreeFactory::registerFromROSPlugins()
-{
-  std::vector<std::string> plugins;
-  ros::package::getPlugins("behaviortree_cpp", "bt_lib_plugin", plugins, true);
-  std::vector<std::string> catkin_lib_paths = getCatkinLibraryPaths();
-
-  for(const auto& plugin : plugins)
-  {
-    auto filename = std::filesystem::path(plugin + BT::SharedLibrary::suffix());
-    for(const auto& lib_path : catkin_lib_paths)
-    {
-      const auto full_path = std::filesystem::path(lib_path) / filename;
-      if(std::filesystem::exists(full_path))
-      {
-        std::cout << "Registering ROS plugins from " << full_path.string() << std::endl;
-        registerFromPlugin(full_path.string());
-        break;
-      }
-    }
-  }
-}
-#else
-
 void BehaviorTreeFactory::registerFromROSPlugins()
 {
   throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was "
                      "compiled without ROS support. Recompile the BehaviorTree.CPP "
                      "using catkin");
 }
-#endif
 
 void BehaviorTreeFactory::registerBehaviorTreeFromFile(
     const std::filesystem::path& filename)

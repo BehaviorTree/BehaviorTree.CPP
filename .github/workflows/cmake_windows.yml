@@ -1,6 +1,11 @@
 name: cmake Windows
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

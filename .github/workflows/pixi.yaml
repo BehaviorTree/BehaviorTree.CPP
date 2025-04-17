@@ -1,6 +1,11 @@
 name: Pixi (conda)
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   pixi_conda_build:

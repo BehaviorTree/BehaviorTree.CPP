@@ -33,41 +33,27 @@ set(BT_TESTS
   test_helper.hpp
 )
 
-set(TEST_DEPENDECIES
-    ${BTCPP_LIBRARY}
-    foonathan::lexy
-    bt_sample_nodes)
-
 if(ament_cmake_FOUND)
 
     find_package(ament_cmake_gtest REQUIRED)
 
-    ament_add_gtest(${BTCPP_LIBRARY}_test ${BT_TESTS})
-    target_link_libraries(${BTCPP_LIBRARY}_test
-        ${TEST_DEPENDECIES}
-        ${ament_LIBRARIES})
-
-elseif(catkin_FOUND AND CATKIN_ENABLE_TESTING)
-
-    catkin_add_gtest(${BTCPP_LIBRARY}_test ${BT_TESTS})
-    target_link_libraries(${BTCPP_LIBRARY}_test
-        ${TEST_DEPENDECIES}
-        Threads::Threads
-        ${catkin_LIBRARIES})
+    ament_add_gtest(behaviortree_cpp_test ${BT_TESTS})
+    target_link_libraries(behaviortree_cpp_test ${ament_LIBRARIES})
 
 else()
 
     find_package(GTest REQUIRED)
+
     enable_testing()
+    add_executable(behaviortree_cpp_test ${BT_TESTS})
+    add_test(NAME btcpp_test COMMAND behaviortree_cpp_test)
 
-    add_executable(${BTCPP_LIBRARY}_test ${BT_TESTS})
-
-    target_link_libraries(${PROJECT_NAME}_test
-        ${TEST_DEPENDECIES}
-        Threads::Threads
-        GTest::gtest)
+    target_link_libraries(behaviortree_cpp_test
+        GTest::gtest
+        GTest::gtest_main)
 
 endif()
 
-target_include_directories(${BTCPP_LIBRARY}_test PRIVATE include ${PROJECT_SOURCE_DIR}/3rdparty)
-target_compile_definitions(${BTCPP_LIBRARY}_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(behaviortree_cpp_test ${BTCPP_LIBRARY} bt_sample_nodes foonathan::lexy)
+target_include_directories(behaviortree_cpp_test PRIVATE include ${PROJECT_SOURCE_DIR}/3rdparty)
+target_compile_definitions(behaviortree_cpp_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")

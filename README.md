@@ -55,7 +55,6 @@ If you are looking for a more fancy graphical user interface (and I know you do)
 
 Three build systems are supported:
 
-- **catkin**, if you use ROS
 - **colcon (ament)**, if you use ROS2
 - **conan** otherwise (Linux/Windows).
 - **straight cmake** if you want to be personally responsible for dependencies :)
