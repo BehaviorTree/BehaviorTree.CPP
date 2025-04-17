@@ -75,7 +75,7 @@ struct BT::any_cast_base<HelloGreeter>
 template <>
 struct BT::any_cast_base<FancyHelloGreeter>
 {
-  using type = Greeter;
+  using type = HelloGreeter;
 };
 
 // Register cast base type for Unwelcomer
