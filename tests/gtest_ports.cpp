@@ -150,7 +150,7 @@ TEST(PortsTest, NonPorts)
   ASSERT_EQ(root->type(), NodeType::ACTION);
 
   EXPECT_EQ(root->config().other_attributes.size(), 1);
-  ASSERT_TRUE(root->config().other_attributes.contains("_not_da_port"));
+  ASSERT_EQ(root->config().other_attributes.count("_not_da_port"), 1);
   EXPECT_EQ(root->config().other_attributes.at("_not_da_port"), "whateva");
 }
 
