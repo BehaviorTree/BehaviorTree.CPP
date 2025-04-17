@@ -11,7 +11,7 @@ namespace BT
 {
 
 /**
-*  To add new type to the JSON library, you should follow these isntructions:
+*  To add new type to the JSON library, you should follow these instructions:
 *    https://json.nlohmann.me/features/arbitrary_types/
 *
 *  Considering for instance the type:
@@ -80,22 +80,31 @@ public:
   template <typename T>
   Expected<T> fromJson(const nlohmann::json& source) const;
 
-  /// Register new JSON converters with addConverter<Foo>().
-  /// You should have used first the macro BT_JSON_CONVERTER
+  /**
+   * @brief Register new JSON converters with addConverter<Foo>().
+   * You should used first the macro BT_JSON_CONVERTER.
+   * The convertions from/to vector<T> are automatically registered.
+   */
   template <typename T>
   void addConverter();
 
   /**
    * @brief addConverter register a to_json function that converts a json to a type T.
+   * The convertion to std:vector<T> is automatically registered.
    *
    * @param to_json the function with signature void(const T&, nlohmann::json&)
    * @param add_type if true, add a field called [__type] with the name ofthe type.
-   * */
+   */
   template <typename T>
   void addConverter(std::function<void(const T&, nlohmann::json&)> to_json,
                     bool add_type = true);
 
-  /// Register custom from_json converter directly.
+  /**
+   * @brief addConverter register a from_json function that converts a json to a type T.
+   * The convertions from std::vector<T> is automatically registered.
+   *
+   * @param from_json the function with signature void(const nlohmann::json&, T&)
+   */
   template <typename T>
   void addConverter(std::function<void(const nlohmann::json&, T&)> from_json);
 
@@ -105,6 +114,7 @@ private:
 
   std::unordered_map<std::type_index, ToJonConverter> to_json_converters_;
   std::unordered_map<std::type_index, FromJonConverter> from_json_converters_;
+  std::unordered_map<std::type_index, FromJonConverter> from_json_array_converters_;
   std::unordered_map<std::string, BT::TypeInfo> type_names_;
 };
 
@@ -129,6 +139,15 @@ inline Expected<T> JsonExporter::fromJson(const nlohmann::json& source) const
 template <typename T>
 inline void JsonExporter::addConverter()
 {
+  // we need to get the name of the type
+  nlohmann::json const js = T{};
+  // we insert both the name obtained from JSON and demangle
+  if(js.contains("__type"))
+  {
+    type_names_.insert({ std::string(js["__type"]), BT::TypeInfo::Create<T>() });
+  }
+  type_names_.insert({ BT::demangle(typeid(T)), BT::TypeInfo::Create<T>() });
+
   ToJonConverter to_converter = [](const BT::Any& entry, nlohmann::json& dst) {
     dst = *const_cast<BT::Any&>(entry).castPtr<T>();
   };
@@ -139,16 +158,23 @@ inline void JsonExporter::addConverter()
     return { BT::Any(value), BT::TypeInfo::Create<T>() };
   };
 
-  // we need to get the name of the type
-  nlohmann::json const js = T{};
-  // we insert both the name obtained from JSON and demangle
-  if(js.contains("__type"))
-  {
-    type_names_.insert({ std::string(js["__type"]), BT::TypeInfo::Create<T>() });
-  }
-  type_names_.insert({ BT::demangle(typeid(T)), BT::TypeInfo::Create<T>() });
-
   from_json_converters_.insert({ typeid(T), from_converter });
+
+  //---- include vectors of T
+  ToJonConverter to_array_converter = [](const BT::Any& entry, nlohmann::json& dst) {
+    dst = *const_cast<BT::Any&>(entry).castPtr<std::vector<T>>();
+  };
+  to_json_converters_.insert({ typeid(std::vector<T>), to_array_converter });
+
+  FromJonConverter from_array_converter = [](const nlohmann::json& src) -> Entry {
+    std::vector<T> value;
+    for(const auto& item : src)
+    {
+      value.push_back(item.get<T>());
+    }
+    return { BT::Any(value), BT::TypeInfo::Create<std::vector<T>>() };
+  };
+  from_json_array_converters_.insert({ typeid(T), from_array_converter });
 }
 
 template <typename T>
@@ -163,6 +189,18 @@ inline void JsonExporter::addConverter(
     }
   };
   to_json_converters_.insert({ typeid(T), std::move(converter) });
+  //---------------------------------------------
+  // add the vector<T> converter
+  auto vector_converter = [converter](const BT::Any& entry, nlohmann::json& json) {
+    auto& vec = *const_cast<BT::Any&>(entry).castPtr<std::vector<T>>();
+    for(const auto& item : vec)
+    {
+      nlohmann::json item_json;
+      converter(BT::Any(item), item_json);
+      json.push_back(item_json);
+    }
+  };
+  to_json_converters_.insert({ typeid(std::vector<T>), std::move(vector_converter) });
 }
 
 template <typename T>
@@ -176,6 +214,19 @@ JsonExporter::addConverter(std::function<void(const nlohmann::json&, T&)> func)
   };
   type_names_.insert({ BT::demangle(typeid(T)), BT::TypeInfo::Create<T>() });
   from_json_converters_.insert({ typeid(T), std::move(converter) });
+  //---------------------------------------------
+  // add the vector<T> converter
+  auto vector_converter = [func](const nlohmann::json& json) -> Entry {
+    std::vector<T> tmp;
+    for(const auto& item : json)
+    {
+      T item_tmp;
+      func(item, item_tmp);
+      tmp.push_back(item_tmp);
+    }
+    return { BT::Any(tmp), BT::TypeInfo::Create<std::vector<T>>() };
+  };
+  from_json_array_converters_.insert({ typeid(T), std::move(vector_converter) });
 }
 
 template <typename T>
