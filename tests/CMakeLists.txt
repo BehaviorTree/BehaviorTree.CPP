@@ -28,6 +28,7 @@ set(BT_TESTS
   gtest_tree.cpp
   gtest_updates.cpp
   gtest_wakeup.cpp
+  gtest_interface.cpp
 
   script_parser_test.cpp
   test_helper.hpp
