@@ -36,6 +36,48 @@ struct any_cast_base
   using type = void;  // Default: no base known, fallback to default any storage
 };
 
+// C++17 backport of std::type_identity
+template <typename T>
+struct type_identity
+{
+  using type = T;
+};
+
+// Trait to check if a type has a valid cast base
+template <typename T, typename = void>
+struct has_valid_cast_base : std::false_type
+{
+};
+
+template <typename T>
+struct has_valid_cast_base<T, std::void_t<typename any_cast_base<T>::type>>
+{
+  static constexpr bool value =
+      !std::is_same<typename any_cast_base<T>::type, void>::value;
+};
+
+// Recursive helper (non-self-recursive, SFINAE-safe)
+template <typename T>
+struct resolve_root_base_helper
+{
+  using Base = typename any_cast_base<T>::type;
+
+  using type = typename std::conditional<std::is_same<T, Base>::value, type_identity<T>,
+                                         resolve_root_base_helper<Base>>::type::type;
+};
+
+// Public interface with guard
+template <typename T>
+struct root_base_resolver
+{
+  using type = typename std::conditional<has_valid_cast_base<T>::value,
+                                         resolve_root_base_helper<T>,
+                                         type_identity<T>>::type::type;
+};
+
+template <typename T>
+using root_base_t = typename root_base_resolver<T>::type;
+
 // Trait to detect std::shared_ptr types.
 template <typename T>
 struct is_shared_ptr : std::false_type
@@ -160,9 +202,12 @@ public:
     // store as base class if specialized
     if constexpr(!std::is_same_v<Base, void>)
     {
-      static_assert(is_polymorphic_safe_v<Base>, "Any Base trait specialization must be "
-                                                 "polymorphic");
-      _any = std::static_pointer_cast<Base>(value);
+      using RootBase = root_base_t<T>;
+
+      static_assert(is_polymorphic_safe_v<RootBase>, "Any Base trait specialization must "
+                                                     "be "
+                                                     "polymorphic");
+      _any = std::static_pointer_cast<RootBase>(value);
     }
     else
     {
@@ -264,15 +309,17 @@ public:
 
       if constexpr(is_polymorphic_safe_v<Derived> && !std::is_same_v<Base, void>)
       {
+        using RootBase = root_base_t<Derived>;
+
         try
         {
           // Attempt to retrieve the stored shared_ptr<Base> from the Any container
-          auto base_ptr = linb::any_cast<std::shared_ptr<Base>>(&_any);
+          auto base_ptr = linb::any_cast<std::shared_ptr<RootBase>>(&_any);
           if(!base_ptr)
             return nullptr;
 
           // Case 1: If Base and Derived are the same, no casting is needed
-          if constexpr(std::is_same_v<Base, Derived>)
+          if constexpr(std::is_same_v<RootBase, Derived>)
           {
             return reinterpret_cast<T*>(base_ptr);
           }
@@ -636,15 +683,17 @@ inline nonstd::expected<T, std::string> Any::tryCast() const
 
     if constexpr(is_polymorphic_safe_v<Derived> && !std::is_same_v<Base, void>)
     {
+      using RootBase = root_base_t<Derived>;
+
       // Attempt to retrieve the stored shared_ptr<Base> from the Any container
-      auto base_ptr = linb::any_cast<std::shared_ptr<Base>>(_any);
+      auto base_ptr = linb::any_cast<std::shared_ptr<RootBase>>(_any);
       if(!base_ptr)
       {
         throw std::runtime_error("Any::cast cannot cast to shared_ptr<Base> class");
       }
 
       // Case 1: If Base and Derived are the same, no casting is needed
-      if constexpr(std::is_same_v<T, std::shared_ptr<Base>>)
+      if constexpr(std::is_same_v<T, std::shared_ptr<RootBase>>)
       {
         return base_ptr;
       }

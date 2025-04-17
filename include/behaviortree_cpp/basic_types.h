@@ -358,11 +358,14 @@ public:
 
       if constexpr(!std::is_same_v<Base, void>)
       {
-        static_assert(is_polymorphic_safe_v<Base>, "TypeInfo Base trait specialization "
-                                                   "must be "
-                                                   "polymorphic");
-        return TypeInfo{ typeid(std::shared_ptr<Base>),
-                         GetAnyFromStringFunctor<std::shared_ptr<Base>>() };
+        using RootBase = root_base_t<Elem>;
+
+        static_assert(is_polymorphic_safe_v<RootBase>, "TypeInfo Base trait "
+                                                       "specialization "
+                                                       "must be "
+                                                       "polymorphic");
+        return TypeInfo{ typeid(std::shared_ptr<RootBase>),
+                         GetAnyFromStringFunctor<std::shared_ptr<RootBase>>() };
       }
     }
     return TypeInfo{ typeid(T), GetAnyFromStringFunctor<T>() };
