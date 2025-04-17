@@ -13,7 +13,6 @@
 #include <filesystem>
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
-#include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "wildcards/wildcards.hpp"
 

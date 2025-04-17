@@ -162,32 +162,7 @@ public:
   [[nodiscard]] T* castPtr()
   {
     static_assert(!std::is_same_v<T, float>, "The value has been casted internally to "
-                                             "[double]. "
-                                             "Use that instead");
-    static_assert(!SafeAny::details::is_integer<T>() || std::is_same_v<T, uint64_t>, "The"
-                                                                                     " va"
-                                                                                     "lue"
-                                                                                     " ha"
-                                                                                     "s "
-                                                                                     "bee"
-                                                                                     "n "
-                                                                                     "cas"
-                                                                                     "ted"
-                                                                                     " in"
-                                                                                     "ter"
-                                                                                     "nal"
-                                                                                     "ly "
-                                                                                     "to "
-                                                                                     "[in"
-                                                                                     "t64"
-                                                                                     "_t]"
-                                                                                     ". "
-                                                                                     "Use"
-                                                                                     " th"
-                                                                                     "at "
-                                                                                     "ins"
-                                                                                     "tea"
-                                                                                     "d");
+                                             "[double]. Use that instead");
 
     return _any.empty() ? nullptr : linb::any_cast<T>(&_any);
   }
