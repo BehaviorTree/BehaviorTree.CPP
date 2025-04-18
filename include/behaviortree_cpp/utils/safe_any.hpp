@@ -116,6 +116,61 @@ struct is_polymorphic_safe<T, std::enable_if_t<is_complete<T>::value>>
 template <typename T>
 inline constexpr bool is_polymorphic_safe_v = is_polymorphic_safe<T>::value;
 
+// Compute and store the base class inheritance chain of a type T
+// from derived to root base order, e.g. SphynxCat -> Cat -> Animal
+template <typename... Ts>
+struct type_list
+{
+  template <typename U>
+  using prepend = type_list<U, Ts...>;
+};
+
+template <typename... Ts>
+std::vector<std::type_index> to_type_index_vector(type_list<Ts...>)
+{
+  return { std::type_index(typeid(Ts))... };
+}
+
+template <typename T, typename = void>
+struct compute_base_chain_impl
+{
+  using type = type_list<T>;
+};
+
+// Base case: recursion ends when base is void or equal to self
+template <typename T>
+struct compute_base_chain_impl<
+    T, std::enable_if_t<std::is_same_v<typename any_cast_base<T>::type, void> ||
+                        std::is_same_v<typename any_cast_base<T>::type, T>>>
+{
+  using type = type_list<T>;
+};
+
+// Recursive case
+template <typename T>
+struct compute_base_chain_impl<
+    T, std::enable_if_t<has_valid_cast_base<T>::value &&
+                        !std::is_same_v<typename any_cast_base<T>::type, void> &&
+                        !std::is_same_v<typename any_cast_base<T>::type, T> &&
+                        is_polymorphic_safe_v<T>>>
+{
+private:
+  using Base = typename any_cast_base<T>::type;
+  using BaseChain = typename compute_base_chain_impl<Base>::type;
+
+public:
+  using type = typename BaseChain::template prepend<T>;
+};
+
+template <typename T>
+using compute_base_chain = typename compute_base_chain_impl<T>::type;
+
+template <typename T>
+std::vector<std::type_index> get_base_chain_type_index()
+{
+  return to_type_index_vector(compute_base_chain<T>{});
+}
+
 // Rational: since type erased numbers will always use at least 8 bytes
 // it is faster to cast everything to either double, uint64_t or int64_t.
 class Any
