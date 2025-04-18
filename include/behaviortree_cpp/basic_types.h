@@ -442,6 +442,14 @@ public:
     : TypeInfo(type_info, conv), direction_(direction)
   {}
 
+  PortInfo(PortDirection direction, const TypeInfo& type_info)
+    : TypeInfo(type_info), direction_(direction)
+  {}
+
+  PortInfo(PortDirection direction, TypeInfo&& type_info)
+    : TypeInfo(std::move(type_info)), direction_(direction)
+  {}
+
   [[nodiscard]] PortDirection direction() const;
 
   void setDescription(StringView description);
@@ -493,7 +501,7 @@ template <typename T = AnyTypeAllowed>
   else
   {
     auto type_info = TypeInfo::Create<T>();
-    out = { sname, PortInfo(direction, type_info.type(), type_info.converter()) };
+    out = { sname, PortInfo(direction, std::move(type_info)) };
   }
   if(!description.empty())
   {
