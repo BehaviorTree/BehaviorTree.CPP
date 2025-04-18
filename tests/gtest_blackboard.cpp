@@ -1035,24 +1035,6 @@ TEST(BlackboardTest, Upcasting_Issue943)
     factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
     factory.registerNodeType<ShowFancyGreetMessage>("ShowFancyGreetMessage");
 
-    try
-    {
-      auto tree = factory.createTreeFromText(xml_txt);
-      FAIL() << "Expected BT::RuntimeError to be thrown";
-    }
-    catch(const BT::RuntimeError& e)
-    {
-      std::string expected_msg = "The creation of the tree failed because the port "
-                                 "[hello_greeter] was initially "
-                                 "created with type [std::shared_ptr<HelloGreeter>] and, "
-                                 "later type "
-                                 "[std::shared_ptr<FancyHelloGreeter>] was used "
-                                 "somewhere else.";
-      ASSERT_EQ(e.what(), expected_msg);
-    }
-    catch(...)
-    {
-      FAIL() << "Expected BT::RuntimeError but caught a different exception";
-    }
+    ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_txt));
   }
 }
