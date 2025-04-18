@@ -3,6 +3,62 @@
 
 #include <behaviortree_cpp/utils/safe_any.hpp>
 
+class Animal
+{
+public:
+  using Ptr = std::shared_ptr<Animal>;
+  virtual ~Animal() = default;
+};
+
+class Cat : public Animal
+{
+public:
+  using Ptr = std::shared_ptr<Cat>;
+};
+
+class SphynxCat : public Cat
+{
+public:
+  using Ptr = std::shared_ptr<SphynxCat>;
+};
+
+class Dog : public Animal
+{
+public:
+  using Ptr = std::shared_ptr<Dog>;
+};
+
+// Not registered
+class Plant
+{
+public:
+  using Ptr = std::shared_ptr<Plant>;
+};
+
+template <>
+struct BT::any_cast_base<Animal>
+{
+  using type = Animal;
+};
+
+template <>
+struct BT::any_cast_base<Cat>
+{
+  using type = Animal;
+};
+
+template <>
+struct BT::any_cast_base<SphynxCat>
+{
+  using type = Cat;
+};
+
+template <>
+struct BT::any_cast_base<Dog>
+{
+  using type = Animal;
+};
+
 /**
  *    +-------------------+------------+-------------+-----------------------------+
  *    |       Class       | Base Class | Polymorphic | Type Trait Registered       |
