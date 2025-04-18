@@ -856,7 +856,6 @@ TEST(BlackboardTest, SetBlackboard_WithPortRemapping)
   ASSERT_NO_THROW(tree.tickWhileRunning(););
 }
 
-
 class CreateHelloGreeter : public SyncActionNode
 {
 public:
@@ -929,22 +928,68 @@ public:
   }
 };
 
+class ShowFancyGreetMessage : public SyncActionNode
+{
+public:
+  ShowFancyGreetMessage(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    FancyHelloGreeter::Ptr greeter{};
+
+    getInput("in_invalid_derived", greeter);
+    if(!greeter)
+      return NodeStatus::FAILURE;
+
+    greeter->show_msg();
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<FancyHelloGreeter::Ptr>("in_invalid_derived") };
+  }
+};
+
 TEST(BlackboardTest, Upcasting_Issue943)
 {
-  auto bb = BT::Blackboard::create();
+  {
+    auto bb = BT::Blackboard::create();
 
-  auto hello_greeter = std::make_shared<HelloGreeter>();
-  bb->set("hello_greeter", hello_greeter);
+    // set hello_greeter
+    auto hello_greeter = std::make_shared<HelloGreeter>();
+    bb->set("hello_greeter", hello_greeter);
 
-  std::shared_ptr<Greeter> g{};
-  ASSERT_TRUE(bb->get("hello_greeter", g));
-  ASSERT_STREQ("hello", g->show_msg().c_str());
+    // retrieve as base class -> OK
+    std::shared_ptr<Greeter> g{};
+    ASSERT_TRUE(bb->get("hello_greeter", g));
+    ASSERT_STREQ("hello", g->show_msg().c_str());
 
-  std::shared_ptr<HelloGreeter> hg{};
-  ASSERT_TRUE(bb->get("hello_greeter", hg));
-  ASSERT_STREQ("hello", hg->show_msg().c_str());
+    // retrieve as derived class -> OK
+    std::shared_ptr<HelloGreeter> hg{};
+    ASSERT_TRUE(bb->get("hello_greeter", hg));
+    ASSERT_STREQ("hello", hg->show_msg().c_str());
 
-  std::string xml_txt = R"(
+    // retrieve as most-derived class -> should throw (type mismatch)
+    std::shared_ptr<FancyHelloGreeter> fhg{};
+    std::cout << "D" << std::endl;
+    ASSERT_ANY_THROW(auto rc = bb->get("hello_greeter", fhg));
+
+    // overwrite hello_greeter bb key
+    ASSERT_ANY_THROW(bb->set("hello_greeter", g));
+    ASSERT_NO_THROW(bb->set("hello_greeter", hg));
+    ASSERT_ANY_THROW(bb->set("hello_greeter", fhg));
+  }
+
+  // This test verifies that polymorphic upcasting works correctly during tree creation.
+  // The port "hello_greeter" is produced as HelloGreeter and later consumed as both
+  // HelloGreeter and its base type Greeter. The tree should execute successfully,
+  // confirming safe polymorphic compatibility through the base_chain mechanism.
+  {
+    std::string xml_txt = R"(
     <root BTCPP_format="4" >
       <BehaviorTree ID="Main">
         <Sequence>
@@ -955,14 +1000,59 @@ TEST(BlackboardTest, Upcasting_Issue943)
       </BehaviorTree>
     </root>)";
 
-  BehaviorTreeFactory factory;
-  factory.registerNodeType<CreateHelloGreeter>("CreateHelloGreeter");
-  factory.registerNodeType<SetDerivedParameter>("SetDerivedParameter");
-  factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<CreateHelloGreeter>("CreateHelloGreeter");
+    factory.registerNodeType<SetDerivedParameter>("SetDerivedParameter");
+    factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
 
-  auto tree = factory.createTreeFromText(xml_txt);
+    auto tree = factory.createTreeFromText(xml_txt);
 
-  NodeStatus status = tree.tickWhileRunning();
+    NodeStatus status = tree.tickWhileRunning();
 
-  ASSERT_EQ(status, NodeStatus::SUCCESS);
+    ASSERT_EQ(status, NodeStatus::SUCCESS);
+  }
+
+  // This test ensures that an invalid polymorphic downcast is correctly detected
+  // during tree creation. The port "hello_greeter" is first created with HelloGreeter,
+  // then later expected as FancyHelloGreeter (a more derived type), which fails.
+  {
+    std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <Script code="test := false"/>
+          <CreateHelloGreeter out_derived="{hello_greeter}" />
+          <SetDerivedParameter in_derived="{hello_greeter}" n="2" />
+          <ShowGreetMessage in_base="{hello_greeter}" />
+          <ShowFancyGreetMessage in_invalid_derived="{hello_greeter}" />
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<CreateHelloGreeter>("CreateHelloGreeter");
+    factory.registerNodeType<SetDerivedParameter>("SetDerivedParameter");
+    factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
+    factory.registerNodeType<ShowFancyGreetMessage>("ShowFancyGreetMessage");
+
+    try
+    {
+      auto tree = factory.createTreeFromText(xml_txt);
+      FAIL() << "Expected BT::RuntimeError to be thrown";
+    }
+    catch(const BT::RuntimeError& e)
+    {
+      std::string expected_msg = "The creation of the tree failed because the port "
+                                 "[hello_greeter] was initially "
+                                 "created with type [std::shared_ptr<HelloGreeter>] and, "
+                                 "later type "
+                                 "[std::shared_ptr<FancyHelloGreeter>] was used "
+                                 "somewhere else.";
+      ASSERT_EQ(e.what(), expected_msg);
+    }
+    catch(...)
+    {
+      FAIL() << "Expected BT::RuntimeError but caught a different exception";
+    }
+  }
 }
