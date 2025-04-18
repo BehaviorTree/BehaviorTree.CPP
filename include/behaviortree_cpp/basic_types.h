@@ -364,8 +364,13 @@ public:
                                                        "specialization "
                                                        "must be "
                                                        "polymorphic");
-        return TypeInfo{ typeid(std::shared_ptr<RootBase>),
-                         GetAnyFromStringFunctor<std::shared_ptr<RootBase>>() };
+
+        using Chain = compute_base_chain<Elem>;
+        auto base_chain = to_type_index_vector(Chain{});
+
+        return TypeInfo(typeid(std::shared_ptr<RootBase>),
+                        GetAnyFromStringFunctor<std::shared_ptr<RootBase>>(),
+                        std::move(base_chain));
       }
     }
     return TypeInfo{ typeid(T), GetAnyFromStringFunctor<T>() };
@@ -376,6 +381,14 @@ public:
 
   TypeInfo(std::type_index type_info, StringConverter conv)
     : type_info_(type_info), converter_(conv), type_str_(BT::demangle(type_info))
+  {}
+
+  TypeInfo(std::type_index type_info, StringConverter conv,
+           std::vector<std::type_index>&& base_chain)
+    : type_info_(type_info)
+    , converter_(conv)
+    , type_str_(BT::demangle(type_info))
+    , base_chain_(std::move(base_chain))
   {}
 
   [[nodiscard]] const std::type_index& type() const;
@@ -403,10 +416,21 @@ public:
     return converter_;
   }
 
+  [[nodiscard]] bool isConvertibleFrom(const std::type_index& other) const
+  {
+    return std::find(base_chain_.begin(), base_chain_.end(), other) != base_chain_.end();
+  }
+
+  [[nodiscard]] const std::vector<std::type_index>& baseChain() const
+  {
+    return base_chain_;
+  }
+
 private:
   std::type_index type_info_;
   StringConverter converter_;
   std::string type_str_;
+  std::vector<std::type_index> base_chain_;
 };
 
 class PortInfo : public TypeInfo
