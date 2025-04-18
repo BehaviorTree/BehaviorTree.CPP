@@ -368,9 +368,7 @@ public:
         using Chain = compute_base_chain<Elem>;
         auto base_chain = to_type_index_vector(Chain{});
 
-        return TypeInfo(typeid(std::shared_ptr<RootBase>),
-                        GetAnyFromStringFunctor<std::shared_ptr<RootBase>>(),
-                        std::move(base_chain));
+        return TypeInfo(typeid(T), GetAnyFromStringFunctor<T>(), std::move(base_chain));
       }
     }
     return TypeInfo{ typeid(T), GetAnyFromStringFunctor<T>() };
