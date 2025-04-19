@@ -15,7 +15,7 @@
 #include "behaviortree_cpp/blackboard.h"
 
 #include "../sample_nodes/dummy_nodes.h"
-#include "greeter_test.h"
+#include "animal_hierarchy_test.h"
 
 using namespace BT;
 
@@ -856,101 +856,210 @@ TEST(BlackboardTest, SetBlackboard_WithPortRemapping)
   ASSERT_NO_THROW(tree.tickWhileRunning(););
 }
 
-class CreateHelloGreeter : public SyncActionNode
+class CreateAnimal : public SyncActionNode
 {
 public:
-  CreateHelloGreeter(const std::string& name, const NodeConfig& config)
+  CreateAnimal(const std::string& name, const NodeConfig& config)
     : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
-    auto hello_greeter = std::make_shared<HelloGreeter>();
+    auto animal = std::make_shared<Animal>();
 
-    setOutput("out_derived", hello_greeter);
+    setOutput("out_animal", animal);
 
     return NodeStatus::SUCCESS;
   }
 
   static PortsList providedPorts()
   {
-    return { BT::OutputPort<HelloGreeter::Ptr>("out_derived") };
+    return { BT::OutputPort<Animal::Ptr>("out_animal") };
   }
 };
 
-class SetDerivedParameter : public SyncActionNode
+class CreateCat : public SyncActionNode
 {
 public:
-  SetDerivedParameter(const std::string& name, const NodeConfig& config)
+  CreateCat(const std::string& name, const NodeConfig& config)
     : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
-    int n;
-    HelloGreeter::Ptr hello_greeter{};
+    auto cat = std::make_shared<Cat>();
 
-    getInput("n", n);
-    getInput("in_derived", hello_greeter);
-
-    hello_greeter->setDerivedParameter(n);
-    hello_greeter->show_msg();
+    setOutput("out_cat", cat);
 
     return NodeStatus::SUCCESS;
   }
 
   static PortsList providedPorts()
   {
-    return { BT::InputPort<int>("n"), BT::InputPort<HelloGreeter::Ptr>("in_derived") };
+    return { BT::OutputPort<Cat::Ptr>("out_cat") };
   }
 };
 
-class ShowGreetMessage : public SyncActionNode
+class CreateSphynx : public SyncActionNode
 {
 public:
-  ShowGreetMessage(const std::string& name, const NodeConfig& config)
+  CreateSphynx(const std::string& name, const NodeConfig& config)
     : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
-    Greeter::Ptr greeter{};
+    auto sphynx = std::make_shared<Sphynx>();
 
-    getInput("in_base", greeter);
-    greeter->show_msg();
+    setOutput("out_sphynx", sphynx);
 
     return NodeStatus::SUCCESS;
   }
 
   static PortsList providedPorts()
   {
-    return { BT::InputPort<Greeter::Ptr>("in_base") };
+    return { BT::OutputPort<Sphynx::Ptr>("out_sphynx") };
   }
 };
 
-class ShowFancyGreetMessage : public SyncActionNode
+class CreateDog : public SyncActionNode
 {
 public:
-  ShowFancyGreetMessage(const std::string& name, const NodeConfig& config)
+  CreateDog(const std::string& name, const NodeConfig& config)
     : SyncActionNode(name, config)
   {}
 
   NodeStatus tick() override
   {
-    FancyHelloGreeter::Ptr greeter{};
+    auto dog = std::make_shared<Dog>();
 
-    getInput("in_invalid_derived", greeter);
-    if(!greeter)
-      return NodeStatus::FAILURE;
-
-    greeter->show_msg();
+    setOutput("out_dog", dog);
 
     return NodeStatus::SUCCESS;
   }
 
   static PortsList providedPorts()
   {
-    return { BT::InputPort<FancyHelloGreeter::Ptr>("in_invalid_derived") };
+    return { BT::OutputPort<Dog::Ptr>("out_dog") };
+  }
+};
+
+class PrintAnimalName : public SyncActionNode
+{
+public:
+  PrintAnimalName(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    Animal::Ptr animal{};
+    getInput("in_animal", animal);
+
+    std::cout << animal->name() << std::endl;
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<Animal::Ptr>("in_animal") };
+  }
+};
+
+class PrintCatName : public SyncActionNode
+{
+public:
+  PrintCatName(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    Cat::Ptr cat{};
+    getInput("in_cat", cat);
+
+    std::cout << cat->name() << std::endl;
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<Cat::Ptr>("in_cat") };
+  }
+};
+
+class PrintDogName : public SyncActionNode
+{
+public:
+  PrintDogName(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    Dog::Ptr dog{};
+    getInput("in_dog", dog);
+
+    std::cout << dog->name() << std::endl;
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<Dog::Ptr>("in_dog") };
+  }
+};
+
+class PrintSphynxName : public SyncActionNode
+{
+public:
+  PrintSphynxName(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    Sphynx::Ptr sphynx{};
+    getInput("in_sphynx", sphynx);
+
+    std::cout << sphynx->name() << std::endl;
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<Sphynx::Ptr>("in_sphynx") };
+  }
+};
+
+class ModifyAnimalName : public SyncActionNode
+{
+public:
+  ModifyAnimalName(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    Animal::Ptr animal{};
+    getInput("inout_animal", animal);
+
+    animal->setName("Animal");
+
+    setOutput("inout_animal", animal);
+
+    std::cout << animal->name() << std::endl;
+
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::BidirectionalPort<Animal::Ptr>("inout_animal") };
   }
 };
 
@@ -959,51 +1068,43 @@ TEST(BlackboardTest, Upcasting_Issue943)
   {
     auto bb = BT::Blackboard::create();
 
-    // set hello_greeter
-    auto hello_greeter = std::make_shared<HelloGreeter>();
-    bb->set("hello_greeter", hello_greeter);
+    auto cat_original = std::make_shared<Cat>();
+    bb->set("cat", cat_original);
 
-    // retrieve as base class -> OK
-    std::shared_ptr<Greeter> g{};
-    ASSERT_TRUE(bb->get("hello_greeter", g));
-    ASSERT_STREQ("hello", g->show_msg().c_str());
+    std::shared_ptr<Animal> animal{};
+    ASSERT_TRUE(bb->get("cat", animal));
+    ASSERT_STREQ("Cat", animal->name().c_str());
 
-    // retrieve as derived class -> OK
-    std::shared_ptr<HelloGreeter> hg{};
-    ASSERT_TRUE(bb->get("hello_greeter", hg));
-    ASSERT_STREQ("hello", hg->show_msg().c_str());
+    std::shared_ptr<Cat> cat{};
+    ASSERT_TRUE(bb->get("cat", cat));
+    ASSERT_STREQ("Cat", cat->name().c_str());
 
-    // retrieve as most-derived class -> should throw (type mismatch)
-    std::shared_ptr<FancyHelloGreeter> fhg{};
-    std::cout << "D" << std::endl;
-    ASSERT_ANY_THROW(auto rc = bb->get("hello_greeter", fhg));
+    std::shared_ptr<Sphynx> sphynx{};
+    ASSERT_ANY_THROW(auto rc = bb->get("cat", sphynx));
 
-    // overwrite hello_greeter bb key
-    ASSERT_ANY_THROW(bb->set("hello_greeter", g));
-    ASSERT_NO_THROW(bb->set("hello_greeter", hg));
-    ASSERT_ANY_THROW(bb->set("hello_greeter", fhg));
+    ASSERT_ANY_THROW(bb->set("cat", animal));
+    ASSERT_NO_THROW(bb->set("cat", cat));
+    ASSERT_ANY_THROW(bb->set("cat", sphynx));
   }
 
   // This test verifies that polymorphic upcasting works correctly during tree creation.
-  // The port "hello_greeter" is produced as HelloGreeter and later consumed as both
-  // HelloGreeter and its base type Greeter. The tree should execute successfully,
-  // confirming safe polymorphic compatibility through the base_chain mechanism.
+  // The port "cat" is produced as Cat and later consumed as both Cat and its base type Animal.
   {
     std::string xml_txt = R"(
     <root BTCPP_format="4" >
       <BehaviorTree ID="Main">
         <Sequence>
-          <CreateHelloGreeter out_derived="{hello_greeter}" />
-          <SetDerivedParameter in_derived="{hello_greeter}" n="2" />
-          <ShowGreetMessage in_base="{hello_greeter}" />
+          <CreateCat out_cat="{cat}" />
+          <PrintCatName in_cat="{cat}" />
+          <PrintAnimalName in_animal="{cat}" />
         </Sequence>
       </BehaviorTree>
     </root>)";
 
     BehaviorTreeFactory factory;
-    factory.registerNodeType<CreateHelloGreeter>("CreateHelloGreeter");
-    factory.registerNodeType<SetDerivedParameter>("SetDerivedParameter");
-    factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
+    factory.registerNodeType<CreateCat>("CreateCat");
+    factory.registerNodeType<PrintCatName>("PrintCatName");
+    factory.registerNodeType<PrintAnimalName>("PrintAnimalName");
 
     auto tree = factory.createTreeFromText(xml_txt);
 
@@ -1012,28 +1113,86 @@ TEST(BlackboardTest, Upcasting_Issue943)
     ASSERT_EQ(status, NodeStatus::SUCCESS);
   }
 
-  // This test ensures that an invalid polymorphic downcast is correctly detected
-  // during tree creation. The port "hello_greeter" is first created with HelloGreeter,
-  // then later expected as FancyHelloGreeter (a more derived type), which fails.
+  // This test ensures that an invalid polymorphic upcast is correctly detected
+  // during tree creation. The port "cat" is first created with Cat, then later
+  // expected as Dog, which is invalid.
   {
     std::string xml_txt = R"(
     <root BTCPP_format="4" >
       <BehaviorTree ID="Main">
         <Sequence>
-          <Script code="test := false"/>
-          <CreateHelloGreeter out_derived="{hello_greeter}" />
-          <SetDerivedParameter in_derived="{hello_greeter}" n="2" />
-          <ShowGreetMessage in_base="{hello_greeter}" />
-          <ShowFancyGreetMessage in_invalid_derived="{hello_greeter}" />
+          <CreateCat out_cat="{cat}" />
+          <PrintDogName in_dog="{cat}" />
         </Sequence>
       </BehaviorTree>
     </root>)";
 
     BehaviorTreeFactory factory;
-    factory.registerNodeType<CreateHelloGreeter>("CreateHelloGreeter");
-    factory.registerNodeType<SetDerivedParameter>("SetDerivedParameter");
-    factory.registerNodeType<ShowGreetMessage>("ShowGreetMessage");
-    factory.registerNodeType<ShowFancyGreetMessage>("ShowFancyGreetMessage");
+    factory.registerNodeType<CreateCat>("CreateCat");
+    factory.registerNodeType<PrintDogName>("PrintDogName");
+
+    ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_txt));
+  }
+
+  // This test ensures that an invalid polymorphic downcast is correctly detected
+  // during tree creation. The port "cat" is first created with Cat, then later
+  // expected as Sphynx (a more derived type), which fails.
+  {
+    std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <CreateCat out_cat="{cat}" />
+          <PrintSphynxName in_sphynx="{cat}" />
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<CreateCat>("CreateCat");
+    factory.registerNodeType<PrintSphynxName>("PrintSphynxName");
+
+    ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_txt));
+  }
+
+  // This test ensures that no polymorphic upcast can be used when supplied
+  // to an Output port. The port "cat" is first created with Cat, then later
+  // expected as an Animal output port, which fails.
+  {
+    std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <CreateCat out_cat="{cat}" />
+          <CreateAnimal out_animal="{cat}" />
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<CreateAnimal>("CreateAnimal");
+    factory.registerNodeType<CreateCat>("CreateCat");
+
+    ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_txt));
+  }
+
+  // This test ensures that no polymorphic upcast can be used when supplied
+  // to an Bidirectional port. The port "cat" is first created with Cat, then later
+  // expected as an Animal bidirectional port, which fails.
+  {
+    std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <CreateCat out_cat="{cat}" />
+          <ModifyAnimalName inout_animal="{cat}" />
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+    BehaviorTreeFactory factory;
+    factory.registerNodeType<CreateCat>("CreateCat");
+    factory.registerNodeType<ModifyAnimalName>("ModifyAnimalName");
 
     ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_txt));
   }

@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include <behaviortree_cpp/utils/safe_any.hpp>
-#include "greeter_test.h"
+#include "animal_hierarchy_test.h"
 
 using namespace BT;
 
@@ -254,77 +254,31 @@ TEST(Any, Cast)
   /// Issue 943
   // Type casting: polymorphic class w/ registered base class
   {
-    auto g = std::make_shared<Greeter>();
-    Any any_g(g);
-    EXPECT_NO_THROW(auto res = any_g.cast<Greeter::Ptr>());
-    EXPECT_ANY_THROW(auto res = any_g.cast<HelloGreeter::Ptr>());
-    EXPECT_ANY_THROW(auto res = any_g.cast<FancyHelloGreeter::Ptr>());
-    EXPECT_TRUE(any_g.castPtr<Greeter::Ptr>());
-    EXPECT_FALSE(any_g.castPtr<HelloGreeter::Ptr>());
-    EXPECT_FALSE(any_g.castPtr<FancyHelloGreeter::Ptr>());
+    auto animal = std::make_shared<Animal>();
+    Any any_animal(animal);
+    EXPECT_NO_THROW(auto res = any_animal.cast<Animal::Ptr>());
+    EXPECT_ANY_THROW(auto res = any_animal.cast<Cat::Ptr>());
+    EXPECT_ANY_THROW(auto res = any_animal.cast<Sphynx::Ptr>());
+    EXPECT_TRUE(any_animal.castPtr<Animal::Ptr>());
+    EXPECT_FALSE(any_animal.castPtr<Cat::Ptr>());
+    EXPECT_FALSE(any_animal.castPtr<Sphynx::Ptr>());
 
-    auto hg = std::make_shared<HelloGreeter>();
-    Any any_hg(hg);
-    EXPECT_NO_THROW(auto res = any_hg.cast<Greeter::Ptr>());
-    EXPECT_NO_THROW(auto res = any_hg.cast<HelloGreeter::Ptr>());
-    EXPECT_ANY_THROW(auto res = any_hg.cast<FancyHelloGreeter::Ptr>());
-    EXPECT_TRUE(any_hg.castPtr<Greeter::Ptr>());
-    EXPECT_TRUE(any_hg.castPtr<HelloGreeter::Ptr>());
-    EXPECT_FALSE(any_hg.castPtr<FancyHelloGreeter::Ptr>());
+    auto cat = std::make_shared<Cat>();
+    Any any_cat(cat);
+    EXPECT_NO_THROW(auto res = any_cat.cast<Animal::Ptr>());
+    EXPECT_NO_THROW(auto res = any_cat.cast<Cat::Ptr>());
+    EXPECT_ANY_THROW(auto res = any_cat.cast<Sphynx::Ptr>());
+    EXPECT_TRUE(any_cat.castPtr<Animal::Ptr>());
+    EXPECT_TRUE(any_cat.castPtr<Cat::Ptr>());
+    EXPECT_FALSE(any_cat.castPtr<Sphynx::Ptr>());
 
-    auto fhg = std::make_shared<FancyHelloGreeter>();
-    Any any_fhg(fhg);
-    EXPECT_NO_THROW(auto res = any_fhg.cast<Greeter::Ptr>());
-    EXPECT_NO_THROW(auto res = any_fhg.cast<HelloGreeter::Ptr>());
-    EXPECT_NO_THROW(auto res = any_fhg.cast<FancyHelloGreeter::Ptr>());
-    EXPECT_TRUE(any_fhg.castPtr<Greeter::Ptr>());
-    EXPECT_TRUE(any_fhg.castPtr<HelloGreeter::Ptr>());
-    EXPECT_TRUE(any_fhg.castPtr<FancyHelloGreeter::Ptr>());
-
-    // Try to upcast to an incorrectly registered base
-    auto u = std::make_shared<Unwelcomer>();
-
-    // OK, fails to compile -> invalid static cast
-    // Any any_u(u);
-    // EXPECT_ANY_THROW(auto res = any_g.cast<Unwelcomer::Ptr>());
-  }
-
-  // Type casting: polymorphic class w/o registered base class
-  {
-    auto g = std::make_shared<GreeterNoReg>();
-    Any any_g(g);
-    EXPECT_NO_THROW(auto res = any_g.cast<GreeterNoReg::Ptr>());
-    EXPECT_ANY_THROW(auto res = any_g.cast<HelloGreeterNoReg::Ptr>());
-    EXPECT_TRUE(any_g.castPtr<GreeterNoReg::Ptr>());
-    EXPECT_FALSE(any_g.castPtr<HelloGreeterNoReg::Ptr>());
-
-    auto hg = std::make_shared<HelloGreeterNoReg>();
-    Any any_hg(hg);
-    EXPECT_ANY_THROW(auto res = any_hg.cast<GreeterNoReg::Ptr>());
-    EXPECT_NO_THROW(auto res = any_hg.cast<HelloGreeterNoReg::Ptr>());
-    EXPECT_FALSE(any_hg.castPtr<GreeterNoReg::Ptr>());
-    EXPECT_TRUE(any_hg.castPtr<HelloGreeterNoReg::Ptr>());
-  }
-
-  // Type casting: non polymorphic class w/ registered base class
-  {
-    // OK: static_assert(std::is_polymorphic_v<Base>, "Base must be polymorphic")
-  }
-
-  // Type casting: non polymorphic class w/o registered base class
-  {
-    auto g = std::make_shared<GreeterNoPolyReg>();
-    Any any_g(g);
-    EXPECT_NO_THROW(auto res = any_g.cast<GreeterNoPolyReg::Ptr>());
-    EXPECT_ANY_THROW(auto res = any_g.cast<HelloGreeterNoPolyReg::Ptr>());
-    EXPECT_TRUE(any_g.castPtr<GreeterNoPolyReg::Ptr>());
-    EXPECT_FALSE(any_g.castPtr<HelloGreeterNoPolyReg::Ptr>());
-
-    auto hg = std::make_shared<HelloGreeterNoPolyReg>();
-    Any any_hg(hg);
-    EXPECT_ANY_THROW(auto res = any_hg.cast<GreeterNoPolyReg::Ptr>());
-    EXPECT_NO_THROW(auto res = any_hg.cast<HelloGreeterNoPolyReg::Ptr>());
-    EXPECT_FALSE(any_hg.castPtr<GreeterNoPolyReg::Ptr>());
-    EXPECT_TRUE(any_hg.castPtr<HelloGreeterNoPolyReg::Ptr>());
+    auto sphynx = std::make_shared<Sphynx>();
+    Any any_sphynx(sphynx);
+    EXPECT_NO_THROW(auto res = any_sphynx.cast<Animal::Ptr>());
+    EXPECT_NO_THROW(auto res = any_sphynx.cast<Cat::Ptr>());
+    EXPECT_NO_THROW(auto res = any_sphynx.cast<Sphynx::Ptr>());
+    EXPECT_TRUE(any_sphynx.castPtr<Animal::Ptr>());
+    EXPECT_TRUE(any_sphynx.castPtr<Cat::Ptr>());
+    EXPECT_TRUE(any_sphynx.castPtr<Sphynx::Ptr>());
   }
 }

@@ -3,7 +3,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_cpp/json_export.h"
-#include "greeter_test.h"  // upcasting tests
+#include "animal_hierarchy_test.h"
 
 using namespace BT;
 
@@ -732,6 +732,12 @@ TEST(PortTest, DefaultWronglyOverriden)
   ASSERT_NO_THROW(auto tree = factory.createTreeFromText(xml_txt_correct));
 }
 
+class Plant
+{
+public:
+  using Ptr = std::shared_ptr<Plant>;
+};
+
 TEST(PortTest, Upcasting_Issue943)
 {
   using namespace BT;
@@ -740,7 +746,7 @@ TEST(PortTest, Upcasting_Issue943)
   auto animal = PortInfo::Create<Animal::Ptr>();
   auto cat = PortInfo::Create<Cat::Ptr>();
   auto dog = PortInfo::Create<Dog::Ptr>();
-  auto sphynx = PortInfo::Create<SphynxCat::Ptr>();
+  auto sphynx = PortInfo::Create<Sphynx::Ptr>();
 
   ASSERT_EQ(0, plant.baseChain().size());
   ASSERT_EQ(1, animal.baseChain().size());
@@ -754,7 +760,7 @@ TEST(PortTest, Upcasting_Issue943)
   ASSERT_EQ(std::type_index(typeid(Dog)), dog.baseChain()[0]);
   ASSERT_EQ(std::type_index(typeid(Animal)), dog.baseChain()[1]);
 
-  ASSERT_EQ(std::type_index(typeid(SphynxCat)), sphynx.baseChain()[0]);
+  ASSERT_EQ(std::type_index(typeid(Sphynx)), sphynx.baseChain()[0]);
   ASSERT_EQ(std::type_index(typeid(Cat)), sphynx.baseChain()[1]);
   ASSERT_EQ(std::type_index(typeid(Animal)), sphynx.baseChain()[2]);
 
@@ -762,29 +768,29 @@ TEST(PortTest, Upcasting_Issue943)
   ASSERT_FALSE(plant.isConvertibleFrom(std::type_index(typeid(Animal))));
   ASSERT_FALSE(plant.isConvertibleFrom(std::type_index(typeid(Cat))));
   ASSERT_FALSE(plant.isConvertibleFrom(std::type_index(typeid(Dog))));
-  ASSERT_FALSE(plant.isConvertibleFrom(std::type_index(typeid(SphynxCat))));
+  ASSERT_FALSE(plant.isConvertibleFrom(std::type_index(typeid(Sphynx))));
 
   ASSERT_FALSE(animal.isConvertibleFrom(std::type_index(typeid(Plant))));
   ASSERT_TRUE(animal.isConvertibleFrom(std::type_index(typeid(Animal))));
   ASSERT_FALSE(animal.isConvertibleFrom(std::type_index(typeid(Cat))));
   ASSERT_FALSE(animal.isConvertibleFrom(std::type_index(typeid(Dog))));
-  ASSERT_FALSE(animal.isConvertibleFrom(std::type_index(typeid(SphynxCat))));
+  ASSERT_FALSE(animal.isConvertibleFrom(std::type_index(typeid(Sphynx))));
 
   ASSERT_FALSE(cat.isConvertibleFrom(std::type_index(typeid(Plant))));
   ASSERT_TRUE(cat.isConvertibleFrom(std::type_index(typeid(Animal))));
   ASSERT_TRUE(cat.isConvertibleFrom(std::type_index(typeid(Cat))));
   ASSERT_FALSE(cat.isConvertibleFrom(std::type_index(typeid(Dog))));
-  ASSERT_FALSE(cat.isConvertibleFrom(std::type_index(typeid(SphynxCat))));
+  ASSERT_FALSE(cat.isConvertibleFrom(std::type_index(typeid(Sphynx))));
 
   ASSERT_FALSE(dog.isConvertibleFrom(std::type_index(typeid(Plant))));
   ASSERT_TRUE(dog.isConvertibleFrom(std::type_index(typeid(Animal))));
   ASSERT_FALSE(dog.isConvertibleFrom(std::type_index(typeid(Cat))));
   ASSERT_TRUE(dog.isConvertibleFrom(std::type_index(typeid(Dog))));
-  ASSERT_FALSE(dog.isConvertibleFrom(std::type_index(typeid(SphynxCat))));
+  ASSERT_FALSE(dog.isConvertibleFrom(std::type_index(typeid(Sphynx))));
 
   ASSERT_FALSE(sphynx.isConvertibleFrom(std::type_index(typeid(Plant))));
   ASSERT_TRUE(sphynx.isConvertibleFrom(std::type_index(typeid(Animal))));
   ASSERT_TRUE(sphynx.isConvertibleFrom(std::type_index(typeid(Cat))));
   ASSERT_FALSE(sphynx.isConvertibleFrom(std::type_index(typeid(Dog))));
-  ASSERT_TRUE(sphynx.isConvertibleFrom(std::type_index(typeid(SphynxCat))));
+  ASSERT_TRUE(sphynx.isConvertibleFrom(std::type_index(typeid(Sphynx))));
 }
