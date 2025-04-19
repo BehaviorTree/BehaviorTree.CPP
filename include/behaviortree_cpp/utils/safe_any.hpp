@@ -368,31 +368,38 @@ public:
 
         try
         {
+          // Case 1: If Base and Derived are the same, no casting is needed
+          if constexpr(std::is_same_v<RootBase, Derived>)
+          {
+            return linb::any_cast<std::shared_ptr<RootBase>>(&_any);
+          }
+
+          // Case 2: Previously cached
+          if(_cached_type == typeid(T))
+          {
+            return reinterpret_cast<T*>(&_cached_derived_ptr);
+          }
+
           // Attempt to retrieve the stored shared_ptr<Base> from the Any container
           auto base_ptr = linb::any_cast<std::shared_ptr<RootBase>>(&_any);
           if(!base_ptr)
             return nullptr;
 
-          // Case 1: If Base and Derived are the same, no casting is needed
-          if constexpr(std::is_same_v<RootBase, Derived>)
-          {
-            return reinterpret_cast<T*>(base_ptr);
-          }
-
-          // Case 2: Originally stored as shared_ptr<Derived>
+          // Case 3: Stored as Derived originally
           if(_original_type == typeid(std::shared_ptr<Derived>))
           {
             _cached_derived_ptr = std::static_pointer_cast<Derived>(*base_ptr);
-            return reinterpret_cast<T*>(&_cached_derived_ptr);
           }
-
-          // Case 3: Fallback to dynamic cast
-          auto derived_ptr = std::dynamic_pointer_cast<Derived>(*base_ptr);
-          if(derived_ptr)
+          // Case 4: Fallback to dynamic cast
+          else
           {
+            auto derived_ptr = std::dynamic_pointer_cast<Derived>(*base_ptr);
+            if(!derived_ptr)
+              return nullptr;
             _cached_derived_ptr = derived_ptr;
-            return reinterpret_cast<T*>(&_cached_derived_ptr);
           }
+          _cached_type = typeid(T);
+          return reinterpret_cast<T*>(&_cached_derived_ptr);
         }
         catch(...)
         {
@@ -427,6 +434,7 @@ private:
   linb::any _any;
   std::type_index _original_type;
   mutable std::shared_ptr<void> _cached_derived_ptr = nullptr;
+  mutable std::type_index _cached_type = typeid(void);
 
   //----------------------------
 
