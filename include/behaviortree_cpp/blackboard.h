@@ -256,11 +256,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
 
     std::type_index previous_type = entry.info.type();
 
-    // allow matching if any is of the same base
-    const auto current_type = TypeInfo::Create<T>().type();
-
     // check type mismatch
-    if(previous_type != current_type && previous_type != new_value.type())
+    if(previous_type != std::type_index(typeid(T)) && previous_type != new_value.type())
     {
       bool mismatching = true;
       if(std::is_constructible<StringView, T>::value)
