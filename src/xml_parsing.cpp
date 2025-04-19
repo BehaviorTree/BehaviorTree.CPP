@@ -830,9 +830,10 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
                prev_info->type() != port_info.type());
 
           // allow mismatch if the previous type appears in the base_chain
-          // of the current port (i.e., valid polymorphic upcast)
-          if(port_type_mismatch && !prev_info->baseChain().empty() &&
-             !port_info.baseChain().empty() &&
+          // of the current port (i.e., valid polymorphic upcast) and the
+          // port direction is an INPUT.
+          if(port_type_mismatch && port_info.direction() == PortDirection::INPUT &&
+             !prev_info->baseChain().empty() && !port_info.baseChain().empty() &&
              prev_info->isConvertibleFrom(port_info.baseChain()[0]))
           {
             port_type_mismatch = false;
