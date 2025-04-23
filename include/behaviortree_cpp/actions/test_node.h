@@ -39,7 +39,7 @@ struct TestNodeConfig
 
   /// Function invoked when the action is completed. By default just return [return_status]
   /// Override it to intorduce more comple cases
-  std::function<NodeStatus(void)> complete_func = [this]() { return return_status; };
+  std::function<NodeStatus(void)> complete_func = [ret = return_status]() { return ret; };
 };
 
 /**
