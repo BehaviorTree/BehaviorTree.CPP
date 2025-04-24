@@ -2,6 +2,67 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* change TestNodeConfig preferred constructor
+* Fix dangling‐capture in TestNodeConfig
+* Fix Precondition to only check condition once (`#904 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/904>`_)
+* fix issue 945
+* extend JSON convertion to include vectors (`#965 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/965>`_)
+* Fix CI, add BUILD_TESTS and remove catkin support
+* Fix testing CMake issue to resolve Rolling regression (`#961 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/961>`_)
+* Bug fix/set blackboard (`#955 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/955>`_)
+* feat: add fuzzing harnesses (`#925 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/925>`_)
+* fix warnings
+* Add const to applyVisitor (`#935 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/935>`_)
+* try fix (`#941 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/941>`_)
+* add workflow for sonarcube (`#936 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/936>`_)
+* Fix issue `#909 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/909>`_: static queue in Loop
+* apply changes suggested in `#893 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/893>`_
+* apply fix mentioned in `#916 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/916>`_
+* apply fixes suggested in `#919 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/919>`_
+* fix issue `#918 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/918>`_ (introduced in `#885 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/885>`_)
+* add fix suggested in `#920 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/920>`_
+* add unit test related to `#931 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/931>`_
+* Fix compilation error when targeting C++23 (`#926 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/926>`_)                   ^~~~~~~~~~~~~
+* Fixes issue # `#929 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/929>`_ and `#921 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/921>`_
+* apply check suggested in `#924 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/924>`_
+* Fix ROS 2 build when ZeroMQ or SQlite3 include are not in the default include path (`#911 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/911>`_)
+  * Fix ROS 2 build when ZeroMQ or SQlite3 include are not in the default include path
+  * Update ament_build.cmake
+* Fix/use correct compiler pixi/conda (`#914 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/914>`_)
+  * fix: Use the cxx-compiler package which will set the correct compiler for the platform, and setup the required environment for it to work as expected
+  * misc: update pixi versions in pipeline
+* Add "other ports" to NodeConfig (`#910 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/910>`_)
+* [retry_node] Refresh max_attempts\_ in case it changed (`#905 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/905>`_)
+  Co-authored-by: Guillaume Doisy <guillaume@dexory.com>
+* use relative path in .Doxyfile (`#882 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/882>`_)
+* Additional XML verification for ReactiveSequence nodes (`#885 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/885>`_)
+  Co-authored-by: AndyZe <andyzelenak@apptronik.com>
+* fix script parse error while 'A==-1' (`#896 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/896>`_)
+  Co-authored-by: wangzheng <wangz@oasisrobotics.tech>
+* Expose return value of wait_for (`#887 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/887>`_)
+* fix(examples): update t11_groot_howto log filename (`#886 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/886>`_)
+* put minitrace in the build_interface link library (`#874 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/874>`_)
+  fixes the cmake export set when building behavior tree on standard cmake: CMake Error: install(EXPORT "behaviortree_cppTargets" ...) includes target "behaviortree_cpp" which requires target "minitrace" that is not in any export set.
+* Improved XML parsing error message to say where in the XML the offending port is found. (`#876 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/876>`_)
+  Example output:
+  a port with name [ball_pose] is found in the XML (<GrabBall>, line 7) but not in the providedPorts() of its registered node type.
+* Refactored the TreeNode::executeTick() function to use a scoped timer for performance monitoring. (`#861 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/861>`_) (`#863 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/863>`_)
+  Update src/tree_node.cpp
+  Co-authored-by: wangzheng <wangz@oasisrobotics.tech>
+  Co-authored-by: Davide Faconti <davide.faconti@gmail.com>
+* fix issue `#852 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/852>`_: thread safety in Loggers
+* Lexy updated
+* tinyXML updated to version 10.0
+* cppzmq updated to version 4.10
+* fix the "all_skipped" logic
+* fixed: support utf-8 path xml-file (`#845 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/845>`_)
+  * fixed: 1. added compile version check to support Chinese path xml-file parsing 2. cmake add msvc /utf-8 options
+  * change cmake /utf-8 option add mode
+* Export plugins to share directory & register CrossDoor plugin (`#804 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/804>`_)
+* Contributors: Aglargil, AndyZe, Antoine Hoarau, David Sobek, Davide Faconti, Guillaume Doisy, Isar Meijer, Jake Keller, Marq Rasmussen, Michele Tartari, Silvio Traversaro, Tony Najjar, b-adkins, ckrah, devis12, kinly, tony-p, vincent-hui
+
 4.6.2 (2024-06-26)
 ------------------
 * Initialize template variable `T out` (`#839 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/839>`_)
