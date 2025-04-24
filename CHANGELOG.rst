@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.7.0 (2025-04-24)
+------------------
 * change TestNodeConfig preferred constructor
 * Fix dangling‐capture in TestNodeConfig
 * Fix Precondition to only check condition once (`#904 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/904>`_)
