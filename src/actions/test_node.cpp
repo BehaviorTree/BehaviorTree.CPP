@@ -68,7 +68,8 @@ BT::NodeStatus BT::TestNode::onCompleted()
 {
   Ast::Environment env = { config().blackboard, config().enums };
 
-  auto status = _test_config.complete_func();
+  auto status = (_test_config.complete_func) ? _test_config.complete_func() :
+                                               _test_config.return_status;
   if(status == NodeStatus::SUCCESS && _success_executor)
   {
     _success_executor(env);

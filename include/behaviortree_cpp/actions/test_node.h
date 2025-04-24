@@ -37,9 +37,9 @@ struct TestNodeConfig
   /// if async_delay > 0, this action become asynchronous and wait this amount of time
   std::chrono::milliseconds async_delay = std::chrono::milliseconds(0);
 
-  /// Function invoked when the action is completed. By default just return [return_status]
-  /// Override it to intorduce more comple cases
-  std::function<NodeStatus(void)> complete_func = [this]() { return return_status; };
+  /// Function invoked when the action is completed.
+  /// If not specified, the node will return [return_status]
+  std::function<NodeStatus(void)> complete_func;
 };
 
 /**
