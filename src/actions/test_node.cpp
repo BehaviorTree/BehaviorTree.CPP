@@ -1,12 +1,20 @@
 #include "behaviortree_cpp/actions/test_node.h"
 
-BT::TestNode::TestNode(const std::string& name, const NodeConfig& config,
-                       TestNodeConfig test_config)
-  : StatefulActionNode(name, config), _test_config(std::move(test_config))
+namespace BT
+{
+
+TestNode::TestNode(const std::string& name, const NodeConfig& config,
+                   TestNodeConfig test_config)
+  : TestNode(name, config, std::make_shared<TestNodeConfig>(std::move(test_config)))
+{}
+
+TestNode::TestNode(const std::string& name, const NodeConfig& config,
+                   std::shared_ptr<TestNodeConfig> test_config)
+  : StatefulActionNode(name, config), _config(std::move(test_config))
 {
   setRegistrationID("TestNode");
 
-  if(_test_config.return_status == NodeStatus::IDLE)
+  if(_config->return_status == NodeStatus::IDLE)
   {
     throw RuntimeError("TestNode can not return IDLE");
   }
@@ -22,21 +30,21 @@ BT::TestNode::TestNode(const std::string& name, const NodeConfig& config,
       executor = result.value();
     }
   };
-  prepareScript(_test_config.success_script, _success_executor);
-  prepareScript(_test_config.failure_script, _failure_executor);
-  prepareScript(_test_config.post_script, _post_executor);
+  prepareScript(_config->success_script, _success_executor);
+  prepareScript(_config->failure_script, _failure_executor);
+  prepareScript(_config->post_script, _post_executor);
 }
 
-BT::NodeStatus BT::TestNode::onStart()
+NodeStatus TestNode::onStart()
 {
-  if(_test_config.async_delay <= std::chrono::milliseconds(0))
+  if(_config->async_delay <= std::chrono::milliseconds(0))
   {
     return onCompleted();
   }
   // convert this in an asynchronous operation. Use another thread to count
   // a certain amount of time.
   _completed = false;
-  _timer.add(std::chrono::milliseconds(_test_config.async_delay), [this](bool aborted) {
+  _timer.add(std::chrono::milliseconds(_config->async_delay), [this](bool aborted) {
     if(!aborted)
     {
       _completed.store(true);
@@ -50,7 +58,7 @@ BT::NodeStatus BT::TestNode::onStart()
   return NodeStatus::RUNNING;
 }
 
-BT::NodeStatus BT::TestNode::onRunning()
+NodeStatus TestNode::onRunning()
 {
   if(_completed)
   {
@@ -59,17 +67,18 @@ BT::NodeStatus BT::TestNode::onRunning()
   return NodeStatus::RUNNING;
 }
 
-void BT::TestNode::onHalted()
+void TestNode::onHalted()
 {
   _timer.cancelAll();
 }
 
-BT::NodeStatus BT::TestNode::onCompleted()
+NodeStatus TestNode::onCompleted()
 {
   Ast::Environment env = { config().blackboard, config().enums };
 
-  auto status = (_test_config.complete_func) ? _test_config.complete_func() :
-                                               _test_config.return_status;
+  auto status =
+      (_config->complete_func) ? _config->complete_func() : _config->return_status;
+
   if(status == NodeStatus::SUCCESS && _success_executor)
   {
     _success_executor(env);
@@ -84,3 +93,5 @@ BT::NodeStatus BT::TestNode::onCompleted()
   }
   return status;
 }
+
+}  // namespace BT

@@ -64,7 +64,14 @@ struct TestNodeConfig
 class TestNode : public BT::StatefulActionNode
 {
 public:
-  TestNode(const std::string& name, const NodeConfig& config, TestNodeConfig test_config);
+  // This constructor is deprecated, because it may cause problems if TestNodeConfig::complete_func is capturing
+  // a reference to the TestNode, i.e. [this]. Use the constructor with std::shared_ptr<TestNodeConfig> instead.
+  // For more details, see https://github.com/BehaviorTree/BehaviorTree.CPP/pull/967
+  [[deprecated("prefer the constructor with std::shared_ptr<TestNodeConfig>")]] TestNode(
+      const std::string& name, const NodeConfig& config, TestNodeConfig test_config);
+
+  TestNode(const std::string& name, const NodeConfig& config,
+           std::shared_ptr<TestNodeConfig> test_config);
 
   static PortsList providedPorts()
   {
@@ -80,7 +87,7 @@ protected:
 
   NodeStatus onCompleted();
 
-  TestNodeConfig _test_config;
+  std::shared_ptr<TestNodeConfig> _config;
   ScriptFunction _success_executor;
   ScriptFunction _failure_executor;
   ScriptFunction _post_executor;
