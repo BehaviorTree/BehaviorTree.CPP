@@ -263,12 +263,21 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
       }
       else if(const auto test_config = std::get_if<TestNodeConfig>(&rule))
       {
-        // second case, the variant is a TestNodeConfig
-        auto test_node =
-            new TestNode(name, config, std::make_shared<TestNodeConfig>(*test_config));
-        node.reset(test_node);
+        node = std::make_unique<TestNode>(name, config,
+                                          std::make_shared<TestNodeConfig>(*test_config));
         substituted = true;
         break;
+      }
+      else if(const auto test_config =
+                  std::get_if<std::shared_ptr<TestNodeConfig>>(&rule))
+      {
+        node = std::make_unique<TestNode>(name, config, *test_config);
+        substituted = true;
+        break;
+      }
+      else
+      {
+        throw LogicError("Substitution rule is not a string or a TestNodeConfig");
       }
     }
   }

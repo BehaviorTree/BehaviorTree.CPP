@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 
   // this will be synchronous (async_delay is 0)
   BT::TestNodeConfig counting_config;
-  test_config.return_status = BT::NodeStatus::SUCCESS;
+  counting_config.return_status = BT::NodeStatus::SUCCESS;
 
   //---------------------------------------------------------------
   // Next, we want to substitute one or more of out Nodes with this mocks

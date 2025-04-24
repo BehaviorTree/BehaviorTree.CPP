@@ -469,7 +469,8 @@ public:
 
   void clearSubstitutionRules();
 
-  using SubstitutionRule = std::variant<std::string, TestNodeConfig>;
+  using SubstitutionRule =
+      std::variant<std::string, TestNodeConfig, std::shared_ptr<TestNodeConfig>>;
 
   /**
    * @brief addSubstitutionRule replace a node with another one when the tree is

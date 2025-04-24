@@ -55,11 +55,11 @@ struct TestNodeConfig
  * This particular node is created by the factory when TestNodeConfig is
  * added as a substitution rule:
  *
- *    TestNodeConfig test_config;
+ *    auto test_config = std::make_shared<TestNodeConfig>();
  *    // change fields of test_config
  *    factory.addSubstitutionRule(pattern, test_config);
  *
- * See tutorial 11 for more details.
+ * See tutorial 15 for more details.
  */
 class TestNode : public BT::StatefulActionNode
 {
