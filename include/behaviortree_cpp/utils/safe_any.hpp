@@ -134,7 +134,7 @@ public:
   }
 
   // copy the value (casting into dst). We preserve the destination type.
-  void copyInto(Any& dst);
+  void copyInto(Any& dst) const;
 
   // this is different from any_cast, because if allows safe
   // conversions between arithmetic values and from/to string.
@@ -321,7 +321,7 @@ inline bool Any::isIntegral() const
   return _any.type() == typeid(int64_t) || _any.type() == typeid(uint64_t);
 }
 
-inline void Any::copyInto(Any& dst)
+inline void Any::copyInto(Any& dst) const
 {
   if(dst.empty())
   {
