@@ -35,6 +35,8 @@ to visualize, record, replay and analyze state transitions.
 
 You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
 
+An automatically generated API documentation can be found here: https://BehaviorTree.github.io/BehaviorTree.CPP/
+
 If the documentation doesn't answer your questions and/or you want to
 connect with the other **BT.CPP** users, visit [our forum](https://github.com/BehaviorTree/BehaviorTree.CPP/discussions)
 
