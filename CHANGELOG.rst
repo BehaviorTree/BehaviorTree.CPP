@@ -2,6 +2,15 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix ROS CI
+* Add action to publish Doxygen documentation as GH Page (`#972 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/972>`_)
+* Update Doxyfile
+* Make BT::Any::copyInto const (`#970 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/970>`_)
+* more changes related to TestNode
+* Contributors: David Sobek, Davide Faconti, Marcus Ebner von Eschenbach
+
 4.7.0 (2025-04-24)
 ------------------
 * change TestNodeConfig preferred constructor
