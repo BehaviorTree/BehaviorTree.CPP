@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.7.1 (2025-05-13)
+------------------
 * fix ROS CI
 * Add action to publish Doxygen documentation as GH Page (`#972 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/972>`_)
 * Update Doxyfile
