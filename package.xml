@@ -14,18 +14,19 @@
 
   <build_depend>ros_environment</build_depend>
 
+  <buildtool_depend>git</buildtool_depend>
+  <buildtool_depend >ament_cmake</buildtool_depend>
 
-  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
-  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
-  <depend condition="$ROS_VERSION == 2">ament_index_cpp</depend>
+  <depend >rclcpp</depend>
+  <depend >ament_index_cpp</depend>
 
   <depend>libsqlite3-dev</depend>
   <depend>libzmq3-dev</depend>
 
-  <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
+  <test_depend >ament_cmake_gtest</test_depend>
 
   <export>
-      <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+      <build_type >ament_cmake</build_type>
   </export>
 
 </package>
