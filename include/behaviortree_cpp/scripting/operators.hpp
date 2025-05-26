@@ -27,7 +27,7 @@ using SimpleString = SafeAny::SimpleString;
 
 using expr_ptr = std::shared_ptr<struct ExprBase>;
 
-// extended strin to number that consider enums and booleans
+// extended string to number that consider enums and booleans
 inline double StringToDouble(const Any& value, const Environment& env)
 {
   const auto str = value.cast<std::string>();

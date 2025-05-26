@@ -50,7 +50,7 @@ struct TestNodeConfig
  * 3. Either complete immediately (synchronous action), or after a
  *    given period of time (asynchronous action)
  *
- * This behavior is changed by the parameters pased with TestNodeConfig.
+ * This behavior is changed by the parameters passed with TestNodeConfig.
  *
  * This particular node is created by the factory when TestNodeConfig is
  * added as a substitution rule:

@@ -27,11 +27,11 @@ namespace BT::Monitor
 
 enum RequestType : uint8_t
 {
-  // Request the entire tree defintion as XML
+  // Request the entire tree definition as XML
   FULLTREE = 'T',
-  // Request the staus of all the nodes
+  // Request the status of all the nodes
   STATUS = 'S',
-  // retrieve the valus in a set of blackboards
+  // retrieve the values in a set of blackboards
   BLACKBOARD = 'B',
 
   // Groot requests the insertion of a hook

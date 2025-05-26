@@ -17,7 +17,7 @@ Changelog for package behaviortree_cpp
 * Fix dangling‐capture in TestNodeConfig
 * Fix Precondition to only check condition once (`#904 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/904>`_)
 * fix issue 945
-* extend JSON convertion to include vectors (`#965 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/965>`_)
+* extend JSON conversion to include vectors (`#965 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/965>`_)
 * Fix CI, add BUILD_TESTS and remove catkin support
 * Fix testing CMake issue to resolve Rolling regression (`#961 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/961>`_)
 * Bug fix/set blackboard (`#955 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/955>`_)
@@ -116,7 +116,7 @@ Changelog for package behaviortree_cpp
 * warn about overwritten enums
 * fix ambiguous to_json
 * Extend unit test for blackboard backup to run the second tree (`#789 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/789>`_)
-* json convertion changed and
+* json conversion changed and
 * issue `#755 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/755>`_ : add backchaining test and change reactive nodes checks (`#770 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/770>`_)
 * Update switch_node.h
 * test moved and port remapping fixed
@@ -393,7 +393,7 @@ Changelog for package behaviortree_cpp
 * better include paths
 * Control node and Decorators RUNNING before first child
 * blackboard: update getKeys and add mutex to scripting
-* add [[nodiscard]] and some othe minor changes
+* add [[nodiscard]] and some other minor changes
 * add screenshot
 * change the behavior of tickOnce to actually loop is wake up signal is… (`#522 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/522>`_)
   * change the behavior of tickOnce to actually loop is wake up signal is received
@@ -492,7 +492,7 @@ Changelog for package behaviortree_cpp
   dependency explicitly.
 * Change order of lock to prevent deadlock. (`#368 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/368>`_)
   Resolves `#367 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/367>`_.
-* Fix `#320 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/320>`_ : forbit refrences in Any
+* Fix `#320 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/320>`_ : forbid references in Any
 * Update action_node.h
 * Contributors: Adam Sasine, Davide Faconti, Fabian Schurig, Griswald Brooks, Hyeongsik Min, Robodrome, imgbot[bot], panwauu
 
@@ -839,9 +839,9 @@ Changelog for package behaviortree_cpp
 * Conan package distribution (#39)
 * Non-functional refactoring of xml_parsing to clean up the code
 * cosmetic changes in the code of BehaviorTreeFactory
-* XML schema. Related to enchancement #40
+* XML schema. Related to enhancement #40
 * call setRegistrationName() for built-in Nodes
-  The methos is called by BehaviorTreefactory, therefore it
+  The method is called by BehaviorTreefactory, therefore it
   registrationName is empty if trees are created programmatically.
 * Reset reference count when destroying logger (issue #38)
 * Contributors: Davide Facont, Davide Faconti, Uilian Ries
@@ -857,7 +857,7 @@ Changelog for package behaviortree_cpp
 ------------------
 * adding virtual TreeNode::onInit() [issue #33]
 * fix issue #34 : if you don't implement convertFromString, it will compile but it may throw
-* Pretty demangled names and obsolate comments removed
+* Pretty demangled names and obsolete comments removed
 * bug fixes
 * more comments
 * [enhancement #32]: add CoroActionNode and rename ActionNode as "AsynActionNode"
@@ -924,7 +924,7 @@ Changelog for package behaviortree_cpp
 * Fix: registerBuilder did not register the manifest. It was "broken" as public API method
 * Use the Pimpl idiom to hide zmq from the header file
 * move header of minitrace in the cpp file
-* Fixed a crash occuring when you didn't initialized a Tree object (#20)
+* Fixed a crash occurring when you didn't initialized a Tree object (#20)
 * Fix issue #16
 * add ParallelNode to pre-registered entries in factory (issue #13)
 * removed M_PI

@@ -475,7 +475,7 @@ public:
   /**
    * @brief addSubstitutionRule replace a node with another one when the tree is
    * created.
-   * If the rule ia a string, we will use a diferent node type (already registered)
+   * If the rule ia a string, we will use a different node type (already registered)
    * instead.
    * If the rule is a TestNodeConfig, a test node with that configuration will be created instead.
    *
@@ -526,7 +526,7 @@ std::vector<Blackboard::Ptr> BlackboardBackup(const BT::Tree& tree);
  * @brief BlackboardRestore uses Blackboard::cloneInto to restore
  * all the blackboards of the tree
  *
- * @param backup a vectror of blackboards
+ * @param backup a vector of blackboards
  * @param tree the destination
  */
 void BlackboardRestore(const std::vector<Blackboard::Ptr>& backup, BT::Tree& tree);

@@ -44,7 +44,7 @@ public:
 
   static PortsList providedPorts()
   {
-    return { InputPort("value", "Value to be written int othe output_key"),
+    return { InputPort("value", "Value to be written into the output_key"),
              BidirectionalPort("output_key", "Name of the blackboard entry where the "
                                              "value should be written") };
   }

@@ -20,7 +20,7 @@
 /**
  * Template Action used in ex04_waypoints.cpp example.
  *
- * Its purpose is to do make it easy to create while loops wich consume the elements of a queue.
+ * Its purpose is to do make it easy to create while loops which consume the elements of a queue.
  *
  * Note that modifying the queue is not thread safe, therefore the action that creates the queue
  * or push elements into it, must be Synchronous.
@@ -47,7 +47,7 @@ struct ProtectedQueue
  *
  * We avoid this using reference semantic (wrapping the object in a shared_ptr).
  * Unfortunately, remember that this makes our access to the list not thread-safe!
- * This is the reason why we add a mutex to be used when modyfying the ProtectedQueue::items
+ * This is the reason why we add a mutex to be used when modifying the ProtectedQueue::items
  *
  * */
 
@@ -95,7 +95,7 @@ public:
 };
 
 /**
- * Get the size of a queue. Usefull is you want to write something like:
+ * Get the size of a queue. Useful when you want to write something like:
  *
  *  <QueueSize queue="{waypoints}" size="{wp_size}" />
  *  <Repeat num_cycles="{wp_size}" >

@@ -99,10 +99,10 @@ protected:
  * IMPORTANT: this action is quite hard to implement correctly.
  * Please make sure that you know what you are doing.
  *
- * - In your overriden tick() method, you must check periodically
+ * - In your overridden tick() method, you must check periodically
  *   the result of the method isHaltRequested() and stop your execution accordingly.
  *
- * - in the overriden halt() method, you can do some cleanup, but do not forget to
+ * - in the overridden halt() method, you can do some cleanup, but do not forget to
  *   invoke the base class method ThreadedAction::halt();
  *
  * - remember, with few exceptions, a halted ThreadedAction must return NodeStatus::IDLE.
