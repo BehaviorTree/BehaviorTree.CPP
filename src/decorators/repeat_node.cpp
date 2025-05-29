@@ -59,7 +59,7 @@ NodeStatus RepeatNode::tick()
         resetChild();
 
         // Return the execution flow if the child is async,
-        // to make this interruptable.
+        // to make this interruptible.
         if(requiresWakeUp() && prev_status == NodeStatus::IDLE && do_loop)
         {
           emitWakeUpSignal();

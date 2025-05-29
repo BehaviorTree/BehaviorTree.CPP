@@ -136,7 +136,7 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
   builder.Finish(behavior_tree);
 }
 
-/** Serialize manually the informations about state transition
+/** Serialize manually the information about state transition
  * No flatbuffer serialization here
  */
 inline SerializedTransition SerializeTransition(uint16_t UID, Duration timestamp,

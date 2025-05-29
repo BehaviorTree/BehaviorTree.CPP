@@ -176,7 +176,7 @@ void Blackboard::cloneInto(Blackboard& dst) const
     auto it = dst_storage.find(src_key);
     if(it != dst_storage.end())
     {
-      // overwite
+      // overwrite
       auto& dst_entry = it->second;
       dst_entry->string_converter = src_entry->string_converter;
       dst_entry->value = src_entry->value;

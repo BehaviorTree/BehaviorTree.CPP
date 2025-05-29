@@ -22,7 +22,7 @@ struct Point2D
   }
 };
 
-// Allow bi-directional convertion to JSON
+// Allow bi-directional conversion to JSON
 BT_JSON_CONVERTER(Point2D, point)
 {
   add_field("x", &point.x);

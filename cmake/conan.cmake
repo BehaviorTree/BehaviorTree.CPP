@@ -116,7 +116,7 @@ macro(_conan_check_language)
         set(LANGUAGE C)
         set(USING_CXX 0)
     else ()
-        message(FATAL_ERROR "Conan: Neither C or C++ was detected as a language for the project. Unabled to detect compiler version.")
+        message(FATAL_ERROR "Conan: Neither C or C++ was detected as a language for the project. Unable to detect compiler version.")
     endif()
 endmacro()
 
@@ -1050,7 +1050,7 @@ macro(conan_config_install)
     endif()
 
     if(DEFINED CONAN_ARGS)
-	# Convert ; seperated multi arg list into space seperated string
+	# Convert ; separated multi arg list into space separated string
 	string(REPLACE ";" " " l_CONAN_ARGS "${CONAN_ARGS}")
 	set(CONAN_ARGS_ARGS "--args=${l_CONAN_ARGS}")
     endif()

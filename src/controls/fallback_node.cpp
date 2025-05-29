@@ -55,7 +55,7 @@ NodeStatus FallbackNode::tick()
       case NodeStatus::FAILURE: {
         current_child_idx_++;
         // Return the execution flow if the child is async,
-        // to make this interruptable.
+        // to make this interruptible.
         if(asynch_ && requiresWakeUp() && prev_status == NodeStatus::IDLE &&
            current_child_idx_ < children_count)
         {

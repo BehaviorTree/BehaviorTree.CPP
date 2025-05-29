@@ -455,7 +455,7 @@ public:
 
   NodeStatus tick() override
   {
-    // case 1: the port is Any, but we can cast dirrectly to string
+    // case 1: the port is Any, but we can cast directly to string
     auto res_str = getInput<std::string>("val_str");
     // case 2: the port is Any, and we retrieve an Any (to be casted later)
     auto res_int = getInput<BT::Any>("val_int");

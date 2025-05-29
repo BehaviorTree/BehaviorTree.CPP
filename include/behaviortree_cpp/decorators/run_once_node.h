@@ -42,7 +42,7 @@ public:
   {
     return { InputPort<bool>("then_skip", true,
                              "If true, skip after the first execution, "
-                             "otherwise return the same NodeStatus returned once bu the "
+                             "otherwise return the same NodeStatus returned once by the "
                              "child.") };
   }
 

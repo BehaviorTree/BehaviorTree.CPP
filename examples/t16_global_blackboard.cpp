@@ -97,7 +97,7 @@ int main()
   return 0;
 }
 
-/* Expecte output:
+/* Expected output:
 
 [main_print] val: 1
 [sub_print] val: 1

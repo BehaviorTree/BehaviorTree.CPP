@@ -494,7 +494,7 @@ inline nonstd::expected<T, std::string> Any::tryCast() const
   }
 
   // special case when the output is an enum.
-  // We will try first a int convertion
+  // We will try first a int conversion
   if constexpr(std::is_enum_v<T>)
   {
     if(isNumber())

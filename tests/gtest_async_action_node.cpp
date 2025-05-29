@@ -70,7 +70,7 @@ TEST_P(NodeStatusFixture, normal_routine)
 TEST_F(MockedThreadedActionFixture, no_halt)
 {
   // Test verifies that halt returns immediately, if the node is idle. It
-  // further checks if the halt-flag is resetted correctly.
+  // further checks if the halt-flag is reset correctly.
   sn.halt();
   ASSERT_TRUE(sn.isHaltRequested());
 

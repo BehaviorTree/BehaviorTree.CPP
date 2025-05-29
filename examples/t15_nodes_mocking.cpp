@@ -147,7 +147,7 @@ int main(int argc, char** argv)
     factory.loadSubstitutionRuleFromJSON(json_text);
   }
   //---------------------------------------------------------------
-  // IMPORTANT: all substiutions must be done BEFORE creating the tree
+  // IMPORTANT: all substitutions must be done BEFORE creating the tree
   // During the construction phase of the tree, the substitution
   // rules will be used to instantiate the test nodes, instead of the
   // original ones.
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
   return 0;
 }
 
-/* Expecte output:
+/* Expected output:
 
 ----- Nodes fullPath() -------
 Sequence::1

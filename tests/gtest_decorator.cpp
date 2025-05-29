@@ -213,8 +213,8 @@ TEST(Decorator, RunOnce)
     NodeStatus status = tree.tickWhileRunning();
     ASSERT_EQ(status, NodeStatus::SUCCESS);
   }
-  // counters[0] contains the number ot times TestA was ticked
+  // counters[0] contains the number of times TestA was ticked
   ASSERT_EQ(counters[0], 1);
-  // counters[1] contains the number ot times TestB was ticked
+  // counters[1] contains the number of times TestB was ticked
   ASSERT_EQ(counters[1], 5);
 }

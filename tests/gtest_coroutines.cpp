@@ -97,10 +97,10 @@ TEST(CoroTest, do_action)
 
   node.will_fail_ = true;
   EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(node)) << "Should execute again "
-                                                                   "and retun failure";
+                                                                   "and return failure";
   EXPECT_FALSE(node.wasHalted());
 
-  EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(node)) << "Shoudln't fail "
+  EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(node)) << "Shouldn't fail "
                                                                    "because we set "
                                                                    "status to idle";
   EXPECT_FALSE(node.wasHalted());
