@@ -28,7 +28,7 @@ NodeStatus FallbackNode::tick()
 {
   const size_t children_count = children_nodes_.size();
 
-  if(status() == NodeStatus::IDLE)
+  if(!isStatusActive(status()))
   {
     skipped_count_ = 0;
   }
@@ -77,19 +77,22 @@ NodeStatus FallbackNode::tick()
   }    // end while loop
 
   // The entire while loop completed. This means that all the children returned FAILURE.
+  const bool all_children_skipped = (skipped_count_ == children_count);
   if(current_child_idx_ == children_count)
   {
     resetChildren();
     current_child_idx_ = 0;
+    skipped_count_ = 0;
   }
 
   // Skip if ALL the nodes have been skipped
-  return (skipped_count_ == children_count) ? NodeStatus::SKIPPED : NodeStatus::FAILURE;
+  return (all_children_skipped) ? NodeStatus::SKIPPED : NodeStatus::FAILURE;
 }
 
 void FallbackNode::halt()
 {
   current_child_idx_ = 0;
+  skipped_count_ = 0;
   ControlNode::halt();
 }
 

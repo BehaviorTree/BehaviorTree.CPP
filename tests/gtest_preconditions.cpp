@@ -474,3 +474,34 @@ TEST(Preconditions, WhileCallsOnHalt)
   ASSERT_EQ(status, BT::NodeStatus::SKIPPED);
   ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 69);
 }
+
+TEST(Preconditions, SkippedSequence)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <AlwaysSuccess _skipIf="skip"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto factory = BT::BehaviorTreeFactory();
+  auto tree = factory.createTreeFromText(xml_text);
+
+  tree.rootBlackboard()->set("skip", true);
+  auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SKIPPED);
+
+  tree.rootBlackboard()->set("skip", false);
+  status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+
+  tree.rootBlackboard()->set("skip", true);
+  status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SKIPPED);
+
+  tree.rootBlackboard()->set("skip", false);
+  status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+}

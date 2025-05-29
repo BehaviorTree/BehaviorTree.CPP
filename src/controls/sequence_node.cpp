@@ -27,6 +27,7 @@ SequenceNode::SequenceNode(const std::string& name, bool make_async)
 void SequenceNode::halt()
 {
   current_child_idx_ = 0;
+  skipped_count_ = 0;
   ControlNode::halt();
 }
 
@@ -34,7 +35,7 @@ NodeStatus SequenceNode::tick()
 {
   const size_t children_count = children_nodes_.size();
 
-  if(status() == NodeStatus::IDLE)
+  if(!isStatusActive(status()))
   {
     skipped_count_ = 0;
   }
@@ -86,13 +87,15 @@ NodeStatus SequenceNode::tick()
   }    // end while loop
 
   // The entire while loop completed. This means that all the children returned SUCCESS.
+  const bool all_children_skipped = (skipped_count_ == children_count);
   if(current_child_idx_ == children_count)
   {
     resetChildren();
     current_child_idx_ = 0;
+    skipped_count_ = 0;
   }
   // Skip if ALL the nodes have been skipped
-  return (skipped_count_ == children_count) ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
+  return (all_children_skipped) ? NodeStatus::SKIPPED : NodeStatus::SUCCESS;
 }
 
 }  // namespace BT
