@@ -51,6 +51,10 @@ class JsonExporter
 public:
   static JsonExporter& get();
 
+  // Delete copy constructors as can only be this one global instance.
+  JsonExporter& operator=(JsonExporter&&) = delete;
+  JsonExporter& operator=(JsonExporter&) = delete;
+
   /**
    * @brief toJson adds the content of "any" to the JSON "destination".
    *
