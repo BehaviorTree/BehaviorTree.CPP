@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.7.2 (2025-05-29)
+------------------
 * Fix issue `#978 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/978>`_ : skipped was not working properly
 * Added codespell as a pre-commit hook. (`#977 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/977>`_)
 * fix: Make impossible to accidentally copy JsonExporter singleton (`#975 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/975>`_)
