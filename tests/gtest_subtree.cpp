@@ -726,3 +726,67 @@ TEST(SubTree, SubtreeNameNotRegistered)
   ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
   ASSERT_ANY_THROW(factory.registerBehaviorTreeFromText(xml_text));
 }
+
+TEST(SubTree, RecursiveSubtree)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+ <root BTCPP_format="4" >
+
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root">
+            <AlwaysSuccess/>
+            <SubTree ID="MainTree" />
+        </Sequence>
+     </BehaviorTree>
+
+ </root>
+ )";
+
+  // clang-format on
+  BehaviorTreeFactory factory;
+  std::vector<std::string> console;
+  factory.registerNodeType<PrintToConsole>("PrintToConsole", &console);
+
+  ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
+}
+
+TEST(SubTree, RecursiveCycle)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+ <root BTCPP_format="4" main_tree_to_execute="MainTree">
+
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root">
+            <AlwaysSuccess/>
+            <SubTree ID="TreeA" />
+        </Sequence>
+     </BehaviorTree>
+
+     <BehaviorTree ID="TreeA">
+        <Sequence name="root">
+            <AlwaysSuccess/>
+            <SubTree ID="TreeB" />
+        </Sequence>
+     </BehaviorTree>
+
+     <BehaviorTree ID="TreeB">
+        <Sequence name="root">
+            <AlwaysSuccess/>
+            <SubTree ID="MainTree" />
+        </Sequence>
+     </BehaviorTree>
+ </root>
+ )";
+
+  // clang-format on
+  BehaviorTreeFactory factory;
+  std::vector<std::string> console;
+  factory.registerNodeType<PrintToConsole>("PrintToConsole", &console);
+
+  ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
+}
+
