@@ -732,16 +732,14 @@ TEST(SubTree, RecursiveSubtree)
   // clang-format off
 
   static const char* xml_text = R"(
- <root BTCPP_format="4" >
-
-     <BehaviorTree ID="MainTree">
-        <Sequence name="root">
-            <AlwaysSuccess/>
-            <SubTree ID="MainTree" />
-        </Sequence>
-     </BehaviorTree>
-
- </root>
+  <root BTCPP_format="4" >
+      <BehaviorTree ID="MainTree">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="MainTree" />
+         </Sequence>
+      </BehaviorTree>
+  </root>
  )";
 
   // clang-format on
@@ -757,29 +755,28 @@ TEST(SubTree, RecursiveCycle)
   // clang-format off
 
   static const char* xml_text = R"(
- <root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <root BTCPP_format="4" main_tree_to_execute="MainTree">
+      <BehaviorTree ID="MainTree">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="TreeA" />
+         </Sequence>
+      </BehaviorTree>
 
-     <BehaviorTree ID="MainTree">
-        <Sequence name="root">
-            <AlwaysSuccess/>
-            <SubTree ID="TreeA" />
-        </Sequence>
-     </BehaviorTree>
+      <BehaviorTree ID="TreeA">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="TreeB" />
+         </Sequence>
+      </BehaviorTree>
 
-     <BehaviorTree ID="TreeA">
-        <Sequence name="root">
-            <AlwaysSuccess/>
-            <SubTree ID="TreeB" />
-        </Sequence>
-     </BehaviorTree>
-
-     <BehaviorTree ID="TreeB">
-        <Sequence name="root">
-            <AlwaysSuccess/>
-            <SubTree ID="MainTree" />
-        </Sequence>
-     </BehaviorTree>
- </root>
+      <BehaviorTree ID="TreeB">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="MainTree" />
+         </Sequence>
+      </BehaviorTree>
+  </root>
  )";
 
   // clang-format on
@@ -789,4 +786,3 @@ TEST(SubTree, RecursiveCycle)
 
   ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
 }
-

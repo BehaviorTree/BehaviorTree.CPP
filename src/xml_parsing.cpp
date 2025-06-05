@@ -940,7 +940,8 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
       // check for recursion in behavior tree
       if(prefix.find(subtree_ID) != std::string::npos)
       {
-        auto msg = StrCat("Recursive behavior trees are not supported. A cycle was found in ",
+        auto msg = StrCat("Recursive behavior trees are not supported. A cycle was found "
+                          "in ",
                           "<Subtree ID=\"", subtree_ID, "\"> with prefix: ", prefix);
         throw RuntimeError(msg);
       }
