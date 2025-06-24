@@ -49,6 +49,8 @@ bool JsonExporter::toJson(const Any& any, nlohmann::json& dst) const
     }
     else
     {
+      dst[kTypeField] = demangle(type);
+      dst[kValueField] = any.empty() ? "no value set" : "no JSON converter registered";
       return false;
     }
   }
