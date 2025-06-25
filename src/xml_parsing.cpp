@@ -19,6 +19,7 @@
 #include <string>
 #include <typeindex>
 #include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/utils/strcat.hpp"
 
 #if defined(_MSVC_LANG) && !defined(__clang__)
 #define __bt_cplusplus (_MSC_VER == 1900 ? 201103L : _MSVC_LANG)
@@ -89,7 +90,7 @@ auto StrEqual = [](const char* str1, const char* str2) -> bool {
 
 struct SubtreeModel
 {
-  std::unordered_map<std::string, BT::PortInfo> ports;
+  PortsList ports;
 };
 
 struct XMLParser::PImpl
@@ -644,6 +645,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   const auto element_name = element->Name();
   const auto element_ID = element->Attribute("ID");
 
+  // TODO: Pull out this node type logic
   auto node_type = convertFromString<NodeType>(element_name);
   // name used by the factory
   std::string type_ID;
@@ -688,16 +690,20 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
 
   PortsRemapping port_remap;
   NonPortAttributes other_attributes;
+  // Only relevant for subtrees
+  bool do_autoremap = false;
 
+  // Parse ports and validate them where we can.
   for(const XMLAttribute* att = element->FirstAttribute(); att; att = att->Next())
   {
     const std::string port_name = att->Name();
-    const std::string port_value = att->Value();
+    std::string port_value = att->Value();
     if(IsAllowedPortName(port_name))
     {
-      const std::string port_name = att->Name();
-      const std::string port_value = att->Value();
-
+      if(port_value == "{=}")
+      {
+        port_value = StrCat("{", port_name, "}");
+      }
       if(manifest)
       {
         auto port_model_it = manifest->ports.find(port_name);
@@ -709,31 +715,33 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
                                     ") but not in the providedPorts() of its "
                                     "registered node type."));
         }
-        else
+
+        const auto& port_model = port_model_it->second;
+        bool is_blacbkboard = port_value.size() >= 3 && port_value.front() == '{' &&
+                              port_value.back() == '}';
+        // let's test already if conversion is possible
+        if(!is_blacbkboard && port_model.converter() && port_model.isStronglyTyped())
         {
-          const auto& port_model = port_model_it->second;
-          bool is_blacbkboard = port_value.size() >= 3 && port_value.front() == '{' &&
-                                port_value.back() == '}';
-          // let's test already if conversion is possible
-          if(!is_blacbkboard && port_model.converter() && port_model.isStronglyTyped())
+          // This may throw
+          try
           {
-            // This may throw
-            try
-            {
-              port_model.converter()(port_value);
-            }
-            catch(std::exception& ex)
-            {
-              auto msg = StrCat("The port with name \"", port_name, "\" and value \"",
-                                port_value, "\" can not be converted to ",
-                                port_model.typeName());
-              throw LogicError(msg);
-            }
+            port_model.converter()(port_value);
+          }
+          catch(std::exception& ex)
+          {
+            auto msg =
+                StrCat("The port with name \"", port_name, "\" and value \"", port_value,
+                       "\" can not be converted to ", port_model.typeName());
+            throw LogicError(msg);
           }
         }
       }
 
       port_remap[port_name] = port_value;
+    }
+    else if(node_type == NodeType::SUBTREE && port_name == "_autoremap")
+    {
+      do_autoremap = convertFromString<bool>(port_value);
     }
     else if(!IsReservedAttribute(port_name))
     {
@@ -746,6 +754,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   config.path = prefix_path + instance_name;
   config.uid = output_tree.getUID();
   config.manifest = manifest;
+  config.auto_remapped = do_autoremap;
 
   if(type_ID == instance_name)
   {
@@ -775,9 +784,62 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   //---------------------------------------------
   TreeNode::Ptr new_node;
 
+  // TODO: in order to set the config at this point, we need the subtree model, which is parsed after this function call in recursivelyCreateSubtree
   if(node_type == NodeType::SUBTREE)
   {
-    config.input_ports = port_remap;
+    // check if this subtree has a model. If it does,
+    // we want to check if all the mandatory ports were remapped and
+    // add default ones, if necessary.
+    auto subtree_model_it = subtree_models.find(type_ID);
+    if(subtree_model_it != subtree_models.end())
+    {
+      const PortsList& subtree_model_ports = subtree_model_it->second.ports;
+      // check if:
+      // - remapping contains mandatory ports
+      // - if any of these has default value
+      for(const auto& [port_name, port_info] : subtree_model_ports)
+      {
+        auto it = port_remap.find(port_name);
+        // don't override existing remapping
+        if(it == port_remap.end() && !do_autoremap)
+        {
+          // remapping is not explicitly defined in the XML: use the model
+          if(port_info.defaultValueString().empty())
+          {
+            auto msg = StrCat("In the <TreeNodesModel> the <Subtree ID=\"", type_ID,
+                              "\"> is defining a mandatory port called [", port_name,
+                              "], but you are not remapping it");
+            throw RuntimeError(msg);
+          }
+          port_remap.insert({ port_name, port_info.defaultValueString() });
+        }
+      }
+    }
+    // populate the node config
+    for(const auto& [port_name, port_value] : port_remap)
+    {
+      PortDirection direction = PortDirection::INPUT;
+      if(subtree_model_it != subtree_models.end())
+      {
+        const PortsList& subtree_model_ports = subtree_model_it->second.ports;
+        if(const auto& it = subtree_model_ports.find(port_name);
+           it != subtree_model_ports.end())
+        {
+          direction = it->second.direction();
+        }
+      }
+
+      // Include the ports in the node config
+      if(direction == PortDirection::INPUT || direction == PortDirection::INOUT)
+      {
+        config.input_ports[port_name] = port_value;
+      }
+      if(direction == PortDirection::OUTPUT || direction == PortDirection::INOUT)
+      {
+        config.output_ports[port_name] = port_value;
+      }
+    }
+
     new_node =
         factory.instantiateTreeNode(instance_name, toStr(NodeType::SUBTREE), config);
     auto subtree_node = dynamic_cast<SubTreeNode*>(new_node.get());
@@ -933,7 +995,8 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
   recursiveStep = [&](TreeNode::Ptr parent_node, Tree::Subtree::Ptr subtree,
                       std::string prefix, const XMLElement* element) {
     // create the node
-    auto node = createNodeFromXML(element, blackboard, parent_node, prefix, output_tree);
+    TreeNode::Ptr node =
+        createNodeFromXML(element, blackboard, parent_node, prefix, output_tree);
     subtree->nodes.push_back(node);
 
     // common case: iterate through all children
@@ -947,78 +1010,31 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
     }
     else  // special case: SubTreeNode
     {
-      auto new_bb = Blackboard::create(blackboard);
       const std::string subtree_ID = element->Attribute("ID");
-      std::unordered_map<std::string, std::string> subtree_remapping;
-      bool do_autoremap = false;
+      TreeNode::ConstPtr const_node = node;
 
-      for(auto attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
-      {
-        std::string attr_name = attr->Name();
-        std::string attr_value = attr->Value();
-        if(attr_value == "{=}")
-        {
-          attr_value = StrCat("{", attr_name, "}");
-        }
+      auto new_bb = Blackboard::create(blackboard);
+      const bool do_autoremap = const_node->config().auto_remapped;
+      new_bb->enableAutoRemapping(do_autoremap);
 
-        if(attr_name == "_autoremap")
-        {
-          do_autoremap = convertFromString<bool>(attr_value);
-          new_bb->enableAutoRemapping(do_autoremap);
-          continue;
-        }
-        if(!IsAllowedPortName(attr->Name()))
-        {
-          continue;
-        }
-        subtree_remapping.insert({ attr_name, attr_value });
-      }
-      // check if this subtree has a model. If it does,
-      // we want to check if all the mandatory ports were remapped and
-      // add default ones, if necessary
-      auto subtree_model_it = subtree_models.find(subtree_ID);
-      if(subtree_model_it != subtree_models.end())
+      // Populate the subtree's blackboard with it's port values.
+      PortsRemapping subtree_remapping = const_node->config().input_ports;
+      const PortsRemapping output_ports = const_node->config().output_ports;
+      subtree_remapping.insert(output_ports.begin(), output_ports.end());
+      for(const auto& [port_name, port_value] : subtree_remapping)
       {
-        const auto& subtree_model_ports = subtree_model_it->second.ports;
-        // check if:
-        // - remapping contains mondatory ports
-        // - if any of these has default value
-        for(const auto& [port_name, port_info] : subtree_model_ports)
-        {
-          auto it = subtree_remapping.find(port_name);
-          // don't override existing remapping
-          if(it == subtree_remapping.end() && !do_autoremap)
-          {
-            // remapping is not explicitly defined in the XML: use the model
-            if(port_info.defaultValueString().empty())
-            {
-              auto msg = StrCat("In the <TreeNodesModel> the <Subtree ID=\"", subtree_ID,
-                                "\"> is defining a mandatory port called [", port_name,
-                                "], but you are not remapping it");
-              throw RuntimeError(msg);
-            }
-            else
-            {
-              subtree_remapping.insert({ port_name, port_info.defaultValueString() });
-            }
-          }
-        }
-      }
-
-      for(const auto& [attr_name, attr_value] : subtree_remapping)
-      {
-        if(TreeNode::isBlackboardPointer(attr_value))
+        if(TreeNode::isBlackboardPointer(port_value))
         {
           // do remapping
-          StringView port_name = TreeNode::stripBlackboardPointer(attr_value);
-          new_bb->addSubtreeRemapping(attr_name, port_name);
+          StringView pointer_name = TreeNode::stripBlackboardPointer(port_value);
+          new_bb->addSubtreeRemapping(port_name, pointer_name);
         }
         else
         {
           // constant string: just set that constant value into the BB
           // IMPORTANT: this must not be autoremapped!!!
           new_bb->enableAutoRemapping(false);
-          new_bb->set(attr_name, static_cast<std::string>(attr_value));
+          new_bb->set(port_name, static_cast<std::string>(port_value));
           new_bb->enableAutoRemapping(do_autoremap);
         }
       }

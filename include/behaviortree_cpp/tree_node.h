@@ -91,6 +91,8 @@ struct NodeConfig
   PortsRemapping input_ports;
   // output ports
   PortsRemapping output_ports;
+  // If missing port fields are automatically remapped (only relevant for subtrees).
+  bool auto_remapped = false;
 
   // Any other attributes found in the xml that are not parsed as ports
   // or built-in identifier (e.g. anything with a leading '_')
@@ -130,7 +132,8 @@ inline constexpr bool hasNodeFullCtor()
 class TreeNode
 {
 public:
-  typedef std::shared_ptr<TreeNode> Ptr;
+  using Ptr = std::shared_ptr<TreeNode>;
+  using ConstPtr = std::shared_ptr<const TreeNode>;
 
   /**
      * @brief TreeNode main constructor.
