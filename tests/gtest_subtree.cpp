@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <gmock/gmock-matchers.h>
 #include "behaviortree_cpp/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
 #include "../sample_nodes/movebase_node.h"
@@ -8,8 +7,6 @@
 #include "test_helper.hpp"
 
 using namespace BT;
-using ::testing::Contains;
-using ::testing::Pair;
 
 TEST(SubTree, SiblingPorts_Issue_72)
 {
@@ -605,10 +602,21 @@ TEST(SubTree, SubtreeModels)
     }
   });
 
+  // Make sure ports are correct in the node config
   ASSERT_NE(subtreeNode, nullptr);
-  EXPECT_THAT(subtreeNode->config().input_ports, Contains(Pair("in_name", "{my_name}")));
-  EXPECT_THAT(subtreeNode->config().output_ports, Contains(Pair("out_state", "{my_"
-                                                                             "state}")));
+  const PortsRemapping& input_ports = subtreeNode->config().input_ports;
+  EXPECT_EQ(input_ports.size(), 2);
+  ASSERT_TRUE(input_ports.contains("in_name"));
+  EXPECT_EQ(input_ports.at("in_name"), "{my_name}");
+  ASSERT_TRUE(input_ports.contains("in_value"));
+  EXPECT_EQ(input_ports.at("in_value"), "42");
+  const PortsRemapping& output_ports = subtreeNode->config().output_ports;
+  EXPECT_EQ(output_ports.size(), 2);
+  ASSERT_TRUE(output_ports.contains("out_result"));
+  EXPECT_EQ(output_ports.at("out_result"), "{output}");
+  ASSERT_TRUE(output_ports.contains("out_state"));
+  EXPECT_EQ(output_ports.at("out_state"), "{my_state}");
+
   tree.tickWhileRunning();
 }
 
