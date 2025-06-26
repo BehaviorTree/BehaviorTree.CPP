@@ -1,10 +1,15 @@
 #include <gtest/gtest.h>
+#include <gmock/gmock-matchers.h>
 #include "behaviortree_cpp/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
 #include "../sample_nodes/movebase_node.h"
+#include "behaviortree_cpp/exceptions.h"
+#include "behaviortree_cpp/xml_parsing.h"
 #include "test_helper.hpp"
 
 using namespace BT;
+using ::testing::Contains;
+using ::testing::Pair;
 
 TEST(SubTree, SiblingPorts_Issue_72)
 {
@@ -516,6 +521,11 @@ public:
 private:
   virtual BT::NodeStatus tick() override
   {
+    const auto& condition = getInput<bool>("condition");
+    if(!condition.has_value())
+    {
+      throw RuntimeError("Missing input port 'condition'.");
+    }
     if(getInput<bool>("condition").value())
       return BT::NodeStatus::SUCCESS;
     else
@@ -586,6 +596,19 @@ TEST(SubTree, SubtreeModels)
 
   BehaviorTreeFactory factory;
   auto tree = factory.createTreeFromText(xml_text);
+
+  const TreeNode* subtreeNode = nullptr;
+  tree.applyVisitor([&subtreeNode](const TreeNode* node) {
+    if(node->name() == "MySub")
+    {
+      subtreeNode = node;
+    }
+  });
+
+  ASSERT_NE(subtreeNode, nullptr);
+  EXPECT_THAT(subtreeNode->config().input_ports, Contains(Pair("in_name", "{my_name}")));
+  EXPECT_THAT(subtreeNode->config().output_ports, Contains(Pair("out_state", "{my_"
+                                                                             "state}")));
   tree.tickWhileRunning();
 }
 
