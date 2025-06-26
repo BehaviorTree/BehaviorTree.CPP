@@ -24,7 +24,7 @@
   <depend>libsqlite3-dev</depend>
   <depend>libzmq3-dev</depend>
 
-  <test_depend condition="$ROS_VERSION == 2">ament_cmake_gtest</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_cmake_gmock</test_depend>
 
   <export>
       <build_type condition="$ROS_VERSION == 1">catkin</build_type>
