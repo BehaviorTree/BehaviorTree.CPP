@@ -40,8 +40,10 @@ public:
 
   virtual void halt() override;
 
-private:
+protected:
   size_t current_child_idx_;
+
+private:
   size_t skipped_count_ = 0;
   bool asynch_ = false;
 
