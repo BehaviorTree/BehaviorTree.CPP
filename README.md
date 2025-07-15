@@ -64,19 +64,19 @@ Compiling with [conan](https://conan.io/):
 Assuming that you are in the **parent** directory of `BehaviorTree.CPP`:
 
 ```
-mkdir build; cd build
-conan install ../BehaviorTree.CPP --output-folder=. --build=missing
-cmake ../BehaviorTree.CPP -DCMAKE_TOOLCHAIN_FILE="conan_toolchain.cmake"
-cmake --build . --parallel
+mkdir build_release
+conan install . -of build_release -s build_type=Release
+cmake -S . -B build_release -DCMAKE_TOOLCHAIN_FILE="build_release/conan_toolchain.cmake"
+cmake --build build_release --parallel
 ```
 
 If you have dependencies such as ZeroMQ and SQlite already installed and you don't want to
 use conan, simply type:
 
 ```
-mkdir build; cd build
-cmake ../BehaviorTree.CPP
-cmake --build . --parallel
+mkdir build_release
+cmake -S . -B build_release
+cmake --build build_release --parallel
 ```
 
 If you want to build in a [pixi](https://pixi.sh/) project (conda virtual environment).
