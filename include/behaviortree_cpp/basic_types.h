@@ -183,6 +183,10 @@ template <>
 template <>
 [[nodiscard]] std::vector<double> convertFromString<std::vector<double>>(StringView str);
 
+// Boolean values separated by the character ";"
+template <>
+[[nodiscard]] std::vector<bool> convertFromString<std::vector<bool>>(StringView str);
+
 // Strings separated by the character ";"
 template <>
 [[nodiscard]] std::vector<std::string>
