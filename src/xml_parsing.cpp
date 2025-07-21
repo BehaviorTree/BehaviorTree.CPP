@@ -819,9 +819,19 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
         if(auto prev_info = blackboard->entryInfo(port_key))
         {
           // Check consistency of types.
-          bool const port_type_mismatch =
+          bool port_type_mismatch =
               (prev_info->isStronglyTyped() && port_info.isStronglyTyped() &&
                prev_info->type() != port_info.type());
+
+          // allow mismatch if the previous type appears in the base_chain
+          // of the current port (i.e., valid polymorphic upcast) and the
+          // port direction is an INPUT.
+          if(port_type_mismatch && port_info.direction() == PortDirection::INPUT &&
+             !prev_info->baseChain().empty() && !port_info.baseChain().empty() &&
+             prev_info->isConvertibleFrom(port_info.baseChain()[0]))
+          {
+            port_type_mismatch = false;
+          }
 
           // special case related to convertFromString
           bool const string_input = (prev_info->type() == typeid(std::string));
