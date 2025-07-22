@@ -2,7 +2,8 @@
 #include <filesystem>
 #include <string>
 #include <utility>
-#include <vector>
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "../sample_nodes/crossdoor_nodes.h"
 #include "../sample_nodes/dummy_nodes.h"
@@ -102,6 +103,78 @@ static const char* xml_text_subtree_part2 = R"(
   </BehaviorTree>
 </root>  )";
 
+static const char* xml_text_incorrect1 = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Sequence name="MainObjective">
+          <Action ID="Script" />
+          <Action ID="Script" />
+          <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+            <Decorator ID="Precondition">
+              <Control ID="Parallel">
+                <Control ID="IfThenElse">
+                  <Sequence>
+                    <Action ID="TriggerServer"/>
+                    <Action ID="LogMessage"/>
+                    <Action ID="Script" />
+                  </Sequence>
+                  <Action ID="AlwaysFailure" />
+                </Control>
+                <Sequence>
+                  <Decorator ID="Precondition">
+                    <Sequence>
+                      <Decorator ID="Precondition">
+                        <Sequence>
+                          <Action ID="LogMessage"/>
+                          <Action ID="ValveControl"/>
+                        </Sequence>
+                      </Decorator>
+                      <Action ID="TriggerServer"/>
+                      <Action ID="LogMessage"/>
+                    </Sequence>
+                  </Decorator>
+                  <Control ID="Fallback">
+                    <Sequence>
+                      <Decorator ID="Precondition">
+                        <Sequence>
+                          <Action ID="LogMessage"/>
+                          <Action ID="ValveControl"/>
+                          <Decorator ID="Delay" delay_msec="1000" />
+                        </Sequence>
+                      </Decorator>
+                    </Sequence>
+                    <Decorator ID="Inverter">
+                      <Action ID="Script" code="retry := 'false'" />
+                    </Decorator>
+                  </Control>
+                </Sequence>
+              </Control>
+            </Decorator>
+          </Decorator>
+          <Decorator ID="Precondition" else="SUCCESS" if="retry == 'false'">
+            <Action ID="AlwaysFailure" />
+          </Decorator>
+        </Sequence>
+      </BehaviorTree>
+    </root>
+    )";
+
+static const char* xml_text_incorrect2 = R"(
+
+<root BTCPP_format="4">
+  <BehaviorTree ID="DoorClosedSubtree">
+    <Sequence name="door_sequence">
+      <Decorator ID="Inverter">
+        <Action ID="IsDoorLocked" />
+      </Decorator>
+      <Decorator ID="RepeatUntilSuccess" />
+      <Action ID="OpenDoor" />
+      <Action ID="PassThroughDoor" />
+      <Action ID="CloseDoor" />
+    </Sequence>
+  </BehaviorTree>
+</root>  )";
+
 // clang-format on
 
 TEST(BehaviorTreeFactory, NotRegisteredNode)
@@ -171,6 +244,33 @@ TEST(BehaviorTreeFactory, Subtree)
   ASSERT_EQ(subtree->nodes[2]->name(), "RetryUntilSuccessful");
   ASSERT_EQ(subtree->nodes[3]->name(), "PickLock");
   ASSERT_EQ(subtree->nodes[4]->name(), "SmashDoor");
+}
+
+TEST(BehaviorTreeFactory, SubtreeParsingError)
+{
+  BehaviorTreeFactory factory;
+  CrossDoor cross_door;
+  cross_door.registerNodes(factory);
+  try
+  {
+    auto tree = factory.createTreeFromText(xml_text_incorrect1);
+    FAIL() << "Expected exception thrown";
+  }
+  catch(const BT::RuntimeError& e)
+  {
+    std::string error_msg = e.what();
+    EXPECT_TRUE(error_msg.find("line 36") != std::string::npos);
+  }
+  try
+  {
+    auto tree = factory.createTreeFromText(xml_text_incorrect2);
+    FAIL() << "Expected exception thrown";
+  }
+  catch(const BT::RuntimeError& e)
+  {
+    std::string error_msg = e.what();
+    EXPECT_TRUE(error_msg.find("line 7") != std::string::npos);
+  }
 }
 
 TEST(BehaviorTreeFactory, Issue7)
