@@ -15,7 +15,8 @@
 
 namespace BT
 {
-SequenceNode::SequenceNode(const std::string& name, bool make_async, const NodeConfiguration& conf)
+SequenceNode::SequenceNode(const std::string& name, bool make_async,
+                           const NodeConfiguration& conf)
   : ControlNode::ControlNode(name, conf), current_child_idx_(0), asynch_(make_async)
 {
   if(asynch_)
