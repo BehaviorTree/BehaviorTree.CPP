@@ -82,7 +82,7 @@ static const char* xml_text_subtree_part1 = R"(
   <BehaviorTree ID="MainTree">
     <Fallback name="root_selector">
       <SubTree ID="DoorClosedSubtree" />
-      <Action ID="PassThroughWindow" />
+      <Action ID="PassThroughDoor" />
     </Fallback>
   </BehaviorTree>
 </root>  )";
@@ -93,11 +93,10 @@ static const char* xml_text_subtree_part2 = R"(
   <BehaviorTree ID="DoorClosedSubtree">
     <Sequence name="door_sequence">
       <Decorator ID="Inverter">
-        <Action ID="IsDoorLocked" />
+        <Action ID="IsDoorClosed" />
       </Decorator>
       <Action ID="OpenDoor" />
       <Action ID="PassThroughDoor" />
-      <Action ID="CloseDoor" />
     </Sequence>
   </BehaviorTree>
 </root>  )";
