@@ -261,10 +261,11 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       break;
     }
 
-  const char* path_attr = incl_node->Attribute("path");
-  if (!path_attr) {
-    throw RuntimeError("Invalid <include> tag: missing 'path' attribute");
-  }
+    const char* path_attr = incl_node->Attribute("path");
+    if (!path_attr)
+    {
+      throw RuntimeError("Invalid <include> tag: missing 'path' attribute");
+    }
 
 #if __bt_cplusplus >= 202002L
     auto file_path{ std::filesystem::path(path_attr) };
