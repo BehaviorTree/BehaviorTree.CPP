@@ -13,11 +13,13 @@ using ErrorReport = lexy_ext::_report_error<char*>;
 
 Expected<ScriptFunction> ParseScript(const std::string& script)
 {
-  char error_msgs_buffer[2048];
+  std::string error_msgs_buffer;  // dynamically growing error buffer
 
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
+
+  auto reporter = ErrorReport().to(std::back_inserter(error_msgs_buffer));
   auto result =
-      lexy::parse<BT::Grammar::stmt>(input, ErrorReport().to(error_msgs_buffer));
+      lexy::parse<BT::Grammar::stmt>(input, reporter);
   if(result.has_value() && result.error_count() == 0)
   {
     try
