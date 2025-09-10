@@ -18,8 +18,7 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
   auto input = lexy::string_input<lexy::utf8_encoding>(script);
 
   auto reporter = ErrorReport().to(std::back_inserter(error_msgs_buffer));
-  auto result =
-      lexy::parse<BT::Grammar::stmt>(input, reporter);
+  auto result = lexy::parse<BT::Grammar::stmt>(input, reporter);
   if(result.has_value() && result.error_count() == 0)
   {
     try
