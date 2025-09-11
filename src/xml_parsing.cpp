@@ -434,119 +434,76 @@ void VerifyXML(const std::string& xml_text,
     const std::string ID = node->Attribute("ID") ? node->Attribute("ID") : "";
     const int line_number = node->GetLineNum();
 
-    if(name == "Decorator")
+    // Precondition: built-in XML element types must define attribute [ID]
+    const bool is_builtin =
+        (name == "Decorator" || name == "Action" || name == "Condition" ||
+         name == "Control" || name == "SubTree");
+    if(is_builtin && ID.empty())
     {
+      ThrowError(line_number,
+                 std::string("The tag <") + name + "> must have the attribute [ID]");
+    }
+
+    if(name == "BehaviorTree")
+    {
+      if(ID.empty() && behavior_tree_count > 1)
+      {
+        ThrowError(line_number, "The tag <BehaviorTree> must have the attribute [ID]");
+      }
+      if(registered_nodes.count(ID) != 0)
+      {
+        ThrowError(line_number, "The attribute [ID] of tag <BehaviorTree> must not use "
+                                "the name of a registered Node");
+      }
       if(children_count != 1)
       {
-        ThrowError(line_number, "The tag <Decorator> must have exactly 1 "
-                                "child");
-      }
-      if(ID.empty())
-      {
-        ThrowError(line_number, "The tag <Decorator> must have the "
-                                "attribute [ID]");
-      }
-    }
-    else if(name == "Action")
-    {
-      if(children_count != 0)
-      {
-        ThrowError(line_number, "The tag <Action> must not have any "
-                                "child");
-      }
-      if(ID.empty())
-      {
-        ThrowError(line_number, "The tag <Action> must have the "
-                                "attribute [ID]");
-      }
-    }
-    else if(name == "Condition")
-    {
-      if(children_count != 0)
-      {
-        ThrowError(line_number, "The tag <Condition> must not have any "
-                                "child");
-      }
-      if(ID.empty())
-      {
-        ThrowError(line_number, "The tag <Condition> must have the "
-                                "attribute [ID]");
-      }
-    }
-    else if(name == "Control")
-    {
-      if(children_count == 0)
-      {
-        ThrowError(line_number, "The tag <Control> must have at least 1 "
-                                "child");
-      }
-      if(ID.empty())
-      {
-        ThrowError(line_number, "The tag <Control> must have the "
-                                "attribute [ID]");
+        ThrowError(line_number, "The tag <BehaviorTree> with ID '" + ID +
+                                    "' must have exactly 1 child");
       }
     }
     else if(name == "SubTree")
     {
       if(children_count != 0)
       {
-        ThrowError(line_number, "<SubTree> should not have any child");
-      }
-      if(ID.empty())
-      {
-        ThrowError(line_number, "The tag <SubTree> must have the "
-                                "attribute [ID]");
+        ThrowError(line_number,
+                   "<SubTree> with ID '" + ID + "' should not have any child");
       }
       if(registered_nodes.count(ID) != 0)
       {
-        ThrowError(line_number, "The attribute [ID] of tag <SubTree> must "
-                                "not use the name of a registered Node");
-      }
-    }
-    else if(name == "BehaviorTree")
-    {
-      if(ID.empty() && behavior_tree_count > 1)
-      {
-        ThrowError(line_number, "The tag <BehaviorTree> must have the "
-                                "attribute [ID]");
-      }
-      if(children_count != 1)
-      {
-        ThrowError(line_number, "The tag <BehaviorTree> must have exactly 1 "
-                                "child");
-      }
-      if(registered_nodes.count(ID) != 0)
-      {
-        ThrowError(line_number, "The attribute [ID] of tag <BehaviorTree> "
-                                "must not use the name of a registered Node");
+        ThrowError(line_number, "The attribute [ID] of tag <SubTree> must not use the "
+                                "name of a registered Node");
       }
     }
     else
     {
-      // search in the factory and the list of subtrees
-      const auto search = registered_nodes.find(name);
+      // use ID for builtin node types, otherwise use the element name
+      const auto lookup_name = is_builtin ? ID : name;
+      const auto search = registered_nodes.find(lookup_name);
       bool found = (search != registered_nodes.end());
       if(!found)
       {
-        ThrowError(line_number, std::string("Node not recognized: ") + name);
+        ThrowError(line_number, std::string("Node not recognized: ") + lookup_name);
       }
 
-      if(search->second == NodeType::DECORATOR)
+      const auto node_type = search->second;
+      const std::string& registered_name = search->first;
+
+      if(node_type == NodeType::DECORATOR)
       {
         if(children_count != 1)
         {
-          ThrowError(line_number,
-                     std::string("The node <") + name + "> must have exactly 1 child");
+          ThrowError(line_number, std::string("The node '") + registered_name +
+                                      "' must have exactly 1 child");
         }
       }
-      else if(search->second == NodeType::CONTROL)
+      else if(node_type == NodeType::CONTROL)
       {
         if(children_count == 0)
         {
-          ThrowError(line_number,
-                     std::string("The node <") + name + "> must have 1 or more children");
+          ThrowError(line_number, std::string("The node '") + registered_name +
+                                      "' must have 1 or more children");
         }
-        if(name == "ReactiveSequence")
+        if(registered_name == "ReactiveSequence")
         {
           size_t async_count = 0;
           for(auto child = node->FirstChildElement(); child != nullptr;
@@ -568,11 +525,27 @@ void VerifyXML(const std::string& xml_text,
               ++async_count;
               if(async_count > 1)
               {
-                ThrowError(line_number, std::string("A ReactiveSequence cannot have more "
-                                                    "than one async child."));
+                ThrowError(line_number, std::string("A ReactiveSequence cannot have "
+                                                    "more than one async child."));
               }
             }
           }
+        }
+      }
+      else if(node_type == NodeType::ACTION)
+      {
+        if(children_count != 0)
+        {
+          ThrowError(line_number, std::string("The node '") + registered_name +
+                                      "' must not have any child");
+        }
+      }
+      else if(node_type == NodeType::CONDITION)
+      {
+        if(children_count != 0)
+        {
+          ThrowError(line_number, std::string("The node '") + registered_name +
+                                      "' must not have any child");
         }
       }
     }
