@@ -61,11 +61,11 @@ Three build systems are supported:
 
 Compiling with [conan](https://conan.io/):
 
-Assuming that you are in the **parent** directory of `BehaviorTree.CPP`:
+Assuming that you are in the **root** directory of `BehaviorTree.CPP`:
 
 ```
 mkdir build_release
-conan install . -of build_release -s build_type=Release
+conan install . -of build_release -s build_type=Release --build=missing
 cmake -S . -B build_release -DCMAKE_TOOLCHAIN_FILE="build_release/conan_toolchain.cmake"
 cmake --build build_release --parallel
 ```

@@ -1,5 +1,7 @@
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
+set(BUILDING_WITH_CONAN ON)
+
 if(BTCPP_GROOT_INTERFACE)
     find_package(ZeroMQ REQUIRED)
     list(APPEND BTCPP_EXTRA_LIBRARIES ${ZeroMQ_LIBRARIES})
@@ -18,6 +20,8 @@ endif()
 set( BTCPP_LIB_DESTINATION     lib )
 set( BTCPP_INCLUDE_DESTINATION include )
 set( BTCPP_BIN_DESTINATION     bin )
+
+find_package(minitrace REQUIRED)
 
 mark_as_advanced(
     BTCPP_EXTRA_LIBRARIES

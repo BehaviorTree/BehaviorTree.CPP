@@ -94,9 +94,9 @@ endif()
 
 add_subdirectory(3rdparty/lexy)
 
-add_library(minitrace STATIC 3rdparty/minitrace/minitrace.cpp)
-target_compile_definitions(minitrace PRIVATE MTR_ENABLED=True)
-set_property(TARGET minitrace PROPERTY POSITION_INDEPENDENT_CODE ON)
+if(NOT BUILDING_WITH_CONAN)
+    add_subdirectory(3rdparty/minitrace)
+endif()
 
 list(APPEND BT_SOURCE
     src/action_node.cpp
@@ -180,7 +180,7 @@ target_link_libraries(${BTCPP_LIBRARY}
         Threads::Threads
         ${CMAKE_DL_LIBS}
         $<BUILD_INTERFACE:foonathan::lexy>
-        $<BUILD_INTERFACE:minitrace>
+        minitrace::minitrace
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
