@@ -95,6 +95,7 @@ endif()
 add_subdirectory(3rdparty/lexy)
 
 if(NOT BUILDING_WITH_CONAN)
+    add_subdirectory(3rdparty/minicoro)
     add_subdirectory(3rdparty/minitrace)
     add_subdirectory(3rdparty/tinyxml2)
 endif()
@@ -181,6 +182,8 @@ target_link_libraries(${BTCPP_LIBRARY}
         $<BUILD_INTERFACE:foonathan::lexy>
         minitrace::minitrace
         tinyxml2::tinyxml2
+        minicoro::minicoro
+        flatbuffers::flatbuffers
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )

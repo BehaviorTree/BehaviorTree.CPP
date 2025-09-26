@@ -21,6 +21,7 @@ set( BTCPP_LIB_DESTINATION     lib )
 set( BTCPP_INCLUDE_DESTINATION include )
 set( BTCPP_BIN_DESTINATION     bin )
 
+find_package(minicoro REQUIRED)
 find_package(minitrace REQUIRED)
 find_package(tinyxml2 REQUIRED)
 
