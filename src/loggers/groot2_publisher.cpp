@@ -1,7 +1,6 @@
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/loggers/groot2_protocol.h"
 #include "behaviortree_cpp/xml_parsing.h"
-#include "zmq.hpp"
 #include "zmq_addon.hpp"
 
 namespace BT
