@@ -92,13 +92,17 @@ endif()
 #############################################################
 # LIBRARY
 
-add_subdirectory(3rdparty/lexy)
-
 if(NOT BUILDING_WITH_CONAN)
     add_subdirectory(3rdparty/minicoro)
     add_subdirectory(3rdparty/minitrace)
     add_subdirectory(3rdparty/tinyxml2)
 endif()
+
+# Libraries not yet supported by conan
+add_subdirectory(3rdparty/lexy)
+add_subdirectory(3rdparty/cpp-sqlite) # https://github.com/conan-io/conan-center-index/pull/28407
+add_subdirectory(3rdparty/cppzmq)
+add_subdirectory(3rdparty/wildcards) # The version supported by conan is newer and not compatible with behaviortree.cpp
 
 list(APPEND BT_SOURCE
     src/action_node.cpp
@@ -184,6 +188,9 @@ target_link_libraries(${BTCPP_LIBRARY}
         tinyxml2::tinyxml2
         minicoro::minicoro
         flatbuffers::flatbuffers
+        cpp-sqlite::cpp-sqlite
+        cppzmq
+        wildcards::wildcards
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
@@ -193,7 +200,6 @@ target_include_directories(${BTCPP_LIBRARY}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )

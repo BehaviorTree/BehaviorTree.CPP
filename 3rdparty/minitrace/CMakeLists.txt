@@ -6,7 +6,7 @@ add_library(minitrace::minitrace ALIAS minitrace)
 
 target_include_directories(minitrace
     PUBLIC
-        "."
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_compile_definitions(minitrace
