@@ -24,6 +24,7 @@ set( BTCPP_BIN_DESTINATION     bin )
 find_package(minicoro REQUIRED)
 find_package(minitrace REQUIRED)
 find_package(tinyxml2 REQUIRED)
+find_package(flatbuffers REQUIRED)
 
 mark_as_advanced(
     BTCPP_EXTRA_LIBRARIES
