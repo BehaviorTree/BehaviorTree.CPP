@@ -33,7 +33,7 @@
 
 #include <map>
 #include "behaviortree_cpp/xml_parsing.h"
-#include "tinyxml2/tinyxml2.h"
+#include "tinyxml2.h"
 #include <filesystem>
 
 #ifdef USING_ROS2

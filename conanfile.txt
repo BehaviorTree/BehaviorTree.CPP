@@ -3,6 +3,7 @@ gtest/1.14.0
 zeromq/4.3.4
 sqlite3/3.40.1
 minitrace/cci.20230905
+tinyxml2/10.0.0
 
 [generators]
 CMakeDeps

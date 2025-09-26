@@ -96,6 +96,7 @@ add_subdirectory(3rdparty/lexy)
 
 if(NOT BUILDING_WITH_CONAN)
     add_subdirectory(3rdparty/minitrace)
+    add_subdirectory(3rdparty/tinyxml2)
 endif()
 
 list(APPEND BT_SOURCE
@@ -140,8 +141,6 @@ list(APPEND BT_SOURCE
     src/loggers/bt_file_logger_v2.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
-
-    3rdparty/tinyxml2/tinyxml2.cpp
     )
 
 
@@ -181,6 +180,7 @@ target_link_libraries(${BTCPP_LIBRARY}
         ${CMAKE_DL_LIBS}
         $<BUILD_INTERFACE:foonathan::lexy>
         minitrace::minitrace
+        tinyxml2::tinyxml2
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
