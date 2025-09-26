@@ -183,7 +183,7 @@ target_link_libraries(${BTCPP_LIBRARY}
     PRIVATE
         Threads::Threads
         ${CMAKE_DL_LIBS}
-        $<BUILD_INTERFACE:foonathan::lexy>
+        foonathan::lexy
         minitrace::minitrace
         tinyxml2::tinyxml2
         minicoro::minicoro
@@ -200,7 +200,6 @@ target_include_directories(${BTCPP_LIBRARY}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
 
