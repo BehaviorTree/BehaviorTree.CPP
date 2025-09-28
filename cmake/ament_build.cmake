@@ -23,10 +23,6 @@ set( BTCPP_EXTRA_LIBRARIES
 
 ament_export_dependencies(ament_index_cpp)
 
-set( BTCPP_LIB_DESTINATION     lib )
-set( BTCPP_INCLUDE_DESTINATION include )
-set( BTCPP_BIN_DESTINATION     bin )
-
 mark_as_advanced(
     BTCPP_EXTRA_LIBRARIES
     BTCPP_EXTRA_INCLUDE_DIRS

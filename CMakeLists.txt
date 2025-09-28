@@ -28,6 +28,10 @@ option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
 option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ON)
 option(USE_VENDORED_WILDCARDS "Use the bundled version of wildcards" ON)
 
+set(BTCPP_LIB_DESTINATION     lib)
+set(BTCPP_INCLUDE_DESTINATION include)
+set(BTCPP_BIN_DESTINATION     bin)
+
 set(BASE_FLAGS "")
 
 if(ENABLE_DEBUG)
