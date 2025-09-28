@@ -74,8 +74,6 @@ if(USE_V3_COMPATIBLE_NAMES)
     add_definitions(-DUSE_BTCPP3_OLD_NAMES)
 endif()
 
-set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
-
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
 if(POLICY CMP0057)
