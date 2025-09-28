@@ -808,14 +808,14 @@ function(conan_cmake_configure)
     conan_cmake_generate_conanfile(OFF ${ARGV})
 endfunction()
 
-# Generate, writing in disk a conanfile.txt with the requires, options, and imports
+# Generate, writing in disk a conanfile.py with the requires, options, and imports
 # specified as arguments
 # This will be considered as temporary file, generated in CMAKE_CURRENT_BINARY_DIR)
 function(conan_cmake_generate_conanfile DEFAULT_GENERATOR)
 
     conan_parse_arguments(${ARGV})
 
-    set(_FN "${CMAKE_CURRENT_BINARY_DIR}/conanfile.txt")
+    set(_FN "${CMAKE_CURRENT_BINARY_DIR}/conanfile.py")
     file(WRITE ${_FN} "")
 
     if(DEFINED ARGUMENTS_REQUIRES)

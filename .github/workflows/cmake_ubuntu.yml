@@ -39,7 +39,7 @@ jobs:
 
     - name: Install conan dependencies
       working-directory: ${{github.workspace}}/build
-      run: conan install ${{github.workspace}}/conanfile.txt -s build_type=${{env.BUILD_TYPE}} --build=missing
+      run: conan install ${{github.workspace}}/conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing
 
     - name: Configure CMake
       shell: bash
