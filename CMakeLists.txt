@@ -19,6 +19,15 @@ option(USE_AFLPLUSPLUS "Use AFL++ instead of libFuzzer" OFF)
 option(ENABLE_DEBUG "Enable debug build with full symbols" OFF)
 option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
 
+option(USE_VENDORED_CPPSQLITE "Use the bundled version of cpp-sqlite" ON)
+option(USE_VENDORED_CPPZMQ "Use the bundled version of cppzmq" ON)
+option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
+option(USE_VENDORED_LEXY "Use the bundled version of lexy" ON)
+option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
+option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
+option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ON)
+option(USE_VENDORED_WILDCARDS "Use the bundled version of wildcards" ON)
+
 set(BASE_FLAGS "")
 
 if(ENABLE_DEBUG)
@@ -61,10 +70,6 @@ if(USE_V3_COMPATIBLE_NAMES)
     add_definitions(-DUSE_BTCPP3_OLD_NAMES)
 endif()
 
-#---- Find other packages ----
-find_package(Threads REQUIRED)
-
-
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
 
 # Update the policy setting to avoid an error when loading the ament_cmake package
@@ -90,19 +95,63 @@ else()
 endif()
 
 #############################################################
-# LIBRARY
+# Handle dependencies
 
-if(NOT BUILDING_WITH_CONAN)
-    add_subdirectory(3rdparty/minicoro)
-    add_subdirectory(3rdparty/minitrace)
-    add_subdirectory(3rdparty/tinyxml2)
+find_package(Threads REQUIRED)
+
+if(BTCPP_GROOT_INTERFACE)
+    find_package(ZeroMQ REQUIRED)
 endif()
 
-# Libraries not yet supported by conan
-add_subdirectory(3rdparty/lexy)
-add_subdirectory(3rdparty/cpp-sqlite) # https://github.com/conan-io/conan-center-index/pull/28407
-add_subdirectory(3rdparty/cppzmq)
-add_subdirectory(3rdparty/wildcards) # The version supported by conan is newer and not compatible with behaviortree.cpp
+if(BTCPP_SQLITE_LOGGING)
+    if(USE_VENDORED_CPPSQLITE)
+        add_subdirectory(3rdparty/cpp-sqlite)
+    else()
+        find_package(cpp-sqlite REQUIRED)
+    endif()
+endif()
+
+if(USE_VENDORED_CPPZMQ)
+    add_subdirectory(3rdparty/cppzmq)
+else()
+    find_package(cppzmq REQUIRED)
+endif()
+
+if(USE_VENDORED_FLATBUFFERS)
+    add_subdirectory(3rdparty/flatbuffers)
+else()
+    find_package(flatbuffers REQUIRED)
+endif()
+
+if(USE_VENDORED_LEXY)
+    add_subdirectory(3rdparty/lexy)
+else()
+    find_package(lexy REQUIRED)
+endif()
+
+if(USE_VENDORED_MINICORO)
+    add_subdirectory(3rdparty/minicoro)
+else()
+    find_package(minicoro REQUIRED)
+endif()
+
+if(USE_VENDORED_MINITRACE)
+    add_subdirectory(3rdparty/minitrace)
+else()
+    find_package(minitrace REQUIRED)
+endif()
+
+if(USE_VENDORED_TINYXML2)
+    add_subdirectory(3rdparty/tinyxml2)
+else()
+    find_package(tinyxml2 REQUIRED)
+endif()
+
+if(USE_VENDORED_WILDCARDS)
+    add_subdirectory(3rdparty/wildcards)
+else()
+    find_package(wildcards REQUIRED)
+endif()
 
 list(APPEND BT_SOURCE
     src/action_node.cpp
