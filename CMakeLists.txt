@@ -104,7 +104,11 @@ endif()
 find_package(Threads REQUIRED)
 
 if(BTCPP_GROOT_INTERFACE)
-    find_package(ZeroMQ REQUIRED)
+    if(USE_VENDORED_CPPZMQ)
+        add_subdirectory(3rdparty/cppzmq)
+    else()
+        find_package(cppzmq REQUIRED)
+    endif()
 endif()
 
 if(BTCPP_SQLITE_LOGGING)
@@ -115,11 +119,7 @@ if(BTCPP_SQLITE_LOGGING)
     endif()
 endif()
 
-if(USE_VENDORED_CPPZMQ)
-    add_subdirectory(3rdparty/cppzmq)
-else()
-    find_package(cppzmq REQUIRED)
-endif()
+
 
 if(USE_VENDORED_FLATBUFFERS)
     add_subdirectory(3rdparty/flatbuffers)
