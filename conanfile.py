@@ -22,7 +22,7 @@ class BehaviortreeCppConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
-      
+
         #tc.variables["USE_VENDORED_CPPSQLITE"] = False
         #tc.variables["USE_VENDORED_CPPZMQ"] = False
         tc.variables["USE_VENDORED_FLATBUFFERS"] = False
@@ -32,6 +32,6 @@ class BehaviortreeCppConan(ConanFile):
         tc.variables["USE_VENDORED_TINYXML2"] = False
         #tc.variables["USE_VENDORED_WILDCARDS"] = False
         tc.generate()
-        
+
         deps = CMakeDeps(self)
         deps.generate()
