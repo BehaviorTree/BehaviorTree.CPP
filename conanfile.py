@@ -18,7 +18,7 @@ class BehaviortreeCppConan(ConanFile):
         self.requires("minitrace/cci.20230905")
         self.requires("sqlite3/3.40.1") # This should be a transitive dependency of cpp-sqlite
         self.requires("tinyxml2/10.0.0")
-        self.requires("zeromq/4.3.4")
+        self.requires("zeromq/4.3.4") # This should be a transitive dependency of cppzmq
 
     def generate(self):
         tc = CMakeToolchain(self)
