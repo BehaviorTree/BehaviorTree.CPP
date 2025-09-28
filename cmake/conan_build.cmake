@@ -1,26 +1,18 @@
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
 
-set(BUILDING_WITH_CONAN ON)
-
 if(BTCPP_GROOT_INTERFACE)
-    find_package(ZeroMQ REQUIRED)
+#    find_package(ZeroMQ REQUIRED)
     list(APPEND BTCPP_EXTRA_LIBRARIES ${ZeroMQ_LIBRARIES})
     list(APPEND BTCPP_EXTRA_INCLUDE_DIRS ${ZeroMQ_INCLUDE_DIRS})
     message(STATUS "ZeroMQ_LIBRARIES: ${ZeroMQ_LIBRARIES}")
 endif()
 
 if(BTCPP_SQLITE_LOGGING)
-    find_package(SQLite3 REQUIRED)
+#    find_package(SQLite3 REQUIRED)
     list(APPEND BTCPP_EXTRA_LIBRARIES ${SQLite3_LIBRARIES})
     list(APPEND BTCPP_EXTRA_INCLUDE_DIRS ${SQLite3_INCLUDE_DIRS})
     message(STATUS "SQLite3_LIBRARIES: ${SQLite3_LIBRARIES}")
 endif()
-
-
-find_package(minicoro REQUIRED)
-find_package(minitrace REQUIRED)
-find_package(tinyxml2 REQUIRED)
-find_package(flatbuffers REQUIRED)
 
 mark_as_advanced(
     BTCPP_EXTRA_LIBRARIES
