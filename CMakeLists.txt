@@ -117,7 +117,6 @@ if(BTCPP_SQLITE_LOGGING)
     endif()
 endif()
 
-
 if(USE_VENDORED_FLATBUFFERS)
     add_subdirectory(3rdparty/flatbuffers)
 else()
