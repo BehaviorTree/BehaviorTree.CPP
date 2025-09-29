@@ -1,5 +1,5 @@
 from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain, CMakeDeps
+from conan.tools.cmake import CMakeToolchain, CMakeDeps, cmake_layout
 
 class BehaviortreeCppConan(ConanFile):
     name = "behaviortree.cpp"
@@ -8,6 +8,9 @@ class BehaviortreeCppConan(ConanFile):
     default_options = {
         "flatbuffers/*:header_only": True,
     }
+
+    def layout(self):
+        cmake_layout(self)
 
     def build_requirements(self):
        self.test_requires("gtest/1.14.0")
