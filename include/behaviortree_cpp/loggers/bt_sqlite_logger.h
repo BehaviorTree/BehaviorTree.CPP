@@ -3,10 +3,8 @@
 #include <filesystem>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
 
-namespace sqlite
-{
-class Connection;
-}
+// forward declaration
+struct sqlite3;
 
 namespace BT
 {
@@ -74,7 +72,7 @@ public:
   virtual void flush() override;
 
 private:
-  std::unique_ptr<sqlite::Connection> db_;
+  sqlite3* db_ = nullptr;
 
   int64_t monotonic_timestamp_ = 0;
   std::unordered_map<const BT::TreeNode*, int64_t> starting_time_;

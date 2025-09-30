@@ -1,9 +1,55 @@
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 #include "behaviortree_cpp/xml_parsing.h"
-#include "cpp-sqlite/sqlite.hpp"
+#include <sqlite3.h>
+#include <stdexcept>
+#include <sstream>
 
 namespace BT
 {
+
+namespace
+{
+// Helper function to execute a SQL statement and check for errors
+void execSQL(sqlite3* db, const std::string& sql)
+{
+  char* err_msg = nullptr;
+  int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &err_msg);
+  if(rc != SQLITE_OK)
+  {
+    std::string error = "SQL error: ";
+    if(err_msg)
+    {
+      error += err_msg;
+      sqlite3_free(err_msg);
+    }
+    throw RuntimeError(error);
+  }
+}
+
+// Helper function to prepare a statement
+sqlite3_stmt* prepareStatement(sqlite3* db, const std::string& sql)
+{
+  sqlite3_stmt* stmt = nullptr;
+  int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+  if(rc != SQLITE_OK)
+  {
+    throw RuntimeError(std::string("Failed to prepare statement: ") + sqlite3_errmsg(db));
+  }
+  return stmt;
+}
+
+// Helper function to execute a prepared statement
+void execStatement(sqlite3_stmt* stmt)
+{
+  int rc = sqlite3_step(stmt);
+  if(rc != SQLITE_DONE && rc != SQLITE_ROW)
+  {
+    throw RuntimeError(std::string("Failed to execute statement: ") + std::to_string(rc));
+  }
+  sqlite3_finalize(stmt);
+}
+
+}  // namespace
 
 SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepath,
                            bool append)
@@ -17,53 +63,64 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
 
   enableTransitionToIdle(true);
 
-  db_ = std::make_unique<sqlite::Connection>(filepath.string());
+  // Open database
+  int rc = sqlite3_open(filepath.string().c_str(), &db_);
+  if(rc != SQLITE_OK)
+  {
+    throw RuntimeError(std::string("Cannot open database: ") + sqlite3_errmsg(db_));
+  }
 
-  sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Transitions ("
-                          "timestamp  INTEGER PRIMARY KEY NOT NULL, "
-                          "session_id INTEGER NOT NULL, "
-                          "node_uid   INTEGER NOT NULL, "
-                          "duration   INTEGER, "
-                          "state      INTEGER NOT NULL,"
-                          "extra_data VARCHAR );");
+  // Create tables
+  execSQL(db_, "CREATE TABLE IF NOT EXISTS Transitions ("
+               "timestamp  INTEGER PRIMARY KEY NOT NULL, "
+               "session_id INTEGER NOT NULL, "
+               "node_uid   INTEGER NOT NULL, "
+               "duration   INTEGER, "
+               "state      INTEGER NOT NULL,"
+               "extra_data VARCHAR );");
 
-  sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Nodes ("
-                          "session_id INTEGER NOT NULL, "
-                          "fullpath   VARCHAR, "
-                          "node_uid   INTEGER NOT NULL );");
+  execSQL(db_, "CREATE TABLE IF NOT EXISTS Nodes ("
+               "session_id INTEGER NOT NULL, "
+               "fullpath   VARCHAR, "
+               "node_uid   INTEGER NOT NULL );");
 
-  sqlite::Statement(*db_, "CREATE TABLE IF NOT EXISTS Definitions ("
-                          "session_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                          "date       TEXT NOT NULL,"
-                          "xml_tree   TEXT NOT NULL);");
+  execSQL(db_, "CREATE TABLE IF NOT EXISTS Definitions ("
+               "session_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+               "date       TEXT NOT NULL,"
+               "xml_tree   TEXT NOT NULL);");
 
   if(!append)
   {
-    sqlite::Statement(*db_, "DELETE from Transitions;");
-    sqlite::Statement(*db_, "DELETE from Definitions;");
-    sqlite::Statement(*db_, "DELETE from Nodes;");
+    execSQL(db_, "DELETE from Transitions;");
+    execSQL(db_, "DELETE from Definitions;");
+    execSQL(db_, "DELETE from Nodes;");
   }
 
+  // Insert tree definition
   auto tree_xml = WriteTreeToXML(tree, true, true);
-  sqlite::Statement(*db_,
-                    "INSERT into Definitions (date, xml_tree) "
-                    "VALUES (datetime('now','localtime'),?);",
-                    tree_xml);
+  sqlite3_stmt* stmt = prepareStatement(db_, "INSERT into Definitions (date, xml_tree) "
+                                             "VALUES (datetime('now','localtime'),?);");
+  sqlite3_bind_text(stmt, 1, tree_xml.c_str(), -1, SQLITE_TRANSIENT);
+  execStatement(stmt);
 
-  auto res = sqlite::Query(*db_, "SELECT MAX(session_id) "
-                                 "FROM Definitions LIMIT 1;");
-
-  while(res.Next())
+  // Get session_id
+  stmt = prepareStatement(db_, "SELECT MAX(session_id) FROM Definitions LIMIT 1;");
+  if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    session_id_ = res.Get(0);
+    session_id_ = sqlite3_column_int(stmt, 0);
   }
+  sqlite3_finalize(stmt);
 
+  // Insert nodes
   for(const auto& subtree : tree.subtrees)
   {
     for(const auto& node : subtree->nodes)
     {
-      sqlite::Statement(*db_, "INSERT INTO Nodes VALUES (?, ?, ?)", session_id_,
-                        node->fullPath(), node->UID());
+      stmt = prepareStatement(db_, "INSERT INTO Nodes VALUES (?, ?, ?)");
+      sqlite3_bind_int(stmt, 1, session_id_);
+      sqlite3_bind_text(stmt, 2, node->fullPath().c_str(), -1, SQLITE_TRANSIENT);
+      sqlite3_bind_int(stmt, 3, node->UID());
+      execStatement(stmt);
     }
   }
 
@@ -76,7 +133,8 @@ SqliteLogger::~SqliteLogger()
   queue_cv_.notify_one();
   writer_thread_.join();
   flush();
-  sqlite::Statement(*db_, "PRAGMA optimize;");
+  execSQL(db_, "PRAGMA optimize;");
+  sqlite3_close(db_);
 }
 
 void SqliteLogger::setAdditionalCallback(ExtraCallback func)
@@ -124,16 +182,11 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
     transitions_queue_.push_back(trans);
   }
   queue_cv_.notify_one();
-
-  if(extra_func_)
-  {
-    extra_func_(timestamp, node, prev_status, status);
-  }
 }
 
 void SqliteLogger::execSqlStatement(std::string statement)
 {
-  sqlite::Statement(*db_, statement);
+  execSQL(db_, statement);
 }
 
 void SqliteLogger::writerLoop()
@@ -154,16 +207,22 @@ void SqliteLogger::writerLoop()
       auto const trans = transitions.front();
       transitions.pop_front();
 
-      sqlite::Statement(*db_, "INSERT INTO Transitions VALUES (?, ?, ?, ?, ?, ?)",
-                        trans.timestamp, session_id_, trans.node_uid, trans.duration,
-                        static_cast<int>(trans.status), trans.extra_data);
+      sqlite3_stmt* stmt = prepareStatement(db_, "INSERT INTO Transitions VALUES (?, ?, "
+                                                 "?, ?, ?, ?)");
+      sqlite3_bind_int64(stmt, 1, trans.timestamp);
+      sqlite3_bind_int(stmt, 2, session_id_);
+      sqlite3_bind_int(stmt, 3, trans.node_uid);
+      sqlite3_bind_int64(stmt, 4, trans.duration);
+      sqlite3_bind_int(stmt, 5, static_cast<int>(trans.status));
+      sqlite3_bind_text(stmt, 6, trans.extra_data.c_str(), -1, SQLITE_TRANSIENT);
+      execStatement(stmt);
     }
   }
 }
 
 void BT::SqliteLogger::flush()
 {
-  sqlite3_db_cacheflush(db_->GetPtr());
+  sqlite3_db_cacheflush(db_);
 }
 
 }  // namespace BT
