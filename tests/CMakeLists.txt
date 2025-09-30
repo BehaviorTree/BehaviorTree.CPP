@@ -56,5 +56,5 @@ else()
 endif()
 
 target_include_directories(behaviortree_cpp_test PRIVATE include)
-target_link_libraries(behaviortree_cpp_test ${BTCPP_LIBRARY} bt_sample_nodes foonathan::lexy wildcards::wildcards)
+target_link_libraries(behaviortree_cpp_test ${BTCPP_LIBRARY} bt_sample_nodes foonathan::lexy)
 target_compile_definitions(behaviortree_cpp_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")

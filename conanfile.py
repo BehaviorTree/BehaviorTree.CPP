@@ -34,7 +34,6 @@ class BehaviortreeCppConan(ConanFile):
         tc.cache_variables["USE_VENDORED_MINICORO"] = False
         tc.cache_variables["USE_VENDORED_MINITRACE"] = False
         tc.cache_variables["USE_VENDORED_TINYXML2"] = False
-        #tc.cache_variables["USE_VENDORED_WILDCARDS"] = False
         tc.generate()
 
         deps = CMakeDeps(self)

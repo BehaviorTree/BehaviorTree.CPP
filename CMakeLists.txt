@@ -26,7 +26,6 @@ option(USE_VENDORED_LEXY "Use the bundled version of lexy" ON)
 option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
 option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
 option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ON)
-option(USE_VENDORED_WILDCARDS "Use the bundled version of wildcards" ON)
 
 set(BTCPP_LIB_DESTINATION     lib)
 set(BTCPP_INCLUDE_DESTINATION include)
@@ -147,12 +146,6 @@ else()
     find_package(tinyxml2 REQUIRED)
 endif()
 
-if(USE_VENDORED_WILDCARDS)
-    add_subdirectory(3rdparty/wildcards)
-else()
-    find_package(wildcards REQUIRED)
-endif()
-
 list(APPEND BT_SOURCE
     src/action_node.cpp
     src/basic_types.cpp
@@ -239,7 +232,6 @@ target_link_libraries(${BTCPP_LIBRARY}
         flatbuffers::flatbuffers
         cpp-sqlite::cpp-sqlite
         cppzmq
-        wildcards::wildcards
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
