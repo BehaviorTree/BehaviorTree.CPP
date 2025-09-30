@@ -33,7 +33,7 @@ jobs:
       run: conan profile detect
 
     - name: Install conan dependencies
-      run: conan install conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing
+      run: conan install conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing --settings:host compiler.cppstd=17
 
     - name: Normalize build type
       shell: bash
