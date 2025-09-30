@@ -2,6 +2,46 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.7.3 (2025-10-01)
+------------------
+* remove cpp-sqlite
+* update cppzmq to 4.11.0
+* remove wildcards from 3rd party
+* Clean up VerifyXML logic (`#1000 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1000>`_)
+  * Refactor VerifyXML to clarify logic
+  - Reduces duplication in VerifyXML by handling the ID check for built-in
+  node types up front so they can then be definitively looked up in the
+  registered nodes.
+  - Enhances error messaging in VerifyXML by using *either* the node name
+  *or* the ID, depending on which is appropriate, instead of leaving
+  users guessing "which Decorator is wrong"
+  - Fixes custom Action and Condition nodes using shorthand syntax not
+  being properly verified
+  - Fixes `<Control ID="ReactiveSequence"/>` not being verified with the
+  same logic as `<ReactiveSequence/>`
+  - Fixes `<Action ID="MyAction"/>` not triggering a behavior lookup when
+  `<MyAction/>` would.
+  * fix tests that were failing due to bad assumptions
+* Append SQLite3_INCLUDE_DIRS to BTCPP_EXTRA_INCLUDE_DIRS, otherwise sqlite3.h won't be found (`#1002 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1002>`_)
+  Co-authored-by: alejandro.suarez@omron.com <alejandro.suarez@omron.com>
+* fix: use dynamically growing error buffer in ParseScript (`#1007 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1007>`_)
+  * fix: use dynamically growing error buffer in ParseScript
+  * style: format code
+  * fix: use dynamically growing error buffer in ValidateScript
+  ---------
+  Co-authored-by: ahuo <ahuo2865189826@gmail.com>
+* fix: validate __type field before accessing in fromJson (`#1009 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1009>`_)
+  Co-authored-by: ahuo <ahuo2865189826@gmail.com>
+* fix: check path attribute before using (`#1005 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1005>`_)
+  Co-authored-by: ahuo <ahuo2865189826@gmail.com>
+* Set current_child_idx of SequenceNode protected (`#991 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/991>`_)
+* Add convertFromString<vector<bool>> (`#992 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/992>`_)
+* Update README.md fix `#985 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/985>`_
+  Duuuude
+* fix: exclude 3rd party libraries from sonar issue tracking (`#984 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/984>`_)
+* change CI file
+* Contributors: Alejandro Suárez, Davide Faconti, Ezra Brooks, Marcus Ebner von Eschenbach, Shaur(ya) Kumar, Vince Reda, Yiyi Wang
+
 4.7.2 (2025-05-29)
 ------------------
 * Fix issue `#978 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/978>`_ : skipped was not working properly
