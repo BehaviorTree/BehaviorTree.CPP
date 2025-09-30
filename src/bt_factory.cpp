@@ -13,15 +13,15 @@
 #include <filesystem>
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/utils/wildcards.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
-#include "wildcards/wildcards.hpp"
 
 namespace BT
 {
 
 bool WildcardMatch(std::string const& str, StringView filter)
 {
-  return wildcards::match(str, filter);
+  return wildcards_match(str, { filter.data(), filter.size() });
 }
 
 struct BehaviorTreeFactory::PImpl
@@ -242,7 +242,7 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
   bool substituted = false;
   for(const auto& [filter, rule] : _p->substitution_rules)
   {
-    if(filter == name || filter == ID || wildcards::match(config.path, filter))
+    if(filter == name || filter == ID || wildcards_match(config.path, filter))
     {
       // first case: the rule is simply a string with the name of the
       // node to create instead
