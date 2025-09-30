@@ -19,7 +19,6 @@ option(USE_AFLPLUSPLUS "Use AFL++ instead of libFuzzer" OFF)
 option(ENABLE_DEBUG "Enable debug build with full symbols" OFF)
 option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
 
-option(USE_VENDORED_CPPSQLITE "Use the bundled version of cpp-sqlite" ON)
 option(USE_VENDORED_CPPZMQ "Use the bundled version of cppzmq" ON)
 option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
 option(USE_VENDORED_LEXY "Use the bundled version of lexy" ON)
@@ -109,11 +108,7 @@ if(BTCPP_GROOT_INTERFACE)
 endif()
 
 if(BTCPP_SQLITE_LOGGING)
-    if(USE_VENDORED_CPPSQLITE)
-        add_subdirectory(3rdparty/cpp-sqlite)
-    else()
-        find_package(cpp-sqlite REQUIRED)
-    endif()
+    find_package(SQLite3 REQUIRED)
 endif()
 
 if(USE_VENDORED_FLATBUFFERS)
@@ -230,8 +225,8 @@ target_link_libraries(${BTCPP_LIBRARY}
         tinyxml2::tinyxml2
         minicoro::minicoro
         flatbuffers::flatbuffers
-        cpp-sqlite::cpp-sqlite
-        cppzmq
+        $<$<BOOL:${BTCPP_GROOT_INTERFACE}>:cppzmq>
+        $<$<BOOL:${BTCPP_SQLITE_LOGGING}>:SQLite::SQLite3>
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )

@@ -19,7 +19,7 @@ class BehaviortreeCppConan(ConanFile):
         self.requires("flatbuffers/24.12.23")
         self.requires("minicoro/0.1.3")
         self.requires("minitrace/cci.20230905")
-        self.requires("sqlite3/3.40.1") # This should be a transitive dependency of cpp-sqlite
+        self.requires("sqlite3/3.40.1")
         self.requires("tinyxml2/10.0.0")
         self.requires("cppzmq/4.11.0")
         self.requires("foonathan-lexy/2022.12.1")
@@ -27,7 +27,6 @@ class BehaviortreeCppConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
 
-        #tc.cache_variables["USE_VENDORED_CPPSQLITE"] = False
         tc.cache_variables["USE_VENDORED_CPPZMQ"] = False
         tc.cache_variables["USE_VENDORED_FLATBUFFERS"] = False
         tc.cache_variables["USE_VENDORED_LEXY"] = False
