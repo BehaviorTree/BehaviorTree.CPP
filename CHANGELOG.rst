@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.7.3 (2025-10-01)
+------------------
 * remove cpp-sqlite
 * update cppzmq to 4.11.0
 * remove wildcards from 3rd party
