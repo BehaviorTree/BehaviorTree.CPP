@@ -53,7 +53,7 @@ std::string xsdAttributeType(const BT::PortInfo& port_info)
     return "blackboardType";
   }
   const auto& type_info = port_info.type();
-  if((type_info == typeid(int)) or (type_info == typeid(unsigned int)))
+  if((type_info == typeid(int)) || (type_info == typeid(unsigned int)))
   {
     return "integerOrBlackboardType";
   }
@@ -1444,7 +1444,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
   {
     XMLElement* type = doc.NewElement("xs:complexType");
     type->SetAttribute("name", (model->registration_ID + "Type").c_str());
-    if((model->type == NodeType::ACTION) or (model->type == NodeType::CONDITION) or
+    if((model->type == NodeType::ACTION) || (model->type == NodeType::CONDITION) ||
        (model->type == NodeType::SUBTREE))
     {
       /* No children, nothing to add. */
@@ -1478,11 +1478,11 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
       XMLElement* attr = doc.NewElement("xs:attribute");
       attr->SetAttribute("name", port_name.c_str());
       const auto xsd_attribute_type = xsdAttributeType(port_info);
-      if(not xsd_attribute_type.empty())
+      if(!xsd_attribute_type.empty())
       {
         attr->SetAttribute("type", xsd_attribute_type.c_str());
       }
-      if(not port_info.defaultValue().empty())
+      if(!port_info.defaultValue().empty())
       {
         attr->SetAttribute("default", port_info.defaultValueString().c_str());
       }
