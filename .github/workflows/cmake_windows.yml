@@ -35,13 +35,19 @@ jobs:
     - name: Install conan dependencies
       run: conan install conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing
 
+    - name: Normalize build type
+      shell: bash
+      # The build type is Capitalized, e.g. Release, but the preset is all lowercase, e.g. release.
+      # There is no built in way to do string manipulations on GHA as far as I know.`
+      run: echo "BUILD_TYPE_LOWERCASE=$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Configure CMake
       shell: bash
       run: cmake --preset conan-default
 
     - name: Build
       shell: bash
-      run: cmake --build --preset conan-default
+      run: cmake --build --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
 
     - name: run test (Windows)
       working-directory: ${{github.workspace}}/build/${{env.BUILD_TYPE}}
