@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.7.2 LANGUAGES C CXX)
+project(behaviortree_cpp VERSION 4.7.3 LANGUAGES C CXX)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
