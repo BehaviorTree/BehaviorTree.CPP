@@ -26,14 +26,14 @@ class BehaviortreeCppConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
 
-        #tc.variables["USE_VENDORED_CPPSQLITE"] = False
-        tc.variables["USE_VENDORED_CPPZMQ"] = False
-        tc.variables["USE_VENDORED_FLATBUFFERS"] = False
-        #tc.variables["USE_VENDORED_LEXY"] = False
-        tc.variables["USE_VENDORED_MINICORO"] = False
-        tc.variables["USE_VENDORED_MINITRACE"] = False
-        tc.variables["USE_VENDORED_TINYXML2"] = False
-        #tc.variables["USE_VENDORED_WILDCARDS"] = False
+        #tc.cache_variables["USE_VENDORED_CPPSQLITE"] = False
+        tc.cache_variables["USE_VENDORED_CPPZMQ"] = False
+        tc.cache_variables["USE_VENDORED_FLATBUFFERS"] = False
+        #tc.cache_variables["USE_VENDORED_LEXY"] = False
+        tc.cache_variables["USE_VENDORED_MINICORO"] = False
+        tc.cache_variables["USE_VENDORED_MINITRACE"] = False
+        tc.cache_variables["USE_VENDORED_TINYXML2"] = False
+        #tc.cache_variables["USE_VENDORED_WILDCARDS"] = False
         tc.generate()
 
         deps = CMakeDeps(self)
