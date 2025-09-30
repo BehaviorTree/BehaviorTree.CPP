@@ -50,5 +50,5 @@ jobs:
       run: cmake --build --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
 
     - name: run test (Windows)
-      working-directory: ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+      working-directory: ${{github.workspace}}/build
       run: $env:PATH+=";${{env.BUILD_TYPE}}"; tests/${{env.BUILD_TYPE}}/behaviortree_cpp_test.exe
