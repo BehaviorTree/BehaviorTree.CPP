@@ -3,7 +3,7 @@
 #include <fstream>
 #include <signal.h>
 #include <fstream>
-#include "cppzmq/zmq.hpp"
+#include "zmq.hpp"
 #include "behaviortree_cpp/flatbuffers/BT_logger_generated.h"
 
 // http://zguide.zeromq.org/cpp:interrupt

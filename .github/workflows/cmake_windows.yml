@@ -32,24 +32,22 @@ jobs:
     - name: Create default profile
       run: conan profile detect
 
-    - name: Create Build Environment
-      # Some projects don't allow in-source building, so create a separate build directory
-      # We'll use this as our working directory for all subsequent commands
-      run: cmake -E make_directory ${{github.workspace}}/build
-
     - name: Install conan dependencies
-      working-directory: ${{github.workspace}}/build
-      run: conan install ${{github.workspace}}/conanfile.txt -s build_type=${{env.BUILD_TYPE}} --build=missing
+      run: conan install conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing --settings:host compiler.cppstd=17
+
+    - name: Normalize build type
+      shell: bash
+      # The build type is Capitalized, e.g. Release, but the preset is all lowercase, e.g. release.
+      # There is no built in way to do string manipulations on GHA as far as I know.`
+      run: echo "BUILD_TYPE_LOWERCASE=$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Configure CMake
       shell: bash
-      working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+      run: cmake --preset conan-default
 
     - name: Build
-      working-directory: ${{github.workspace}}/build
       shell: bash
-      run: cmake --build . --config ${{env.BUILD_TYPE}}
+      run: cmake --build --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
 
     - name: run test (Windows)
       working-directory: ${{github.workspace}}/build
