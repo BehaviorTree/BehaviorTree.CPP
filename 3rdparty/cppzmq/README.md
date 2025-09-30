@@ -163,25 +163,27 @@ Build instructions
 Build steps:
 
 1. Build [libzmq](https://github.com/zeromq/libzmq) via cmake. This does an out of source build and installs the build files
-   - download and unzip the lib, cd to directory
-   - mkdir build
-   - cd build
-   - cmake ..
-   - sudo make -j4 install
+   - `git clone https://github.com/zeromq/libzmq.git`
+   - `cd libzmq`
+   - `mkdir build`
+   - `cd build`
+   - `cmake ..`
+   - `sudo make -j4 install`
 
 2. Build cppzmq via cmake. This does an out of source build and installs the build files
-   - download and unzip the lib, cd to directory
-   - mkdir build
-   - cd build
-   - cmake ..
-   - sudo make -j4 install
+   - `git clone https://github.com/zeromq/cppzmq.git`
+   - `cd cppzmq`
+   - `mkdir build`
+   - `cd build`
+   - `cmake ..` or `cmake -DCPPZMQ_BUILD_TESTS=OFF ..` to skip building tests
+   - `sudo make -j4 install`
 
-3. Build cppzmq via [vcpkg](https://github.com/Microsoft/vcpkg/). This does an out of source build and installs the build files
-   - git clone https://github.com/Microsoft/vcpkg.git
-   - cd vcpkg
-   - ./bootstrap-vcpkg.sh # bootstrap-vcpkg.bat for Powershell
-   - ./vcpkg integrate install
-   - ./vcpkg install cppzmq
+3. Alternatively, build cppzmq via [vcpkg](https://github.com/Microsoft/vcpkg/). This does an out of source build and installs the build files
+   - `git clone https://github.com/Microsoft/vcpkg.git`
+   - `cd vcpkg`
+   - `./bootstrap-vcpkg.sh` (bootstrap-vcpkg.bat for Powershell)
+   - `./vcpkg integrate install`
+   - `./vcpkg install cppzmq`
 
 Using this:
 
@@ -193,4 +195,6 @@ cpp zmq (which will also include libzmq for you).
 #find cppzmq wrapper, installed by make of cppzmq
 find_package(cppzmq)
 target_link_libraries(*Your Project Name* cppzmq)
+# Or use static library to link
+target_link_libraries(*Your Project Name* cppzmq-static)
 ```
