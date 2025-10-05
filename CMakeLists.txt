@@ -64,6 +64,7 @@ endif()
 
 #---- Find other packages ----
 find_package(Threads REQUIRED)
+find_package(tinyxml2 CONFIG)
 
 
 set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
@@ -141,10 +142,11 @@ list(APPEND BT_SOURCE
     src/loggers/bt_file_logger_v2.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
-
-    3rdparty/tinyxml2/tinyxml2.cpp
     )
 
+if(NOT TARGET tinyxml2::tinyxml2)
+    list(APPEND BT_SOURCE 3rdparty/tinyxml2/src/tinyxml2.cpp)
+endif()
 
 if(BTCPP_GROOT_INTERFACE)
     # should be found already, at this stage
@@ -185,6 +187,15 @@ target_link_libraries(${BTCPP_LIBRARY}
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
+
+if(TARGET tinyxml2::tinyxml2)
+    target_link_libraries(${BTCPP_LIBRARY} PRIVATE tinyxml2::tinyxml2)
+else()
+    target_include_directories(${BTCPP_LIBRARY} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/tinyxml2/include>
+    )
+endif()
+
 
 target_include_directories(${BTCPP_LIBRARY}
     PUBLIC
