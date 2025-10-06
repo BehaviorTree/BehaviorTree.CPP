@@ -20,6 +20,17 @@ option(USE_AFLPLUSPLUS "Use AFL++ instead of libFuzzer" OFF)
 option(ENABLE_DEBUG "Enable debug build with full symbols" OFF)
 option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
 
+option(USE_VENDORED_CPPZMQ "Use the bundled version of cppzmq" ON)
+option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
+option(USE_VENDORED_LEXY "Use the bundled version of lexy" ON)
+option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
+option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
+option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ON)
+
+set(BTCPP_LIB_DESTINATION     lib)
+set(BTCPP_INCLUDE_DESTINATION include)
+set(BTCPP_BIN_DESTINATION     bin)
+
 set(BASE_FLAGS "")
 
 if(ENABLE_DEBUG)
@@ -62,12 +73,6 @@ if(USE_V3_COMPATIBLE_NAMES)
     add_definitions(-DUSE_BTCPP3_OLD_NAMES)
 endif()
 
-#---- Find other packages ----
-find_package(Threads REQUIRED)
-
-
-set(BEHAVIOR_TREE_LIBRARY ${PROJECT_NAME})
-
 # Update the policy setting to avoid an error when loading the ament_cmake package
 # at the current cmake version level
 if(POLICY CMP0057)
@@ -85,19 +90,57 @@ if ( ament_cmake_FOUND )
     include(cmake/ament_build.cmake)
 else()
     message(STATUS "------------------------------------------")
-    message(STATUS "BehaviorTree is being built with conan.")
+    message(STATUS "BehaviorTree is being built without AMENT.")
     message(STATUS "------------------------------------------")
     include(cmake/conan_build.cmake)
 endif()
 
 #############################################################
-# LIBRARY
+# Handle dependencies
 
-add_subdirectory(3rdparty/lexy)
+find_package(Threads REQUIRED)
 
-add_library(minitrace STATIC 3rdparty/minitrace/minitrace.cpp)
-target_compile_definitions(minitrace PRIVATE MTR_ENABLED=True)
-set_property(TARGET minitrace PROPERTY POSITION_INDEPENDENT_CODE ON)
+if(BTCPP_GROOT_INTERFACE)
+    if(USE_VENDORED_CPPZMQ)
+        add_subdirectory(3rdparty/cppzmq)
+    else()
+        find_package(cppzmq REQUIRED)
+    endif()
+endif()
+
+if(BTCPP_SQLITE_LOGGING)
+    find_package(SQLite3 REQUIRED)
+endif()
+
+if(USE_VENDORED_FLATBUFFERS)
+    add_subdirectory(3rdparty/flatbuffers)
+else()
+    find_package(flatbuffers REQUIRED)
+endif()
+
+if(USE_VENDORED_LEXY)
+    add_subdirectory(3rdparty/lexy)
+else()
+    find_package(lexy REQUIRED)
+endif()
+
+if(USE_VENDORED_MINICORO)
+    add_subdirectory(3rdparty/minicoro)
+else()
+    find_package(minicoro REQUIRED)
+endif()
+
+if(USE_VENDORED_MINITRACE)
+    add_subdirectory(3rdparty/minitrace)
+else()
+    find_package(minitrace REQUIRED)
+endif()
+
+if(USE_VENDORED_TINYXML2)
+    add_subdirectory(3rdparty/tinyxml2)
+else()
+    find_package(tinyxml2 REQUIRED)
+endif()
 
 list(APPEND BT_SOURCE
     src/action_node.cpp
@@ -141,8 +184,6 @@ list(APPEND BT_SOURCE
     src/loggers/bt_file_logger_v2.cpp
     src/loggers/bt_minitrace_logger.cpp
     src/loggers/bt_observer.cpp
-
-    3rdparty/tinyxml2/tinyxml2.cpp
     )
 
 
@@ -180,8 +221,13 @@ target_link_libraries(${BTCPP_LIBRARY}
     PRIVATE
         Threads::Threads
         ${CMAKE_DL_LIBS}
-        $<BUILD_INTERFACE:foonathan::lexy>
-        $<BUILD_INTERFACE:minitrace>
+        foonathan::lexy
+        minitrace::minitrace
+        tinyxml2::tinyxml2
+        minicoro::minicoro
+        flatbuffers::flatbuffers
+        $<$<BOOL:${BTCPP_GROOT_INTERFACE}>:cppzmq>
+        $<$<BOOL:${BTCPP_SQLITE_LOGGING}>:SQLite::SQLite3>
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
@@ -191,8 +237,6 @@ target_include_directories(${BTCPP_LIBRARY}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/lexy/include>
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
 

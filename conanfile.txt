@@ -1,8 +1,0 @@
-[requires]
-gtest/1.14.0
-zeromq/4.3.4
-sqlite3/3.40.1
-
-[generators]
-CMakeDeps
-CMakeToolchain

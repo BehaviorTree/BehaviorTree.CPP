@@ -1,7 +1,4 @@
-include_directories( ../include )
-
 # compile as static libraries
-
 set(CMAKE_DEBUG_POSTFIX "")
 
 add_library(bt_sample_nodes STATIC

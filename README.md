@@ -61,13 +61,15 @@ Three build systems are supported:
 
 Compiling with [conan](https://conan.io/):
 
-Assuming that you are in the **parent** directory of `BehaviorTree.CPP`:
+> [!NOTE]
+> Conan builds require CMake 3.23 or newer.
+
+Assuming that you are in the **root** directory of `BehaviorTree.CPP`:
 
 ```
-mkdir build_release
-conan install . -of build_release -s build_type=Release
-cmake -S . -B build_release -DCMAKE_TOOLCHAIN_FILE="build_release/conan_toolchain.cmake"
-cmake --build build_release --parallel
+conan install . -s build_type=Release --build=missing
+cmake --preset conan-release
+cmake --build --preset conan-release
 ```
 
 If you have dependencies such as ZeroMQ and SQlite already installed and you don't want to

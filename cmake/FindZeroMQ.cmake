@@ -63,5 +63,13 @@ else (ZeroMQ_LIBRARIES AND ZeroMQ_INCLUDE_DIRS)
   # show the ZeroMQ_INCLUDE_DIRS and ZeroMQ_LIBRARIES variables only in the advanced view
   mark_as_advanced(ZeroMQ_INCLUDE_DIRS ZeroMQ_LIBRARIES)
 
+  if(ZeroMQ_FOUND AND NOT TARGET libzmq)
+    add_library(libzmq UNKNOWN IMPORTED)
+    set_target_properties(libzmq PROPERTIES
+      IMPORTED_LOCATION "${ZeroMQ_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${ZeroMQ_INCLUDE_DIRS}"
+    )
+  endif()
+
 endif (ZeroMQ_LIBRARIES AND ZeroMQ_INCLUDE_DIRS)
 endif(ZeroMQ_FOUND)
