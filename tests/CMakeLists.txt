@@ -54,7 +54,16 @@ else()
         GTest::gtest
         GTest::gtest_main)
 
-    gtest_discover_tests(behaviortree_cpp_test)
+    # gtest_discover_tests queries the test executable for available tests and registers them on ctest individually
+    # On Windows it needs a little help to find the shared libraries
+    if(WIN32)
+        gtest_discover_tests(behaviortree_cpp_test
+            DISCOVERY_MODE PRE_TEST
+            DISCOVERY_ENVIRONMENT "PATH=$<TARGET_FILE_DIR:behaviortree_cpp_test>;$ENV{PATH}"
+        )
+    else()
+        gtest_discover_tests(behaviortree_cpp_test)
+    endif()
 
 endif()
 
