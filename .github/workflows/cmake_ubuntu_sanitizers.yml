@@ -1,4 +1,4 @@
-name: cmake Ubuntu with Address and Undefined Behavior Sanitizers
+name: cmake Ubuntu Sanitizers
 
 on:
   push:
@@ -21,6 +21,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
+        sanitizer: [asan_ubsan, tsan]
 
     steps:
     - uses: actions/checkout@v2
@@ -43,7 +44,14 @@ jobs:
 
     - name: Configure CMake
       shell: bash
-      run: cmake --preset conan-${{ env.BUILD_TYPE_LOWERCASE }} -DBTCPP_ENABLE_ASAN:BOOL=ON -DBTCPP_ENABLE_UBSAN:BOOL=ON
+      run: |
+        if [[ "${{ matrix.sanitizer }}" == "asan_ubsan" ]]; then
+          cmake --preset conan-${{ env.BUILD_TYPE_LOWERCASE }} \
+            -DBTCPP_ENABLE_ASAN:BOOL=ON -DBTCPP_ENABLE_UBSAN:BOOL=ON
+        else
+          cmake --preset conan-${{ env.BUILD_TYPE_LOWERCASE }} \
+            -DBTCPP_ENABLE_TSAN:BOOL=ON
+        fi
 
     - name: Build
       shell: bash
@@ -54,4 +62,5 @@ jobs:
         GTEST_COLOR: "On"
         ASAN_OPTIONS: "color=always"
         UBSAN_OPTIONS: "halt_on_error=1:print_stacktrace=1:color=always"
-      run: ctest --test-dir build/${{env.BUILD_TYPE}}
+        TSAN_OPTIONS: "color=always"
+      run: sudo sysctl vm.mmap_rnd_bits=28 && ctest --test-dir build/${{env.BUILD_TYPE}} --output-on-failure
