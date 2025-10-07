@@ -8,7 +8,7 @@ endif()
 # Address Sanitizer and Undefined Behavior Sanitizer can be run at the same time.
 # Thread Sanitizer requires its own build.
 if(BTCPP_ENABLE_TSAN AND (BTCPP_ENABLE_ASAN OR BTCPP_ENABLE_UBSAN))
-    message(FATAL_ERROR "TSAN is not compatible with ASAN or UBSAN. Please enable only one of them.")
+    message(FATAL_ERROR "TSan is not compatible with ASan or UBSan. ASan and UBSan can run together, but TSan requires its own separate build.")
 endif()
 
 if(BTCPP_ENABLE_ASAN)
