@@ -43,15 +43,18 @@ if(ament_cmake_FOUND)
 
 else()
 
-    find_package(GTest REQUIRED)
-
     enable_testing()
+
+    find_package(GTest REQUIRED)
+    include(GoogleTest)
+
     add_executable(behaviortree_cpp_test ${BT_TESTS})
-    add_test(NAME btcpp_test COMMAND behaviortree_cpp_test)
 
     target_link_libraries(behaviortree_cpp_test
         GTest::gtest
         GTest::gtest_main)
+
+    gtest_discover_tests(behaviortree_cpp_test)
 
 endif()
 
