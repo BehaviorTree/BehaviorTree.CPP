@@ -13,6 +13,9 @@ option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_TESTING "Build the unit tests" ON)
 option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
+option(BTCPP_ENABLE_ASAN "Enable Address Sanitizer" OFF)
+option(BTCPP_ENABLE_UBSAN "Enable Undefined Behavior Sanitizer" OFF)
+option(BTCPP_ENABLE_TSAN "Enable Thread Sanitizer" OFF)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 option(ENABLE_FUZZING "Enable fuzzing builds" OFF)
@@ -53,6 +56,8 @@ endif()
 
 set(CMAKE_CONFIG_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CONFIG_PATH}")
+
+include(sanitizers)
 
 set(BTCPP_LIBRARY ${PROJECT_NAME})
 
