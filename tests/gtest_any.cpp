@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include <behaviortree_cpp/utils/safe_any.hpp>
+#include "animal_hierarchy_test.h"
 
 using namespace BT;
 
@@ -248,5 +249,36 @@ TEST(Any, Cast)
     std::vector<int> v{ 1, 2, 3 };
     Any a(v);
     EXPECT_EQ(a.cast<std::vector<int>>(), v);
+  }
+
+  /// Issue 943
+  // Type casting: polymorphic class w/ registered base class
+  {
+    auto animal = std::make_shared<Animal>();
+    Any any_animal(animal);
+    EXPECT_NO_THROW(auto res = any_animal.cast<Animal::Ptr>());
+    EXPECT_ANY_THROW(auto res = any_animal.cast<Cat::Ptr>());
+    EXPECT_ANY_THROW(auto res = any_animal.cast<Sphynx::Ptr>());
+    EXPECT_TRUE(any_animal.castPtr<Animal::Ptr>());
+    EXPECT_FALSE(any_animal.castPtr<Cat::Ptr>());
+    EXPECT_FALSE(any_animal.castPtr<Sphynx::Ptr>());
+
+    auto cat = std::make_shared<Cat>();
+    Any any_cat(cat);
+    EXPECT_NO_THROW(auto res = any_cat.cast<Animal::Ptr>());
+    EXPECT_NO_THROW(auto res = any_cat.cast<Cat::Ptr>());
+    EXPECT_ANY_THROW(auto res = any_cat.cast<Sphynx::Ptr>());
+    EXPECT_TRUE(any_cat.castPtr<Animal::Ptr>());
+    EXPECT_TRUE(any_cat.castPtr<Cat::Ptr>());
+    EXPECT_FALSE(any_cat.castPtr<Sphynx::Ptr>());
+
+    auto sphynx = std::make_shared<Sphynx>();
+    Any any_sphynx(sphynx);
+    EXPECT_NO_THROW(auto res = any_sphynx.cast<Animal::Ptr>());
+    EXPECT_NO_THROW(auto res = any_sphynx.cast<Cat::Ptr>());
+    EXPECT_NO_THROW(auto res = any_sphynx.cast<Sphynx::Ptr>());
+    EXPECT_TRUE(any_sphynx.castPtr<Animal::Ptr>());
+    EXPECT_TRUE(any_sphynx.castPtr<Cat::Ptr>());
+    EXPECT_TRUE(any_sphynx.castPtr<Sphynx::Ptr>());
   }
 }
