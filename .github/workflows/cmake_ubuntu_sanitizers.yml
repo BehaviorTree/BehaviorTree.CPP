@@ -1,0 +1,69 @@
+name: cmake Ubuntu Sanitizers
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+        sanitizer: [asan_ubsan, tsan]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Conan
+      id: conan
+      uses: turtlebrowser/get-conan@main
+
+    - name: Create default profile
+      run: conan profile detect
+
+    - name: Install conan dependencies
+      run: conan install conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing
+
+    - name: Normalize build type
+      shell: bash
+      # The build type is Capitalized, e.g. Release, but the preset is all lowercase, e.g. release.
+      # There is no built in way to do string manipulations on GHA as far as I know.`
+      run: echo "BUILD_TYPE_LOWERCASE=$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+    - name: Configure CMake
+      shell: bash
+      run: |
+        if [[ "${{ matrix.sanitizer }}" == "asan_ubsan" ]]; then
+          cmake --preset conan-${{ env.BUILD_TYPE_LOWERCASE }} \
+            -DBTCPP_ENABLE_ASAN:BOOL=ON -DBTCPP_ENABLE_UBSAN:BOOL=ON
+        else
+          cmake --preset conan-${{ env.BUILD_TYPE_LOWERCASE }} \
+            -DBTCPP_ENABLE_TSAN:BOOL=ON
+        fi
+
+    - name: Build
+      shell: bash
+      run: cmake --build --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
+
+    - name: run test (Linux + Address and Undefined Behavior Sanitizers)
+      env:
+        GTEST_COLOR: "On"
+        ASAN_OPTIONS: "color=always"
+        UBSAN_OPTIONS: "halt_on_error=1:print_stacktrace=1:color=always"
+        TSAN_OPTIONS: "color=always"
+      # There is a known issue with TSAN on recent kernel versions. Without the vm.mmap_rnd_bits=28
+      # workaround all binaries with TSan enabled crash with "FATAL: ThreadSanitizer: unexpected memory mapping"
+      run: sudo sysctl vm.mmap_rnd_bits=28 && ctest --test-dir build/${{env.BUILD_TYPE}} --output-on-failure

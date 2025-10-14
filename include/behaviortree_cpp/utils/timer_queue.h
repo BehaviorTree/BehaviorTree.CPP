@@ -23,10 +23,7 @@ public:
 
   void notify()
   {
-    {
-      std::lock_guard<std::mutex> lock(m_mtx);
-      m_count++;
-    }
+    m_count.fetch_add(1);
     m_cv.notify_one();
   }
 
@@ -38,8 +35,15 @@ public:
     {
       return false;
     }
-    m_count--;
+    // Only decrement if there is a real count. If we woke because of manualUnlock,
+    // m_count may be zero and we must not decrement it.
+    if(m_count > 0)
+    {
+      m_count.fetch_sub(1);
+    }
+    // Clear the manual unlock flag
     m_unlock = false;
+
     return true;
   }
 
@@ -52,7 +56,7 @@ public:
 private:
   std::mutex m_mtx;
   std::condition_variable m_cv;
-  unsigned m_count = 0;
+  std::atomic_uint m_count = 0;
   std::atomic_bool m_unlock = false;
 };
 }  // namespace details
@@ -74,15 +78,18 @@ class TimerQueue
 public:
   TimerQueue()
   {
-    m_th = std::thread([this] { run(); });
+    m_finish.store(false);
+    m_thread = std::thread([this]() { run(); });
   }
 
   ~TimerQueue()
   {
-    m_finish = true;
+    m_finish.store(true);
     cancelAll();
-    m_checkWork.manualUnlock();
-    m_th.join();
+    if(m_thread.joinable())
+    {
+      m_thread.join();
+    }
   }
 
   //! Adds a new timer
@@ -174,7 +181,7 @@ private:
 
   void run()
   {
-    while(!m_finish)
+    while(!m_finish.load())
     {
       auto end = calcWaitTime();
       if(end.first)
@@ -239,8 +246,8 @@ private:
   }
 
   details::Semaphore m_checkWork;
-  std::thread m_th;
-  bool m_finish = false;
+  std::thread m_thread;
+  std::atomic_bool m_finish = false;
   uint64_t m_idcounter = 0;
 
   struct WorkItem

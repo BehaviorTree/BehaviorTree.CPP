@@ -106,19 +106,13 @@ NodeStatus TreeNode::executeTick()
     if(!substituted)
     {
       using namespace std::chrono;
-
-      auto t1 = steady_clock::now();
-      // trick to prevent the compile from reordering the order of execution. See #861
-      // This makes sure that the code is executed at the end of this scope
-      std::shared_ptr<void> execute_later(nullptr, [&](...) {
-        auto t2 = steady_clock::now();
-        if(monitor_tick)
-        {
-          monitor_tick(*this, new_status, duration_cast<microseconds>(t2 - t1));
-        }
-      });
-
+      const auto t1 = steady_clock::now();
       new_status = tick();
+      const auto t2 = steady_clock::now();
+      if(monitor_tick)
+      {
+        monitor_tick(*this, new_status, duration_cast<microseconds>(t2 - t1));
+      }
     }
   }
 
