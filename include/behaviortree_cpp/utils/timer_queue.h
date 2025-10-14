@@ -86,7 +86,6 @@ public:
   {
     m_finish.store(true);
     cancelAll();
-
     if(m_thread.joinable())
     {
       m_thread.join();

@@ -68,8 +68,8 @@ struct RetryTest : testing::Test
 
 struct TimeoutAndRetry : testing::Test
 {
-  BT::TimeoutNode timeout_root;
   BT::RetryNode retry;
+  BT::TimeoutNode timeout_root;
   BT::SyncActionTest action;
 
   TimeoutAndRetry() : timeout_root("deadline", 9), retry("retry", 1000), action("action")
