@@ -52,11 +52,13 @@ Blackboard::getEntry(const std::string& key) const
     return rootBlackboard()->getEntry(key.substr(1, key.size() - 1));
   }
 
-  std::unique_lock<std::mutex> lock(mutex_);
-  auto it = storage_.find(key);
-  if(it != storage_.end())
   {
-    return it->second;
+    std::unique_lock<std::mutex> storage_lock(storage_mutex_);
+    auto it = storage_.find(key);
+    if(it != storage_.end())
+    {
+      return it->second;
+    }
   }
   // not found. Try autoremapping
   if(auto parent = parent_bb_.lock())
@@ -130,7 +132,7 @@ std::vector<StringView> Blackboard::getKeys() const
 
 void Blackboard::clear()
 {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::unique_lock<std::mutex> storage_lock(storage_mutex_);
   storage_.clear();
 }
 
@@ -157,8 +159,10 @@ void Blackboard::createEntry(const std::string& key, const TypeInfo& info)
 
 void Blackboard::cloneInto(Blackboard& dst) const
 {
-  std::unique_lock lk1(mutex_);
-  std::unique_lock lk2(dst.mutex_);
+  // Lock both mutexes without risking lock-order inversion.
+  std::unique_lock<std::mutex> lk1(storage_mutex_, std::defer_lock);
+  std::unique_lock<std::mutex> lk2(dst.storage_mutex_, std::defer_lock);
+  std::lock(lk1, lk2);
 
   // keys that are not updated must be removed.
   std::unordered_set<std::string> keys_to_remove;
@@ -212,7 +216,7 @@ Blackboard::Ptr Blackboard::parent()
 std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string& key,
                                                                const TypeInfo& info)
 {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::unique_lock<std::mutex> storage_lock(storage_mutex_);
   // This function might be called recursively, when we do remapping, because we move
   // to the top scope to find already existing  entries
 

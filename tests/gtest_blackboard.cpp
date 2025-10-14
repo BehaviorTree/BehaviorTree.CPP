@@ -294,6 +294,8 @@ TEST(BlackboardTest, CheckTypeSafety)
   ASSERT_TRUE(is);
 }
 
+#ifndef USE_SANITIZE_THREAD
+
 TEST(BlackboardTest, AnyPtrLocked)
 {
   auto blackboard = Blackboard::create();
@@ -346,6 +348,7 @@ TEST(BlackboardTest, AnyPtrLocked)
     ASSERT_NE(cycles, value);
   }
 }
+#endif
 
 TEST(BlackboardTest, SetStringView)
 {

@@ -141,7 +141,7 @@ public:
   const Blackboard* rootBlackboard() const;
 
 private:
-  mutable std::mutex mutex_;
+  mutable std::mutex storage_mutex_;
   mutable std::recursive_mutex entry_mutex_;
   std::unordered_map<std::string, std::shared_ptr<Entry>> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
@@ -186,7 +186,7 @@ inline T Blackboard::get(const std::string& key) const
 
 inline void Blackboard::unset(const std::string& key)
 {
-  std::unique_lock lock(mutex_);
+  std::unique_lock storage_lock(storage_mutex_);
 
   // check local storage
   auto it = storage_.find(key);
@@ -207,7 +207,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     rootBlackboard()->set(key.substr(1, key.size() - 1), value);
     return;
   }
-  std::unique_lock lock(mutex_);
+  std::unique_lock storage_lock(storage_mutex_);
 
   // check local storage
   auto it = storage_.find(key);
@@ -215,7 +215,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
   {
     // create a new entry
     Any new_value(value);
-    lock.unlock();
+    storage_lock.unlock();
     std::shared_ptr<Blackboard::Entry> entry;
     // if a new generic port is created with a string, it's type should be AnyTypeAllowed
     if constexpr(std::is_same_v<std::string, T>)
@@ -228,7 +228,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
                         GetAnyFromStringFunctor<T>());
       entry = createEntryImpl(key, new_port);
     }
-    lock.lock();
+    storage_lock.lock();
 
     entry->value = new_value;
     entry->sequence_id++;
@@ -239,6 +239,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
     // this is not the first time we set this entry, we need to check
     // if the type is the same or not.
     Entry& entry = *it->second;
+    storage_lock.unlock();
+
     std::scoped_lock scoped_lock(entry.entry_mutex);
 
     Any& previous_any = entry.value;
