@@ -4,7 +4,7 @@
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/ros2.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/ros2.yaml)
 [![pixi (Conda)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml)
 
-# BehaviorTree.CPP 4.7
+# BehaviorTree.CPP 4.8
 
 <p align="center"><img width=350 src="animated.svg"></p>
 

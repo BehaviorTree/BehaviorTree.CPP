@@ -2,6 +2,29 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix issue in destruction order
+* fix memory leak
+* fix thread safety issues
+* Improve error message
+* Leave a note for posterity
+* Fix windows builds
+* Do not fail fast. We want results of both sanitizer runs
+* Combine sanitizer actions into a single file
+* use gtest_discover_tests to regiester the unit tests
+  this modern approach registers many individual tests instead of a single monolitic test
+  so if one fails the rest continue running which allows the developer to flag multiple
+  failing tests on a single run
+  It also speeds up testing since tests run in parallel
+* Add support for sanitizers including some GHAs
+* Remove unused conan.cmake (`#1016 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1016>`_)
+* Improve handling of dependencies (`#1012 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1012>`_)
+* update tinyxml to version 11.0
+* fix potential compilation errors
+* compile for c++ 17 (`#1013 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1013>`_)
+* Contributors: Davide Faconti, Eric Riff
+
 4.7.3 (2025-10-01)
 ------------------
 * remove cpp-sqlite
