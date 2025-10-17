@@ -226,7 +226,7 @@ target_link_libraries(${BTCPP_LIBRARY}
     PRIVATE
         Threads::Threads
         ${CMAKE_DL_LIBS}
-        foonathan::lexy
+        $<BUILD_INTERFACE:foonathan::lexy>
         minitrace::minitrace
         tinyxml2::tinyxml2
         minicoro::minicoro

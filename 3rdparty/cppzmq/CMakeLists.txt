@@ -7,7 +7,7 @@ add_library(cppzmq INTERFACE)
 
 target_include_directories(cppzmq
     INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 if(TARGET libzmq-static)
@@ -17,3 +17,10 @@ elseif(TARGET libzmq)
 else()
     message(FATAL_ERROR "Unknown zeromq target name")
 endif()
+
+install(TARGETS cppzmq
+        EXPORT ${BTCPP_LIBRARY}Targets
+        ARCHIVE DESTINATION ${BTCPP_LIB_DESTINATION}
+        LIBRARY DESTINATION ${BTCPP_LIB_DESTINATION}
+        RUNTIME DESTINATION ${BTCPP_BIN_DESTINATION}
+        INCLUDES DESTINATION ${BTCPP_INCLUDE_DESTINATION})
