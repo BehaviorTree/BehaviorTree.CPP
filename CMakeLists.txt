@@ -231,9 +231,9 @@ target_link_libraries(${BTCPP_LIBRARY}
         tinyxml2::tinyxml2
         minicoro::minicoro
         flatbuffers::flatbuffers
+    PUBLIC
         $<$<BOOL:${BTCPP_GROOT_INTERFACE}>:cppzmq>
         $<$<BOOL:${BTCPP_SQLITE_LOGGING}>:SQLite::SQLite3>
-    PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
 
