@@ -29,11 +29,17 @@
 #if defined(__linux) || defined(__linux__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+
+#include "tinyxml2.h"
+
+#if defined(__linux) || defined(__linux__)
+#pragma GCC diagnostic pop
 #endif
 
 #include <map>
 #include "behaviortree_cpp/xml_parsing.h"
-#include "tinyxml2.h"
 #include <filesystem>
 
 #ifdef USING_ROS2
