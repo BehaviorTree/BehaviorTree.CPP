@@ -226,16 +226,28 @@ target_link_libraries(${BTCPP_LIBRARY}
     PRIVATE
         Threads::Threads
         ${CMAKE_DL_LIBS}
-        foonathan::lexy
-        minitrace::minitrace
-        tinyxml2::tinyxml2
-        minicoro::minicoro
-        flatbuffers::flatbuffers
-        $<$<BOOL:${BTCPP_GROOT_INTERFACE}>:cppzmq>
-        $<$<BOOL:${BTCPP_SQLITE_LOGGING}>:SQLite::SQLite3>
+        $<BUILD_INTERFACE:foonathan::lexy>
+        $<BUILD_INTERFACE:minitrace::minitrace>
+        $<BUILD_INTERFACE:tinyxml2::tinyxml2>
+        $<BUILD_INTERFACE:minicoro::minicoro>
+        $<BUILD_INTERFACE:flatbuffers::flatbuffers>
     PUBLIC
         ${BTCPP_EXTRA_LIBRARIES}
 )
+
+if(BTCPP_GROOT_INTERFACE)
+    target_link_libraries(${BTCPP_LIBRARY}
+        PRIVATE
+            $<BUILD_INTERFACE:cppzmq>
+    )
+endif()
+
+if(BTCPP_SQLITE_LOGGING)
+    target_link_libraries(${BTCPP_LIBRARY}
+        PRIVATE
+            $<BUILD_INTERFACE:SQLite::SQLite3>
+    )
+endif()
 
 target_include_directories(${BTCPP_LIBRARY}
     PUBLIC
