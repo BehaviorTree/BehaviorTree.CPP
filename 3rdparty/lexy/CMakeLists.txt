@@ -9,7 +9,7 @@ option(LEXY_FORCE_CPP17     "Whether or not lexy should use C++17 even if compil
 
 add_subdirectory(src)
 
-option(LEXY_ENABLE_INSTALL   "whether or not to enable the install rule" ON)
+option(LEXY_ENABLE_INSTALL   "whether or not to enable the install rule" OFF)
 if(LEXY_ENABLE_INSTALL)
     include(CMakePackageConfigHelpers)
     include(GNUInstallDirs)
