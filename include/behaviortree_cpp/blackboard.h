@@ -13,7 +13,6 @@
 
 namespace BT
 {
-
 /// This type contains a pointer to Any, protected
 /// with a locked mutex as long as the object is in scope
 using AnyPtrLocked = LockedPtr<Any>;
