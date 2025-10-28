@@ -28,7 +28,7 @@ option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
 option(USE_VENDORED_LEXY "Use the bundled version of lexy" ON)
 option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
 option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
-option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ON)
+# Usage of TINYXML2 sits with the ROS2 lookup
 
 set(BTCPP_LIB_DESTINATION     lib)
 set(BTCPP_INCLUDE_DESTINATION include)
@@ -84,6 +84,7 @@ if(POLICY CMP0057)
     cmake_policy(SET CMP0057 NEW)
 endif()
 
+set(_default_use_vendored_tiny_xml ON)
 find_package(ament_cmake QUIET)
 
 if ( ament_cmake_FOUND )
@@ -93,12 +94,14 @@ if ( ament_cmake_FOUND )
     message(STATUS "BehaviorTree is being built using AMENT.")
     message(STATUS "------------------------------------------")
     include(cmake/ament_build.cmake)
+    set(_default_use_vendored_tiny_xml OFF)
 else()
     message(STATUS "------------------------------------------")
     message(STATUS "BehaviorTree is being built without AMENT.")
     message(STATUS "------------------------------------------")
     include(cmake/conan_build.cmake)
 endif()
+option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ${_default_use_vendored_tiny_xml})
 
 #############################################################
 # Handle dependencies
