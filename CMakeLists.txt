@@ -147,7 +147,8 @@ endif()
 if(USE_VENDORED_TINYXML2)
     add_subdirectory(3rdparty/tinyxml2)
 else()
-    find_package(tinyxml2 REQUIRED)
+    find_package(tinyxml2_vendor REQUIRED)
+    find_package(TinyXML2 REQUIRED)
 endif()
 
 list(APPEND BT_SOURCE
