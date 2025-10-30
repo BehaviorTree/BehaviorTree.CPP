@@ -21,6 +21,7 @@
 #include <set>
 #include <vector>
 
+#include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
 
