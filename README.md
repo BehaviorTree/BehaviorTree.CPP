@@ -110,7 +110,7 @@ only in the master branch.
 
 The MIT License (MIT)
 
-Copyright (c) 2019-2023 Davide Faconti
+Copyright (c) 2019-2025 Davide Faconti
 
 Copyright (c) 2018-2019 Davide Faconti, Eurecat
 
