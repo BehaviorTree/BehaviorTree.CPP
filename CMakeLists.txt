@@ -28,7 +28,6 @@ option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
 option(USE_VENDORED_LEXY "Use the bundled version of lexy" ON)
 option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
 option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
-option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ON)
 
 set(BTCPP_LIB_DESTINATION     lib)
 set(BTCPP_INCLUDE_DESTINATION include)
@@ -93,11 +92,21 @@ if ( ament_cmake_FOUND )
     message(STATUS "BehaviorTree is being built using AMENT.")
     message(STATUS "------------------------------------------")
     include(cmake/ament_build.cmake)
+
+    find_package(tinyxml2_vendor REQUIRED)
+    find_package(TinyXML2 REQUIRED)
 else()
     message(STATUS "------------------------------------------")
     message(STATUS "BehaviorTree is being built without AMENT.")
     message(STATUS "------------------------------------------")
     include(cmake/conan_build.cmake)
+
+    option(USE_VENDORED_TINYXML2 "Use the bundled version of tinyxml2" ON)
+    if(USE_VENDORED_TINYXML2)
+        add_subdirectory(3rdparty/tinyxml2)
+    else()
+        find_package(tinyxml2 REQUIRED)
+    endif()
 endif()
 
 #############################################################
@@ -139,12 +148,6 @@ if(USE_VENDORED_MINITRACE)
     add_subdirectory(3rdparty/minitrace)
 else()
     find_package(minitrace REQUIRED)
-endif()
-
-if(USE_VENDORED_TINYXML2)
-    add_subdirectory(3rdparty/tinyxml2)
-else()
-    find_package(tinyxml2 REQUIRED)
 endif()
 
 list(APPEND BT_SOURCE
