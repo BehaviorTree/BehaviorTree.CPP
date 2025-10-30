@@ -152,8 +152,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>haltTree</b> ()</td><
 <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>rootNode</b> () const</td></tr>
 <tr class="separator:a8809416969079bd52235beb98ae60a0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae31f344252dd19177240917777b57e54"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#ae31f344252dd19177240917777b57e54">sleep</a> (std::chrono::system_clock::duration timeout)</td></tr>
-<tr class="memdesc:ae31f344252dd19177240917777b57e54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep for a certain amount of time. This sleep could be interrupted by the method <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a05339c112add31fc3c592e3e0e5d5d4b" title="Notify that the tree should be ticked again()">TreeNode::emitWakeUpSignal()</a>  <br /></td></tr>
+<tr class="memdesc:ae31f344252dd19177240917777b57e54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep for a certain amount of time. This sleep could be interrupted by the methods <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a05339c112add31fc3c592e3e0e5d5d4b" title="Notify that the tree should be ticked again()">TreeNode::emitWakeUpSignal()</a> or <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#af1cca51122db214c296fe92ab2a2d3ce" title="Wake up the tree. This will interrupt the sleep() method.">Tree::emitWakeUpSignal()</a>  <br /></td></tr>
 <tr class="separator:ae31f344252dd19177240917777b57e54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1cca51122db214c296fe92ab2a2d3ce"><td class="memItemLeft" align="right" valign="top"><a id="af1cca51122db214c296fe92ab2a2d3ce" name="af1cca51122db214c296fe92ab2a2d3ce"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>emitWakeUpSignal</b> ()</td></tr>
+<tr class="memdesc:af1cca51122db214c296fe92ab2a2d3ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wake up the tree. This will interrupt the <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#ae31f344252dd19177240917777b57e54" title="Sleep for a certain amount of time. This sleep could be interrupted by the methods TreeNode::emitWake...">sleep()</a> method. <br /></td></tr>
+<tr class="separator:af1cca51122db214c296fe92ab2a2d3ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9f6b556b8395132be0b14bc4d784be5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#ac9f6b556b8395132be0b14bc4d784be5">tickExactlyOnce</a> ()</td></tr>
 <tr class="separator:ac9f6b556b8395132be0b14bc4d784be5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39a85b09e4e7203ab586e8012f381d73"><td class="memItemLeft" align="right" valign="top"><a id="a39a85b09e4e7203ab586e8012f381d73" name="a39a85b09e4e7203ab586e8012f381d73"></a>
@@ -236,7 +240,7 @@ template&lt;typename <a class="el" href="../../d2/d8d/namespace_b_t.html#a86a645
       </table>
 </div><div class="memdoc">
 
-<p>Sleep for a certain amount of time. This sleep could be interrupted by the method <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a05339c112add31fc3c592e3e0e5d5d4b" title="Notify that the tree should be ticked again()">TreeNode::emitWakeUpSignal()</a> </p>
+<p>Sleep for a certain amount of time. This sleep could be interrupted by the methods <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a05339c112add31fc3c592e3e0e5d5d4b" title="Notify that the tree should be ticked again()">TreeNode::emitWakeUpSignal()</a> or <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#af1cca51122db214c296fe92ab2a2d3ce" title="Wake up the tree. This will interrupt the sleep() method.">Tree::emitWakeUpSignal()</a> </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">timeout</td><td>duration of the sleep </td></tr>
@@ -261,7 +265,7 @@ template&lt;typename <a class="el" href="../../d2/d8d/namespace_b_t.html#a86a645
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Tick the root of the tree once, even if a node invoked emitWakeUpSignal() </p>
+<p>Tick the root of the tree once, even if a node invoked <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#af1cca51122db214c296fe92ab2a2d3ce" title="Wake up the tree. This will interrupt the sleep() method.">emitWakeUpSignal()</a> </p>
 
 </div>
 </div>
@@ -280,7 +284,7 @@ template&lt;typename <a class="el" href="../../d2/d8d/namespace_b_t.html#a86a645
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Call tickOnce until the status is different from RUNNING. Note that between one tick and the following one, a <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#ae31f344252dd19177240917777b57e54" title="Sleep for a certain amount of time. This sleep could be interrupted by the method TreeNode::emitWakeU...">Tree::sleep()</a> is used </p>
+<p>Call tickOnce until the status is different from RUNNING. Note that between one tick and the following one, a <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#ae31f344252dd19177240917777b57e54" title="Sleep for a certain amount of time. This sleep could be interrupted by the methods TreeNode::emitWake...">Tree::sleep()</a> is used </p>
 
 </div>
 </div>
