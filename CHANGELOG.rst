@@ -2,6 +2,20 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#996 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/996>`_ from EnjoyRobotics/make-sequence-node-inheritable
+* Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
+* fix issue `#1034 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1034>`_
+* Merge pull request `#1030 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1030>`_ from pleemann/tree_wake_up
+  Event-based tree ticking
+* force tinyxml2_vendor in ROS2. See `#1033 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1033>`_ and `#1028 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1028>`_
+* added Tree::emitWakeUpSignal
+* Lint
+* Propagate node config to parent
+* Make tick method protected
+* Contributors: Davide Faconti, pleemann, redvinaa
+
 4.8.1 (2025-10-23)
 ------------------
 
