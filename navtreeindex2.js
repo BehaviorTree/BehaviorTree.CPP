@@ -1,5 +1,7 @@
 var NAVTREEINDEX2 =
 {
+"db/d6b/struct_b_t_1_1_ast_1_1_expr_if.html":[1,0,0,0,5],
+"db/d6e/struct_b_t_1_1_ast_1_1_expr_base.html":[1,0,0,0,2],
 "db/d78/struct_b_t_1_1_ast_1_1_expr_assignment.html":[1,0,0,0,1],
 "db/d7e/leaf__node_8h_source.html":[2,0,0,0,18],
 "db/d81/bt__factory_8h_source.html":[2,0,0,0,11],
@@ -35,8 +37,8 @@ var NAVTREEINDEX2 =
 "dc/da6/class_b_t_1_1_fallback_node.html":[1,0,0,20],
 "dc/da6/class_b_t_1_1_fallback_node.html#a254b111f7bde893dd711327f4879e290":[1,0,0,20,0],
 "dc/da6/class_b_t_1_1_fallback_node.html#a254b111f7bde893dd711327f4879e290":[0,0,0,17,0],
-"dc/dae/class_b_t_1_1_switch_node.html":[1,0,0,73],
 "dc/dae/class_b_t_1_1_switch_node.html":[0,0,0,70],
+"dc/dae/class_b_t_1_1_switch_node.html":[1,0,0,73],
 "dc/dae/class_b_t_1_1_switch_node.html#aa7c2861279a1505a713cade9012d96eb":[0,0,0,70,0],
 "dc/dae/class_b_t_1_1_switch_node.html#aa7c2861279a1505a713cade9012d96eb":[1,0,0,73,0],
 "dc/df7/struct_b_t_1_1_grammar_1_1_expression_1_1bit__prefix.html":[1,0,0,2,3,3],

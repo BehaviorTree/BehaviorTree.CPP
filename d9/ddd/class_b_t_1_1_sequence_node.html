@@ -92,6 +92,7 @@ $(document).ready(function(){initNavTree('d9/ddd/class_b_t_1_1_sequence_node.htm
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="../../d4/de8/class_b_t_1_1_sequence_node-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">BT::SequenceNode Class Reference</div></div>
@@ -126,9 +127,9 @@ Collaboration diagram for BT::SequenceNode:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ac9ad55afa5940335246073c89633e4ee"><td class="memItemLeft" align="right" valign="top"><a id="ac9ad55afa5940335246073c89633e4ee" name="ac9ad55afa5940335246073c89633e4ee"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceNode</b> (const std::string &amp;<a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#ac639db3ba4cca6f420b953f36350923c">name</a>, bool make_async=false)</td></tr>
-<tr class="separator:ac9ad55afa5940335246073c89633e4ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f5a15a26afb443792ed283364da76e5"><td class="memItemLeft" align="right" valign="top"><a id="a6f5a15a26afb443792ed283364da76e5" name="a6f5a15a26afb443792ed283364da76e5"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SequenceNode</b> (const std::string &amp;<a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#ac639db3ba4cca6f420b953f36350923c">name</a>, bool make_async=false, const <a class="el" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfiguration</a> &amp;conf=<a class="el" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfiguration</a>())</td></tr>
+<tr class="separator:a6f5a15a26afb443792ed283364da76e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb7243d9a0a171fb01aa91420a53a716"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddd/class_b_t_1_1_sequence_node.html#afb7243d9a0a171fb01aa91420a53a716">halt</a> () override</td></tr>
 <tr class="separator:afb7243d9a0a171fb01aa91420a53a716"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_b_t_1_1_control_node"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_b_t_1_1_control_node')"><img src="../../closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="../../d6/ddb/class_b_t_1_1_control_node.html">BT::ControlNode</a></td></tr>
@@ -251,6 +252,46 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>emitWakeUpSignal</b> 
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>requiresWakeUp</b> () const</td></tr>
 <tr class="separator:ab5341443a75942aee3de15fe41ede029 inherit pub_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a9121083765b74640bb7bc8d965c22d1f"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/ddd/class_b_t_1_1_sequence_node.html#a9121083765b74640bb7bc8d965c22d1f">tick</a> () override</td></tr>
+<tr class="memdesc:a9121083765b74640bb7bc8d965c22d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to be implemented by the user.  <br /></td></tr>
+<tr class="separator:a9121083765b74640bb7bc8d965c22d1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_class_b_t_1_1_tree_node"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_b_t_1_1_tree_node')"><img src="../../closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">BT::TreeNode</a></td></tr>
+<tr class="memitem:a5abb43f6833295670bc0a11ad9fe3eae inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a5abb43f6833295670bc0a11ad9fe3eae" name="a5abb43f6833295670bc0a11ad9fe3eae"></a>
+<a class="el" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>config</b> ()</td></tr>
+<tr class="separator:a5abb43f6833295670bc0a11ad9fe3eae inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15ea206d20defd764035481ceda1de3e inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a15ea206d20defd764035481ceda1de3e">tick</a> ()=0</td></tr>
+<tr class="memdesc:a15ea206d20defd764035481ceda1de3e inherit pro_methods_class_b_t_1_1_tree_node"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to be implemented by the user.  <br /></td></tr>
+<tr class="separator:a15ea206d20defd764035481ceda1de3e inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8874bae4b946a2ea6d1b3db1a696cf6a inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a8874bae4b946a2ea6d1b3db1a696cf6a" name="a8874bae4b946a2ea6d1b3db1a696cf6a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>resetStatus</b> ()</td></tr>
+<tr class="memdesc:a8874bae4b946a2ea6d1b3db1a696cf6a inherit pro_methods_class_b_t_1_1_tree_node"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the status to IDLE. <br /></td></tr>
+<tr class="separator:a8874bae4b946a2ea6d1b3db1a696cf6a inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d2bef301e75a93a6fcd190274086209 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a5d2bef301e75a93a6fcd190274086209" name="a5d2bef301e75a93a6fcd190274086209"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setRegistrationID</b> (StringView ID)</td></tr>
+<tr class="separator:a5d2bef301e75a93a6fcd190274086209 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0389b4fc94e9ca42f6bf00a881b2cc2 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="aa0389b4fc94e9ca42f6bf00a881b2cc2" name="aa0389b4fc94e9ca42f6bf00a881b2cc2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setWakeUpInstance</b> (std::shared_ptr&lt; <a class="el" href="../../da/d2f/class_b_t_1_1_wake_up_signal.html">WakeUpSignal</a> &gt; instance)</td></tr>
+<tr class="separator:aa0389b4fc94e9ca42f6bf00a881b2cc2 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a03dd64782771d097e0d660cdc2366f inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a0a03dd64782771d097e0d660cdc2366f" name="a0a03dd64782771d097e0d660cdc2366f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>modifyPortsRemapping</b> (const PortsRemapping &amp;new_remapping)</td></tr>
+<tr class="separator:a0a03dd64782771d097e0d660cdc2366f inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab98b671336cdc496028b52112e21a0ed inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="ab98b671336cdc496028b52112e21a0ed" name="ab98b671336cdc496028b52112e21a0ed"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setStatus</b> (<a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> new_status)</td></tr>
+<tr class="memdesc:ab98b671336cdc496028b52112e21a0ed inherit pro_methods_class_b_t_1_1_tree_node"><td class="mdescLeft">&#160;</td><td class="mdescRight">setStatus changes the status of the node. it will throw if you try to change the status to IDLE, because your parent node should do that, not the user! <br /></td></tr>
+<tr class="separator:ab98b671336cdc496028b52112e21a0ed inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c4ef8671d5dfc14aec00c1e47852a2c inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a7c4ef8671d5dfc14aec00c1e47852a2c" name="a7c4ef8671d5dfc14aec00c1e47852a2c"></a>
+PreScripts &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>preConditionsScripts</b> ()</td></tr>
+<tr class="separator:a7c4ef8671d5dfc14aec00c1e47852a2c inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2938d6a473ea066543f69136d3eb447 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="ad2938d6a473ea066543f69136d3eb447" name="ad2938d6a473ea066543f69136d3eb447"></a>
+PostScripts &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>postConditionsScripts</b> ()</td></tr>
+<tr class="separator:ad2938d6a473ea066543f69136d3eb447 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplParams" colspan="2"><a id="ac2ecedb8437809238a9662de376e6079" name="ac2ecedb8437809238a9662de376e6079"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>parseString</b> (const std::string &amp;str) const</td></tr>
+<tr class="separator:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:ae3570f9ceb07440d616c3049fa06e9c6"><td class="memItemLeft" align="right" valign="top"><a id="ae3570f9ceb07440d616c3049fa06e9c6" name="ae3570f9ceb07440d616c3049fa06e9c6"></a>
@@ -306,40 +347,6 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>PreScripts</b> = std
 <tr class="memitem:a86792d94061addb80731d3b811cfbf87 inherit pro_types_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a86792d94061addb80731d3b811cfbf87" name="a86792d94061addb80731d3b811cfbf87"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>PostScripts</b> = std::array&lt; ScriptFunction, size_t(PostCond::COUNT_)&gt;</td></tr>
 <tr class="separator:a86792d94061addb80731d3b811cfbf87 inherit pro_types_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_methods_class_b_t_1_1_tree_node"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_b_t_1_1_tree_node')"><img src="../../closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">BT::TreeNode</a></td></tr>
-<tr class="memitem:a5abb43f6833295670bc0a11ad9fe3eae inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a5abb43f6833295670bc0a11ad9fe3eae" name="a5abb43f6833295670bc0a11ad9fe3eae"></a>
-<a class="el" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfig</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>config</b> ()</td></tr>
-<tr class="separator:a5abb43f6833295670bc0a11ad9fe3eae inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15ea206d20defd764035481ceda1de3e inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a15ea206d20defd764035481ceda1de3e">tick</a> ()=0</td></tr>
-<tr class="memdesc:a15ea206d20defd764035481ceda1de3e inherit pro_methods_class_b_t_1_1_tree_node"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to be implemented by the user.  <br /></td></tr>
-<tr class="separator:a15ea206d20defd764035481ceda1de3e inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8874bae4b946a2ea6d1b3db1a696cf6a inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a8874bae4b946a2ea6d1b3db1a696cf6a" name="a8874bae4b946a2ea6d1b3db1a696cf6a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>resetStatus</b> ()</td></tr>
-<tr class="memdesc:a8874bae4b946a2ea6d1b3db1a696cf6a inherit pro_methods_class_b_t_1_1_tree_node"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the status to IDLE. <br /></td></tr>
-<tr class="separator:a8874bae4b946a2ea6d1b3db1a696cf6a inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d2bef301e75a93a6fcd190274086209 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a5d2bef301e75a93a6fcd190274086209" name="a5d2bef301e75a93a6fcd190274086209"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setRegistrationID</b> (StringView ID)</td></tr>
-<tr class="separator:a5d2bef301e75a93a6fcd190274086209 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0389b4fc94e9ca42f6bf00a881b2cc2 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="aa0389b4fc94e9ca42f6bf00a881b2cc2" name="aa0389b4fc94e9ca42f6bf00a881b2cc2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setWakeUpInstance</b> (std::shared_ptr&lt; <a class="el" href="../../da/d2f/class_b_t_1_1_wake_up_signal.html">WakeUpSignal</a> &gt; instance)</td></tr>
-<tr class="separator:aa0389b4fc94e9ca42f6bf00a881b2cc2 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a03dd64782771d097e0d660cdc2366f inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a0a03dd64782771d097e0d660cdc2366f" name="a0a03dd64782771d097e0d660cdc2366f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>modifyPortsRemapping</b> (const PortsRemapping &amp;new_remapping)</td></tr>
-<tr class="separator:a0a03dd64782771d097e0d660cdc2366f inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab98b671336cdc496028b52112e21a0ed inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="ab98b671336cdc496028b52112e21a0ed" name="ab98b671336cdc496028b52112e21a0ed"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setStatus</b> (<a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> new_status)</td></tr>
-<tr class="memdesc:ab98b671336cdc496028b52112e21a0ed inherit pro_methods_class_b_t_1_1_tree_node"><td class="mdescLeft">&#160;</td><td class="mdescRight">setStatus changes the status of the node. it will throw if you try to change the status to IDLE, because your parent node should do that, not the user! <br /></td></tr>
-<tr class="separator:ab98b671336cdc496028b52112e21a0ed inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c4ef8671d5dfc14aec00c1e47852a2c inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="a7c4ef8671d5dfc14aec00c1e47852a2c" name="a7c4ef8671d5dfc14aec00c1e47852a2c"></a>
-PreScripts &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>preConditionsScripts</b> ()</td></tr>
-<tr class="separator:a7c4ef8671d5dfc14aec00c1e47852a2c inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad2938d6a473ea066543f69136d3eb447 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memItemLeft" align="right" valign="top"><a id="ad2938d6a473ea066543f69136d3eb447" name="ad2938d6a473ea066543f69136d3eb447"></a>
-PostScripts &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>postConditionsScripts</b> ()</td></tr>
-<tr class="separator:ad2938d6a473ea066543f69136d3eb447 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplParams" colspan="2"><a id="ac2ecedb8437809238a9662de376e6079" name="ac2ecedb8437809238a9662de376e6079"></a>
-template&lt;typename T &gt; </td></tr>
-<tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>parseString</b> (const std::string &amp;str) const</td></tr>
-<tr class="separator:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="../../d9/ddd/class_b_t_1_1_sequence_node.html" title="The SequenceNode is used to tick children in an ordered sequence. If any child returns RUNNING,...">SequenceNode</a> is used to tick children in an ordered sequence. If any child returns RUNNING, previous children will NOT be ticked again. </p>
@@ -374,6 +381,35 @@ template&lt;typename T &gt; </td></tr>
 <p>The method used to interrupt the execution of a RUNNING node. Only Async nodes that may return RUNNING should implement it. </p>
 
 <p>Reimplemented from <a class="el" href="../../d6/ddb/class_b_t_1_1_control_node.html#a99fcae0869f2a0d792af43987c5921f3">BT::ControlNode</a>.</p>
+
+</div>
+</div>
+<a id="a9121083765b74640bb7bc8d965c22d1f" name="a9121083765b74640bb7bc8d965c22d1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9121083765b74640bb7bc8d965c22d1f">&#9670;&#160;</a></span>tick()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a> BT::SequenceNode::tick </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Method to be implemented by the user. </p>
+
+<p>Implements <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a15ea206d20defd764035481ceda1de3e">BT::TreeNode</a>.</p>
 
 </div>
 </div>
