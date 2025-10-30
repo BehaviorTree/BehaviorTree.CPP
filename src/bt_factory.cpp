@@ -519,6 +519,11 @@ bool Tree::sleep(std::chrono::system_clock::duration timeout)
       std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
 }
 
+void Tree::emitWakeUpSignal()
+{
+  wake_up_->emitSignal();
+}
+
 Tree::~Tree()
 {
   haltTree();
