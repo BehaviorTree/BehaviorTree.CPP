@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.8.2 (2025-10-30)
+------------------
 * Merge pull request `#996 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/996>`_ from EnjoyRobotics/make-sequence-node-inheritable
 * Merge branch 'master' of github.com:BehaviorTree/BehaviorTree.CPP
 * fix issue `#1034 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1034>`_
