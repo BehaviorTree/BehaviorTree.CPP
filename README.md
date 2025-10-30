@@ -94,10 +94,6 @@ example here: https://github.com/BehaviorTree/btcpp_sample .
 Are you using BT.CPP in your commercial product and do you need technical support / consulting?
 You can contact the primary author, **dfaconti@aurynrobotics.com**, to discuss your use case and needs.
 
-# Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=BehaviorTree/BehaviorTree.CPP&type=Date)](https://star-history.com/#BehaviorTree/BehaviorTree.CPP&Date)
-
 ## Previous version
 
 Version 3.8 of the software can be found in the branch
@@ -105,6 +101,16 @@ Version 3.8 of the software can be found in the branch
 
 That branch might receive bug fixes, but the new features will be implemented
 only in the master branch.
+
+# Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=BehaviorTree/BehaviorTree.CPP&type=Date)](https://star-history.com/#BehaviorTree/BehaviorTree.CPP&Date)
+
+# Contributors
+
+<a href="https://github.com/BehaviorTree/BehaviorTree.CPP/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=BehaviorTree/BehaviorTree.CPP" />
+</a>
 
 # License
 
