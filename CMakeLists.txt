@@ -240,7 +240,7 @@ target_link_libraries(${BTCPP_LIBRARY}
 
 if(BTCPP_GROOT_INTERFACE)
     target_link_libraries(${BTCPP_LIBRARY}
-        PRIVATE
+        PUBLIC
             $<BUILD_INTERFACE:cppzmq>
     )
 endif()
