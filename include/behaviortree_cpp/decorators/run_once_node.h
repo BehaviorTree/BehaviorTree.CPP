@@ -1,4 +1,4 @@
-/*  Copyright (C) 2023 Davide Faconti -  All Rights Reserved
+/*  Copyright (C) 2023-2025 Davide Faconti -  All Rights Reserved
 *   Copyright (C) 2022 Gaël Écorchard, Czech Institute of Informatics, Robotics, and Cybernetics (ciirc) <gael.ecorchard@cvut.cz>
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
