@@ -47,8 +47,8 @@ NodeStatus RepeatNode::tick()
 
   while(do_loop)
   {
-    NodeStatus const prev_status = child_node_->status();
-    NodeStatus child_status = child_node_->executeTick();
+    const NodeStatus prev_status = child_node_->status();
+    const NodeStatus child_status = child_node_->executeTick();
 
     switch(child_status)
     {

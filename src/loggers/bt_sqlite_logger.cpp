@@ -3,6 +3,7 @@
 #include <sqlite3.h>
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 namespace BT
 {
@@ -13,11 +14,11 @@ namespace
 void execSQL(sqlite3* db, const std::string& sql)
 {
   char* err_msg = nullptr;
-  int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &err_msg);
+  const int rc = sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &err_msg);
   if(rc != SQLITE_OK)
   {
     std::string error = "SQL error: ";
-    if(err_msg)
+    if(err_msg != nullptr)
     {
       error += err_msg;
       sqlite3_free(err_msg);
@@ -30,7 +31,7 @@ void execSQL(sqlite3* db, const std::string& sql)
 sqlite3_stmt* prepareStatement(sqlite3* db, const std::string& sql)
 {
   sqlite3_stmt* stmt = nullptr;
-  int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+  const int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
   if(rc != SQLITE_OK)
   {
     throw RuntimeError(std::string("Failed to prepare statement: ") + sqlite3_errmsg(db));
@@ -41,7 +42,7 @@ sqlite3_stmt* prepareStatement(sqlite3* db, const std::string& sql)
 // Helper function to execute a prepared statement
 void execStatement(sqlite3_stmt* stmt)
 {
-  int rc = sqlite3_step(stmt);
+  const int rc = sqlite3_step(stmt);
   if(rc != SQLITE_DONE && rc != SQLITE_ROW)
   {
     throw RuntimeError(std::string("Failed to execute statement: ") + std::to_string(rc));
@@ -64,7 +65,7 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
   enableTransitionToIdle(true);
 
   // Open database
-  int rc = sqlite3_open(filepath.string().c_str(), &db_);
+  const int rc = sqlite3_open(filepath.string().c_str(), &db_);
   if(rc != SQLITE_OK)
   {
     throw RuntimeError(std::string("Cannot open database: ") + sqlite3_errmsg(db_));
@@ -129,11 +130,18 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
 
 SqliteLogger::~SqliteLogger()
 {
-  loop_ = false;
-  queue_cv_.notify_one();
-  writer_thread_.join();
-  flush();
-  execSQL(db_, "PRAGMA optimize;");
+  try
+  {
+    loop_ = false;
+    queue_cv_.notify_one();
+    writer_thread_.join();
+    flush();
+    execSQL(db_, "PRAGMA optimize;");
+  }
+  catch(const std::exception& ex)
+  {
+    std::cerr << "Exception in ~SqliteLogger(): " << ex.what() << std::endl;
+  }
   sqlite3_close(db_);
 }
 
@@ -146,7 +154,7 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
                             NodeStatus prev_status, NodeStatus status)
 {
   using namespace std::chrono;
-  int64_t tm_usec = int64_t(duration_cast<microseconds>(timestamp).count());
+  const int64_t tm_usec = int64_t(duration_cast<microseconds>(timestamp).count());
   monotonic_timestamp_ = std::max(monotonic_timestamp_ + 1, tm_usec);
 
   long elapsed_time = 0;
@@ -178,7 +186,7 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
   }
 
   {
-    std::scoped_lock lk(queue_mutex_);
+    const std::scoped_lock lk(queue_mutex_);
     transitions_queue_.push_back(trans);
   }
   queue_cv_.notify_one();

@@ -73,7 +73,7 @@ NodeStatus ManualSelectorNode::tick()
     }
   }
 
-  NodeStatus ret = children_nodes_[idx]->executeTick();
+  const NodeStatus ret = children_nodes_[idx]->executeTick();
   if(ret == NodeStatus::RUNNING)
   {
     running_child_idx_ = idx;
@@ -83,11 +83,9 @@ NodeStatus ManualSelectorNode::tick()
 
 NodeStatus ManualSelectorNode::selectStatus() const
 {
-  WINDOW* win;
+  WINDOW* win = nullptr;
   initscr();
   cbreak();
-
-  win = newwin(6, 70, 1, 1);  // create a new window
 
   mvwprintw(win, 0, 0, "No children.");
   mvwprintw(win, 1, 0, "Press: S to return SUCCESSFUL,");
@@ -100,20 +98,20 @@ NodeStatus ManualSelectorNode::selectStatus() const
   curs_set(0);        // hide the default screen cursor.
 
   int ch = 0;
-  NodeStatus ret;
-  while(1)
+  NodeStatus ret = NodeStatus::RUNNING;
+  while(true)
   {
     if(ch == 's' || ch == 'S')
     {
       ret = NodeStatus::SUCCESS;
       break;
     }
-    else if(ch == 'f' || ch == 'F')
+    if(ch == 'f' || ch == 'F')
     {
       ret = NodeStatus::FAILURE;
       break;
     }
-    else if(ch == 'r' || ch == 'R')
+    if(ch == 'r' || ch == 'R')
     {
       ret = NodeStatus::RUNNING;
       break;
@@ -144,11 +142,11 @@ uint8_t ManualSelectorNode::selectChild() const
     width = std::max(width, str.size() + 2);
   }
 
-  WINDOW* win;
+  WINDOW* win = nullptr;
   initscr();
   cbreak();
 
-  win = newwin(children_count + 6, 70, 1, 1);  // create a new window
+  win = newwin(static_cast<int>(children_count) + 6, 70, 1, 1);  // create a new window
 
   mvwprintw(win, 0, 0, "Use UP/DOWN arrow to select the child, Enter to confirm.");
   mvwprintw(win, 1, 0, "Press: S to skip and return SUCCESSFUL,");
@@ -158,7 +156,7 @@ uint8_t ManualSelectorNode::selectChild() const
   // now print all the menu items and highlight the first one
   for(size_t i = 0; i < list.size(); i++)
   {
-    mvwprintw(win, i + 5, 0, "%2ld. %s", i + 1, list[i].c_str());
+    mvwprintw(win, static_cast<int>(i) + 5, 0, "%2zu. %s", i + 1, list[i].c_str());
   }
 
   wrefresh(win);      // update the terminal screen
@@ -168,7 +166,7 @@ uint8_t ManualSelectorNode::selectChild() const
 
   uint8_t row = 0;
   int ch = 0;
-  while(1)
+  while(true)
   {
     // right pad with spaces to make the items appear with even width.
     wattroff(win, A_STANDOUT);

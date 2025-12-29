@@ -21,7 +21,7 @@ DecoratorNode::DecoratorNode(const std::string& name, const NodeConfig& config)
 
 void DecoratorNode::setChild(TreeNode* child)
 {
-  if(child_node_)
+  if(child_node_ != nullptr)
   {
     throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
   }
@@ -52,7 +52,7 @@ void DecoratorNode::haltChild()
 
 void DecoratorNode::resetChild()
 {
-  if(!child_node_)
+  if(child_node_ == nullptr)
   {
     return;
   }
@@ -76,8 +76,8 @@ NodeStatus SimpleDecoratorNode::tick()
 
 NodeStatus DecoratorNode::executeTick()
 {
-  NodeStatus status = TreeNode::executeTick();
-  NodeStatus child_status = child()->status();
+  const NodeStatus status = TreeNode::executeTick();
+  const NodeStatus child_status = child()->status();
   if(child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE)
   {
     child()->resetStatus();

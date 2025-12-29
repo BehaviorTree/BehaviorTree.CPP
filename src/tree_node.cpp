@@ -54,10 +54,8 @@ TreeNode::TreeNode(std::string name, NodeConfig config)
   : _p(new PImpl(std::move(name), std::move(config)))
 {}
 
-TreeNode::TreeNode(TreeNode&& other) noexcept
-{
-  this->_p = std::move(other._p);
-}
+TreeNode::TreeNode(TreeNode&& other) noexcept : _p(std::move(other._p))
+{}
 
 TreeNode& TreeNode::operator=(TreeNode&& other) noexcept
 {
@@ -65,8 +63,7 @@ TreeNode& TreeNode::operator=(TreeNode&& other) noexcept
   return *this;
 }
 
-TreeNode::~TreeNode()
-{}
+TreeNode::~TreeNode() = default;
 
 NodeStatus TreeNode::executeTick()
 {
@@ -75,7 +72,7 @@ NodeStatus TreeNode::executeTick()
   PostTickCallback post_tick;
   TickMonitorCallback monitor_tick;
   {
-    std::scoped_lock lk(_p->callback_injection_mutex);
+    const std::scoped_lock lk(_p->callback_injection_mutex);
     pre_tick = _p->pre_tick_callback;
     post_tick = _p->post_tick_callback;
     monitor_tick = _p->tick_monitor_callback;
@@ -160,9 +157,9 @@ void TreeNode::setStatus(NodeStatus new_status)
                        "If you know what you are doing (?) use resetStatus() instead.");
   }
 
-  NodeStatus prev_status;
+  NodeStatus prev_status = NodeStatus::IDLE;
   {
-    std::unique_lock<std::mutex> UniqueLock(_p->state_mutex);
+    const std::unique_lock<std::mutex> UniqueLock(_p->state_mutex);
     prev_status = _p->status;
     _p->status = new_status;
   }
@@ -197,7 +194,7 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
       continue;
     }
 
-    const PreCond preID = PreCond(index);
+    const auto preID = static_cast<PreCond>(index);
 
     // Some preconditions are applied only when the node state is IDLE or SKIPPED
     if(_p->status == NodeStatus::IDLE || _p->status == NodeStatus::SKIPPED)
@@ -209,11 +206,11 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
         {
           return NodeStatus::FAILURE;
         }
-        else if(preID == PreCond::SUCCESS_IF)
+        if(preID == PreCond::SUCCESS_IF)
         {
           return NodeStatus::SUCCESS;
         }
-        else if(preID == PreCond::SKIP_IF)
+        if(preID == PreCond::SKIP_IF)
         {
           return NodeStatus::SKIPPED;
         }
@@ -261,9 +258,9 @@ void TreeNode::checkPostConditions(NodeStatus status)
 
 void TreeNode::resetStatus()
 {
-  NodeStatus prev_status;
+  NodeStatus prev_status = NodeStatus::IDLE;
   {
-    std::unique_lock<std::mutex> lock(_p->state_mutex);
+    const std::unique_lock<std::mutex> lock(_p->state_mutex);
     prev_status = _p->status;
     _p->status = NodeStatus::IDLE;
   }
@@ -278,7 +275,7 @@ void TreeNode::resetStatus()
 
 NodeStatus TreeNode::status() const
 {
-  std::lock_guard<std::mutex> lock(_p->state_mutex);
+  const std::lock_guard<std::mutex> lock(_p->state_mutex);
   return _p->status;
 }
 
@@ -309,22 +306,25 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
   return _p->state_change_signal.subscribe(std::move(callback));
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 void TreeNode::setPreTickFunction(PreTickCallback callback)
 {
-  std::unique_lock lk(_p->callback_injection_mutex);
-  _p->pre_tick_callback = callback;
+  const std::unique_lock lk(_p->callback_injection_mutex);
+  _p->pre_tick_callback = std::move(callback);
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 void TreeNode::setPostTickFunction(PostTickCallback callback)
 {
-  std::unique_lock lk(_p->callback_injection_mutex);
-  _p->post_tick_callback = callback;
+  const std::unique_lock lk(_p->callback_injection_mutex);
+  _p->post_tick_callback = std::move(callback);
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 void TreeNode::setTickMonitorCallback(TickMonitorCallback callback)
 {
-  std::unique_lock lk(_p->callback_injection_mutex);
-  _p->tick_monitor_callback = callback;
+  const std::unique_lock lk(_p->callback_injection_mutex);
+  _p->tick_monitor_callback = std::move(callback);
 }
 
 uint16_t TreeNode::UID() const
@@ -385,7 +385,7 @@ bool TreeNode::isBlackboardPointer(StringView str, StringView* stripped_pointer)
   }
   const auto size = (last_index - front_index) + 1;
   auto valid = size >= 3 && str[front_index] == '{' && str[last_index] == '}';
-  if(valid && stripped_pointer)
+  if(valid && stripped_pointer != nullptr)
   {
     *stripped_pointer = StringView(&str[front_index + 1], size - 2);
   }

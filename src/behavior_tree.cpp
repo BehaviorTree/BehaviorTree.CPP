@@ -18,7 +18,7 @@ namespace BT
 void applyRecursiveVisitor(const TreeNode* node,
                            const std::function<void(const TreeNode*)>& visitor)
 {
-  if(!node)
+  if(node == nullptr)
   {
     throw LogicError("One of the children of a DecoratorNode or ControlNode is nullptr");
   }
@@ -40,7 +40,7 @@ void applyRecursiveVisitor(const TreeNode* node,
 
 void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>& visitor)
 {
-  if(!node)
+  if(node == nullptr)
   {
     throw LogicError("One of the children of a DecoratorNode or ControlNode is nullptr");
   }
@@ -56,7 +56,7 @@ void applyRecursiveVisitor(TreeNode* node, const std::function<void(TreeNode*)>&
   }
   else if(auto decorator = dynamic_cast<BT::DecoratorNode*>(node))
   {
-    if(decorator->child())
+    if(decorator->child() != nullptr)
     {
       applyRecursiveVisitor(decorator->child(), visitor);
     }
@@ -72,7 +72,7 @@ void printTreeRecursively(const TreeNode* root_node, std::ostream& stream)
     {
       stream << "   ";
     }
-    if(!node)
+    if(node == nullptr)
     {
       stream << "!nullptr!" << std::endl;
       return;
@@ -98,7 +98,7 @@ void printTreeRecursively(const TreeNode* root_node, std::ostream& stream)
   stream << "----------------" << std::endl;
 }
 
-void buildSerializedStatusSnapshot(TreeNode* root_node,
+void buildSerializedStatusSnapshot(const TreeNode* root_node,
                                    SerializedTreeStatus& serialized_buffer)
 {
   serialized_buffer.clear();

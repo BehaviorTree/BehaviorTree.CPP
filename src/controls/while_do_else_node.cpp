@@ -36,7 +36,7 @@ NodeStatus WhileDoElseNode::tick()
 
   setStatus(NodeStatus::RUNNING);
 
-  NodeStatus condition_status = children_nodes_[0]->executeTick();
+  const NodeStatus condition_status = children_nodes_[0]->executeTick();
 
   if(condition_status == NodeStatus::RUNNING)
   {
@@ -70,11 +70,8 @@ NodeStatus WhileDoElseNode::tick()
   {
     return NodeStatus::RUNNING;
   }
-  else
-  {
-    resetChildren();
-    return status;
-  }
+  resetChildren();
+  return status;
 }
 
 }  // namespace BT

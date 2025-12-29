@@ -25,7 +25,7 @@ public:
 
   ~LockedPtr()
   {
-    if(mutex_)
+    if(mutex_ != nullptr)
     {
       mutex_->unlock();
     }
@@ -34,16 +34,17 @@ public:
   LockedPtr(LockedPtr const&) = delete;
   LockedPtr& operator=(LockedPtr const&) = delete;
 
-  LockedPtr(LockedPtr&& other)
+  LockedPtr(LockedPtr&& other) noexcept
   {
     std::swap(ref_, other.ref_);
     std::swap(mutex_, other.mutex_);
   }
 
-  LockedPtr& operator=(LockedPtr&& other)
+  LockedPtr& operator=(LockedPtr&& other) noexcept
   {
     std::swap(ref_, other.ref_);
     std::swap(mutex_, other.mutex_);
+    return *this;
   }
 
   operator bool() const
@@ -53,7 +54,7 @@ public:
 
   void lock()
   {
-    if(mutex_)
+    if(mutex_ != nullptr)
     {
       mutex_->lock();
     }
@@ -61,7 +62,7 @@ public:
 
   void unlock()
   {
-    if(mutex_)
+    if(mutex_ != nullptr)
     {
       mutex_->unlock();
     }

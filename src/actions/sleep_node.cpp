@@ -25,7 +25,7 @@ NodeStatus SleepNode::onStart()
   timer_waiting_ = true;
 
   timer_id_ = timer_.add(std::chrono::milliseconds(msec), [this](bool aborted) {
-    std::unique_lock<std::mutex> lk(delay_mutex_);
+    const std::unique_lock<std::mutex> lk(delay_mutex_);
     if(!aborted)
     {
       emitWakeUpSignal();

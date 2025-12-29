@@ -47,7 +47,7 @@ NodeStatus ParallelAllNode::tick()
     TreeNode* child_node = children_nodes_[index];
 
     // already completed
-    if(completed_list_.count(index) != 0)
+    if(completed_list_.contains(index))
     {
       continue;
     }

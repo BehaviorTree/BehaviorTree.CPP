@@ -70,7 +70,8 @@ public:
   Any(const Any& other) : _any(other._any), _original_type(other._original_type)
   {}
 
-  Any(Any&& other) : _any(std::move(other._any)), _original_type(other._original_type)
+  Any(Any&& other) noexcept
+    : _any(std::move(other._any)), _original_type(other._original_type)
   {}
 
   explicit Any(const double& value) : _any(value), _original_type(typeid(double))
@@ -116,6 +117,8 @@ public:
   }
 
   Any& operator=(const Any& other);
+
+  Any& operator=(Any&& other) noexcept;
 
   [[nodiscard]] bool isNumber() const;
 
@@ -305,7 +308,17 @@ inline bool isCastingSafe(const std::type_index& type, const T& val)
 
 inline Any& Any::operator=(const Any& other)
 {
-  this->_any = other._any;
+  if(this != &other)
+  {
+    this->_any = other._any;
+    this->_original_type = other._original_type;
+  }
+  return *this;
+}
+
+inline Any& Any::operator=(Any&& other) noexcept
+{
+  this->_any = std::move(other._any);
   this->_original_type = other._original_type;
   return *this;
 }

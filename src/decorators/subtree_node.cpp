@@ -19,7 +19,7 @@ BT::PortsList BT::SubTreeNode::providedPorts()
 
 BT::NodeStatus BT::SubTreeNode::tick()
 {
-  NodeStatus prev_status = status();
+  const NodeStatus prev_status = status();
   if(prev_status == NodeStatus::IDLE)
   {
     setStatus(NodeStatus::RUNNING);

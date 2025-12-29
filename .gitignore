@@ -18,3 +18,6 @@ CMakeSettings.json
 CMakeUserPresets.json
 
 tags
+/clang_tidy_output.log
+/.clang-tidy-venv/*
+/llvm.sh

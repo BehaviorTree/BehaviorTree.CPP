@@ -53,7 +53,6 @@ public:
     if(this != &other)
     {
       this->~SimpleString();
-      // Ensure clean state before swap
       _storage = {};
       std::swap(_storage, other._storage);
     }

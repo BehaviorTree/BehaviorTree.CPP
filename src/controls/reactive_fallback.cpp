@@ -55,7 +55,7 @@ NodeStatus ReactiveFallback::tick()
         {
           running_child_ = int(index);
         }
-        else if(throw_if_multiple_running && running_child_ != int(index))
+        else if(throw_if_multiple_running && running_child_ != static_cast<int>(index))
         {
           throw LogicError("[ReactiveFallback]: only a single child can return RUNNING.\n"
                            "This throw can be disabled with "
