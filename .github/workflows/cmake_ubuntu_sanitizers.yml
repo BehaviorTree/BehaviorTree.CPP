@@ -25,7 +25,7 @@ jobs:
         sanitizer: [asan_ubsan, tsan]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
 
     - name: Install Conan
       id: conan

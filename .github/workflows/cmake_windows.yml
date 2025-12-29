@@ -23,7 +23,7 @@ jobs:
         os: [windows-latest]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install Conan
       id: conan
