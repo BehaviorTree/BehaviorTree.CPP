@@ -47,7 +47,7 @@ private:
   {
     loadExecutor();
 
-    BT::NodeStatus else_return;
+    BT::NodeStatus else_return = NodeStatus::FAILURE;
     if(!getInput("else", else_return))
     {
       throw RuntimeError("Missing parameter [else] in Precondition");

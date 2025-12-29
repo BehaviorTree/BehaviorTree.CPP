@@ -78,8 +78,10 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
 * See examples in sample_nodes directory.
 */
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage,bugprone-macro-parentheses)
 #define BT_REGISTER_NODES(factory)                                                       \
   BTCPP_EXPORT void BT_RegisterNodesFromPlugin(BT::BehaviorTreeFactory& factory)
+// NOLINTEND(cppcoreguidelines-macro-usage,bugprone-macro-parentheses)
 
 constexpr const char* PLUGIN_SYMBOL = "BT_RegisterNodesFromPlugin";
 

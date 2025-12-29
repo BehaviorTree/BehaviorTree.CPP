@@ -370,9 +370,9 @@ public:
     }
     else if constexpr(hasNodeNameCtor<DerivedT>())
     {
-      auto node_ptr = new DerivedT(name, args...);
+      auto node_ptr = std::make_unique<DerivedT>(name, args...);
       node_ptr->config() = config;
-      return std::unique_ptr<DerivedT>(node_ptr);
+      return node_ptr;
     }
   }
 
