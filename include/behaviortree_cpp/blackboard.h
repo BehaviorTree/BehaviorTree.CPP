@@ -40,6 +40,11 @@ protected:
   {}
 
 public:
+  Blackboard(const Blackboard&) = delete;
+  Blackboard& operator=(const Blackboard&) = delete;
+  Blackboard(Blackboard&&) = delete;
+  Blackboard& operator=(Blackboard&&) = delete;
+
   struct Entry
   {
     Any value;
@@ -54,7 +59,11 @@ public:
     Entry(const TypeInfo& _info) : info(_info)
     {}
 
-    Entry& operator=(const Entry& other);
+    ~Entry() = default;
+    Entry(const Entry&) = delete;
+    Entry& operator=(const Entry&) = delete;
+    Entry(Entry&&) = delete;
+    Entry& operator=(Entry&&) = delete;
   };
 
   /** Use this static method to create an instance of the BlackBoard

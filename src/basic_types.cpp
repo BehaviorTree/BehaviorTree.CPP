@@ -6,6 +6,7 @@
 #include <cstring>
 #include <clocale>
 #include <charconv>
+#include <tuple>
 
 namespace BT
 {
@@ -46,31 +47,28 @@ std::string toStr(NodeStatus status, bool colored)
   {
     return toStr(status);
   }
-  else
+  switch(status)
   {
-    switch(status)
-    {
-      case NodeStatus::SUCCESS:
-        return "\x1b[32m"
-               "SUCCESS"
-               "\x1b[0m";  // RED
-      case NodeStatus::FAILURE:
-        return "\x1b[31m"
-               "FAILURE"
-               "\x1b[0m";  // GREEN
-      case NodeStatus::RUNNING:
-        return "\x1b[33m"
-               "RUNNING"
-               "\x1b[0m";  // YELLOW
-      case NodeStatus::SKIPPED:
-        return "\x1b[34m"
-               "SKIPPED"
-               "\x1b[0m";  // BLUE
-      case NodeStatus::IDLE:
-        return "\x1b[36m"
-               "IDLE"
-               "\x1b[0m";  // CYAN
-    }
+    case NodeStatus::SUCCESS:
+      return "\x1b[32m"
+             "SUCCESS"
+             "\x1b[0m";  // GREEN
+    case NodeStatus::FAILURE:
+      return "\x1b[31m"
+             "FAILURE"
+             "\x1b[0m";  // RED
+    case NodeStatus::RUNNING:
+      return "\x1b[33m"
+             "RUNNING"
+             "\x1b[0m";  // YELLOW
+    case NodeStatus::SKIPPED:
+      return "\x1b[34m"
+             "SKIPPED"
+             "\x1b[0m";  // BLUE
+    case NodeStatus::IDLE:
+      return "\x1b[36m"
+             "IDLE"
+             "\x1b[0m";  // CYAN
   }
   return "Undefined";
 }
@@ -120,7 +118,8 @@ template <>
 int64_t convertFromString<int64_t>(StringView str)
 {
   long result = 0;
-  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  std::ignore = ptr;
   if(ec != std::errc())
   {
     throw RuntimeError(StrCat("Can't convert string [", str, "] to integer"));
@@ -132,7 +131,8 @@ template <>
 uint64_t convertFromString<uint64_t>(StringView str)
 {
   unsigned long result = 0;
-  auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  std::ignore = ptr;
   if(ec != std::errc())
   {
     throw RuntimeError(StrCat("Can't convert string [", str, "] to integer"));
@@ -140,6 +140,8 @@ uint64_t convertFromString<uint64_t>(StringView str)
   return result;
 }
 
+namespace
+{
 template <typename T>
 T ConvertWithBoundCheck(StringView str)
 {
@@ -151,6 +153,7 @@ T ConvertWithBoundCheck(StringView str)
   }
   return res;
 }
+}  // namespace
 
 template <>
 int8_t convertFromString<int8_t>(StringView str)
@@ -194,21 +197,23 @@ double convertFromString<double>(StringView str)
   // see issue #120
   // http://quick-bench.com/DWaXRWnxtxvwIMvZy2DxVPEKJnE
 
-  std::string old_locale = setlocale(LC_NUMERIC, nullptr);
-  setlocale(LC_NUMERIC, "C");
-  double val = std::stod(str.data());
-  setlocale(LC_NUMERIC, old_locale.c_str());
+  const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
+  std::ignore = setlocale(LC_NUMERIC, "C");
+  const std::string str_copy(str.data(), str.size());
+  const double val = std::stod(str_copy);
+  std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
   return val;
 }
 
 template <>
 float convertFromString<float>(StringView str)
 {
-  std::string old_locale = setlocale(LC_NUMERIC, nullptr);
-  setlocale(LC_NUMERIC, "C");
-  float val = std::stof(str.data());
-  setlocale(LC_NUMERIC, old_locale.c_str());
-  return val;
+  const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
+  std::ignore = setlocale(LC_NUMERIC, "C");
+  const std::string str_copy(str.data(), str.size());
+  const double val = std::stod(str_copy);
+  std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
+  return static_cast<float>(val);
 }
 
 template <>
@@ -439,7 +444,7 @@ bool IsAllowedPortName(StringView str)
     return false;
   }
   const char first_char = str.data()[0];
-  if(!std::isalpha(first_char))
+  if(std::isalpha(static_cast<unsigned char>(first_char)) == 0)
   {
     return false;
   }
@@ -467,7 +472,7 @@ bool IsReservedAttribute(StringView str)
 
 Any convertFromJSON(StringView json_text, std::type_index type)
 {
-  nlohmann::json json = nlohmann::json::parse(json_text);
+  const nlohmann::json json = nlohmann::json::parse(json_text);
   auto res = JsonExporter::get().fromJson(json, type);
   if(!res)
   {
@@ -488,8 +493,18 @@ Expected<std::string> toJsonString(const Any& value)
 
 bool StartWith(StringView str, StringView prefix)
 {
-  return str.size() >= prefix.size() &&
-         strncmp(str.data(), prefix.data(), prefix.size()) == 0;
+  if(str.size() < prefix.size())
+  {
+    return false;
+  }
+  for(size_t i = 0; i < prefix.size(); ++i)
+  {
+    if(str[i] != prefix[i])
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool StartWith(StringView str, char prefix)

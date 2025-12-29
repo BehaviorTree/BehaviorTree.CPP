@@ -31,6 +31,11 @@ public:
 
   ~EntryUpdatedDecorator() override = default;
 
+  EntryUpdatedDecorator(const EntryUpdatedDecorator&) = delete;
+  EntryUpdatedDecorator& operator=(const EntryUpdatedDecorator&) = delete;
+  EntryUpdatedDecorator(EntryUpdatedDecorator&&) = delete;
+  EntryUpdatedDecorator& operator=(EntryUpdatedDecorator&&) = delete;
+
   static PortsList providedPorts()
   {
     return { InputPort<BT::Any>("entry", "Entry to check") };

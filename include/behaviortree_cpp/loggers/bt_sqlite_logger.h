@@ -55,7 +55,12 @@ public:
    */
   SqliteLogger(const Tree& tree, std::filesystem::path const& file, bool append = false);
 
-  virtual ~SqliteLogger() override;
+  ~SqliteLogger() override;
+
+  SqliteLogger(const SqliteLogger&) = delete;
+  SqliteLogger& operator=(const SqliteLogger&) = delete;
+  SqliteLogger(SqliteLogger&&) = delete;
+  SqliteLogger& operator=(SqliteLogger&&) = delete;
 
   // You can inject a function that add a string to the Transitions table,
   // in the column "extra_data".

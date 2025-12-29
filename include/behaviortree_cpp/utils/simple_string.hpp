@@ -52,9 +52,6 @@ public:
   {
     if(this != &other)
     {
-      this->~SimpleString();
-      // Ensure clean state before swap
-      _storage = {};
       std::swap(_storage, other._storage);
     }
     return *this;
@@ -194,7 +191,7 @@ private:
     {
       _storage.str.size = size;
       _storage.soo.capacity_left = IS_LONG_BIT;
-      _storage.str.data = new char[size + 1];
+      _storage.str.data = new char[size + 1];  // NOLINT(cppcoreguidelines-owning-memory)
       std::memcpy(_storage.str.data, input_data, size);
       _storage.str.data[size] = '\0';
     }

@@ -79,11 +79,7 @@ bool CheckStringEquality(const std::string& v1, const std::string& v2,
   double v1_real = 0;
   double v2_real = 0;
   constexpr auto eps = double(std::numeric_limits<float>::epsilon());
-  if(ToReal(v1, v1_real) && ToReal(v2, v2_real) && std::abs(v1_real - v2_real) <= eps)
-  {
-    return true;
-  }
-  return false;
+  return ToReal(v1, v1_real) && ToReal(v2, v2_real) && std::abs(v1_real - v2_real) <= eps;
 }
 
 }  // namespace BT::details

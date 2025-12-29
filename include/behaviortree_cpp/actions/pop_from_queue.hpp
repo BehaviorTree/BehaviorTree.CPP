@@ -71,18 +71,12 @@ public:
       {
         return NodeStatus::FAILURE;
       }
-      else
-      {
-        T val = items.front();
-        items.pop_front();
-        setOutput("popped_item", val);
-        return NodeStatus::SUCCESS;
-      }
+      T val = items.front();
+      items.pop_front();
+      setOutput("popped_item", val);
+      return NodeStatus::SUCCESS;
     }
-    else
-    {
-      return NodeStatus::FAILURE;
-    }
+    return NodeStatus::FAILURE;
   }
 
   static PortsList providedPorts()
@@ -125,11 +119,8 @@ public:
       {
         return NodeStatus::FAILURE;
       }
-      else
-      {
-        setOutput("size", int(items.size()));
-        return NodeStatus::SUCCESS;
-      }
+      setOutput("size", int(items.size()));
+      return NodeStatus::SUCCESS;
     }
     return NodeStatus::FAILURE;
   }

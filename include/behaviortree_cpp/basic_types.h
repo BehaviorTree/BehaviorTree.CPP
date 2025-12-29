@@ -418,8 +418,11 @@ public:
     {
       default_value_str_ = BT::toStr(default_value);
     }
+    // NOLINTNEXTLINE(bugprone-empty-catch)
     catch(LogicError&)
-    {}
+    {
+      // conversion to string not available for this type, ignore
+    }
   }
 
   [[nodiscard]] const std::string& description() const;

@@ -37,7 +37,7 @@ void ControlNode::halt()
 
 void ControlNode::resetChildren()
 {
-  for(auto child : children_nodes_)
+  for(auto* child : children_nodes_)
   {
     if(child->status() == NodeStatus::RUNNING)
     {
@@ -54,7 +54,7 @@ const std::vector<TreeNode*>& ControlNode::children() const
 
 void ControlNode::haltChild(size_t i)
 {
-  auto child = children_nodes_[i];
+  auto* child = children_nodes_[i];
   if(child->status() == NodeStatus::RUNNING)
   {
     child->haltNode();

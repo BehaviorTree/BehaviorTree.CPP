@@ -45,6 +45,8 @@ public:
 
   scoped_demangled_name(scoped_demangled_name const&) = delete;
   scoped_demangled_name& operator=(scoped_demangled_name const&) = delete;
+  scoped_demangled_name(scoped_demangled_name&&) = delete;
+  scoped_demangled_name& operator=(scoped_demangled_name&&) = delete;
 };
 
 #if defined(HAS_CXXABI_H)
@@ -58,6 +60,7 @@ inline char const* demangle_alloc(char const* name) noexcept
 
 inline void demangle_free(char const* name) noexcept
 {
+  // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
   std::free(const_cast<char*>(name));
 }
 
@@ -103,14 +106,11 @@ inline std::string demangle(const std::type_index& index)
 
   scoped_demangled_name demangled_name(index.name());
   char const* const p = demangled_name.get();
-  if(p)
+  if(p != nullptr)
   {
     return p;
   }
-  else
-  {
-    return index.name();
-  }
+  return index.name();
 }
 
 inline std::string demangle(const std::type_info& info)

@@ -21,6 +21,8 @@ MinitraceLogger::~MinitraceLogger()
   mtr_shutdown();
 }
 
+namespace
+{
 const char* toConstStr(NodeType type)
 {
   switch(type)
@@ -39,6 +41,7 @@ const char* toConstStr(NodeType type)
       return "Undefined";
   }
 }
+}  // namespace
 
 void MinitraceLogger::callback(Duration /*timestamp*/, const TreeNode& node,
                                NodeStatus prev_status, NodeStatus status)

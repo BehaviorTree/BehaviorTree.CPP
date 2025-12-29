@@ -5,10 +5,13 @@
 namespace BT
 {
 
+namespace
+{
 int64_t ToUsec(Duration ts)
 {
   return std::chrono::duration_cast<std::chrono::microseconds>(ts).count();
 }
+}  // namespace
 
 struct FileLogger2::PImpl
 {
@@ -51,19 +54,19 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
   std::string const xml = WriteTreeToXML(tree, true, true);
 
   // serialize the length of the buffer in the first 4 bytes
-  char write_buffer[8];
-  flatbuffers::WriteScalar(write_buffer, static_cast<int32_t>(xml.size()));
-  _p->file_stream.write(write_buffer, 4);
+  std::array<char, 8> write_buffer{};
+  flatbuffers::WriteScalar(write_buffer.data(), static_cast<int32_t>(xml.size()));
+  _p->file_stream.write(write_buffer.data(), 4);
 
   // write the XML definition
-  _p->file_stream.write(xml.data(), int(xml.size()));
+  _p->file_stream.write(xml.data(), static_cast<std::streamsize>(xml.size()));
 
   _p->first_timestamp = std::chrono::system_clock::now().time_since_epoch();
 
   // save the first timestamp in the next 8 bytes (microseconds)
-  int64_t timestamp_usec = ToUsec(_p->first_timestamp);
-  flatbuffers::WriteScalar(write_buffer, timestamp_usec);
-  _p->file_stream.write(write_buffer, 8);
+  const int64_t timestamp_usec = ToUsec(_p->first_timestamp);
+  flatbuffers::WriteScalar(write_buffer.data(), timestamp_usec);
+  _p->file_stream.write(write_buffer.data(), 8);
 
   _p->writer_thread = std::thread(&FileLogger2::writerLoop, this);
 }
@@ -79,12 +82,12 @@ FileLogger2::~FileLogger2()
 void FileLogger2::callback(Duration timestamp, const TreeNode& node,
                            NodeStatus /*prev_status*/, NodeStatus status)
 {
-  Transition trans;
+  Transition trans{};
   trans.timestamp_usec = uint64_t(ToUsec(timestamp - _p->first_timestamp));
   trans.node_uid = node.UID();
   trans.status = static_cast<uint64_t>(status);
   {
-    std::scoped_lock lock(_p->queue_mutex);
+    const std::scoped_lock lock(_p->queue_mutex);
     _p->transitions_queue.push_back(trans);
   }
   _p->queue_cv.notify_one();
@@ -114,7 +117,7 @@ void FileLogger2::writerLoop()
     while(!transitions.empty())
     {
       const auto trans = transitions.front();
-      std::array<char, 9> write_buffer;
+      std::array<char, 9> write_buffer{};
       std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6);
       std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2);
       std::memcpy(write_buffer.data() + 8, &trans.status, 1);

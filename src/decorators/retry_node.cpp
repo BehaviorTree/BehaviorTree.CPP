@@ -15,8 +15,6 @@
 
 namespace BT
 {
-constexpr const char* RetryNode::NUM_ATTEMPTS;
-
 RetryNode::RetryNode(const std::string& name, int NTries)
   : DecoratorNode(name, {})
   , max_attempts_(NTries)
@@ -54,8 +52,8 @@ NodeStatus RetryNode::tick()
 
   while(do_loop)
   {
-    NodeStatus prev_status = child_node_->status();
-    NodeStatus child_status = child_node_->executeTick();
+    const NodeStatus prev_status = child_node_->status();
+    const NodeStatus child_status = child_node_->executeTick();
 
     switch(child_status)
     {

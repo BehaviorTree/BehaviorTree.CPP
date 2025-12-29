@@ -56,6 +56,11 @@ public:
 
   ~ParallelNode() override = default;
 
+  ParallelNode(const ParallelNode&) = delete;
+  ParallelNode& operator=(const ParallelNode&) = delete;
+  ParallelNode(ParallelNode&&) = delete;
+  ParallelNode& operator=(ParallelNode&&) = delete;
+
   virtual void halt() override;
 
   size_t successThreshold() const;

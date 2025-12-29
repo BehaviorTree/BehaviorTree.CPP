@@ -11,6 +11,29 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
     - uses: pre-commit/action@v3.0.1
+
+  clang-tidy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install LLVM 21
+      run: |
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh 21
+        sudo apt-get install -y clangd-21 clang-tidy-21
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libzmq3-dev libsqlite3-dev
+
+    - name: Configure CMake
+      run: cmake -B build -DBUILD_TESTING=OFF
+
+    - name: Run clang-tidy
+      run: ./run_clang_tidy.sh

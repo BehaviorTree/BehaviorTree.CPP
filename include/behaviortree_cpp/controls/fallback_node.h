@@ -34,7 +34,12 @@ class FallbackNode : public ControlNode
 public:
   FallbackNode(const std::string& name, bool make_asynch = false);
 
-  virtual ~FallbackNode() override = default;
+  ~FallbackNode() override = default;
+
+  FallbackNode(const FallbackNode&) = delete;
+  FallbackNode& operator=(const FallbackNode&) = delete;
+  FallbackNode(FallbackNode&&) = delete;
+  FallbackNode& operator=(FallbackNode&&) = delete;
 
   virtual void halt() override;
 

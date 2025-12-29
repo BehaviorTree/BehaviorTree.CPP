@@ -1,5 +1,10 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <string_view>
+#include <vector>
+
 /**
  * @file wildcards.hpp
  * @brief Simple wildcard matching function supporting '*' and '?'.
@@ -35,7 +40,7 @@ inline bool wildcards_match(std::string_view str, std::string_view pattern)
       return cached == 1;
     }
 
-    bool result;
+    bool result = false;
     if(pattern[j] == '*')
     {
       result = match_ref(match_ref, i, j + 1);

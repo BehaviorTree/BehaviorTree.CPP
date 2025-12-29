@@ -23,7 +23,12 @@ class ConditionNode : public LeafNode
 public:
   ConditionNode(const std::string& name, const NodeConfig& config);
 
-  virtual ~ConditionNode() override = default;
+  ~ConditionNode() override = default;
+
+  ConditionNode(const ConditionNode&) = delete;
+  ConditionNode& operator=(const ConditionNode&) = delete;
+  ConditionNode(ConditionNode&&) = delete;
+  ConditionNode& operator=(ConditionNode&&) = delete;
 
   //Do nothing
   virtual void halt() override final
@@ -57,6 +62,11 @@ public:
                       const NodeConfig& config);
 
   ~SimpleConditionNode() override = default;
+
+  SimpleConditionNode(const SimpleConditionNode&) = delete;
+  SimpleConditionNode& operator=(const SimpleConditionNode&) = delete;
+  SimpleConditionNode(SimpleConditionNode&&) = delete;
+  SimpleConditionNode& operator=(SimpleConditionNode&&) = delete;
 
 protected:
   virtual NodeStatus tick() override;

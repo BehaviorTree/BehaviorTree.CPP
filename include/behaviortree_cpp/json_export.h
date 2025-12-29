@@ -51,10 +51,17 @@ class JsonExporter
 public:
   static JsonExporter& get();
 
-  // Delete copy constructors as can only be this one global instance.
-  JsonExporter& operator=(JsonExporter&&) = delete;
-  JsonExporter& operator=(JsonExporter&) = delete;
+  ~JsonExporter() = default;
 
+  JsonExporter(const JsonExporter&) = delete;
+  JsonExporter& operator=(const JsonExporter&) = delete;
+  JsonExporter(JsonExporter&&) = delete;
+  JsonExporter& operator=(JsonExporter&&) = delete;
+
+private:
+  JsonExporter() = default;
+
+public:
   /**
    * @brief toJson adds the content of "any" to the JSON "destination".
    *
@@ -246,7 +253,7 @@ inline void RegisterJsonDefinition()
 //------------------------------------------------
 
 // Macro to implement to_json() and from_json()
-
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define BT_JSON_CONVERTER(Type, value)                                                   \
   template <class AddField>                                                              \
   void _JsonTypeDefinition(Type&, AddField&);                                            \
@@ -266,5 +273,6 @@ inline void RegisterJsonDefinition()
                                                                                          \
   template <class AddField>                                                              \
   inline void _JsonTypeDefinition(Type& value, AddField& add_field)
+// NOLINTEND(bugprone-macro-parentheses)
 
 //end of file

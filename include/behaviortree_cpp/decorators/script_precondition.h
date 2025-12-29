@@ -27,7 +27,12 @@ public:
     loadExecutor();
   }
 
-  virtual ~PreconditionNode() override = default;
+  ~PreconditionNode() override = default;
+
+  PreconditionNode(const PreconditionNode&) = delete;
+  PreconditionNode& operator=(const PreconditionNode&) = delete;
+  PreconditionNode(PreconditionNode&&) = delete;
+  PreconditionNode& operator=(PreconditionNode&&) = delete;
 
   static PortsList providedPorts()
   {
@@ -42,7 +47,7 @@ private:
   {
     loadExecutor();
 
-    BT::NodeStatus else_return;
+    BT::NodeStatus else_return = NodeStatus::FAILURE;
     if(!getInput("else", else_return))
     {
       throw RuntimeError("Missing parameter [else] in Precondition");

@@ -36,7 +36,12 @@ class SequenceWithMemory : public ControlNode
 public:
   SequenceWithMemory(const std::string& name);
 
-  virtual ~SequenceWithMemory() override = default;
+  ~SequenceWithMemory() override = default;
+
+  SequenceWithMemory(const SequenceWithMemory&) = delete;
+  SequenceWithMemory& operator=(const SequenceWithMemory&) = delete;
+  SequenceWithMemory(SequenceWithMemory&&) = delete;
+  SequenceWithMemory& operator=(SequenceWithMemory&&) = delete;
 
   virtual void halt() override;
 

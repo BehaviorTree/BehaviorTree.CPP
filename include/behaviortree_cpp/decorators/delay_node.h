@@ -43,6 +43,11 @@ public:
     halt();
   }
 
+  DelayNode(const DelayNode&) = delete;
+  DelayNode& operator=(const DelayNode&) = delete;
+  DelayNode(DelayNode&&) = delete;
+  DelayNode& operator=(DelayNode&&) = delete;
+
   static PortsList providedPorts()
   {
     return { InputPort<unsigned>("delay_msec", "Tick the child after a few "

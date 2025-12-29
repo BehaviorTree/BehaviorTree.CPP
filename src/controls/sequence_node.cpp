@@ -20,9 +20,13 @@ SequenceNode::SequenceNode(const std::string& name, bool make_async,
   : ControlNode::ControlNode(name, conf), current_child_idx_(0), asynch_(make_async)
 {
   if(asynch_)
+  {
     setRegistrationID("AsyncSequence");
+  }
   else
+  {
     setRegistrationID("Sequence");
+  }
 }
 
 void SequenceNode::halt()

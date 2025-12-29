@@ -24,7 +24,12 @@ class ManualSelectorNode : public ControlNode
 public:
   ManualSelectorNode(const std::string& name, const NodeConfig& config);
 
-  virtual ~ManualSelectorNode() override = default;
+  ~ManualSelectorNode() override = default;
+
+  ManualSelectorNode(const ManualSelectorNode&) = delete;
+  ManualSelectorNode& operator=(const ManualSelectorNode&) = delete;
+  ManualSelectorNode(ManualSelectorNode&&) = delete;
+  ManualSelectorNode& operator=(ManualSelectorNode&&) = delete;
 
   virtual void halt() override;
 

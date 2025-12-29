@@ -40,7 +40,7 @@ NodeStatus EntryUpdatedAction::tick()
 {
   if(auto entry = config().blackboard->getEntry(entry_key_))
   {
-    std::unique_lock lk(entry->entry_mutex);
+    const std::unique_lock lk(entry->entry_mutex);
     const uint64_t current_id = entry->sequence_id;
     const uint64_t previous_id = sequence_id_;
     sequence_id_ = current_id;

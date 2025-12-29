@@ -56,10 +56,10 @@ public:
   }
 
 private:
-  bool enabled_;
-  bool show_transition_to_idle_;
+  bool enabled_ = true;
+  bool show_transition_to_idle_ = true;
   std::vector<TreeNode::StatusChangeSubscriber> subscribers_;
-  TimestampType type_;
+  TimestampType type_ = TimestampType::absolute;
   BT::TimePoint first_timestamp_ = {};
   std::mutex callback_mutex_;
 };
@@ -67,7 +67,6 @@ private:
 //--------------------------------------------
 
 inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node)
-  : enabled_(true), show_transition_to_idle_(true), type_(TimestampType::absolute)
 {
   first_timestamp_ = std::chrono::high_resolution_clock::now();
 

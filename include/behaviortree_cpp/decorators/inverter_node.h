@@ -27,7 +27,12 @@ class InverterNode : public DecoratorNode
 public:
   InverterNode(const std::string& name);
 
-  virtual ~InverterNode() override = default;
+  ~InverterNode() override = default;
+
+  InverterNode(const InverterNode&) = delete;
+  InverterNode& operator=(const InverterNode&) = delete;
+  InverterNode(InverterNode&&) = delete;
+  InverterNode& operator=(InverterNode&&) = delete;
 
 private:
   virtual BT::NodeStatus tick() override;

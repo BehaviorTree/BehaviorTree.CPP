@@ -60,6 +60,11 @@ public:
     timer_.cancelAll();
   }
 
+  TimeoutNode(const TimeoutNode&) = delete;
+  TimeoutNode& operator=(const TimeoutNode&) = delete;
+  TimeoutNode(TimeoutNode&&) = delete;
+  TimeoutNode& operator=(TimeoutNode&&) = delete;
+
   static PortsList providedPorts()
   {
     return { InputPort<unsigned>("msec", "After a certain amount of time, "

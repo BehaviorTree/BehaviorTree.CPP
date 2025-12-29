@@ -52,14 +52,19 @@ class SwitchNode : public ControlNode
 public:
   SwitchNode(const std::string& name, const BT::NodeConfig& config);
 
-  virtual ~SwitchNode() override = default;
+  ~SwitchNode() override = default;
+
+  SwitchNode(const SwitchNode&) = delete;
+  SwitchNode& operator=(const SwitchNode&) = delete;
+  SwitchNode(SwitchNode&&) = delete;
+  SwitchNode& operator=(SwitchNode&&) = delete;
 
   void halt() override;
 
   static PortsList providedPorts();
 
 private:
-  int running_child_;
+  int running_child_ = -1;
   std::vector<std::string> case_keys_;
   virtual BT::NodeStatus tick() override;
 };
@@ -70,7 +75,7 @@ private:
 template <size_t NUM_CASES>
 inline SwitchNode<NUM_CASES>::SwitchNode(const std::string& name,
                                          const NodeConfig& config)
-  : ControlNode::ControlNode(name, config), running_child_(-1)
+  : ControlNode::ControlNode(name, config)
 {
   setRegistrationID("Switch");
   for(unsigned i = 1; i <= NUM_CASES; i++)

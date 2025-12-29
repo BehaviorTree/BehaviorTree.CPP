@@ -23,7 +23,7 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
   {
     try
     {
-      std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
+      const std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
       if(exprs.empty())
       {
         return nonstd::make_unexpected("Empty Script");
@@ -32,7 +32,7 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
       return [exprs, script](Ast::Environment& env) -> Any {
         try
         {
-          for(auto i = 0u; i < exprs.size() - 1; ++i)
+          for(auto i = 0U; i < exprs.size() - 1; ++i)
           {
             exprs[i]->evaluate(env);
           }
@@ -49,10 +49,7 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
       return nonstd::make_unexpected(err.what());
     }
   }
-  else
-  {
-    return nonstd::make_unexpected(error_msgs_buffer);
-  }
+  return nonstd::make_unexpected(error_msgs_buffer);
 }
 
 BT::Expected<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string& script)
@@ -62,10 +59,8 @@ BT::Expected<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string
   {
     return executor.value()(env);
   }
-  else  // forward the error
-  {
-    return nonstd::make_unexpected(executor.error());
-  }
+  // forward the error
+  return nonstd::make_unexpected(executor.error());
 }
 
 Result ValidateScript(const std::string& script)
@@ -80,7 +75,7 @@ Result ValidateScript(const std::string& script)
   {
     try
     {
-      std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
+      const std::vector<BT::Ast::ExprBase::Ptr> exprs = LEXY_MOV(result).value();
       if(exprs.empty())
       {
         return nonstd::make_unexpected("Empty Script");

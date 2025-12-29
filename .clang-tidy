@@ -1,0 +1,48 @@
+Checks: [
+  "-*",
+  "bugprone-*",
+  "cert-*",
+  "clang-analyzer-*",
+  "concurrency-*",
+  "cppcoreguidelines-*",
+  "misc-*",
+  "modernize-*",
+  "performance-*",
+  "portability-*",
+  "readability-*",
+  "-bugprone-easily-swappable-parameters",
+  "-bugprone-narrowing-conversions",
+  "-cert-err58-cpp",
+  "-cppcoreguidelines-avoid-c-arrays",
+  "-cppcoreguidelines-avoid-magic-numbers",
+  "-cppcoreguidelines-avoid-non-const-global-variables",
+  "-cppcoreguidelines-non-private-member-variables-in-classes",
+  "-cppcoreguidelines-pro-bounds-array-to-pointer-decay",
+  "-cppcoreguidelines-pro-bounds-constant-array-index",
+  "-cppcoreguidelines-pro-bounds-pointer-arithmetic",
+  "-cppcoreguidelines-pro-type-const-cast",
+  "-cppcoreguidelines-pro-type-union-access",
+  "-cppcoreguidelines-pro-type-vararg",
+  "-misc-no-recursion",
+  "-misc-non-private-member-variables-in-classes"
+]
+
+
+WarningsAsErrors: '-*,bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,misc-*,portability-*,readability-implicit-bool-conversion,-concurrency-mt-unsafe,-readability-function-cognitive-complexity'
+
+CheckOptions:
+  # ignore macros when computing the cyclomatic complexity. problem caused by RCLCPP LOG macros
+  - key:             readability-function-cognitive-complexity.IgnoreMacros
+    value:           'true'
+
+  # This change makes it compatible with MISRA:2023 rule 4.14.1
+  - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           'true'
+
+  # Making a copy of a shared_ptr has a non-zero cost, but this cost is small.
+  # Unfortunately the ROS API (subscriber callbacks) oblige the user to use callbacks functions that will trigger this warning
+  # This is the reason wht the warning is silenced here
+  - key:              performance-unnecessary-value-param.AllowedTypes
+    value:            'std::shared_ptr'
+
+  # Reference: https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html
