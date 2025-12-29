@@ -307,27 +307,6 @@ void ImportBlackboardFromJSON(const nlohmann::json& json, Blackboard& blackboard
   }
 }
 
-Blackboard::Entry::Entry(const Entry& other)
-  : value(other.value)
-  , info(other.info)
-  , string_converter(other.string_converter)
-  , sequence_id(other.sequence_id)
-  , stamp(other.stamp)
-{}
-
-Blackboard::Entry& Blackboard::Entry::operator=(const Entry& other)
-{
-  if(this != &other)
-  {
-    value = other.value;
-    info = other.info;
-    string_converter = other.string_converter;
-    sequence_id = other.sequence_id;
-    stamp = other.stamp;
-  }
-  return *this;
-}
-
 Blackboard* BT::Blackboard::rootBlackboard()
 {
   auto bb = static_cast<const Blackboard&>(*this).rootBlackboard();

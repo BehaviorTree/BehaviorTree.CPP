@@ -60,8 +60,8 @@ public:
     {}
 
     ~Entry() = default;
-    Entry(const Entry& other);
-    Entry& operator=(const Entry& other);
+    Entry(const Entry&) = delete;
+    Entry& operator=(const Entry&) = delete;
     Entry(Entry&&) = delete;
     Entry& operator=(Entry&&) = delete;
   };
