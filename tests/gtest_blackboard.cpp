@@ -47,30 +47,6 @@ public:
   }
 };
 
-class BB_TypedTestNode : public SyncActionNode
-{
-public:
-  BB_TypedTestNode(const std::string& name, const NodeConfig& config)
-    : SyncActionNode(name, config)
-  {}
-
-  NodeStatus tick()
-  {
-    return NodeStatus::SUCCESS;
-  }
-
-  static PortsList providedPorts()
-  {
-    return { BT::InputPort("input"),
-             BT::InputPort<int>("input_int"),
-             BT::InputPort<std::string>("input_string"),
-
-             BT::OutputPort("output"),
-             BT::OutputPort<int>("output_int"),
-             BT::OutputPort<std::string>("output_string") };
-  }
-};
-
 TEST(BlackboardTest, GetInputsFromBlackboard)
 {
   auto bb = Blackboard::create();
@@ -197,37 +173,7 @@ TEST(BlackboardTest, TypoInPortName)
   ASSERT_THROW(auto tree = factory.createTreeFromText(xml_text), RuntimeError);
 }
 
-TEST(BlackboardTest, CheckPortType)
-{
-  BehaviorTreeFactory factory;
-  factory.registerNodeType<BB_TypedTestNode>("TypedNode");
-
-  //-----------------------------
-  std::string good_one = R"(
-    <root BTCPP_format="4" >
-        <BehaviorTree ID="MainTree">
-            <Sequence>
-                <TypedNode name = "first"  output_int="{matching}"  output_string="{whatever}" output="{no_problem}" />
-                <TypedNode name = "second" input_int="{matching}"   input="{whatever}"         input_string="{no_problem}"  />
-            </Sequence>
-        </BehaviorTree>
-    </root>)";
-
-  auto tree = factory.createTreeFromText(good_one);
-  ASSERT_NE(tree.rootNode(), nullptr);
-  //-----------------------------
-  std::string bad_one = R"(
-    <root BTCPP_format="4" >
-        <BehaviorTree ID="MainTree">
-            <Sequence>
-                <TypedNode name = "first"  output_int="{value}" />
-                <TypedNode name = "second" input_string="{value}" />
-            </Sequence>
-        </BehaviorTree>
-    </root>)";
-
-  ASSERT_THROW(auto tree = factory.createTreeFromText(bad_one), RuntimeError);
-}
+// NOTE: CheckPortType test moved to gtest_port_type_rules.cpp
 
 class RefCountClass
 {
@@ -717,67 +663,8 @@ TEST(BlackboardTest, SetBlackboard_Upd_Ts_SeqId)
   ASSERT_GT(seq_id2, seq_id1);
 }
 
-TEST(BlackboardTest, SetBlackboard_ChangeType1)
-{
-  BT::BehaviorTreeFactory factory;
-
-  const std::string xml_text = R"(
-  <root BTCPP_format="4">
-    <BehaviorTree ID="MainTree">
-      <Sequence>
-        <SetBlackboard value="{first_point}" output_key="other_point" />
-        <Sleep msec="5" />
-        <SetBlackboard value="{random_str}" output_key="other_point" />
-      </Sequence>
-    </BehaviorTree>
-  </root> )";
-
-  factory.registerBehaviorTreeFromText(xml_text);
-  auto tree = factory.createTree("MainTree");
-  auto& blackboard = tree.subtrees.front()->blackboard;
-
-  const Point point = { 2, 7 };
-  blackboard->set("first_point", point);
-  blackboard->set("random_str", "Hello!");
-
-  // First tick should succeed
-  ASSERT_NO_THROW(tree.tickExactlyOnce());
-  const auto entry_ptr = blackboard->getEntry("other_point");
-  std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
-  // Second tick should throw due to type mismatch
-  EXPECT_THROW({ tree.tickWhileRunning(); }, BT::LogicError);
-}
-
-TEST(BlackboardTest, SetBlackboard_ChangeType2)
-{
-  BT::BehaviorTreeFactory factory;
-
-  const std::string xml_text = R"(
-  <root BTCPP_format="4">
-    <BehaviorTree ID="MainTree">
-      <Sequence>
-        <SetBlackboard value="{first_point}" output_key="other_point" />
-        <Sleep msec="5" />
-        <SetBlackboard value="{random_num}" output_key="other_point" />
-      </Sequence>
-    </BehaviorTree>
-  </root> )";
-
-  factory.registerBehaviorTreeFromText(xml_text);
-  auto tree = factory.createTree("MainTree");
-  auto& blackboard = tree.subtrees.front()->blackboard;
-
-  const Point point = { 2, 7 };
-  blackboard->set("first_point", point);
-  blackboard->set("random_num", 57);
-
-  // First tick should succeed
-  ASSERT_NO_THROW(tree.tickExactlyOnce());
-  const auto entry_ptr = blackboard->getEntry("other_point");
-  std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
-  // Second tick should throw due to type mismatch
-  EXPECT_THROW({ tree.tickWhileRunning(); }, BT::LogicError);
-}
+// NOTE: SetBlackboard_ChangeType1 and SetBlackboard_ChangeType2 tests
+// moved to gtest_port_type_rules.cpp
 
 // Simple Action that updates an instance of Point in the blackboard
 class UpdatePosition : public BT::SyncActionNode
