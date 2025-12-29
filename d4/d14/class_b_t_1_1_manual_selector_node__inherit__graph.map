@@ -1,0 +1,5 @@
+<map id="BT::ManualSelectorNode" name="BT::ManualSelectorNode">
+<area shape="rect" id="node1" title="Use a Terminal User Interface (ncurses) to select a certain child manually." alt="" coords="5,152,187,177"/>
+<area shape="rect" id="node2" href="$d6/ddb/class_b_t_1_1_control_node.html" title=" " alt="" coords="33,79,159,104"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="43,5,149,31"/>
+</map>

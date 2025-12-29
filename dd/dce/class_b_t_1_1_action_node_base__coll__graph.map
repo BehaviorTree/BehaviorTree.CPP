@@ -1,0 +1,5 @@
+<map id="BT::ActionNodeBase" name="BT::ActionNodeBase">
+<area shape="rect" id="node1" title="The ActionNodeBase is the base class to use to create any kind of action. A particular derived class ..." alt="" coords="5,152,159,177"/>
+<area shape="rect" id="node2" href="$d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="28,79,136,104"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="29,5,135,31"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="BT::AlwaysFailureNode" name="BT::AlwaysFailureNode">
+<area shape="rect" id="node1" title=" " alt="" coords="5,299,176,324"/>
+<area shape="rect" id="node2" href="$da/d73/class_b_t_1_1_sync_action_node.html" title="The SyncActionNode is an ActionNode that explicitly prevents the status RUNNING and doesn&#39;t require a..." alt="" coords="15,225,167,251"/>
+<area shape="rect" id="node3" href="$d3/de2/class_b_t_1_1_action_node_base.html" title="The ActionNodeBase is the base class to use to create any kind of action. A particular derived class ..." alt="" coords="14,152,167,177"/>
+<area shape="rect" id="node4" href="$d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="37,79,145,104"/>
+<area shape="rect" id="node5" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="37,5,144,31"/>
+</map>

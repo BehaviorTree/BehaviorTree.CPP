@@ -1,0 +1,5 @@
+<map id="BT::ForceFailureNode" name="BT::ForceFailureNode">
+<area shape="rect" id="node1" title="The ForceFailureNode returns always FAILURE or RUNNING." alt="" coords="5,168,164,193"/>
+<area shape="rect" id="node2" href="$d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="13,93,157,119"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="31,5,138,31"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="BT::Ast::Environment" name="BT::Ast::Environment">
+<area shape="rect" id="node1" title="The Environment class is used to encapsulate the information and states needed by the scripting langu..." alt="" coords="161,284,320,309"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,196,228,221"/>
+<area shape="rect" id="node3" href="$d0/d51/class_b_t_1_1_blackboard.html" title="The Blackboard is the mechanism used by BehaviorTrees to exchange typed data." alt="" coords="57,101,176,126"/>
+<area shape="rect" id="node4" title=" " alt="" coords="253,196,479,221"/>
+<area shape="rect" id="node5" title=" " alt="" coords="290,93,442,133"/>
+<area shape="rect" id="node6" title=" " alt="" coords="315,5,353,31"/>
+<area shape="rect" id="node7" title=" " alt="" coords="380,5,419,31"/>
+</map>

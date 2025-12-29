@@ -1,0 +1,20 @@
+<map id="BT::DecoratorNode" name="BT::DecoratorNode">
+<area shape="rect" id="node1" title=" " alt="" coords="160,351,304,376"/>
+<area shape="rect" id="node3" href="$df/dc2/class_b_t_1_1_consume_queue.html" title=" " alt="" coords="378,5,565,31"/>
+<area shape="rect" id="node4" href="$d4/d56/class_b_t_1_1_delay_node.html" title="The delay node will introduce a delay and then tick the child returning the status of the child as it..." alt="" coords="412,55,531,80"/>
+<area shape="rect" id="node5" href="$d1/d7b/class_b_t_1_1_entry_updated_decorator.html" title="The EntryUpdatedDecorator checks the Timestamp in an entry to determine if the value was updated sinc..." alt="" coords="372,104,571,129"/>
+<area shape="rect" id="node6" href="$d4/d8c/class_b_t_1_1_force_failure_node.html" title="The ForceFailureNode returns always FAILURE or RUNNING." alt="" coords="392,153,551,179"/>
+<area shape="rect" id="node7" href="$d7/db8/class_b_t_1_1_force_success_node.html" title="The ForceSuccessNode returns always SUCCESS or RUNNING." alt="" coords="388,203,555,228"/>
+<area shape="rect" id="node8" href="$d2/ded/class_b_t_1_1_inverter_node.html" title="The InverterNode returns SUCCESS if child fails of FAILURE is child succeeds. RUNNING status is propa..." alt="" coords="406,252,537,277"/>
+<area shape="rect" id="node9" href="$de/d22/class_b_t_1_1_keep_running_until_failure_node.html" title="The KeepRunningUntilFailureNode returns always FAILURE or RUNNING." alt="" coords="352,301,591,327"/>
+<area shape="rect" id="node10" href="$dd/d32/class_b_t_1_1_loop_node.html" title="The LoopNode class is used to pop_front elements from a std::deque. This element is copied into the p..." alt="" coords="397,351,546,376"/>
+<area shape="rect" id="node11" href="$d7/dd5/class_b_t_1_1_precondition_node.html" title=" " alt="" coords="391,400,552,425"/>
+<area shape="rect" id="node12" href="$d6/d78/class_b_t_1_1_repeat_node.html" title="The RepeatNode is used to execute a child several times, as long as it succeed." alt="" coords="408,449,535,475"/>
+<area shape="rect" id="node13" href="$dd/de4/class_b_t_1_1_retry_node.html" title="The RetryNode is used to execute a child several times if it fails." alt="" coords="414,499,529,524"/>
+<area shape="rect" id="node15" href="$dd/dbd/class_b_t_1_1_run_once_node.html" title="The RunOnceNode is used when you want to execute the child only once. If the child is asynchronous,..." alt="" coords="402,548,541,573"/>
+<area shape="rect" id="node16" href="$d3/d37/class_b_t_1_1_simple_decorator_node.html" title="The SimpleDecoratorNode provides an easy to use DecoratorNode. The user should simply provide a callb..." alt="" coords="377,597,566,623"/>
+<area shape="rect" id="node17" href="$df/d34/class_b_t_1_1_sub_tree_node.html" title="The SubTreeNode is a way to wrap an entire Subtree, creating a separated BlackBoard...." alt="" coords="406,647,537,672"/>
+<area shape="rect" id="node18" href="$d4/d20/class_b_t_1_1_timeout_node.html" title="The TimeoutNode will halt() a running child if the latter has been RUNNING longer than a given time...." alt="" coords="404,696,539,721"/>
+<area shape="rect" id="node2" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="5,351,112,376"/>
+<area shape="rect" id="node14" href="$d1/def/class_b_t_1_1_retry_node_typo.html" title=" " alt="" coords="639,499,784,524"/>
+</map>

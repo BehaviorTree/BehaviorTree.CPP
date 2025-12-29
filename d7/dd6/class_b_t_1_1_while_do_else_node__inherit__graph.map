@@ -1,0 +1,5 @@
+<map id="BT::WhileDoElseNode" name="BT::WhileDoElseNode">
+<area shape="rect" id="node1" title="WhileDoElse must have exactly 2 or 3 children. It is a REACTIVE node of IfThenElseNode." alt="" coords="5,152,168,177"/>
+<area shape="rect" id="node2" href="$d6/ddb/class_b_t_1_1_control_node.html" title=" " alt="" coords="23,79,150,104"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="33,5,140,31"/>
+</map>

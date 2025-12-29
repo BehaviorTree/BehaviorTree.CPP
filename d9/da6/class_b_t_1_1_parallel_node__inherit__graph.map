@@ -1,0 +1,5 @@
+<map id="BT::ParallelNode" name="BT::ParallelNode">
+<area shape="rect" id="node1" title="The ParallelNode execute all its children concurrently, but not in separate threads!" alt="" coords="5,152,133,177"/>
+<area shape="rect" id="node2" href="$d6/ddb/class_b_t_1_1_control_node.html" title=" " alt="" coords="6,79,133,104"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="16,5,123,31"/>
+</map>

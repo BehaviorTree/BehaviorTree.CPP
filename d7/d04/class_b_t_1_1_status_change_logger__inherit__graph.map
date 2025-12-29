@@ -1,0 +1,9 @@
+<map id="BT::StatusChangeLogger" name="BT::StatusChangeLogger">
+<area shape="rect" id="node1" title=" " alt="" coords="5,129,185,155"/>
+<area shape="rect" id="node2" href="$d2/d7b/class_b_t_1_1_file_logger2.html" title="The FileLogger2 is a logger that saves the tree as XML and all the transitions. Data is written to fi..." alt="" coords="248,5,369,31"/>
+<area shape="rect" id="node3" href="$da/df5/class_b_t_1_1_groot2_publisher.html" title="The Groot2Publisher is used to create an interface between your BT.CPP executor and Groot2." alt="" coords="233,55,384,80"/>
+<area shape="rect" id="node4" href="$de/d4f/class_b_t_1_1_minitrace_logger.html" title=" " alt="" coords="233,104,384,129"/>
+<area shape="rect" id="node5" href="$df/ddb/class_b_t_1_1_sqlite_logger.html" title="The SqliteLogger is a logger that will store the tree and all the status transitions in a SQLite data..." alt="" coords="245,153,372,179"/>
+<area shape="rect" id="node6" href="$d1/d52/class_b_t_1_1_std_cout_logger.html" title="StdCoutLogger is a very simple logger that displays all the transitions on the console." alt="" coords="238,203,379,228"/>
+<area shape="rect" id="node7" href="$d2/d2b/class_b_t_1_1_tree_observer.html" title="The TreeObserver is used to collect statistics about which nodes are executed and their returned stat..." alt="" coords="243,252,375,277"/>
+</map>

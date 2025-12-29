@@ -1,0 +1,5 @@
+<map id="BT::EntryUpdatedDecorator" name="BT::EntryUpdatedDecorator">
+<area shape="rect" id="node1" title="The EntryUpdatedDecorator checks the Timestamp in an entry to determine if the value was updated sinc..." alt="" coords="5,152,204,177"/>
+<area shape="rect" id="node2" href="$d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="33,79,177,104"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="51,5,158,31"/>
+</map>

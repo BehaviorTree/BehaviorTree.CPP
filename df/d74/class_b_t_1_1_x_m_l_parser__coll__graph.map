@@ -1,0 +1,4 @@
+<map id="BT::XMLParser" name="BT::XMLParser">
+<area shape="rect" id="node1" title="The XMLParser is a class used to read the model of a BehaviorTree from file or text and instantiate t..." alt="" coords="5,79,120,104"/>
+<area shape="rect" id="node2" href="$de/da6/class_b_t_1_1_parser.html" title="The BehaviorTreeParser is a class used to read the model of a BehaviorTree from file or text and inst..." alt="" coords="19,5,106,31"/>
+</map>

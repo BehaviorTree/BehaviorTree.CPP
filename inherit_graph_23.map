@@ -1,0 +1,4 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$de/da6/class_b_t_1_1_parser.html" title="The BehaviorTreeParser is a class used to read the model of a BehaviorTree from file or text and inst..." alt="" coords="5,5,92,31"/>
+<area shape="rect" id="node2" href="$d8/d05/class_b_t_1_1_x_m_l_parser.html" title="The XMLParser is a class used to read the model of a BehaviorTree from file or text and instantiate t..." alt="" coords="140,5,255,31"/>
+</map>

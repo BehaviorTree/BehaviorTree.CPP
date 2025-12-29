@@ -1,0 +1,6 @@
+<map id="BT::ScriptCondition" name="BT::ScriptCondition">
+<area shape="rect" id="node1" title="Execute a script, and if the result is true, return SUCCESS, FAILURE otherwise." alt="" coords="5,225,151,251"/>
+<area shape="rect" id="node2" href="$dc/dfc/class_b_t_1_1_condition_node.html" title=" " alt="" coords="7,152,149,177"/>
+<area shape="rect" id="node3" href="$d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="24,79,132,104"/>
+<area shape="rect" id="node4" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="25,5,131,31"/>
+</map>

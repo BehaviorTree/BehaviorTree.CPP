@@ -1,0 +1,6 @@
+<map id="BT::CoroActionNode" name="BT::CoroActionNode">
+<area shape="rect" id="node1" title="The CoroActionNode class is an a good candidate for asynchronous actions which need to communicate wi..." alt="" coords="7,225,157,251"/>
+<area shape="rect" id="node2" href="$d3/de2/class_b_t_1_1_action_node_base.html" title="The ActionNodeBase is the base class to use to create any kind of action. A particular derived class ..." alt="" coords="5,152,159,177"/>
+<area shape="rect" id="node3" href="$d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="28,79,136,104"/>
+<area shape="rect" id="node4" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="29,5,135,31"/>
+</map>
