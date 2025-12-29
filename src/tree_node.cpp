@@ -306,21 +306,18 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
   return _p->state_change_signal.subscribe(std::move(callback));
 }
 
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
 void TreeNode::setPreTickFunction(PreTickCallback callback)
 {
   const std::unique_lock lk(_p->callback_injection_mutex);
   _p->pre_tick_callback = std::move(callback);
 }
 
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
 void TreeNode::setPostTickFunction(PostTickCallback callback)
 {
   const std::unique_lock lk(_p->callback_injection_mutex);
   _p->post_tick_callback = std::move(callback);
 }
 
-// NOLINTNEXTLINE(performance-unnecessary-value-param)
 void TreeNode::setTickMonitorCallback(TickMonitorCallback callback)
 {
   const std::unique_lock lk(_p->callback_injection_mutex);
