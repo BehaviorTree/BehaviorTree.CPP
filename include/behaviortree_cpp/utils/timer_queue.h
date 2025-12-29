@@ -175,10 +175,12 @@ public:
     return ret;
   }
 
-private:
   TimerQueue(const TimerQueue&) = delete;
   TimerQueue& operator=(const TimerQueue&) = delete;
+  TimerQueue(TimerQueue&&) = delete;
+  TimerQueue& operator=(TimerQueue&&) = delete;
 
+private:
   void run()
   {
     while(!m_finish.load())
@@ -253,7 +255,7 @@ private:
   struct WorkItem
   {
     std::chrono::time_point<_Clock, _Duration> end;
-    uint64_t id;  // id==0 means it was cancelled
+    uint64_t id = 0;  // id==0 means it was cancelled
     std::function<void(bool)> handler;
     bool operator>(const WorkItem& other) const
     {

@@ -12,15 +12,19 @@ Checks: [
   "readability-*",
   "-bugprone-easily-swappable-parameters",
   "-bugprone-narrowing-conversions",
+  "-cert-err58-cpp",
   "-cppcoreguidelines-avoid-c-arrays",
   "-cppcoreguidelines-avoid-magic-numbers",
   "-cppcoreguidelines-avoid-non-const-global-variables",
+  "-cppcoreguidelines-non-private-member-variables-in-classes",
   "-cppcoreguidelines-pro-bounds-array-to-pointer-decay",
   "-cppcoreguidelines-pro-bounds-constant-array-index",
   "-cppcoreguidelines-pro-bounds-pointer-arithmetic",
+  "-cppcoreguidelines-pro-type-const-cast",
   "-cppcoreguidelines-pro-type-union-access",
   "-cppcoreguidelines-pro-type-vararg",
-  "-misc-no-recursion"
+  "-misc-no-recursion",
+  "-misc-non-private-member-variables-in-classes"
 ]
 
 

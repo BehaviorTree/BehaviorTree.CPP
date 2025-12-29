@@ -30,6 +30,11 @@ public:
 
   ~EntryUpdatedAction() override = default;
 
+  EntryUpdatedAction(const EntryUpdatedAction&) = delete;
+  EntryUpdatedAction& operator=(const EntryUpdatedAction&) = delete;
+  EntryUpdatedAction(EntryUpdatedAction&&) = delete;
+  EntryUpdatedAction& operator=(EntryUpdatedAction&&) = delete;
+
   static PortsList providedPorts()
   {
     return { InputPort<BT::Any>("entry", "Entry to check") };

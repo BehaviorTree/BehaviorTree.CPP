@@ -37,7 +37,12 @@ public:
   SequenceNode(const std::string& name, bool make_async = false,
                const NodeConfiguration& conf = NodeConfiguration());
 
-  virtual ~SequenceNode() override = default;
+  ~SequenceNode() override = default;
+
+  SequenceNode(const SequenceNode&) = delete;
+  SequenceNode& operator=(const SequenceNode&) = delete;
+  SequenceNode(SequenceNode&&) = delete;
+  SequenceNode& operator=(SequenceNode&&) = delete;
 
   virtual void halt() override;
 

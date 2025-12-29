@@ -45,6 +45,11 @@ public:
 
   ~ParallelAllNode() override = default;
 
+  ParallelAllNode(const ParallelAllNode&) = delete;
+  ParallelAllNode& operator=(const ParallelAllNode&) = delete;
+  ParallelAllNode(ParallelAllNode&&) = delete;
+  ParallelAllNode& operator=(ParallelAllNode&&) = delete;
+
   virtual void halt() override;
 
   size_t failureThreshold() const;

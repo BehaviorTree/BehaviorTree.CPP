@@ -1201,7 +1201,7 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
   std::map<std::string, const TreeNodeManifest*> ordered_models;
   for(const auto& [registration_ID, model] : tree.manifests)
   {
-    if(add_builtin_models || !temp_factory.builtinNodes().contains(registration_ID))
+    if(add_builtin_models || temp_factory.builtinNodes().count(registration_ID) == 0)
     {
       ordered_models.insert({ registration_ID, &model });
     }

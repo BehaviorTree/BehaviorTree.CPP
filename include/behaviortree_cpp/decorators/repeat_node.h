@@ -39,7 +39,12 @@ public:
 
   RepeatNode(const std::string& name, const NodeConfig& config);
 
-  virtual ~RepeatNode() override = default;
+  ~RepeatNode() override = default;
+
+  RepeatNode(const RepeatNode&) = delete;
+  RepeatNode& operator=(const RepeatNode&) = delete;
+  RepeatNode(RepeatNode&&) = delete;
+  RepeatNode& operator=(RepeatNode&&) = delete;
 
   static PortsList providedPorts()
   {

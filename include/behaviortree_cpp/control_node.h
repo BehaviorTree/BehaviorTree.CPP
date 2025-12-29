@@ -26,7 +26,12 @@ protected:
 public:
   ControlNode(const std::string& name, const NodeConfig& config);
 
-  virtual ~ControlNode() override = default;
+  ~ControlNode() override = default;
+
+  ControlNode(const ControlNode&) = delete;
+  ControlNode& operator=(const ControlNode&) = delete;
+  ControlNode(ControlNode&&) = delete;
+  ControlNode& operator=(ControlNode&&) = delete;
 
   /// The method used to add nodes to the children vector
   void addChild(TreeNode* child);

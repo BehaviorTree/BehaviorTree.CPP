@@ -54,7 +54,12 @@ class SubTreeNode : public DecoratorNode
 public:
   SubTreeNode(const std::string& name, const NodeConfig& config);
 
-  virtual ~SubTreeNode() override = default;
+  ~SubTreeNode() override = default;
+
+  SubTreeNode(const SubTreeNode&) = delete;
+  SubTreeNode& operator=(const SubTreeNode&) = delete;
+  SubTreeNode(SubTreeNode&&) = delete;
+  SubTreeNode& operator=(SubTreeNode&&) = delete;
 
   static PortsList providedPorts();
 

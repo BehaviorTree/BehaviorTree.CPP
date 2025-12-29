@@ -20,6 +20,11 @@ public:
   TreeObserver(const BT::Tree& tree);
   ~TreeObserver() override;
 
+  TreeObserver(const TreeObserver&) = delete;
+  TreeObserver& operator=(const TreeObserver&) = delete;
+  TreeObserver(TreeObserver&&) = delete;
+  TreeObserver& operator=(TreeObserver&&) = delete;
+
   virtual void flush() override
   {}
 

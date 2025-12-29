@@ -17,6 +17,11 @@ public:
   StdCoutLogger(const BT::Tree& tree);
   ~StdCoutLogger() override;
 
+  StdCoutLogger(const StdCoutLogger&) = delete;
+  StdCoutLogger& operator=(const StdCoutLogger&) = delete;
+  StdCoutLogger(StdCoutLogger&&) = delete;
+  StdCoutLogger& operator=(StdCoutLogger&&) = delete;
+
   virtual void flush() override;
 
 private:

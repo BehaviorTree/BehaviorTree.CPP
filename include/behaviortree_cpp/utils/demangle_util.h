@@ -45,6 +45,8 @@ public:
 
   scoped_demangled_name(scoped_demangled_name const&) = delete;
   scoped_demangled_name& operator=(scoped_demangled_name const&) = delete;
+  scoped_demangled_name(scoped_demangled_name&&) = delete;
+  scoped_demangled_name& operator=(scoped_demangled_name&&) = delete;
 };
 
 #if defined(HAS_CXXABI_H)

@@ -38,6 +38,11 @@ public:
   ActionNodeBase(const std::string& name, const NodeConfig& config);
   ~ActionNodeBase() override = default;
 
+  ActionNodeBase(const ActionNodeBase&) = delete;
+  ActionNodeBase& operator=(const ActionNodeBase&) = delete;
+  ActionNodeBase(ActionNodeBase&&) = delete;
+  ActionNodeBase& operator=(ActionNodeBase&&) = delete;
+
   virtual NodeType type() const override final
   {
     return NodeType::ACTION;
@@ -54,6 +59,11 @@ class SyncActionNode : public ActionNodeBase
 public:
   SyncActionNode(const std::string& name, const NodeConfig& config);
   ~SyncActionNode() override = default;
+
+  SyncActionNode(const SyncActionNode&) = delete;
+  SyncActionNode& operator=(const SyncActionNode&) = delete;
+  SyncActionNode(SyncActionNode&&) = delete;
+  SyncActionNode& operator=(SyncActionNode&&) = delete;
 
   /// throws if the derived class return RUNNING.
   virtual NodeStatus executeTick() override;
@@ -86,6 +96,11 @@ public:
                    const NodeConfig& config);
 
   ~SimpleActionNode() override = default;
+
+  SimpleActionNode(const SimpleActionNode&) = delete;
+  SimpleActionNode& operator=(const SimpleActionNode&) = delete;
+  SimpleActionNode(SimpleActionNode&&) = delete;
+  SimpleActionNode& operator=(SimpleActionNode&&) = delete;
 
 protected:
   virtual NodeStatus tick() override final;
@@ -197,7 +212,12 @@ class CoroActionNode : public ActionNodeBase
 {
 public:
   CoroActionNode(const std::string& name, const NodeConfig& config);
-  virtual ~CoroActionNode() override;
+  ~CoroActionNode() override;
+
+  CoroActionNode(const CoroActionNode&) = delete;
+  CoroActionNode& operator=(const CoroActionNode&) = delete;
+  CoroActionNode(CoroActionNode&&) = delete;
+  CoroActionNode& operator=(CoroActionNode&&) = delete;
 
   /// Use this method to return RUNNING and temporary "pause" the Action.
   void setStatusRunningAndYield();

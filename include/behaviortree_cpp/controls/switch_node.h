@@ -52,7 +52,12 @@ class SwitchNode : public ControlNode
 public:
   SwitchNode(const std::string& name, const BT::NodeConfig& config);
 
-  virtual ~SwitchNode() override = default;
+  ~SwitchNode() override = default;
+
+  SwitchNode(const SwitchNode&) = delete;
+  SwitchNode& operator=(const SwitchNode&) = delete;
+  SwitchNode(SwitchNode&&) = delete;
+  SwitchNode& operator=(SwitchNode&&) = delete;
 
   void halt() override;
 

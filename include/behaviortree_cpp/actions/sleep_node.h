@@ -22,6 +22,11 @@ public:
     halt();
   }
 
+  SleepNode(const SleepNode&) = delete;
+  SleepNode& operator=(const SleepNode&) = delete;
+  SleepNode(SleepNode&&) = delete;
+  SleepNode& operator=(SleepNode&&) = delete;
+
   NodeStatus onStart() override;
 
   NodeStatus onRunning() override;

@@ -36,7 +36,12 @@ class IfThenElseNode : public ControlNode
 public:
   IfThenElseNode(const std::string& name);
 
-  virtual ~IfThenElseNode() override = default;
+  ~IfThenElseNode() override = default;
+
+  IfThenElseNode(const IfThenElseNode&) = delete;
+  IfThenElseNode& operator=(const IfThenElseNode&) = delete;
+  IfThenElseNode(IfThenElseNode&&) = delete;
+  IfThenElseNode& operator=(IfThenElseNode&&) = delete;
 
   virtual void halt() override;
 

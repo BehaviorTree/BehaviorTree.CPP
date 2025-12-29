@@ -36,6 +36,7 @@ skip_list=(
   "$ws_dir/3rdparty"
   "$ws_dir/include/behaviortree_cpp/contrib"
   "$ws_dir/include/behaviortree_cpp/scripting"
+  "$ws_dir/include/behaviortree_cpp/flatbuffers"
 )
 
 skip_paths=()
@@ -58,7 +59,7 @@ for path in "${skip_list[@]}"; do
 done
 echo "-----------------------------------------------------------"
 
-find $clang_tidy_paths \( -name '*.cpp' -o -name '*.hpp' \) -not -name '*_WIN.cpp' "${skip_paths[@]}" -print0 \
+find $clang_tidy_paths \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -not -name '*_WIN.cpp' "${skip_paths[@]}" -print0 \
   | xargs -0 -n 1 -P $(nproc) bash -c '
     set -o pipefail
     echo "$@"

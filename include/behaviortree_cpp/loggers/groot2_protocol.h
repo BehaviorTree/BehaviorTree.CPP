@@ -139,10 +139,8 @@ struct ReplyHeader
     return RequestHeader::size() + 16;
   }
 
-  ReplyHeader()
-  {
-    tree_id.fill(0);
-  }
+  ReplyHeader() : tree_id{}
+  {}
 };
 
 template <typename T>

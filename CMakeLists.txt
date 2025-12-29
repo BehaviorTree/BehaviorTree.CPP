@@ -307,6 +307,21 @@ if(BTCPP_EXAMPLES)
 endif()
 
 ######################################################
+# Generate .clangd configuration file for standalone header checking
+file(WRITE ${CMAKE_SOURCE_DIR}/.clangd
+"CompileFlags:
+  Add:
+    - -xc++
+    - -std=c++17
+    - -I${CMAKE_SOURCE_DIR}/include
+    - -I${CMAKE_SOURCE_DIR}/3rdparty
+    - -I${CMAKE_SOURCE_DIR}/3rdparty/minitrace
+    - -I${CMAKE_SOURCE_DIR}/3rdparty/tinyxml2
+    - -I${CMAKE_SOURCE_DIR}/3rdparty/minicoro
+    - -I${CMAKE_SOURCE_DIR}/3rdparty/lexy/include
+")
+
+######################################################
 # INSTALL
 
 INSTALL(TARGETS ${BTCPP_LIBRARY}

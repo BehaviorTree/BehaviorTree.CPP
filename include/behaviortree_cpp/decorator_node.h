@@ -13,7 +13,12 @@ protected:
 public:
   DecoratorNode(const std::string& name, const NodeConfig& config);
 
-  virtual ~DecoratorNode() override = default;
+  ~DecoratorNode() override = default;
+
+  DecoratorNode(const DecoratorNode&) = delete;
+  DecoratorNode& operator=(const DecoratorNode&) = delete;
+  DecoratorNode(DecoratorNode&&) = delete;
+  DecoratorNode& operator=(DecoratorNode&&) = delete;
 
   void setChild(TreeNode* child);
 
@@ -59,6 +64,11 @@ public:
                       const NodeConfig& config);
 
   ~SimpleDecoratorNode() override = default;
+
+  SimpleDecoratorNode(const SimpleDecoratorNode&) = delete;
+  SimpleDecoratorNode& operator=(const SimpleDecoratorNode&) = delete;
+  SimpleDecoratorNode(SimpleDecoratorNode&&) = delete;
+  SimpleDecoratorNode& operator=(SimpleDecoratorNode&&) = delete;
 
 protected:
   virtual NodeStatus tick() override;

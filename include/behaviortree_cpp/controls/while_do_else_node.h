@@ -35,7 +35,12 @@ class WhileDoElseNode : public ControlNode
 public:
   WhileDoElseNode(const std::string& name);
 
-  virtual ~WhileDoElseNode() override = default;
+  ~WhileDoElseNode() override = default;
+
+  WhileDoElseNode(const WhileDoElseNode&) = delete;
+  WhileDoElseNode& operator=(const WhileDoElseNode&) = delete;
+  WhileDoElseNode(WhileDoElseNode&&) = delete;
+  WhileDoElseNode& operator=(WhileDoElseNode&&) = delete;
 
   virtual void halt() override;
 

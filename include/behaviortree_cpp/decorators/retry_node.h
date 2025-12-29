@@ -43,7 +43,12 @@ public:
 
   RetryNode(const std::string& name, const NodeConfig& config);
 
-  virtual ~RetryNode() override = default;
+  ~RetryNode() override = default;
+
+  RetryNode(const RetryNode&) = delete;
+  RetryNode& operator=(const RetryNode&) = delete;
+  RetryNode(RetryNode&&) = delete;
+  RetryNode& operator=(RetryNode&&) = delete;
 
   static PortsList providedPorts()
   {
@@ -73,7 +78,12 @@ public:
   RetryNodeTypo(const std::string& name, const NodeConfig& config)
     : RetryNode(name, config){};
 
-  virtual ~RetryNodeTypo() override = default;
+  ~RetryNodeTypo() override = default;
+
+  RetryNodeTypo(const RetryNodeTypo&) = delete;
+  RetryNodeTypo& operator=(const RetryNodeTypo&) = delete;
+  RetryNodeTypo(RetryNodeTypo&&) = delete;
+  RetryNodeTypo& operator=(RetryNodeTypo&&) = delete;
 };
 
 }  // namespace BT
