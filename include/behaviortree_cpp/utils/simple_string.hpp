@@ -52,8 +52,6 @@ public:
   {
     if(this != &other)
     {
-      this->~SimpleString();
-      _storage = {};
       std::swap(_storage, other._storage);
     }
     return *this;

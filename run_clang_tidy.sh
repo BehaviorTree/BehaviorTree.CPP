@@ -14,7 +14,7 @@ if ! command -v clangd-21 &> /dev/null; then
   echo "  wget https://apt.llvm.org/llvm.sh"
   echo "  chmod +x llvm.sh"
   echo "  sudo ./llvm.sh 21"
-  echo "  sudo apt install clangd-21 clangd-tidy-21"
+  echo "  sudo apt install clangd-21 clang-tidy-21"
   exit 1
 fi
 
@@ -59,7 +59,7 @@ for path in "${skip_list[@]}"; do
 done
 echo "-----------------------------------------------------------"
 
-find $clang_tidy_paths \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -not -name '*_WIN.cpp' "${skip_paths[@]}" -print0 \
+find "$ws_dir/src" "$ws_dir/include" \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -not -name '*_WIN.cpp' "${skip_paths[@]}" -print0 \
   | xargs -0 -n 1 -P $(nproc) bash -c '
     set -o pipefail
     echo "$@"

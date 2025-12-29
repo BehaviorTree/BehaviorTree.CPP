@@ -52,11 +52,11 @@ std::string toStr(NodeStatus status, bool colored)
     case NodeStatus::SUCCESS:
       return "\x1b[32m"
              "SUCCESS"
-             "\x1b[0m";  // RED
+             "\x1b[0m";  // GREEN
     case NodeStatus::FAILURE:
       return "\x1b[31m"
              "FAILURE"
-             "\x1b[0m";  // GREEN
+             "\x1b[0m";  // RED
     case NodeStatus::RUNNING:
       return "\x1b[33m"
              "RUNNING"

@@ -53,7 +53,7 @@ NodeStatus ReactiveFallback::tick()
         }
         if(running_child_ == -1)
         {
-          running_child_ = int(index);
+          running_child_ = static_cast<int>(index);
         }
         else if(throw_if_multiple_running && running_child_ != static_cast<int>(index))
         {
