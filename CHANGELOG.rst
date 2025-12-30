@@ -2,6 +2,29 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.8.3 (2025-12-29)
+------------------
+* minor change
+* remove nolint
+* Entry should be non copyable
+* miscellaneus
+* fix
+* run clang tidy in CI
+* fix remaining warnings
+* apply the rulke of 5
+* fix compilation in c++17
+* add clang tidy and fix warnings
+* update copyright year
+* add unit test
+* fix multiple issues with SimpleString
+* Merge pull request `#1043 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1043>`_ from uilianries/fix/cppzmq-visibility
+  [fix] Make cppzmq as public dependency to avoid linkage errors for tools
+* Turn cppzmq dependency public
+* Restore Star History and add Contributors section
+  Reintroduced the Star History section and added Contributors section to the README.
+* Update copyright year in README.md
+* Contributors: Davide Faconti, Uilian Ries
+
 4.8.2 (2025-10-30)
 ------------------
 * Merge pull request `#996 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/996>`_ from EnjoyRobotics/make-sequence-node-inheritable
