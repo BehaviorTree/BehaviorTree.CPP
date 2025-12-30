@@ -354,6 +354,27 @@ public:
   template <typename T>
   static TypeInfo Create()
   {
+    // store the base class typeid if specialized
+    if constexpr(is_shared_ptr<T>::value)
+    {
+      using Elem = typename T::element_type;
+      using Base = typename any_cast_base<Elem>::type;
+
+      if constexpr(!std::is_same_v<Base, void>)
+      {
+        using RootBase = root_base_t<Elem>;
+
+        static_assert(is_polymorphic_safe_v<RootBase>, "TypeInfo Base trait "
+                                                       "specialization "
+                                                       "must be "
+                                                       "polymorphic");
+
+        using Chain = compute_base_chain<Elem>;
+        auto base_chain = to_type_index_vector(Chain{});
+
+        return TypeInfo(typeid(T), GetAnyFromStringFunctor<T>(), std::move(base_chain));
+      }
+    }
     return TypeInfo{ typeid(T), GetAnyFromStringFunctor<T>() };
   }
 
@@ -362,6 +383,14 @@ public:
 
   TypeInfo(std::type_index type_info, StringConverter conv)
     : type_info_(type_info), converter_(conv), type_str_(BT::demangle(type_info))
+  {}
+
+  TypeInfo(std::type_index type_info, StringConverter conv,
+           std::vector<std::type_index>&& base_chain)
+    : type_info_(type_info)
+    , converter_(conv)
+    , type_str_(BT::demangle(type_info))
+    , base_chain_(std::move(base_chain))
   {}
 
   [[nodiscard]] const std::type_index& type() const;
@@ -389,10 +418,21 @@ public:
     return converter_;
   }
 
+  [[nodiscard]] bool isConvertibleFrom(const std::type_index& other) const
+  {
+    return std::find(base_chain_.begin(), base_chain_.end(), other) != base_chain_.end();
+  }
+
+  [[nodiscard]] const std::vector<std::type_index>& baseChain() const
+  {
+    return base_chain_;
+  }
+
 private:
   std::type_index type_info_;
   StringConverter converter_;
   std::string type_str_;
+  std::vector<std::type_index> base_chain_;
 };
 
 class PortInfo : public TypeInfo
@@ -404,6 +444,14 @@ public:
 
   PortInfo(PortDirection direction, std::type_index type_info, StringConverter conv)
     : TypeInfo(type_info, conv), direction_(direction)
+  {}
+
+  PortInfo(PortDirection direction, const TypeInfo& type_info)
+    : TypeInfo(type_info), direction_(direction)
+  {}
+
+  PortInfo(PortDirection direction, TypeInfo&& type_info)
+    : TypeInfo(std::move(type_info)), direction_(direction)
   {}
 
   [[nodiscard]] PortDirection direction() const;
@@ -459,7 +507,8 @@ template <typename T = AnyTypeAllowed>
   }
   else
   {
-    out = { sname, PortInfo(direction, typeid(T), GetAnyFromStringFunctor<T>()) };
+    auto type_info = TypeInfo::Create<T>();
+    out = { sname, PortInfo(direction, std::move(type_info)) };
   }
   if(!description.empty())
   {
@@ -508,7 +557,6 @@ BidirectionalPort(StringView name, StringView description = {})
 
 namespace details
 {
-
 template <typename T = AnyTypeAllowed, typename DefaultT = T>
 [[nodiscard]] inline std::pair<std::string, PortInfo>
 PortWithDefault(PortDirection direction, StringView name, const DefaultT& default_value,
