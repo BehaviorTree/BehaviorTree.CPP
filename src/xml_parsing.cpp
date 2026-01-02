@@ -1010,6 +1010,20 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
         subtree_path += subtree_ID + "::" + std::to_string(node->UID());
       }
 
+      // Check if the path already exists - duplicate paths cause issues in Groot2
+      // and TreeObserver (see Groot2 issue #56)
+      for(const auto& sub : output_tree.subtrees)
+      {
+        if(sub->instance_name == subtree_path)
+        {
+          throw RuntimeError("Duplicate SubTree path detected: '", subtree_path,
+                             "'. Multiple SubTree nodes with the same 'name' attribute "
+                             "under the same parent are not allowed. "
+                             "Please use unique names or omit the 'name' attribute "
+                             "to auto-generate unique paths.");
+        }
+      }
+
       recursivelyCreateSubtree(subtree_ID,
                                subtree_path,        // name
                                subtree_path + "/",  //prefix
