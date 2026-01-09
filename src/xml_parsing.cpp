@@ -91,6 +91,92 @@ namespace
 auto StrEqual = [](const char* str1, const char* str2) -> bool {
   return strcmp(str1, str2) == 0;
 };
+
+// Helper to format forbidden character for error messages
+std::string formatForbiddenChar(char c)
+{
+  if(c < 32 || c == 127)
+  {
+    return "control character (ASCII " + std::to_string(static_cast<int>(c)) + ")";
+  }
+  return std::string("'") + c + "'";
+}
+
+void validateModelName(const std::string& name, int line_number)
+{
+  const auto line_str = std::to_string(line_number);
+  if(name.empty())
+  {
+    throw RuntimeError("Error at line ", line_str,
+                       ": Model/Node type name cannot be empty");
+  }
+  if(name == "Root" || name == "root")
+  {
+    throw RuntimeError("Error at line ", line_str,
+                       ": 'Root' is a reserved name and cannot be used as a node type");
+  }
+  if(char c = findForbiddenChar(name); c != '\0')
+  {
+    throw RuntimeError("Error at line ", line_str, ": Model name '", name,
+                       "' contains forbidden character ", formatForbiddenChar(c));
+  }
+}
+
+void validatePortName(const std::string& name, int line_number)
+{
+  const auto line_str = std::to_string(line_number);
+  if(name.empty())
+  {
+    throw RuntimeError("Error at line ", line_str, ": Port name cannot be empty");
+  }
+  if(std::isdigit(static_cast<unsigned char>(name[0])))
+  {
+    throw RuntimeError("Error at line ", line_str, ": Port name '", name,
+                       "' cannot start with a digit");
+  }
+  if(char c = findForbiddenChar(name); c != '\0')
+  {
+    throw RuntimeError("Error at line ", line_str, ": Port name '", name,
+                       "' contains forbidden character ", formatForbiddenChar(c));
+  }
+  if(IsReservedAttribute(name))
+  {
+    throw RuntimeError("Error at line ", line_str, ": Port name '", name,
+                       "' is a reserved attribute name");
+  }
+}
+
+void validateInstanceName(const std::string& name, int line_number)
+{
+  // Instance name CAN be empty (defaults to model name)
+  // Instance names are XML attribute VALUES, so they can contain spaces,
+  // periods, and most characters. We only reject control characters that
+  // are invalid in XML.
+  if(name.empty())
+  {
+    return;
+  }
+  for(const char c : name)
+  {
+    const auto uc = static_cast<unsigned char>(c);
+    // Only reject control characters that are invalid in XML
+    // (XML allows tab=0x09, newline=0x0A, carriage return=0x0D)
+    if(uc < 32 && uc != 0x09 && uc != 0x0A && uc != 0x0D)
+    {
+      const auto line_str = std::to_string(line_number);
+      throw RuntimeError("Error at line ", line_str, ": Instance name '", name,
+                         "' contains invalid control character (ASCII ",
+                         std::to_string(static_cast<int>(uc)), ")");
+    }
+    if(uc == 127)
+    {
+      const auto line_str = std::to_string(line_number);
+      throw RuntimeError("Error at line ", line_str, ": Instance name '", name,
+                         "' contains invalid control character (ASCII 127)");
+    }
+  }
+}
+
 }  // namespace
 
 struct SubtreeModel

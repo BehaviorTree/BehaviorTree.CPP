@@ -1001,6 +1001,32 @@ TEST(PortTypeRules, CustomTypeStringLiteral_InvalidFormat)
   EXPECT_THROW(auto tree = factory.createTreeFromText(xml), LogicError);
 }
 
+TEST(PortTypeRules, StringToDifferentTypes)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<NodeWithStringPorts>("NodeWithStringPorts");
+  factory.registerNodeType<NodeWithIntPorts>("NodeWithIntPorts");
+  factory.registerNodeType<NodeWithDoublePorts>("NodeWithDoublePorts");
+
+  // Missing second coordinate
+  std::string xml = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree>
+        <Sequence>
+          <NodeWithStringPorts input="42" output="{value}"/>
+          <NodeWithIntPorts input="{value}" output="{test_int}"/>
+          <NodeWithDoublePorts input="{value}" output="{test_double}"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>
+  )";
+
+  auto tree = factory.createTreeFromText(xml);
+  tree.tickWhileRunning();
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("test_int"), 84);
+  ASSERT_DOUBLE_EQ(tree.rootBlackboard()->get<double>("test_double"), 42.0);
+}
+
 //==============================================================================
 // TEST SECTION 10: Reserved Port Names
 //==============================================================================

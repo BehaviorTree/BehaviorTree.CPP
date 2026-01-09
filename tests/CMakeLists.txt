@@ -18,6 +18,7 @@ set(BT_TESTS
   gtest_port_type_rules.cpp
   gtest_postconditions.cpp
   gtest_match.cpp
+  gtest_name_validation.cpp
   gtest_json.cpp
   gtest_reactive.cpp
   gtest_reactive_backchaining.cpp
