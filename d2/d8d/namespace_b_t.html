@@ -623,6 +623,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsAllowedPortName</b>
 <tr class="memitem:a074c47a72ad0a540ad6b978d31fe8275"><td class="memItemLeft" align="right" valign="top"><a id="a074c47a72ad0a540ad6b978d31fe8275" name="a074c47a72ad0a540ad6b978d31fe8275"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReservedAttribute</b> (StringView str)</td></tr>
 <tr class="separator:a074c47a72ad0a540ad6b978d31fe8275"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22c8132d6e9b69a5a1d38a755264ff56"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d8d/namespace_b_t.html#a22c8132d6e9b69a5a1d38a755264ff56">findForbiddenChar</a> (StringView name)</td></tr>
+<tr class="separator:a22c8132d6e9b69a5a1d38a755264ff56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a198312e3776d7af945108b79e9296df9"><td class="memTemplParams" colspan="2"><a id="a198312e3776d7af945108b79e9296df9" name="a198312e3776d7af945108b79e9296df9"></a>
 template&lt;typename T  = AnyTypeAllowed&gt; </td></tr>
 <tr class="memitem:a198312e3776d7af945108b79e9296df9"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; std::string, <a class="el" href="../../d8/d5e/class_b_t_1_1_port_info.html">PortInfo</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>CreatePort</b> (PortDirection direction, StringView name, StringView description={})</td></tr>
@@ -1255,6 +1257,25 @@ template&lt;typename T &gt; </div>
 <p>This function is invoked under the hood by <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">TreeNode::getInput()</a>, but only when the input port contains a string.</p>
 <p>If you have a custom type, you need to implement the corresponding template specialization.</p>
 <p>If the string starts with the prefix "json:", it will fall back to <a class="el" href="../../d2/d8d/namespace_b_t.html#a183200576f5fa139ae3359abbe8ef1c4" title="convertFromJSON will parse a json string and use JsonExporter to convert its content to a given type....">convertFromJSON()</a> </p>
+
+</div>
+</div>
+<a id="a22c8132d6e9b69a5a1d38a755264ff56" name="a22c8132d6e9b69a5a1d38a755264ff56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22c8132d6e9b69a5a1d38a755264ff56">&#9670;&#160;</a></span>findForbiddenChar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char BT::findForbiddenChar </td>
+          <td>(</td>
+          <td class="paramtype">StringView&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns the first forbidden character found in the name, or '\0' if valid. Forbidden characters include: space, tab, newline, CR, &lt; &gt; &amp; " ' / \ : * ? | . and control characters (ASCII 0-31, 127). UTF-8 multibyte sequences are allowed. </p>
 
 </div>
 </div>

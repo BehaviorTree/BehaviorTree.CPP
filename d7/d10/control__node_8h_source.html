@@ -108,65 +108,66 @@ $(document).ready(function(){initNavTree('d7/d10/control__node_8h_source.html','
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#</span><span class="preprocessor">pragma</span> <span class="preprocessor">once</span></div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#</span><span class="preprocessor">include</span> <span class="preprocessor">&lt;</span><span class="preprocessor">vector</span><span class="preprocessor">&gt;</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#</span><span class="preprocessor">include</span> <span class="preprocessor">&quot;behaviortree_cpp/tree_node.h&quot;</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">namespace</span> <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>{</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">class</span> <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a> : <span class="keyword">public</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>{</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>  std::vector&lt;TreeNode*&gt; children_nodes_;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  ControlNode(<span class="keyword">const</span> std::string&amp; name, <span class="keyword">const</span> <a class="code hl_struct" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfig</a>&amp; config);</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  ~ControlNode() <span class="keyword">override</span> = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  ControlNode(<span class="keyword">const</span> <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  ControlNode(<a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp; operator=(<a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  <span class="comment">/// The method used to add nodes to the children vector</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#a7a0eef4ae2da07156bcc49f304bbbf4f">addChild</a>(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* child);</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  size_t childrenCount() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  <span class="keyword">const</span> std::vector&lt;TreeNode*&gt;&amp; children() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  <span class="keyword">const</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* child(size_t index) <span class="keyword">const</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  {</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keywordflow">return</span> children().at(index);</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  }</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#a99fcae0869f2a0d792af43987c5921f3">halt</a>() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  <span class="comment">/// same as resetChildren()</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#ae100fb6cf56095d9b2f09d8e08a7fb9c">haltChildren</a>();</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  [[<a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">deprecated</a>(<span class="stringliteral">&quot;deprecated: please use explicitly haltChildren() or haltChild(i)&quot;</span>)]] <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  haltChildren(size_t first);</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="keywordtype">void</span> haltChild(size_t i);</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keyword">virtual</span> <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e">NodeType</a> type() <span class="keyword">const</span> <span class="keyword">override</span> <span class="keyword">final</span></div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  {</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordflow">return</span> <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e">NodeType</a>::CONTROL;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  }</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  <span class="comment">/// Set the status of all children to IDLE.</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  <span class="comment">/// also send a halt() signal to all RUNNING children</span></div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#a18ffb6a67c9a2bd663486b7b2b75edf3">resetChildren</a>();</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>};</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>}  <span class="comment">// namespace BT</span></div>
-<div class="ttc" id="aclass_b_t_1_1_control_node_html"><div class="ttname"><a href="../../d6/ddb/class_b_t_1_1_control_node.html">BT::ControlNode</a></div><div class="ttdef"><b>Definition:</b> control_node.h:22</div></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#</span><span class="preprocessor">include</span> <span class="preprocessor">&quot;behaviortree_cpp/tree_node.h&quot;</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#</span><span class="preprocessor">include</span> <span class="preprocessor">&lt;</span><span class="preprocessor">vector</span><span class="preprocessor">&gt;</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">namespace</span> <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>{</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">class</span> <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a> : <span class="keyword">public</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>{</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>  std::vector&lt;TreeNode*&gt; children_nodes_;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>  ControlNode(<span class="keyword">const</span> std::string&amp; name, <span class="keyword">const</span> <a class="code hl_struct" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfig</a>&amp; config);</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  ~ControlNode() <span class="keyword">override</span> = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  ControlNode(<span class="keyword">const</span> <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  ControlNode(<a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  <a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp; operator=(<a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">ControlNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="comment">/// The method used to add nodes to the children vector</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#a7a0eef4ae2da07156bcc49f304bbbf4f">addChild</a>(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* child);</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  size_t childrenCount() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  <span class="keyword">const</span> std::vector&lt;TreeNode*&gt;&amp; children() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  <span class="keyword">const</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* child(size_t index) <span class="keyword">const</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  {</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordflow">return</span> children().at(index);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  }</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#a99fcae0869f2a0d792af43987c5921f3">halt</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="comment">/// same as resetChildren()</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#ae100fb6cf56095d9b2f09d8e08a7fb9c">haltChildren</a>();</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  [[<a class="code hl_class" href="../../d6/ddb/class_b_t_1_1_control_node.html">deprecated</a>(<span class="stringliteral">&quot;deprecated: please use explicitly haltChildren() or haltChild(i)&quot;</span>)]] <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  haltChildren(size_t first);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  <span class="keywordtype">void</span> haltChild(size_t i);</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keyword">virtual</span> <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e">NodeType</a> type() <span class="keyword">const</span> <span class="keyword">override</span> <span class="keyword">final</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  {</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordflow">return</span> <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e">NodeType</a>::CONTROL;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  }</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  <span class="comment">/// Set the status of all children to IDLE.</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="comment">/// also send a halt() signal to all RUNNING children</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/ddb/class_b_t_1_1_control_node.html#a18ffb6a67c9a2bd663486b7b2b75edf3">resetChildren</a>();</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>};</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>}  <span class="comment">// namespace BT</span></div>
+<div class="ttc" id="aclass_b_t_1_1_control_node_html"><div class="ttname"><a href="../../d6/ddb/class_b_t_1_1_control_node.html">BT::ControlNode</a></div><div class="ttdef"><b>Definition:</b> control_node.h:23</div></div>
 <div class="ttc" id="aclass_b_t_1_1_control_node_html_a18ffb6a67c9a2bd663486b7b2b75edf3"><div class="ttname"><a href="../../d6/ddb/class_b_t_1_1_control_node.html#a18ffb6a67c9a2bd663486b7b2b75edf3">BT::ControlNode::resetChildren</a></div><div class="ttdeci">void resetChildren()</div></div>
 <div class="ttc" id="aclass_b_t_1_1_control_node_html_a7a0eef4ae2da07156bcc49f304bbbf4f"><div class="ttname"><a href="../../d6/ddb/class_b_t_1_1_control_node.html#a7a0eef4ae2da07156bcc49f304bbbf4f">BT::ControlNode::addChild</a></div><div class="ttdeci">void addChild(TreeNode *child)</div><div class="ttdoc">The method used to add nodes to the children vector.</div></div>
 <div class="ttc" id="aclass_b_t_1_1_control_node_html_a99fcae0869f2a0d792af43987c5921f3"><div class="ttname"><a href="../../d6/ddb/class_b_t_1_1_control_node.html#a99fcae0869f2a0d792af43987c5921f3">BT::ControlNode::halt</a></div><div class="ttdeci">virtual void halt() override</div></div>
 <div class="ttc" id="aclass_b_t_1_1_control_node_html_ae100fb6cf56095d9b2f09d8e08a7fb9c"><div class="ttname"><a href="../../d6/ddb/class_b_t_1_1_control_node.html#ae100fb6cf56095d9b2f09d8e08a7fb9c">BT::ControlNode::haltChildren</a></div><div class="ttdeci">void haltChildren()</div><div class="ttdoc">same as resetChildren()</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html">BT::TreeNode</a></div><div class="ttdoc">Abstract base class for Behavior Tree Nodes.</div><div class="ttdef"><b>Definition:</b> tree_node.h:132</div></div>
-<div class="ttc" id="anamespace_b_t_html"><div class="ttname"><a href="../../d2/d8d/namespace_b_t.html">BT</a></div><div class="ttdef"><b>Definition:</b> action_node.h:25</div></div>
+<div class="ttc" id="anamespace_b_t_html"><div class="ttname"><a href="../../d2/d8d/namespace_b_t.html">BT</a></div><div class="ttdef"><b>Definition:</b> action_node.h:24</div></div>
 <div class="ttc" id="anamespace_b_t_html_a86a6454c13791311dface943d837363e"><div class="ttname"><a href="../../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e">BT::NodeType</a></div><div class="ttdeci">NodeType</div><div class="ttdoc">Enumerates the possible types of nodes.</div><div class="ttdef"><b>Definition:</b> basic_types.h:21</div></div>
 <div class="ttc" id="astruct_b_t_1_1_node_config_html"><div class="ttname"><a href="../../dc/d26/struct_b_t_1_1_node_config.html">BT::NodeConfig</a></div><div class="ttdef"><b>Definition:</b> tree_node.h:83</div></div>
 </div><!-- fragment --></div><!-- contents -->

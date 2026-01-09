@@ -118,6 +118,7 @@ var namespace_b_t =
     [ "convertFromString", "d2/d8d/namespace_b_t.html#afaf200f50db2b15eea2e20e6a068a0d2", null ],
     [ "ExportBlackboardToJSON", "d2/d8d/namespace_b_t.html#a9700fbeea6af84efe32e9f22bc45d8e2", null ],
     [ "ExportTreeToJSON", "d2/d8d/namespace_b_t.html#a02848b586dc8265d5d51be939401626d", null ],
+    [ "findForbiddenChar", "d2/d8d/namespace_b_t.html#a22c8132d6e9b69a5a1d38a755264ff56", null ],
     [ "getType", "d2/d8d/namespace_b_t.html#aa8bda3dd22bdb1c2aaa354a610e25ac9", null ],
     [ "ImportBlackboardFromJSON", "d2/d8d/namespace_b_t.html#a93b8bbf4a1f09391295076701c1457e4", null ],
     [ "ImportTreeFromJSON", "d2/d8d/namespace_b_t.html#a47af04695aeb786b3c2ec2267f5bf02b", null ],
