@@ -97,7 +97,7 @@ $(document).ready(function(){initNavTree('de/d22/class_b_t_1_1_keep_running_unti
 </div><!--header-->
 <div class="contents">
 
-<p>The <a class="el" href="../../de/d22/class_b_t_1_1_keep_running_until_failure_node.html" title="The KeepRunningUntilFailureNode returns always FAILURE or RUNNING.">KeepRunningUntilFailureNode</a> returns always FAILURE or RUNNING.  
+<p>The <a class="el" href="../../de/d22/class_b_t_1_1_keep_running_until_failure_node.html" title="The KeepRunningUntilFailureNode keeps ticking the child as long as it returns SUCCESS,...">KeepRunningUntilFailureNode</a> keeps ticking the child as long as it returns SUCCESS, and returns RUNNING.  
  <a href="../../de/d22/class_b_t_1_1_keep_running_until_failure_node.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="../../d8/d5e/keep__running__until__failure__node_8h_source.html">keep_running_until_failure_node.h</a>&gt;</code></p>
@@ -106,8 +106,8 @@ Inheritance diagram for BT::KeepRunningUntilFailureNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d7/d97/class_b_t_1_1_keep_running_until_failure_node__inherit__graph.png" border="0" usemap="#a_b_t_1_1_keep_running_until_failure_node_inherit__map" alt="Inheritance graph"/></div>
 <map name="a_b_t_1_1_keep_running_until_failure_node_inherit__map" id="a_b_t_1_1_keep_running_until_failure_node_inherit__map">
-<area shape="rect" title="The KeepRunningUntilFailureNode returns always FAILURE or RUNNING." alt="" coords="5,152,244,177"/>
-<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="53,79,197,104"/>
+<area shape="rect" title="The KeepRunningUntilFailureNode keeps ticking the child as long as it returns SUCCESS,..." alt="" coords="5,152,244,177"/>
+<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="53,79,197,104"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="71,5,178,31"/>
 </map>
 <center><span class="legend">[<a target="top" href="../../graph_legend.html">legend</a>]</span></center></div>
@@ -116,8 +116,8 @@ Collaboration diagram for BT::KeepRunningUntilFailureNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/d4d/class_b_t_1_1_keep_running_until_failure_node__coll__graph.png" border="0" usemap="#a_b_t_1_1_keep_running_until_failure_node_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_keep_running_until_failure_node_coll__map" id="a_b_t_1_1_keep_running_until_failure_node_coll__map">
-<area shape="rect" title="The KeepRunningUntilFailureNode returns always FAILURE or RUNNING." alt="" coords="5,168,244,193"/>
-<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="53,93,197,119"/>
+<area shape="rect" title="The KeepRunningUntilFailureNode keeps ticking the child as long as it returns SUCCESS,..." alt="" coords="5,168,244,193"/>
+<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="53,93,197,119"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="71,5,178,31"/>
 </map>
 <center><span class="legend">[<a target="top" href="../../graph_legend.html">legend</a>]</span></center></div>
@@ -338,7 +338,13 @@ template&lt;typename T &gt; </td></tr>
 <tr class="separator:a783598423aae241355c9e60756b3f27f inherit pro_attribs_class_b_t_1_1_decorator_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The <a class="el" href="../../de/d22/class_b_t_1_1_keep_running_until_failure_node.html" title="The KeepRunningUntilFailureNode returns always FAILURE or RUNNING.">KeepRunningUntilFailureNode</a> returns always FAILURE or RUNNING. </p>
+<div class="textblock"><p>The <a class="el" href="../../de/d22/class_b_t_1_1_keep_running_until_failure_node.html" title="The KeepRunningUntilFailureNode keeps ticking the child as long as it returns SUCCESS,...">KeepRunningUntilFailureNode</a> keeps ticking the child as long as it returns SUCCESS, and returns RUNNING. </p>
+<ul>
+<li>If the child returns SUCCESS, reset the child and return RUNNING.</li>
+<li>If the child returns RUNNING, return RUNNING.</li>
+<li>If the child returns FAILURE, return FAILURE.</li>
+</ul>
+<p>This creates an infinite loop that stops only when the child fails. </p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/decorators/<a class="el" href="../../d8/d5e/keep__running__until__failure__node_8h_source.html">keep_running_until_failure_node.h</a></li>
 </ul>

@@ -97,12 +97,17 @@ $(document).ready(function(){initNavTree('d6/ddb/class_b_t_1_1_control_node.html
   <div class="headertitle"><div class="title">BT::ControlNode Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>The <a class="el" href="../../d6/ddb/class_b_t_1_1_control_node.html" title="The ControlNode is the base class for nodes that can have multiple children.">ControlNode</a> is the base class for nodes that can have multiple children.  
+ <a href="../../d6/ddb/class_b_t_1_1_control_node.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../d7/d10/control__node_8h_source.html">control_node.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for BT::ControlNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../da/d34/class_b_t_1_1_control_node__inherit__graph.png" border="0" usemap="#a_b_t_1_1_control_node_inherit__map" alt="Inheritance graph"/></div>
 <map name="a_b_t_1_1_control_node_inherit__map" id="a_b_t_1_1_control_node_inherit__map">
-<area shape="rect" title=" " alt="" coords="160,252,287,277"/>
+<area shape="rect" title="The ControlNode is the base class for nodes that can have multiple children." alt="" coords="160,252,287,277"/>
 <area shape="rect" href="../../dc/da6/class_b_t_1_1_fallback_node.html" title="The FallbackNode is used to try different strategies, until one succeeds. If any child returns RUNNIN..." alt="" coords="365,5,498,31"/>
 <area shape="rect" href="../../d8/d08/class_b_t_1_1_if_then_else_node.html" title="IfThenElseNode must have exactly 2 or 3 children. This node is NOT reactive." alt="" coords="357,55,505,80"/>
 <area shape="rect" href="../../dc/d0b/class_b_t_1_1_manual_selector_node.html" title="Use a Terminal User Interface (ncurses) to select a certain child manually." alt="" coords="341,104,522,129"/>
@@ -122,7 +127,7 @@ Collaboration diagram for BT::ControlNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../de/d23/class_b_t_1_1_control_node__coll__graph.png" border="0" usemap="#a_b_t_1_1_control_node_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_control_node_coll__map" id="a_b_t_1_1_control_node_coll__map">
-<area shape="rect" title=" " alt="" coords="5,181,132,207"/>
+<area shape="rect" title="The ControlNode is the base class for nodes that can have multiple children." alt="" coords="5,181,132,207"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="15,5,122,31"/>
 <area shape="rect" title=" " alt="" coords="85,93,303,119"/>
 </map>
@@ -347,7 +352,11 @@ template&lt;typename T &gt; </td></tr>
 <tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>parseString</b> (const std::string &amp;str) const</td></tr>
 <tr class="separator:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The <a class="el" href="../../d6/ddb/class_b_t_1_1_control_node.html" title="The ControlNode is the base class for nodes that can have multiple children.">ControlNode</a> is the base class for nodes that can have multiple children. </p>
+<p>ControlNodes determine the order and conditions under which their children are ticked.</p>
+<p>Each derived class implements specific rules about if, when, and how many times children are ticked. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a99fcae0869f2a0d792af43987c5921f3" name="a99fcae0869f2a0d792af43987c5921f3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a99fcae0869f2a0d792af43987c5921f3">&#9670;&#160;</a></span>halt()</h2>
 

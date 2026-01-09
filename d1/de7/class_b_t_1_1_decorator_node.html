@@ -97,21 +97,26 @@ $(document).ready(function(){initNavTree('d1/de7/class_b_t_1_1_decorator_node.ht
   <div class="headertitle"><div class="title">BT::DecoratorNode Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>The <a class="el" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child.">DecoratorNode</a> is the base class for nodes that have exactly one child.  
+ <a href="../../d1/de7/class_b_t_1_1_decorator_node.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../d3/db1/decorator__node_8h_source.html">decorator_node.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for BT::DecoratorNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d8/d74/class_b_t_1_1_decorator_node__inherit__graph.png" border="0" usemap="#a_b_t_1_1_decorator_node_inherit__map" alt="Inheritance graph"/></div>
 <map name="a_b_t_1_1_decorator_node_inherit__map" id="a_b_t_1_1_decorator_node_inherit__map">
-<area shape="rect" title=" " alt="" coords="160,351,304,376"/>
+<area shape="rect" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="160,351,304,376"/>
 <area shape="rect" href="../../df/dc2/class_b_t_1_1_consume_queue.html" title=" " alt="" coords="378,5,565,31"/>
 <area shape="rect" href="../../d4/d56/class_b_t_1_1_delay_node.html" title="The delay node will introduce a delay and then tick the child returning the status of the child as it..." alt="" coords="412,55,531,80"/>
 <area shape="rect" href="../../d1/d7b/class_b_t_1_1_entry_updated_decorator.html" title="The EntryUpdatedDecorator checks the Timestamp in an entry to determine if the value was updated sinc..." alt="" coords="372,104,571,129"/>
-<area shape="rect" href="../../d4/d8c/class_b_t_1_1_force_failure_node.html" title="The ForceFailureNode returns always FAILURE or RUNNING." alt="" coords="392,153,551,179"/>
-<area shape="rect" href="../../d7/db8/class_b_t_1_1_force_success_node.html" title="The ForceSuccessNode returns always SUCCESS or RUNNING." alt="" coords="388,203,555,228"/>
+<area shape="rect" href="../../d4/d8c/class_b_t_1_1_force_failure_node.html" title="The ForceFailureNode always returns FAILURE when the child completes, regardless of whether the child..." alt="" coords="392,153,551,179"/>
+<area shape="rect" href="../../d7/db8/class_b_t_1_1_force_success_node.html" title="The ForceSuccessNode always returns SUCCESS when the child completes, regardless of whether the child..." alt="" coords="388,203,555,228"/>
 <area shape="rect" href="../../d2/ded/class_b_t_1_1_inverter_node.html" title="The InverterNode returns SUCCESS if child fails of FAILURE is child succeeds. RUNNING status is propa..." alt="" coords="406,252,537,277"/>
-<area shape="rect" href="../../de/d22/class_b_t_1_1_keep_running_until_failure_node.html" title="The KeepRunningUntilFailureNode returns always FAILURE or RUNNING." alt="" coords="352,301,591,327"/>
+<area shape="rect" href="../../de/d22/class_b_t_1_1_keep_running_until_failure_node.html" title="The KeepRunningUntilFailureNode keeps ticking the child as long as it returns SUCCESS,..." alt="" coords="352,301,591,327"/>
 <area shape="rect" href="../../dd/d32/class_b_t_1_1_loop_node.html" title="The LoopNode class is used to pop_front elements from a std::deque. This element is copied into the p..." alt="" coords="397,351,546,376"/>
-<area shape="rect" href="../../d7/dd5/class_b_t_1_1_precondition_node.html" title=" " alt="" coords="391,400,552,425"/>
+<area shape="rect" href="../../d7/dd5/class_b_t_1_1_precondition_node.html" title="The PreconditionNode evaluates a script condition before ticking its child." alt="" coords="391,400,552,425"/>
 <area shape="rect" href="../../d6/d78/class_b_t_1_1_repeat_node.html" title="The RepeatNode is used to execute a child several times, as long as it succeed." alt="" coords="408,449,535,475"/>
 <area shape="rect" href="../../dd/de4/class_b_t_1_1_retry_node.html" title="The RetryNode is used to execute a child several times if it fails." alt="" coords="414,499,529,524"/>
 <area shape="rect" href="../../dd/dbd/class_b_t_1_1_run_once_node.html" title="The RunOnceNode is used when you want to execute the child only once. If the child is asynchronous,..." alt="" coords="402,548,541,573"/>
@@ -127,7 +132,7 @@ Collaboration diagram for BT::DecoratorNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/d36/class_b_t_1_1_decorator_node__coll__graph.png" border="0" usemap="#a_b_t_1_1_decorator_node_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_decorator_node_coll__map" id="a_b_t_1_1_decorator_node_coll__map">
-<area shape="rect" title=" " alt="" coords="5,93,149,119"/>
+<area shape="rect" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="5,93,149,119"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="24,5,131,31"/>
 </map>
 <center><span class="legend">[<a target="top" href="../../graph_legend.html">legend</a>]</span></center></div>
@@ -345,7 +350,15 @@ template&lt;typename T &gt; </td></tr>
 <tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>parseString</b> (const std::string &amp;str) const</td></tr>
 <tr class="separator:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The <a class="el" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child.">DecoratorNode</a> is the base class for nodes that have exactly one child. </p>
+<p>DecoratorNodes modify the behavior of their child in some way. They may:</p><ul>
+<li>Transform the result received from the child (e.g., Inverter)</li>
+<li>Control when or how many times the child is ticked (e.g., Repeat, Retry)</li>
+<li>Add timing constraints (e.g., Timeout, Delay)</li>
+<li>Conditionally execute the child (e.g., Precondition) </li>
+</ul>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="add55473b513501079f3064dcac8c8dfc" name="add55473b513501079f3064dcac8c8dfc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#add55473b513501079f3064dcac8c8dfc">&#9670;&#160;</a></span>executeTick()</h2>
 

@@ -97,12 +97,17 @@ $(document).ready(function(){initNavTree('db/d0f/class_b_t_1_1_script_node.html'
   <div class="headertitle"><div class="title">BT::ScriptNode Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>The <a class="el" href="../../db/d0f/class_b_t_1_1_script_node.html" title="The ScriptNode executes a piece of script code to set or modify entries in the Blackboard.">ScriptNode</a> executes a piece of script code to set or modify entries in the <a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html" title="The Blackboard is the mechanism used by BehaviorTrees to exchange typed data.">Blackboard</a>.  
+ <a href="../../db/d0f/class_b_t_1_1_script_node.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../d3/d86/script__node_8h_source.html">script_node.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for BT::ScriptNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/d31/class_b_t_1_1_script_node__inherit__graph.png" border="0" usemap="#a_b_t_1_1_script_node_inherit__map" alt="Inheritance graph"/></div>
 <map name="a_b_t_1_1_script_node_inherit__map" id="a_b_t_1_1_script_node_inherit__map">
-<area shape="rect" title=" " alt="" coords="23,299,141,324"/>
+<area shape="rect" title="The ScriptNode executes a piece of script code to set or modify entries in the Blackboard." alt="" coords="23,299,141,324"/>
 <area shape="rect" href="../../da/d73/class_b_t_1_1_sync_action_node.html" title="The SyncActionNode is an ActionNode that explicitly prevents the status RUNNING and doesn&#39;t require a..." alt="" coords="6,225,158,251"/>
 <area shape="rect" href="../../d3/de2/class_b_t_1_1_action_node_base.html" title="The ActionNodeBase is the base class to use to create any kind of action. A particular derived class ..." alt="" coords="5,152,159,177"/>
 <area shape="rect" href="../../d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="28,79,136,104"/>
@@ -114,7 +119,7 @@ Collaboration diagram for BT::ScriptNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../dc/dfd/class_b_t_1_1_script_node__coll__graph.png" border="0" usemap="#a_b_t_1_1_script_node_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_script_node_coll__map" id="a_b_t_1_1_script_node_coll__map">
-<area shape="rect" title=" " alt="" coords="23,299,141,324"/>
+<area shape="rect" title="The ScriptNode executes a piece of script code to set or modify entries in the Blackboard." alt="" coords="23,299,141,324"/>
 <area shape="rect" href="../../da/d73/class_b_t_1_1_sync_action_node.html" title="The SyncActionNode is an ActionNode that explicitly prevents the status RUNNING and doesn&#39;t require a..." alt="" coords="6,225,158,251"/>
 <area shape="rect" href="../../d3/de2/class_b_t_1_1_action_node_base.html" title="The ActionNodeBase is the base class to use to create any kind of action. A particular derived class ..." alt="" coords="5,152,159,177"/>
 <area shape="rect" href="../../d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="28,79,136,104"/>
@@ -356,7 +361,12 @@ template&lt;typename T &gt; </td></tr>
 <tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>parseString</b> (const std::string &amp;str) const</td></tr>
 <tr class="separator:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The <a class="el" href="../../db/d0f/class_b_t_1_1_script_node.html" title="The ScriptNode executes a piece of script code to set or modify entries in the Blackboard.">ScriptNode</a> executes a piece of script code to set or modify entries in the <a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html" title="The Blackboard is the mechanism used by BehaviorTrees to exchange typed data.">Blackboard</a>. </p>
+<p>The script is passed via the input port "code" and can use the BT++ scripting language syntax. For instance:</p>
+<p>&lt;Script code=" msg:='hello world' " &gt; &lt;Script code=" A:=42; B:=3.14 " &gt;</p>
+<p>The node always returns SUCCESS after executing the script. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/actions/<a class="el" href="../../d3/d86/script__node_8h_source.html">script_node.h</a></li>
 </ul>
 </div><!-- contents -->

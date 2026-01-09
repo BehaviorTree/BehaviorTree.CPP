@@ -97,13 +97,18 @@ $(document).ready(function(){initNavTree('d7/dd5/class_b_t_1_1_precondition_node
   <div class="headertitle"><div class="title">BT::PreconditionNode Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>The <a class="el" href="../../d7/dd5/class_b_t_1_1_precondition_node.html" title="The PreconditionNode evaluates a script condition before ticking its child.">PreconditionNode</a> evaluates a script condition before ticking its child.  
+ <a href="../../d7/dd5/class_b_t_1_1_precondition_node.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../d6/dc8/script__precondition_8h_source.html">script_precondition.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for BT::PreconditionNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/ded/class_b_t_1_1_precondition_node__inherit__graph.png" border="0" usemap="#a_b_t_1_1_precondition_node_inherit__map" alt="Inheritance graph"/></div>
 <map name="a_b_t_1_1_precondition_node_inherit__map" id="a_b_t_1_1_precondition_node_inherit__map">
-<area shape="rect" title=" " alt="" coords="5,152,167,177"/>
-<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="14,79,158,104"/>
+<area shape="rect" title="The PreconditionNode evaluates a script condition before ticking its child." alt="" coords="5,152,167,177"/>
+<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="14,79,158,104"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="33,5,139,31"/>
 </map>
 <center><span class="legend">[<a target="top" href="../../graph_legend.html">legend</a>]</span></center></div>
@@ -112,8 +117,8 @@ Collaboration diagram for BT::PreconditionNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d8/d7b/class_b_t_1_1_precondition_node__coll__graph.png" border="0" usemap="#a_b_t_1_1_precondition_node_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_precondition_node_coll__map" id="a_b_t_1_1_precondition_node_coll__map">
-<area shape="rect" title=" " alt="" coords="5,168,167,193"/>
-<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="14,93,158,119"/>
+<area shape="rect" title="The PreconditionNode evaluates a script condition before ticking its child." alt="" coords="5,168,167,193"/>
+<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="14,93,158,119"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="33,5,139,31"/>
 </map>
 <center><span class="legend">[<a target="top" href="../../graph_legend.html">legend</a>]</span></center></div>
@@ -351,7 +356,13 @@ template&lt;typename T &gt; </td></tr>
 <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>child_node_</b></td></tr>
 <tr class="separator:a783598423aae241355c9e60756b3f27f inherit pro_attribs_class_b_t_1_1_decorator_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The <a class="el" href="../../d7/dd5/class_b_t_1_1_precondition_node.html" title="The PreconditionNode evaluates a script condition before ticking its child.">PreconditionNode</a> evaluates a script condition before ticking its child. </p>
+<p>If the script in the "if" port returns true, the child is ticked. If the script returns false, the node returns the status specified in the "else" port (FAILURE by default).</p>
+<p>Once the child starts (returns RUNNING), subsequent ticks will continue executing the child without re-evaluating the precondition until completion.</p>
+<p>Example usage:</p>
+<p>&lt;Precondition if="A &gt; B &amp;&amp; color != BLUE" else="FAILURE"&gt; &lt;SomeAction&gt; &lt;/Precondition&gt; </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/decorators/<a class="el" href="../../d6/dc8/script__precondition_8h_source.html">script_precondition.h</a></li>
 </ul>
 </div><!-- contents -->

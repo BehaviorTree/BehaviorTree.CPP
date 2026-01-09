@@ -97,7 +97,7 @@ $(document).ready(function(){initNavTree('d7/db8/class_b_t_1_1_force_success_nod
 </div><!--header-->
 <div class="contents">
 
-<p>The <a class="el" href="../../d7/db8/class_b_t_1_1_force_success_node.html" title="The ForceSuccessNode returns always SUCCESS or RUNNING.">ForceSuccessNode</a> returns always SUCCESS or RUNNING.  
+<p>The <a class="el" href="../../d7/db8/class_b_t_1_1_force_success_node.html" title="The ForceSuccessNode always returns SUCCESS when the child completes, regardless of whether the child...">ForceSuccessNode</a> always returns SUCCESS when the child completes, regardless of whether the child returned SUCCESS or FAILURE.  
  <a href="../../d7/db8/class_b_t_1_1_force_success_node.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="../../d2/dc1/force__success__node_8h_source.html">force_success_node.h</a>&gt;</code></p>
@@ -106,8 +106,8 @@ Inheritance diagram for BT::ForceSuccessNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d06/class_b_t_1_1_force_success_node__inherit__graph.png" border="0" usemap="#a_b_t_1_1_force_success_node_inherit__map" alt="Inheritance graph"/></div>
 <map name="a_b_t_1_1_force_success_node_inherit__map" id="a_b_t_1_1_force_success_node_inherit__map">
-<area shape="rect" title="The ForceSuccessNode returns always SUCCESS or RUNNING." alt="" coords="5,152,172,177"/>
-<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="17,79,161,104"/>
+<area shape="rect" title="The ForceSuccessNode always returns SUCCESS when the child completes, regardless of whether the child..." alt="" coords="5,152,172,177"/>
+<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="17,79,161,104"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="35,5,142,31"/>
 </map>
 <center><span class="legend">[<a target="top" href="../../graph_legend.html">legend</a>]</span></center></div>
@@ -116,8 +116,8 @@ Collaboration diagram for BT::ForceSuccessNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/d0d/class_b_t_1_1_force_success_node__coll__graph.png" border="0" usemap="#a_b_t_1_1_force_success_node_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_force_success_node_coll__map" id="a_b_t_1_1_force_success_node_coll__map">
-<area shape="rect" title="The ForceSuccessNode returns always SUCCESS or RUNNING." alt="" coords="5,168,172,193"/>
-<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title=" " alt="" coords="17,93,161,119"/>
+<area shape="rect" title="The ForceSuccessNode always returns SUCCESS when the child completes, regardless of whether the child..." alt="" coords="5,168,172,193"/>
+<area shape="rect" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child." alt="" coords="17,93,161,119"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="35,5,142,31"/>
 </map>
 <center><span class="legend">[<a target="top" href="../../graph_legend.html">legend</a>]</span></center></div>
@@ -338,7 +338,11 @@ template&lt;typename T &gt; </td></tr>
 <tr class="separator:a783598423aae241355c9e60756b3f27f inherit pro_attribs_class_b_t_1_1_decorator_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The <a class="el" href="../../d7/db8/class_b_t_1_1_force_success_node.html" title="The ForceSuccessNode returns always SUCCESS or RUNNING.">ForceSuccessNode</a> returns always SUCCESS or RUNNING. </p>
+<div class="textblock"><p>The <a class="el" href="../../d7/db8/class_b_t_1_1_force_success_node.html" title="The ForceSuccessNode always returns SUCCESS when the child completes, regardless of whether the child...">ForceSuccessNode</a> always returns SUCCESS when the child completes, regardless of whether the child returned SUCCESS or FAILURE. </p>
+<ul>
+<li>If the child returns RUNNING, this node returns RUNNING.</li>
+<li>If the child returns SUCCESS or FAILURE, this node returns SUCCESS. </li>
+</ul>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/decorators/<a class="el" href="../../d2/dc1/force__success__node_8h_source.html">force_success_node.h</a></li>
 </ul>

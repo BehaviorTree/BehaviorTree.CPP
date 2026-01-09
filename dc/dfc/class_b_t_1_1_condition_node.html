@@ -96,12 +96,17 @@ $(document).ready(function(){initNavTree('dc/dfc/class_b_t_1_1_condition_node.ht
   <div class="headertitle"><div class="title">BT::ConditionNode Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>The <a class="el" href="../../dc/dfc/class_b_t_1_1_condition_node.html" title="The ConditionNode is a leaf node used to check a condition.">ConditionNode</a> is a leaf node used to check a condition.  
+ <a href="../../dc/dfc/class_b_t_1_1_condition_node.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../da/d52/condition__node_8h_source.html">condition_node.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for BT::ConditionNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d64/class_b_t_1_1_condition_node__inherit__graph.png" border="0" usemap="#a_b_t_1_1_condition_node_inherit__map" alt="Inheritance graph"/></div>
 <map name="a_b_t_1_1_condition_node_inherit__map" id="a_b_t_1_1_condition_node_inherit__map">
-<area shape="rect" title=" " alt="" coords="101,152,244,177"/>
+<area shape="rect" title="The ConditionNode is a leaf node used to check a condition." alt="" coords="101,152,244,177"/>
 <area shape="rect" href="../../da/d26/class_b_t_1_1_script_condition.html" title="Execute a script, and if the result is true, return SUCCESS, FAILURE otherwise." alt="" coords="5,225,151,251"/>
 <area shape="rect" href="../../dc/d49/class_b_t_1_1_simple_condition_node.html" title="The SimpleConditionNode provides an easy to use ConditionNode. The user should simply provide a callb..." alt="" coords="175,225,362,251"/>
 <area shape="rect" href="../../d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="119,79,227,104"/>
@@ -113,7 +118,7 @@ Collaboration diagram for BT::ConditionNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d7/d28/class_b_t_1_1_condition_node__coll__graph.png" border="0" usemap="#a_b_t_1_1_condition_node_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_condition_node_coll__map" id="a_b_t_1_1_condition_node_coll__map">
-<area shape="rect" title=" " alt="" coords="5,152,148,177"/>
+<area shape="rect" title="The ConditionNode is a leaf node used to check a condition." alt="" coords="5,152,148,177"/>
 <area shape="rect" href="../../d1/de2/class_b_t_1_1_leaf_node.html" title=" " alt="" coords="23,79,131,104"/>
 <area shape="rect" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="23,5,130,31"/>
 </map>
@@ -323,7 +328,11 @@ template&lt;typename T &gt; </td></tr>
 <tr class="memitem:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>parseString</b> (const std::string &amp;str) const</td></tr>
 <tr class="separator:ac2ecedb8437809238a9662de376e6079 inherit pro_methods_class_b_t_1_1_tree_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>The <a class="el" href="../../dc/dfc/class_b_t_1_1_condition_node.html" title="The ConditionNode is a leaf node used to check a condition.">ConditionNode</a> is a leaf node used to check a condition. </p>
+<p>Unlike ActionNodes, a <a class="el" href="../../dc/dfc/class_b_t_1_1_condition_node.html" title="The ConditionNode is a leaf node used to check a condition.">ConditionNode</a> should NOT alter the system or have side-effects. and should NOT return RUNNING. It should return SUCCESS or FAILURE synchronously to indicate whether a condition is met.</p>
+<p>Conditions are typically used to check the state of the world or the system before performing an action (e.g., "IsDoorOpen", "IsBatteryLow"). </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="ad6dc34ea7ed32903800f9384416e1bac" name="ad6dc34ea7ed32903800f9384416e1bac"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad6dc34ea7ed32903800f9384416e1bac">&#9670;&#160;</a></span>halt()</h2>
 

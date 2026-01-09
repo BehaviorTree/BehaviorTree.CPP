@@ -1,5 +1,5 @@
 <map id="BT::ControlNode" name="BT::ControlNode">
-<area shape="rect" id="node1" title=" " alt="" coords="160,252,287,277"/>
+<area shape="rect" id="node1" title="The ControlNode is the base class for nodes that can have multiple children." alt="" coords="160,252,287,277"/>
 <area shape="rect" id="node3" href="$dc/da6/class_b_t_1_1_fallback_node.html" title="The FallbackNode is used to try different strategies, until one succeeds. If any child returns RUNNIN..." alt="" coords="365,5,498,31"/>
 <area shape="rect" id="node4" href="$d8/d08/class_b_t_1_1_if_then_else_node.html" title="IfThenElseNode must have exactly 2 or 3 children. This node is NOT reactive." alt="" coords="357,55,505,80"/>
 <area shape="rect" id="node5" href="$dc/d0b/class_b_t_1_1_manual_selector_node.html" title="Use a Terminal User Interface (ncurses) to select a certain child manually." alt="" coords="341,104,522,129"/>
