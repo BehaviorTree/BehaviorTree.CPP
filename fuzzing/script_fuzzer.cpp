@@ -1,11 +1,13 @@
-#include <fuzzer/FuzzedDataProvider.h>
-#include "behaviortree_cpp/scripting/script_parser.hpp"
-#include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/scripting/script_parser.hpp"
+
 #include <cstdint>
-#include <string>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <string>
+
+#include <fuzzer/FuzzedDataProvider.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {

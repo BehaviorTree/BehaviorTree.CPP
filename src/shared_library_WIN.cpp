@@ -1,8 +1,10 @@
-#include <string>
-#include <mutex>
-#include <Windows.h>
-#include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/exceptions.h"
+#include "behaviortree_cpp/utils/shared_library.h"
+
+#include <mutex>
+#include <string>
+
+#include <Windows.h>
 
 namespace BT
 {

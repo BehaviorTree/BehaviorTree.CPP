@@ -1,8 +1,9 @@
-#include <gtest/gtest.h>
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_cpp/json_export.h"
+#include "behaviortree_cpp/xml_parsing.h"
+
+#include <gtest/gtest.h>
 
 using namespace BT;
 

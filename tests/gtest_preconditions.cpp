@@ -1,8 +1,11 @@
-#include <gtest/gtest.h>
-#include <string>
+#include "test_helper.hpp"
+
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
-#include "test_helper.hpp"
+
+#include <string>
+
+#include <gtest/gtest.h>
 
 using namespace BT;
 

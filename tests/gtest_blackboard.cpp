@@ -10,9 +10,10 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <gtest/gtest.h>
-#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/bt_factory.h"
+
+#include <gtest/gtest.h>
 
 #include "../sample_nodes/dummy_nodes.h"
 

@@ -12,7 +12,9 @@
 */
 
 #include "behaviortree_cpp/controls/manual_node.h"
+
 #include "behaviortree_cpp/action_node.h"
+
 #include <curses.h>
 
 namespace BT

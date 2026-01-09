@@ -1,9 +1,10 @@
 #pragma once
 
-#include <array>
-#include <future>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
 #include "behaviortree_cpp/loggers/groot2_protocol.h"
+
+#include <array>
+#include <future>
 
 namespace BT
 {

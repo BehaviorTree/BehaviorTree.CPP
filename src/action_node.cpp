@@ -12,8 +12,10 @@
 */
 
 #define MINICORO_IMPL
-#include "minicoro.h"
 #include "behaviortree_cpp/action_node.h"
+
+#include "minicoro.h"
+
 #include <iostream>
 
 using namespace BT;

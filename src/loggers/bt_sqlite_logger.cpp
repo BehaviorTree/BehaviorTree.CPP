@@ -1,9 +1,12 @@
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
+
 #include "behaviortree_cpp/xml_parsing.h"
-#include <sqlite3.h>
-#include <stdexcept>
-#include <sstream>
+
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
+
+#include <sqlite3.h>
 
 namespace BT
 {

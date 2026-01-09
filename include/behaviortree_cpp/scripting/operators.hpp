@@ -12,13 +12,13 @@
 
 #pragma once
 
+#include "behaviortree_cpp/scripting/any_types.hpp"
+#include "behaviortree_cpp/scripting/script_parser.hpp"
+
 #include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "behaviortree_cpp/scripting/any_types.hpp"
-#include "behaviortree_cpp/scripting/script_parser.hpp"
 
 // Naive implementation of an AST with simple evaluation function.
 namespace BT::Ast

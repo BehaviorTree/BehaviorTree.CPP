@@ -12,8 +12,9 @@
 
 #pragma once
 
-#include <deque>
 #include "behaviortree_cpp/decorator_node.h"
+
+#include <deque>
 
 namespace BT
 {

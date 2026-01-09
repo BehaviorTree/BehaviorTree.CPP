@@ -39,8 +39,9 @@
 #define Foundation_SharedLibrary_INCLUDED
 
 #include "platform.hpp"
-#include <string>
+
 #include <mutex>
+#include <string>
 
 namespace BT
 {

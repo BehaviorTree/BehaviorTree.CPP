@@ -10,13 +10,15 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <gtest/gtest.h>
 #include "action_test_node.h"
 #include "condition_test_node.h"
+
 #include "behaviortree_cpp/behavior_tree.h"
 
 #include <sstream>
 #include <string>
+
+#include <gtest/gtest.h>
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;

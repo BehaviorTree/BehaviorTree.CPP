@@ -11,6 +11,7 @@
 */
 
 #include "behaviortree_cpp/decorators/updated_decorator.h"
+
 #include "behaviortree_cpp/bt_factory.h"
 
 namespace BT

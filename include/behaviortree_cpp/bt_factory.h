@@ -14,16 +14,16 @@
 #ifndef BT_FACTORY_H
 #define BT_FACTORY_H
 
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/contrib/json.hpp"
+#include "behaviortree_cpp/contrib/magic_enum.hpp"
+
 #include <filesystem>
 #include <functional>
 #include <memory>
-#include <unordered_map>
 #include <set>
+#include <unordered_map>
 #include <vector>
-
-#include "behaviortree_cpp/contrib/json.hpp"
-#include "behaviortree_cpp/contrib/magic_enum.hpp"
-#include "behaviortree_cpp/behavior_tree.h"
 
 namespace BT
 {

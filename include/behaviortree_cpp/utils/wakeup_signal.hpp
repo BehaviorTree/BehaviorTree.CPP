@@ -1,10 +1,10 @@
 #ifndef BEHAVIORTREECORE_WAKEUP_SIGNAL_HPP
 #define BEHAVIORTREECORE_WAKEUP_SIGNAL_HPP
 
-#include <chrono>
-#include <mutex>
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
+#include <mutex>
 
 namespace BT
 {

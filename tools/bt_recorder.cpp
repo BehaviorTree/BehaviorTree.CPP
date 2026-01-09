@@ -1,10 +1,12 @@
-#include <stdio.h>
-#include <iostream>
-#include <fstream>
-#include <signal.h>
-#include <fstream>
 #include "zmq.hpp"
+
 #include "behaviortree_cpp/flatbuffers/BT_logger_generated.h"
+
+#include <fstream>
+#include <iostream>
+
+#include <signal.h>
+#include <stdio.h>
 
 // http://zguide.zeromq.org/cpp:interrupt
 static bool s_interrupted = false;

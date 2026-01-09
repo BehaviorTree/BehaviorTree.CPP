@@ -13,8 +13,9 @@
 
 #pragma once
 
-#include <set>
 #include "behaviortree_cpp/control_node.h"
+
+#include <set>
 
 namespace BT
 {

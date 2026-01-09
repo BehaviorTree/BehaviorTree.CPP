@@ -1,9 +1,12 @@
-#include <gtest/gtest.h>
+#include "behaviortree_cpp/xml_parsing.h"
+
 #include <filesystem>
 #include <string>
 #include <utility>
 #include <vector>
-#include "behaviortree_cpp/xml_parsing.h"
+
+#include <gtest/gtest.h>
+
 #include "../sample_nodes/crossdoor_nodes.h"
 #include "../sample_nodes/dummy_nodes.h"
 

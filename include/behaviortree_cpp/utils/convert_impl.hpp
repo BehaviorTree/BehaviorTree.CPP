@@ -12,9 +12,10 @@
 
 #pragma once
 
-#include <type_traits>
-#include <cmath>
 #include "simple_string.hpp"
+
+#include <cmath>
+#include <type_traits>
 
 #undef max
 #undef min

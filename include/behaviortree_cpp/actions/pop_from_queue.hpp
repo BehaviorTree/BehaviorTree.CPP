@@ -12,10 +12,11 @@
 
 #pragma once
 
-#include <list>
-#include <mutex>
 #include "behaviortree_cpp/action_node.h"
 #include "behaviortree_cpp/decorator_node.h"
+
+#include <list>
+#include <mutex>
 
 /**
  * Template Action used in ex04_waypoints.cpp example.

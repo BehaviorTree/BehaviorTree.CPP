@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
-#include "behaviortree_cpp/loggers/bt_observer.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/loggers/bt_observer.h"
+
+#include <gtest/gtest.h>
 
 namespace BT::test
 {

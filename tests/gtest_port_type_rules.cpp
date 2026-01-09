@@ -34,9 +34,10 @@
  * 8. Type mismatch between strongly typed ports causes error
  */
 
-#include <gtest/gtest.h>
-#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/bt_factory.h"
+
+#include <gtest/gtest.h>
 
 using namespace BT;
 

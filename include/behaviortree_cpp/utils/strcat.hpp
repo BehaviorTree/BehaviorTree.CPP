@@ -1,8 +1,8 @@
 #ifndef STRCAT_HPP
 #define STRCAT_HPP
 
-#include <string_view>
 #include <string>
+#include <string_view>
 
 namespace BT
 {

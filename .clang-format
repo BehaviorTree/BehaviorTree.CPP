@@ -44,7 +44,22 @@ SpaceAfterControlStatementKeyword: true
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Never
 ContinuationIndentWidth: 4
-SortIncludes: false
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Main header (same name as source file)
+  - Regex:           '^"[^/]*\.h(pp)?"$'
+    Priority:        1
+  # BehaviorTree.CPP project headers
+  - Regex:           '^"behaviortree_cpp/.*'
+    Priority:        2
+  # C++ standard library headers
+  - Regex:           '^<[a-z_]+>$'
+    Priority:        3
+  # System headers with .h extension
+  - Regex:           '^<.*\.h>'
+    Priority:        4
+IncludeIsMainRegex: '(_test)?$'
 SpaceAfterCStyleCast: false
 ReflowComments: false
 

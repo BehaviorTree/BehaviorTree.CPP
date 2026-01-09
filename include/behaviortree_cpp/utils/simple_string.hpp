@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
-#include <cstring>
-#include <stdexcept>
-#include <limits>
 #include <cstdint>
+#include <cstring>
+#include <limits>
+#include <stdexcept>
+#include <string>
 #include <string_view>
 
 namespace SafeAny

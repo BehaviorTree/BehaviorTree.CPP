@@ -1,9 +1,10 @@
 #pragma once
-#include <fstream>
-#include <deque>
-#include <array>
-#include <filesystem>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
+
+#include <array>
+#include <deque>
+#include <filesystem>
+#include <fstream>
 
 namespace BT
 {

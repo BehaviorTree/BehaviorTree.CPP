@@ -10,6 +10,8 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "behaviortree_cpp/basic_types.h"
+
 #include <cstdio>
 #include <cstring>
 #include <functional>
@@ -19,7 +21,6 @@
 #include <string>
 #include <tuple>
 #include <typeindex>
-#include "behaviortree_cpp/basic_types.h"
 
 #if defined(_MSVC_LANG) && !defined(__clang__)
 #define __bt_cplusplus (_MSC_VER == 1900 ? 201103L : _MSVC_LANG)
@@ -39,9 +40,10 @@
 #pragma GCC diagnostic pop
 #endif
 
-#include <map>
 #include "behaviortree_cpp/xml_parsing.h"
+
 #include <filesystem>
+#include <map>
 
 #ifdef USING_ROS2
 #include <ament_index_cpp/get_package_share_directory.hpp>

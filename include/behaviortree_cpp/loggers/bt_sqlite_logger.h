@@ -1,7 +1,8 @@
 #pragma once
 
-#include <filesystem>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
+
+#include <filesystem>
 
 // forward declaration
 struct sqlite3;

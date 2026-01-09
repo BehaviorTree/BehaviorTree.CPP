@@ -61,3 +61,15 @@ repos:
         -   tomli
         args:
             [--toml=./pyproject.toml]
+
+  # Include What You Use (requires: apt install iwyu, and compile_commands.json)
+  - repo: local
+    hooks:
+      - id: iwyu
+        name: include-what-you-use
+        entry: iwyu_tool -p build
+        language: system
+        files: \.(cpp|hpp|h)$
+        exclude: ^3rdparty/|^include/behaviortree_cpp/contrib/
+        pass_filenames: false
+        stages: [manual]

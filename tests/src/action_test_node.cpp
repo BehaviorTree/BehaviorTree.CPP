@@ -12,6 +12,7 @@
 */
 
 #include "action_test_node.h"
+
 #include <string>
 
 BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadline_ms)

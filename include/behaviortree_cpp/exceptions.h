@@ -14,8 +14,9 @@
 #ifndef BT_EXCEPTIONS_H
 #define BT_EXCEPTIONS_H
 
-#include <string>
 #include <stdexcept>
+#include <string>
+
 #include "utils/strcat.hpp"
 
 namespace BT

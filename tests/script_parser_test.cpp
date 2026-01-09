@@ -1,10 +1,11 @@
-#include <gtest/gtest.h>
-
-#include "behaviortree_cpp/scripting/operators.hpp"
-#include "behaviortree_cpp/bt_factory.h"
-#include "../sample_nodes/dummy_nodes.h"
 #include "test_helper.hpp"
 
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/scripting/operators.hpp"
+
+#include <gtest/gtest.h>
+
+#include "../sample_nodes/dummy_nodes.h"
 #include <lexy/input/string_input.hpp>
 
 BT::Any GetScriptResult(BT::Ast::Environment& environment, const char* text)

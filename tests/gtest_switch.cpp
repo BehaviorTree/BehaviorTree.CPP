@@ -1,9 +1,11 @@
-#include <gtest/gtest.h>
 #include "action_test_node.h"
 #include "condition_test_node.h"
+
 #include "behaviortree_cpp/behavior_tree.h"
-#include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/tree_node.h"
+
+#include <gtest/gtest.h>
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;

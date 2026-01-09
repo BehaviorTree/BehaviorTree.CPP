@@ -11,6 +11,7 @@
 */
 
 #include "behaviortree_cpp/actions/updated_action.h"
+
 #include "behaviortree_cpp/bt_factory.h"
 
 namespace BT

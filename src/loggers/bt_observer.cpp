@@ -1,6 +1,7 @@
 #include "behaviortree_cpp/loggers/bt_observer.h"
-#include "behaviortree_cpp/decorator_node.h"
+
 #include "behaviortree_cpp/control_node.h"
+#include "behaviortree_cpp/decorator_node.h"
 
 namespace BT
 {

@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
-#include <behaviortree_cpp/bt_factory.h>
 #include <iostream>
 #include <memory>
+
+#include <behaviortree_cpp/bt_factory.h>
+#include <gtest/gtest.h>
 
 // interface
 struct IMotor

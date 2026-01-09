@@ -1,7 +1,9 @@
-#include <fuzzer/FuzzedDataProvider.h>
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
+
 #include <string>
+
+#include <fuzzer/FuzzedDataProvider.h>
 
 // List of valid node types we can use to construct valid-ish XML
 constexpr const char* NODE_TYPES[] = {

@@ -1,9 +1,13 @@
-#include <gtest/gtest.h>
-#include <set>
+#include "test_helper.hpp"
+
 #include "behaviortree_cpp/bt_factory.h"
+
+#include <set>
+
+#include <gtest/gtest.h>
+
 #include "../sample_nodes/dummy_nodes.h"
 #include "../sample_nodes/movebase_node.h"
-#include "test_helper.hpp"
 
 using namespace BT;
 

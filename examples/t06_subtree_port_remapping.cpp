@@ -1,8 +1,8 @@
-#include "behaviortree_cpp/loggers/bt_cout_logger.h"
-#include "behaviortree_cpp/bt_factory.h"
-
-#include "movebase_node.h"
 #include "dummy_nodes.h"
+#include "movebase_node.h"
+
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
 
 /** In the CrossDoor example we did not exchange any information
  * between the Maintree and the DoorClosed subtree.

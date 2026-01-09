@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "behaviortree_cpp/utils/wildcards.hpp"
+
+#include <gtest/gtest.h>
 
 TEST(Match, Match)
 {

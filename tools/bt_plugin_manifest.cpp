@@ -1,8 +1,10 @@
-#include <stdio.h>
+#include "behaviortree_cpp/bt_factory.h"
+
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
-#include "behaviortree_cpp/bt_factory.h"
+
+#include <stdio.h>
 
 int main(int argc, char* argv[])
 {

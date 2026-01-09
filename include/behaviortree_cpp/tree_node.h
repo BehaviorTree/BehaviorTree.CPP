@@ -13,16 +13,16 @@
 
 #pragma once
 
+#include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/scripting/script_parser.hpp"
+#include "behaviortree_cpp/utils/signal.h"
+#include "behaviortree_cpp/utils/strcat.hpp"
+#include "behaviortree_cpp/utils/wakeup_signal.hpp"
+
 #include <exception>
 #include <map>
 #include <utility>
-
-#include "behaviortree_cpp/utils/signal.h"
-#include "behaviortree_cpp/basic_types.h"
-#include "behaviortree_cpp/blackboard.h"
-#include "behaviortree_cpp/utils/strcat.hpp"
-#include "behaviortree_cpp/utils/wakeup_signal.hpp"
-#include "behaviortree_cpp/scripting/script_parser.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)

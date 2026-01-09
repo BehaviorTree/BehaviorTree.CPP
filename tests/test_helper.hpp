@@ -1,9 +1,9 @@
 #ifndef TEST_HELPER_HPP
 #define TEST_HELPER_HPP
 
-#include <cstdio>
-
 #include "behaviortree_cpp/bt_factory.h"
+
+#include <cstdio>
 
 inline BT::NodeStatus TestTick(int* tick_counter)
 {

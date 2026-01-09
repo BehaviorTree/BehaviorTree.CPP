@@ -1,7 +1,9 @@
-#include <gtest/gtest.h>
-#include "behaviortree_cpp/bt_factory.h"
 #include "test_helper.hpp"
+
+#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/bt_observer.h"
+
+#include <gtest/gtest.h>
 
 using BT::NodeStatus;
 using std::chrono::milliseconds;

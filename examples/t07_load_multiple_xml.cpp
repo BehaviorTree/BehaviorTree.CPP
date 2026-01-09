@@ -1,4 +1,5 @@
 #include "dummy_nodes.h"
+
 #include "behaviortree_cpp/bt_factory.h"
 
 /** This example show how it is possible to:

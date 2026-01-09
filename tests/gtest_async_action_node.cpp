@@ -9,8 +9,8 @@
 #include <string>
 #include <thread>
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 // The mocked version of the base.
 struct MockedThreadedAction : public BT::ThreadedAction

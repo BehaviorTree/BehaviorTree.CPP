@@ -1,10 +1,11 @@
 #include "behaviortree_cpp/scripting/script_parser.hpp"
+
 #include "behaviortree_cpp/scripting/operators.hpp"
 
 #include <lexy/action/parse.hpp>
 #include <lexy/action/validate.hpp>
-#include <lexy_ext/report_error.hpp>
 #include <lexy/input/string_input.hpp>
+#include <lexy_ext/report_error.hpp>
 
 namespace BT
 {

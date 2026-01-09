@@ -1,7 +1,8 @@
-#include <gtest/gtest.h>
+#include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/json_export.h"
-#include "behaviortree_cpp/basic_types.h"
+
+#include <gtest/gtest.h>
 
 //----------- Custom types ----------
 

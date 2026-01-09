@@ -11,6 +11,7 @@
 */
 
 #include "condition_test_node.h"
+
 #include <string>
 
 BT::ConditionTestNode::ConditionTestNode(const std::string& name)

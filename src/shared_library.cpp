@@ -1,4 +1,5 @@
 #include "behaviortree_cpp/utils/shared_library.h"
+
 #include "behaviortree_cpp/exceptions.h"
 
 BT::SharedLibrary::SharedLibrary(const std::string& path, int flags)
