@@ -19,6 +19,22 @@
 
 namespace BT
 {
+/**
+ * @brief The PreconditionNode evaluates a script condition before ticking its child.
+ *
+ * If the script in the "if" port returns true, the child is ticked.
+ * If the script returns false, the node returns the status specified in the "else" port
+ * (FAILURE by default).
+ *
+ * Once the child starts (returns RUNNING), subsequent ticks will continue
+ * executing the child without re-evaluating the precondition until completion.
+ *
+ * Example usage:
+ *
+ *   <Precondition if="A > B && color != BLUE" else="FAILURE">
+ *     <SomeAction/>
+ *   </Precondition>
+ */
 class PreconditionNode : public DecoratorNode
 {
 public:

@@ -17,7 +17,11 @@
 namespace BT
 {
 /**
- * @brief The ForceSuccessNode returns always SUCCESS or RUNNING.
+ * @brief The ForceSuccessNode always returns SUCCESS when the child completes,
+ * regardless of whether the child returned SUCCESS or FAILURE.
+ *
+ * - If the child returns RUNNING, this node returns RUNNING.
+ * - If the child returns SUCCESS or FAILURE, this node returns SUCCESS.
  */
 class ForceSuccessNode : public DecoratorNode
 {

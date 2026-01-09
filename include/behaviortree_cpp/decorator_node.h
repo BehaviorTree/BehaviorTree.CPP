@@ -5,6 +5,16 @@
 
 namespace BT
 {
+/**
+ * @brief The DecoratorNode is the base class for nodes that have exactly one child.
+ *
+ * DecoratorNodes modify the behavior of their child in some way.
+ * They may:
+ * - Transform the result received from the child (e.g., Inverter)
+ * - Control when or how many times the child is ticked (e.g., Repeat, Retry)
+ * - Add timing constraints (e.g., Timeout, Delay)
+ * - Conditionally execute the child (e.g., Precondition)
+ */
 class DecoratorNode : public TreeNode
 {
 protected:

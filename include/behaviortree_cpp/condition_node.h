@@ -18,6 +18,16 @@
 
 namespace BT
 {
+/**
+ * @brief The ConditionNode is a leaf node used to check a condition.
+ *
+ * Unlike ActionNodes, a ConditionNode should NOT alter the system
+ * and should NOT return RUNNING. It should return SUCCESS or FAILURE
+ * synchronously to indicate whether a condition is met.
+ *
+ * Conditions are typically used to check the state of the world or
+ * the system before performing an action (e.g., "IsDoorOpen", "IsBatteryLow").
+ */
 class ConditionNode : public LeafNode
 {
 public:

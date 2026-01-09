@@ -18,6 +18,18 @@
 
 namespace BT
 {
+/**
+ * @brief The ScriptNode executes a piece of script code to set or modify
+ * entries in the Blackboard.
+ *
+ * The script is passed via the input port "code" and can use the BT++ scripting
+ * language syntax. For instance:
+ *
+ *   <Script code=" msg:='hello world' " />
+ *   <Script code=" A:=42; B:=3.14 " />
+ *
+ * The node always returns SUCCESS after executing the script.
+ */
 class ScriptNode : public SyncActionNode
 {
 public:

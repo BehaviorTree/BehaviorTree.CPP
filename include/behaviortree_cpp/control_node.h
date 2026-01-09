@@ -19,6 +19,15 @@
 
 namespace BT
 {
+/**
+ * @brief The ControlNode is the base class for nodes that can have multiple children.
+ *
+ * ControlNodes determine the order and conditions under which their children are
+ * ticked.
+ *
+ * Each derived class implements specific rules about if, when, and how many
+ * times children are ticked.
+ */
 class ControlNode : public TreeNode
 {
 protected:

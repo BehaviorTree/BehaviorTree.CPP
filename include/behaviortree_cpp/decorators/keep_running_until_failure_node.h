@@ -18,7 +18,14 @@
 namespace BT
 {
 /**
- * @brief The KeepRunningUntilFailureNode returns always FAILURE or RUNNING.
+ * @brief The KeepRunningUntilFailureNode keeps ticking the child as long
+ * as it returns SUCCESS, and returns RUNNING.
+ *
+ * - If the child returns SUCCESS, reset the child and return RUNNING.
+ * - If the child returns RUNNING, return RUNNING.
+ * - If the child returns FAILURE, return FAILURE.
+ *
+ * This creates an infinite loop that stops only when the child fails.
  */
 class KeepRunningUntilFailureNode : public DecoratorNode
 {
