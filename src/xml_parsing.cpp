@@ -131,7 +131,7 @@ void validatePortName(const std::string& name, int line_number)
   {
     throw RuntimeError("Error at line ", line_str, ": Port name cannot be empty");
   }
-  if(std::isdigit(static_cast<unsigned char>(name[0])))
+  if(std::isdigit(static_cast<unsigned char>(name[0])) != 0)
   {
     throw RuntimeError("Error at line ", line_str, ": Port name '", name,
                        "' cannot start with a digit");
