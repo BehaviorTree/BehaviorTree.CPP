@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <set>
 #include "behaviortree_cpp/bt_factory.h"
 #include "../sample_nodes/dummy_nodes.h"
 #include "../sample_nodes/movebase_node.h"
@@ -725,4 +726,167 @@ TEST(SubTree, SubtreeNameNotRegistered)
 
   ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
   ASSERT_ANY_THROW(factory.registerBehaviorTreeFromText(xml_text));
+}
+
+// Test for Groot2 issue #56: duplicate _fullpath when multiple subtrees have the same name
+// https://github.com/BehaviorTree/Groot2/issues/56
+//
+// When two SubTree nodes under the same parent have the same "name" attribute,
+// tree creation should fail with a clear error message.
+TEST(SubTree, DuplicateSubTreeName_Groot2Issue56)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <ParallelAll>
+            <SubTree ID="Worker" name="my_worker"/>
+            <SubTree ID="Worker" name="my_worker"/>
+        </ParallelAll>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Worker">
+        <AlwaysSuccess name="do_work"/>
+    </BehaviorTree>
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+
+  // Should throw RuntimeError because of duplicate SubTree names
+  ASSERT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
+}
+
+// Additional test to verify the error message content
+TEST(SubTree, DuplicateSubTreeName_ErrorMessage)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SubTree ID="Task" name="my_task"/>
+            <SubTree ID="Task" name="my_task"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Task">
+        <AlwaysSuccess/>
+    </BehaviorTree>
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+
+  try
+  {
+    factory.createTreeFromText(xml_text);
+    FAIL() << "Expected RuntimeError to be thrown";
+  }
+  catch(const RuntimeError& e)
+  {
+    std::string msg = e.what();
+    EXPECT_TRUE(msg.find("Duplicate SubTree path") != std::string::npos)
+        << "Error message should mention 'Duplicate SubTree path'. Got: " << msg;
+    EXPECT_TRUE(msg.find("my_task") != std::string::npos)
+        << "Error message should mention the duplicate path 'my_task'. Got: " << msg;
+  }
+}
+
+// Test that unique names under the same parent work correctly
+TEST(SubTree, UniqueSubTreeNames_WorksCorrectly)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <ParallelAll>
+            <SubTree ID="Worker" name="worker_1"/>
+            <SubTree ID="Worker" name="worker_2"/>
+        </ParallelAll>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Worker">
+        <AlwaysSuccess name="do_work"/>
+    </BehaviorTree>
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  Tree tree = factory.createTreeFromText(xml_text);
+
+  // Verify paths are unique
+  std::set<std::string> all_paths;
+  tree.applyVisitor([&](TreeNode* node) {
+    EXPECT_EQ(all_paths.count(node->fullPath()), 0);
+    all_paths.insert(node->fullPath());
+  });
+
+  ASSERT_EQ(tree.subtrees.size(), 3);
+  auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+// Test that omitting name attribute auto-generates unique paths
+TEST(SubTree, NoNameAttribute_AutoGeneratesUniquePaths)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <ParallelAll>
+            <SubTree ID="Worker"/>
+            <SubTree ID="Worker"/>
+        </ParallelAll>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Worker">
+        <AlwaysSuccess name="do_work"/>
+    </BehaviorTree>
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  Tree tree = factory.createTreeFromText(xml_text);
+
+  // Verify paths are unique (auto-generated with UID)
+  std::set<std::string> all_paths;
+  tree.applyVisitor([&](TreeNode* node) {
+    EXPECT_EQ(all_paths.count(node->fullPath()), 0);
+    all_paths.insert(node->fullPath());
+  });
+
+  ASSERT_EQ(tree.subtrees.size(), 3);
+  auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+// Test nested subtrees - duplicate names at the same level should fail
+TEST(SubTree, NestedDuplicateNames_ShouldFail)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SubTree ID="Level1" name="task"/>
+            <SubTree ID="Level1" name="task"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Level1">
+        <AlwaysSuccess name="work"/>
+    </BehaviorTree>
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+
+  // Should throw RuntimeError because of duplicate SubTree names
+  ASSERT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
 }
