@@ -2,6 +2,20 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* extend the Groot example to reproduce issues with arrays
+* add tool to generate XML models
+* add documentation to classes
+* sort includes with clang format
+* add new name validation rules
+* add claude file
+* detect duplicated instance names
+* cleanup doc
+* add contributors guide
+* move and cleanup tests
+* Contributors: Davide Faconti
+
 4.8.3 (2025-12-29)
 ------------------
 * minor change
