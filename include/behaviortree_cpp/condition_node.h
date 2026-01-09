@@ -21,7 +21,7 @@ namespace BT
 /**
  * @brief The ConditionNode is a leaf node used to check a condition.
  *
- * Unlike ActionNodes, a ConditionNode should NOT alter the system
+ * Unlike ActionNodes, a ConditionNode should NOT alter the system or have side-effects.
  * and should NOT return RUNNING. It should return SUCCESS or FAILURE
  * synchronously to indicate whether a condition is met.
  *
