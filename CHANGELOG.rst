@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.8.4 (2026-01-09)
+------------------
 * extend the Groot example to reproduce issues with arrays
 * add tool to generate XML models
 * add documentation to classes
