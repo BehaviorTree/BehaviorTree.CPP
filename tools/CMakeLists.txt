@@ -24,3 +24,8 @@ add_executable(bt4_plugin_manifest         bt_plugin_manifest.cpp )
 target_link_libraries(bt4_plugin_manifest  ${BTCPP_LIBRARY} )
 install(TARGETS bt4_plugin_manifest
         DESTINATION ${BTCPP_BIN_DESTINATION} )
+
+add_executable(bt4_nodes_model         bt_nodes_model.cpp )
+target_link_libraries(bt4_nodes_model  ${BTCPP_LIBRARY} )
+install(TARGETS bt4_nodes_model
+        DESTINATION ${BTCPP_BIN_DESTINATION} )
