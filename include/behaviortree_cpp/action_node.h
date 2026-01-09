@@ -19,7 +19,6 @@
 #include <atomic>
 #include <future>
 #include <mutex>
-#include <thread>
 
 namespace BT
 {

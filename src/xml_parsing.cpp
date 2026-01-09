@@ -309,6 +309,8 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
           {
             throw RuntimeError("Missing attribute [name] in port (SubTree model)");
           }
+          // Validate port name
+          validatePortName(name, port_node->GetLineNum());
           if(auto default_value = port_node->Attribute("default"))
           {
             port.setDefaultValue(default_value);
@@ -550,6 +552,11 @@ void VerifyXML(const std::string& xml_text,
       {
         ThrowError(line_number, "The tag <BehaviorTree> must have the attribute [ID]");
       }
+      // Validate BehaviorTree ID as a model name
+      if(!ID.empty())
+      {
+        validateModelName(ID, line_number);
+      }
       if(registered_nodes.count(ID) != 0)
       {
         ThrowError(line_number, "The attribute [ID] of tag <BehaviorTree> must not use "
@@ -568,6 +575,8 @@ void VerifyXML(const std::string& xml_text,
         ThrowError(line_number,
                    "<SubTree> with ID '" + ID + "' should not have any child");
       }
+      // Validate SubTree ID as a model name
+      validateModelName(ID, line_number);
       if(registered_nodes.count(ID) != 0)
       {
         ThrowError(line_number, "The attribute [ID] of tag <SubTree> must not use the "
@@ -578,6 +587,11 @@ void VerifyXML(const std::string& xml_text,
     {
       // use ID for builtin node types, otherwise use the element name
       const auto lookup_name = is_builtin ? ID : name;
+      // Validate model name for custom node types (non-builtin element names)
+      if(!is_builtin)
+      {
+        validateModelName(name, line_number);
+      }
       const auto search = registered_nodes.find(lookup_name);
       const bool found = (search != registered_nodes.end());
       if(!found)
@@ -742,6 +756,12 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   // attribute [name] is present.
   const char* attr_name = element->Attribute("name");
   const std::string instance_name = (attr_name != nullptr) ? attr_name : type_ID;
+
+  // Validate instance name if explicitly provided
+  if(attr_name != nullptr)
+  {
+    validateInstanceName(instance_name, element->GetLineNum());
+  }
 
   const TreeNodeManifest* manifest = nullptr;
 

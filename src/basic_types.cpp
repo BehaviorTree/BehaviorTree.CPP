@@ -447,7 +447,13 @@ bool IsAllowedPortName(StringView str)
     return false;
   }
   const char first_char = str.data()[0];
+  // Port name cannot start with a digit
   if(std::isalpha(static_cast<unsigned char>(first_char)) == 0)
+  {
+    return false;
+  }
+  // Check for forbidden characters
+  if(findForbiddenChar(str) != '\0')
   {
     return false;
   }
@@ -471,6 +477,36 @@ bool IsReservedAttribute(StringView str)
     }
   }
   return str == "name" || str == "ID" || str == "_autoremap";
+}
+
+char findForbiddenChar(StringView name)
+{
+  // Forbidden characters that break XML serialization or cause filesystem issues
+  static constexpr std::array<char, 16> kForbiddenChars = {
+    ' ', '\t', '\n', '\r', '<', '>', '&', '"', '\'', '/', '\\', ':', '*', '?', '|', '.'
+  };
+
+  for(const char c : name)
+  {
+    const auto uc = static_cast<unsigned char>(c);
+    // Allow UTF-8 multibyte sequences (high bit set)
+    if(uc >= 0x80)
+    {
+      continue;
+    }
+    // Block control characters (ASCII 0-31 and 127)
+    if(uc < 32 || uc == 127)
+    {
+      return c;
+    }
+    // Check forbidden character list
+    if(std::find(kForbiddenChars.begin(), kForbiddenChars.end(), c) !=
+       kForbiddenChars.end())
+    {
+      return c;
+    }
+  }
+  return '\0';
 }
 
 Any convertFromJSON(StringView json_text, std::type_index type)

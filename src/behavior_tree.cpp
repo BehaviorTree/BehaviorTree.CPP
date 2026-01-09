@@ -12,8 +12,6 @@
 
 #include "behaviortree_cpp/behavior_tree.h"
 
-#include <cstring>
-
 namespace BT
 {
 void applyRecursiveVisitor(const TreeNode* node,

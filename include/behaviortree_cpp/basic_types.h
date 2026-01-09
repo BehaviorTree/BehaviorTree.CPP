@@ -348,6 +348,11 @@ struct Timestamp
 
 [[nodiscard]] bool IsReservedAttribute(StringView str);
 
+/// Returns the first forbidden character found in the name, or '\0' if valid.
+/// Forbidden characters include: space, tab, newline, CR, < > & " ' / \ : * ? | .
+/// and control characters (ASCII 0-31, 127). UTF-8 multibyte sequences are allowed.
+[[nodiscard]] char findForbiddenChar(StringView name);
+
 class TypeInfo
 {
 public:
