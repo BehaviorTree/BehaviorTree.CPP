@@ -81,7 +81,7 @@ struct Groot2Publisher::PImpl
 
   std::string tree_xml;
 
-  std::atomic_bool active_server = false;
+  std::atomic_bool active_server = true;
   std::thread server_thread;
 
   std::mutex status_mutex;
@@ -241,7 +241,6 @@ void Groot2Publisher::serverLoop()
 {
   auto const serialized_uuid = CreateRandomUUID();
 
-  _p->active_server = true;
   auto& socket = _p->server;
 
   auto sendErrorReply = [&socket](const std::string& msg) {
