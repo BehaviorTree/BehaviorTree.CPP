@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cstdlib>
 #include <future>
 
 #include <behaviortree_cpp/loggers/groot2_protocol.h>
@@ -20,25 +21,28 @@ static const char* xml_text = R"(
 void throwRuntimeError()
 {
   BT::BehaviorTreeFactory factory;
-  factory.registerSimpleAction("ThrowRuntimeError", [](BT::TreeNode&) {
+  factory.registerSimpleAction("ThrowRuntimeError", [](BT::TreeNode&) -> BT::NodeStatus {
     throw BT::RuntimeError("Oops!");
-    return BT::NodeStatus::FAILURE;
   });
 
   auto tree = factory.createTreeFromText(xml_text);
   BT::Groot2Publisher publisher(tree);
-  EXPECT_THROW(tree.tickOnce(), BT::RuntimeError);
+  EXPECT_THROW(tree.tickExactlyOnce(), BT::RuntimeError);
 }
 }  // namespace
 
 TEST(Groot2PublisherTest, EnsureNoInfiniteLoopOnThrow)
 {
-  auto fut = std::async(std::launch::async, throwRuntimeError);
-  auto status = fut.wait_for(1s);
-  EXPECT_EQ(status, std::future_status::ready);
-
-  if(status != std::future_status::ready)
-  {
-    std::exit(1);  // Force exit to avoid destructor blocking
-  }
+  EXPECT_EXIT(
+      {
+        auto fut = std::async(std::launch::async, throwRuntimeError);
+        auto status = fut.wait_for(1s);  // shouldn't run for more than 1 second
+        if(status != std::future_status::ready)
+        {
+          std::cerr << "Test took too long. Possible infinite loop.\n";
+          std::exit(EXIT_FAILURE);
+        }
+        std::exit(EXIT_SUCCESS);
+      },
+      ::testing::ExitedWithCode(EXIT_SUCCESS), ".*");
 }
