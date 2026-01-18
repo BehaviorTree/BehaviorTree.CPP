@@ -63,7 +63,7 @@ jobs:
         GTEST_COLOR: "On"
         ASAN_OPTIONS: "color=always"
         UBSAN_OPTIONS: "halt_on_error=1:print_stacktrace=1:color=always"
-        TSAN_OPTIONS: "color=always"
+        TSAN_OPTIONS: "suppressions=${GITHUB_WORKSPACE}/tests/tsan_suppressions.txt:color=always"
       # There is a known issue with TSAN on recent kernel versions. Without the vm.mmap_rnd_bits=28
       # workaround all binaries with TSan enabled crash with "FATAL: ThreadSanitizer: unexpected memory mapping"
       run: sudo sysctl vm.mmap_rnd_bits=28 && ctest --test-dir build/${{env.BUILD_TYPE}} --output-on-failure
