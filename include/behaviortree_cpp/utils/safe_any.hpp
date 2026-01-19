@@ -16,12 +16,12 @@
 #include <charconv>
 #endif
 
-#include "behaviortree_cpp/contrib/any.hpp"
 #include "behaviortree_cpp/contrib/expected.hpp"
 #include "behaviortree_cpp/utils/convert_impl.hpp"
 #include "behaviortree_cpp/utils/demangle_util.h"
 #include "behaviortree_cpp/utils/strcat.hpp"
 
+#include <any>
 #include <string>
 #include <type_traits>
 #include <typeindex>
@@ -167,7 +167,7 @@ public:
     static_assert(!std::is_same_v<T, float>, "The value has been casted internally to "
                                              "[double]. Use that instead");
 
-    return _any.empty() ? nullptr : linb::any_cast<T>(&_any);
+    return _any.has_value() ? std::any_cast<T>(&_any) : nullptr;
   }
 
   // This is the original type
@@ -184,11 +184,11 @@ public:
 
   [[nodiscard]] bool empty() const noexcept
   {
-    return _any.empty();
+    return !_any.has_value();
   }
 
 private:
-  linb::any _any;
+  std::any _any;
   std::type_index _original_type;
 
   //----------------------------
@@ -380,19 +380,19 @@ inline nonstd::expected<DST, std::string> Any::convert(EnableString<DST>) const
 
   if(type == typeid(SafeAny::SimpleString))
   {
-    return linb::any_cast<SafeAny::SimpleString>(_any).toStdString();
+    return std::any_cast<SafeAny::SimpleString>(_any).toStdString();
   }
   else if(type == typeid(int64_t))
   {
-    return std::to_string(linb::any_cast<int64_t>(_any));
+    return std::to_string(std::any_cast<int64_t>(_any));
   }
   else if(type == typeid(uint64_t))
   {
-    return std::to_string(linb::any_cast<uint64_t>(_any));
+    return std::to_string(std::any_cast<uint64_t>(_any));
   }
   else if(type == typeid(double))
   {
-    return std::to_string(linb::any_cast<double>(_any));
+    return std::to_string(std::any_cast<double>(_any));
   }
 
   return nonstd::make_unexpected(errorMsg<DST>());
@@ -404,7 +404,7 @@ inline nonstd::expected<T, std::string> Any::stringToNumber() const
   static_assert(std::is_arithmetic_v<T> && !std::is_same_v<T, bool>, "Expecting a "
                                                                      "numeric type");
 
-  const auto str = linb::any_cast<SafeAny::SimpleString>(_any);
+  const auto str = std::any_cast<SafeAny::SimpleString>(_any);
 #if __cpp_lib_to_chars >= 201611L
   T out;
   auto [ptr, err] = std::from_chars(str.data(), str.data() + str.size(), out);
@@ -451,12 +451,12 @@ inline nonstd::expected<DST, std::string> Any::convert(EnableEnum<DST>) const
 
   if(type == typeid(int64_t))
   {
-    auto out = linb::any_cast<int64_t>(_any);
+    auto out = std::any_cast<int64_t>(_any);
     return static_cast<DST>(out);
   }
   else if(type == typeid(uint64_t))
   {
-    auto out = linb::any_cast<uint64_t>(_any);
+    auto out = std::any_cast<uint64_t>(_any);
     return static_cast<DST>(out);
   }
 
@@ -473,15 +473,15 @@ inline nonstd::expected<DST, std::string> Any::convert(EnableArithmetic<DST>) co
 
   if(type == typeid(int64_t))
   {
-    convertNumber<int64_t, DST>(linb::any_cast<int64_t>(_any), out);
+    convertNumber<int64_t, DST>(std::any_cast<int64_t>(_any), out);
   }
   else if(type == typeid(uint64_t))
   {
-    convertNumber<uint64_t, DST>(linb::any_cast<uint64_t>(_any), out);
+    convertNumber<uint64_t, DST>(std::any_cast<uint64_t>(_any), out);
   }
   else if(type == typeid(double))
   {
-    convertNumber<double, DST>(linb::any_cast<double>(_any), out);
+    convertNumber<double, DST>(std::any_cast<double>(_any), out);
   }
   else
   {
@@ -496,14 +496,14 @@ inline nonstd::expected<T, std::string> Any::tryCast() const
   static_assert(!std::is_reference<T>::value, "Any::cast uses value semantic, "
                                               "can not cast to reference");
 
-  if(_any.empty())
+  if(!_any.has_value())
   {
     throw std::runtime_error("Any::cast failed because it is empty");
   }
 
   if(castedType() == typeid(T))
   {
-    return linb::any_cast<T>(_any);
+    return std::any_cast<T>(_any);
   }
 
   // special case when the output is an enum.
