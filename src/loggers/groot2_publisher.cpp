@@ -81,7 +81,7 @@ struct Groot2Publisher::PImpl
 
   std::string tree_xml;
 
-  std::atomic_bool active_server = false;
+  std::atomic_bool active_server = true;
   std::thread server_thread;
 
   std::mutex status_mutex;
@@ -98,7 +98,8 @@ struct Groot2Publisher::PImpl
   std::unordered_map<uint16_t, Monitor::Hook::Ptr> pre_hooks;
   std::unordered_map<uint16_t, Monitor::Hook::Ptr> post_hooks;
 
-  std::chrono::system_clock::time_point last_heartbeat;
+  std::mutex last_heartbeat_mutex;
+  std::chrono::steady_clock::time_point last_heartbeat;
   std::chrono::milliseconds max_heartbeat_delay = std::chrono::milliseconds(5000);
 
   std::atomic_bool recording = false;
@@ -241,7 +242,6 @@ void Groot2Publisher::serverLoop()
 {
   auto const serialized_uuid = CreateRandomUUID();
 
-  _p->active_server = true;
   auto& socket = _p->server;
 
   auto sendErrorReply = [&socket](const std::string& msg) {
@@ -252,7 +252,10 @@ void Groot2Publisher::serverLoop()
   };
 
   // initialize _p->last_heartbeat
-  _p->last_heartbeat = std::chrono::system_clock::now();
+  {
+    const std::unique_lock lk(_p->last_heartbeat_mutex);
+    _p->last_heartbeat = std::chrono::steady_clock::now();
+  }
 
   while(_p->active_server)
   {
@@ -261,8 +264,12 @@ void Groot2Publisher::serverLoop()
     {
       continue;
     }
+
     // this heartbeat will help establishing if Groot is connected or not
-    _p->last_heartbeat = std::chrono::system_clock::now();
+    {
+      const std::unique_lock lk(_p->last_heartbeat_mutex);
+      _p->last_heartbeat = std::chrono::steady_clock::now();
+    }
 
     std::string const request_str = requestMsg[0].to_string();
     if(request_str.size() != Monitor::RequestHeader::size())
@@ -512,10 +519,13 @@ void Groot2Publisher::heartbeatLoop()
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    auto now = std::chrono::system_clock::now();
+    auto now = std::chrono::steady_clock::now();
     const bool prev_heartbeat = has_heartbeat;
 
-    has_heartbeat = (now - _p->last_heartbeat < _p->max_heartbeat_delay);
+    {
+      const std::unique_lock lk(_p->last_heartbeat_mutex);
+      has_heartbeat = (now - _p->last_heartbeat < _p->max_heartbeat_delay);
+    }
 
     // if we loose or gain heartbeat, disable/enable all breakpoints
     if(has_heartbeat != prev_heartbeat)
