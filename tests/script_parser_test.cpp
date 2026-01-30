@@ -424,6 +424,42 @@ TEST(ParserTest, Issue595)
   ASSERT_EQ(0, counters[0]);
 }
 
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1029
+TEST(ParserTest, OperatorAssociativity_Issue1029)
+{
+  BT::Ast::Environment environment = { BT::Blackboard::create(), {} };
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+
+  // Addition and subtraction are left-associative:
+  // "5 - 2 + 1" should be (5-2)+1 = 4, NOT 5-(2+1) = 2
+  EXPECT_EQ(GetResult("5 - 2 + 1").cast<double>(), 4.0);
+
+  // "10 - 3 - 2" should be (10-3)-2 = 5, NOT 10-(3-2) = 9
+  EXPECT_EQ(GetResult("10 - 3 - 2").cast<double>(), 5.0);
+
+  // "2 + 3 - 1" should be (2+3)-1 = 4
+  EXPECT_EQ(GetResult("2 + 3 - 1").cast<double>(), 4.0);
+
+  // Multiplication and division are also left-associative:
+  // "12 / 3 / 2" should be (12/3)/2 = 2, NOT 12/(3/2) = 8
+  EXPECT_EQ(GetResult("12 / 3 / 2").cast<double>(), 2.0);
+
+  // "12 / 3 * 2" should be (12/3)*2 = 8, NOT 12/(3*2) = 2
+  EXPECT_EQ(GetResult("12 / 3 * 2").cast<double>(), 8.0);
+
+  // Mixed precedence: "2 + 3 * 4 - 1" should be 2+(3*4)-1 = 13
+  EXPECT_EQ(GetResult("2 + 3 * 4 - 1").cast<double>(), 13.0);
+
+  // Verify string concatenation operator (..) still works after operand fix
+  EXPECT_EQ(GetResult("A:='hello'; B:=' world'; A .. B").cast<std::string>(), "hello "
+                                                                              "world");
+  // Chained concatenation (left-associative)
+  EXPECT_EQ(GetResult("A .. ' ' .. B").cast<std::string>(), "hello  world");
+}
+
 TEST(ParserTest, NewLine)
 {
   BT::BehaviorTreeFactory factory;

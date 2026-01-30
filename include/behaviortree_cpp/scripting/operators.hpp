@@ -747,7 +747,10 @@ struct Expression : lexy::expression_production
       return dsl::op<Ast::ExprBinaryArithmetic::concat>(LEXY_LIT(".."));
     }();
 
-    using operand = math_sum;
+    // Use math_prefix (not math_sum) to avoid duplicating math_sum/math_product
+    // in the operation list, which would break left-associativity of +/-/*//
+    // due to conflicting binding power levels in lexy's _operation_list_of.
+    using operand = math_prefix;
   };
 
   // ~x
