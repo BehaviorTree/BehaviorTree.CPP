@@ -929,6 +929,31 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
                                demangle(prev_info->type()), "] and, later type [",
                                demangle(port_info.type()), "] was used somewhere else.");
           }
+
+          // If the existing entry is not strongly typed (e.g. set as a plain
+          // string from subtree remapping) but the port IS strongly typed,
+          // upgrade the entry by converting the string value. Issue #1065.
+          if(!prev_info->isStronglyTyped() && port_info.isStronglyTyped())
+          {
+            auto entry = blackboard->getEntry(port_key);
+            if(entry)
+            {
+              std::scoped_lock lock(entry->entry_mutex);
+              if(!entry->value.empty() && entry->value.isString())
+              {
+                auto str_val = entry->value.tryCast<std::string>();
+                if(str_val)
+                {
+                  auto typed_val = port_info.parseString(*str_val);
+                  if(!typed_val.empty())
+                  {
+                    entry->info = port_info;
+                    entry->value = typed_val;
+                  }
+                }
+              }
+            }
+          }
         }
         else
         {
