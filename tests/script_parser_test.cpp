@@ -460,6 +460,44 @@ TEST(ParserTest, OperatorAssociativity_Issue1029)
   EXPECT_EQ(GetResult("A .. ' ' .. B").cast<std::string>(), "hello  world");
 }
 
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/832
+TEST(ParserTest, CompareWithNegativeNumber_Issue832)
+{
+  BT::Ast::Environment environment = { BT::Blackboard::create(), {} };
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+
+  // "A != -1" should parse and evaluate correctly
+  EXPECT_EQ(GetResult("A:=0; A!=-1").cast<int>(), 1);   // 0 != -1 is true
+  EXPECT_EQ(GetResult("A:=-1; A!=-1").cast<int>(), 0);  // -1 != -1 is false
+  EXPECT_EQ(GetResult("A:=0; A==-1").cast<int>(), 0);   // 0 == -1 is false
+  EXPECT_EQ(GetResult("A:=0; A>-1").cast<int>(), 1);    // 0 > -1 is true
+  EXPECT_EQ(GetResult("A:=0; A<-1").cast<int>(), 0);    // 0 < -1 is false
+
+  // Also test that ValidateScript accepts these expressions
+  EXPECT_TRUE(BT::ValidateScript("A:=0; A!=-1"));
+  EXPECT_TRUE(BT::ValidateScript("A:=0; A>-1"));
+
+  // Reproducer from the issue: precondition with negative literal
+  BT::BehaviorTreeFactory factory;
+  const std::string xml_text = R"(
+  <root BTCPP_format="4">
+      <BehaviorTree>
+         <Sequence>
+             <Script code=" A:=0 " />
+             <AlwaysSuccess _failureIf="A!=-1"/>
+         </Sequence>
+      </BehaviorTree>
+  </root>
+  )";
+  auto tree = factory.createTreeFromText(xml_text);
+  // A==0, so A!=-1 is true, meaning _failureIf triggers => FAILURE
+  auto status = tree.tickWhileRunning();
+  EXPECT_EQ(status, BT::NodeStatus::FAILURE);
+}
+
 // https://github.com/BehaviorTree/BehaviorTree.CPP/issues/923
 // Regression test: ValidateScript must not crash on large invalid scripts
 // that produce error messages exceeding any fixed-size buffer.
