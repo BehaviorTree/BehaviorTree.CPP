@@ -460,6 +460,29 @@ TEST(ParserTest, OperatorAssociativity_Issue1029)
   EXPECT_EQ(GetResult("A .. ' ' .. B").cast<std::string>(), "hello  world");
 }
 
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/923
+// Regression test: ValidateScript must not crash on large invalid scripts
+// that produce error messages exceeding any fixed-size buffer.
+TEST(ParserTest, ValidateScriptLargeError_Issue923)
+{
+  // Build an invalid script large enough to overflow the old 2048-byte buffer
+  std::string script;
+  for(int i = 0; i < 10; i++)
+  {
+    script += "+6e66>6666.6+66\r6>6;6e62=6+6e66>66666'; en';o';o'; en'; ";
+    script += "\x7f"
+              "n"
+              "\x7f"
+              "r;6.6+66.H>6+6"
+              "\x80"
+              "6"
+              "\x1e"
+              ";@e66";
+  }
+  // Must not crash (old code used a fixed char[2048] buffer causing OOB read)
+  auto result = BT::ValidateScript(script);
+  EXPECT_FALSE(result);  // invalid script, but no crash
+}
 TEST(ParserTest, NewLine)
 {
   BT::BehaviorTreeFactory factory;
