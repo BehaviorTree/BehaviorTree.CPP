@@ -637,7 +637,7 @@ TEST(PortTest, GetInputDefaultValue_Issue858)
   }
 }
 
-// Helper class used by Issue #969 test
+// Helper class used by Issue #969 and #1065 tests
 class CollectDoubleAction : public SyncActionNode
 {
 public:
@@ -776,4 +776,42 @@ TEST(PortTest, DefaultEmptyVector_Issue982)
   ASSERT_TRUE(result.empty()) << "Expected empty vector, but got " << result.size()
                               << " element(s). First element: \""
                               << (result.empty() ? "" : result[0]) << "\"";
+}
+
+// Issue #1065: passing a string literal like "1;2;3" through a SubTree port
+// to a LoopDouble node should work, but fails because the subtree remapping
+// stores the value as a plain std::string in the blackboard without converting
+// it to SharedQueue<double>.
+TEST(PortTest, SubtreeStringLiteralToLoopDouble_Issue1065)
+{
+  // The main tree passes a string literal "1;2;3" to the subtree port "queue".
+  // Inside the subtree, LoopDouble should parse it and iterate over the values.
+  std::string xml_txt = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <SubTree ID="LoopSubTree" queue="1;2;3" />
+      </BehaviorTree>
+
+      <BehaviorTree ID="LoopSubTree">
+        <LoopDouble queue="{queue}" value="{number}">
+          <CollectDouble value="{number}" />
+        </LoopDouble>
+      </BehaviorTree>
+    </root>
+  )";
+
+  std::vector<double> collected;
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<CollectDoubleAction>("CollectDouble", &collected);
+  factory.registerBehaviorTreeFromText(xml_txt);
+
+  auto tree = factory.createTree("MainTree");
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(collected.size(), 3u);
+  EXPECT_DOUBLE_EQ(collected[0], 1.0);
+  EXPECT_DOUBLE_EQ(collected[1], 2.0);
+  EXPECT_DOUBLE_EQ(collected[2], 3.0);
 }
