@@ -745,3 +745,123 @@ TEST(BlackboardTest, SetBlackboard_WithPortRemapping)
   // Tick till the end with no crashes
   ASSERT_NO_THROW(tree.tickWhileRunning(););
 }
+
+// Issue #942: getLockedPortContent should return a valid locked reference
+// even when the port is not explicitly declared in XML, as long as there is
+// a default blackboard remapping (e.g., "{=}").
+class ActionWithLockedPort : public SyncActionNode
+{
+public:
+  ActionWithLockedPort(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    auto any_locked = getLockedPortContent("value");
+    if(!any_locked)
+    {
+      locked_valid = false;
+      return NodeStatus::FAILURE;
+    }
+    locked_valid = true;
+    // Assign a value through the locked reference
+    any_locked.assign(42);
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BidirectionalPort<int>("value", "{=}", "A value with default BB remap") };
+  }
+
+  bool locked_valid = false;
+};
+
+TEST(BlackboardTest, GetLockedPortContentWithDefault_Issue942)
+{
+  // XML does NOT specify the "value" port — relies on default "{=}"
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <ActionWithLockedPort/>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithLockedPort>("ActionWithLockedPort");
+  auto tree = factory.createTreeFromText(xml_txt);
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+
+  for(const auto& node : tree.subtrees.front()->nodes)
+  {
+    if(auto action = dynamic_cast<ActionWithLockedPort*>(node.get()))
+    {
+      ASSERT_TRUE(action->locked_valid);
+    }
+  }
+
+  // The value should be accessible from the blackboard
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("value"), 42);
+}
+
+// Issue #974: blackboard->set(key, "42") stores a string.
+// When two string-valued blackboard entries are compared in a script,
+// numeric comparison should be used if both strings are parseable as numbers.
+// "9" < "10" is false lexicographically but true numerically.
+TEST(BlackboardTest, StringSetNumericScriptComparison_Issue974)
+{
+  auto bb = Blackboard::create();
+  bb->set("a", std::string("9"));
+  bb->set("b", std::string("10"));
+
+  BehaviorTreeFactory factory;
+
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <Script code=" result := false "/>
+          <Script code=" result := (a < b) "/>
+          <AlwaysSuccess _successIf="result"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_txt, bb);
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  // 9 < 10 is true numerically, even though "9" > "10" lexicographically
+  ASSERT_TRUE(bb->get<bool>("result"));
+}
+
+// Issue #408: debugMessage should show remapped entries from parent blackboard
+TEST(BlackboardTest, DebugMessageShowsRemappedEntries_Issue408)
+{
+  // Create parent BB with a value
+  auto parent_bb = Blackboard::create();
+  parent_bb->set("parent_value", 42);
+
+  // Create child BB with remapping
+  auto child_bb = Blackboard::create(parent_bb);
+  child_bb->addSubtreeRemapping("local_name", "parent_value");
+
+  // Capture debugMessage output
+  testing::internal::CaptureStdout();
+  child_bb->debugMessage();
+  std::string output = testing::internal::GetCapturedStdout();
+
+  // The output should contain the remapped key with its type info from parent
+  EXPECT_TRUE(output.find("local_name") != std::string::npos)
+      << "debugMessage output should mention 'local_name'. Got: " << output;
+  EXPECT_TRUE(output.find("parent_value") != std::string::npos)
+      << "debugMessage output should mention 'parent_value'. Got: " << output;
+  // The output should show the parent entry's type, not just the remapping
+  EXPECT_TRUE(output.find("int") != std::string::npos) << "debugMessage output should "
+                                                          "show the type of the remapped "
+                                                          "entry. Got: "
+                                                       << output;
+}

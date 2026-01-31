@@ -222,6 +222,11 @@ float convertFromString<float>(StringView str)
 template <>
 std::vector<int> convertFromString<std::vector<int>>(StringView str)
 {
+  if(StartWith(str, "json:"))
+  {
+    str.remove_prefix(5);
+    return nlohmann::json::parse(str).get<std::vector<int>>();
+  }
   auto parts = splitString(str, ';');
   std::vector<int> output;
   output.reserve(parts.size());
@@ -235,6 +240,11 @@ std::vector<int> convertFromString<std::vector<int>>(StringView str)
 template <>
 std::vector<double> convertFromString<std::vector<double>>(StringView str)
 {
+  if(StartWith(str, "json:"))
+  {
+    str.remove_prefix(5);
+    return nlohmann::json::parse(str).get<std::vector<double>>();
+  }
   auto parts = splitString(str, ';');
   std::vector<double> output;
   output.reserve(parts.size());
@@ -248,6 +258,11 @@ std::vector<double> convertFromString<std::vector<double>>(StringView str)
 template <>
 std::vector<bool> convertFromString<std::vector<bool>>(StringView str)
 {
+  if(StartWith(str, "json:"))
+  {
+    str.remove_prefix(5);
+    return nlohmann::json::parse(str).get<std::vector<bool>>();
+  }
   auto parts = splitString(str, ';');
   std::vector<bool> output;
   output.reserve(parts.size());
@@ -261,6 +276,11 @@ std::vector<bool> convertFromString<std::vector<bool>>(StringView str)
 template <>
 std::vector<std::string> convertFromString<std::vector<std::string>>(StringView str)
 {
+  if(StartWith(str, "json:"))
+  {
+    str.remove_prefix(5);
+    return nlohmann::json::parse(str).get<std::vector<std::string>>();
+  }
   auto parts = splitString(str, ';');
   std::vector<std::string> output;
   output.reserve(parts.size());

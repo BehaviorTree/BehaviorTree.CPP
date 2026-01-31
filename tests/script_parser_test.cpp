@@ -424,6 +424,104 @@ TEST(ParserTest, Issue595)
   ASSERT_EQ(0, counters[0]);
 }
 
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1029
+TEST(ParserTest, OperatorAssociativity_Issue1029)
+{
+  BT::Ast::Environment environment = { BT::Blackboard::create(), {} };
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+
+  // Addition and subtraction are left-associative:
+  // "5 - 2 + 1" should be (5-2)+1 = 4, NOT 5-(2+1) = 2
+  EXPECT_EQ(GetResult("5 - 2 + 1").cast<double>(), 4.0);
+
+  // "10 - 3 - 2" should be (10-3)-2 = 5, NOT 10-(3-2) = 9
+  EXPECT_EQ(GetResult("10 - 3 - 2").cast<double>(), 5.0);
+
+  // "2 + 3 - 1" should be (2+3)-1 = 4
+  EXPECT_EQ(GetResult("2 + 3 - 1").cast<double>(), 4.0);
+
+  // Multiplication and division are also left-associative:
+  // "12 / 3 / 2" should be (12/3)/2 = 2, NOT 12/(3/2) = 8
+  EXPECT_EQ(GetResult("12 / 3 / 2").cast<double>(), 2.0);
+
+  // "12 / 3 * 2" should be (12/3)*2 = 8, NOT 12/(3*2) = 2
+  EXPECT_EQ(GetResult("12 / 3 * 2").cast<double>(), 8.0);
+
+  // Mixed precedence: "2 + 3 * 4 - 1" should be 2+(3*4)-1 = 13
+  EXPECT_EQ(GetResult("2 + 3 * 4 - 1").cast<double>(), 13.0);
+
+  // Verify string concatenation operator (..) still works after operand fix
+  EXPECT_EQ(GetResult("A:='hello'; B:=' world'; A .. B").cast<std::string>(), "hello "
+                                                                              "world");
+  // Chained concatenation (left-associative)
+  EXPECT_EQ(GetResult("A .. ' ' .. B").cast<std::string>(), "hello  world");
+}
+
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/832
+TEST(ParserTest, CompareWithNegativeNumber_Issue832)
+{
+  BT::Ast::Environment environment = { BT::Blackboard::create(), {} };
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+
+  // "A != -1" should parse and evaluate correctly
+  EXPECT_EQ(GetResult("A:=0; A!=-1").cast<int>(), 1);   // 0 != -1 is true
+  EXPECT_EQ(GetResult("A:=-1; A!=-1").cast<int>(), 0);  // -1 != -1 is false
+  EXPECT_EQ(GetResult("A:=0; A==-1").cast<int>(), 0);   // 0 == -1 is false
+  EXPECT_EQ(GetResult("A:=0; A>-1").cast<int>(), 1);    // 0 > -1 is true
+  EXPECT_EQ(GetResult("A:=0; A<-1").cast<int>(), 0);    // 0 < -1 is false
+
+  // Also test that ValidateScript accepts these expressions
+  EXPECT_TRUE(BT::ValidateScript("A:=0; A!=-1"));
+  EXPECT_TRUE(BT::ValidateScript("A:=0; A>-1"));
+
+  // Reproducer from the issue: precondition with negative literal
+  BT::BehaviorTreeFactory factory;
+  const std::string xml_text = R"(
+  <root BTCPP_format="4">
+      <BehaviorTree>
+         <Sequence>
+             <Script code=" A:=0 " />
+             <AlwaysSuccess _failureIf="A!=-1"/>
+         </Sequence>
+      </BehaviorTree>
+  </root>
+  )";
+  auto tree = factory.createTreeFromText(xml_text);
+  // A==0, so A!=-1 is true, meaning _failureIf triggers => FAILURE
+  auto status = tree.tickWhileRunning();
+  EXPECT_EQ(status, BT::NodeStatus::FAILURE);
+}
+
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/923
+// Regression test: ValidateScript must not crash on large invalid scripts
+// that produce error messages exceeding any fixed-size buffer.
+TEST(ParserTest, ValidateScriptLargeError_Issue923)
+{
+  // Build an invalid script large enough to overflow the old 2048-byte buffer
+  std::string script;
+  for(int i = 0; i < 10; i++)
+  {
+    script += "+6e66>6666.6+66\r6>6;6e62=6+6e66>66666'; en';o';o'; en'; ";
+    script += "\x7f"
+              "n"
+              "\x7f"
+              "r;6.6+66.H>6+6"
+              "\x80"
+              "6"
+              "\x1e"
+              ";@e66";
+  }
+  // Must not crash (old code used a fixed char[2048] buffer causing OOB read)
+  auto result = BT::ValidateScript(script);
+  EXPECT_FALSE(result);  // invalid script, but no crash
+}
+
 TEST(ParserTest, NewLine)
 {
   BT::BehaviorTreeFactory factory;

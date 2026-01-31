@@ -116,8 +116,21 @@ void Blackboard::debugMessage() const
 
   for(const auto& [from, to] : internal_to_external_)
   {
-    std::cout << "[" << from << "] remapped to port of parent tree [" << to << "]"
-              << std::endl;
+    std::cout << "[" << from << "] remapped to port of parent tree [" << to << "]";
+    // Show the type of the remapped entry from the parent. Issue #408.
+    if(auto parent = parent_bb_.lock())
+    {
+      if(auto entry = parent->getEntry(to))
+      {
+        auto port_type = entry->info.type();
+        if(port_type == typeid(void))
+        {
+          port_type = entry->value.type();
+        }
+        std::cout << " (" << BT::demangle(port_type) << ")";
+      }
+    }
+    std::cout << std::endl;
   }
 }
 

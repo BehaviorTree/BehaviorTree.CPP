@@ -20,6 +20,7 @@
 #include "behaviortree_cpp/utils/strcat.hpp"
 #include "behaviortree_cpp/utils/wakeup_signal.hpp"
 
+#include <charconv>
 #include <exception>
 #include <map>
 #include <utility>
@@ -432,17 +433,25 @@ T TreeNode::parseString(const std::string& str) const
 {
   if constexpr(std::is_enum_v<T> && !std::is_same_v<T, NodeStatus>)
   {
-    auto it = config().enums->find(str);
-    // conversion available
-    if(it != config().enums->end())
+    // Check the ScriptingEnumsRegistry first, if available.
+    if(config().enums)
     {
-      return static_cast<T>(it->second);
+      auto it = config().enums->find(str);
+      if(it != config().enums->end())
+      {
+        return static_cast<T>(it->second);
+      }
     }
-    else
+    // Try numeric conversion (e.g. "2" for an enum value).
+    int tmp = 0;
+    auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), tmp);
+    if(ec == std::errc() && ptr == str.data() + str.size())
     {
-      // hopefully str contains a number that can be parsed. May throw
-      return static_cast<T>(convertFromString<int>(str));
+      return static_cast<T>(tmp);
     }
+    // Fall back to convertFromString<T>, which uses a user-provided
+    // specialization if one exists. Issue #948.
+    return convertFromString<T>(str);
   }
   return convertFromString<T>(str);
 }
