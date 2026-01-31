@@ -647,3 +647,60 @@ TEST(PortTest, SubtreeStringLiteralToLoopDouble_Issue1065)
   EXPECT_DOUBLE_EQ(collected[1], 2.0);
   EXPECT_DOUBLE_EQ(collected[2], 3.0);
 }
+
+// Issue #982: A port of type std::vector<std::string> with a default empty value {}
+// gets initialized with the literal string "json:[]" instead of being empty.
+// This happens because toStr() converts {} to "json:[]", and the vector
+// convertFromString specialization doesn't handle the "json:" prefix.
+class ActionWithDefaultEmptyVector : public SyncActionNode
+{
+public:
+  ActionWithDefaultEmptyVector(const std::string& name, const NodeConfig& config,
+                               std::vector<std::string>* out_vec)
+    : SyncActionNode(name, config), out_vec_(out_vec)
+  {}
+
+  NodeStatus tick() override
+  {
+    if(!getInput("string_vector", *out_vec_))
+    {
+      return NodeStatus::FAILURE;
+    }
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::InputPort<std::vector<std::string>>("string_vector", {},
+                                                     "A string vector") };
+  }
+
+private:
+  std::vector<std::string>* out_vec_;
+};
+
+TEST(PortTest, DefaultEmptyVector_Issue982)
+{
+  // Port has default value {} (empty vector) and no input specified in XML.
+  // The vector should be empty, not contain "json:[]".
+  std::string xml_txt = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <ActionWithDefaultEmptyVector />
+      </BehaviorTree>
+    </root>
+  )";
+
+  std::vector<std::string> result;
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithDefaultEmptyVector>("ActionWithDefaultEmptyVector",
+                                                         &result);
+  auto tree = factory.createTreeFromText(xml_txt);
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_TRUE(result.empty()) << "Expected empty vector, but got " << result.size()
+                              << " element(s). First element: \""
+                              << (result.empty() ? "" : result[0]) << "\"";
+}
