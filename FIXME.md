@@ -49,7 +49,7 @@ This file tracks reported bugs from GitHub issues. For each bug, the workflow is
 - **Component:** `include/behaviortree_cpp/decorators/loop_node.h`
 - **Test file:** `tests/gtest_decorator.cpp` (or new)
 
-### [ ] #948 - ParseString errors with custom enum types
+### [x] #948 - ParseString errors with custom enum types
 - **URL:** https://github.com/BehaviorTree/BehaviorTree.CPP/issues/948
 - **Summary:** `parseString` in `tree_node.h` has an unsafe `find` on an unordered_map that may not be instantiated yet if `getInput` is called during construction. Also, custom enum types cannot be properly parsed via `convertFromString`.
 - **Component:** `include/behaviortree_cpp/tree_node.h`, `include/behaviortree_cpp/basic_types.h`
