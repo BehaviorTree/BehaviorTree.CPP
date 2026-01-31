@@ -79,7 +79,7 @@ This file tracks reported bugs from GitHub issues. For each bug, the workflow is
 - **Component:** `src/blackboard.cpp`, `include/behaviortree_cpp/blackboard.h`
 - **Test file:** `tests/gtest_blackboard.cpp`
 
-### [ ] #408 - debugMessage does not print parent values in SubTree
+### [x] #408 - debugMessage does not print parent values in SubTree
 - **URL:** https://github.com/BehaviorTree/BehaviorTree.CPP/issues/408
 - **Summary:** `config().blackboard->debugMessage()` inside a SubTree node's constructor does not show remapped entries from the parent blackboard. The function only checks `internal_to_external_` after finding an entry in `storage_`.
 - **Component:** `src/blackboard.cpp`
