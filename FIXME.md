@@ -55,7 +55,7 @@ This file tracks reported bugs from GitHub issues. For each bug, the workflow is
 - **Component:** `include/behaviortree_cpp/tree_node.h`, `include/behaviortree_cpp/basic_types.h`
 - **Test file:** `tests/gtest_ports.cpp`
 
-### [ ] #858 - getInput throws when default parameter is passed
+### [x] #858 - getInput throws when default parameter is passed
 - **URL:** https://github.com/BehaviorTree/BehaviorTree.CPP/issues/858
 - **Summary:** Calling `getInput` with a default parameter value throws `std::out_of_range` (`_Map_base::at`). The internal map lookup fails when the port has a default value but the entry does not exist in the expected location.
 - **Component:** `include/behaviortree_cpp/tree_node.h`

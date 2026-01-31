@@ -759,3 +759,58 @@ TEST(PortTest, LoopNodeAcceptsVector_Issue969)
   EXPECT_DOUBLE_EQ(collected[1], 20.0);
   EXPECT_DOUBLE_EQ(collected[2], 30.0);
 }
+
+// Issue #858: getInput should return the default value declared in
+// providedPorts when the XML does not specify the port.
+class ActionWithDefaultPort : public SyncActionNode
+{
+public:
+  ActionWithDefaultPort(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    auto res = getInput<std::string>("log_name");
+    if(!res)
+    {
+      throw RuntimeError("getInput failed: " + res.error());
+    }
+    result = res.value();
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { InputPort<std::string>("log_name", "my_default_logger", "Logger name"),
+             InputPort<std::string>("message", "Message to be logged") };
+  }
+
+  std::string result;
+};
+
+TEST(PortTest, GetInputDefaultValue_Issue858)
+{
+  // XML does NOT specify "log_name" — should use the default from providedPorts
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <ActionWithDefaultPort message="hello"/>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithDefaultPort>("ActionWithDefaultPort");
+  auto tree = factory.createTreeFromText(xml_txt);
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+
+  for(const auto& node : tree.subtrees.front()->nodes)
+  {
+    if(auto action = dynamic_cast<ActionWithDefaultPort*>(node.get()))
+    {
+      ASSERT_EQ("my_default_logger", action->result);
+    }
+  }
+}
