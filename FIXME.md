@@ -5,6 +5,8 @@ This file tracks reported bugs from GitHub issues. For each bug, the workflow is
 2. Evaluate whether the behavior diverges from intended library semantics
 3. Fix the issue (if confirmed as a bug)
 
+**IMPORTANT:** NEVER modify existing tests that were not created in this branch. Only add new tests.
+
 ---
 
 ## Scripting / Script Parser
@@ -71,7 +73,7 @@ This file tracks reported bugs from GitHub issues. For each bug, the workflow is
 - **Component:** `src/blackboard.cpp`, `include/behaviortree_cpp/blackboard.h`
 - **Test file:** `tests/gtest_blackboard.cpp`
 
-### [ ] #942 - Default blackboard entry not created for locked content
+### [x] #942 - Default blackboard entry not created for locked content
 - **URL:** https://github.com/BehaviorTree/BehaviorTree.CPP/issues/942
 - **Summary:** When using `getLockedPortContent` on a port with a default blackboard entry, no blackboard entry is actually created on the first call. The returned `AnyPtrLocked` is a default/empty value not placed into the blackboard.
 - **Component:** `src/blackboard.cpp`, `include/behaviortree_cpp/blackboard.h`
