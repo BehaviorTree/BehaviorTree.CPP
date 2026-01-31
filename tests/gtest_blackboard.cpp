@@ -745,3 +745,34 @@ TEST(BlackboardTest, SetBlackboard_WithPortRemapping)
   // Tick till the end with no crashes
   ASSERT_NO_THROW(tree.tickWhileRunning(););
 }
+
+// Issue #974: blackboard->set(key, "42") stores a string.
+// When two string-valued blackboard entries are compared in a script,
+// numeric comparison should be used if both strings are parseable as numbers.
+// "9" < "10" is false lexicographically but true numerically.
+TEST(BlackboardTest, StringSetNumericScriptComparison_Issue974)
+{
+  auto bb = Blackboard::create();
+  bb->set("a", std::string("9"));
+  bb->set("b", std::string("10"));
+
+  BehaviorTreeFactory factory;
+
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <Script code=" result := false "/>
+          <Script code=" result := (a < b) "/>
+          <AlwaysSuccess _successIf="result"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_txt, bb);
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  // 9 < 10 is true numerically, even though "9" > "10" lexicographically
+  ASSERT_TRUE(bb->get<bool>("result"));
+}

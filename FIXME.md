@@ -65,7 +65,7 @@ This file tracks reported bugs from GitHub issues. For each bug, the workflow is
 
 ## Blackboard
 
-### [ ] #974 - Blackboard set() stores values as string type
+### [x] #974 - Blackboard set() stores values as string type
 - **URL:** https://github.com/BehaviorTree/BehaviorTree.CPP/issues/974
 - **Summary:** When using `blackboard->set(key, value.dump())` to set numeric values from JSON, the blackboard stores them as strings. Subsequent scripting operations with numeric operators fail because string types cannot be compared numerically.
 - **Component:** `src/blackboard.cpp`, `include/behaviortree_cpp/blackboard.h`
