@@ -704,3 +704,58 @@ TEST(PortTest, DefaultEmptyVector_Issue982)
                               << " element(s). First element: \""
                               << (result.empty() ? "" : result[0]) << "\"";
 }
+
+// Issue #969: LoopNode<T> uses SharedQueue<T> (shared_ptr<deque<T>>) for its queue
+// port, but upstream nodes often produce std::vector<T>. This type mismatch causes
+// tree creation to fail.
+class ProduceVectorDoubleAction : public SyncActionNode
+{
+public:
+  ProduceVectorDoubleAction(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    std::vector<double> vec = { 10.0, 20.0, 30.0 };
+    setOutput("numbers", vec);
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BT::OutputPort<std::vector<double>>("numbers") };
+  }
+};
+
+TEST(PortTest, LoopNodeAcceptsVector_Issue969)
+{
+  // An upstream node outputs std::vector<double>, and LoopDouble should be
+  // able to iterate over it without requiring manual conversion to SharedQueue.
+  std::string xml_txt = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Sequence>
+          <ProduceVectorDouble numbers="{nums}" />
+          <LoopDouble queue="{nums}" value="{val}">
+            <CollectDouble value="{val}" />
+          </LoopDouble>
+        </Sequence>
+      </BehaviorTree>
+    </root>
+  )";
+
+  std::vector<double> collected;
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ProduceVectorDoubleAction>("ProduceVectorDouble");
+  factory.registerNodeType<CollectDoubleAction>("CollectDouble", &collected);
+  auto tree = factory.createTreeFromText(xml_txt);
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(collected.size(), 3u);
+  EXPECT_DOUBLE_EQ(collected[0], 10.0);
+  EXPECT_DOUBLE_EQ(collected[1], 20.0);
+  EXPECT_DOUBLE_EQ(collected[2], 30.0);
+}
