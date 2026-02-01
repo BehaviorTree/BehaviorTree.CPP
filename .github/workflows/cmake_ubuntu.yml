@@ -85,13 +85,9 @@ jobs:
              --output-file coverage.info \
              --ignore-errors mismatch \
              --ignore-errors negative
-        lcov --remove coverage.info \
-             '/usr/*' \
-             '*/3rdparty/*' \
-             '*/tests/*' \
-             '*/examples/*' \
-             '*/sample_nodes/*' \
-             '*/tools/*' \
+        lcov --extract coverage.info \
+             '*/include/*' \
+             '*/src/*' \
              --output-file coverage.info \
              --ignore-errors unused
         lcov --list coverage.info
