@@ -450,6 +450,28 @@ TEST(BehaviorTreeFactory, ManifestMethod)
   EXPECT_NE(xml.find(expectedXML), std::string::npos);
 }
 
+TEST(BehaviorTreeFactory, ReturnByValue)
+{
+  // Issue #937: BehaviorTreeFactory cannot be returned by value from
+  // a function because the move constructor/assignment were defaulted
+  // in the header where PImpl is an incomplete type.
+  auto make_factory = []() -> BT::BehaviorTreeFactory {
+    BT::BehaviorTreeFactory factory;
+    factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+    return factory;
+  };
+  auto factory = make_factory();
+
+  // Verify the moved-into factory is fully functional
+  const auto& manifests = factory.manifests();
+  ASSERT_TRUE(manifests.count("SaySomething"));
+
+  // Also test move assignment
+  BT::BehaviorTreeFactory factory2;
+  factory2 = std::move(factory);
+  ASSERT_TRUE(factory2.manifests().count("SaySomething"));
+}
+
 TEST(BehaviorTreeFactory, addMetadataToManifest)
 {
   BehaviorTreeFactory factory;
