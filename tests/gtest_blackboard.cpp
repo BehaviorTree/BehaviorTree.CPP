@@ -773,3 +773,64 @@ TEST(BlackboardTest, DebugMessageShowsRemappedEntries_Issue408)
                                                           "entry. Got: "
                                                        << output;
 }
+
+// Issue #942: getLockedPortContent should return a valid locked reference
+// even when the port is not explicitly declared in XML, as long as there is
+// a default blackboard remapping (e.g., "{=}").
+class ActionWithLockedPort : public SyncActionNode
+{
+public:
+  ActionWithLockedPort(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    auto any_locked = getLockedPortContent("value");
+    if(!any_locked)
+    {
+      locked_valid = false;
+      return NodeStatus::FAILURE;
+    }
+    locked_valid = true;
+    // Assign a value through the locked reference
+    any_locked.assign(42);
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { BidirectionalPort<int>("value", "{=}", "A value with default BB remap") };
+  }
+
+  bool locked_valid = false;
+};
+
+TEST(BlackboardTest, GetLockedPortContentWithDefault_Issue942)
+{
+  // XML does NOT specify the "value" port — relies on default "{=}"
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <ActionWithLockedPort/>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithLockedPort>("ActionWithLockedPort");
+  auto tree = factory.createTreeFromText(xml_txt);
+  auto status = tree.tickWhileRunning();
+
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+
+  for(const auto& node : tree.subtrees.front()->nodes)
+  {
+    if(auto action = dynamic_cast<ActionWithLockedPort*>(node.get()))
+    {
+      ASSERT_TRUE(action->locked_valid);
+    }
+  }
+
+  // The value should be accessible from the blackboard
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("value"), 42);
+}
