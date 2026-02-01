@@ -479,7 +479,21 @@ AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string& key)
 {
   if(auto remapped_key = getRemappedKey(key, getRawPortValue(key)))
   {
-    return _p->config.blackboard->getAnyLocked(std::string(*remapped_key));
+    const auto bb_key = std::string(*remapped_key);
+    auto result = _p->config.blackboard->getAnyLocked(bb_key);
+    if(!result && _p->config.manifest)
+    {
+      // Entry doesn't exist yet. Create it using the port's type info
+      // from the manifest so that getLockedPortContent works even when
+      // the port is not explicitly declared in XML. Issue #942.
+      auto port_it = _p->config.manifest->ports.find(key);
+      if(port_it != _p->config.manifest->ports.end())
+      {
+        _p->config.blackboard->createEntry(bb_key, port_it->second);
+        result = _p->config.blackboard->getAnyLocked(bb_key);
+      }
+    }
+    return result;
   }
   return {};
 }
