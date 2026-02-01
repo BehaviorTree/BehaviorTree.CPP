@@ -867,8 +867,13 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
     config.input_ports = port_remap;
     new_node =
         factory->instantiateTreeNode(instance_name, toStr(NodeType::SUBTREE), config);
+    // If a substitution rule replaced the SubTree with a different node
+    // (e.g. a TestNode), the dynamic_cast will return nullptr.
     auto subtree_node = dynamic_cast<SubTreeNode*>(new_node.get());
-    subtree_node->setSubtreeID(type_ID);
+    if(subtree_node)
+    {
+      subtree_node->setSubtreeID(type_ID);
+    }
   }
   else
   {

@@ -50,3 +50,39 @@ TEST(Substitution, Parser)
 
   ASSERT_EQ(*std::get_if<std::string>(&rules.at("actionC")), "NotAConfig");
 }
+
+// Regression test for issue #934: segfault when substituting a SubTree node
+TEST(Substitution, SubTreeNodeSubstitution)
+{
+  static const char* parent_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Parent">
+      <SubTree ID="Child" name="child" />
+    </BehaviorTree>
+  </root>
+  )";
+
+  static const char* child_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Child">
+      <AlwaysSuccess />
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(parent_xml);
+  factory.registerBehaviorTreeFromText(child_xml);
+
+  BT::TestNodeConfig config;
+  config.return_status = BT::NodeStatus::SUCCESS;
+  factory.addSubstitutionRule("child", config);
+
+  // This should not crash (was a segfault before the fix)
+  Tree tree;
+  ASSERT_NO_THROW(tree = factory.createTree("Parent"));
+
+  // The substituted tree should tick successfully
+  auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+}
