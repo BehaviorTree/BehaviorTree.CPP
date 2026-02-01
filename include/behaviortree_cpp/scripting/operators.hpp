@@ -16,6 +16,7 @@
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 
 #include <cmath>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>
@@ -407,11 +408,32 @@ struct ExprComparison : ExprBase
       }
       else if(lhs_v.isString() && rhs_v.isString())
       {
-        auto lv = lhs_v.cast<SimpleString>();
-        auto rv = rhs_v.cast<SimpleString>();
-        if(!SwitchImpl(lv, rv, ops[i]))
+        // Try numeric comparison when both strings are parseable as numbers.
+        // This handles values set via blackboard->set(key, "42"). Issue #974.
+        auto ls = lhs_v.cast<std::string>();
+        auto rs = rhs_v.cast<std::string>();
+        char* lend = nullptr;
+        char* rend = nullptr;
+        double ld = std::strtod(ls.c_str(), &lend);
+        double rd = std::strtod(rs.c_str(), &rend);
+        bool l_numeric = (lend == ls.c_str() + ls.size()) && !ls.empty();
+        bool r_numeric = (rend == rs.c_str() + rs.size()) && !rs.empty();
+
+        if(l_numeric && r_numeric)
         {
-          return False;
+          if(!SwitchImpl(ld, rd, ops[i]))
+          {
+            return False;
+          }
+        }
+        else
+        {
+          auto lv = lhs_v.cast<SimpleString>();
+          auto rv = rhs_v.cast<SimpleString>();
+          if(!SwitchImpl(lv, rv, ops[i]))
+          {
+            return False;
+          }
         }
       }
       else if(lhs_v.isString() && rhs_v.isNumber())
