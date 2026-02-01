@@ -759,7 +759,7 @@ TEST(SubTree, DuplicateSubTreeName_Groot2Issue56)
   BehaviorTreeFactory factory;
 
   // Should throw RuntimeError because of duplicate SubTree names
-  ASSERT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
+  ASSERT_THROW((void)factory.createTreeFromText(xml_text), RuntimeError);
 }
 
 // Additional test to verify the error message content
@@ -786,7 +786,7 @@ TEST(SubTree, DuplicateSubTreeName_ErrorMessage)
 
   try
   {
-    factory.createTreeFromText(xml_text);
+    (void)factory.createTreeFromText(xml_text);
     FAIL() << "Expected RuntimeError to be thrown";
   }
   catch(const RuntimeError& e)
@@ -892,5 +892,5 @@ TEST(SubTree, NestedDuplicateNames_ShouldFail)
   BehaviorTreeFactory factory;
 
   // Should throw RuntimeError because of duplicate SubTree names
-  ASSERT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
+  ASSERT_THROW((void)factory.createTreeFromText(xml_text), RuntimeError);
 }
