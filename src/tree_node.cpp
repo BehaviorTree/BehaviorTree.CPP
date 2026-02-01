@@ -481,7 +481,7 @@ AnyPtrLocked BT::TreeNode::getLockedPortContent(const std::string& key)
   {
     const auto bb_key = std::string(*remapped_key);
     auto result = _p->config.blackboard->getAnyLocked(bb_key);
-    if(!result && _p->config.manifest)
+    if(!result && _p->config.manifest != nullptr)
     {
       // Entry doesn't exist yet. Create it using the port's type info
       // from the manifest so that getLockedPortContent works even when

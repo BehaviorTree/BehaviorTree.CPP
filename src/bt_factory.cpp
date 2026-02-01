@@ -486,7 +486,7 @@ void Tree::remapManifestPointers()
     for(auto& node : subtree->nodes)
     {
       const auto* old_manifest = node->config().manifest;
-      if(old_manifest)
+      if(old_manifest != nullptr)
       {
         auto it = manifests.find(old_manifest->registration_ID);
         if(it != manifests.end())
