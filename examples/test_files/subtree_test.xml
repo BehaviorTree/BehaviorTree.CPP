@@ -1,5 +1,5 @@
-<root main_tree_to_execute="BehaviorTree">
-	
+<root BTCPP_format="4">
+
     <include path="Check.xml" />
     <include path="subtrees/Talk.xml" />
 
@@ -13,4 +13,3 @@
     </BehaviorTree>
 
 </root>
-

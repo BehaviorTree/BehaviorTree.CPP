@@ -1,7 +1,7 @@
-#include "behaviortree_cpp_v3/bt_factory.h"
-
 #include "dummy_nodes.h"
 #include "movebase_node.h"
+
+#include "behaviortree_cpp/bt_factory.h"
 
 using namespace BT;
 
@@ -9,15 +9,14 @@ using namespace BT;
  *
  *  - The difference between Sequence and ReactiveSequence
  *
- *  - How to create an asynchronous ActionNode (an action that is execute in
- *    its own thread).
+ *  - How to create an asynchronous ActionNode.
 */
 
 // clang-format off
 
 static const char* xml_text_sequence = R"(
 
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
@@ -33,7 +32,7 @@ static const char* xml_text_sequence = R"(
 
 static const char* xml_text_reactive = R"(
 
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
 
      <BehaviorTree ID="MainTree">
         <ReactiveSequence name="root">
@@ -51,86 +50,52 @@ static const char* xml_text_reactive = R"(
 
 // clang-format on
 
-void Assert(bool condition)
-{
-    if (!condition)
-        throw RuntimeError("this is not what I expected");
-}
-
+using namespace DummyNodes;
 
 int main()
 {
-    using namespace DummyNodes;
-    using std::chrono::milliseconds;
+  BehaviorTreeFactory factory;
 
-    BehaviorTreeFactory factory;
-    factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
-    factory.registerNodeType<MoveBaseAction>("MoveBase");
-    factory.registerNodeType<SaySomething>("SaySomething");
+  factory.registerSimpleCondition("BatteryOK", std::bind(CheckBattery));
+  factory.registerNodeType<MoveBaseAction>("MoveBase");
+  factory.registerNodeType<SaySomething>("SaySomething");
 
-    // Compare the state transitions and messages using either
-    // xml_text_sequence and xml_text_sequence_star
+  // Compare the state transitions and messages using either
+  // xml_text_sequence and xml_text_reactive.
 
-    // The main difference that you should notice is:
-    //  1) When Sequence is used, BatteryOK is executed at __each__ tick()
-    //  2) When SequenceStar is used, those ConditionNodes are executed only __once__.
+  // The main difference that you should notice is:
+  //  1) When Sequence is used, the ConditionNode is executed only __once__ because it returns SUCCESS.
+  //  2) When ReactiveSequence is used, BatteryOK is executed at __each__ tick()
 
-    for (auto& xml_text : {xml_text_sequence, xml_text_reactive})
+  for(auto& xml_text : { xml_text_sequence, xml_text_reactive })
+  {
+    std::cout << "\n------------ BUILDING A NEW TREE ------------\n\n";
+
+    auto tree = factory.createTreeFromText(xml_text);
+
+    NodeStatus status = NodeStatus::IDLE;
+#if 0
+    // Tick the root until we receive either SUCCESS or RUNNING
+    // same as: tree.tickRoot(Tree::WHILE_RUNNING)
+    std::cout << "--- ticking\n";
+    status = tree.tickWhileRunning();
+    std::cout << "--- status: " << toStr(status) << "\n\n";
+#else
+    // If we need to run code between one tick() and the next,
+    // we can implement our own while loop
+    while(status != NodeStatus::SUCCESS)
     {
-        std::cout << "\n------------ BUILDING A NEW TREE ------------" << std::endl;
+      std::cout << "--- ticking\n";
+      status = tree.tickOnce();
+      std::cout << "--- status: " << toStr(status) << "\n\n";
 
-        auto tree = factory.createTreeFromText(xml_text);
-
-        NodeStatus status;
-
-        std::cout << "\n--- 1st executeTick() ---" << std::endl;
-        status = tree.tickRoot();
-        Assert(status == NodeStatus::RUNNING);
-
-        tree.sleep( milliseconds(150) );
-        std::cout << "\n--- 2nd executeTick() ---" << std::endl;
-        status = tree.tickRoot();
-        Assert(status == NodeStatus::RUNNING);
-
-        tree.sleep( milliseconds(150) );
-        std::cout << "\n--- 3rd executeTick() ---" << std::endl;
-        status = tree.tickRoot();
-        Assert(status == NodeStatus::SUCCESS);
-
-        std::cout << std::endl;
+      // if still running, add some wait time
+      if(status == NodeStatus::RUNNING)
+      {
+        tree.sleep(std::chrono::milliseconds(100));
+      }
     }
-    return 0;
+#endif
+  }
+  return 0;
 }
-
-/*
- Expected output:
-
------------- BUILDING A NEW TREE ------------
-
---- 1st executeTick() ---
-[ Battery: OK ]
-Robot says: "mission started..."
-[ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
-
---- 2nd executeTick() ---
-[ MoveBase: FINISHED ]
-
---- 3rd executeTick() ---
-Robot says: "mission completed!"
-
------------- BUILDING A NEW TREE ------------
-
---- 1st executeTick() ---
-[ Battery: OK ]
-Robot says: "mission started..."
-[ MoveBase: STARTED ]. goal: x=1 y=2.0 theta=3.00
-
---- 2nd executeTick() ---
-[ Battery: OK ]
-[ MoveBase: FINISHED ]
-
---- 3rd executeTick() ---
-[ Battery: OK ]
-Robot says: "mission completed!"
-
-*/

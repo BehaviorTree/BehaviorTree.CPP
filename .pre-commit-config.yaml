@@ -1,0 +1,63 @@
+
+# To use:
+#
+#     pre-commit run -a
+#
+# Or:
+#
+#     pre-commit install  # (runs every time you commit in git)
+#
+# To update this file:
+#
+#     pre-commit autoupdate
+#
+# See https://github.com/pre-commit/pre-commit
+
+exclude: ^3rdparty/|3rdparty|^include/behaviortree_cpp/contrib/|CHANGELOG.rst
+repos:
+
+  # Standard hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+        exclude_types: [svg]
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+        exclude_types: [svg]
+      - id: fix-byte-order-marker
+
+  # CPP hooks
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v17.0.6
+    hooks:
+      - id: clang-format
+        args: ['-fallback-style=none', '-i']
+
+  # C++ static analysis (installs clang-tidy automatically via pip)
+  # - repo: https://github.com/mxmlnrdr/clang_tidy_hook
+  #   rev: v0.3.1
+  #   hooks:
+  #     - id: clang-tidy
+  #       args:
+  #         - --config-file=.clang-tidy
+  #         - -p=build
+
+  # Spell check
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        additional_dependencies:
+        -   tomli
+        args:
+            [--toml=./pyproject.toml]

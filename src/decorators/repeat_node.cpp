@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2025 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,82 +11,94 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp_v3/decorators/repeat_node.h"
+#include "behaviortree_cpp/decorators/repeat_node.h"
 
 namespace BT
 {
-constexpr const char* RepeatNode::NUM_CYCLES;
 
 RepeatNode::RepeatNode(const std::string& name, int NTries)
-    : DecoratorNode(name, {} ),
-    num_cycles_(NTries),
-    try_index_(0),
-    read_parameter_from_ports_(false)
+  : DecoratorNode(name, {})
+  , num_cycles_(NTries)
+  , repeat_count_(0)
+  , read_parameter_from_ports_(false)
 {
-     setRegistrationID("Repeat");
+  setRegistrationID("Repeat");
 }
 
-RepeatNode::RepeatNode(const std::string& name, const NodeConfiguration& config)
-  : DecoratorNode(name, config),
-    num_cycles_(0),
-    try_index_(0),
-    read_parameter_from_ports_(true)
-{
-
-}
+RepeatNode::RepeatNode(const std::string& name, const NodeConfig& config)
+  : DecoratorNode(name, config)
+  , num_cycles_(0)
+  , repeat_count_(0)
+  , read_parameter_from_ports_(true)
+{}
 
 NodeStatus RepeatNode::tick()
 {
-    if( read_parameter_from_ports_ )
+  if(read_parameter_from_ports_)
+  {
+    if(!getInput(NUM_CYCLES, num_cycles_))
     {
-        if( !getInput(NUM_CYCLES, num_cycles_) )
-        {
-            throw RuntimeError("Missing parameter [", NUM_CYCLES, "] in RepeatNode");
-        }
+      throw RuntimeError("Missing parameter [", NUM_CYCLES, "] in RepeatNode");
     }
+  }
 
-    setStatus(NodeStatus::RUNNING);
+  bool do_loop = repeat_count_ < num_cycles_ || num_cycles_ == -1;
+  setStatus(NodeStatus::RUNNING);
 
-    while (try_index_ < num_cycles_ || num_cycles_== -1 )
+  while(do_loop)
+  {
+    const NodeStatus prev_status = child_node_->status();
+    const NodeStatus child_status = child_node_->executeTick();
+
+    switch(child_status)
     {
-        NodeStatus child_state = child_node_->executeTick();
+      case NodeStatus::SUCCESS: {
+        repeat_count_++;
+        do_loop = repeat_count_ < num_cycles_ || num_cycles_ == -1;
 
-        switch (child_state)
+        resetChild();
+
+        // Return the execution flow if the child is async,
+        // to make this interruptible.
+        if(requiresWakeUp() && prev_status == NodeStatus::IDLE && do_loop)
         {
-            case NodeStatus::SUCCESS:
-            {
-                try_index_++;
-                haltChild();
-            }
-            break;
-
-            case NodeStatus::FAILURE:
-            {
-                try_index_ = 0;
-                haltChild();
-                return (NodeStatus::FAILURE);
-            }
-
-            case NodeStatus::RUNNING:
-            {
-                return NodeStatus::RUNNING;
-            }
-
-            default:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
+          emitWakeUpSignal();
+          return NodeStatus::RUNNING;
         }
-    }
+      }
+      break;
 
-    try_index_ = 0;
-    return NodeStatus::SUCCESS;
+      case NodeStatus::FAILURE: {
+        repeat_count_ = 0;
+        resetChild();
+        return (NodeStatus::FAILURE);
+      }
+
+      case NodeStatus::RUNNING: {
+        return NodeStatus::RUNNING;
+      }
+
+      case NodeStatus::SKIPPED: {
+        // to allow it to be skipped again, we must reset the node
+        resetChild();
+        // the child has been skipped. Skip the decorator too.
+        // Don't reset the counter, though !
+        return NodeStatus::SKIPPED;
+      }
+      case NodeStatus::IDLE: {
+        throw LogicError("[", name(), "]: A children should not return IDLE");
+      }
+    }
+  }
+
+  repeat_count_ = 0;
+  return NodeStatus::SUCCESS;
 }
 
 void RepeatNode::halt()
 {
-    try_index_ = 0;
-    DecoratorNode::halt();
+  repeat_count_ = 0;
+  DecoratorNode::halt();
 }
 
-}
+}  // namespace BT

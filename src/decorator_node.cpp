@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2017 Michele Colledanchise - All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2025 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,73 +11,78 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp_v3/decorator_node.h"
+#include "behaviortree_cpp/decorator_node.h"
 
 namespace BT
 {
-DecoratorNode::DecoratorNode(const std::string& name, const NodeConfiguration& config)
+DecoratorNode::DecoratorNode(const std::string& name, const NodeConfig& config)
   : TreeNode::TreeNode(name, config), child_node_(nullptr)
-{
-}
+{}
 
 void DecoratorNode::setChild(TreeNode* child)
 {
-    if (child_node_)
-    {
-        throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
-    }
+  if(child_node_ != nullptr)
+  {
+    throw BehaviorTreeException("Decorator [", name(), "] has already a child assigned");
+  }
 
-    child_node_ = child;
+  child_node_ = child;
 }
 
 void DecoratorNode::halt()
 {
-    haltChild();
-    setStatus(NodeStatus::IDLE);
+  resetChild();
+  resetStatus();  // might be redundant
 }
 
 const TreeNode* DecoratorNode::child() const
 {
-    return child_node_;
+  return child_node_;
 }
 
 TreeNode* DecoratorNode::child()
 {
-    return child_node_;
+  return child_node_;
 }
 
 void DecoratorNode::haltChild()
 {
-    if( !child_node_ ){
-        return;
-    }
-    if (child_node_->status() == NodeStatus::RUNNING)
-    {
-        child_node_->halt();
-    }
-    child_node_->setStatus(NodeStatus::IDLE);
+  resetChild();
 }
 
-SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name, TickFunctor tick_functor,
-                                         const NodeConfiguration& config)
-  : DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
+void DecoratorNode::resetChild()
 {
+  if(child_node_ == nullptr)
+  {
+    return;
+  }
+  if(child_node_->status() == NodeStatus::RUNNING)
+  {
+    child_node_->haltNode();
+  }
+  child_node_->resetStatus();
 }
+
+SimpleDecoratorNode::SimpleDecoratorNode(const std::string& name,
+                                         TickFunctor tick_functor,
+                                         const NodeConfig& config)
+  : DecoratorNode(name, config), tick_functor_(std::move(tick_functor))
+{}
 
 NodeStatus SimpleDecoratorNode::tick()
 {
-    return tick_functor_(child()->executeTick(), *this);
+  return tick_functor_(child()->executeTick(), *this);
 }
 
 NodeStatus DecoratorNode::executeTick()
 {
-    NodeStatus status = TreeNode::executeTick();
-    NodeStatus child_status = child()->status();
-    if( child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE )
-    {
-        child()->setStatus(NodeStatus::IDLE);
-    }
-    return status;
+  const NodeStatus status = TreeNode::executeTick();
+  const NodeStatus child_status = child()->status();
+  if(child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE)
+  {
+    child()->resetStatus();
+  }
+  return status;
 }
 
-}
+}  // namespace BT

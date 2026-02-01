@@ -18,35 +18,43 @@ Remember to be careful when interpreting the output. This is not a sampling prof
 How to use
 ----------
 
-  1. Include minitrace.c and minitrace.h in your project. #include minitrace.h in some common header.
+  1. Include `minitrace.c` and `minitrace.h` in your project. `#include minitrace.h` in some common header.
 
   2. In your initialization code:
 
-        mtr_init("trace.json");
+      ```c
+      mtr_init("trace.json");
+      ```
 
   3. In your exit code:
 
-        mtr_shutdown();
+      ```c
+      mtr_shutdown();
+      ```
 
-  4. In all functions you want to profile:
+  4. Make sure `MTR_ENABLED` is defined globally when you want to profile, for example `-DMTR_ENABLED`
 
-        // C
-        MTR_BEGIN("GFX", "RasterizeTriangle")
-        ...
-        MTR_END("GFX", "RasterizeTriangle")
+  5. In all functions you want to profile:
 
-        // C++
-        MTR_SCOPE("GFX", "RasterizeTriangle")
+      ```c
+      // C
+      MTR_BEGIN("GFX", "RasterizeTriangle")
+      ...
+      MTR_END("GFX", "RasterizeTriangle")
+      ```
 
-  5. In Google Chrome open "about:tracing"
+      ```c++
+      // C++
+      MTR_SCOPE("GFX", "RasterizeTriangle")
+      ```
 
-  6. Click Open, and choose your trace.json
+  6. In Google Chrome open "about:tracing"
 
-  7. Navigate the trace view using the WASD keys, and Look for bottlenecks and optimize your application. 
+  7. Click Open, and choose your `trace.json`
 
-  8. In your final release build, build with
+  8. Navigate the trace view using the WASD keys, and Look for bottlenecks and optimize your application.
 
-         -DMTR_DISABLE
+  9. In your final release build, don't forget to remove `-DMTR_ENABLED` or however you set the define.
 
 
 By default, it will collect 1 million tracepoints and then stop. You can change this behaviour, see the
@@ -57,41 +65,43 @@ Note: Please only use string literals in MTR statements.
 Example code
 ------------
 
-    int main(int argc, const char *argv[]) {
-      int i;
-      mtr_init("trace.json");
+```c
+int main(int argc, const char *argv[]) {
+  int i;
+  mtr_init("trace.json");
 
-      MTR_META_PROCESS_NAME("minitrace_test");
-      MTR_META_THREAD_NAME("main thread");
+  MTR_META_PROCESS_NAME("minitrace_test");
+  MTR_META_THREAD_NAME("main thread");
 
-      int long_running_thing_1;
-      int long_running_thing_2;
+  int long_running_thing_1;
+  int long_running_thing_2;
 
-      MTR_START("background", "long_running", &long_running_thing_1);
-      MTR_START("background", "long_running", &long_running_thing_2);
+  MTR_START("background", "long_running", &long_running_thing_1);
+  MTR_START("background", "long_running", &long_running_thing_2);
 
-      MTR_BEGIN("main", "outer");
-      usleep(80000);
-      for (i = 0; i < 3; i++) {
-        MTR_BEGIN("main", "inner");
-        usleep(40000);
-        MTR_END("main", "inner");
-        usleep(10000);
-      }
-      MTR_STEP("background", "long_running", &long_running_thing_1, "middle step");
-      usleep(80000);
-      MTR_END("main", "outer");
+  MTR_BEGIN("main", "outer");
+  usleep(80000);
+  for (i = 0; i < 3; i++) {
+    MTR_BEGIN("main", "inner");
+    usleep(40000);
+    MTR_END("main", "inner");
+    usleep(10000);
+  }
+  MTR_STEP("background", "long_running", &long_running_thing_1, "middle step");
+  usleep(80000);
+  MTR_END("main", "outer");
 
-      usleep(50000);
-      MTR_INSTANT("main", "the end");
-      usleep(10000);
-      MTR_FINISH("background", "long_running", &long_running_thing_1);
-      MTR_FINISH("background", "long_running", &long_running_thing_2);
+  usleep(50000);
+  MTR_INSTANT("main", "the end");
+  usleep(10000);
+  MTR_FINISH("background", "long_running", &long_running_thing_1);
+  MTR_FINISH("background", "long_running", &long_running_thing_2);
 
-      mtr_flush();
-      mtr_shutdown();
-      return 0;
-    }
+  mtr_flush();
+  mtr_shutdown();
+  return 0;
+}
+```
 
 The output will result in something looking a little like the picture at the top of this readme.
 

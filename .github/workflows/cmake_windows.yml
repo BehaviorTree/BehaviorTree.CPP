@@ -1,0 +1,54 @@
+name: cmake Windows
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install Conan
+      id: conan
+      uses: turtlebrowser/get-conan@main
+
+    - name: Create default profile
+      run: conan profile detect
+
+    - name: Install conan dependencies
+      run: conan install conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing --settings:host compiler.cppstd=17
+
+    - name: Normalize build type
+      shell: bash
+      # The build type is Capitalized, e.g. Release, but the preset is all lowercase, e.g. release.
+      # There is no built in way to do string manipulations on GHA as far as I know.`
+      run: echo "BUILD_TYPE_LOWERCASE=$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+    - name: Configure CMake
+      shell: bash
+      run: cmake --preset conan-default
+
+    - name: Build
+      shell: bash
+      run: cmake --build --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
+
+    - name: run test (Windows)
+      working-directory: ${{github.workspace}}/build
+      run: $env:PATH+=";${{env.BUILD_TYPE}}"; tests/${{env.BUILD_TYPE}}/behaviortree_cpp_test.exe

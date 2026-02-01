@@ -1,0 +1,103 @@
+name: cmake Ubuntu
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install Conan
+      id: conan
+      uses: turtlebrowser/get-conan@main
+
+    - name: Create default profile
+      run: conan profile detect
+
+    - name: Install conan dependencies
+      run: conan install conanfile.py -s build_type=${{env.BUILD_TYPE}} --build=missing
+
+    - name: Normalize build type
+      shell: bash
+      run: echo "BUILD_TYPE_LOWERCASE=$(echo "${BUILD_TYPE}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+    - name: Configure CMake
+      shell: bash
+      run: cmake --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
+
+    - name: Build
+      shell: bash
+      run: cmake --build --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
+
+    - name: run test (Linux)
+      run: ctest --test-dir build/${{env.BUILD_TYPE}}
+
+  coverage:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install lcov
+      run: sudo apt-get update && sudo apt-get install -y lcov
+
+    - name: Install Conan
+      id: conan
+      uses: turtlebrowser/get-conan@main
+
+    - name: Create default profile
+      run: conan profile detect
+
+    - name: Install conan dependencies
+      run: conan install conanfile.py -s build_type=Debug --build=missing
+
+    - name: Configure CMake with coverage
+      shell: bash
+      run: |
+        cmake --preset conan-debug \
+          -DCMAKE_C_FLAGS="--coverage -fprofile-update=atomic" \
+          -DCMAKE_CXX_FLAGS="--coverage -fprofile-update=atomic"
+
+    - name: Build
+      shell: bash
+      run: cmake --build --preset conan-debug
+
+    - name: Run tests
+      run: ctest --test-dir build/Debug --output-on-failure
+
+    - name: Collect coverage
+      run: |
+        lcov --capture --directory build/Debug \
+             --output-file coverage.info \
+             --ignore-errors mismatch \
+             --ignore-errors negative
+        lcov --remove coverage.info \
+             '/usr/*' \
+             '*/3rdparty/*' \
+             '*/tests/*' \
+             '*/examples/*' \
+             '*/sample_nodes/*' \
+             '*/tools/*' \
+             --output-file coverage.info \
+             --ignore-errors unused
+        lcov --list coverage.info
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: coverage.info
+        token: ${{ secrets.CODECOV_TOKEN }}

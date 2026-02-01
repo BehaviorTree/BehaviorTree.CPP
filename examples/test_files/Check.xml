@@ -1,10 +1,10 @@
 <root>
 
     <BehaviorTree ID="CheckStatus">
-        <SequenceStar>
+        <SequenceWithMemory>
             <Action ID="CheckBattery"/>
             <Action ID="CheckTemperature"/>
-        </SequenceStar>
+        </SequenceWithMemory>
     </BehaviorTree>
-    
+
 </root>

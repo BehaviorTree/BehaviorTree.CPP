@@ -8,10 +8,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <atomic>
 
 #ifdef _WIN32
 #pragma warning (disable:4996)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #define __thread __declspec(thread)
 #define pthread_mutex_t CRITICAL_SECTION
@@ -26,11 +29,20 @@
 #include <unistd.h>
 #endif
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include "minitrace.h"
 
-#define ARRAY_SIZE(x) sizeof(x)/sizeof(x[0])
+#ifdef __GNUC__
+#define ATTR_NORETURN __attribute__((noreturn))
+#else
+#define ATTR_NORETURN
+#endif
 
-namespace minitrace {
+#define ARRAY_SIZE(x) sizeof(x)/sizeof(x[0])
+#define TRUE 1
+#define FALSE 0
 
 // Ugh, this struct is already pretty heavy.
 // Will probably need to move arguments to a second buffer to support more than one.
@@ -51,43 +63,50 @@ typedef struct raw_event {
 	};
 } raw_event_t;
 
-static raw_event_t *buffer;
-static volatile int count;
-static int is_tracing = 0;
+static raw_event_t *event_buffer;
+static raw_event_t *flush_buffer;
+static std::atomic_int event_count;
+static int is_tracing = FALSE;
+static int is_flushing = FALSE;
+static int events_in_progress = 0;
 static int64_t time_offset;
 static int first_line = 1;
-static FILE *file;
+static FILE *f;
 static __thread int cur_thread_id;	// Thread local storage
+static int cur_process_id;
 static pthread_mutex_t mutex;
+static pthread_mutex_t event_mutex;
 
 #define STRING_POOL_SIZE 100
 static char *str_pool[100];
 
+// forward declaration
+void mtr_flush_with_state(int);
+
 // Tiny portability layer.
 // Exposes:
 //	 get_cur_thread_id()
+//	 get_cur_process_id()
 //	 mtr_time_s()
 //	 pthread basics
 #ifdef _WIN32
 static int get_cur_thread_id() {
 	return (int)GetCurrentThreadId();
 }
+static int get_cur_process_id() {
+	return (int)GetCurrentProcessId();
+}
 
 static uint64_t _frequency = 0;
 static uint64_t _starttime = 0;
-
-inline int64_t mtr_time_usec(){
-  static int64_t prev = 0;
+double mtr_time_s() {
 	if (_frequency == 0) {
 		QueryPerformanceFrequency((LARGE_INTEGER*)&_frequency);
 		QueryPerformanceCounter((LARGE_INTEGER*)&_starttime);
 	}
 	__int64 time;
 	QueryPerformanceCounter((LARGE_INTEGER*)&time);
-    int64_t now = static_cast<int64_t>( 1.0e6 * ((double)(time - _starttime) / (double)_frequency));
-  if( now <= prev) now = prev + 1;
-  prev = now;
-  return now;
+	return ((double) (time - _starttime) / (double) _frequency);
 }
 
 // Ctrl+C handling for Windows console apps
@@ -110,36 +129,37 @@ void mtr_register_sigint_handler() {
 static inline int get_cur_thread_id() {
 	return (int)(intptr_t)pthread_self();
 }
+static inline int get_cur_process_id() {
+	return (int)getpid();
+}
 
 #if defined(BLACKBERRY)
-inline int64_t mtr_time_usec(){
-  static int64_t prev = 0;
+double mtr_time_s() {
 	struct timespec time;
 	clock_gettime(CLOCK_MONOTONIC, &time); // Linux must use CLOCK_MONOTONIC_RAW due to time warps
-  int64_t now = time.tv_sec*1000000 + time.tv_nsec / 1000;
-  if( now <= prev) now = prev + 1;
-  prev = now;
-  return now;
+	return time.tv_sec + time.tv_nsec / 1.0e9;
 }
 #else
-int64_t mtr_time_usec()
-{
-  static int64_t prev = 0;
+double mtr_time_s() {
+	static time_t start;
 	struct timeval tv;
-    gettimeofday(&tv, nullptr);
-  int64_t now = 1000000*tv.tv_sec + tv.tv_usec;
-  if( now <= prev) now = prev + 1;
-  prev = now;
-  return now;
+	gettimeofday(&tv, NULL);
+	if (start == 0) {
+		start = tv.tv_sec;
+	}
+	tv.tv_sec -= start;
+	return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
 }
 #endif	// !BLACKBERRY
 
-static void termination_handler(int ) {
+static void termination_handler(int signum) ATTR_NORETURN;
+static void termination_handler(int signum) {
+	(void) signum;
 	if (is_tracing) {
 		printf("Ctrl-C detected! Flushing trace and shutting down.\n\n");
 		mtr_flush();
-        fwrite("\n]}\n", 1, 4, file);
-        fclose(file);
+		fwrite("\n]}\n", 1, 4, f);
+		fclose(f);
 	}
 	exit(1);
 }
@@ -155,19 +175,28 @@ void mtr_register_sigint_handler() {
 
 #endif
 
+void mtr_init_from_stream(void *stream) {
+#ifndef MTR_ENABLED
+	return;
+#endif
+	event_buffer = (raw_event_t *)malloc(INTERNAL_MINITRACE_BUFFER_SIZE * sizeof(raw_event_t));
+	flush_buffer = (raw_event_t *)malloc(INTERNAL_MINITRACE_BUFFER_SIZE * sizeof(raw_event_t));
+	is_tracing = 1;
+	event_count = 0;
+	f = (FILE *)stream;
+	const char *header = "{\"traceEvents\":[\n";
+	fwrite(header, 1, strlen(header), f);
+	time_offset = (uint64_t)(mtr_time_s() * 1000000);
+	first_line = 1;
+	pthread_mutex_init(&mutex, 0);
+	pthread_mutex_init(&event_mutex, 0);
+}
+
 void mtr_init(const char *json_file) {
 #ifndef MTR_ENABLED
 	return;
 #endif
-	buffer = (raw_event_t *)malloc(INTERNAL_MINITRACE_BUFFER_SIZE * sizeof(raw_event_t));
-	is_tracing = 1;
-	count = 0;
-    file = fopen(json_file, "wb");
-	const char *header = "{\"traceEvents\":[\n";
-    fwrite(header, 1, strlen(header), file);
-    time_offset = mtr_time_usec();
-	first_line = 1;
-	pthread_mutex_init(&mutex, 0);
+	mtr_init_from_stream(fopen(json_file, "wb"));
 }
 
 void mtr_shutdown() {
@@ -175,14 +204,18 @@ void mtr_shutdown() {
 #ifndef MTR_ENABLED
 	return;
 #endif
-	is_tracing = 0;
-	mtr_flush();
-    fwrite("\n]}\n", 1, 4, file);
-    fclose(file);
+	pthread_mutex_lock(&mutex);
+	is_tracing = FALSE;
+	pthread_mutex_unlock(&mutex);
+	mtr_flush_with_state(TRUE);
+
+	fwrite("\n]}\n", 1, 4, f);
+	fclose(f);
 	pthread_mutex_destroy(&mutex);
-    file = 0;
-	free(buffer);
-	buffer = 0;
+	pthread_mutex_destroy(&event_mutex);
+	f = 0;
+	free(event_buffer);
+	event_buffer = 0;
 	for (i = 0; i < STRING_POOL_SIZE; i++) {
 		if (str_pool[i]) {
 			free(str_pool[i]);
@@ -195,7 +228,7 @@ const char *mtr_pool_string(const char *str) {
 	int i;
 	for (i = 0; i < STRING_POOL_SIZE; i++) {
 		if (!str_pool[i]) {
-      str_pool[i] = (char *)malloc(strlen(str) + 1);
+			str_pool[i] = (char*)malloc(strlen(str) + 1);
 			strcpy(str_pool[i], str);
 			return str_pool[i];
 		} else {
@@ -210,33 +243,63 @@ void mtr_start() {
 #ifndef MTR_ENABLED
 	return;
 #endif
-	is_tracing = 1;
+	pthread_mutex_lock(&mutex);
+	is_tracing = TRUE;
+	pthread_mutex_unlock(&mutex);
 }
 
 void mtr_stop() {
 #ifndef MTR_ENABLED
 	return;
 #endif
-	is_tracing = 0;
+	pthread_mutex_lock(&mutex);
+	is_tracing = FALSE;
+	pthread_mutex_unlock(&mutex);
 }
 
 // TODO: fwrite more than one line at a time.
-void mtr_flush() {
+// Flushing is thread safe and process async
+// using double-buffering mechanism.
+// Aware: only one flushing process may be 
+// running at any point of time
+void mtr_flush_with_state(int is_last) {
 #ifndef MTR_ENABLED
 	return;
 #endif
+	int i = 0;
 	char linebuf[1024];
-	char arg_buf[256];
+	char arg_buf[1024];
 	char id_buf[256];
-	// We have to lock while flushing. So we really should avoid flushing as much as possible.
+	int event_count_copy = 0;
+	int events_in_progress_copy = 1;
+	raw_event_t *event_buffer_tmp = NULL;
 
-
+	// small critical section to swap buffers
+	// - no any new events can be spawn while
+	//   swapping since they tied to the same mutex
+	// - checks for any flushing in process
 	pthread_mutex_lock(&mutex);
-	int old_tracing = is_tracing;
-	is_tracing = 0;	// Stop logging even if using interlocked increments instead of the mutex. Can cause data loss.
+	// if not flushing already
+	if (is_flushing) {
+		pthread_mutex_unlock(&mutex);
+		return;
+	}
+	is_flushing = TRUE;
+	event_count_copy = event_count;
+	event_buffer_tmp = flush_buffer;
+	flush_buffer = event_buffer;
+	event_buffer = event_buffer_tmp;
+	event_count = 0;
+	// waiting for any unfinished events before swap
+	while (events_in_progress_copy != 0) {
+		pthread_mutex_lock(&event_mutex);
+		events_in_progress_copy = events_in_progress;
+		pthread_mutex_unlock(&event_mutex);
+	}
+	pthread_mutex_unlock(&mutex);
 
-	for (int i = 0; i < count; i++) {
-		raw_event_t *raw = &buffer[i];
+	for (i = 0; i < event_count_copy; i++) {
+		raw_event_t *raw = &flush_buffer[i];
 		int len;
 		switch (raw->arg_type) {
 		case MTR_ARG_TYPE_INT:
@@ -247,12 +310,12 @@ void mtr_flush() {
 			break;
 		case MTR_ARG_TYPE_STRING_COPY:
 			if (strlen(raw->a_str) > 700) {
-				((char*)raw->a_str)[700] = 0;
+				snprintf(arg_buf, ARRAY_SIZE(arg_buf), "\"%s\":\"%.*s\"", raw->arg_name, 700, raw->a_str);
+			} else {
+				snprintf(arg_buf, ARRAY_SIZE(arg_buf), "\"%s\":\"%s\"", raw->arg_name, raw->a_str);
 			}
-			snprintf(arg_buf, ARRAY_SIZE(arg_buf), "\"%s\":\"%s\"", raw->arg_name, raw->a_str);
 			break;
 		case MTR_ARG_TYPE_NONE:
-		default:
 			arg_buf[0] = '\0';
 			break;
 		}
@@ -274,16 +337,15 @@ void mtr_flush() {
 		const char *cat = raw->cat;
 #ifdef _WIN32
 		// On Windows, we often end up with backslashes in category.
+		char temp[256];
 		{
-			char temp[256];
-			int cat_len = (int)strlen(cat);
-            if (cat_len > 255)
-                cat_len = 255;
-            for (int a = 0; a < cat_len; a++)
-            {
-				temp[a] = cat[a] == '\\' ? '/' : cat[a];
+			int len = (int)strlen(cat);
+			int i;
+			if (len > 255) len = 255;
+			for (i = 0; i < len; i++) {
+				temp[i] = cat[i] == '\\' ? '/' : cat[i];
 			}
-            temp[cat_len] = 0;
+			temp[len] = 0;
 			cat = temp;
 		}
 #endif
@@ -291,89 +353,138 @@ void mtr_flush() {
 		len = snprintf(linebuf, ARRAY_SIZE(linebuf), "%s{\"cat\":\"%s\",\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64 ",\"ph\":\"%c\",\"name\":\"%s\",\"args\":{%s}%s}",
 				first_line ? "" : ",\n",
 				cat, raw->pid, raw->tid, raw->ts - time_offset, raw->ph, raw->name, arg_buf, id_buf);
-        fwrite(linebuf, 1, len, file);
-        fflush(file);
+		fwrite(linebuf, 1, len, f);
 		first_line = 0;
+
+		if (raw->arg_type == MTR_ARG_TYPE_STRING_COPY) {
+			free((void*)raw->a_str);
+		}
+		#ifdef MTR_COPY_EVENT_CATEGORY_AND_NAME
+		free(raw->name);
+		free(raw->cat);
+		#endif
 	}
-	count = 0;
-	is_tracing = old_tracing;
+
+	pthread_mutex_lock(&mutex);
+	is_flushing = is_last;
 	pthread_mutex_unlock(&mutex);
+}
+
+void mtr_flush() {
+	mtr_flush_with_state(FALSE);
 }
 
 void internal_mtr_raw_event(const char *category, const char *name, char ph, void *id) {
 #ifndef MTR_ENABLED
 	return;
 #endif
-	if (!is_tracing || count >= INTERNAL_MINITRACE_BUFFER_SIZE)
+	pthread_mutex_lock(&mutex);
+	if (!is_tracing || event_count >= INTERNAL_MINITRACE_BUFFER_SIZE) {
+		pthread_mutex_unlock(&mutex);
 		return;
-  int64_t ts = mtr_time_usec();
+	}
+	raw_event_t *ev = &event_buffer[event_count];
+	++event_count;
+	pthread_mutex_lock(&event_mutex);
+	++events_in_progress;
+	pthread_mutex_unlock(&event_mutex);
+	pthread_mutex_unlock(&mutex);
+
+	double ts = mtr_time_s();
 	if (!cur_thread_id) {
 		cur_thread_id = get_cur_thread_id();
 	}
+	if (!cur_process_id) {
+		cur_process_id = get_cur_process_id();
+	}
 
-#if 0 && _WIN32	// TODO: This needs testing
-	int bufPos = InterlockedIncrement(&count);
-	raw_event_t *ev = &buffer[count - 1];
+#ifdef MTR_COPY_EVENT_CATEGORY_AND_NAME
+	const size_t category_len = strlen(category);
+	ev->cat = malloc(category_len + 1);
+	strcpy(ev->cat, category);
+
+	const size_t name_len = strlen(name);
+	ev->name = malloc(name_len + 1);
+	strcpy(ev->name, name);
+
 #else
-	pthread_mutex_lock(&mutex);
-	raw_event_t *ev = &buffer[count];
-	count++;
-	pthread_mutex_unlock(&mutex);
-#endif
-
 	ev->cat = category;
 	ev->name = name;
+#endif
+
 	ev->id = id;
 	ev->ph = ph;
-  if (ev->ph == 'X') {
-    int64_t x;
-    memcpy(&x, id, sizeof(int64_t));
-    ev->ts = x;
-    ev->a_double = static_cast<double>(ts - x);
-  } else {
-    ev->ts = ts;
-  }
-  ev->tid = cur_thread_id;
-	ev->pid = 0;
+	if (ev->ph == 'X') {
+		double x;
+		memcpy(&x, id, sizeof(double));
+		ev->ts = (int64_t)(x * 1000000);
+		ev->a_double = (ts - x) * 1000000;
+	} else {
+		ev->ts = (int64_t)(ts * 1000000);
+	}
+	ev->tid = cur_thread_id;
+	ev->pid = cur_process_id;
+	ev->arg_type = MTR_ARG_TYPE_NONE;
+
+	pthread_mutex_lock(&event_mutex);
+	--events_in_progress;
+	pthread_mutex_unlock(&event_mutex);
 }
 
 void internal_mtr_raw_event_arg(const char *category, const char *name, char ph, void *id, mtr_arg_type arg_type, const char *arg_name, void *arg_value) {
 #ifndef MTR_ENABLED
 	return;
 #endif
-	if (!is_tracing || count >= INTERNAL_MINITRACE_BUFFER_SIZE)
+	pthread_mutex_lock(&mutex);
+	if (!is_tracing || event_count >= INTERNAL_MINITRACE_BUFFER_SIZE) {
+		pthread_mutex_unlock(&mutex);
 		return;
+	}
+	raw_event_t *ev = &event_buffer[event_count];
+	++event_count;
+	pthread_mutex_lock(&event_mutex);
+	++events_in_progress;
+	pthread_mutex_unlock(&event_mutex);
+	pthread_mutex_unlock(&mutex);
+
 	if (!cur_thread_id) {
 		cur_thread_id = get_cur_thread_id();
 	}
-  int64_t ts = mtr_time_usec();
+	if (!cur_process_id) {
+		cur_process_id = get_cur_process_id();
+	}
+	double ts = mtr_time_s();
 
-#if 0 && _WIN32	// TODO: This needs testing
-	int bufPos = InterlockedIncrement(&count);
-	raw_event_t *ev = &buffer[count - 1];
+#ifdef MTR_COPY_EVENT_CATEGORY_AND_NAME
+	const size_t category_len = strlen(category);
+	ev->cat = malloc(category_len + 1);
+	strcpy(ev->cat, category);
+
+	const size_t name_len = strlen(name);
+	ev->name = malloc(name_len + 1);
+	strcpy(ev->name, name);
+
 #else
-	pthread_mutex_lock(&mutex);
-	raw_event_t *ev = &buffer[count];
-	count++;
-	pthread_mutex_unlock(&mutex);
-#endif
-
 	ev->cat = category;
 	ev->name = name;
+#endif
+
 	ev->id = id;
-  ev->ts = ts;
+	ev->ts = (int64_t)(ts * 1000000);
 	ev->ph = ph;
 	ev->tid = cur_thread_id;
-	ev->pid = 0;
+	ev->pid = cur_process_id;
 	ev->arg_type = arg_type;
 	ev->arg_name = arg_name;
 	switch (arg_type) {
 	case MTR_ARG_TYPE_INT: ev->a_int = (int)(uintptr_t)arg_value; break;
 	case MTR_ARG_TYPE_STRING_CONST:	ev->a_str = (const char*)arg_value; break;
 	case MTR_ARG_TYPE_STRING_COPY: ev->a_str = strdup((const char*)arg_value); break;
-	default:
-		break;
+	case MTR_ARG_TYPE_NONE: break;
 	}
+
+	pthread_mutex_lock(&event_mutex);
+	--events_in_progress;
+	pthread_mutex_unlock(&event_mutex);
 }
 
-}

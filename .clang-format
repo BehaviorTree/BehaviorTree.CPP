@@ -1,5 +1,5 @@
 ---
-BasedOnStyle:  Google
+BasedOnStyle: Google
 AccessModifierOffset: -2
 ConstructorInitializerIndentWidth: 2
 AlignEscapedNewlinesLeft: false
@@ -8,14 +8,13 @@ AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
-AllowShortLoopsOnASingleLine: false
 AlwaysBreakTemplateDeclarations: true
 AlwaysBreakBeforeMultilineStrings: false
 BreakBeforeBinaryOperators: false
 BreakBeforeTernaryOperators: false
-BreakConstructorInitializersBeforeComma: true
+BreakConstructorInitializers: BeforeComma
 BinPackParameters: true
-ColumnLimit:    100
+ColumnLimit: 90
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 DerivePointerBinding: false
 PointerBindsToType: true
@@ -30,21 +29,37 @@ PenaltyBreakString: 1
 PenaltyBreakFirstLessLess: 1000
 PenaltyExcessCharacter: 1000
 PenaltyReturnTypeOnItsOwnLine: 90
-SpacesBeforeTrailingComments: 3
-Cpp11BracedListStyle: true
-Standard:        Auto
-IndentWidth:     4
-TabWidth:        4
-UseTab:          Never
+SpacesBeforeTrailingComments: 2
+Cpp11BracedListStyle: false
+Standard: Auto
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
 IndentFunctionDeclarationAfterType: false
 SpacesInParentheses: false
-SpacesInAngles:  false
+SpacesInAngles: false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpaceAfterControlStatementKeyword: true
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: Never
 ContinuationIndentWidth: 4
-SortIncludes: false
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Main header (same name as source file)
+  - Regex:           '^"[^/]*\.h(pp)?"$'
+    Priority:        1
+  # BehaviorTree.CPP project headers
+  - Regex:           '^"behaviortree_cpp/.*'
+    Priority:        2
+  # C++ standard library headers
+  - Regex:           '^<[a-z_]+>$'
+    Priority:        3
+  # System headers with .h extension
+  - Regex:           '^<.*\.h>'
+    Priority:        4
+IncludeIsMainRegex: '(_test)?$'
 SpaceAfterCStyleCast: false
 ReflowComments: false
 
@@ -53,16 +68,16 @@ BreakBeforeBraces: Custom
 
 # Control of individual brace wrapping cases
 BraceWrapping: {
-    AfterClass: 'true'
-    AfterControlStatement: 'true'
-    AfterEnum : 'true'
-    AfterFunction : 'true'
-    AfterNamespace : 'true'
-    AfterStruct : 'true'
-    AfterUnion : 'true'
-    BeforeCatch : 'true'
-    BeforeElse : 'true'
-    IndentBraces : 'false'
+    AfterClass: 'true',
+    AfterControlStatement: 'true',
+    AfterEnum : 'true',
+    AfterFunction : 'true',
+    AfterNamespace : 'true',
+    AfterStruct : 'true',
+    AfterUnion : 'true',
+    BeforeCatch : 'true',
+    BeforeElse : 'true',
+    IndentBraces : 'false',
+    SplitEmptyFunction: 'false'
 }
 ...
-

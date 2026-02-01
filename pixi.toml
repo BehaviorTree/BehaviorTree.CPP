@@ -1,0 +1,29 @@
+[project]
+name = "BehaviorTree.CPP"
+version = "4.5.2"
+description = "This C++ 17 library provides a framework to create BehaviorTrees"
+authors = ["Tony Paulussen <T.paulussen@gmail.com>"]
+channels = ["conda-forge"]
+platforms = ["linux-64", "win-64"]
+
+[target.win-64.tasks]
+test = "PATH=\"$PATH;build/Release\" build/tests/Release/behaviortree_cpp_test.exe"
+
+[target.linux-64.tasks]
+test = "./build/tests/behaviortree_cpp_test"
+
+[tasks]
+build = "mkdir -p build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel --config Release"
+
+[dependencies]
+cmake = ">=3.16.3"
+gmock = "1.14.*"
+sqlite = "3.40.*"
+zeromq = "4.3.*"
+gtest = "1.14.*"
+cxx-compiler = "*"
+
+pre-commit = "*"
+
+[target.linux-64.dependencies]
+make = "*"

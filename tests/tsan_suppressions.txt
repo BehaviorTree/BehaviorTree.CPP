@@ -1,0 +1,4 @@
+# ThreadSanitizer suppressions file for behaviortree_cpp_test
+
+# ZeroMQ false positives
+race:zmq::epoll_t::add_fd

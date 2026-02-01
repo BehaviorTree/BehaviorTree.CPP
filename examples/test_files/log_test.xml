@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+        <Sequence>
+            <SubTree ID="Subtree" name="FirstSubtree"/>
+            <SubTree ID="Subtree" name="SecondSubtree"/>
+        </Sequence>
+    </BehaviorTree>
+    <BehaviorTree ID="Subtree">
+        <Sequence name="SleepSequence">
+            <Sleep msec="300"/>
+            <AlwaysSuccess/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- Description of Node Models (used by Groot) -->
+    <TreeNodesModel>
+        <Action ID="Sleep" editable="true">
+            <input_port name="msec"/>
+        </Action>
+    </TreeNodesModel>
+</root>

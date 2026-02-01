@@ -1,0 +1,22 @@
+name: ros2-rolling
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  industrial_ci:
+    strategy:
+      matrix:
+        env:
+          - {ROS_DISTRO: rolling, ROS_REPO: main}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
+        with:
+            package-name: plotjuggler

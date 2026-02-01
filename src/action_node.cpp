@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2025 Davide Faconti -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,205 +11,246 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp_v3/action_node.h"
+#define MINICORO_IMPL
+#include "behaviortree_cpp/action_node.h"
+
+#include "minicoro.h"
+
+#include <iostream>
 
 using namespace BT;
 
-ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfiguration& config)
+ActionNodeBase::ActionNodeBase(const std::string& name, const NodeConfig& config)
   : LeafNode::LeafNode(name, config)
-{
-}
-
+{}
 
 //-------------------------------------------------------
 
 SimpleActionNode::SimpleActionNode(const std::string& name,
                                    SimpleActionNode::TickFunctor tick_functor,
-                                   const NodeConfiguration& config)
+                                   const NodeConfig& config)
   : SyncActionNode(name, config), tick_functor_(std::move(tick_functor))
-{
-}
+{}
 
 NodeStatus SimpleActionNode::tick()
 {
-    NodeStatus prev_status = status();
+  NodeStatus prev_status = status();
 
-    if (prev_status == NodeStatus::IDLE)
-    {
-        setStatus(NodeStatus::RUNNING);
-        prev_status = NodeStatus::RUNNING;
-    }
+  if(prev_status == NodeStatus::IDLE)
+  {
+    setStatus(NodeStatus::RUNNING);
+    prev_status = NodeStatus::RUNNING;
+  }
 
-    NodeStatus status = tick_functor_(*this);
-    if (status != prev_status)
-    {
-        setStatus(status);
-    }
-    return status;
+  const NodeStatus status = tick_functor_(*this);
+  if(status != prev_status)
+  {
+    setStatus(status);
+  }
+  return status;
 }
 
 //-------------------------------------------------------
 
-SyncActionNode::SyncActionNode(const std::string &name, const NodeConfiguration& config):
-  ActionNodeBase(name, config)
+SyncActionNode::SyncActionNode(const std::string& name, const NodeConfig& config)
+  : ActionNodeBase(name, config)
 {}
 
 NodeStatus SyncActionNode::executeTick()
 {
   auto stat = ActionNodeBase::executeTick();
-  if( stat == NodeStatus::RUNNING)
+  if(stat == NodeStatus::RUNNING)
   {
     throw LogicError("SyncActionNode MUST never return RUNNING");
   }
   return stat;
 }
 
-
 //-------------------------------------
-#ifndef BT_NO_COROUTINES
-
-#ifdef BT_BOOST_COROUTINE2
-#include <boost/coroutine2/all.hpp>
-using namespace boost::coroutines2;
-#endif
-
-#ifdef BT_BOOST_COROUTINE
-#include <boost/coroutine/all.hpp>
-using namespace boost::coroutines;
-#endif
 
 struct CoroActionNode::Pimpl
 {
-    std::unique_ptr<coroutine<void>::pull_type> coro;
-    std::function<void(coroutine<void>::push_type & yield)> func;
-    coroutine<void>::push_type * yield_ptr;
+  mco_coro* coro = nullptr;
+  mco_desc desc = {};
 };
 
-CoroActionNode::CoroActionNode(const std::string &name,
-                               const NodeConfiguration& config):
- ActionNodeBase (name, config), _p( new Pimpl)
+namespace
 {
-    _p->func = [this](coroutine<void>::push_type & yield) {
-        _p->yield_ptr = &yield;
-        setStatus(tick());
-    };
+void CoroEntry(mco_coro* co)
+{
+  static_cast<CoroActionNode*>(co->user_data)->tickImpl();
 }
+}  // namespace
+
+CoroActionNode::CoroActionNode(const std::string& name, const NodeConfig& config)
+  : ActionNodeBase(name, config), _p(new Pimpl)
+{}
 
 CoroActionNode::~CoroActionNode()
 {
+  try
+  {
+    destroyCoroutine();
+  }
+  catch(const std::exception& ex)
+  {
+    std::cerr << "Exception in ~CoroActionNode(): " << ex.what() << std::endl;
+  }
 }
 
 void CoroActionNode::setStatusRunningAndYield()
 {
-    setStatus( NodeStatus::RUNNING );
-    (*_p->yield_ptr)();
+  setStatus(NodeStatus::RUNNING);
+  mco_yield(_p->coro);
 }
 
 NodeStatus CoroActionNode::executeTick()
 {
-    if( !(_p->coro) || !(*_p->coro) )
-    {
-        _p->coro.reset( new coroutine<void>::pull_type(_p->func) );
-        return status();
-    }
+  // create a new coroutine, if necessary
+  if(_p->coro == nullptr)
+  {
+    // First initialize a `desc` object through `mco_desc_init`.
+    _p->desc = mco_desc_init(CoroEntry, 0);
+    _p->desc.user_data = this;
 
-    if( status() == NodeStatus::RUNNING && (bool)_p->coro )
+    const mco_result res = mco_create(&_p->coro, &_p->desc);
+    if(res != MCO_SUCCESS)
     {
-        (*_p->coro)();
+      throw RuntimeError("Can't create coroutine");
     }
+  }
 
-    return status();
+  //------------------------
+  // execute the coroutine
+  mco_resume(_p->coro);
+  //------------------------
+
+  // check if the coroutine finished. In this case, destroy it
+  if(mco_status(_p->coro) == MCO_DEAD)
+  {
+    destroyCoroutine();
+  }
+
+  return status();
+}
+
+void CoroActionNode::tickImpl()
+{
+  setStatus(TreeNode::executeTick());
 }
 
 void CoroActionNode::halt()
 {
-    _p->coro.reset();
+  destroyCoroutine();
+  resetStatus();  // might be redundant
 }
-#endif
 
+void CoroActionNode::destroyCoroutine()
+{
+  if(_p->coro != nullptr)
+  {
+    const mco_result res = mco_destroy(_p->coro);
+    if(res != MCO_SUCCESS)
+    {
+      throw RuntimeError("Can't destroy coroutine");
+    }
+    _p->coro = nullptr;
+  }
+}
 
+bool StatefulActionNode::isHaltRequested() const
+{
+  return halt_requested_.load();
+}
 
 NodeStatus StatefulActionNode::tick()
 {
-  const NodeStatus initial_status = status();
+  const NodeStatus prev_status = status();
 
-  if( initial_status == NodeStatus::IDLE )
+  if(prev_status == NodeStatus::IDLE)
   {
-    NodeStatus new_status = onStart();
-    if( new_status == NodeStatus::IDLE)
+    const NodeStatus new_status = onStart();
+    if(new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("StatefulActionNode::onStart() must not return IDLE");
+      throw LogicError("StatefulActionNode::onStart() must not return IDLE");
     }
     return new_status;
   }
   //------------------------------------------
-  if( initial_status == NodeStatus::RUNNING )
+  if(prev_status == NodeStatus::RUNNING)
   {
-    NodeStatus new_status = onRunning();
-    if( new_status == NodeStatus::IDLE)
+    const NodeStatus new_status = onRunning();
+    if(new_status == NodeStatus::IDLE)
     {
-      throw std::logic_error("StatefulActionNode::onRunning() must not return IDLE");
+      throw LogicError("StatefulActionNode::onRunning() must not return IDLE");
     }
     return new_status;
   }
-  //------------------------------------------
-  return initial_status;
+  return prev_status;
 }
 
 void StatefulActionNode::halt()
 {
-  if( status() == NodeStatus::RUNNING)
+  halt_requested_.store(true);
+  if(status() == NodeStatus::RUNNING)
   {
     onHalted();
   }
-  setStatus(NodeStatus::IDLE);
+  resetStatus();  // might be redundant
 }
 
-NodeStatus BT::AsyncActionNode::executeTick()
+NodeStatus BT::ThreadedAction::executeTick()
 {
-    using lock_type = std::unique_lock<std::mutex>;
-    //send signal to other thread.
-    // The other thread is in charge for changing the status
-    if (status() == NodeStatus::IDLE)
-    {
-        setStatus( NodeStatus::RUNNING );
-        halt_requested_ = false;
-        thread_handle_ = std::async(std::launch::async, [this]() {
+  using lock_type = std::unique_lock<std::mutex>;
+  //send signal to other thread.
+  // The other thread is in charge for changing the status
+  if(status() == NodeStatus::IDLE)
+  {
+    setStatus(NodeStatus::RUNNING);
+    halt_requested_ = false;
+    thread_handle_ = std::async(std::launch::async, [this]() {
+      try
+      {
+        auto status = tick();
+        if(!isHaltRequested())
+        {
+          setStatus(status);
+        }
+      }
+      catch(std::exception&)
+      {
+        std::cerr << "\nUncaught exception from tick(): [" << registrationName() << "/"
+                  << name() << "]\n"
+                  << std::endl;
+        // Set the exception pointer and the status atomically.
+        const lock_type l(mutex_);
+        exptr_ = std::current_exception();
+        setStatus(BT::NodeStatus::IDLE);
+      }
+      emitWakeUpSignal();
+    });
+  }
 
-            try {
-                setStatus(tick());
-            }
-            catch (std::exception&)
-            {
-                std::cerr << "\nUncaught exception from the method tick(): ["
-                          << registrationName() << "/" << name() << "]\n" << std::endl;
-                // Set the exception pointer and the status atomically.
-                lock_type l(m_);
-                exptr_ = std::current_exception();
-                setStatus(BT::NodeStatus::IDLE);
-            }
-            emitStateChanged();
-        });
-    }
-
-    lock_type l(m_);
-    if( exptr_ )
-    {
-        // The official interface of std::exception_ptr does not define any move
-        // semantics. Thus, we copy and reset exptr_ manually.
-        const auto exptr_copy = exptr_;
-        exptr_ = nullptr;
-        std::rethrow_exception(exptr_copy);
-    }
-    return status();
+  const lock_type l(mutex_);
+  if(exptr_)
+  {
+    // The official interface of std::exception_ptr does not define any move
+    // semantics. Thus, we copy and reset exptr_ manually.
+    const auto exptr_copy = exptr_;
+    exptr_ = nullptr;
+    std::rethrow_exception(exptr_copy);
+  }
+  return status();
 }
 
-void AsyncActionNode::halt()
+void ThreadedAction::halt()
 {
-    halt_requested_.store(true);
+  halt_requested_.store(true);
 
-    if( thread_handle_.valid() ){
-        thread_handle_.wait();
-    }
-    thread_handle_ = {};
+  if(thread_handle_.valid())
+  {
+    thread_handle_.wait();
+  }
+  thread_handle_ = {};
+  resetStatus();  // might be redundant
 }

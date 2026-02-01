@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2025 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,68 +11,93 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp_v3/controls/fallback_node.h"
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/controls/fallback_node.h"
+
 namespace BT
 {
-
-FallbackNode::FallbackNode(const std::string& name)
-    : ControlNode::ControlNode(name, {} )
-    ,current_child_idx_(0)
+FallbackNode::FallbackNode(const std::string& name, bool make_asynch)
+  : ControlNode::ControlNode(name, {}), current_child_idx_(0), asynch_(make_asynch)
 {
+  if(asynch_)
+  {
+    setRegistrationID("AsyncFallback");
+  }
+  else
+  {
     setRegistrationID("Fallback");
+  }
 }
 
 NodeStatus FallbackNode::tick()
 {
-    const size_t children_count = children_nodes_.size();
+  const size_t children_count = children_nodes_.size();
 
-    setStatus(NodeStatus::RUNNING);
+  if(!isStatusActive(status()))
+  {
+    skipped_count_ = 0;
+  }
 
-    while (current_child_idx_ < children_count)
+  setStatus(NodeStatus::RUNNING);
+
+  while(current_child_idx_ < children_count)
+  {
+    TreeNode* current_child_node = children_nodes_[current_child_idx_];
+
+    auto prev_status = current_child_node->status();
+    const NodeStatus child_status = current_child_node->executeTick();
+
+    switch(child_status)
     {
-        TreeNode* current_child_node = children_nodes_[current_child_idx_];
-        const NodeStatus child_status = current_child_node->executeTick();
-
-        switch (child_status)
-        {
-            case NodeStatus::RUNNING:
-            {
-                return child_status;
-            }
-            case NodeStatus::SUCCESS:
-            {
-                haltChildren();
-                current_child_idx_ = 0;
-                return child_status;
-            }
-            case NodeStatus::FAILURE:
-            {
-                current_child_idx_++;
-            }
-            break;
-
-            case NodeStatus::IDLE:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
-        }   // end switch
-    }       // end while loop
-
-    // The entire while loop completed. This means that all the children returned FAILURE.
-    if (current_child_idx_ == children_count)
-    {
-        haltChildren();
+      case NodeStatus::RUNNING: {
+        return child_status;
+      }
+      case NodeStatus::SUCCESS: {
+        resetChildren();
         current_child_idx_ = 0;
-    }
+        return child_status;
+      }
+      case NodeStatus::FAILURE: {
+        current_child_idx_++;
+        // Return the execution flow if the child is async,
+        // to make this interruptible.
+        if(asynch_ && requiresWakeUp() && prev_status == NodeStatus::IDLE &&
+           current_child_idx_ < children_count)
+        {
+          emitWakeUpSignal();
+          return NodeStatus::RUNNING;
+        }
+      }
+      break;
+      case NodeStatus::SKIPPED: {
+        // It was requested to skip this node
+        current_child_idx_++;
+        skipped_count_++;
+      }
+      break;
+      case NodeStatus::IDLE: {
+        throw LogicError("[", name(), "]: A children should not return IDLE");
+      }
+    }  // end switch
+  }    // end while loop
 
-    return NodeStatus::FAILURE;
+  // The entire while loop completed. This means that all the children returned FAILURE.
+  const bool all_children_skipped = (skipped_count_ == children_count);
+  if(current_child_idx_ == children_count)
+  {
+    resetChildren();
+    current_child_idx_ = 0;
+    skipped_count_ = 0;
+  }
+
+  // Skip if ALL the nodes have been skipped
+  return (all_children_skipped) ? NodeStatus::SKIPPED : NodeStatus::FAILURE;
 }
 
 void FallbackNode::halt()
 {
-    current_child_idx_ = 0;
-    ControlNode::halt();
+  current_child_idx_ = 0;
+  skipped_count_ = 0;
+  ControlNode::halt();
 }
 
-}
+}  // namespace BT

@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Davide Faconti, Eurecat -  All Rights Reserved
+/* Copyright (C) 2020-2025 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -10,57 +10,90 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp_v3/controls/reactive_fallback.h"
+#include "behaviortree_cpp/controls/reactive_fallback.h"
 
 namespace BT
 {
 
+bool ReactiveFallback::throw_if_multiple_running = false;
+
+void ReactiveFallback::EnableException(bool enable)
+{
+  ReactiveFallback::throw_if_multiple_running = enable;
+}
+
 NodeStatus ReactiveFallback::tick()
 {
-    size_t failure_count = 0;
+  bool all_skipped = true;
+  if(status() == NodeStatus::IDLE)
+  {
+    running_child_ = -1;
+  }
+  setStatus(NodeStatus::RUNNING);
 
-    for (size_t index = 0; index < childrenCount(); index++)
+  for(size_t index = 0; index < childrenCount(); index++)
+  {
+    TreeNode* current_child_node = children_nodes_[index];
+    const NodeStatus child_status = current_child_node->executeTick();
+
+    // switch to RUNNING state as soon as you find an active child
+    all_skipped &= (child_status == NodeStatus::SKIPPED);
+
+    switch(child_status)
     {
-        TreeNode* current_child_node = children_nodes_[index];
-        const NodeStatus child_status = current_child_node->executeTick();
-
-        switch (child_status)
+      case NodeStatus::RUNNING: {
+        // reset the previous children, to make sure that they are
+        // in IDLE state the next time we tick them
+        for(size_t i = 0; i < childrenCount(); i++)
         {
-            case NodeStatus::RUNNING:
-            {
-                for(size_t i=index+1; i < childrenCount(); i++)
-                {
-                    haltChild(i);
-                }
-                return NodeStatus::RUNNING;
-            }
+          if(i != index)
+          {
+            haltChild(i);
+          }
+        }
+        if(running_child_ == -1)
+        {
+          running_child_ = static_cast<int>(index);
+        }
+        else if(throw_if_multiple_running && running_child_ != static_cast<int>(index))
+        {
+          throw LogicError("[ReactiveFallback]: only a single child can return RUNNING.\n"
+                           "This throw can be disabled with "
+                           "ReactiveFallback::EnableException(false)");
+        }
+        return NodeStatus::RUNNING;
+      }
 
-            case NodeStatus::FAILURE:
-            {
-                failure_count++;
-            }break;
+      case NodeStatus::FAILURE:
+        break;
 
-            case NodeStatus::SUCCESS:
-            {
-                haltChildren();
-                return NodeStatus::SUCCESS;
-            }
+      case NodeStatus::SUCCESS: {
+        resetChildren();
+        return NodeStatus::SUCCESS;
+      }
 
-            case NodeStatus::IDLE:
-            {
-                throw LogicError("A child node must never return IDLE");
-            }
-        }   // end switch
-    } //end for
+      case NodeStatus::SKIPPED: {
+        // to allow it to be skipped again, we must reset the node
+        haltChild(index);
+      }
+      break;
 
-    if( failure_count == childrenCount() )
-    {
-        haltChildren();
-        return NodeStatus::FAILURE;
-    }
+      case NodeStatus::IDLE: {
+        throw LogicError("[", name(), "]: A children should not return IDLE");
+      }
+    }  // end switch
+  }    //end for
 
-    return NodeStatus::RUNNING;
+  resetChildren();
+
+  // Skip if ALL the nodes have been skipped
+  return all_skipped ? NodeStatus::SKIPPED : NodeStatus::FAILURE;
 }
 
+void ReactiveFallback::halt()
+{
+  running_child_ = -1;
+  ControlNode::halt();
 }
 
+}  // namespace BT

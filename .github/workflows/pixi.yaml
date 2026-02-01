@@ -1,0 +1,27 @@
+name: Pixi (conda)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pixi_conda_build:
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Pixi is the tool used to create/manage conda environment
+      - uses: actions/checkout@v6
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.40.3
+      - name: Build
+        run: pixi run build
+      - name: Run tests
+        run: pixi run test

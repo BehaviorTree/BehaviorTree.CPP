@@ -1,134 +1,94 @@
 ![License MIT](https://img.shields.io/github/license/BehaviorTree/BehaviorTree.CPP?color=blue)
-![Version](https://img.shields.io/badge/version-3.7-blue.svg)
-[![cmake](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake.yml)
-[![ros1](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros1/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros1)
-[![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/workflows/ros2/badge.svg?branch=master)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions?query=workflow%3Aros2)
-[![LGTM Grade](https://img.shields.io/lgtm/grade/cpp/github/BehaviorTree/BehaviorTree.CPP)](https://lgtm.com/projects/g/BehaviorTree/BehaviorTree.CPP/context:cpp)
-![Discourse topics](https://img.shields.io/discourse/topics?server=https%3A%2F%2Fdiscourse.behaviortree.dev)
+[![conan Ubuntu](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_ubuntu.yml)
+[![conan Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
+[![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/ros2.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/ros2.yaml)
+[![pixi (Conda)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml)
+[![codecov](https://codecov.io/github/BehaviorTree/BehaviorTree.CPP/graph/badge.svg)](https://app.codecov.io/github/BehaviorTree/BehaviorTree.CPP)
 
-# BehaviorTree.CPP
+# BehaviorTree.CPP 4.8
 
-<p align="center"><img src="docs/images/ReadTheDocs.png"></p>
+<p align="center"><img width=350 src="animated.svg"></p>
 
-This  __C++ 14__ library provides a framework to create BehaviorTrees.
+This  __C++ 17__ library provides a framework to create BehaviorTrees.
 It was designed to be flexible, easy to use, reactive and fast.
 
 Even if our main use-case is __robotics__, you can use this library to build
-__AI for games__, or to replace Finite State Machines in your application.
+__AI for games__, or to replace Finite State Machines.
 
-There are few features that make __BehaviorTree.CPP__ unique, when compared to other implementations:
+There are few features which make __BehaviorTree.CPP__ unique, when compared to other implementations:
 
 - It makes __asynchronous Actions__, i.e. non-blocking, a first-class citizen.
 
-- You can build __reactive__ behaviors that execute multiple Actions concurrently.
+- You can build __reactive__ behaviors that execute multiple Actions concurrently (orthogonality).
 
-- Trees are defined using a Domain Specific Scripting __scripting language__ (based on XML), and can be loaded at run-time; in other words, even if written in C++, Trees are _not_ hard-coded.
+- Trees are defined using a Domain Specific __scripting language__ (based on XML), and can be loaded at run-time; in other words, even if written in C++, the morphology of the Trees is _not_ hard-coded.
 
 - You can statically link your custom TreeNodes or convert them into __plugins__
-which can be loaded at run-time.
+and load them at run-time.
 
 - It provides a type-safe and flexible mechanism to do __Dataflow__ between
   Nodes of the Tree.
 
-- It includes a __logging/profiling__ infrastructure that allows the user 
+- It includes a __logging/profiling__ infrastructure that allows the user
 to visualize, record, replay and analyze state transitions.
 
-- Last but not least: it is well [documented](https://www.behaviortree.dev/)!
-
-## Documentation
+## Documentation and Community
 
 You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
 
-To find more details about the conceptual ideas that make this implementation different from others,
-you can read the [final deliverable of the project MOOD2Be](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/MOOD2Be_final_report.pdf).
-
-## Forum and Community
+An automatically generated API documentation can be found here: https://www.behaviortree.dev/
 
 If the documentation doesn't answer your questions and/or you want to
-connect with the other **BT.CPP** users, visit https://discourse.behaviortree.dev/
-
-## Commercial support
-
-Are you using BT.CPP in your commercial product and you need technical support / consulting?
-You can get in touch at dfaconti@aurynrobotics.com and we will happy to discuss your use case and needs.
-
-# Design principles
-
-The main goal of this project is to create a Behavior Tree implementation
-that uses the principles of Model Driven Development to separate the role 
-of the __Component Developer__ from the __Behavior Designer__.
-
-In practice, this means that:
-
-- Custom TreeNodes must be reusable building blocks. 
- You should be able to implement them once and reuse them to build many behaviors.
-
-- To build a Behavior Tree out of TreeNodes, the Behavior Designer must 
-not need to read nor modify the C++ source code of a given TreeNode.
-
-- Complex Behaviours must be composable using Subtrees
-
-Many of the features and, sometimes, the apparent limitations of this library, might be a consequence 
-of this design principle. 
-
-For instance, having a scoped BlackBoard, visible only in a portion of the tree, is particularly important 
-to avoid "name pollution" and allow the creation of large scale trees.
+connect with the other **BT.CPP** users, visit [our forum](https://github.com/BehaviorTree/BehaviorTree.CPP/discussions)
 
 # GUI Editor
 
-Editing a BehaviorTree is as simple as editing a XML file in your favourite text editor.
+Editing a BehaviorTree is as simple as editing an XML file in your favorite text editor.
 
-If you are looking for a more fancy graphical user interface (and I know you do) check 
-[Groot](https://github.com/BehaviorTree/Groot) out.
+If you are looking for a more fancy graphical user interface (and I know you do) check
+[Groot2](https://www.behaviortree.dev/groot) out.
 
 ![Groot screenshot](docs/groot-screenshot.png)
 
-## Watch Groot and BehaviorTree.CPP in action
+# How to compile
 
-Click on the following image to see a short video of how the C++ library and
-the graphic user interface are used to design and monitor a Behavior Tree.
+**BT.CPP** requires a compile that supports c++17.
 
-[![MOOD2Be](docs/video_MOOD2Be.png)](https://vimeo.com/304651183)
+Three build systems are supported:
 
-# How to compile (plain old cmake)
+- **colcon (ament)**, if you use ROS2
+- **conan** otherwise (Linux/Windows).
+- **straight cmake** if you want to be personally responsible for dependencies :)
 
-On Ubuntu, you are encourage to install the following dependencies:
+Compiling with [conan](https://conan.io/):
 
-     sudo apt-get install libzmq3-dev libboost-dev
-     
-Other dependencies are already included in the __3rdparty__ folder.
+> [!NOTE]
+> Conan builds require CMake 3.23 or newer.
 
-To compile and install the library, from the BehaviorTree.CPP folder, execute:
+Assuming that you are in the **root** directory of `BehaviorTree.CPP`:
 
-     mkdir build; cd build
-     cmake ..
-     make
-     sudo make install
-
-If you want to use BT.CPp in your application a typical **CMakeLists.txt** file 
-will look like this:
-
-```cmake
-cmake_minimum_required(VERSION 3.5)
-
-project(hello_BT)
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-find_package(behaviortree_cpp_v3)
-
-add_executable(${PROJECT_NAME} "hello_BT.cpp")
-target_link_libraries(${PROJECT_NAME} BT::behaviortree_cpp_v3)
+```
+conan install . -s build_type=Release --build=missing
+cmake --preset conan-release
+cmake --build --preset conan-release
 ```
 
-## ROS1 or ROS2 users (Catkin/Ament)
+If you have dependencies such as ZeroMQ and SQlite already installed and you don't want to
+use conan, simply type:
 
-You can easily install the package with the command
+```
+mkdir build_release
+cmake -S . -B build_release
+cmake --build build_release --parallel
+```
 
-      sudo apt-get install ros-$ROS_DISTRO-behaviortree-cpp-v3
-      
-If you want to compile it with catkin, you __must__ include this package 
-to your catkin workspace.
+If you want to build in a [pixi](https://pixi.sh/) project (conda virtual environment).
+```
+pixi run build
+```
+
+If you want to use BT.CPP in your application, please refer to the
+example here: https://github.com/BehaviorTree/btcpp_sample .
 
 ## Installing BehaviorTree.CPP (vcpkg)
 
@@ -144,36 +104,36 @@ The behaviortree-cpp port in vcpkg is kept up to date by Microsoft team members 
 
 # Acknowledgement
 
-This library was initially developed at  **Eurecat - https://eurecat.org/en/** (main author, Davide Faconti) in a joint effort
-with the **Italian Institute of Technology** (Michele Colledanchise).
+Are you using BT.CPP in your commercial product and do you need technical support / consulting?
+You can contact the primary author, **dfaconti@aurynrobotics.com**, to discuss your use case and needs.
 
-This software is one of the main components of [MOOD2Be](https://eurecat.org/en/portfolio-items/mood2be/),
-which is one of the six **Integrated Technical Projects (ITPs)** selected from the
-[RobMoSys first open call](https://robmosys.eu/itp/). Therefore, MOOD2Be has been supported by the European Horizon2020 project RobMoSys. This software is RobMoSys conformant. 
+## Previous version
 
-![RobMoSys Conformant](docs/robmosys_conformant_logo.png)
+Version 3.8 of the software can be found in the branch
+[v3.8](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/v3.8).
 
-# Further readings
+That branch might receive bug fixes, but the new features will be implemented
+only in the master branch.
 
-- Introductory article: [Behavior trees for AI: How they work](http://www.gamasutra.com/blogs/ChrisSimpson/20140717/221339/Behavior_trees_for_AI_How_they_work.php)
+# Star History
 
-- **How Behavior Trees Modularize Hybrid Control Systems and Generalize 
-Sequential Behavior Compositions, the Subsumption Architecture,
-and Decision Trees.** 
-Michele Colledanchise and Petter Ogren. IEEE Transaction on Robotics 2017.
+[![Star History Chart](https://api.star-history.com/svg?repos=BehaviorTree/BehaviorTree.CPP&type=Date)](https://star-history.com/#BehaviorTree/BehaviorTree.CPP&Date)
 
-- **Behavior Trees in Robotics and AI**, 
-published by CRC Press Taylor & Francis, available for purchase
-(ebook and hardcover) on the CRC Press Store or Amazon.
+# Contributors
 
-The Preprint version (free) is available here: https://arxiv.org/abs/1709.00084
+<a href="https://github.com/BehaviorTree/BehaviorTree.CPP/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=BehaviorTree/BehaviorTree.CPP" />
+</a>
 
 # License
 
 The MIT License (MIT)
 
+Copyright (c) 2019-2025 Davide Faconti
+
+Copyright (c) 2018-2019 Davide Faconti, Eurecat
+
 Copyright (c) 2014-2018 Michele Colledanchise
-Copyright (c) 2018-2021 Davide Faconti
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -11,12 +11,12 @@ theme:
   feature:
     tabs: true
   palette:
-    primary: indigo  
+    primary: indigo
     accent: Deep Purple
   font:
     text: Ubuntu
     code: Roboto Mono
-  
+
 repo_name: 'BehaviorTree.CPP'
 repo_url: 'https://github.com/BehaviorTree/BehaviorTree.CPP'
 
@@ -30,7 +30,7 @@ markdown_extensions:
 
 nav:
     - Home: index.md
-    
+
     - Learn the basics:
       - Introduction to BT: BT_basics.md
       - Getting started:    getting_started.md
@@ -38,8 +38,8 @@ nav:
       - Fallback Nodes:     FallbackNode.md
       - Decorators Nodes:   DecoratorNode.md
       - The XML format:     xml_format.md
-       
-    - Tutorials: 
+
+    - Tutorials:
 
       - "Summary":                             tutorials_summary.md
       - "Tutorial 1: Create a Tree":           tutorial_01_first_tree.md
@@ -51,8 +51,7 @@ nav:
       - "Tutorial 7: Load multiple XMLs":      tutorial_07_multiple_xml.md
       - "Tutorial 8: Additional arguments":    tutorial_08_additional_args.md
       - "Tutorial 9: Coroutines":              tutorial_09_coroutines.md
-    
+
     - Application Notes:
       - "Concurrency and Asynchronous Nodes": asynchronous_nodes.md
       - "How to Wrap legacy code": example_01_legacy_wrap.md
-    

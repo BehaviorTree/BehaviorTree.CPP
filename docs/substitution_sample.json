@@ -1,0 +1,15 @@
+{
+  "TestNodeConfigs": {
+    "MyTest": {
+      "async_delay": 2000,
+      "return_status": "SUCCESS",
+      "post_script": "msg ='message SUBSTITUED'"
+    }
+  },
+
+  "SubstitutionRules": {
+    "mysub/action_*": "TestAction",
+    "talk": "TestSaySomething",
+    "last_action": "MyTest"
+  }
+}

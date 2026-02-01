@@ -1,4 +1,4 @@
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 using namespace BT;
 
@@ -6,79 +6,81 @@ using namespace BT;
  *  type is not std::string.
 */
 
-
 // We want to be able to use this custom type
-struct Position2D { double x,y; };
+struct Position2D
+{
+  double x, y;
+};
 
 // It is recommended (or, in some cases, mandatory) to define a template
 // specialization of convertFromString that converts a string to Position2D.
 namespace BT
 {
-template <> inline Position2D convertFromString(StringView str)
+template <>
+inline Position2D convertFromString(StringView str)
 {
-    printf("Converting string: \"%s\"\n", str.data() );
+  printf("Converting string: \"%s\"\n", str.data());
 
-    // real numbers separated by semicolons
-    auto parts = splitString(str, ';');
-    if (parts.size() != 2)
-    {
-        throw RuntimeError("invalid input)");
-    }
-    else{
-        Position2D output;
-        output.x     = convertFromString<double>(parts[0]);
-        output.y     = convertFromString<double>(parts[1]);
-        return output;
-    }
+  // real numbers separated by semicolons
+  auto parts = splitString(str, ';');
+  if(parts.size() != 2)
+  {
+    throw RuntimeError("invalid input)");
+  }
+  else
+  {
+    Position2D output;
+    output.x = convertFromString<double>(parts[0]);
+    output.y = convertFromString<double>(parts[1]);
+    return output;
+  }
 }
-} // end namespace BT
+}  // end namespace BT
 
-
-class CalculateGoal: public SyncActionNode
+class CalculateGoal : public SyncActionNode
 {
 public:
-    CalculateGoal(const std::string& name, const NodeConfiguration& config):
-        SyncActionNode(name,config)
-    {}
+  CalculateGoal(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
 
-    NodeStatus tick() override
-    {
-        Position2D mygoal = {1.1, 2.3};
-        setOutput("goal", mygoal);
-        return NodeStatus::SUCCESS;
-    }
-    static PortsList providedPorts()
-    {
-        return { OutputPort<Position2D>("goal") };
-    }
+  NodeStatus tick() override
+  {
+    Position2D mygoal = { 1.1, 2.3 };
+    setOutput("goal", mygoal);
+    return NodeStatus::SUCCESS;
+  }
+  static PortsList providedPorts()
+  {
+    return { OutputPort<Position2D>("goal") };
+  }
 };
 
-
-class PrintTarget: public SyncActionNode
+class PrintTarget : public SyncActionNode
 {
 public:
-    PrintTarget(const std::string& name, const NodeConfiguration& config):
-        SyncActionNode(name,config)
-    {}
+  PrintTarget(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
 
-    NodeStatus tick() override
+  NodeStatus tick() override
+  {
+    auto res = getInput<Position2D>("target");
+    if(!res)
     {
-        auto res = getInput<Position2D>("target");
-        if( !res )
-        {
-            throw RuntimeError("error reading port [target]:", res.error() );
-        }
-        Position2D goal = res.value();
-        printf("Target positions: [ %.1f, %.1f ]\n", goal.x, goal.y );
-        return NodeStatus::SUCCESS;
+      throw RuntimeError("error reading port [target]:", res.error());
     }
+    Position2D goal = res.value();
+    printf("Target positions: [ %.1f, %.1f ]\n", goal.x, goal.y);
+    return NodeStatus::SUCCESS;
+  }
 
-    static PortsList providedPorts()
-    {
-        // Optionally, a port can have a human readable description
-        const char*  description = "Simply print the target on console...";
-        return { InputPort<Position2D>("target", description) };
-    }
+  static PortsList providedPorts()
+  {
+    // Optionally, a port can have a human readable description
+    const char* description = "Simply print the target on console...";
+    return { InputPort<Position2D>("target", description) };
+  }
 };
 
 //----------------------------------------------------------------
@@ -91,7 +93,7 @@ public:
 *  2) Call PrintTarget. The input "target" will be read from the Blackboard
 *     entry "GoalPosition".
 *
-*  3) Use the built-in action SetBlackboard to write the key "OtherGoal".
+*  3) Use the built-in action Script to write the key "OtherGoal".
 *     A conversion from string to Position2D will be done under the hood.
 *
 *  4) Call PrintTarget. The input "goal" will be read from the Blackboard
@@ -101,12 +103,12 @@ public:
 // clang-format off
 static const char* xml_text = R"(
 
- <root main_tree_to_execute = "MainTree" >
+ <root BTCPP_format="4" >
      <BehaviorTree ID="MainTree">
         <Sequence name="root">
             <CalculateGoal   goal="{GoalPosition}" />
             <PrintTarget     target="{GoalPosition}" />
-            <SetBlackboard   output_key="OtherGoal" value="-1;3" />
+            <Script          code="OtherGoal='-1;3'" />
             <PrintTarget     target="{OtherGoal}" />
         </Sequence>
      </BehaviorTree>
@@ -117,21 +119,21 @@ static const char* xml_text = R"(
 
 int main()
 {
-    using namespace BT;
+  using namespace BT;
 
-    BehaviorTreeFactory factory;
-    factory.registerNodeType<CalculateGoal>("CalculateGoal");
-    factory.registerNodeType<PrintTarget>("PrintTarget");
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<CalculateGoal>("CalculateGoal");
+  factory.registerNodeType<PrintTarget>("PrintTarget");
 
-    auto tree = factory.createTreeFromText(xml_text);
-    tree.tickRoot();
+  auto tree = factory.createTreeFromText(xml_text);
 
-/* Expected output:
+  tree.tickWhileRunning();
+
+  /* Expected output:
  *
     Target positions: [ 1.1, 2.3 ]
     Converting string: "-1;3"
     Target positions: [ -1.0, 3.0 ]
 */
-    return 0;
+  return 0;
 }
-

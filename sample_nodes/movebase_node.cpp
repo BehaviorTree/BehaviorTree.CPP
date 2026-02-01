@@ -1,39 +1,47 @@
 #include "movebase_node.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
+
+#include "behaviortree_cpp/bt_factory.h"
 
 // This function must be implemented in the .cpp file to create
 // a plugin that can be loaded at run-time
 BT_REGISTER_NODES(factory)
 {
-    factory.registerNodeType<MoveBaseAction>("MoveBase");
+  factory.registerNodeType<MoveBaseAction>("MoveBase");
 }
 
-BT::NodeStatus MoveBaseAction::tick()
+BT::NodeStatus MoveBaseAction::onStart()
 {
-    Pose2D goal;
-    if ( !getInput<Pose2D>("goal", goal))
-    {
-        throw BT::RuntimeError("missing required input [goal]");
-    }
+  if(!getInput<Pose2D>("goal", _goal))
+  {
+    throw BT::RuntimeError("missing required input [goal]");
+  }
+  printf("[ MoveBase: SEND REQUEST ]. goal: x=%.1f y=%.1f theta=%.1f\n", _goal.x, _goal.y,
+         _goal.theta);
 
-    printf("[ MoveBase: STARTED ]. goal: x=%.f y=%.1f theta=%.2f\n", goal.x, goal.y, goal.theta);
+  // We use this counter to simulate an action that takes a certain
+  // amount of time to be completed (220 ms)
+  _completion_time = chr::system_clock::now() + chr::milliseconds(220);
 
-    _halt_requested.store(false);
-    int count = 0;
+  return BT::NodeStatus::RUNNING;
+}
 
-    // Pretend that "computing" takes 250 milliseconds.
-    // It is up to you to check periodically _halt_requested and interrupt
-    // this tick() if it is true.
-    while (!_halt_requested && count++ < 25)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
+BT::NodeStatus MoveBaseAction::onRunning()
+{
+  // Pretend that we are checking if the reply has been received
+  // you don't want to block inside this function too much time.
+  std::this_thread::sleep_for(chr::milliseconds(10));
 
+  // Pretend that, after a certain amount of time,
+  // we have completed the operation
+  if(chr::system_clock::now() >= _completion_time)
+  {
     std::cout << "[ MoveBase: FINISHED ]" << std::endl;
-    return _halt_requested ? BT::NodeStatus::FAILURE : BT::NodeStatus::SUCCESS;
+    return BT::NodeStatus::SUCCESS;
+  }
+  return BT::NodeStatus::RUNNING;
 }
 
-void MoveBaseAction::halt()
+void MoveBaseAction::onHalted()
 {
-    _halt_requested.store(true);
+  printf("[ MoveBase: ABORTED ]");
 }

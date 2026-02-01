@@ -1,5 +1,5 @@
 /* Copyright (C) 2015-2018 Michele Colledanchise -  All Rights Reserved
- * Copyright (C) 2018-2020 Davide Faconti, Eurecat -  All Rights Reserved
+ * Copyright (C) 2018-2025 Davide Faconti, Eurecat -  All Rights Reserved
 *
 *   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 *   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
@@ -11,45 +11,42 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "behaviortree_cpp_v3/decorators/inverter_node.h"
+#include "behaviortree_cpp/decorators/inverter_node.h"
 
 namespace BT
 {
-InverterNode::InverterNode(const std::string& name) :
-    DecoratorNode(name, {} )
+InverterNode::InverterNode(const std::string& name) : DecoratorNode(name, {})
 {
-    setRegistrationID("Inverter");
+  setRegistrationID("Inverter");
 }
 
 NodeStatus InverterNode::tick()
 {
-    setStatus(NodeStatus::RUNNING);
+  setStatus(NodeStatus::RUNNING);
+  const NodeStatus child_status = child_node_->executeTick();
 
-    const NodeStatus child_state = child_node_->executeTick();
-
-    switch (child_state)
-    {
-        case NodeStatus::SUCCESS:
-        {
-            return NodeStatus::FAILURE;
-        }
-
-        case NodeStatus::FAILURE:
-        {
-            return NodeStatus::SUCCESS;
-        }
-
-        case NodeStatus::RUNNING:
-        {
-            return NodeStatus::RUNNING;
-        }
-
-        default:
-        {
-            throw LogicError("A child node must never return IDLE");
-        }
+  switch(child_status)
+  {
+    case NodeStatus::SUCCESS: {
+      resetChild();
+      return NodeStatus::FAILURE;
     }
-    //return status();
+
+    case NodeStatus::FAILURE: {
+      resetChild();
+      return NodeStatus::SUCCESS;
+    }
+
+    case NodeStatus::RUNNING:
+    case NodeStatus::SKIPPED: {
+      return child_status;
+    }
+
+    case NodeStatus::IDLE: {
+      throw LogicError("[", name(), "]: A children should not return IDLE");
+    }
+  }
+  return status();
 }
 
-}
+}  // namespace BT

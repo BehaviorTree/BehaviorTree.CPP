@@ -1,0 +1,86 @@
+namespace Serialization;
+
+enum NodeStatus : byte {
+    IDLE = 0,
+    RUNNING,
+    SUCCESS,
+    FAILURE
+}
+
+enum NodeType : byte {
+    UNDEFINED = 0,
+    ACTION,
+    CONDITION,
+    CONTROL,
+    DECORATOR,
+    SUBTREE
+}
+
+enum PortDirection : byte {
+    INPUT = 0,
+    OUTPUT,
+    INOUT
+}
+
+table PortModel
+{
+  port_name : string;
+  direction : PortDirection;
+  type_info : string;
+  description: string;
+}
+
+table PortConfig
+{
+  port_name : string;
+  remap : string;
+}
+
+table TreeNode
+{
+  uid           : uint16;
+  children_uid  : [uint16];
+  status        : NodeStatus;
+  instance_name : string   (required);
+  registration_name : string (required);
+  port_remaps  : [PortConfig];
+}
+
+table NodeModel
+{
+  registration_name : string (required);
+  type : NodeType;
+  ports : [PortModel];
+}
+
+
+table BehaviorTree
+{
+  root_uid : uint16;
+  nodes    : [TreeNode];
+  node_models : [NodeModel];
+}
+
+struct Timestamp
+{
+  usec_since_epoch : uint64;
+}
+
+
+struct StatusChange
+{
+  uid         : uint16;
+  prev_status : NodeStatus;
+  status      : NodeStatus;
+  timestamp   : Timestamp;
+}
+
+table StatusChangeLog
+{
+    behavior_tree  : BehaviorTree;
+    state_changes  : [StatusChange];
+}
+
+root_type StatusChangeLog;
+
+root_type BehaviorTree;

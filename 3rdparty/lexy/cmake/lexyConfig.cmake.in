@@ -1,0 +1,8 @@
+# Copyright (C) 2020-2024 Jonathan Müller and lexy contributors
+# SPDX-License-Identifier: BSL-1.0
+
+# lexy CMake configuration file.
+
+@PACKAGE_INIT@
+
+include ("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
