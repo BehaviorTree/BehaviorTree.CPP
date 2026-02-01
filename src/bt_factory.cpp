@@ -106,6 +106,10 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
 
 BehaviorTreeFactory::~BehaviorTreeFactory() = default;
 
+BehaviorTreeFactory::BehaviorTreeFactory(BehaviorTreeFactory&& other) noexcept = default;
+BehaviorTreeFactory&
+BehaviorTreeFactory::operator=(BehaviorTreeFactory&& other) noexcept = default;
+
 bool BehaviorTreeFactory::unregisterBuilder(const std::string& ID)
 {
   if(builtinNodes().count(ID) != 0)
