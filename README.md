@@ -90,7 +90,19 @@ pixi run build
 If you want to use BT.CPP in your application, please refer to the
 example here: https://github.com/BehaviorTree/btcpp_sample .
 
-# Commercial support
+## Installing BehaviorTree.CPP (vcpkg)
+
+Alternatively, you can build and install behaviortree-cpp using [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    ./vcpkg install behaviortree-cpp
+
+The behaviortree-cpp port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
+#  Commercial support
 
 Are you using BT.CPP in your commercial product and do you need technical support / consulting?
 You can contact the primary author, **dfaconti@aurynrobotics.com**, to discuss your use case and needs.
