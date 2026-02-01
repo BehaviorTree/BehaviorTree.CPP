@@ -870,7 +870,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
     // If a substitution rule replaced the SubTree with a different node
     // (e.g. a TestNode), the dynamic_cast will return nullptr.
     auto subtree_node = dynamic_cast<SubTreeNode*>(new_node.get());
-    if(subtree_node)
+    if(subtree_node != nullptr)
     {
       subtree_node->setSubtreeID(type_ID);
     }
