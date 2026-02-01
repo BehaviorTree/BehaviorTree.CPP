@@ -12,6 +12,7 @@ set(BT_TESTS
   gtest_enums.cpp
   gtest_factory.cpp
   gtest_fallback.cpp
+  gtest_groot2_publisher.cpp
   gtest_parallel.cpp
   gtest_preconditions.cpp
   gtest_ports.cpp
