@@ -3,6 +3,7 @@
 [![conan Windows](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/cmake_windows.yml)
 [![ros2](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/ros2.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/ros2.yaml)
 [![pixi (Conda)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml)
+[![codecov](https://codecov.io/github/BehaviorTree/BehaviorTree.CPP/graph/badge.svg)](https://app.codecov.io/github/BehaviorTree/BehaviorTree.CPP)
 
 # BehaviorTree.CPP 4.8
 
