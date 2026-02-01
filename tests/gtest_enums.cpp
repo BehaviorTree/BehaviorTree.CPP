@@ -240,3 +240,68 @@ TEST(Enums, SubtreeRemapping)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   ASSERT_EQ(tree.rootBlackboard()->get<BatteryStatus>("fault_status"), LOW_BATTERY);
 }
+
+// Issue #948: enums with a convertFromString<T> specialization should be parsed
+// correctly via getInput, without requiring ScriptingEnumsRegistry.
+class ActionWithNodeType : public SyncActionNode
+{
+public:
+  ActionWithNodeType(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  NodeStatus tick() override
+  {
+    auto res = getInput<NodeType>("type");
+    if(!res)
+    {
+      throw RuntimeError("getInput failed: " + res.error());
+    }
+    parsed_type = res.value();
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { InputPort<NodeType>("type") };
+  }
+
+  NodeType parsed_type = NodeType::UNDEFINED;
+};
+
+TEST(Enums, ParseEnumWithConvertFromString_Issue948)
+{
+  std::string xml_txt = R"(
+    <root BTCPP_format="4" >
+      <BehaviorTree ID="Main">
+        <Sequence>
+          <ActionWithNodeType name="test_action" type="Action"/>
+          <ActionWithNodeType name="test_control" type="Control"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithNodeType>("ActionWithNodeType");
+  // Deliberately NOT registering NodeType in ScriptingEnumsRegistry.
+  // convertFromString<NodeType> exists and should be used as fallback.
+
+  auto tree = factory.createTreeFromText(xml_txt);
+  NodeStatus status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+
+  for(const auto& node : tree.subtrees.front()->nodes)
+  {
+    if(auto typed = dynamic_cast<ActionWithNodeType*>(node.get()))
+    {
+      if(typed->name() == "test_action")
+      {
+        ASSERT_EQ(NodeType::ACTION, typed->parsed_type);
+      }
+      else if(typed->name() == "test_control")
+      {
+        ASSERT_EQ(NodeType::CONTROL, typed->parsed_type);
+      }
+    }
+  }
+}
