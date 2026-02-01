@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <utility>
 #include <new>
+#include <array>
 
 #if defined(PARTICLE)
 #if !defined(__cpp_exceptions) && !defined(ANY_IMPL_NO_EXCEPTIONS) && !defined(ANY_IMPL_EXCEPTIONS)
@@ -211,7 +212,7 @@ private: // Storage and Virtual Method Table
 
     union storage_union
     {
-        using stack_storage_t = typename std::aligned_storage<2 * sizeof(void*), std::alignment_of<void*>::value>::type;
+        struct alignas(void*) stack_storage_t : std::array<std::byte, 2 * sizeof(void*)> {};
 
         void*               dynamic;
         stack_storage_t     stack;      // 2 words for e.g. shared_ptr
