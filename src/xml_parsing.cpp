@@ -21,6 +21,7 @@
 #include <string>
 #include <tuple>
 #include <typeindex>
+#include <unordered_set>
 
 #if defined(_MSVC_LANG) && !defined(__clang__)
 #define __bt_cplusplus (_MSC_VER == 1900 ? 201103L : _MSVC_LANG)
@@ -196,7 +197,8 @@ struct XMLParser::PImpl
   void recursivelyCreateSubtree(const std::string& tree_ID, const std::string& tree_path,
                                 const std::string& prefix_path, Tree& output_tree,
                                 Blackboard::Ptr blackboard,
-                                const TreeNode::Ptr& root_node);
+                                const TreeNode::Ptr& root_node,
+                                std::unordered_set<std::string> ancestors = {});
 
   void getPortsRecursively(const XMLElement* element,
                            std::vector<std::string>& output_ports);
@@ -1000,13 +1002,16 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
   return new_node;
 }
 
-void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
-                                                    const std::string& tree_path,
-                                                    const std::string& prefix_path,
-                                                    Tree& output_tree,
-                                                    Blackboard::Ptr blackboard,
-                                                    const TreeNode::Ptr& root_node)
+void BT::XMLParser::PImpl::recursivelyCreateSubtree(
+    const std::string& tree_ID, const std::string& tree_path,
+    const std::string& prefix_path, Tree& output_tree, Blackboard::Ptr blackboard,
+    const TreeNode::Ptr& root_node, std::unordered_set<std::string> ancestors)
 {
+  if(!ancestors.insert(tree_ID).second)
+  {
+    throw RuntimeError("Recursive behavior tree cycle detected: tree '", tree_ID,
+                       "' references itself (directly or indirectly)");
+  }
   std::function<void(const TreeNode::Ptr&, Tree::Subtree::Ptr, std::string,
                      const XMLElement*)>
       recursiveStep;
@@ -1135,7 +1140,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(const std::string& tree_ID,
       recursivelyCreateSubtree(subtree_ID,
                                subtree_path,        // name
                                subtree_path + "/",  //prefix
-                               output_tree, new_bb, node);
+                               output_tree, new_bb, node, ancestors);
     }
   };
 

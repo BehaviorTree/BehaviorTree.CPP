@@ -732,6 +732,86 @@ TEST(SubTree, SubtreeNameNotRegistered)
   ASSERT_ANY_THROW(factory.registerBehaviorTreeFromText(xml_text));
 }
 
+TEST(SubTree, RecursiveSubtree)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+  <root BTCPP_format="4" >
+      <BehaviorTree ID="MainTree">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="MainTree" />
+         </Sequence>
+      </BehaviorTree>
+  </root>
+ )";
+
+  // clang-format on
+  BehaviorTreeFactory factory;
+
+  ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
+}
+
+TEST(SubTree, RecursiveCycle)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+  <root BTCPP_format="4" main_tree_to_execute="MainTree">
+      <BehaviorTree ID="MainTree">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="TreeA" />
+         </Sequence>
+      </BehaviorTree>
+
+      <BehaviorTree ID="TreeA">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="TreeB" />
+         </Sequence>
+      </BehaviorTree>
+
+      <BehaviorTree ID="TreeB">
+         <Sequence name="root">
+             <AlwaysSuccess/>
+             <SubTree ID="MainTree" />
+         </Sequence>
+      </BehaviorTree>
+  </root>
+ )";
+
+  // clang-format on
+  BehaviorTreeFactory factory;
+
+  ASSERT_ANY_THROW(auto tree = factory.createTreeFromText(xml_text));
+}
+
+TEST(SubTree, SubstringTreeIDsAreNotRecursive)
+{
+  // Verify that tree IDs which are substrings of each other do NOT
+  // incorrectly trigger the recursive cycle detection.
+  // clang-format off
+
+  static const char* xml_text = R"(
+  <root BTCPP_format="4" main_tree_to_execute="Tree">
+      <BehaviorTree ID="Tree">
+         <SubTree ID="TreeABC" />
+      </BehaviorTree>
+
+      <BehaviorTree ID="TreeABC">
+         <AlwaysSuccess/>
+      </BehaviorTree>
+  </root>
+ )";
+
+  // clang-format on
+  BehaviorTreeFactory factory;
+
+  ASSERT_NO_THROW(auto tree = factory.createTreeFromText(xml_text));
+}
+
 // Test for Groot2 issue #56: duplicate _fullpath when multiple subtrees have the same name
 // https://github.com/BehaviorTree/Groot2/issues/56
 //
