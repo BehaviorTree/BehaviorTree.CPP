@@ -426,29 +426,34 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
 
   std::unordered_map<std::string, TestNodeConfig> configs;
 
-  auto test_configs = json.at("TestNodeConfigs");
-  for(auto const& [name, test_config] : test_configs.items())
+  // TestNodeConfigs is optional: users may only have string-based
+  // substitution rules that map to already-registered node types.
+  if(json.contains("TestNodeConfigs"))
   {
-    auto& config = configs[name];
+    auto test_configs = json.at("TestNodeConfigs");
+    for(auto const& [name, test_config] : test_configs.items())
+    {
+      auto& config = configs[name];
 
-    auto return_status = test_config.at("return_status").get<std::string>();
-    config.return_status = convertFromString<NodeStatus>(return_status);
-    if(test_config.contains("async_delay"))
-    {
-      config.async_delay =
-          std::chrono::milliseconds(test_config["async_delay"].get<int>());
-    }
-    if(test_config.contains("post_script"))
-    {
-      config.post_script = test_config["post_script"].get<std::string>();
-    }
-    if(test_config.contains("success_script"))
-    {
-      config.success_script = test_config["success_script"].get<std::string>();
-    }
-    if(test_config.contains("failure_script"))
-    {
-      config.failure_script = test_config["failure_script"].get<std::string>();
+      auto return_status = test_config.at("return_status").get<std::string>();
+      config.return_status = convertFromString<NodeStatus>(return_status);
+      if(test_config.contains("async_delay"))
+      {
+        config.async_delay =
+            std::chrono::milliseconds(test_config["async_delay"].get<int>());
+      }
+      if(test_config.contains("post_script"))
+      {
+        config.post_script = test_config["post_script"].get<std::string>();
+      }
+      if(test_config.contains("success_script"))
+      {
+        config.success_script = test_config["success_script"].get<std::string>();
+      }
+      if(test_config.contains("failure_script"))
+      {
+        config.failure_script = test_config["failure_script"].get<std::string>();
+      }
     }
   }
 
