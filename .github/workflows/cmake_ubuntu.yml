@@ -69,8 +69,8 @@ jobs:
       shell: bash
       run: |
         cmake --preset conan-debug \
-          -DCMAKE_C_FLAGS="--coverage" \
-          -DCMAKE_CXX_FLAGS="--coverage"
+          -DCMAKE_C_FLAGS="--coverage -fprofile-update=atomic" \
+          -DCMAKE_CXX_FLAGS="--coverage -fprofile-update=atomic"
 
     - name: Build
       shell: bash
@@ -83,7 +83,8 @@ jobs:
       run: |
         lcov --capture --directory build/Debug \
              --output-file coverage.info \
-             --ignore-errors mismatch
+             --ignore-errors mismatch \
+             --ignore-errors negative
         lcov --remove coverage.info \
              '/usr/*' \
              '*/3rdparty/*' \
