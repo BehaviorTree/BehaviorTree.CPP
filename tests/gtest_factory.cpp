@@ -460,3 +460,84 @@ TEST(BehaviorTreeFactory, addMetadataToManifest)
   const auto& modified_manifest = factory.manifests().at("SaySomething");
   EXPECT_EQ(modified_manifest.metadata, makeTestMetadata());
 }
+
+// Action node used to reproduce issue #1046 (use-after-free on
+// manifest pointer). It calls getInput() for a port name that is
+// NOT in the XML, so getInputStamped falls through to the
+// manifest lookup.
+class ActionIssue1046 : public BT::SyncActionNode
+{
+public:
+  ActionIssue1046(const std::string& name, const BT::NodeConfig& config)
+    : BT::SyncActionNode(name, config)
+  {}
+
+  BT::NodeStatus tick() override
+  {
+    // "value" is declared in providedPorts() but NOT set in the
+    // XML, so getInput() will look it up in the manifest.
+    // If the manifest pointer is dangling, this is a
+    // use-after-free.
+    int value = 0;
+    auto res = getInput("value", value);
+    // We expect this to fail (no default, not in XML), but it
+    // must not crash.
+    (void)res;
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  static BT::PortsList providedPorts()
+  {
+    return { BT::InputPort<int>("value", "a test port") };
+  }
+};
+
+// Test for issue #1046: heap use-after-free when
+// BehaviorTreeFactory is destroyed before the tree is ticked.
+TEST(BehaviorTreeFactory, FactoryDestroyedBeforeTick)
+{
+  // clang-format off
+  // The XML deliberately does NOT set the "value" port so
+  // that getInput falls through to the manifest to read
+  // the port info.  This triggers the dangling-pointer bug.
+  static const char* xml_text_issue_1046 = R"(
+  <root BTCPP_format="4" >
+    <BehaviorTree ID="Main">
+      <ActionIssue1046/>
+    </BehaviorTree>
+  </root> )";
+  // clang-format on
+
+  BT::Tree tree;
+  {
+    // Factory created in an inner scope
+    BT::BehaviorTreeFactory factory;
+    factory.registerNodeType<ActionIssue1046>("ActionIssue1046");
+    factory.registerBehaviorTreeFromText(xml_text_issue_1046);
+    tree = factory.createTree("Main");
+    // factory is destroyed here
+  }
+
+  // Verify that every node's manifest pointer points into the
+  // tree's own copy, not into freed factory memory.
+  for(const auto& subtree : tree.subtrees)
+  {
+    for(const auto& node : subtree->nodes)
+    {
+      const auto* manifest_ptr =
+          static_cast<const BT::TreeNode*>(node.get())->config().manifest;
+      if(manifest_ptr)
+      {
+        auto it = tree.manifests.find(manifest_ptr->registration_ID);
+        ASSERT_NE(it, tree.manifests.end());
+        EXPECT_EQ(manifest_ptr, &(it->second));
+      }
+    }
+  }
+
+  // Ticking after factory destruction should not crash.
+  // Before the fix, NodeConfig::manifest pointed to a manifest
+  // owned by the now-destroyed factory, causing use-after-free
+  // when getInput() looked up the port in the manifest.
+  EXPECT_EQ(BT::NodeStatus::SUCCESS, tree.tickWhileRunning());
+}

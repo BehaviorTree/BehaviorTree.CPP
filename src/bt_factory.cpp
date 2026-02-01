@@ -350,6 +350,7 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
   parser.loadFromText(text);
   auto tree = parser.instantiateTree(blackboard);
   tree.manifests = this->manifests();
+  tree.remapManifestPointers();
   return tree;
 }
 
@@ -369,6 +370,7 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path& file_p
   parser.loadFromFile(file_path);
   auto tree = parser.instantiateTree(blackboard);
   tree.manifests = this->manifests();
+  tree.remapManifestPointers();
   return tree;
 }
 
@@ -377,6 +379,7 @@ Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
 {
   auto tree = _p->parser->instantiateTree(blackboard, tree_name);
   tree.manifests = this->manifests();
+  tree.remapManifestPointers();
   return tree;
 }
 
@@ -475,6 +478,25 @@ BehaviorTreeFactory::substitutionRules() const
 }
 
 Tree::Tree() = default;
+
+void Tree::remapManifestPointers()
+{
+  for(auto& subtree : subtrees)
+  {
+    for(auto& node : subtree->nodes)
+    {
+      const auto* old_manifest = node->config().manifest;
+      if(old_manifest)
+      {
+        auto it = manifests.find(old_manifest->registration_ID);
+        if(it != manifests.end())
+        {
+          node->config().manifest = &(it->second);
+        }
+      }
+    }
+  }
+}
 
 void Tree::initialize()
 {

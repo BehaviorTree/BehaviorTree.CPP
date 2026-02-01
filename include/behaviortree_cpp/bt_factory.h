@@ -192,6 +192,8 @@ public:
   }
 
 private:
+  friend class BehaviorTreeFactory;
+
   std::shared_ptr<WakeUpSignal> wake_up_;
 
   enum TickOption
@@ -202,6 +204,11 @@ private:
   };
 
   NodeStatus tickRoot(TickOption opt, std::chrono::milliseconds sleep_time);
+
+  // Fix #1046: re-point each node's NodeConfig::manifest from the
+  // factory's map to the tree's own copy so the pointers remain
+  // valid after the factory is destroyed.
+  void remapManifestPointers();
 
   uint16_t uid_counter_ = 0;
 };
