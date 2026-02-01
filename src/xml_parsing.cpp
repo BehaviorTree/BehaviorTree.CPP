@@ -198,7 +198,7 @@ struct XMLParser::PImpl
                                 const std::string& prefix_path, Tree& output_tree,
                                 Blackboard::Ptr blackboard,
                                 const TreeNode::Ptr& root_node,
-                                std::unordered_set<std::string> ancestors = {});
+                                std::unordered_set<std::string>& ancestors);
 
   void getPortsRecursively(const XMLElement* element,
                            std::vector<std::string>& output_ports);
@@ -705,8 +705,9 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
                        "root_blackboard");
   }
 
+  std::unordered_set<std::string> ancestors;
   _p->recursivelyCreateSubtree(main_tree_ID, {}, {}, output_tree, root_blackboard,
-                               TreeNode::Ptr());
+                               TreeNode::Ptr(), ancestors);
   output_tree.initialize();
   return output_tree;
 }
@@ -1005,7 +1006,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
 void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     const std::string& tree_ID, const std::string& tree_path,
     const std::string& prefix_path, Tree& output_tree, Blackboard::Ptr blackboard,
-    const TreeNode::Ptr& root_node, std::unordered_set<std::string> ancestors)
+    const TreeNode::Ptr& root_node, std::unordered_set<std::string>& ancestors)
 {
   if(!ancestors.insert(tree_ID).second)
   {
@@ -1162,6 +1163,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
   output_tree.subtrees.push_back(new_tree);
 
   recursiveStep(root_node, new_tree, prefix_path, root_element);
+  ancestors.erase(tree_ID);
 }
 
 void XMLParser::PImpl::getPortsRecursively(const XMLElement* element,
