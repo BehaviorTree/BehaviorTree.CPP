@@ -745,3 +745,31 @@ TEST(BlackboardTest, SetBlackboard_WithPortRemapping)
   // Tick till the end with no crashes
   ASSERT_NO_THROW(tree.tickWhileRunning(););
 }
+
+// Issue #408: debugMessage should show remapped entries from parent blackboard
+TEST(BlackboardTest, DebugMessageShowsRemappedEntries_Issue408)
+{
+  // Create parent BB with a value
+  auto parent_bb = Blackboard::create();
+  parent_bb->set("parent_value", 42);
+
+  // Create child BB with remapping
+  auto child_bb = Blackboard::create(parent_bb);
+  child_bb->addSubtreeRemapping("local_name", "parent_value");
+
+  // Capture debugMessage output
+  testing::internal::CaptureStdout();
+  child_bb->debugMessage();
+  std::string output = testing::internal::GetCapturedStdout();
+
+  // The output should contain the remapped key with its type info from parent
+  EXPECT_TRUE(output.find("local_name") != std::string::npos)
+      << "debugMessage output should mention 'local_name'. Got: " << output;
+  EXPECT_TRUE(output.find("parent_value") != std::string::npos)
+      << "debugMessage output should mention 'parent_value'. Got: " << output;
+  // The output should show the parent entry's type, not just the remapping
+  EXPECT_TRUE(output.find("int") != std::string::npos) << "debugMessage output should "
+                                                          "show the type of the remapped "
+                                                          "entry. Got: "
+                                                       << output;
+}
