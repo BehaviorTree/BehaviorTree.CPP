@@ -395,7 +395,20 @@ public:
                     "[registerNode]: you MUST implement the static method:\n"
                     "  PortsList providedPorts();\n");
 
-      static_assert(!(has_static_ports_list && !param_constructable),
+      // When extra arguments were passed to registerNodeType but the full
+      // constructor signature doesn't match, the problem is most likely a
+      // type mismatch in those extra arguments (issue #837).
+      static_assert(!(has_static_ports_list && !param_constructable
+                       && sizeof...(ExtraArgs) > 0),
+                    "[registerNode]: the constructor is NOT compatible with the "
+                    "arguments provided.\n"
+                    "Verify that the types of the extra arguments passed to "
+                    "registerNodeType match\n"
+                    "the constructor signature: "
+                    "(const std::string&, const NodeConfig&, ...)\n");
+
+      static_assert(!(has_static_ports_list && !param_constructable
+                       && sizeof...(ExtraArgs) == 0),
                     "[registerNode]: since you have a static method providedPorts(),\n"
                     "you MUST add a constructor with signature:\n"
                     "(const std::string&, const NodeConfig&)\n");
