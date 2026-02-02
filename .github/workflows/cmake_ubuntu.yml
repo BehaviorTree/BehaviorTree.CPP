@@ -86,8 +86,8 @@ jobs:
              --ignore-errors mismatch \
              --ignore-errors negative
         lcov --extract coverage.info \
-             '*/include/*' \
-             '*/src/*' \
+             '*/BehaviorTree.CPP/include/*' \
+             '*/BehaviorTree.CPP/src/*' \
              --output-file coverage.info \
              --ignore-errors unused
         lcov --list coverage.info
