@@ -17,6 +17,7 @@
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
+#include "behaviortree_cpp/export.h"
 
 #include <filesystem>
 #include <functional>
@@ -91,7 +92,7 @@ bool WildcardMatch(const std::string& str, StringView filter);
  * @brief Struct used to store a tree.
  * If this object goes out of scope, the tree is destroyed.
  */
-class Tree
+class BTCPP_API Tree
 {
 public:
   // a tree can contain multiple subtree.
@@ -222,7 +223,7 @@ class Parser;
  * Some node types are "builtin", whilst other are used defined and need
  * to be registered using a unique ID.
  */
-class BehaviorTreeFactory
+class BTCPP_API BehaviorTreeFactory
 {
 public:
   BehaviorTreeFactory();

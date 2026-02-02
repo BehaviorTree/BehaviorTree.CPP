@@ -216,8 +216,11 @@ if (WIN32)
 endif()
 
 if (BTCPP_SHARED_LIBS)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE})
+    target_compile_definitions(${BTCPP_LIBRARY}
+        PUBLIC BTCPP_SHARED_LIBS
+        PRIVATE behaviortree_cpp_EXPORTS
+    )
 else()
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_library(${BTCPP_LIBRARY} STATIC ${BT_SOURCE})
@@ -260,7 +263,6 @@ target_include_directories(${BTCPP_LIBRARY}
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
 
-target_compile_definitions(${BTCPP_LIBRARY} PRIVATE $<$<CONFIG:Debug>:TINYXML2_DEBUG>)
 target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAKE_PROJECT_VERSION}")
 
 target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)

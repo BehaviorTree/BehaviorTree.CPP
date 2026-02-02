@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include "behaviortree_cpp/export.h"
 #include "behaviortree_cpp/tree_node.h"
 
 #include <vector>
@@ -28,7 +29,7 @@ namespace BT
  * Each derived class implements specific rules about if, when, and how many
  * times children are ticked.
  */
-class ControlNode : public TreeNode
+class BTCPP_API ControlNode : public TreeNode
 {
 protected:
   std::vector<TreeNode*> children_nodes_;
