@@ -522,3 +522,132 @@ TEST(ParserTest, NewLine)
   ASSERT_EQ(tree.rootBlackboard()->get<int>("A"), 5);
   ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 6);
 }
+
+TEST(ParserTest, TokenizerEdgeCases)
+{
+  // Unterminated string
+  EXPECT_FALSE(BT::ValidateScript("'hello"));
+
+  // Hex edge cases
+  EXPECT_FALSE(BT::ValidateScript("0x"));
+  EXPECT_FALSE(BT::ValidateScript("0xG"));
+
+  // Exponent without digits
+  EXPECT_FALSE(BT::ValidateScript("3e"));
+  EXPECT_FALSE(BT::ValidateScript("3e+"));
+
+  // DotDot adjacent to integer: "65..66" should parse as 65 .. 66
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto result = BT::ParseScriptAndExecute(env, "A:='65'; B:='66'; A..B");
+  EXPECT_TRUE(result.has_value());
+  EXPECT_EQ(result.value().cast<std::string>(), "6566");
+
+  // Empty and whitespace-only scripts
+  EXPECT_FALSE(BT::ValidateScript(""));
+  EXPECT_FALSE(BT::ValidateScript("   "));
+  EXPECT_FALSE(BT::ValidateScript("\t\n\r"));
+}
+
+TEST(ParserTest, ChainedComparisons)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  // 1 < 2 < 3 should be true (chained: 1<2 AND 2<3)
+  EXPECT_EQ(Parse("1 < 2 < 3").value().cast<int>(), 1);
+
+  // 3 > 2 > 1 should be true
+  EXPECT_EQ(Parse("3 > 2 > 1").value().cast<int>(), 1);
+
+  // 1 < 2 > 3 should be false (1<2 is true, but 2>3 is false)
+  EXPECT_EQ(Parse("1 < 2 > 3").value().cast<int>(), 0);
+
+  // Chained equality
+  EXPECT_EQ(Parse("5 == 5 == 5").value().cast<int>(), 1);
+  EXPECT_EQ(Parse("5 == 5 != 3").value().cast<int>(), 1);
+
+  // 1 <= 2 <= 3
+  EXPECT_EQ(Parse("1 <= 2 <= 3").value().cast<int>(), 1);
+
+  // 3 >= 2 >= 1
+  EXPECT_EQ(Parse("3 >= 2 >= 1").value().cast<int>(), 1);
+}
+
+TEST(ParserTest, OperatorPrecedence)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  // Bitwise AND binds tighter than bitwise OR
+  // 6 | 3 & 5 should be 6 | (3 & 5) = 6 | 1 = 7
+  EXPECT_EQ(Parse("6 | 3 & 5").value().cast<int>(), 7);
+
+  // Bitwise OR binds tighter than logical AND
+  // true && (6 | 0) should be true
+  EXPECT_EQ(Parse("true && (6 | 0)").value().cast<int>(), 1);
+
+  // Logical AND binds tighter than logical OR
+  // false || true && true should be false || (true && true) = true
+  EXPECT_EQ(Parse("false || true && true").value().cast<int>(), 1);
+
+  // false && true || true should be (false && true) || true = true
+  EXPECT_EQ(Parse("false && true || true").value().cast<int>(), 1);
+
+  // Parentheses override precedence
+  EXPECT_EQ(Parse("(2 + 3) * 4").value().cast<double>(), 20.0);
+  EXPECT_EQ(Parse("2 * (3 + 4)").value().cast<double>(), 14.0);
+}
+
+TEST(ParserTest, UnaryOperators)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  // Logical NOT
+  EXPECT_EQ(Parse("!true").value().cast<int>(), 0);
+  EXPECT_EQ(Parse("!false").value().cast<int>(), 1);
+  EXPECT_EQ(Parse("!!true").value().cast<int>(), 1);
+
+  // Bitwise complement
+  auto result = Parse("~0");
+  EXPECT_TRUE(result.has_value());
+  EXPECT_EQ(result.value().cast<int64_t>(), ~int64_t(0));
+
+  // Unary minus
+  EXPECT_EQ(Parse("-(3 + 2)").value().cast<double>(), -5.0);
+
+  // Unary minus in expressions
+  EXPECT_EQ(Parse("10 + -3").value().cast<double>(), 7.0);
+}
+
+TEST(ParserTest, TernaryExpressions)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  EXPECT_EQ(Parse("true ? 1 : 2").value().cast<int>(), 1);
+  EXPECT_EQ(Parse("false ? 1 : 2").value().cast<int>(), 2);
+
+  // Ternary with expressions in branches
+  EXPECT_EQ(Parse("true ? 2 + 3 : 10").value().cast<double>(), 5.0);
+  EXPECT_EQ(Parse("false ? 10 : 2 + 3").value().cast<double>(), 5.0);
+
+  // Ternary with comparison as condition
+  EXPECT_EQ(Parse("3 > 2 ? 'yes' : 'no'").value().cast<std::string>(), "yes");
+  EXPECT_EQ(Parse("3 < 2 ? 'yes' : 'no'").value().cast<std::string>(), "no");
+}
+
+TEST(ParserTest, MultipleStatements)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  // Multiple semicolons
+  Parse("a:=1;;; b:=2;;");
+  EXPECT_EQ(env.vars->get<double>("a"), 1.0);
+  EXPECT_EQ(env.vars->get<double>("b"), 2.0);
+
+  // Last expression is the return value
+  auto result = Parse("a:=10; b:=20; a+b");
+  EXPECT_EQ(result.value().cast<double>(), 30.0);
+}
