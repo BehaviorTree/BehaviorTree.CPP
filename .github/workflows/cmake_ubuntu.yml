@@ -90,6 +90,10 @@ jobs:
              '*/BehaviorTree.CPP/src/*' \
              --output-file coverage.info \
              --ignore-errors unused
+        lcov --remove coverage.info \
+             '*/contrib/*' \
+             --output-file coverage.info \
+             --ignore-errors unused
         lcov --list coverage.info
 
     - name: Upload coverage reports to Codecov
