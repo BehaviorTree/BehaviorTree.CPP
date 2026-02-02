@@ -15,7 +15,6 @@
 
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/blackboard.h"
-#include "behaviortree_cpp/export.h"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 #include "behaviortree_cpp/utils/signal.h"
 #include "behaviortree_cpp/utils/strcat.hpp"
@@ -130,7 +129,7 @@ inline constexpr bool hasNodeFullCtor()
 }
 
 /// Abstract base class for Behavior Tree Nodes
-class BTCPP_API TreeNode
+class TreeNode
 {
 public:
   typedef std::shared_ptr<TreeNode> Ptr;

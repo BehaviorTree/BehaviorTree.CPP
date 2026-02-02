@@ -16,8 +16,6 @@
 
 #include "leaf_node.h"
 
-#include "behaviortree_cpp/export.h"
-
 namespace BT
 {
 /**
@@ -30,7 +28,7 @@ namespace BT
  * Conditions are typically used to check the state of the world or
  * the system before performing an action (e.g., "IsDoorOpen", "IsBatteryLow").
  */
-class BTCPP_API ConditionNode : public LeafNode
+class ConditionNode : public LeafNode
 {
 public:
   ConditionNode(const std::string& name, const NodeConfig& config);
@@ -64,7 +62,7 @@ public:
  *
  * Using lambdas or std::bind it is easy to pass a pointer to a method.
  */
-class BTCPP_API SimpleConditionNode : public ConditionNode
+class SimpleConditionNode : public ConditionNode
 {
 public:
   using TickFunctor = std::function<NodeStatus(TreeNode&)>;

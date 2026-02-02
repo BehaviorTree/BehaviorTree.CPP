@@ -1,7 +1,6 @@
 #ifndef DECORATORNODE_H
 #define DECORATORNODE_H
 
-#include "behaviortree_cpp/export.h"
 #include "behaviortree_cpp/tree_node.h"
 
 namespace BT
@@ -16,7 +15,7 @@ namespace BT
  * - Add timing constraints (e.g., Timeout, Delay)
  * - Conditionally execute the child (e.g., Precondition)
  */
-class BTCPP_API DecoratorNode : public TreeNode
+class DecoratorNode : public TreeNode
 {
 protected:
   TreeNode* child_node_;

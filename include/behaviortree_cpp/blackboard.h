@@ -3,7 +3,6 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_cpp/exceptions.h"
-#include "behaviortree_cpp/export.h"
 #include "behaviortree_cpp/utils/locked_reference.hpp"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 
@@ -30,7 +29,7 @@ struct StampedValue
  * @brief The Blackboard is the mechanism used by BehaviorTrees to exchange
  * typed data.
  */
-class BTCPP_API Blackboard
+class Blackboard
 {
 public:
   using Ptr = std::shared_ptr<Blackboard>;

@@ -16,8 +16,6 @@
 
 #include "leaf_node.h"
 
-#include "behaviortree_cpp/export.h"
-
 #include <atomic>
 #include <future>
 #include <mutex>
@@ -33,7 +31,7 @@ namespace BT
  * A particular derived class is free to override executeTick() as needed.
  *
  */
-class BTCPP_API ActionNodeBase : public LeafNode
+class ActionNodeBase : public LeafNode
 {
 public:
   ActionNodeBase(const std::string& name, const NodeConfig& config);
@@ -55,7 +53,7 @@ public:
  * explicitly prevents the status RUNNING and doesn't require
  * an implementation of halt().
  */
-class BTCPP_API SyncActionNode : public ActionNodeBase
+class SyncActionNode : public ActionNodeBase
 {
 public:
   SyncActionNode(const std::string& name, const NodeConfig& config);
@@ -87,7 +85,7 @@ public:
  * Using lambdas or std::bind it is easy to pass a pointer to a method.
  * SimpleActionNode is executed synchronously and does not support halting.
  */
-class BTCPP_API SimpleActionNode : public SyncActionNode
+class SimpleActionNode : public SyncActionNode
 {
 public:
   using TickFunctor = std::function<NodeStatus(TreeNode&)>;
@@ -129,7 +127,7 @@ protected:
  * a TreeNode::emitWakeUpSignal() will be called.
  */
 
-class BTCPP_API ThreadedAction : public ActionNodeBase
+class ThreadedAction : public ActionNodeBase
 {
 public:
   ThreadedAction(const std::string& name, const NodeConfig& config)
@@ -172,7 +170,7 @@ using AsyncActionNode = ThreadedAction;
  *
  * -) if halted, method onHalted() is invoked
  */
-class BTCPP_API StatefulActionNode : public ActionNodeBase
+class StatefulActionNode : public ActionNodeBase
 {
 public:
   StatefulActionNode(const std::string& name, const NodeConfig& config)
@@ -209,7 +207,7 @@ private:
  * It is up to the user to decide when to suspend execution of the Action and resume
  * the parent node, invoking the method setStatusRunningAndYield().
  */
-class BTCPP_API CoroActionNode : public ActionNodeBase
+class CoroActionNode : public ActionNodeBase
 {
 public:
   CoroActionNode(const std::string& name, const NodeConfig& config);
