@@ -6,108 +6,91 @@
 #include <gtest/gtest.h>
 
 #include "../sample_nodes/dummy_nodes.h"
-#include <lexy/input/string_input.hpp>
 
 BT::Any GetScriptResult(BT::Ast::Environment& environment, const char* text)
 {
-  auto input = lexy::zstring_input<lexy::utf8_encoding>(text);
-  auto result = lexy::parse<BT::Grammar::stmt>(input, lexy_ext::report_error);
-
-  if(result.has_value())
-  {
-    auto exprs = LEXY_MOV(result).value();
-    for(auto i = 0u; i < exprs.size() - 1; ++i)
-    {
-      exprs[i]->evaluate(environment);
-    }
-    return exprs.back()->evaluate(environment);
-  }
-  else
+  auto exprs = BT::Scripting::parseStatements(text);
+  if(exprs.empty())
   {
     return {};
   }
+  for(size_t i = 0; i < exprs.size() - 1; ++i)
+  {
+    exprs[i]->evaluate(environment);
+  }
+  return exprs.back()->evaluate(environment);
 }
 
 TEST(ParserTest, AnyTypes)
 {
-  auto Parse = [](const char* str) {
-    return lexy::parse<BT::Grammar::AnyValue>(lexy::zstring_input(str),
-                                              lexy_ext::report_error);
-  };
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
 
   auto result = Parse("628");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<int>(), 628);
 
   result = Parse("-628");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<int>(), -628);
 
   result = Parse("0x100");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<int>(), 256);
 
   result = Parse("0X100");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<int>(), 256);
 
   result = Parse("3.14");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<double>(), 3.14);
 
   result = Parse("-3.14");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<double>(), -3.14);
 
   result = Parse("3.14e2");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<double>(), 314);
 
   result = Parse("3.14e-2");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<double>(), 0.0314);
 
   result = Parse("3e2");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<double>(), 300);
 
   result = Parse("3e-2");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<double>(), 0.03);
 
   result = Parse("'hello world '");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<std::string>(), "hello world ");
 
   result = Parse("true");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<int>(), 1);
 
   result = Parse("false");
-  EXPECT_TRUE(result.is_success());
+  EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value().cast<int>(), 0);
 }
 
 TEST(ParserTest, AnyTypes_Failing)
 {
-  std::istringstream null_sink;
-
-  auto Parse = [](const char* str) {
-    return lexy::parse<BT::Grammar::AnyValue>(lexy::zstring_input(str),
-                                              lexy_ext::report_error);
-  };
-
-  EXPECT_TRUE(!Parse("0X100g").is_success());
-
-  EXPECT_TRUE(!Parse("0X100.").is_success());
-
-  EXPECT_TRUE(!Parse("3foo").is_success());
-
-  EXPECT_TRUE(!Parse("65.").is_success());
-
-  EXPECT_TRUE(!Parse("65.43foo").is_success());
-
-  EXPECT_TRUE(!Parse("foo").is_success());
+  EXPECT_FALSE(BT::ValidateScript("0X100g"));
+  EXPECT_FALSE(BT::ValidateScript("0X100."));
+  EXPECT_FALSE(BT::ValidateScript("3foo"));
+  EXPECT_FALSE(BT::ValidateScript("65."));
+  EXPECT_FALSE(BT::ValidateScript("65.43foo"));
+  // "foo" is a valid identifier (parses as ExprName), only fails at
+  // evaluation when the variable doesn't exist.
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  EXPECT_FALSE(BT::ParseScriptAndExecute(env, "foo").has_value());
 }
 
 TEST(ParserTest, Equations)
