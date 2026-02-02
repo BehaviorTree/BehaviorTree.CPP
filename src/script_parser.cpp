@@ -15,7 +15,6 @@
 #include "behaviortree_cpp/scripting/operators.hpp"
 
 #include <charconv>
-#include <stdexcept>
 
 namespace BT
 {
@@ -84,9 +83,8 @@ private:
   {
     if(!check(type))
     {
-      throw std::runtime_error(StrCat("Parse error at position ",
-                                      std::to_string(peek().pos), ": ", msg, " (got '",
-                                      peek().text, "')"));
+      throw RuntimeError(StrCat("Parse error at position ", std::to_string(peek().pos),
+                                ": ", msg, " (got '", peek().text, "')"));
     }
     return advance();
   }
@@ -248,12 +246,12 @@ private:
     // Error token from tokenizer
     if(tok.type == TokenType::Error)
     {
-      throw std::runtime_error(
+      throw RuntimeError(
           StrCat("Invalid token '", tok.text, "' at position ", std::to_string(tok.pos)));
     }
 
-    throw std::runtime_error(StrCat("Expected operand at position ",
-                                    std::to_string(tok.pos), " (got '", tok.text, "')"));
+    throw RuntimeError(StrCat("Expected operand at position ", std::to_string(tok.pos),
+                              " (got '", tok.text, "')"));
   }
 
   /// Main Pratt expression parser
@@ -326,7 +324,7 @@ private:
         op = Ast::ExprAssignment::assign_div;
         break;
       default:
-        throw std::runtime_error("Internal error: unexpected assignment op");
+        throw RuntimeError("Internal error: unexpected assignment op");
     }
     // Parse RHS -- use minBP=0 to allow full expression
     auto right = parseExpr(0);
@@ -375,7 +373,7 @@ private:
       case TokenType::GreaterEqual:
         return Ast::ExprComparison::greater_equal;
       default:
-        throw std::runtime_error("Internal error: not a comparison op");
+        throw RuntimeError("Internal error: not a comparison op");
     }
   }
 
@@ -416,7 +414,7 @@ private:
         op = Ast::ExprBinaryArithmetic::logic_or;
         break;
       default:
-        throw std::runtime_error("Internal error: unknown binary operator");
+        throw RuntimeError("Internal error: unknown binary operator");
     }
     return std::make_shared<Ast::ExprBinaryArithmetic>(std::move(left), op,
                                                        std::move(right));
@@ -443,7 +441,7 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
     {
       return nonstd::make_unexpected("Empty Script");
     }
-    return [exprs = std::move(exprs), script](Ast::Environment& env) -> Any {
+    return [exprs = std::move(exprs), script](Ast::Environment& env) {
       try
       {
         for(size_t i = 0; i < exprs.size() - 1; ++i)
@@ -458,7 +456,7 @@ Expected<ScriptFunction> ParseScript(const std::string& script)
       }
     };
   }
-  catch(std::runtime_error& err)
+  catch(RuntimeError& err)
   {
     return nonstd::make_unexpected(err.what());
   }
@@ -473,7 +471,7 @@ Expected<Any> ParseScriptAndExecute(Ast::Environment& env, const std::string& sc
     {
       return executor.value()(env);
     }
-    catch(std::exception& err)
+    catch(RuntimeError& err)
     {
       return nonstd::make_unexpected(err.what());
     }
@@ -492,7 +490,7 @@ Result ValidateScript(const std::string& script)
     }
     return {};
   }
-  catch(std::runtime_error& err)
+  catch(RuntimeError& err)
   {
     return nonstd::make_unexpected(err.what());
   }

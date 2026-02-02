@@ -40,6 +40,184 @@ bool isHexDigit(char c)
   return std::isxdigit(static_cast<unsigned char>(c)) != 0;
 }
 
+// Consume trailing garbage after a malformed number token.
+void consumeTrailingGarbage(const std::string& source, size_t len, size_t& i)
+{
+  while(i < len && (isIdentChar(source[i]) || source[i] == '.'))
+  {
+    ++i;
+  }
+}
+
+struct NumberResult
+{
+  bool is_real = false;
+  bool has_error = false;
+};
+
+NumberResult scanHexNumber(const std::string& source, size_t len, size_t& i)
+{
+  NumberResult result;
+  i += 2;  // skip "0x"/"0X"
+  if(i >= len || !isHexDigit(source[i]))
+  {
+    result.has_error = true;
+  }
+  else
+  {
+    while(i < len && isHexDigit(source[i]))
+    {
+      ++i;
+    }
+  }
+  // Hex numbers don't support dot or exponent
+  if(i < len && (source[i] == '.' || isIdentChar(source[i])))
+  {
+    result.has_error = true;
+    consumeTrailingGarbage(source, len, i);
+  }
+  return result;
+}
+
+NumberResult scanDecimalNumber(const std::string& source, size_t len, size_t& i)
+{
+  NumberResult result;
+
+  // Integer part
+  while(i < len && isDigit(source[i]))
+  {
+    ++i;
+  }
+  // Fractional part
+  if(i < len && source[i] == '.')
+  {
+    // Distinguish from ".." (concat operator)
+    if(i + 1 < len && source[i + 1] == '.')
+    {
+      // Stop here: "65.." is Integer("65") + DotDot
+    }
+    else if(i + 1 < len && isDigit(source[i + 1]))
+    {
+      result.is_real = true;
+      ++i;  // consume '.'
+      while(i < len && isDigit(source[i]))
+      {
+        ++i;
+      }
+    }
+    else
+    {
+      // "65." or "65.x" -- incomplete real
+      result.has_error = true;
+      ++i;  // consume the dot
+      consumeTrailingGarbage(source, len, i);
+    }
+  }
+  // Exponent (only for decimal numbers)
+  if(!result.has_error && i < len && (source[i] == 'e' || source[i] == 'E'))
+  {
+    result.is_real = true;
+    ++i;  // consume 'e'/'E'
+    if(i < len && (source[i] == '+' || source[i] == '-'))
+    {
+      ++i;  // consume sign
+    }
+    if(i >= len || !isDigit(source[i]))
+    {
+      result.has_error = true;
+    }
+    else
+    {
+      while(i < len && isDigit(source[i]))
+      {
+        ++i;
+      }
+    }
+  }
+  // Trailing alpha (e.g. "3foo", "65.43foo")
+  if(!result.has_error && i < len && isIdentStart(source[i]))
+  {
+    result.has_error = true;
+    while(i < len && isIdentChar(source[i]))
+    {
+      ++i;
+    }
+  }
+  return result;
+}
+
+TokenType matchTwoCharOp(char c, char next)
+{
+  if(c == '.' && next == '.')
+    return TokenType::DotDot;
+  if(c == '&' && next == '&')
+    return TokenType::AmpAmp;
+  if(c == '|' && next == '|')
+    return TokenType::PipePipe;
+  if(c == '=' && next == '=')
+    return TokenType::EqualEqual;
+  if(c == '!' && next == '=')
+    return TokenType::BangEqual;
+  if(c == '<' && next == '=')
+    return TokenType::LessEqual;
+  if(c == '>' && next == '=')
+    return TokenType::GreaterEqual;
+  if(c == ':' && next == '=')
+    return TokenType::ColonEqual;
+  if(c == '+' && next == '=')
+    return TokenType::PlusEqual;
+  if(c == '-' && next == '=')
+    return TokenType::MinusEqual;
+  if(c == '*' && next == '=')
+    return TokenType::StarEqual;
+  if(c == '/' && next == '=')
+    return TokenType::SlashEqual;
+  return TokenType::Error;
+}
+
+TokenType matchSingleCharOp(char c)
+{
+  switch(c)
+  {
+    case '+':
+      return TokenType::Plus;
+    case '-':
+      return TokenType::Minus;
+    case '*':
+      return TokenType::Star;
+    case '/':
+      return TokenType::Slash;
+    case '&':
+      return TokenType::Ampersand;
+    case '|':
+      return TokenType::Pipe;
+    case '^':
+      return TokenType::Caret;
+    case '~':
+      return TokenType::Tilde;
+    case '!':
+      return TokenType::Bang;
+    case '<':
+      return TokenType::Less;
+    case '>':
+      return TokenType::Greater;
+    case '=':
+      return TokenType::Equal;
+    case '?':
+      return TokenType::Question;
+    case ':':
+      return TokenType::Colon;
+    case '(':
+      return TokenType::LeftParen;
+    case ')':
+      return TokenType::RightParen;
+    case ';':
+      return TokenType::Semicolon;
+    default:
+      return TokenType::Error;
+  }
+}
+
 }  // namespace
 
 std::vector<Token> tokenize(const std::string& source)
@@ -87,107 +265,24 @@ std::vector<Token> tokenize(const std::string& source)
     // Number literal (integer or real)
     if(isDigit(c))
     {
-      bool is_real = false;
-      bool has_error = false;
-
-      // Check for hex prefix
-      if(c == '0' && i + 1 < len && (source[i + 1] == 'x' || source[i + 1] == 'X'))
+      NumberResult nr;
+      const bool is_hex =
+          c == '0' && i + 1 < len && (source[i + 1] == 'x' || source[i + 1] == 'X');
+      if(is_hex)
       {
-        i += 2;  // skip "0x"/"0X"
-        if(i >= len || !isHexDigit(source[i]))
-        {
-          has_error = true;
-        }
-        else
-        {
-          while(i < len && isHexDigit(source[i]))
-          {
-            ++i;
-          }
-        }
-        // Hex numbers don't support dot or exponent
-        if(i < len && (source[i] == '.' || isIdentChar(source[i])))
-        {
-          has_error = true;
-          while(i < len && (isIdentChar(source[i]) || source[i] == '.'))
-          {
-            ++i;
-          }
-        }
+        nr = scanHexNumber(source, len, i);
       }
       else
       {
-        // Decimal integer part
-        while(i < len && isDigit(source[i]))
-        {
-          ++i;
-        }
-        // Check for fractional part
-        if(i < len && source[i] == '.')
-        {
-          // Distinguish from ".." (concat operator)
-          if(i + 1 < len && source[i + 1] == '.')
-          {
-            // Stop here: "65.." is Integer("65") + DotDot
-          }
-          else if(i + 1 < len && isDigit(source[i + 1]))
-          {
-            is_real = true;
-            ++i;  // consume '.'
-            while(i < len && isDigit(source[i]))
-            {
-              ++i;
-            }
-          }
-          else
-          {
-            // "65." or "65.x" -- incomplete real
-            has_error = true;
-            ++i;  // consume the dot
-            while(i < len && (isIdentChar(source[i]) || source[i] == '.'))
-            {
-              ++i;
-            }
-          }
-        }
-        // Check for exponent (only for decimal numbers)
-        if(!has_error && i < len && (source[i] == 'e' || source[i] == 'E'))
-        {
-          is_real = true;
-          ++i;  // consume 'e'/'E'
-          if(i < len && (source[i] == '+' || source[i] == '-'))
-          {
-            ++i;  // consume sign
-          }
-          if(i >= len || !isDigit(source[i]))
-          {
-            has_error = true;
-          }
-          else
-          {
-            while(i < len && isDigit(source[i]))
-            {
-              ++i;
-            }
-          }
-        }
-        // Check for trailing alpha (e.g. "3foo", "65.43foo")
-        if(!has_error && i < len && isIdentStart(source[i]))
-        {
-          has_error = true;
-          while(i < len && isIdentChar(source[i]))
-          {
-            ++i;
-          }
-        }
+        nr = scanDecimalNumber(source, len, i);
       }
 
       std::string_view text(&source[start], i - start);
-      if(has_error)
+      if(nr.has_error)
       {
         tokens.push_back({ TokenType::Error, text, start });
       }
-      else if(is_real)
+      else if(nr.is_real)
       {
         tokens.push_back({ TokenType::Real, text, start });
       }
@@ -206,8 +301,8 @@ std::vector<Token> tokenize(const std::string& source)
       {
         ++i;
       }
-      std::string_view text(&source[start], i - start);
-      if(text == "true" || text == "false")
+      if(std::string_view text(&source[start], i - start); text == "true" || text == "fal"
+                                                                                     "se")
       {
         tokens.push_back({ TokenType::Boolean, text, start });
       }
@@ -221,64 +316,8 @@ std::vector<Token> tokenize(const std::string& source)
     // Two-character operators (check before single-char)
     if(i + 1 < len)
     {
-      const char next = source[i + 1];
-      TokenType two_char_type = TokenType::Error;
-      bool matched = true;
-
-      if(c == '.' && next == '.')
-      {
-        two_char_type = TokenType::DotDot;
-      }
-      else if(c == '&' && next == '&')
-      {
-        two_char_type = TokenType::AmpAmp;
-      }
-      else if(c == '|' && next == '|')
-      {
-        two_char_type = TokenType::PipePipe;
-      }
-      else if(c == '=' && next == '=')
-      {
-        two_char_type = TokenType::EqualEqual;
-      }
-      else if(c == '!' && next == '=')
-      {
-        two_char_type = TokenType::BangEqual;
-      }
-      else if(c == '<' && next == '=')
-      {
-        two_char_type = TokenType::LessEqual;
-      }
-      else if(c == '>' && next == '=')
-      {
-        two_char_type = TokenType::GreaterEqual;
-      }
-      else if(c == ':' && next == '=')
-      {
-        two_char_type = TokenType::ColonEqual;
-      }
-      else if(c == '+' && next == '=')
-      {
-        two_char_type = TokenType::PlusEqual;
-      }
-      else if(c == '-' && next == '=')
-      {
-        two_char_type = TokenType::MinusEqual;
-      }
-      else if(c == '*' && next == '=')
-      {
-        two_char_type = TokenType::StarEqual;
-      }
-      else if(c == '/' && next == '=')
-      {
-        two_char_type = TokenType::SlashEqual;
-      }
-      else
-      {
-        matched = false;
-      }
-
-      if(matched)
+      TokenType two_char_type = matchTwoCharOp(c, source[i + 1]);
+      if(two_char_type != TokenType::Error)
       {
         std::string_view text(&source[start], 2);
         tokens.push_back({ two_char_type, text, start });
@@ -288,68 +327,9 @@ std::vector<Token> tokenize(const std::string& source)
     }
 
     // Single-character operators and delimiters
-    {
-      TokenType type = TokenType::Error;
-      switch(c)
-      {
-        case '+':
-          type = TokenType::Plus;
-          break;
-        case '-':
-          type = TokenType::Minus;
-          break;
-        case '*':
-          type = TokenType::Star;
-          break;
-        case '/':
-          type = TokenType::Slash;
-          break;
-        case '&':
-          type = TokenType::Ampersand;
-          break;
-        case '|':
-          type = TokenType::Pipe;
-          break;
-        case '^':
-          type = TokenType::Caret;
-          break;
-        case '~':
-          type = TokenType::Tilde;
-          break;
-        case '!':
-          type = TokenType::Bang;
-          break;
-        case '<':
-          type = TokenType::Less;
-          break;
-        case '>':
-          type = TokenType::Greater;
-          break;
-        case '=':
-          type = TokenType::Equal;
-          break;
-        case '?':
-          type = TokenType::Question;
-          break;
-        case ':':
-          type = TokenType::Colon;
-          break;
-        case '(':
-          type = TokenType::LeftParen;
-          break;
-        case ')':
-          type = TokenType::RightParen;
-          break;
-        case ';':
-          type = TokenType::Semicolon;
-          break;
-        default:
-          break;
-      }
-      std::string_view text(&source[start], 1);
-      tokens.push_back({ type, text, start });
-      ++i;
-    }
+    std::string_view text(&source[start], 1);
+    tokens.push_back({ matchSingleCharOp(c), text, start });
+    ++i;
   }
 
   // Sentinel
