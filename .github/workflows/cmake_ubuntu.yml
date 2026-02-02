@@ -100,4 +100,6 @@ jobs:
       uses: codecov/codecov-action@v5
       with:
         files: coverage.info
+        flags: unittests
+        disable_search: true
         token: ${{ secrets.CODECOV_TOKEN }}

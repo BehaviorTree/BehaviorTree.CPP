@@ -3,11 +3,20 @@ coverage:
     project:
       default:
         target: auto
+        paths:
+          - "include/behaviortree_cpp/**"
+          - "src/**"
+
+flags:
+  unittests:
+    paths:
+      - "include/behaviortree_cpp/**"
+      - "src/**"
 
 ignore:
-  - "3rdparty/**/*"
-  - "examples/**/*"
-  - "include/**/contrib/**/*"
-  - "sample_nodes/**/*"
-  - "tests/**/*"
-  - "tools/**/*"
+  - "3rdparty/**"
+  - "examples/**"
+  - "include/**/contrib/**"
+  - "sample_nodes/**"
+  - "tests/**"
+  - "tools/**"
