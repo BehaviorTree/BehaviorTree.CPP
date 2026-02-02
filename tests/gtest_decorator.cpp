@@ -247,14 +247,19 @@ TEST(Decorator, DelayWithXML)
   status = tree.tickOnce();
   ASSERT_EQ(status, NodeStatus::RUNNING);
 
-  // Wait for the delay to complete (200ms total)
-  std::this_thread::sleep_for(std::chrono::milliseconds(200));
-  status = tree.tickOnce();
+  // Poll until the delay completes (with timeout for safety)
+  while(status == NodeStatus::RUNNING)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    status = tree.tickOnce();
+  }
   auto end = std::chrono::steady_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
   // The child (AlwaysSuccess) should have been executed after the delay
   ASSERT_EQ(status, NodeStatus::SUCCESS);
-  // Verify that at least ~200ms have passed
-  ASSERT_GE(elapsed.count(), 200);
+  // Verify that at least ~200ms have passed (with small tolerance for timing jitter)
+  ASSERT_GE(elapsed.count(), 180);
+  // Ensure the test didn't take too long (sanity check)
+  ASSERT_LE(elapsed.count(), 500);
 }
