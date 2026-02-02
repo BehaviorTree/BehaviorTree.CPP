@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblexy_file.a CMakeFiles/lexy_file.dir/input/file.cpp.o
+/usr/bin/ranlib liblexy_file.a

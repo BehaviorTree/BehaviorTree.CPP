@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtinyxml2.a CMakeFiles/tinyxml2.dir/tinyxml2.cpp.o
+/usr/bin/ranlib libtinyxml2.a
