@@ -685,12 +685,12 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
   Tree output_tree;
 
   // use the main_tree_to_execute argument if it was provided by the user
-  // or the one in the FIRST document opened
+  // or the one in the LAST document opened
   if(main_tree_ID.empty())
   {
-    XMLElement* first_xml_root = _p->opened_documents.front()->RootElement();
+    XMLElement* last_xml_root = _p->opened_documents.back()->RootElement();
 
-    if(auto main_tree_attribute = first_xml_root->Attribute("main_tree_to_execute"))
+    if(auto main_tree_attribute = last_xml_root->Attribute("main_tree_to_execute"))
     {
       main_tree_ID = main_tree_attribute;
     }

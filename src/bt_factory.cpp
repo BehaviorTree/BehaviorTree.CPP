@@ -342,17 +342,8 @@ const std::set<std::string>& BehaviorTreeFactory::builtinNodes() const
 Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
                                              Blackboard::Ptr blackboard)
 {
-  if(!_p->parser->registeredBehaviorTrees().empty())
-  {
-    std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromText "
-                 "after registerBehaviorTreeFrom[File/Text].\n"
-                 "This is NOT, probably, what you want to do.\n"
-                 "You should probably use BehaviorTreeFactory::createTree, instead"
-              << std::endl;
-  }
-  XMLParser parser(*this);
-  parser.loadFromText(text);
-  auto tree = parser.instantiateTree(blackboard);
+  _p->parser->loadFromText(text);
+  auto tree = _p->parser->instantiateTree(blackboard);
   tree.manifests = this->manifests();
   tree.remapManifestPointers();
   return tree;
@@ -361,18 +352,8 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
 Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path& file_path,
                                              Blackboard::Ptr blackboard)
 {
-  if(!_p->parser->registeredBehaviorTrees().empty())
-  {
-    std::cout << "WARNING: You executed BehaviorTreeFactory::createTreeFromFile "
-                 "after registerBehaviorTreeFrom[File/Text].\n"
-                 "This is NOT, probably, what you want to do.\n"
-                 "You should probably use BehaviorTreeFactory::createTree, instead"
-              << std::endl;
-  }
-
-  XMLParser parser(*this);
-  parser.loadFromFile(file_path);
-  auto tree = parser.instantiateTree(blackboard);
+  _p->parser->loadFromFile(file_path);
+  auto tree = _p->parser->instantiateTree(blackboard);
   tree.manifests = this->manifests();
   tree.remapManifestPointers();
   return tree;
