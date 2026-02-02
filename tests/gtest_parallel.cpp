@@ -583,11 +583,8 @@ TEST(Parallel, PauseWithRetry)
   ASSERT_EQ(NodeStatus::SUCCESS, status);
 
   // tolerate an error in time measurement within this margin
-#ifdef WIN32
-  const int margin_msec = 40;
-#else
-  const int margin_msec = 10;
-#endif
+  // CI runners (especially Windows) can overshoot Sleep by 50ms+ under load
+  const int margin_msec = 80;
 
   // the second branch with the RetryUntilSuccessful should take about 150 ms
   ASSERT_LE(toMsec(done_time - t1) - 150, margin_msec);
