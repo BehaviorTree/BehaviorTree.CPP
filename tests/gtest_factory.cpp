@@ -563,3 +563,170 @@ TEST(BehaviorTreeFactory, FactoryDestroyedBeforeTick)
   // when getInput() looked up the port in the manifest.
   EXPECT_EQ(BT::NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
+
+// Regression tests for issue #672: stack buffer overflow in
+// xml_parsing.cpp when parsing malformed/pathological XML.
+// In v3 a fuzz test triggered a stack-buffer-overflow via ASAN in
+// the BehaviorTree element iteration loop with recursiveStep.
+// In v4 the parser was rewritten, but the recursive validation and
+// instantiation paths can still overflow the stack with deeply nested
+// input.  The fix adds a depth limit.
+
+TEST(BehaviorTreeFactory, MalformedXML_InvalidRoot)
+{
+  // XML that is not valid XML at all
+  BehaviorTreeFactory factory;
+  EXPECT_ANY_THROW(factory.createTreeFromText("<not valid xml!!!"));
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_MissingRootElement)
+{
+  // Well-formed XML but missing <root> element
+  const char* xml = R"(
+  <something BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <AlwaysSuccess/>
+    </BehaviorTree>
+  </something>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_EmptyBehaviorTree)
+{
+  // BehaviorTree element with no children
+  const char* xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_EmptyBehaviorTreeID)
+{
+  // BehaviorTree element with empty ID when multiple trees exist
+  const char* xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="">
+      <AlwaysSuccess/>
+    </BehaviorTree>
+    <BehaviorTree ID="Other">
+      <AlwaysSuccess/>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_MissingBehaviorTreeID)
+{
+  // Multiple BehaviorTree elements without IDs
+  const char* xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree>
+      <AlwaysSuccess/>
+    </BehaviorTree>
+    <BehaviorTree>
+      <AlwaysFailure/>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_DeeplyNestedElements)
+{
+  // Generate XML with nesting depth that exceeds the limit (256).
+  // This should throw a readable exception rather than crash with
+  // a stack overflow.
+  std::string xml = R"(<root BTCPP_format="4"><BehaviorTree ID="Main">)";
+  const int depth = 300;
+  for(int i = 0; i < depth; i++)
+  {
+    xml += "<Sequence>";
+  }
+  xml += "<AlwaysSuccess/>";
+  for(int i = 0; i < depth; i++)
+  {
+    xml += "</Sequence>";
+  }
+  xml += "</BehaviorTree></root>";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_ModerateNestingIsOK)
+{
+  // Nesting depth well within the limit should succeed.
+  std::string xml = R"(<root BTCPP_format="4"><BehaviorTree ID="Main">)";
+  const int depth = 50;
+  for(int i = 0; i < depth; i++)
+  {
+    xml += "<Sequence>";
+  }
+  xml += "<AlwaysSuccess/>";
+  for(int i = 0; i < depth; i++)
+  {
+    xml += "</Sequence>";
+  }
+  xml += "</BehaviorTree></root>";
+
+  BehaviorTreeFactory factory;
+  // Should not throw
+  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_MultipleBTChildElements)
+{
+  // BehaviorTree with more than one child element
+  const char* xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <AlwaysSuccess/>
+      <AlwaysFailure/>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_CompletelyEmpty)
+{
+  // Completely empty string
+  BehaviorTreeFactory factory;
+  EXPECT_ANY_THROW(factory.createTreeFromText(""));
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_EmptyRoot)
+{
+  // Root element with no children at all
+  const char* xml = R"(<root BTCPP_format="4"></root>)";
+
+  BehaviorTreeFactory factory;
+  // No BehaviorTree elements: registering succeeds but creating
+  // a tree should fail because there is nothing to instantiate.
+  factory.registerBehaviorTreeFromText(xml);
+  EXPECT_ANY_THROW(factory.createTree("MainTree"));
+}
+
+TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
+{
+  // Reference to a node type that is not registered
+  const char* xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <NonExistentNodeType/>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+}

@@ -530,9 +530,16 @@ void VerifyXML(const std::string& xml_text,
   }
 
   // function to be called recursively
-  std::function<void(const XMLElement*)> recursiveStep;
+  constexpr int kMaxNestingDepth = 256;
+  std::function<void(const XMLElement*, int)> recursiveStep;
 
-  recursiveStep = [&](const XMLElement* node) {
+  recursiveStep = [&](const XMLElement* node, int depth) {
+    if(depth > kMaxNestingDepth)
+    {
+      ThrowError(node->GetLineNum(), "Maximum XML nesting depth exceeded (limit: " +
+                                         std::to_string(kMaxNestingDepth) +
+                                         "). The XML is too deeply nested.");
+    }
     const int children_count = ChildrenCount(node);
     const std::string name = node->Name();
     const std::string ID = node->Attribute("ID") != nullptr ? node->Attribute("ID") : "";
@@ -661,14 +668,14 @@ void VerifyXML(const std::string& xml_text,
     for(auto child = node->FirstChildElement(); child != nullptr;
         child = child->NextSiblingElement())
     {
-      recursiveStep(child);
+      recursiveStep(child, depth + 1);
     }
   };
 
   for(auto bt_root = xml_root->FirstChildElement("BehaviorTree"); bt_root != nullptr;
       bt_root = bt_root->NextSiblingElement("BehaviorTree"))
   {
-    recursiveStep(bt_root);
+    recursiveStep(bt_root, 0);
   }
 }
 
@@ -1018,12 +1025,20 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     throw RuntimeError("Recursive behavior tree cycle detected: tree '", tree_ID,
                        "' references itself (directly or indirectly)");
   }
+  constexpr int kMaxNestingDepth = 256;
   std::function<void(const TreeNode::Ptr&, Tree::Subtree::Ptr, std::string,
-                     const XMLElement*)>
+                     const XMLElement*, int)>
       recursiveStep;
 
   recursiveStep = [&](TreeNode::Ptr parent_node, Tree::Subtree::Ptr subtree,
-                      std::string prefix, const XMLElement* element) {
+                      std::string prefix, const XMLElement* element, int depth) {
+    if(depth > kMaxNestingDepth)
+    {
+      throw RuntimeError("Maximum XML nesting depth exceeded during tree "
+                         "instantiation (limit: ",
+                         std::to_string(kMaxNestingDepth),
+                         "). The XML is too deeply nested.");
+    }
     // create the node
     auto node = createNodeFromXML(element, blackboard, parent_node, prefix, output_tree);
     subtree->nodes.push_back(node);
@@ -1034,7 +1049,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
       for(auto child_element = element->FirstChildElement(); child_element != nullptr;
           child_element = child_element->NextSiblingElement())
       {
-        recursiveStep(node, subtree, prefix, child_element);
+        recursiveStep(node, subtree, prefix, child_element, depth + 1);
       }
     }
     else  // special case: SubTreeNode
@@ -1167,7 +1182,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
   new_tree->tree_ID = tree_ID;
   output_tree.subtrees.push_back(new_tree);
 
-  recursiveStep(root_node, new_tree, prefix_path, root_element);
+  recursiveStep(root_node, new_tree, prefix_path, root_element, 0);
   ancestors.erase(tree_ID);
 }
 
