@@ -229,7 +229,7 @@ TEST(Decorator, DelayWithXML)
   const std::string xml_text = R"(
     <root BTCPP_format="4" >
        <BehaviorTree>
-          <Delay delay_msec="200">
+          <Delay delay_msec="100">
             <AlwaysSuccess/>
           </Delay>
        </BehaviorTree>
