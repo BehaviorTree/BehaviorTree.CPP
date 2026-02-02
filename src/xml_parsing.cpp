@@ -801,9 +801,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
         else
         {
           const auto& port_model = port_model_it->second;
-          const bool is_blackboard = port_value.size() >= 3 &&
-                                     port_value.front() == '{' &&
-                                     port_value.back() == '}';
+          const bool is_blackboard = TreeNode::isBlackboardPointer(port_value);
           // let's test already if conversion is possible
           if(!is_blackboard && port_model.converter() && port_model.isStronglyTyped())
           {

@@ -383,11 +383,62 @@ bool TreeNode::isBlackboardPointer(StringView str, StringView* stripped_pointer)
   }
   const auto size = (last_index - front_index) + 1;
   auto valid = size >= 3 && str[front_index] == '{' && str[last_index] == '}';
-  if(valid && stripped_pointer != nullptr)
+
+  if(!valid)
   {
-    *stripped_pointer = StringView(&str[front_index + 1], size - 2);
+    return false;
   }
-  return valid;
+
+  // Extract content between braces
+  StringView content(&str[front_index + 1], size - 2);
+
+  // Special case: {=} is valid (auto-remapping syntax)
+  if(content == "=")
+  {
+    if(stripped_pointer != nullptr)
+    {
+      *stripped_pointer = content;
+    }
+    return true;
+  }
+
+  // Validate that the content looks like a blackboard variable name:
+  // must match [@]?[a-zA-Z_][a-zA-Z0-9_./]*
+  // The optional '@' prefix refers to the root blackboard.
+  // This rejects JSON strings like {"key": "value"}.
+  if(content.empty())
+  {
+    return false;
+  }
+  size_t start = 0;
+  if(content.front() == '@')
+  {
+    start = 1;
+    if(start >= content.size())
+    {
+      return false;
+    }
+  }
+  const char first_ch = content[start];
+  if(!std::isalpha(static_cast<unsigned char>(first_ch)) && first_ch != '_')
+  {
+    return false;
+  }
+  for(size_t i = start + 1; i < content.size(); i++)
+  {
+    const char ch = content[i];
+    if(!std::isalnum(static_cast<unsigned char>(ch)) && ch != '_' && ch != '.' &&
+       ch != '/')
+    {
+      return false;
+    }
+  }
+
+  if(stripped_pointer != nullptr)
+  {
+    *stripped_pointer = content;
+  }
+  return true;
 }
 
 StringView TreeNode::stripBlackboardPointer(StringView str)

@@ -1,6 +1,7 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/json_export.h"
+#include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <gtest/gtest.h>
@@ -814,4 +815,37 @@ TEST(PortTest, SubtreeStringLiteralToLoopDouble_Issue1065)
   EXPECT_DOUBLE_EQ(collected[0], 1.0);
   EXPECT_DOUBLE_EQ(collected[1], 2.0);
   EXPECT_DOUBLE_EQ(collected[2], 3.0);
+}
+
+// Issue #883: JSON braces should not be treated as blackboard pointers
+TEST(PortTest, IsBlackboardPointer_Issue883)
+{
+  using BT::TreeNode;
+
+  // Valid blackboard pointers
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{my_var}"));
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{my.var}"));
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{my/var}"));
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{_private}"));
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{=}"));
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{a}"));
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("  {my_var}  "));
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{@root_var}"));
+
+  // Invalid: JSON strings should NOT be treated as blackboard pointers
+  EXPECT_FALSE(TreeNode::isBlackboardPointer(R"({"key": "value"})"));
+  EXPECT_FALSE(TreeNode::isBlackboardPointer(R"({"config": {"nested": true}})"));
+
+  // Invalid: other non-variable content
+  EXPECT_FALSE(TreeNode::isBlackboardPointer("{123}"));
+  EXPECT_FALSE(TreeNode::isBlackboardPointer("{}"));
+  EXPECT_FALSE(TreeNode::isBlackboardPointer("ab"));
+
+  // Verify stripped_pointer output
+  BT::StringView stripped;
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{foo_bar}", &stripped));
+  EXPECT_EQ(stripped, "foo_bar");
+
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{=}", &stripped));
+  EXPECT_EQ(stripped, "=");
 }
