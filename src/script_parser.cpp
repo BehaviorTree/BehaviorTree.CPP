@@ -304,7 +304,7 @@ private:
   Ast::expr_ptr parseAssignment(Ast::expr_ptr left)
   {
     const auto& opTok = advance();
-    Ast::ExprAssignment::op_t op;
+    Ast::ExprAssignment::op_t op{};
     switch(opTok.type)
     {
       case TokenType::ColonEqual:
@@ -382,7 +382,7 @@ private:
   static Ast::expr_ptr makeBinary(Ast::expr_ptr left, TokenType opType,
                                   Ast::expr_ptr right)
   {
-    Ast::ExprBinaryArithmetic::op_t op;
+    Ast::ExprBinaryArithmetic::op_t op{};
     switch(opType)
     {
       case TokenType::Plus:

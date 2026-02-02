@@ -22,22 +22,22 @@ namespace
 
 bool isIdentStart(char c)
 {
-  return std::isalpha(static_cast<unsigned char>(c)) || c == '_' || c == '@';
+  return std::isalpha(static_cast<unsigned char>(c)) != 0 || c == '_' || c == '@';
 }
 
 bool isIdentChar(char c)
 {
-  return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
+  return std::isalnum(static_cast<unsigned char>(c)) != 0 || c == '_';
 }
 
 bool isDigit(char c)
 {
-  return std::isdigit(static_cast<unsigned char>(c));
+  return std::isdigit(static_cast<unsigned char>(c)) != 0;
 }
 
 bool isHexDigit(char c)
 {
-  return std::isxdigit(static_cast<unsigned char>(c));
+  return std::isxdigit(static_cast<unsigned char>(c)) != 0;
 }
 
 }  // namespace
