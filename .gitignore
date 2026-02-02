@@ -24,5 +24,7 @@ tags
 /llvm.sh
 t11_groot_howto.btlog
 minitrace.json
+
+TODO.md
 /.worktrees/*
 /docs/plans/*

@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <array>
 #include <charconv>
+#if __cpp_lib_to_chars < 201611L
 #include <clocale>
+#endif
 #include <cstdlib>
 #include <cstring>
 #include <tuple>
@@ -197,26 +199,46 @@ uint32_t convertFromString<uint32_t>(StringView str)
 template <>
 double convertFromString<double>(StringView str)
 {
-  // see issue #120
-  // http://quick-bench.com/DWaXRWnxtxvwIMvZy2DxVPEKJnE
-
+#if __cpp_lib_to_chars >= 201611L
+  // from_chars is locale-independent and thread-safe
+  double result = 0;
+  const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  if(ec != std::errc())
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to double"));
+  }
+  return result;
+#else
+  // Fallback: stod is locale-dependent, so force "C" locale.
+  // See issue #120.  Note: setlocale is not thread-safe.
   const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
   std::ignore = setlocale(LC_NUMERIC, "C");
   const std::string str_copy(str.data(), str.size());
   const double val = std::stod(str_copy);
   std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
   return val;
+#endif
 }
 
 template <>
 float convertFromString<float>(StringView str)
 {
+#if __cpp_lib_to_chars >= 201611L
+  float result = 0;
+  const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+  if(ec != std::errc())
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to float"));
+  }
+  return result;
+#else
   const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
   std::ignore = setlocale(LC_NUMERIC, "C");
   const std::string str_copy(str.data(), str.size());
   const double val = std::stod(str_copy);
   std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
   return static_cast<float>(val);
+#endif
 }
 
 template <>
