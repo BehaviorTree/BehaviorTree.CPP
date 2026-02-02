@@ -24,13 +24,13 @@ ParallelAllNode::ParallelAllNode(const std::string& name, const NodeConfig& conf
 
 NodeStatus ParallelAllNode::tick()
 {
-  int max_failures = 0;
-  if(!getInput("max_failures", max_failures))
+  int failure_threshold = 0;
+  if(!getInput("failure_threshold", failure_threshold))
   {
-    throw RuntimeError("Missing parameter [max_failures] in ParallelNode");
+    throw RuntimeError("Missing parameter [failure_threshold] in ParallelNode");
   }
   const size_t children_count = children_nodes_.size();
-  setFailureThreshold(max_failures);
+  setFailureThreshold(failure_threshold);
 
   size_t skipped_count = 0;
 

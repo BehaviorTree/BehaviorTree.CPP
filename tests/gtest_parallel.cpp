@@ -461,7 +461,7 @@ TEST(Parallel, ParallelAll)
     const char* xml_text = R"(
 <root BTCPP_format="4">
   <BehaviorTree ID="MainTree">
-    <ParallelAll max_failures="1">
+    <ParallelAll failure_threshold="1">
       <BadTest name="first"/>
       <GoodTest name="second"/>
       <GoodTest name="third"/>
@@ -482,7 +482,7 @@ TEST(Parallel, ParallelAll)
     const char* xml_text = R"(
 <root BTCPP_format="4">
   <BehaviorTree ID="MainTree">
-    <ParallelAll max_failures="2">
+    <ParallelAll failure_threshold="2">
       <BadTest name="first"/>
       <GoodTest name="second"/>
       <GoodTest name="third"/>

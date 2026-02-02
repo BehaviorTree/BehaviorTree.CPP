@@ -38,8 +38,8 @@ public:
 
   static PortsList providedPorts()
   {
-    return { InputPort<int>("max_failures", 1,
-                            "If the number of children returning FAILURE exceeds this "
+    return { InputPort<int>("failure_threshold", 1,
+                            "If the number of children returning FAILURE is greater than or equal to this "
                             "value, "
                             "ParallelAll returns FAILURE") };
   }
