@@ -250,7 +250,7 @@ TEST(Decorator, DelayWithXML)
   // Poll until the delay completes (with timeout for safety)
   while(status == NodeStatus::RUNNING)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
     status = tree.tickOnce();
   }
   auto end = std::chrono::steady_clock::now();
