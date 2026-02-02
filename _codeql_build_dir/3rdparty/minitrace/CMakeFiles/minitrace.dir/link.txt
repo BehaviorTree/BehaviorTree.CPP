@@ -1,2 +1,0 @@
-/usr/bin/ar qc libminitrace.a CMakeFiles/minitrace.dir/minitrace.cpp.o
-/usr/bin/ranlib libminitrace.a

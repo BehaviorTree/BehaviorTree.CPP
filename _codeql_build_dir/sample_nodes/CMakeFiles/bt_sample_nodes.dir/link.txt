@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libbt_sample_nodes.a CMakeFiles/bt_sample_nodes.dir/crossdoor_nodes.cpp.o CMakeFiles/bt_sample_nodes.dir/dummy_nodes.cpp.o CMakeFiles/bt_sample_nodes.dir/movebase_node.cpp.o
-/usr/bin/ranlib lib/libbt_sample_nodes.a
