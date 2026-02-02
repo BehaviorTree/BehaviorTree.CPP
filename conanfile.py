@@ -33,6 +33,13 @@ class BehaviortreeCppConan(ConanFile):
         tc.cache_variables["USE_VENDORED_MINICORO"] = False
         tc.cache_variables["USE_VENDORED_MINITRACE"] = False
         tc.cache_variables["USE_VENDORED_TINYXML2"] = False
+
+        # Ensure MSVC runtime is correctly propagated
+        if self.settings.os == "Windows":
+            tc.cache_variables["CMAKE_MSVC_RUNTIME_LIBRARY"] = \
+                "MultiThreadedDebugDLL" if self.settings.build_type == "Debug" \
+                else "MultiThreadedDLL"
+
         tc.generate()
 
         deps = CMakeDeps(self)
