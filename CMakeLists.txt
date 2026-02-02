@@ -216,6 +216,7 @@ if (WIN32)
 endif()
 
 if (BTCPP_SHARED_LIBS)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE})
     target_compile_definitions(${BTCPP_LIBRARY}
         PUBLIC BTCPP_SHARED_LIBS
