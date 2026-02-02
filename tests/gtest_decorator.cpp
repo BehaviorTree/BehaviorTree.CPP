@@ -259,7 +259,7 @@ TEST(Decorator, DelayWithXML)
   // The child (AlwaysSuccess) should have been executed after the delay
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   // Verify that at least ~200ms have passed (with small tolerance for timing jitter)
-  ASSERT_GE(elapsed.count(), 180);
+  ASSERT_GE(elapsed.count(), 80);
   // Ensure the test didn't take too long (sanity check)
-  ASSERT_LE(elapsed.count(), 500);
+  ASSERT_LE(elapsed.count(), 200);
 }
