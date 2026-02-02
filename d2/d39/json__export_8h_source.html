@@ -293,18 +293,18 @@ $(document).ready(function(){initNavTree('d2/d39/json__export_8h_source.html','.
 <div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>      json[<span class="stringliteral">&quot;__type&quot;</span>] = BT::demangle(<span class="keyword">typeid</span>(T));</div>
 <div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    }</div>
 <div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>  };</div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>  to_json_converters_.insert({ <span class="keyword">typeid</span>(T), std::move(converter) });</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>  <span class="comment">//---------------------------------------------</span></div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>  <span class="comment">// add the vector&lt;T&gt; converter</span></div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>  <span class="keyword">auto</span> vector_converter = [converter](<span class="keyword">const</span> <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::<a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>&amp; entry, nlohmann::json&amp; json) {</div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    <span class="keyword">auto</span>&amp; vec = *<span class="keyword">const_cast</span>&lt;BT::Any&amp;&gt;(entry).castPtr&lt;std::vector&lt;T&gt;&gt;();</div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>    <span class="keywordflow">for</span>(<span class="keyword">const</span> <span class="keyword">auto</span>&amp; item : vec)</div>
-<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>    {</div>
-<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>      nlohmann::json item_json;</div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>      converter(BT::Any(item), item_json);</div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>      json.push_back(item_json);</div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    }</div>
-<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  };</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>  <span class="comment">//---------------------------------------------</span></div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>  <span class="comment">// add the vector&lt;T&gt; converter (must be created before moving converter)</span></div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>  <span class="keyword">auto</span> vector_converter = [converter](<span class="keyword">const</span> <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::<a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>&amp; entry, nlohmann::json&amp; json) {</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    <span class="keyword">auto</span>&amp; vec = *<span class="keyword">const_cast</span>&lt;BT::Any&amp;&gt;(entry).castPtr&lt;std::vector&lt;T&gt;&gt;();</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    <span class="keywordflow">for</span>(<span class="keyword">const</span> <span class="keyword">auto</span>&amp; item : vec)</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>    {</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>      nlohmann::json item_json;</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>      converter(BT::Any(item), item_json);</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>      json.push_back(item_json);</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>    }</div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>  };</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  to_json_converters_.insert({ <span class="keyword">typeid</span>(T), std::move(converter) });</div>
 <div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>  to_json_converters_.insert({ <span class="keyword">typeid</span>(std::vector&lt;T&gt;), std::move(vector_converter) });</div>
 <div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>}</div>
 <div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span> </div>
