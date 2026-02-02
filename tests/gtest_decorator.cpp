@@ -220,3 +220,46 @@ TEST(Decorator, RunOnce)
   // counters[1] contains the number of times TestB was ticked
   ASSERT_EQ(counters[1], 5);
 }
+
+// Test for DelayNode with XML: delay_msec port should be honored
+TEST(Decorator, DelayWithXML)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+       <BehaviorTree>
+          <Delay delay_msec="100">
+            <AlwaysSuccess/>
+          </Delay>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+
+  // First tick should return RUNNING (delay not complete)
+  auto start = std::chrono::steady_clock::now();
+  NodeStatus status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+
+  // Wait for a short time, still should be RUNNING
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+
+  // Poll until the delay completes (with timeout for safety)
+  while(status == NodeStatus::RUNNING)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    status = tree.tickOnce();
+  }
+  auto end = std::chrono::steady_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+  // The child (AlwaysSuccess) should have been executed after the delay
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  // Verify that at least ~200ms have passed (with small tolerance for timing jitter)
+  ASSERT_GE(elapsed.count(), 80);
+  // Ensure the test didn't take too long (sanity check)
+  ASSERT_LE(elapsed.count(), 200);
+}

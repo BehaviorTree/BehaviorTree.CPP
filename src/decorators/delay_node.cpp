@@ -12,7 +12,7 @@ DelayNode::DelayNode(const std::string& name, unsigned milliseconds)
 }
 
 DelayNode::DelayNode(const std::string& name, const NodeConfig& config)
-  : DecoratorNode(name, config), timer_id_(0), msec_(0)
+  : DecoratorNode(name, config), timer_id_(0), msec_(0), read_parameter_from_ports_(true)
 {}
 
 void DelayNode::halt()
