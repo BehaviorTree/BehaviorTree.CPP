@@ -778,6 +778,56 @@ TEST(PortTest, DefaultEmptyVector_Issue982)
                               << (result.empty() ? "" : result[0]) << "\"";
 }
 
+// Issue #989: JsonExporter::addConverter(std::function) had a use-after-move
+// bug where `converter` was moved into to_json_converters_ before
+// `vector_converter` captured it, causing bad_function_call at runtime.
+struct TestPoint989
+{
+  double x = 0;
+  double y = 0;
+};
+
+void TestPoint989ToJson(const TestPoint989& p, nlohmann::json& j)
+{
+  j["x"] = p.x;
+  j["y"] = p.y;
+}
+
+void TestPoint989FromJson(const nlohmann::json& j, TestPoint989& p)
+{
+  p.x = j.at("x").get<double>();
+  p.y = j.at("y").get<double>();
+}
+
+TEST(PortTest, JsonExporterVectorConverter_Issue989)
+{
+  auto& exporter = JsonExporter::get();
+  exporter.addConverter<TestPoint989>(&TestPoint989ToJson);
+  exporter.addConverter<TestPoint989>(&TestPoint989FromJson);
+
+  // Single element conversion should work
+  {
+    BT::Any any_val(TestPoint989{ 1.0, 2.0 });
+    nlohmann::json j;
+    ASSERT_TRUE(exporter.toJson(any_val, j));
+    EXPECT_DOUBLE_EQ(j["x"].get<double>(), 1.0);
+    EXPECT_DOUBLE_EQ(j["y"].get<double>(), 2.0);
+  }
+
+  // Vector conversion must not throw bad_function_call
+  {
+    std::vector<TestPoint989> vec = { { 1.0, 2.0 }, { 3.0, 4.0 } };
+    BT::Any any_vec(vec);
+    nlohmann::json j;
+    ASSERT_NO_THROW(ASSERT_TRUE(exporter.toJson(any_vec, j)));
+    ASSERT_EQ(j.size(), 2u);
+    EXPECT_DOUBLE_EQ(j[0]["x"].get<double>(), 1.0);
+    EXPECT_DOUBLE_EQ(j[0]["y"].get<double>(), 2.0);
+    EXPECT_DOUBLE_EQ(j[1]["x"].get<double>(), 3.0);
+    EXPECT_DOUBLE_EQ(j[1]["y"].get<double>(), 4.0);
+  }
+}
+
 // Issue #1065: passing a string literal like "1;2;3" through a SubTree port
 // to a LoopDouble node should work, but fails because the subtree remapping
 // stores the value as a plain std::string in the blackboard without converting

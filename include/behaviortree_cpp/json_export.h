@@ -198,9 +198,8 @@ inline void JsonExporter::addConverter(
       json["__type"] = BT::demangle(typeid(T));
     }
   };
-  to_json_converters_.insert({ typeid(T), std::move(converter) });
   //---------------------------------------------
-  // add the vector<T> converter
+  // add the vector<T> converter (must be created before moving converter)
   auto vector_converter = [converter](const BT::Any& entry, nlohmann::json& json) {
     auto& vec = *const_cast<BT::Any&>(entry).castPtr<std::vector<T>>();
     for(const auto& item : vec)
@@ -210,6 +209,7 @@ inline void JsonExporter::addConverter(
       json.push_back(item_json);
     }
   };
+  to_json_converters_.insert({ typeid(T), std::move(converter) });
   to_json_converters_.insert({ typeid(std::vector<T>), std::move(vector_converter) });
 }
 
