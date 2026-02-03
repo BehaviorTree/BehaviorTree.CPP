@@ -44,9 +44,30 @@ struct TreeNodeManifest
 using PortsRemapping = std::unordered_map<std::string, std::string>;
 using NonPortAttributes = std::unordered_map<std::string, std::string>;
 
+/**
+ * @brief Pre-conditions that can be attached to any node via XML attributes.
+ *
+ * Pre-conditions are evaluated in the order defined by this enum (FAILURE_IF first,
+ * then SUCCESS_IF, then SKIP_IF, then WHILE_TRUE).
+ *
+ * **Important**: FAILURE_IF, SUCCESS_IF, and SKIP_IF are evaluated **only once**
+ * when the node transitions from IDLE (or SKIPPED) to another state.
+ * They are NOT re-evaluated while the node is RUNNING.
+ *
+ * - `_failureIf="<script>"`: If true when node is IDLE, return FAILURE immediately (node's tick() is not called).
+ * - `_successIf="<script>"`: If true when node is IDLE, return SUCCESS immediately (node's tick() is not called).
+ * - `_skipIf="<script>"`: If true when node is IDLE, return SKIPPED immediately (node's tick() is not called).
+ * - `_while="<script>"`: Checked both on IDLE and RUNNING states.
+ *
+ *   If false when IDLE, return SKIPPED. If false when RUNNING, halt the node
+ *   and return SKIPPED. This is the only pre-condition that can interrupt
+ *   a running node.
+ *
+ * If you need a condition to be re-evaluated on every tick, use the
+ * `<Precondition>` decorator node with `else="RUNNING"` instead of these attributes.
+ */
 enum class PreCond
 {
-  // order of the enums also tell us the execution order
   FAILURE_IF = 0,
   SUCCESS_IF,
   SKIP_IF,

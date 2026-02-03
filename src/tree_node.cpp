@@ -186,7 +186,9 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
 {
   Ast::Environment env = { config().blackboard, config().enums };
 
-  // check the pre-conditions
+  // Check pre-conditions in order: FAILURE_IF, SUCCESS_IF, SKIP_IF, WHILE_TRUE.
+  // IMPORTANT: _failureIf, _successIf, and _skipIf are evaluated ONLY when the
+  // node is IDLE or SKIPPED. They are NOT re-evaluated while the node is RUNNING.
   for(size_t index = 0; index < size_t(PreCond::COUNT_); index++)
   {
     const auto& parse_executor = _p->pre_parsed[index];
@@ -197,7 +199,8 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
 
     const auto preID = static_cast<PreCond>(index);
 
-    // Some preconditions are applied only when the node state is IDLE or SKIPPED
+    // _failureIf, _successIf, _skipIf: only checked when IDLE or SKIPPED
+    // _while: checked here AND also when RUNNING (see below)
     if(_p->status == NodeStatus::IDLE || _p->status == NodeStatus::SKIPPED)
     {
       // what to do if the condition is true
@@ -224,7 +227,8 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     }
     else if(_p->status == NodeStatus::RUNNING && preID == PreCond::WHILE_TRUE)
     {
-      // what to do if the condition is false
+      // _while is the ONLY precondition checked while RUNNING.
+      // If the condition becomes false, halt the node and return SKIPPED.
       if(!parse_executor(env).cast<bool>())
       {
         haltNode();

@@ -99,18 +99,18 @@ jobs:
              --ignore-errors unused
         lcov --list coverage.info
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
-      continue-on-error: true
-      with:
-        files: coverage.info
-        flags: unittests
-        disable_search: true
-        disable_file_fixes: false
-        plugins: noop
-        network_filter: >-
-          include/behaviortree_cpp/,src/
-        token: ${{ secrets.CODECOV_TOKEN }}
+    # - name: Upload coverage reports to Codecov
+    #   uses: codecov/codecov-action@v5
+    #   continue-on-error: true
+    #   with:
+    #     files: coverage.info
+    #     flags: unittests
+    #     disable_search: true
+    #     disable_file_fixes: false
+    #     plugins: noop
+    #     network_filter: >-
+    #       include/behaviortree_cpp/,src/
+    #     token: ${{ secrets.CODECOV_TOKEN }}
 
     # --- Coveralls ---
     - name: Upload to Coveralls
@@ -120,14 +120,6 @@ jobs:
         file: coverage.info
         format: lcov
         github-token: ${{ secrets.GITHUB_TOKEN }}
-
-    # --- Codacy ---
-    - name: Upload to Codacy
-      uses: codacy/codacy-coverage-reporter-action@v1
-      continue-on-error: true
-      with:
-        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: coverage.info
 
     # --- SonarCloud ---
     - name: Run SonarCloud analysis
