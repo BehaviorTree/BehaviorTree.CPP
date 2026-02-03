@@ -222,13 +222,29 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
         return NodeStatus::SKIPPED;
       }
     }
-    else if(_p->status == NodeStatus::RUNNING && preID == PreCond::WHILE_TRUE)
+    else if(_p->status == NodeStatus::RUNNING)
     {
-      // what to do if the condition is false
-      if(!parse_executor(env).cast<bool>())
+      // Check WHILE_TRUE when running - halt if condition becomes false
+      if(preID == PreCond::WHILE_TRUE)
+      {
+        // what to do if the condition is false
+        if(!parse_executor(env).cast<bool>())
+        {
+          haltNode();
+          return NodeStatus::SKIPPED;
+        }
+      }
+      // Issue #917: Also check SUCCESS_IF and FAILURE_IF when running
+      // This allows reactive sequences to respond to condition changes
+      else if(preID == PreCond::SUCCESS_IF && parse_executor(env).cast<bool>())
       {
         haltNode();
-        return NodeStatus::SKIPPED;
+        return NodeStatus::SUCCESS;
+      }
+      else if(preID == PreCond::FAILURE_IF && parse_executor(env).cast<bool>())
+      {
+        haltNode();
+        return NodeStatus::FAILURE;
       }
     }
   }

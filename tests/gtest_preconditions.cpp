@@ -508,3 +508,88 @@ TEST(Preconditions, SkippedSequence)
   status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
 }
+
+// Test for Issue #917: _successIf and _failureIf not re-evaluated when node is RUNNING
+// in a ReactiveSequence
+TEST(Preconditions, Issue917_SuccessIfWhenRunning)
+{
+  // The issue is that _successIf is only checked when a node is IDLE or SKIPPED.
+  // In a ReactiveSequence, when a variable changes to make _successIf true,
+  // the running node should return SUCCESS (after being halted).
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <ReactiveSequence>
+        <Script code="loop := loop + 1; my_var := (loop >= 3) ? 42 : 0"/>
+        <KeepRunning _successIf="my_var != 0"/>
+      </ReactiveSequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("loop", 0);
+  tree.rootBlackboard()->set("my_var", 0);
+
+  // First tick: loop=1, my_var=0, KeepRunning returns RUNNING
+  auto status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("loop"), 1);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("my_var"), 0);
+
+  // Second tick: loop=2, my_var=0, KeepRunning still RUNNING
+  status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("loop"), 2);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("my_var"), 0);
+
+  // Third tick: loop=3, my_var=42, _successIf should trigger SUCCESS
+  status = tree.tickOnce();
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("loop"), 3);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("my_var"), 42);
+  // This is the critical assertion - the node should return SUCCESS
+  // because _successIf="my_var != 0" is now true
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+TEST(Preconditions, Issue917_FailureIfWhenRunning)
+{
+  // Similar test for _failureIf: verify it's also evaluated when RUNNING
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <ReactiveSequence>
+        <Script code="loop := loop + 1; my_var := (loop >= 3) ? 42 : 0"/>
+        <KeepRunning _failureIf="my_var != 0"/>
+      </ReactiveSequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("loop", 0);
+  tree.rootBlackboard()->set("my_var", 0);
+
+  // First tick: loop=1, my_var=0, KeepRunning returns RUNNING
+  auto status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+
+  // Second tick: loop=2, my_var=0, KeepRunning still RUNNING
+  status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+
+  // Third tick: loop=3, my_var=42, _failureIf should trigger FAILURE
+  status = tree.tickOnce();
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("my_var"), 42);
+  // This is the critical assertion - the node should return FAILURE
+  // because _failureIf="my_var != 0" is now true
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+}
