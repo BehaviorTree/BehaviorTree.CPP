@@ -183,9 +183,15 @@ std::chrono::milliseconds Groot2Publisher::maxHeartbeatDelay() const
 
 Groot2Publisher::~Groot2Publisher()
 {
-  removeAllHooks();
-
+  // First, signal threads to stop
   _p->active_server = false;
+
+  // Shutdown the ZMQ context to unblock any recv() calls immediately.
+  // This prevents waiting for the recv timeout (100ms) before threads can exit.
+  // Context shutdown will cause all blocking operations to return with ETERM error.
+  _p->context.shutdown();
+
+  // Now join the threads - they should exit quickly
   if(_p->server_thread.joinable())
   {
     _p->server_thread.join();
@@ -195,6 +201,9 @@ Groot2Publisher::~Groot2Publisher()
   {
     _p->heartbeat_thread.join();
   }
+
+  // Remove hooks after threads are stopped to avoid race conditions
+  removeAllHooks();
 
   flush();
 
@@ -260,9 +269,17 @@ void Groot2Publisher::serverLoop()
   while(_p->active_server)
   {
     zmq::multipart_t requestMsg;
-    if(!requestMsg.recv(socket) || requestMsg.size() == 0)
+    try
     {
-      continue;
+      if(!requestMsg.recv(socket) || requestMsg.size() == 0)
+      {
+        continue;
+      }
+    }
+    catch(const zmq::error_t&)
+    {
+      // Context was terminated or socket error - exit the loop
+      break;
     }
 
     // this heartbeat will help establishing if Groot is connected or not
@@ -490,7 +507,15 @@ void Groot2Publisher::serverLoop()
       }
     }
     // send the reply
-    reply_msg.send(socket);
+    try
+    {
+      reply_msg.send(socket);
+    }
+    catch(const zmq::error_t&)
+    {
+      // Context was terminated or socket error - exit the loop
+      break;
+    }
   }
 }
 
