@@ -20,12 +20,12 @@
 using BT::NodeStatus;
 using std::chrono::milliseconds;
 
-// Timing constants for faster test execution
-constexpr int DEADLINE_MS = 30;  // Timeout threshold
+// Timing constants - need generous margins for Windows timer resolution (~15.6ms)
+constexpr int DEADLINE_MS = 100;  // Timeout threshold
 constexpr auto ACTION_LONG_MS =
-    milliseconds(50);  // Action longer than deadline (will timeout)
+    milliseconds(150);  // Action longer than deadline (will timeout)
 constexpr auto ACTION_SHORT_MS =
-    milliseconds(20);  // Action shorter than deadline (will succeed)
+    milliseconds(30);  // Action shorter than deadline (will succeed)
 
 struct DeadlineTest : testing::Test
 {

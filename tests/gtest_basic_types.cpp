@@ -97,8 +97,8 @@ TEST(BasicTypes, ConvertFromString_Int)
   ASSERT_EQ(convertFromString<int>("-42"), -42);
   ASSERT_EQ(convertFromString<int>("0"), 0);
 
-  ASSERT_THROW(convertFromString<int>("not_a_number"), RuntimeError);
-  ASSERT_THROW(convertFromString<int>(""), RuntimeError);
+  ASSERT_THROW((void)convertFromString<int>("not_a_number"), RuntimeError);
+  ASSERT_THROW((void)convertFromString<int>(""), RuntimeError);
 }
 
 TEST(BasicTypes, ConvertFromString_Int64)
@@ -120,7 +120,7 @@ TEST(BasicTypes, ConvertFromString_Double)
   ASSERT_DOUBLE_EQ(convertFromString<double>("0.0"), 0.0);
 
   // Invalid double throws std::invalid_argument
-  ASSERT_THROW(convertFromString<double>("not_a_number"), std::invalid_argument);
+  ASSERT_THROW((void)convertFromString<double>("not_a_number"), std::invalid_argument);
 }
 
 TEST(BasicTypes, ConvertFromString_Bool)
@@ -135,7 +135,7 @@ TEST(BasicTypes, ConvertFromString_Bool)
   ASSERT_FALSE(convertFromString<bool>("FALSE"));
   ASSERT_FALSE(convertFromString<bool>("0"));
 
-  ASSERT_THROW(convertFromString<bool>("invalid"), RuntimeError);
+  ASSERT_THROW((void)convertFromString<bool>("invalid"), RuntimeError);
 }
 
 TEST(BasicTypes, ConvertFromString_String)
@@ -153,7 +153,7 @@ TEST(BasicTypes, ConvertFromString_NodeStatus)
   ASSERT_EQ(convertFromString<NodeStatus>("IDLE"), NodeStatus::IDLE);
   ASSERT_EQ(convertFromString<NodeStatus>("SKIPPED"), NodeStatus::SKIPPED);
 
-  ASSERT_THROW(convertFromString<NodeStatus>("INVALID"), RuntimeError);
+  ASSERT_THROW((void)convertFromString<NodeStatus>("INVALID"), RuntimeError);
 }
 
 TEST(BasicTypes, ConvertFromString_NodeType)

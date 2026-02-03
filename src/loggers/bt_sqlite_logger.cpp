@@ -57,7 +57,7 @@ void execStatement(sqlite3_stmt* stmt)
 
 SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepath,
                            bool append)
-  : StatusChangeLogger(tree.rootNode())
+  : StatusChangeLogger()  // Deferred subscription
 {
   const auto extension = filepath.filename().extension();
   if(extension != ".db3" && extension != ".btdb")
@@ -129,6 +129,13 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
   }
 
   writer_thread_ = std::thread(&SqliteLogger::writerLoop, this);
+
+  // Wait for writer thread to signal readiness (under mutex for proper synchronization)
+  {
+    std::unique_lock lk(queue_mutex_);
+    queue_cv_.wait(lk, [this]() { return writer_ready_.load(); });
+  }
+  subscribeToTreeChanges(tree.rootNode());
 }
 
 SqliteLogger::~SqliteLogger()
@@ -203,6 +210,13 @@ void SqliteLogger::execSqlStatement(std::string statement)
 void SqliteLogger::writerLoop()
 {
   std::deque<Transition> transitions;
+
+  // Signal readiness while holding the lock (establishes happens-before with constructor)
+  {
+    std::scoped_lock lk(queue_mutex_);
+    writer_ready_.store(true, std::memory_order_release);
+  }
+  queue_cv_.notify_one();
 
   while(loop_)
   {
