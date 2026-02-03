@@ -107,6 +107,13 @@ var namespace_b_t =
       [ "DECORATOR", "d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363ea328f58520ec7de39622da273d415c408", null ],
       [ "SUBTREE", "d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363eaaec2090d0bba165a11a2dfa6c2cc301c", null ]
     ] ],
+    [ "PreCond", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228", [
+      [ "FAILURE_IF", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228a6b83f2371841a7dc9f71487ede4cd390", null ],
+      [ "SUCCESS_IF", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228aa2bdf3dce93474f3805380b16d3f8ed1", null ],
+      [ "SKIP_IF", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228a485e24d172e1b00a832da44d01e2d671", null ],
+      [ "WHILE_TRUE", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228ac1ea5352b6d6e5f451cbfe3e4199cec9", null ],
+      [ "COUNT_", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228a6bc642fb244f024a69b6669e1762bb15", null ]
+    ] ],
     [ "BidirectionalPort", "d2/d8d/namespace_b_t.html#aa5246156c75012e4106eb05bc9c3cf47", null ],
     [ "BidirectionalPort", "d2/d8d/namespace_b_t.html#a13321f9dceb6909198966973042a13a1", null ],
     [ "BlackboardBackup", "d2/d8d/namespace_b_t.html#a39d3de37134ad6c26809809a99c85cd1", null ],

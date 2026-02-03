@@ -441,7 +441,7 @@ Enumerations</h2></td></tr>
 , <b>relative</b>
  }</td></tr>
 <tr class="separator:a48001cdc54ea73b84f32a04197b10984"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a300ae4685c319c4027015e7e031228"><td class="memItemLeft" align="right" valign="top"><a id="a9a300ae4685c319c4027015e7e031228" name="a9a300ae4685c319c4027015e7e031228"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><b>PreCond</b> { <br />
+<tr class="memitem:a9a300ae4685c319c4027015e7e031228"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228">PreCond</a> { <br />
 &#160;&#160;<b>FAILURE_IF</b> = 0
 , <b>SUCCESS_IF</b>
 , <b>SKIP_IF</b>
@@ -450,6 +450,7 @@ Enumerations</h2></td></tr>
 &#160;&#160;<b>COUNT_</b>
 <br />
  }</td></tr>
+<tr class="memdesc:a9a300ae4685c319c4027015e7e031228"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pre-conditions that can be attached to any node via XML attributes.  <a href="../../d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228">More...</a><br /></td></tr>
 <tr class="separator:a9a300ae4685c319c4027015e7e031228"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d7928f534d107f01bf32885641f27c8"><td class="memItemLeft" align="right" valign="top"><a id="a9d7928f534d107f01bf32885641f27c8" name="a9d7928f534d107f01bf32885641f27c8"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><b>PostCond</b> { <br />
 &#160;&#160;<b>ON_HALTED</b> = 0
@@ -762,7 +763,7 @@ template&lt;&gt; </td></tr>
 <tr class="separator:afb3b554eb6a64711b61a3dee286f16fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d827ddf8ef81a5f69c000553cae6975"><td class="memItemLeft" align="right" valign="top"><a id="a0d827ddf8ef81a5f69c000553cae6975" name="a0d827ddf8ef81a5f69c000553cae6975"></a>
 template&lt;&gt; </td></tr>
-<tr class="memitem:a0d827ddf8ef81a5f69c000553cae6975"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><b>toStr&lt; BT::PreCond &gt;</b> (const BT::PreCond &amp;cond)</td></tr>
+<tr class="memitem:a0d827ddf8ef81a5f69c000553cae6975"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><b>toStr&lt; BT::PreCond &gt;</b> (const <a class="el" href="../../d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228">BT::PreCond</a> &amp;cond)</td></tr>
 <tr class="separator:a0d827ddf8ef81a5f69c000553cae6975"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac847a4e84e268fdb6cee10726c54a148"><td class="memTemplParams" colspan="2"><a id="ac847a4e84e268fdb6cee10726c54a148" name="ac847a4e84e268fdb6cee10726c54a148"></a>
 template&lt;typename T &gt; </td></tr>
@@ -954,6 +955,41 @@ else{
 </table>
 </div><div class="memdoc">
 <p>Enumerates the states every node can be in after execution during a particular time step. IMPORTANT: Your custom nodes should NEVER return IDLE. </p>
+
+</div>
+</div>
+<a id="a9a300ae4685c319c4027015e7e031228" name="a9a300ae4685c319c4027015e7e031228"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a300ae4685c319c4027015e7e031228">&#9670;&#160;</a></span>PreCond</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="../../d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228">BT::PreCond</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Pre-conditions that can be attached to any node via XML attributes. </p>
+<p>Pre-conditions are evaluated in the order defined by this enum (FAILURE_IF first, then SUCCESS_IF, then SKIP_IF, then WHILE_TRUE).</p>
+<p><b>Important</b>: FAILURE_IF, SUCCESS_IF, and SKIP_IF are evaluated <b>only once</b> when the node transitions from IDLE (or SKIPPED) to another state. They are NOT re-evaluated while the node is RUNNING.</p>
+<ul>
+<li><code>_failureIf="&lt;script&gt;"</code>: If true when node is IDLE, return FAILURE immediately (node's tick() is not called).</li>
+<li><code>_successIf="&lt;script&gt;"</code>: If true when node is IDLE, return SUCCESS immediately (node's tick() is not called).</li>
+<li><code>_skipIf="&lt;script&gt;"</code>: If true when node is IDLE, return SKIPPED immediately (node's tick() is not called).</li>
+<li><p class="startli"><code>_while="&lt;script&gt;"</code>: Checked both on IDLE and RUNNING states.</p>
+<p class="startli">If false when IDLE, return SKIPPED. If false when RUNNING, halt the node and return SKIPPED. This is the only pre-condition that can interrupt a running node.</p>
+</li>
+</ul>
+<p>If you need a condition to be re-evaluated on every tick, use the <code>&lt;Precondition&gt;</code> decorator node with <code>else="RUNNING"</code> instead of these attributes. </p>
 
 </div>
 </div>
