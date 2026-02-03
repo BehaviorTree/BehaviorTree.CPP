@@ -18,6 +18,17 @@ static const char* xml_text = R"(
 </root>
 )";
 
+static const char* xml_text_sequence = R"(
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <AlwaysSuccess/>
+            <ThrowRuntimeError/>
+        </Sequence>
+    </BehaviorTree>
+</root>
+)";
+
 void throwRuntimeError()
 {
   BT::BehaviorTreeFactory factory;
@@ -45,4 +56,51 @@ TEST(Groot2PublisherTest, EnsureNoInfiniteLoopOnThrow)
         std::exit(EXIT_SUCCESS);
       },
       ::testing::ExitedWithCode(EXIT_SUCCESS), ".*");
+}
+
+// Test that destructor completes quickly even after exception
+// This test runs multiple times to catch race conditions
+TEST(Groot2PublisherTest, DestructorCompletesAfterException)
+{
+  for(int i = 0; i < 5; i++)
+  {
+    BT::BehaviorTreeFactory factory;
+    factory.registerSimpleAction("ThrowRuntimeError",
+                                 [](BT::TreeNode&) -> BT::NodeStatus {
+                                   throw BT::RuntimeError("Test exception");
+                                 });
+
+    auto tree = factory.createTreeFromText(xml_text);
+    BT::Groot2Publisher publisher(tree, 1667 + i * 2);
+    EXPECT_THROW(tree.tickExactlyOnce(), BT::RuntimeError);
+  }
+}
+
+// Test that destructor completes quickly when tree has multiple nodes
+TEST(Groot2PublisherTest, DestructorCompletesWithMultipleNodes)
+{
+  BT::BehaviorTreeFactory factory;
+  factory.registerSimpleAction("ThrowRuntimeError", [](BT::TreeNode&) -> BT::NodeStatus {
+    throw BT::RuntimeError("Test exception in sequence");
+  });
+
+  auto tree = factory.createTreeFromText(xml_text_sequence);
+  BT::Groot2Publisher publisher(tree, 1677);
+  EXPECT_THROW(tree.tickExactlyOnce(), BT::RuntimeError);
+}
+
+// Test rapid creation and destruction of publishers
+TEST(Groot2PublisherTest, RapidCreateDestroy)
+{
+  for(int i = 0; i < 3; i++)
+  {
+    BT::BehaviorTreeFactory factory;
+    factory.registerSimpleAction(
+        "ThrowRuntimeError",
+        [](BT::TreeNode&) -> BT::NodeStatus { throw BT::RuntimeError("Rapid test"); });
+
+    auto tree = factory.createTreeFromText(xml_text);
+    BT::Groot2Publisher publisher(tree, 1687 + i * 2);
+    EXPECT_THROW(tree.tickExactlyOnce(), BT::RuntimeError);
+  }
 }
