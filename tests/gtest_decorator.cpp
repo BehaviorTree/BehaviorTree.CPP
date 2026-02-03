@@ -20,12 +20,19 @@
 using BT::NodeStatus;
 using std::chrono::milliseconds;
 
+// Timing constants for faster test execution
+constexpr int DEADLINE_MS = 30;  // Timeout threshold
+constexpr auto ACTION_LONG_MS =
+    milliseconds(50);  // Action longer than deadline (will timeout)
+constexpr auto ACTION_SHORT_MS =
+    milliseconds(20);  // Action shorter than deadline (will succeed)
+
 struct DeadlineTest : testing::Test
 {
   BT::TimeoutNode root;
   BT::AsyncActionTest action;
 
-  DeadlineTest() : root("deadline", 300), action("action", milliseconds(500))
+  DeadlineTest() : root("deadline", DEADLINE_MS), action("action", ACTION_LONG_MS)
   {
     root.setChild(&action);
   }
@@ -49,7 +56,7 @@ struct RepeatTestAsync : testing::Test
   BT::RepeatNode root;
   BT::AsyncActionTest action;
 
-  RepeatTestAsync() : root("repeat", 3), action("action", milliseconds(100))
+  RepeatTestAsync() : root("repeat", 3), action("action", milliseconds(20))
   {
     root.setChild(&action);
   }
@@ -86,12 +93,12 @@ struct TimeoutAndRetry : testing::Test
 TEST_F(DeadlineTest, DeadlineTriggeredTest)
 {
   BT::NodeStatus state = root.executeTick();
-  // deadline in 300 ms, action requires 500 ms
+  // Action takes longer than deadline, so it should timeout
 
   ASSERT_EQ(NodeStatus::RUNNING, action.status());
   ASSERT_EQ(NodeStatus::RUNNING, state);
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(400));
+  std::this_thread::sleep_for(ACTION_LONG_MS + milliseconds(20));
   state = root.executeTick();
   ASSERT_EQ(NodeStatus::FAILURE, state);
   ASSERT_EQ(NodeStatus::IDLE, action.status());
@@ -99,15 +106,15 @@ TEST_F(DeadlineTest, DeadlineTriggeredTest)
 
 TEST_F(DeadlineTest, DeadlineNotTriggeredTest)
 {
-  action.setTime(milliseconds(200));
-  // deadline in 300 ms
+  action.setTime(ACTION_SHORT_MS);
+  // Action shorter than deadline, should succeed
 
   BT::NodeStatus state = root.executeTick();
 
   ASSERT_EQ(NodeStatus::RUNNING, action.status());
   ASSERT_EQ(NodeStatus::RUNNING, state);
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(400));
+  std::this_thread::sleep_for(ACTION_SHORT_MS + milliseconds(20));
   state = root.executeTick();
   ASSERT_EQ(NodeStatus::IDLE, action.status());
   ASSERT_EQ(NodeStatus::SUCCESS, state);
@@ -262,4 +269,193 @@ TEST(Decorator, DelayWithXML)
   ASSERT_GE(elapsed.count(), 80);
   // Ensure the test didn't take too long (sanity check)
   ASSERT_LE(elapsed.count(), 200);
+}
+
+// Tests for ForceFailure decorator
+TEST(Decorator, ForceFailure_ChildSuccess)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <ForceFailure>
+            <AlwaysSuccess/>
+          </ForceFailure>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickWhileRunning();
+
+  // ForceFailure should return FAILURE even when child succeeds
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+}
+
+TEST(Decorator, ForceFailure_ChildFailure)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <ForceFailure>
+            <AlwaysFailure/>
+          </ForceFailure>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickWhileRunning();
+
+  // ForceFailure should return FAILURE when child fails
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+}
+
+// Tests for ForceSuccess decorator (for completeness)
+TEST(Decorator, ForceSuccess_ChildFailure)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <ForceSuccess>
+            <AlwaysFailure/>
+          </ForceSuccess>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickWhileRunning();
+
+  // ForceSuccess should return SUCCESS even when child fails
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+TEST(Decorator, ForceSuccess_ChildSuccess)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <ForceSuccess>
+            <AlwaysSuccess/>
+          </ForceSuccess>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickWhileRunning();
+
+  // ForceSuccess should return SUCCESS when child succeeds
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+// Tests for Inverter decorator
+TEST(Decorator, Inverter_ChildSuccess)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Inverter>
+            <AlwaysSuccess/>
+          </Inverter>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickWhileRunning();
+
+  // Inverter should return FAILURE when child succeeds
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+}
+
+TEST(Decorator, Inverter_ChildFailure)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Inverter>
+            <AlwaysFailure/>
+          </Inverter>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickWhileRunning();
+
+  // Inverter should return SUCCESS when child fails
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+TEST(Decorator, Inverter_InSequence)
+{
+  // Test Inverter behavior within a sequence
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Sequence>
+            <Inverter>
+              <AlwaysFailure/>
+            </Inverter>
+            <AlwaysSuccess/>
+          </Sequence>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickWhileRunning();
+
+  // Inverter converts FAILURE to SUCCESS, so sequence continues and succeeds
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+// Test KeepRunningUntilFailure decorator
+TEST(Decorator, KeepRunningUntilFailure)
+{
+  BT::BehaviorTreeFactory factory;
+
+  int tick_count = 0;
+  factory.registerSimpleAction("SuccessThenFail", [&tick_count](BT::TreeNode&) {
+    tick_count++;
+    if(tick_count < 3)
+    {
+      return NodeStatus::SUCCESS;
+    }
+    return NodeStatus::FAILURE;
+  });
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <KeepRunningUntilFailure>
+            <SuccessThenFail/>
+          </KeepRunningUntilFailure>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+
+  // First tick - child succeeds, should return RUNNING
+  auto status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+  ASSERT_EQ(tick_count, 1);
+
+  // Second tick - child succeeds again, should return RUNNING
+  status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::RUNNING);
+  ASSERT_EQ(tick_count, 2);
+
+  // Third tick - child fails, should return FAILURE
+  status = tree.tickOnce();
+  ASSERT_EQ(status, NodeStatus::FAILURE);
+  ASSERT_EQ(tick_count, 3);
 }
