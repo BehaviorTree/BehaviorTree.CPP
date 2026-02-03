@@ -24,6 +24,7 @@ set(BT_TESTS
   gtest_name_validation.cpp
   gtest_json.cpp
   gtest_loggers.cpp
+  gtest_loop.cpp
   gtest_reactive.cpp
   gtest_reactive_backchaining.cpp
   gtest_sequence.cpp
