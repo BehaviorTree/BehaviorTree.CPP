@@ -14,76 +14,88 @@ C++ library for behavior tree execution.
 
 ## Built-in Control Nodes
 
-### Sequences
-- @ref BT::SequenceNode
-- @ref BT::ReactiveSequence
-- @ref BT::SequenceWithMemory
-
-### Fallbacks
-- @ref BT::FallbackNode
-- @ref BT::ReactiveFallback
-
-### Parallels
-- @ref BT::ParallelNode
-- @ref BT::ParallelAllNode
-
-### Conditional
-- @ref BT::IfThenElseNode
-- @ref BT::WhileDoElseNode
-- @ref BT::SwitchNode
-- @ref BT::ManualSelectorNode
+<table>
+<tr><th>Category</th><th>Nodes</th></tr>
+<tr><td>Sequences</td><td><ul>
+  <li>@ref BT::SequenceNode</li>
+  <li>@ref BT::ReactiveSequence</li>
+  <li>@ref BT::SequenceWithMemory</li>
+</ul></td></tr>
+<tr><td>Fallbacks</td><td><ul>
+  <li>@ref BT::FallbackNode</li>
+  <li>@ref BT::ReactiveFallback</li>
+</ul></td></tr>
+<tr><td>Parallels</td><td><ul>
+  <li>@ref BT::ParallelNode</li>
+  <li>@ref BT::ParallelAllNode</li>
+</ul></td></tr>
+<tr><td>Conditional</td><td><ul>
+  <li>@ref BT::IfThenElseNode</li>
+  <li>@ref BT::WhileDoElseNode</li>
+  <li>@ref BT::SwitchNode</li>
+  <li>@ref BT::ManualSelectorNode</li>
+</ul></td></tr>
+</table>
 
 ## Built-in Decorators
 
-### Repetition
-- @ref BT::RetryNode
-- @ref BT::RepeatNode
-- @ref BT::LoopNode
-
-### Timing
-- @ref BT::TimeoutNode
-- @ref BT::DelayNode
-
-### Result Modification
-- @ref BT::InverterNode
-- @ref BT::ForceSuccessNode
-- @ref BT::ForceFailureNode
-
-### Execution Control
-- @ref BT::RunOnceNode
-- @ref BT::KeepRunningUntilFailureNode
-
-### Subtrees
-- @ref BT::SubTreeNode
-
-### Preconditions
-- @ref BT::PreconditionNode
-- @ref BT::EntryUpdatedDecorator
+<table>
+<tr><th>Category</th><th>Nodes</th></tr>
+<tr><td>Repetition</td><td><ul>
+  <li>@ref BT::RetryNode</li>
+  <li>@ref BT::RepeatNode</li>
+  <li>@ref BT::LoopNode</li>
+</ul></td></tr>
+<tr><td>Timing</td><td><ul>
+  <li>@ref BT::TimeoutNode</li>
+  <li>@ref BT::DelayNode</li>
+</ul></td></tr>
+<tr><td>Result Modification</td><td><ul>
+  <li>@ref BT::InverterNode</li>
+  <li>@ref BT::ForceSuccessNode</li>
+  <li>@ref BT::ForceFailureNode</li>
+</ul></td></tr>
+<tr><td>Execution Control</td><td><ul>
+  <li>@ref BT::RunOnceNode</li>
+  <li>@ref BT::KeepRunningUntilFailureNode</li>
+</ul></td></tr>
+<tr><td>Subtrees</td><td><ul>
+  <li>@ref BT::SubTreeNode</li>
+</ul></td></tr>
+<tr><td>Preconditions</td><td><ul>
+  <li>@ref BT::PreconditionNode</li>
+  <li>@ref BT::EntryUpdatedDecorator</li>
+</ul></td></tr>
+</table>
 
 ## Built-in Actions
 
-### Status
-- @ref BT::AlwaysSuccessNode
-- @ref BT::AlwaysFailureNode
-
-### Blackboard
-- @ref BT::SetBlackboardNode
-- @ref BT::UnsetBlackboardNode
-
-### Utility
-- @ref BT::SleepNode
-- @ref BT::TestNode
-
-### Scripting
-- @ref BT::ScriptNode
-- @ref BT::ScriptCondition
-
-### Entry Updated
-- @ref BT::EntryUpdatedAction
-
-### Queue
-- @ref BT::PopFromQueue
-- @ref BT::QueueSize
+<table>
+<tr><th>Category</th><th>Nodes</th></tr>
+<tr><td>Status</td><td><ul>
+  <li>@ref BT::AlwaysSuccessNode</li>
+  <li>@ref BT::AlwaysFailureNode</li>
+</ul></td></tr>
+<tr><td>Blackboard</td><td><ul>
+  <li>@ref BT::SetBlackboardNode</li>
+  <li>@ref BT::UnsetBlackboardNode</li>
+</ul></td></tr>
+<tr><td>Utility</td><td><ul>
+  <li>@ref BT::SleepNode</li>
+  <li>@ref BT::TestNode</li>
+</ul></td></tr>
+<tr><td>Scripting</td><td><ul>
+  <li>@ref BT::ScriptNode</li>
+  <li>@ref BT::ScriptCondition</li>
+</ul></td></tr>
+<tr><td>Entry Updated</td><td><ul>
+  <li>@ref BT::EntryUpdatedAction</li>
+</ul></td></tr>
+<tr><td>Queue</td><td><ul>
+  <li>@ref BT::PopFromQueue</li>
+  <li>@ref BT::QueueSize</li>
+</ul></td></tr>
+</table>
 
 
 ## Logging & Tools
