@@ -1,7 +1,7 @@
 var index =
 [
     [ "Quick Start", "index.html#autotoc_md0", null ],
-    [ "Node Types", "index.html#autotoc_md1", null ],
+    [ "Core Concepts", "index.html#autotoc_md1", null ],
     [ "Built-in Control Nodes", "index.html#autotoc_md2", [
       [ "Sequences", "index.html#autotoc_md3", null ],
       [ "Fallbacks", "index.html#autotoc_md4", null ],
@@ -24,7 +24,6 @@ var index =
       [ "Entry Updated", "index.html#autotoc_md19", null ],
       [ "Queue", "index.html#autotoc_md20", null ]
     ] ],
-    [ "Core Concepts", "index.html#autotoc_md21", null ],
-    [ "Logging & Tools", "index.html#autotoc_md22", null ],
-    [ "Resources", "index.html#autotoc_md23", null ]
+    [ "Logging & Tools", "index.html#autotoc_md21", null ],
+    [ "Resources", "index.html#autotoc_md22", null ]
 ];

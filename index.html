@@ -17,6 +17,8 @@
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -102,19 +104,12 @@ Quick Start</h1>
 <li><a class="el" href="da/d61/class_b_t_1_1_tree_node.html">BT::TreeNode</a> - Base class for all nodes</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md1"></a>
-Node Types</h1>
-<table class="markdownTable">
-<tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Category   </th><th class="markdownTableHeadNone">Description   </th><th class="markdownTableHeadNone">Key Classes    </th></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><b>Actions</b>   </td><td class="markdownTableBodyNone">Execute tasks   </td><td class="markdownTableBodyNone"><a class="el" href="da/d73/class_b_t_1_1_sync_action_node.html">BT::SyncActionNode</a>, <a class="el" href="d0/d1f/class_b_t_1_1_stateful_action_node.html">BT::StatefulActionNode</a>    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><b>Conditions</b>   </td><td class="markdownTableBodyNone">Check state   </td><td class="markdownTableBodyNone"><a class="el" href="dc/dfc/class_b_t_1_1_condition_node.html">BT::ConditionNode</a>    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><b>Control</b>   </td><td class="markdownTableBodyNone">Flow control   </td><td class="markdownTableBodyNone"><a class="el" href="d9/ddd/class_b_t_1_1_sequence_node.html">BT::SequenceNode</a>, <a class="el" href="dc/da6/class_b_t_1_1_fallback_node.html">BT::FallbackNode</a>, <a class="el" href="d1/dee/class_b_t_1_1_parallel_node.html">BT::ParallelNode</a>    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><b>Decorators</b>   </td><td class="markdownTableBodyNone">Modify behavior   </td><td class="markdownTableBodyNone"><a class="el" href="dd/de4/class_b_t_1_1_retry_node.html">BT::RetryNode</a>, <a class="el" href="d4/d20/class_b_t_1_1_timeout_node.html">BT::TimeoutNode</a>, <a class="el" href="d2/ded/class_b_t_1_1_inverter_node.html">BT::InverterNode</a>   </td></tr>
-</table>
+Core Concepts</h1>
+<ul>
+<li><a class="el" href="d8/d5e/class_b_t_1_1_port_info.html">BT::PortInfo</a> - Type-safe port system</li>
+<li><a class="el" href="d2/d8d/namespace_b_t.html#a7ed468293f4e7dc7ebbaca1a475526f3">BT::Expected</a> - Result type for error handling</li>
+<li><a class="el" href="d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a> - Node execution states</li>
+</ul>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Built-in Control Nodes</h1>
 <h2><a class="anchor" id="autotoc_md3"></a>
@@ -221,20 +216,13 @@ Queue</h2>
 <li><a class="el" href="d9/d8c/class_b_t_1_1_queue_size.html">BT::QueueSize</a></li>
 </ul>
 <h1><a class="anchor" id="autotoc_md21"></a>
-Core Concepts</h1>
-<ul>
-<li><a class="el" href="d8/d5e/class_b_t_1_1_port_info.html">BT::PortInfo</a> - Type-safe port system</li>
-<li><a class="el" href="d2/d8d/namespace_b_t.html#a7ed468293f4e7dc7ebbaca1a475526f3">BT::Expected</a> - Result type for error handling</li>
-<li><a class="el" href="d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a> - Node execution states</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md22"></a>
 Logging &amp; Tools</h1>
 <ul>
 <li><a class="el" href="d2/d7b/class_b_t_1_1_file_logger2.html">BT::FileLogger2</a> - File logging</li>
 <li><a class="el" href="d1/d52/class_b_t_1_1_std_cout_logger.html">BT::StdCoutLogger</a> - Console output</li>
 <li><a class="el" href="da/df5/class_b_t_1_1_groot2_publisher.html">BT::Groot2Publisher</a> - Groot2 editor integration</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md23"></a>
+<h1><a class="anchor" id="autotoc_md22"></a>
 Resources</h1>
 <ul>
 <li><a href="https://github.com/BehaviorTree/BehaviorTree.CPP">GitHub Repository</a></li>
