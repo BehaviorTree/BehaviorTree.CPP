@@ -234,7 +234,8 @@ TEST_F(WhileDoElseTest, InvalidChildCount_One)
     </root>)";
 
   auto tree = factory.createTreeFromText(xml_text);
-  ASSERT_THROW(tree.tickWhileRunning(), std::logic_error);
+  // Throws LogicError, wrapped in NodeExecutionError with backtrace
+  ASSERT_THROW(tree.tickWhileRunning(), BT::BehaviorTreeException);
 }
 
 TEST_F(WhileDoElseTest, InvalidChildCount_Four)
@@ -253,7 +254,8 @@ TEST_F(WhileDoElseTest, InvalidChildCount_Four)
     </root>)";
 
   auto tree = factory.createTreeFromText(xml_text);
-  ASSERT_THROW(tree.tickWhileRunning(), std::logic_error);
+  // Throws LogicError, wrapped in NodeExecutionError with backtrace
+  ASSERT_THROW(tree.tickWhileRunning(), BT::BehaviorTreeException);
 }
 
 TEST_F(WhileDoElseTest, ConditionRunning)
