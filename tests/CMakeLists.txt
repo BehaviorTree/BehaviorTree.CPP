@@ -46,6 +46,7 @@ set(BT_TESTS
   gtest_subtree.cpp
   gtest_switch.cpp
   gtest_tree.cpp
+  gtest_exception_tracking.cpp
   gtest_updates.cpp
   gtest_wakeup.cpp
   gtest_while_do_else.cpp

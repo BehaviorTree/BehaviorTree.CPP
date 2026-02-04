@@ -16,6 +16,8 @@
 
 #include <stdexcept>
 #include <string>
+#include <string_view>
+#include <vector>
 
 #include "utils/strcat.hpp"
 
@@ -65,6 +67,65 @@ public:
   template <typename... SV>
   RuntimeError(const SV&... args) : BehaviorTreeException(args...)
   {}
+};
+
+/// Information about a node in the tick backtrace.
+/// Uses string_view since these reference strings owned by TreeNode,
+/// which outlives the exception in normal usage.
+struct TickBacktraceEntry
+{
+  std::string_view node_name;
+  std::string_view node_path;
+  std::string_view registration_name;
+};
+
+/// Exception thrown when a node's tick() method throws an exception.
+/// Contains the originating node and full tick backtrace showing the path through the tree.
+class NodeExecutionError : public RuntimeError
+{
+public:
+  NodeExecutionError(std::vector<TickBacktraceEntry> backtrace,
+                     const std::string& original_message)
+    : RuntimeError(formatMessage(backtrace, original_message))
+    , backtrace_(std::move(backtrace))
+    , original_message_(original_message)
+  {}
+
+  /// The node that threw the exception (innermost in the backtrace)
+  [[nodiscard]] const TickBacktraceEntry& failedNode() const
+  {
+    return backtrace_.back();
+  }
+
+  /// Full tick backtrace from root to failing node
+  [[nodiscard]] const std::vector<TickBacktraceEntry>& backtrace() const
+  {
+    return backtrace_;
+  }
+
+  [[nodiscard]] const std::string& originalMessage() const
+  {
+    return original_message_;
+  }
+
+private:
+  std::vector<TickBacktraceEntry> backtrace_;
+  std::string original_message_;
+
+  static std::string formatMessage(const std::vector<TickBacktraceEntry>& bt,
+                                   const std::string& original_msg)
+  {
+    std::string msg =
+        StrCat("Exception in node '", bt.back().node_path, "': ", original_msg);
+    msg += "\nTick backtrace:";
+    for(size_t i = 0; i < bt.size(); ++i)
+    {
+      const bool is_last = (i == bt.size() - 1);
+      msg += StrCat("\n  ", is_last ? "-> " : "   ", bt[i].node_path, " (",
+                    bt[i].registration_name, ")");
+    }
+    return msg;
+  }
 };
 
 }  // namespace BT
