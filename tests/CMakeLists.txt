@@ -1,6 +1,19 @@
 ######################################################
 # TESTS
 
+######################################################
+# Plugin for Issue #953 test (must be built before tests)
+# This plugin has a custom type with convertFromString ONLY in the plugin
+add_library(plugin_issue953 SHARED plugin_issue953/plugin_issue953.cpp)
+target_compile_definitions(plugin_issue953 PRIVATE BT_PLUGIN_EXPORT)
+set_target_properties(plugin_issue953 PROPERTIES
+  PREFIX ""
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
+target_link_libraries(plugin_issue953 ${BTCPP_LIBRARY})
+
+######################################################
+
 set(BT_TESTS
   src/action_test_node.cpp
   src/condition_test_node.cpp
@@ -38,6 +51,7 @@ set(BT_TESTS
   gtest_while_do_else.cpp
   gtest_interface.cpp
   gtest_simple_string.cpp
+  gtest_plugin_issue953.cpp
 
   script_parser_test.cpp
   test_helper.hpp
@@ -79,3 +93,9 @@ endif()
 target_include_directories(behaviortree_cpp_test PRIVATE include)
 target_link_libraries(behaviortree_cpp_test ${BTCPP_LIBRARY} bt_sample_nodes foonathan::lexy)
 target_compile_definitions(behaviortree_cpp_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Ensure plugin is built before tests run, and tests can find it
+add_dependencies(behaviortree_cpp_test plugin_issue953)
+target_compile_definitions(behaviortree_cpp_test PRIVATE
+  BT_PLUGIN_ISSUE953_PATH="$<TARGET_FILE:plugin_issue953>"
+)
