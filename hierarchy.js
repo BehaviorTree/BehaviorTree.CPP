@@ -9,7 +9,9 @@ var hierarchy =
     [ "std::exception", null, [
       [ "BT::BehaviorTreeException", "df/d93/class_b_t_1_1_behavior_tree_exception.html", [
         [ "BT::LogicError", "df/d4f/class_b_t_1_1_logic_error.html", null ],
-        [ "BT::RuntimeError", "da/d35/class_b_t_1_1_runtime_error.html", null ]
+        [ "BT::RuntimeError", "da/d35/class_b_t_1_1_runtime_error.html", [
+          [ "BT::NodeExecutionError", "d2/d33/class_b_t_1_1_node_execution_error.html", null ]
+        ] ]
       ] ]
     ] ],
     [ "BT::Ast::ExprBase", "db/d6e/struct_b_t_1_1_ast_1_1_expr_base.html", [
@@ -52,6 +54,7 @@ var hierarchy =
     ] ],
     [ "BT::Tree::Subtree", "d3/d23/struct_b_t_1_1_tree_1_1_subtree.html", null ],
     [ "BT::TestNodeConfig", "d6/d58/struct_b_t_1_1_test_node_config.html", null ],
+    [ "BT::TickBacktraceEntry", "d2/d50/struct_b_t_1_1_tick_backtrace_entry.html", null ],
     [ "BT::TimerQueue< ClockT, DurationT >", "df/d4c/class_b_t_1_1_timer_queue.html", null ],
     [ "BT::Timestamp", "d0/d59/struct_b_t_1_1_timestamp.html", null ],
     [ "BT::Scripting::Token", "da/dd6/struct_b_t_1_1_scripting_1_1_token.html", null ],
