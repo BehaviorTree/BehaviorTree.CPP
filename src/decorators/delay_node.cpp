@@ -6,7 +6,10 @@
 namespace BT
 {
 DelayNode::DelayNode(const std::string& name, unsigned milliseconds)
-  : DecoratorNode(name, {}), timer_id_(0), msec_(milliseconds)
+  : DecoratorNode(name, {})
+  , timer_id_(0)
+  , msec_(milliseconds)
+  , read_parameter_from_ports_(false)
 {
   setRegistrationID("Delay");
 }
