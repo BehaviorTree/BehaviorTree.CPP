@@ -122,7 +122,7 @@ std::string convertFromString<std::string>(StringView str)
 template <>
 int64_t convertFromString<int64_t>(StringView str)
 {
-  long result = 0;
+  int64_t result = 0;
   const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
   std::ignore = ptr;
   if(ec != std::errc())
@@ -135,7 +135,7 @@ int64_t convertFromString<int64_t>(StringView str)
 template <>
 uint64_t convertFromString<uint64_t>(StringView str)
 {
-  unsigned long result = 0;
+  uint64_t result = 0;
   const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
   std::ignore = ptr;
   if(ec != std::errc())

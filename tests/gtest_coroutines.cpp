@@ -11,6 +11,16 @@ using namespace std::chrono;
 using Millisecond = std::chrono::milliseconds;
 using Timepoint = std::chrono::time_point<std::chrono::steady_clock>;
 
+// Timing constants for coroutine tests
+// Keep durations short for fast test execution while maintaining reliable relative timing
+constexpr auto SHORT_ACTION_DURATION = milliseconds(10);  // Quick action for success path
+constexpr auto MEDIUM_ACTION_DURATION = milliseconds(20);  // Medium action duration
+constexpr auto LONG_ACTION_DURATION = milliseconds(50);  // Longer action that may timeout
+constexpr auto TIMEOUT_DURATION =
+    milliseconds(30);  // Timeout threshold (between short and long)
+constexpr auto SEQUENCE_TIMEOUT =
+    milliseconds(35);  // Timeout for sequence (allows 1 action, not 2)
+
 class SimpleCoroAction : public BT::CoroActionNode
 {
 public:
@@ -24,7 +34,7 @@ public:
 
   virtual void halt() override
   {
-    std::cout << "Action was halted. doing cleanup here" << std::endl;
+    // Cleanup when halted
     start_time_ = Timepoint::min();
     halted_ = true;
     BT::CoroActionNode::halt();
@@ -43,7 +53,6 @@ public:
 protected:
   virtual BT::NodeStatus tick() override
   {
-    std::cout << "Starting action " << std::endl;
     halted_ = false;
 
     if(start_time_ == Timepoint::min())
@@ -57,8 +66,6 @@ protected:
     }
 
     halted_ = false;
-
-    std::cout << "Done" << std::endl;
     start_time_ = Timepoint::min();
     return (will_fail_ ? BT::NodeStatus::FAILURE : BT::NodeStatus::SUCCESS);
   }
@@ -88,7 +95,7 @@ TEST(CoroTest, do_action)
   BT::NodeConfig node_config_;
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
-  SimpleCoroAction node(milliseconds(200), false, "Action", node_config_);
+  SimpleCoroAction node(MEDIUM_ACTION_DURATION, false, "Action", node_config_);
 
   EXPECT_EQ(BT::NodeStatus::SUCCESS, executeWhileRunning(node));
   EXPECT_FALSE(node.wasHalted());
@@ -114,15 +121,17 @@ TEST(CoroTest, do_action_timeout)
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
-  SimpleCoroAction node(milliseconds(300), false, "Action", node_config_);
-  BT::TimeoutNode timeout("TimeoutAction", 200);
+  // Action takes longer than timeout -> should fail
+  SimpleCoroAction node(LONG_ACTION_DURATION, false, "Action", node_config_);
+  BT::TimeoutNode timeout("TimeoutAction", TIMEOUT_DURATION.count());
 
   timeout.setChild(&node);
 
   EXPECT_EQ(BT::NodeStatus::FAILURE, executeWhileRunning(timeout)) << "should timeout";
   EXPECT_TRUE(node.wasHalted());
 
-  node.setRequiredTime(Millisecond(100));
+  // Action takes less than timeout -> should succeed
+  node.setRequiredTime(SHORT_ACTION_DURATION);
 
   EXPECT_EQ(BT::NodeStatus::SUCCESS, executeWhileRunning(timeout));
   EXPECT_FALSE(node.wasHalted());
@@ -134,9 +143,11 @@ TEST(CoroTest, sequence_child)
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
-  SimpleCoroAction actionA(milliseconds(200), false, "action_A", node_config_);
-  SimpleCoroAction actionB(milliseconds(200), false, "action_B", node_config_);
-  BT::TimeoutNode timeout("timeout", 300);
+  // Two actions each taking MEDIUM_ACTION_DURATION, but timeout only allows ~1.8x that
+  // First action completes, second gets halted by timeout
+  SimpleCoroAction actionA(MEDIUM_ACTION_DURATION, false, "action_A", node_config_);
+  SimpleCoroAction actionB(MEDIUM_ACTION_DURATION, false, "action_B", node_config_);
+  BT::TimeoutNode timeout("timeout", SEQUENCE_TIMEOUT.count());
   BT::SequenceNode sequence("sequence");
 
   timeout.setChild(&sequence);
@@ -154,17 +165,13 @@ TEST(CoroTest, OtherThreadHalt)
   node_config_.blackboard = BT::Blackboard::create();
   BT::assignDefaultRemapping<SimpleCoroAction>(node_config_);
 
-  SimpleCoroAction actionA(milliseconds(200), false, "action_A", node_config_);
+  SimpleCoroAction actionA(LONG_ACTION_DURATION, false, "action_A", node_config_);
   actionA.executeTick();
 
-  std::cout << "----- 1 ------ " << std::endl;
   auto handle = std::async(std::launch::async, [&]() { actionA.halt(); });
   handle.wait();
-  std::cout << "----- 2 ------ " << std::endl;
   EXPECT_TRUE(actionA.wasHalted());
 
-  std::cout << "----- 3------ " << std::endl;
   handle = std::async(std::launch::async, [&]() { actionA.executeTick(); });
   handle.wait();
-  std::cout << "----- 4 ------ " << std::endl;
 }

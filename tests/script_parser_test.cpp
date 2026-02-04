@@ -323,7 +323,6 @@ BT::NodeStatus checkLevel(BT::TreeNode& self)
   {
     self.setOutput("isLowBattery", (percent < 25));
   }
-  std::cout << "Device: " << devType << " Level: " << percent << std::endl;
   return BT::NodeStatus::SUCCESS;
 }
 

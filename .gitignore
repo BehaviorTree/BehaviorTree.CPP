@@ -28,3 +28,4 @@ minitrace.json
 TODO.md
 /.worktrees/*
 /docs/plans/*
+/coverage_report/*

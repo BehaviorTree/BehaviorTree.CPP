@@ -6,6 +6,7 @@ set(BT_TESTS
   src/condition_test_node.cpp
 
   gtest_any.cpp
+  gtest_basic_types.cpp
   gtest_blackboard.cpp
   gtest_coroutines.cpp
   gtest_decorator.cpp
@@ -13,6 +14,7 @@ set(BT_TESTS
   gtest_factory.cpp
   gtest_fallback.cpp
   gtest_groot2_publisher.cpp
+  gtest_if_then_else.cpp
   gtest_parallel.cpp
   gtest_preconditions.cpp
   gtest_ports.cpp
@@ -21,6 +23,8 @@ set(BT_TESTS
   gtest_match.cpp
   gtest_name_validation.cpp
   gtest_json.cpp
+  gtest_loggers.cpp
+  gtest_loop.cpp
   gtest_reactive.cpp
   gtest_reactive_backchaining.cpp
   gtest_sequence.cpp
@@ -31,6 +35,7 @@ set(BT_TESTS
   gtest_tree.cpp
   gtest_updates.cpp
   gtest_wakeup.cpp
+  gtest_while_do_else.cpp
   gtest_interface.cpp
   gtest_simple_string.cpp
 
