@@ -7,14 +7,10 @@ C++ library for behavior tree execution.
 - @ref BT::Blackboard - Shared data storage
 - @ref BT::TreeNode - Base class for all nodes
 
-## Node Types
-
-| Category | Description | Key Classes |
-|----------|-------------|-------------|
-| **Actions** | Execute tasks | @ref BT::SyncActionNode, @ref BT::StatefulActionNode |
-| **Conditions** | Check state | @ref BT::ConditionNode |
-| **Control** | Flow control | @ref BT::SequenceNode, @ref BT::FallbackNode, @ref BT::ParallelNode |
-| **Decorators** | Modify behavior | @ref BT::RetryNode, @ref BT::TimeoutNode, @ref BT::InverterNode |
+## Core Concepts
+- @ref BT::PortInfo - Type-safe port system
+- @ref BT::Expected - Result type for error handling
+- @ref BT::NodeStatus - Node execution states
 
 ## Built-in Control Nodes
 
@@ -89,10 +85,6 @@ C++ library for behavior tree execution.
 - @ref BT::PopFromQueue
 - @ref BT::QueueSize
 
-## Core Concepts
-- @ref BT::PortInfo - Type-safe port system
-- @ref BT::Expected - Result type for error handling
-- @ref BT::NodeStatus - Node execution states
 
 ## Logging & Tools
 - @ref BT::FileLogger2 - File logging
