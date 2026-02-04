@@ -2,6 +2,14 @@
 
 #include "behaviortree_cpp/xml_parsing.h"
 
+#include <array>
+#include <condition_variable>
+#include <cstring>
+#include <deque>
+#include <fstream>
+#include <mutex>
+#include <thread>
+
 #include "flatbuffers/base.h"
 
 namespace BT
@@ -15,22 +23,26 @@ int64_t ToUsec(Duration ts)
 }
 }  // namespace
 
-struct FileLogger2::PImpl
+// Define the private implementation struct
+struct FileLogger2::Pimpl
 {
   std::ofstream file_stream;
+  std::mutex file_mutex;  // Protects file_stream access from multiple threads
 
   Duration first_timestamp = {};
 
-  std::deque<Transition> transitions_queue;
+  std::deque<FileLogger2::Transition> transitions_queue;
   std::condition_variable queue_cv;
   std::mutex queue_mutex;
 
   std::thread writer_thread;
   std::atomic_bool loop = true;
+  std::atomic_bool writer_ready = false;  // Signals writer thread is in wait loop
 };
 
 FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& filepath)
-  : StatusChangeLogger(tree.rootNode()), _p(new PImpl)
+  : StatusChangeLogger()  // Deferred subscription
+  , _p(std::make_unique<Pimpl>())
 {
   if(filepath.filename().extension() != ".btlog")
   {
@@ -71,6 +83,13 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
   _p->file_stream.write(write_buffer.data(), 8);
 
   _p->writer_thread = std::thread(&FileLogger2::writerLoop, this);
+
+  // Wait for writer thread to signal readiness (under mutex for proper synchronization)
+  {
+    std::unique_lock lock(_p->queue_mutex);
+    _p->queue_cv.wait(lock, [this]() { return _p->writer_ready.load(); });
+  }
+  subscribeToTreeChanges(tree.rootNode());
 }
 
 FileLogger2::~FileLogger2()
@@ -97,6 +116,7 @@ void FileLogger2::callback(Duration timestamp, const TreeNode& node,
 
 void FileLogger2::flush()
 {
+  const std::scoped_lock lock(_p->file_mutex);
   _p->file_stream.flush();
 }
 
@@ -105,29 +125,39 @@ void FileLogger2::writerLoop()
   // local buffer in this thread
   std::deque<Transition> transitions;
 
+  // Signal readiness while holding the lock (establishes happens-before with constructor)
+  {
+    std::scoped_lock lock(_p->queue_mutex);
+    _p->writer_ready.store(true, std::memory_order_release);
+  }
+  _p->queue_cv.notify_one();
+
   while(_p->loop)
   {
     transitions.clear();
     {
       std::unique_lock lock(_p->queue_mutex);
       _p->queue_cv.wait_for(lock, std::chrono::milliseconds(10), [this]() {
-        return !_p->transitions_queue.empty() && _p->loop;
+        return !_p->transitions_queue.empty() || !_p->loop;
       });
       // simple way to pop all the transitions from _p->transitions_queue into transitions
       std::swap(transitions, _p->transitions_queue);
     }
-    while(!transitions.empty())
     {
-      const auto trans = transitions.front();
-      std::array<char, 9> write_buffer{};
-      std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6);
-      std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2);
-      std::memcpy(write_buffer.data() + 8, &trans.status, 1);
+      const std::scoped_lock file_lock(_p->file_mutex);
+      while(!transitions.empty())
+      {
+        const auto trans = transitions.front();
+        std::array<char, 9> write_buffer{};
+        std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6);
+        std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2);
+        std::memcpy(write_buffer.data() + 8, &trans.status, 1);
 
-      _p->file_stream.write(write_buffer.data(), 9);
-      transitions.pop_front();
+        _p->file_stream.write(write_buffer.data(), 9);
+        transitions.pop_front();
+      }
+      _p->file_stream.flush();
     }
-    _p->file_stream.flush();
   }
 }
 

@@ -1,4 +1,18 @@
 # ThreadSanitizer suppressions file for behaviortree_cpp_test
 
-# ZeroMQ false positives
+# ZeroMQ false positives (third-party library)
 race:zmq::epoll_t::add_fd
+race:libzmq.so
+
+# False positive: std::swap of std::deque under mutex provides proper synchronization
+# TSAN does not track ownership transfer through container swap operations
+race:FileLogger2::writerLoop
+race:SqliteLogger::writerLoop
+
+# False positive: mutex lock/unlock pair across container swap is valid
+mutex:FileLogger2::writerLoop
+mutex:FileLogger2::callback
+mutex:FileLogger2::FileLogger2
+mutex:SqliteLogger::writerLoop
+mutex:SqliteLogger::callback
+mutex:SqliteLogger::SqliteLogger

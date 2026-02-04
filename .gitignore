@@ -26,3 +26,4 @@ t11_groot_howto.btlog
 minitrace.json
 /.worktrees/*
 /docs/plans/*
+/coverage_report/*
