@@ -572,6 +572,41 @@ TEST(BehaviorTreeFactory, FactoryDestroyedBeforeTick)
 // instantiation paths can still overflow the stack with deeply nested
 // input.  The fix adds a depth limit.
 
+// Regression test for issue #880:
+// createTreeFromText should be able to reference subtrees that were
+// previously registered via registerBehaviorTreeFromText/FromFile.
+TEST(BehaviorTreeFactory, CreateTreeFromTextFindsRegisteredSubtree)
+{
+  // Step 1: register a subtree definition
+  const char* subtree_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MyTree">
+      <AlwaysSuccess/>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(subtree_xml);
+
+  // Verify "MyTree" is registered
+  ASSERT_EQ(factory.registeredBehaviorTrees().size(), 1);
+
+  // Step 2: use createTreeFromText with XML that references the
+  // registered subtree via <SubTree ID="MyTree"/>
+  const char* main_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="TestTree">
+      <SubTree ID="MyTree"/>
+    </BehaviorTree>
+  </root>)";
+
+  // This should NOT throw. Before the fix it throws:
+  //   "Can't find a tree with name: MyTree"
+  Tree tree;
+  ASSERT_NO_THROW(tree = factory.createTreeFromText(main_xml));
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
+}
+
 TEST(BehaviorTreeFactory, MalformedXML_InvalidRoot)
 {
   // XML that is not valid XML at all
