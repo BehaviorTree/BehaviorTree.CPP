@@ -16,9 +16,42 @@
 #include <array>
 #include <atomic>
 #include <cstring>
+#include <vector>
 
 namespace BT
 {
+
+// Thread-local stack tracking the current tick hierarchy.
+// Used to build a backtrace when an exception is thrown during tick().
+static thread_local std::vector<const TreeNode*> tick_stack_;
+
+// RAII guard to push/pop nodes from the tick stack
+class TickStackGuard
+{
+public:
+  explicit TickStackGuard(const TreeNode* node)
+  {
+    tick_stack_.push_back(node);
+  }
+  ~TickStackGuard()
+  {
+    tick_stack_.pop_back();
+  }
+  TickStackGuard(const TickStackGuard&) = delete;
+  TickStackGuard& operator=(const TickStackGuard&) = delete;
+
+  // Build a backtrace from the current tick stack
+  static std::vector<TickBacktraceEntry> buildBacktrace()
+  {
+    std::vector<TickBacktraceEntry> backtrace;
+    backtrace.reserve(tick_stack_.size());
+    for(const auto* node : tick_stack_)
+    {
+      backtrace.push_back({ node->name(), node->fullPath(), node->registrationName() });
+    }
+    return backtrace;
+  }
+};
 
 struct TreeNode::PImpl
 {
@@ -69,6 +102,9 @@ TreeNode::~TreeNode() = default;
 
 NodeStatus TreeNode::executeTick()
 {
+  // Track this node in the tick stack for exception backtrace
+  TickStackGuard stack_guard(this);
+
   auto new_status = _p->status;
   PreTickCallback pre_tick;
   PostTickCallback post_tick;
@@ -109,7 +145,20 @@ NodeStatus TreeNode::executeTick()
       // See issue #861 for details.
       const auto t1 = steady_clock::now();
       std::atomic_thread_fence(std::memory_order_seq_cst);
-      new_status = tick();
+      try
+      {
+        new_status = tick();
+      }
+      catch(const NodeExecutionError&)
+      {
+        // Already wrapped by a child node, re-throw as-is to preserve original info
+        throw;
+      }
+      catch(const std::exception& ex)
+      {
+        // Wrap the exception with node context and backtrace
+        throw NodeExecutionError(TickStackGuard::buildBacktrace(), ex.what());
+      }
       std::atomic_thread_fence(std::memory_order_seq_cst);
       const auto t2 = steady_clock::now();
       if(monitor_tick)

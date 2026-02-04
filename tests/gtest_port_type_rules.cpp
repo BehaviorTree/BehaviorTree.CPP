@@ -687,7 +687,8 @@ TEST(PortTypeRules, TypeLock_RuntimeTypeChange_Fails)
   std::this_thread::sleep_for(std::chrono::milliseconds{ 5 });
 
   // Second tick fails (tries to change TestPoint to string)
-  EXPECT_THROW(tree.tickWhileRunning(), LogicError);
+  // Throws LogicError, wrapped in NodeExecutionError with backtrace
+  EXPECT_THROW(tree.tickWhileRunning(), BehaviorTreeException);
 }
 
 //==============================================================================
