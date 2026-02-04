@@ -119,8 +119,8 @@ TEST(BasicTypes, ConvertFromString_Double)
   ASSERT_DOUBLE_EQ(convertFromString<double>("-2.5"), -2.5);
   ASSERT_DOUBLE_EQ(convertFromString<double>("0.0"), 0.0);
 
-  // Invalid double throws std::invalid_argument
-  ASSERT_THROW((void)convertFromString<double>("not_a_number"), std::invalid_argument);
+  // Invalid double throws RuntimeError
+  ASSERT_THROW((void)convertFromString<double>("not_a_number"), RuntimeError);
 }
 
 TEST(BasicTypes, ConvertFromString_Bool)
