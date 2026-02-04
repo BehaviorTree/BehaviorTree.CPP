@@ -67,7 +67,7 @@ var namespace_b_t =
     [ "SqliteLogger", "df/ddb/class_b_t_1_1_sqlite_logger.html", "df/ddb/class_b_t_1_1_sqlite_logger" ],
     [ "StampedValue", "d6/dfa/struct_b_t_1_1_stamped_value.html", null ],
     [ "StatefulActionNode", "d0/d1f/class_b_t_1_1_stateful_action_node.html", "d0/d1f/class_b_t_1_1_stateful_action_node" ],
-    [ "StatusChangeLogger", "d9/dbb/class_b_t_1_1_status_change_logger.html", null ],
+    [ "StatusChangeLogger", "d9/dbb/class_b_t_1_1_status_change_logger.html", "d9/dbb/class_b_t_1_1_status_change_logger" ],
     [ "StdCoutLogger", "d1/d52/class_b_t_1_1_std_cout_logger.html", null ],
     [ "SubTreeNode", "df/d34/class_b_t_1_1_sub_tree_node.html", "df/d34/class_b_t_1_1_sub_tree_node" ],
     [ "SwitchNode", "dc/dae/class_b_t_1_1_switch_node.html", "dc/dae/class_b_t_1_1_switch_node" ],

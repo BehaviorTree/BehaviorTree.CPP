@@ -92,6 +92,7 @@ $(document).ready(function(){initNavTree('d9/dbb/class_b_t_1_1_status_change_log
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="../../d3/dc4/class_b_t_1_1_status_change_logger-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">BT::StatusChangeLogger Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
@@ -115,6 +116,7 @@ Inheritance diagram for BT::StatusChangeLogger:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a6629af7405c338ba503443165ff49e44"><td class="memItemLeft" align="right" valign="top"><a id="a6629af7405c338ba503443165ff49e44" name="a6629af7405c338ba503443165ff49e44"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>StatusChangeLogger</b> (<a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a> *root_node)</td></tr>
+<tr class="memdesc:a6629af7405c338ba503443165ff49e44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct and immediately subscribe to status changes. <br /></td></tr>
 <tr class="separator:a6629af7405c338ba503443165ff49e44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66516e8ad596b781546feaecfa64e4ec"><td class="memItemLeft" align="right" valign="top"><a id="a66516e8ad596b781546feaecfa64e4ec" name="a66516e8ad596b781546feaecfa64e4ec"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>StatusChangeLogger</b> (const <a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;other)=delete</td></tr>
@@ -122,12 +124,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae72b021c90e1742e74aa5e2fd05aa8ff"><td class="memItemLeft" align="right" valign="top"><a id="ae72b021c90e1742e74aa5e2fd05aa8ff" name="ae72b021c90e1742e74aa5e2fd05aa8ff"></a>
 <a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;other)=delete</td></tr>
 <tr class="separator:ae72b021c90e1742e74aa5e2fd05aa8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add6cdf822521c66394e133c535871584"><td class="memItemLeft" align="right" valign="top"><a id="add6cdf822521c66394e133c535871584" name="add6cdf822521c66394e133c535871584"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>StatusChangeLogger</b> (<a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;&amp;other)=default</td></tr>
-<tr class="separator:add6cdf822521c66394e133c535871584"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6248976aa9feb07c0430eb7d7d77f0a4"><td class="memItemLeft" align="right" valign="top"><a id="a6248976aa9feb07c0430eb7d7d77f0a4" name="a6248976aa9feb07c0430eb7d7d77f0a4"></a>
-<a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;&amp;other)=default</td></tr>
-<tr class="separator:a6248976aa9feb07c0430eb7d7d77f0a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a028ea86e10fa67074cc13324a95f4e5a"><td class="memItemLeft" align="right" valign="top"><a id="a028ea86e10fa67074cc13324a95f4e5a" name="a028ea86e10fa67074cc13324a95f4e5a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>StatusChangeLogger</b> (<a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;&amp;other)=delete</td></tr>
+<tr class="separator:a028ea86e10fa67074cc13324a95f4e5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04623024fc6c6100fc160f68a67b23ea"><td class="memItemLeft" align="right" valign="top"><a id="a04623024fc6c6100fc160f68a67b23ea" name="a04623024fc6c6100fc160f68a67b23ea"></a>
+<a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a> &amp;&amp;other)=delete</td></tr>
+<tr class="separator:a04623024fc6c6100fc160f68a67b23ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27510af71ce6ab0f698221cc144b758b"><td class="memItemLeft" align="right" valign="top"><a id="a27510af71ce6ab0f698221cc144b758b" name="a27510af71ce6ab0f698221cc144b758b"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>callback</b> (BT::Duration timestamp, const <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a> &amp;node, <a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> prev_status, <a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> status)=0</td></tr>
 <tr class="separator:a27510af71ce6ab0f698221cc144b758b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,6 +151,17 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>showsTransitionToIdle
 <tr class="memitem:abc4b8301cd1a8938c0f92a4a3e5377b9"><td class="memItemLeft" align="right" valign="top"><a id="abc4b8301cd1a8938c0f92a4a3e5377b9" name="abc4b8301cd1a8938c0f92a4a3e5377b9"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>enableTransitionToIdle</b> (bool enable)</td></tr>
 <tr class="separator:abc4b8301cd1a8938c0f92a4a3e5377b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:af6061864fcbd1ddccc42ed7d8429e859"><td class="memItemLeft" align="right" valign="top"><a id="af6061864fcbd1ddccc42ed7d8429e859" name="af6061864fcbd1ddccc42ed7d8429e859"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>StatusChangeLogger</b> ()=default</td></tr>
+<tr class="memdesc:af6061864fcbd1ddccc42ed7d8429e859"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor for deferred subscription. Call <a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63" title="Subscribe to status changes. Call at end of constructor for deferred subscription.">subscribeToTreeChanges()</a> when ready. <br /></td></tr>
+<tr class="separator:af6061864fcbd1ddccc42ed7d8429e859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1637783134697d20616bd96797b1db63"><td class="memItemLeft" align="right" valign="top"><a id="a1637783134697d20616bd96797b1db63" name="a1637783134697d20616bd96797b1db63"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>subscribeToTreeChanges</b> (<a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a> *root_node)</td></tr>
+<tr class="memdesc:a1637783134697d20616bd96797b1db63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subscribe to status changes. Call at end of constructor for deferred subscription. <br /></td></tr>
+<tr class="separator:a1637783134697d20616bd96797b1db63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/loggers/<a class="el" href="../../d1/dbb/abstract__logger_8h_source.html">abstract_logger.h</a></li>

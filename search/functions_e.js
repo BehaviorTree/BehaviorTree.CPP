@@ -12,7 +12,9 @@ var searchData=
   ['sharedlibrary_9',['SharedLibrary',['../d2/ddd/class_b_t_1_1_shared_library.html#ab505f9eb6d36b38ba74d496047d77fac',1,'BT::SharedLibrary::SharedLibrary()'],['../d2/ddd/class_b_t_1_1_shared_library.html#a48f2dd000a04818f10d151300892119e',1,'BT::SharedLibrary::SharedLibrary(const std::string &amp;path, int flags=0)']]],
   ['sleep_10',['sleep',['../d1/d79/class_b_t_1_1_tree.html#ae31f344252dd19177240917777b57e54',1,'BT::Tree']]],
   ['sqlitelogger_11',['SqliteLogger',['../df/ddb/class_b_t_1_1_sqlite_logger.html#a4e1e513a4d32778b5015b1d4ab82819d',1,'BT::SqliteLogger']]],
-  ['subscribetostatuschange_12',['subscribeToStatusChange',['../da/d61/class_b_t_1_1_tree_node.html#afb4606479245153e183b0530e517b3cc',1,'BT::TreeNode']]],
-  ['substitutionrules_13',['substitutionRules',['../d6/dcd/class_b_t_1_1_behavior_tree_factory.html#a6ca87931a32b5b3cbd319ce49980e28f',1,'BT::BehaviorTreeFactory']]],
-  ['suffix_14',['suffix',['../d2/ddd/class_b_t_1_1_shared_library.html#a8844a78727a244644d79916c5005c54d',1,'BT::SharedLibrary']]]
+  ['statuschangelogger_12',['StatusChangeLogger',['../d9/dbb/class_b_t_1_1_status_change_logger.html#a6629af7405c338ba503443165ff49e44',1,'BT::StatusChangeLogger::StatusChangeLogger(TreeNode *root_node)'],['../d9/dbb/class_b_t_1_1_status_change_logger.html#af6061864fcbd1ddccc42ed7d8429e859',1,'BT::StatusChangeLogger::StatusChangeLogger()=default']]],
+  ['subscribetostatuschange_13',['subscribeToStatusChange',['../da/d61/class_b_t_1_1_tree_node.html#afb4606479245153e183b0530e517b3cc',1,'BT::TreeNode']]],
+  ['subscribetotreechanges_14',['subscribeToTreeChanges',['../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63',1,'BT::StatusChangeLogger']]],
+  ['substitutionrules_15',['substitutionRules',['../d6/dcd/class_b_t_1_1_behavior_tree_factory.html#a6ca87931a32b5b3cbd319ce49980e28f',1,'BT::BehaviorTreeFactory']]],
+  ['suffix_16',['suffix',['../d2/ddd/class_b_t_1_1_shared_library.html#a8844a78727a244644d79916c5005c54d',1,'BT::SharedLibrary']]]
 ];

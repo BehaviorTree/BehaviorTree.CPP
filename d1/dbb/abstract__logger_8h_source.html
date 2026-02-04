@@ -110,87 +110,110 @@ $(document).ready(function(){initNavTree('d1/dbb/abstract__logger_8h_source.html
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">class</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a></div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>{</div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>  StatusChangeLogger(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* root_node);</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>  <span class="keyword">virtual</span> ~StatusChangeLogger() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>  <span class="comment">/// Construct and immediately subscribe to status changes.</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>  <a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a6629af7405c338ba503443165ff49e44">StatusChangeLogger</a>(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* root_node);</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>  StatusChangeLogger(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>  <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; other) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>  StatusChangeLogger(<a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp;&amp; other) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>  <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; operator=(<a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp;&amp; other) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> callback(<a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::Duration timestamp, <span class="keyword">const</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>&amp; node,</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>                        <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> prev_status, <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> status) = 0;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> flush() = 0;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>  <span class="keyword">virtual</span> ~StatusChangeLogger() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>  StatusChangeLogger(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>  <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>  StatusChangeLogger(<a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp; operator=(<a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>&amp;&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> callback(<a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::Duration timestamp, <span class="keyword">const</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>&amp; node,</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>                        <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> prev_status, <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> status) = 0;</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  <span class="keywordtype">void</span> setEnabled(<span class="keywordtype">bool</span> enabled)</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  {</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    enabled_ = enabled;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  }</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="keywordtype">void</span> setTimestampType(TimestampType type)</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  {</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    type_ = type;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  }</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  <span class="keywordtype">bool</span> enabled() <span class="keyword">const</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  {</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordflow">return</span> enabled_;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  }</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="comment">// false by default.</span></div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="keywordtype">bool</span> showsTransitionToIdle() <span class="keyword">const</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  {</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordflow">return</span> show_transition_to_idle_;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  }</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  <span class="keywordtype">void</span> enableTransitionToIdle(<span class="keywordtype">bool</span> enable)</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  {</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    show_transition_to_idle_ = enable;</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  }</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keywordtype">bool</span> enabled_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <span class="keywordtype">bool</span> show_transition_to_idle_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  std::vector&lt;TreeNode::StatusChangeSubscriber&gt; subscribers_;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  TimestampType type_ = TimestampType::absolute;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::TimePoint first_timestamp_ = {};</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  std::mutex callback_mutex_;</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>};</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> flush() = 0;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  <span class="keywordtype">void</span> setEnabled(<span class="keywordtype">bool</span> enabled)</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  {</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    enabled_ = enabled;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  }</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  <span class="keywordtype">void</span> setTimestampType(TimestampType type)</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  {</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    type_ = type;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  }</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  <span class="keywordtype">bool</span> enabled() <span class="keyword">const</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  {</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordflow">return</span> enabled_;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  }</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="comment">// false by default.</span></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  <span class="keywordtype">bool</span> showsTransitionToIdle() <span class="keyword">const</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  {</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordflow">return</span> show_transition_to_idle_;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  }</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  <span class="keywordtype">void</span> enableTransitionToIdle(<span class="keywordtype">bool</span> enable)</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  {</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    show_transition_to_idle_ = enable;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  }</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="comment">/// Default constructor for deferred subscription. Call subscribeToTreeChanges() when ready.</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#af6061864fcbd1ddccc42ed7d8429e859">StatusChangeLogger</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  <span class="comment">/// Subscribe to status changes. Call at end of constructor for deferred subscription.</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63">subscribeToTreeChanges</a>(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* root_node);</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="comment">//--------------------------------------------</span></div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="keyword">inline</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>::StatusChangeLogger(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* root_node)</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>{</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  first_timestamp_ = std::chrono::high_resolution_clock::now();</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  <span class="keyword">auto</span> subscribeCallback = [<span class="keyword">this</span>](TimePoint timestamp, <span class="keyword">const</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>&amp; node,</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>                                  <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> prev, <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> status) {</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    std::unique_lock lk(callback_mutex_);</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordflow">if</span>(enabled_ &amp;&amp; (status != <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a>::IDLE || show_transition_to_idle_))</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    {</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>      <span class="keywordflow">if</span>(type_ == TimestampType::absolute)</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>      {</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>        <span class="keyword">this</span>-&gt;callback(timestamp.time_since_epoch(), node, prev, status);</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>      }</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>      <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>      {</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>        <span class="keyword">this</span>-&gt;callback(timestamp - first_timestamp_, node, prev, status);</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>      }</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    }</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  };</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  <span class="keyword">auto</span> visitor = [<span class="keyword">this</span>, subscribeCallback](<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* node) {</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    subscribers_.push_back(node-&gt;subscribeToStatusChange(std::move(subscribeCallback)));</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  };</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  applyRecursiveVisitor(root_node, visitor);</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>}</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>}  <span class="comment">// namespace BT</span></div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">#</span><span class="preprocessor">endif</span>  <span class="comment">// ABSTRACT_LOGGER_H</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  <span class="keywordtype">bool</span> enabled_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  <span class="keywordtype">bool</span> show_transition_to_idle_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  std::vector&lt;TreeNode::StatusChangeSubscriber&gt; subscribers_;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  TimestampType type_ = TimestampType::absolute;</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::TimePoint first_timestamp_ = {};</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  std::mutex callback_mutex_;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>};</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="comment">//--------------------------------------------</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="keyword">inline</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>::<a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a6629af7405c338ba503443165ff49e44">StatusChangeLogger</a>(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* root_node)</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>{</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  <a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63">subscribeToTreeChanges</a><a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63">(</a>root_node<a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63">)</a>;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>}</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code hl_class" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">StatusChangeLogger</a>::<a class="code hl_function" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63">subscribeToTreeChanges</a>(<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* root_node)</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>{</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  first_timestamp_ = std::chrono::high_resolution_clock::now();</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  <span class="keyword">auto</span> subscribeCallback = [<span class="keyword">this</span>](TimePoint timestamp, <span class="keyword">const</span> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>&amp; node,</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>                                  <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> prev, <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> status) {</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="comment">// Copy state under lock, then release before calling user code</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <span class="comment">// This prevents recursive mutex locking when multiple nodes change status</span></div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">bool</span> should_callback = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    Duration adjusted_timestamp;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    {</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>      std::unique_lock lk(callback_mutex_);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>      <span class="keywordflow">if</span>(enabled_ &amp;&amp; (status != <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a>::IDLE || show_transition_to_idle_))</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>      {</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        should_callback = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>        adjusted_timestamp = (type_ == TimestampType::absolute) ?</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>                                 timestamp.time_since_epoch() :</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>                                 (timestamp - first_timestamp_);</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>      }</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    }</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">if</span>(should_callback)</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    {</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>      <span class="keyword">this</span>-&gt;callback(adjusted_timestamp, node, prev, status);</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    }</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  };</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>  <span class="keyword">auto</span> visitor = [<span class="keyword">this</span>, subscribeCallback](<a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>* node) {</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    subscribers_.push_back(node-&gt;subscribeToStatusChange(std::move(subscribeCallback)));</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>  };</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  applyRecursiveVisitor(root_node, visitor);</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>}</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>}  <span class="comment">// namespace BT</span></div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span><span class="preprocessor">#</span><span class="preprocessor">endif</span>  <span class="comment">// ABSTRACT_LOGGER_H</span></div>
 <div class="ttc" id="aclass_b_t_1_1_status_change_logger_html"><div class="ttname"><a href="../../d9/dbb/class_b_t_1_1_status_change_logger.html">BT::StatusChangeLogger</a></div><div class="ttdef"><b>Definition:</b> abstract_logger.h:16</div></div>
+<div class="ttc" id="aclass_b_t_1_1_status_change_logger_html_a1637783134697d20616bd96797b1db63"><div class="ttname"><a href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63">BT::StatusChangeLogger::subscribeToTreeChanges</a></div><div class="ttdeci">void subscribeToTreeChanges(TreeNode *root_node)</div><div class="ttdoc">Subscribe to status changes. Call at end of constructor for deferred subscription.</div><div class="ttdef"><b>Definition:</b> abstract_logger.h:83</div></div>
+<div class="ttc" id="aclass_b_t_1_1_status_change_logger_html_a6629af7405c338ba503443165ff49e44"><div class="ttname"><a href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a6629af7405c338ba503443165ff49e44">BT::StatusChangeLogger::StatusChangeLogger</a></div><div class="ttdeci">StatusChangeLogger(TreeNode *root_node)</div><div class="ttdoc">Construct and immediately subscribe to status changes.</div><div class="ttdef"><b>Definition:</b> abstract_logger.h:78</div></div>
+<div class="ttc" id="aclass_b_t_1_1_status_change_logger_html_af6061864fcbd1ddccc42ed7d8429e859"><div class="ttname"><a href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#af6061864fcbd1ddccc42ed7d8429e859">BT::StatusChangeLogger::StatusChangeLogger</a></div><div class="ttdeci">StatusChangeLogger()=default</div><div class="ttdoc">Default constructor for deferred subscription. Call subscribeToTreeChanges() when ready.</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html">BT::TreeNode</a></div><div class="ttdoc">Abstract base class for Behavior Tree Nodes.</div><div class="ttdef"><b>Definition:</b> tree_node.h:154</div></div>
 <div class="ttc" id="anamespace_b_t_html"><div class="ttname"><a href="../../d2/d8d/namespace_b_t.html">BT</a></div><div class="ttdef"><b>Definition:</b> action_node.h:24</div></div>
 <div class="ttc" id="anamespace_b_t_html_a1414a8362678cd4081eeb30b72845b4e"><div class="ttname"><a href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a></div><div class="ttdeci">NodeStatus</div><div class="ttdef"><b>Definition:</b> basic_types.h:34</div></div>
