@@ -621,144 +621,165 @@ $(document).ready(function(){initNavTree('d1/da6/tree__node_8h_source.html','../
 <div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>    }</div>
 <div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>  }</div>
 <div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span> </div>
-<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>  <span class="keyword">auto</span> blackboard_ptr = getRemappedKey(key, port_value_str);</div>
-<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>  <span class="keywordflow">try</span></div>
-<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>  {</div>
-<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>    <span class="comment">// pure string, not a blackboard key</span></div>
-<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>    <span class="keywordflow">if</span>(!blackboard_ptr)</div>
-<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>    {</div>
-<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>      <span class="keywordflow">try</span></div>
-<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>      {</div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>        destination = parseString&lt;T&gt;(port_value_str);</div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>      }</div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>      <span class="keywordflow">catch</span>(std::exception&amp; ex)</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>      {</div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>        <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;getInput(): &quot;</span>, ex.what()));</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>      }</div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>      <span class="keywordflow">return</span> Timestamp{};</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>    }</div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; blackboard_key = blackboard_ptr.value();</div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span> </div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    <span class="keywordflow">if</span>(!<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">config</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">(</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">)</a>.blackboard)</div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>    {</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>      <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;getInput(): trying to access &quot;</span></div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>                                     <span class="stringliteral">&quot;an invalid Blackboard&quot;</span>);</div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>    }</div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span> </div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>    <span class="keywordflow">if</span>(<span class="keyword">auto</span> entry = config().blackboard-&gt;getEntry(std::string(blackboard_key)))</div>
-<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>    {</div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>      std::unique_lock lk(entry-&gt;entry_mutex);</div>
-<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>      <span class="keyword">auto</span>&amp; any_value = entry-&gt;value;</div>
-<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span> </div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>      <span class="comment">// support getInput&lt;Any&gt;()</span></div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>      <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_same_v&lt;T, Any&gt;)</div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>      {</div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>        destination = any_value;</div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>        <span class="keywordflow">return</span> Timestamp{ entry-&gt;sequence_id, entry-&gt;stamp };</div>
+<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>  <span class="comment">// Helper lambda to parse string using the stored converter if available,</span></div>
+<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>  <span class="comment">// otherwise fall back to convertFromString&lt;T&gt;. This fixes the plugin issue</span></div>
+<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>  <span class="comment">// where convertFromString&lt;T&gt; specializations are not visible across shared</span></div>
+<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>  <span class="comment">// library boundaries (issue #953).</span></div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>  <span class="keyword">auto</span> parseStringWithConverter = [<span class="keyword">this</span>, &amp;key](<span class="keyword">const</span> std::string&amp; str) -&gt; T {</div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>    <span class="keywordflow">if</span>(<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">config</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">(</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">)</a>.manifest)</div>
+<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>    {</div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>      <span class="keyword">auto</span> port_it = <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">config</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">(</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">)</a>.manifest-&gt;ports.find(key);</div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>      <span class="keywordflow">if</span>(port_it != config().manifest-&gt;ports.end())</div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>      {</div>
+<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; converter = port_it-&gt;second.converter();</div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>        <span class="keywordflow">if</span>(converter)</div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>        {</div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>          <span class="keywordflow">return</span> converter(str).<span class="keyword">template</span> cast&lt;T&gt;();</div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>        }</div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>      }</div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>    }</div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>    <span class="comment">// Fall back to parseString which calls convertFromString</span></div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    <span class="keywordflow">return</span> parseString&lt;T&gt;(str);</div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>  };</div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span> </div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>  <span class="keyword">auto</span> blackboard_ptr = getRemappedKey(key, port_value_str);</div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>  <span class="keywordflow">try</span></div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>  {</div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>    <span class="comment">// pure string, not a blackboard key</span></div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>    <span class="keywordflow">if</span>(!blackboard_ptr)</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>    {</div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>      <span class="keywordflow">try</span></div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>      {</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>        destination = parseStringWithConverter(port_value_str);</div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>      }</div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>      <span class="keywordflow">catch</span>(std::exception&amp; ex)</div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>      {</div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>        <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;getInput(): &quot;</span>, ex.what()));</div>
 <div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>      }</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span> </div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>      <span class="keywordflow">if</span>(!entry-&gt;value.empty())</div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>      {</div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>        <span class="keywordflow">if</span>(!std::is_same_v&lt;T, std::string&gt; &amp;&amp; any_value.isString())</div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>        {</div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>          destination = parseString&lt;T&gt;(any_value.cast&lt;std::string&gt;());</div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>        }</div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>        <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>        {</div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>          destination = any_value.cast&lt;T&gt;();</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>        }</div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>        <span class="keywordflow">return</span> Timestamp{ entry-&gt;sequence_id, entry-&gt;stamp };</div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>      }</div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>    }</div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>      <span class="keywordflow">return</span> Timestamp{};</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>    }</div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; blackboard_key = blackboard_ptr.value();</div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span> </div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>    <span class="keywordflow">if</span>(!<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">config</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">(</a><a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">)</a>.blackboard)</div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>    {</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>      <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;getInput(): trying to access &quot;</span></div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>                                     <span class="stringliteral">&quot;an invalid Blackboard&quot;</span>);</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    }</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span> </div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>    <span class="keywordflow">if</span>(<span class="keyword">auto</span> entry = config().blackboard-&gt;getEntry(std::string(blackboard_key)))</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>    {</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>      std::unique_lock lk(entry-&gt;entry_mutex);</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>      <span class="keyword">auto</span>&amp; any_value = entry-&gt;value;</div>
 <div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span> </div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;getInput() failed because it was unable to &quot;</span></div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>                                          <span class="stringliteral">&quot;find the key [&quot;</span>,</div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>                                          key, <span class="stringliteral">&quot;] remapped to [&quot;</span>, blackboard_key, <span class="stringliteral">&quot;]&quot;</span>));</div>
-<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>  }</div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>  <span class="keywordflow">catch</span>(std::exception&amp; err)</div>
-<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>  {</div>
-<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(err.what());</div>
-<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>  }</div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>}</div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span> </div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span><span class="keyword">inline</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">Result</a> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">getInput</a>(<span class="keyword">const</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">std</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">string</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">key</a>, <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">T</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">destination</a>) <span class="keyword">const</span></div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>{</div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>  <span class="keyword">auto</span> res = getInputStamped(key, destination);</div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>  <span class="keywordflow">if</span>(!res)</div>
-<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>  {</div>
-<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(res.error());</div>
-<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>  }</div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>  <span class="keywordflow">return</span> {};</div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>}</div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>      <span class="comment">// support getInput&lt;Any&gt;()</span></div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>      <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_same_v&lt;T, Any&gt;)</div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>      {</div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>        destination = any_value;</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>        <span class="keywordflow">return</span> Timestamp{ entry-&gt;sequence_id, entry-&gt;stamp };</div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>      }</div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span> </div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>      <span class="keywordflow">if</span>(!entry-&gt;value.empty())</div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>      {</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>        <span class="keywordflow">if</span>(!std::is_same_v&lt;T, std::string&gt; &amp;&amp; any_value.isString())</div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>        {</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>          destination = parseStringWithConverter(any_value.cast&lt;std::string&gt;());</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>        }</div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>        <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>        {</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>          destination = any_value.cast&lt;T&gt;();</div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>        }</div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>        <span class="keywordflow">return</span> Timestamp{ entry-&gt;sequence_id, entry-&gt;stamp };</div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>      }</div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>    }</div>
 <div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span> </div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span><span class="keyword">inline</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">Result</a> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">setOutput</a>(<span class="keyword">const</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">std</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">string</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">key</a>, <span class="keyword">const</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">T</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">value</a>)</div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>{</div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>  <span class="keywordflow">if</span>(!config().blackboard)</div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>  {</div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;setOutput() failed: trying to access a &quot;</span></div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>                                   <span class="stringliteral">&quot;Blackboard(BB) entry, but BB is invalid&quot;</span>);</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;getInput() failed because it was unable to &quot;</span></div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>                                          <span class="stringliteral">&quot;find the key [&quot;</span>,</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>                                          key, <span class="stringliteral">&quot;] remapped to [&quot;</span>, blackboard_key, <span class="stringliteral">&quot;]&quot;</span>));</div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>  }</div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>  <span class="keywordflow">catch</span>(std::exception&amp; err)</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>  {</div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(err.what());</div>
 <div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>  }</div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span> </div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>  <span class="keyword">auto</span> remap_it = config().output_ports.find(key);</div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>  <span class="keywordflow">if</span>(remap_it == config().output_ports.end())</div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>  {</div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;setOutput() failed: &quot;</span></div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>                                          <span class="stringliteral">&quot;NodeConfig::output_ports &quot;</span></div>
-<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>                                          <span class="stringliteral">&quot;does not contain the key: [&quot;</span>,</div>
-<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>                                          key, <span class="stringliteral">&quot;]&quot;</span>));</div>
-<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>  }</div>
-<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>  StringView remapped_key = remap_it-&gt;second;</div>
-<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>  <span class="keywordflow">if</span>(remapped_key == <span class="stringliteral">&quot;{=}&quot;</span> || remapped_key == <span class="stringliteral">&quot;=&quot;</span>)</div>
-<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>  {</div>
-<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>    config().blackboard-&gt;set(<span class="keyword">static_cast</span>&lt;std::string&gt;(key), value);</div>
-<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>    <span class="keywordflow">return</span> {};</div>
-<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>  }</div>
-<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span> </div>
-<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>  <span class="keywordflow">if</span>(!isBlackboardPointer(remapped_key))</div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>}</div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span> </div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span><span class="keyword">inline</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">Result</a> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">getInput</a>(<span class="keyword">const</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">std</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">string</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">key</a>, <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">T</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">destination</a>) <span class="keyword">const</span></div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>{</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>  <span class="keyword">auto</span> res = getInputStamped(key, destination);</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>  <span class="keywordflow">if</span>(!res)</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>  {</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(res.error());</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>  }</div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>  <span class="keywordflow">return</span> {};</div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>}</div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span> </div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span><span class="keyword">inline</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">Result</a> <a class="code hl_class" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">setOutput</a>(<span class="keyword">const</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">std</a>::<a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">string</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">key</a>, <span class="keyword">const</span> <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">T</a>&amp; <a class="code hl_function" href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">value</a>)</div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>{</div>
+<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>  <span class="keywordflow">if</span>(!config().blackboard)</div>
 <div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>  {</div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;setOutput requires a blackboard pointer. Use {}&quot;</span>);</div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>  }</div>
-<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span> </div>
-<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_same_v&lt;BT::Any, T&gt;)</div>
-<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>  {</div>
-<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>    <span class="keyword">auto</span> port_type = config().manifest-&gt;ports.at(key).type();</div>
-<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>    <span class="keywordflow">if</span>(port_type != <span class="keyword">typeid</span>(BT::Any) &amp;&amp; port_type != <span class="keyword">typeid</span>(BT::AnyTypeAllowed))</div>
-<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>    {</div>
-<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>      <span class="keywordflow">throw</span> LogicError(<span class="stringliteral">&quot;setOutput&lt;Any&gt; is not allowed, unless the port &quot;</span></div>
-<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>                       <span class="stringliteral">&quot;was declared using OutputPort&lt;Any&gt;&quot;</span>);</div>
-<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>    }</div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;setOutput() failed: trying to access a &quot;</span></div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>                                   <span class="stringliteral">&quot;Blackboard(BB) entry, but BB is invalid&quot;</span>);</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>  }</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span> </div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>  <span class="keyword">auto</span> remap_it = config().output_ports.find(key);</div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>  <span class="keywordflow">if</span>(remap_it == config().output_ports.end())</div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>  {</div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;setOutput() failed: &quot;</span></div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>                                          <span class="stringliteral">&quot;NodeConfig::output_ports &quot;</span></div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>                                          <span class="stringliteral">&quot;does not contain the key: [&quot;</span>,</div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>                                          key, <span class="stringliteral">&quot;]&quot;</span>));</div>
 <div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>  }</div>
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span> </div>
-<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>  remapped_key = stripBlackboardPointer(remapped_key);</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>  config().blackboard-&gt;set(<span class="keyword">static_cast</span>&lt;std::string&gt;(remapped_key), value);</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span> </div>
-<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>  <span class="keywordflow">return</span> {};</div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>}</div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>  StringView remapped_key = remap_it-&gt;second;</div>
+<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>  <span class="keywordflow">if</span>(remapped_key == <span class="stringliteral">&quot;{=}&quot;</span> || remapped_key == <span class="stringliteral">&quot;=&quot;</span>)</div>
+<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>  {</div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>    config().blackboard-&gt;set(<span class="keyword">static_cast</span>&lt;std::string&gt;(key), value);</div>
+<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>    <span class="keywordflow">return</span> {};</div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>  }</div>
 <div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span> </div>
-<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span><span class="comment">// Utility function to fill the list of ports using T::providedPorts();</span></div>
-<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span><span class="keyword">inline</span> <span class="keywordtype">void</span> assignDefaultRemapping(<a class="code hl_struct" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfig</a>&amp; config)</div>
-<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>{</div>
-<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>  <span class="keywordflow">for</span>(<span class="keyword">const</span> <span class="keyword">auto</span>&amp; it : getProvidedPorts&lt;T&gt;())</div>
-<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>  {</div>
-<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; port_name = it.first;</div>
-<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>    <span class="keyword">const</span> <span class="keyword">auto</span> direction = it.second.direction();</div>
-<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span>    <span class="keywordflow">if</span>(direction != PortDirection::OUTPUT)</div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>  <span class="keywordflow">if</span>(!isBlackboardPointer(remapped_key))</div>
+<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>  {</div>
+<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;setOutput requires a blackboard pointer. Use {}&quot;</span>);</div>
+<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>  }</div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span> </div>
+<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_same_v&lt;BT::Any, T&gt;)</div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>  {</div>
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>    <span class="keyword">auto</span> port_type = config().manifest-&gt;ports.at(key).type();</div>
+<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span>    <span class="keywordflow">if</span>(port_type != <span class="keyword">typeid</span>(BT::Any) &amp;&amp; port_type != <span class="keyword">typeid</span>(BT::AnyTypeAllowed))</div>
 <div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>    {</div>
-<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>      <span class="comment">// PortDirection::{INPUT,INOUT}</span></div>
-<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>      config.input_ports[port_name] = <span class="stringliteral">&quot;{=}&quot;</span>;</div>
+<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>      <span class="keywordflow">throw</span> LogicError(<span class="stringliteral">&quot;setOutput&lt;Any&gt; is not allowed, unless the port &quot;</span></div>
+<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>                       <span class="stringliteral">&quot;was declared using OutputPort&lt;Any&gt;&quot;</span>);</div>
 <div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span>    }</div>
-<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>    <span class="keywordflow">if</span>(direction != PortDirection::INPUT)</div>
-<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span>    {</div>
-<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>      <span class="comment">// PortDirection::{OUTPUT,INOUT}</span></div>
-<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span>      config.output_ports[port_name] = <span class="stringliteral">&quot;{=}&quot;</span>;</div>
-<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>    }</div>
-<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span>  }</div>
+<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>  }</div>
+<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span> </div>
+<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>  remapped_key = stripBlackboardPointer(remapped_key);</div>
+<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span>  config().blackboard-&gt;set(<span class="keyword">static_cast</span>&lt;std::string&gt;(remapped_key), value);</div>
+<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span> </div>
+<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span>  <span class="keywordflow">return</span> {};</div>
 <div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span>}</div>
 <div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span> </div>
-<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>}  <span class="comment">// namespace BT</span></div>
+<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span><span class="comment">// Utility function to fill the list of ports using T::providedPorts();</span></div>
+<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span><span class="keyword">inline</span> <span class="keywordtype">void</span> assignDefaultRemapping(<a class="code hl_struct" href="../../dc/d26/struct_b_t_1_1_node_config.html">NodeConfig</a>&amp; config)</div>
+<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>{</div>
+<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>  <span class="keywordflow">for</span>(<span class="keyword">const</span> <span class="keyword">auto</span>&amp; it : getProvidedPorts&lt;T&gt;())</div>
+<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>  {</div>
+<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>    <span class="keyword">const</span> <span class="keyword">auto</span>&amp; port_name = it.first;</div>
+<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span>    <span class="keyword">const</span> <span class="keyword">auto</span> direction = it.second.direction();</div>
+<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>    <span class="keywordflow">if</span>(direction != PortDirection::OUTPUT)</div>
+<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span>    {</div>
+<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span>      <span class="comment">// PortDirection::{INPUT,INOUT}</span></div>
+<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>      config.input_ports[port_name] = <span class="stringliteral">&quot;{=}&quot;</span>;</div>
+<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>    }</div>
+<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>    <span class="keywordflow">if</span>(direction != PortDirection::INPUT)</div>
+<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>    {</div>
+<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>      <span class="comment">// PortDirection::{OUTPUT,INOUT}</span></div>
+<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>      config.output_ports[port_name] = <span class="stringliteral">&quot;{=}&quot;</span>;</div>
+<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>    }</div>
+<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span>  }</div>
+<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span>}</div>
+<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span> </div>
+<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span>}  <span class="comment">// namespace BT</span></div>
 <div class="ttc" id="aclass_b_t_1_1_behavior_tree_factory_html"><div class="ttname"><a href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html">BT::BehaviorTreeFactory</a></div><div class="ttdoc">The BehaviorTreeFactory is used to create instances of a TreeNode at run-time.</div><div class="ttdef"><b>Definition:</b> bt_factory.h:226</div></div>
 <div class="ttc" id="aclass_b_t_1_1_blackboard_html"><div class="ttname"><a href="../../d0/d51/class_b_t_1_1_blackboard.html">BT::Blackboard</a></div><div class="ttdoc">The Blackboard is the mechanism used by BehaviorTrees to exchange typed data.</div><div class="ttdef"><b>Definition:</b> blackboard.h:33</div></div>
 <div class="ttc" id="aclass_b_t_1_1_control_node_html"><div class="ttname"><a href="../../d6/ddb/class_b_t_1_1_control_node.html">BT::ControlNode</a></div><div class="ttdoc">The ControlNode is the base class for nodes that can have multiple children.</div><div class="ttdef"><b>Definition:</b> control_node.h:32</div></div>
@@ -772,7 +793,7 @@ $(document).ready(function(){initNavTree('d1/da6/tree__node_8h_source.html','../
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_a220f3387673ef71c3e47ea320b106c11"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a220f3387673ef71c3e47ea320b106c11">BT::TreeNode::registrationName</a></div><div class="ttdeci">const std::string &amp; registrationName() const</div><div class="ttdoc">registrationName is the ID used by BehaviorTreeFactory to create an instance.</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_a31eda57720de8dd6d97ab83d2956b0f0"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a31eda57720de8dd6d97ab83d2956b0f0">BT::TreeNode::Instantiate</a></div><div class="ttdeci">static std::unique_ptr&lt; TreeNode &gt; Instantiate(const std::string &amp;name, const NodeConfig &amp;config, ExtraArgs... args)</div><div class="ttdef"><b>Definition:</b> tree_node.h:382</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_a4fd8498410d2344cc9af272ea97dfd09"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a4fd8498410d2344cc9af272ea97dfd09">BT::TreeNode::getInputStamped</a></div><div class="ttdeci">Expected&lt; Timestamp &gt; getInputStamped(const std::string &amp;key, T &amp;destination) const</div><div class="ttdoc">getInputStamped is similar to getInput(dey, destination), but it returns also the Timestamp object,...</div><div class="ttdef"><b>Definition:</b> tree_node.h:481</div></div>
-<div class="ttc" id="aclass_b_t_1_1_tree_node_html_a74618849a9199ab568eb451d580e20fc"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">BT::TreeNode::setOutput</a></div><div class="ttdeci">Result setOutput(const std::string &amp;key, const T &amp;value)</div><div class="ttdoc">setOutput modifies the content of an Output port</div><div class="ttdef"><b>Definition:</b> tree_node.h:601</div></div>
+<div class="ttc" id="aclass_b_t_1_1_tree_node_html_a74618849a9199ab568eb451d580e20fc"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a74618849a9199ab568eb451d580e20fc">BT::TreeNode::setOutput</a></div><div class="ttdeci">Result setOutput(const std::string &amp;key, const T &amp;value)</div><div class="ttdoc">setOutput modifies the content of an Output port</div><div class="ttdef"><b>Definition:</b> tree_node.h:622</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_a7d17e161369b535793ed9c6cc0a6a0ac"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a7d17e161369b535793ed9c6cc0a6a0ac">BT::TreeNode::config</a></div><div class="ttdeci">const NodeConfig &amp; config() const</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_a8874bae4b946a2ea6d1b3db1a696cf6a"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a8874bae4b946a2ea6d1b3db1a696cf6a">BT::TreeNode::resetStatus</a></div><div class="ttdeci">void resetStatus()</div><div class="ttdoc">Set the status to IDLE.</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_a891f5c8b5bfe306eba4111beff799c36"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#a891f5c8b5bfe306eba4111beff799c36">BT::TreeNode::UID</a></div><div class="ttdeci">uint16_t UID() const</div></div>
@@ -783,7 +804,7 @@ $(document).ready(function(){initNavTree('d1/da6/tree__node_8h_source.html','../
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_ab98b671336cdc496028b52112e21a0ed"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#ab98b671336cdc496028b52112e21a0ed">BT::TreeNode::setStatus</a></div><div class="ttdeci">void setStatus(NodeStatus new_status)</div><div class="ttdoc">setStatus changes the status of the node. it will throw if you try to change the status to IDLE,...</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_ac089e3035b5cb8daf7537e6d86485e3a"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#ac089e3035b5cb8daf7537e6d86485e3a">BT::TreeNode::getLockedPortContent</a></div><div class="ttdeci">AnyPtrLocked getLockedPortContent(const std::string &amp;key)</div><div class="ttdoc">getLockedPortContent should be used when:</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_ac639db3ba4cca6f420b953f36350923c"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#ac639db3ba4cca6f420b953f36350923c">BT::TreeNode::name</a></div><div class="ttdeci">const std::string &amp; name() const</div><div class="ttdoc">Name of the instance, not the type.</div></div>
-<div class="ttc" id="aclass_b_t_1_1_tree_node_html_ae921e5800a82b7591cb711c710d49725"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">BT::TreeNode::getInput</a></div><div class="ttdeci">Result getInput(const std::string &amp;key, T &amp;destination) const</div><div class="ttdef"><b>Definition:</b> tree_node.h:590</div></div>
+<div class="ttc" id="aclass_b_t_1_1_tree_node_html_ae921e5800a82b7591cb711c710d49725"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">BT::TreeNode::getInput</a></div><div class="ttdeci">Result getInput(const std::string &amp;key, T &amp;destination) const</div><div class="ttdef"><b>Definition:</b> tree_node.h:611</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_aebc95976e7923c048021b553c56489b5"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#aebc95976e7923c048021b553c56489b5">BT::TreeNode::setPreTickFunction</a></div><div class="ttdeci">void setPreTickFunction(PreTickCallback callback)</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_af001be7dac6922889712e8c5f107787e"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#af001be7dac6922889712e8c5f107787e">BT::TreeNode::TreeNode</a></div><div class="ttdeci">TreeNode(std::string name, NodeConfig config)</div><div class="ttdoc">TreeNode main constructor.</div></div>
 <div class="ttc" id="aclass_b_t_1_1_tree_node_html_af205048e4151dfa2cfa91c12baba85b6"><div class="ttname"><a href="../../da/d61/class_b_t_1_1_tree_node.html#af205048e4151dfa2cfa91c12baba85b6">BT::TreeNode::waitValidStatus</a></div><div class="ttdeci">BT::NodeStatus waitValidStatus()</div></div>
