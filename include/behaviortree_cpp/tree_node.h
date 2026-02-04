@@ -526,6 +526,27 @@ inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
     }
   }
 
+  // Helper lambda to parse string using the stored converter if available,
+  // otherwise fall back to convertFromString<T>. This fixes the plugin issue
+  // where convertFromString<T> specializations are not visible across shared
+  // library boundaries (issue #953).
+  auto parseStringWithConverter = [this, &key](const std::string& str) -> T {
+    if(config().manifest)
+    {
+      auto port_it = config().manifest->ports.find(key);
+      if(port_it != config().manifest->ports.end())
+      {
+        const auto& converter = port_it->second.converter();
+        if(converter)
+        {
+          return converter(str).template cast<T>();
+        }
+      }
+    }
+    // Fall back to parseString which calls convertFromString
+    return parseString<T>(str);
+  };
+
   auto blackboard_ptr = getRemappedKey(key, port_value_str);
   try
   {
@@ -534,7 +555,7 @@ inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
     {
       try
       {
-        destination = parseString<T>(port_value_str);
+        destination = parseStringWithConverter(port_value_str);
       }
       catch(std::exception& ex)
       {
@@ -566,7 +587,7 @@ inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
       {
         if(!std::is_same_v<T, std::string> && any_value.isString())
         {
-          destination = parseString<T>(any_value.cast<std::string>());
+          destination = parseStringWithConverter(any_value.cast<std::string>());
         }
         else
         {
