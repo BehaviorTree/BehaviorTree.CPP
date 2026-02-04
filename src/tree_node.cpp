@@ -14,6 +14,7 @@
 #include "behaviortree_cpp/tree_node.h"
 
 #include <array>
+#include <atomic>
 #include <cstring>
 
 namespace BT
@@ -104,8 +105,12 @@ NodeStatus TreeNode::executeTick()
     if(!substituted)
     {
       using namespace std::chrono;
+      // Use atomic_thread_fence to prevent compiler reordering of time measurements.
+      // See issue #861 for details.
       const auto t1 = steady_clock::now();
+      std::atomic_thread_fence(std::memory_order_seq_cst);
       new_status = tick();
+      std::atomic_thread_fence(std::memory_order_seq_cst);
       const auto t2 = steady_clock::now();
       if(monitor_tick)
       {
