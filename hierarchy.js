@@ -4,9 +4,6 @@ var hierarchy =
     [ "BT::AnyTypeAllowed", "d4/df1/struct_b_t_1_1_any_type_allowed.html", null ],
     [ "BT::BehaviorTreeFactory", "d6/dcd/class_b_t_1_1_behavior_tree_factory.html", null ],
     [ "BT::Blackboard", "d0/d51/class_b_t_1_1_blackboard.html", null ],
-    [ "lexyd::char_class_base", null, [
-      [ "BT::Grammar::_xid_start_character", "df/d2d/struct_b_t_1_1_grammar_1_1__xid__start__character.html", null ]
-    ] ],
     [ "BT::Blackboard::Entry", "d8/de8/struct_b_t_1_1_blackboard_1_1_entry.html", null ],
     [ "BT::Ast::Environment", "d0/de8/struct_b_t_1_1_ast_1_1_environment.html", null ],
     [ "std::exception", null, [
@@ -15,7 +12,6 @@ var hierarchy =
         [ "BT::RuntimeError", "da/d35/class_b_t_1_1_runtime_error.html", null ]
       ] ]
     ] ],
-    [ "BT::Grammar::Expression::expected_operand", "d7/dfa/struct_b_t_1_1_grammar_1_1_expression_1_1expected__operand.html", null ],
     [ "BT::Ast::ExprBase", "db/d6e/struct_b_t_1_1_ast_1_1_expr_base.html", [
       [ "BT::Ast::ExprAssignment", "db/d78/struct_b_t_1_1_ast_1_1_expr_assignment.html", null ],
       [ "BT::Ast::ExprBinaryArithmetic", "da/d27/struct_b_t_1_1_ast_1_1_expr_binary_arithmetic.html", null ],
@@ -25,44 +21,17 @@ var hierarchy =
       [ "BT::Ast::ExprName", "d2/d5d/struct_b_t_1_1_ast_1_1_expr_name.html", null ],
       [ "BT::Ast::ExprUnaryArithmetic", "de/d7b/struct_b_t_1_1_ast_1_1_expr_unary_arithmetic.html", null ]
     ] ],
-    [ "lexy::expression_production", null, [
-      [ "BT::Grammar::Expression", "d7/d86/struct_b_t_1_1_grammar_1_1_expression.html", null ]
-    ] ],
-    [ "BT::Grammar::BooleanLiteral::False", "d9/d0c/struct_b_t_1_1_grammar_1_1_boolean_literal_1_1_false.html", null ],
     [ "std::false_type", null, [
       [ "BT::has_static_method_metadata< T, typename >", "d1/da6/struct_b_t_1_1has__static__method__metadata.html", null ],
       [ "BT::has_static_method_providedPorts< T, typename >", "d0/d56/struct_b_t_1_1has__static__method__provided_ports.html", null ]
     ] ],
     [ "BT::Monitor::Hook", "dc/d6e/struct_b_t_1_1_monitor_1_1_hook.html", null ],
-    [ "lexy::dsl::infix_op_left", null, [
-      [ "BT::Grammar::Expression::bit_and", "d3/d46/struct_b_t_1_1_grammar_1_1_expression_1_1bit__and.html", null ],
-      [ "BT::Grammar::Expression::bit_or", "da/dd4/struct_b_t_1_1_grammar_1_1_expression_1_1bit__or.html", null ],
-      [ "BT::Grammar::Expression::logical", "de/dc7/struct_b_t_1_1_grammar_1_1_expression_1_1logical.html", null ],
-      [ "BT::Grammar::Expression::math_product", "df/d72/struct_b_t_1_1_grammar_1_1_expression_1_1math__product.html", null ],
-      [ "BT::Grammar::Expression::math_sum", "d2/d98/struct_b_t_1_1_grammar_1_1_expression_1_1math__sum.html", null ],
-      [ "BT::Grammar::Expression::string_concat", "de/dc9/struct_b_t_1_1_grammar_1_1_expression_1_1string__concat.html", null ]
-    ] ],
-    [ "lexy::dsl::infix_op_list", null, [
-      [ "BT::Grammar::Expression::comparison", "d0/dee/struct_b_t_1_1_grammar_1_1_expression_1_1comparison.html", null ]
-    ] ],
-    [ "lexy::dsl::infix_op_single", null, [
-      [ "BT::Grammar::Expression::assignment", "d2/dfa/struct_b_t_1_1_grammar_1_1_expression_1_1assignment.html", null ],
-      [ "BT::Grammar::Expression::conditional", "d1/dc4/struct_b_t_1_1_grammar_1_1_expression_1_1conditional.html", null ]
-    ] ],
-    [ "BT::Grammar::Integer::integer", "d4/da9/struct_b_t_1_1_grammar_1_1_integer_1_1integer.html", null ],
-    [ "BT::Grammar::Integer::invalid_suffix", "da/d21/struct_b_t_1_1_grammar_1_1_integer_1_1invalid__suffix.html", null ],
-    [ "BT::Grammar::Real::invalid_suffix", "db/db9/struct_b_t_1_1_grammar_1_1_real_1_1invalid__suffix.html", null ],
     [ "BT::JsonExporter", "d0/d64/class_b_t_1_1_json_exporter.html", null ],
     [ "BT::LockedPtr< T >", "d4/d98/class_b_t_1_1_locked_ptr.html", null ],
-    [ "BT::Grammar::Name", "d7/d91/struct_b_t_1_1_grammar_1_1_name.html", null ],
     [ "BT::NodeConfig", "dc/d26/struct_b_t_1_1_node_config.html", null ],
     [ "BT::TreeObserver::NodeStatistics", "d7/d9d/struct_b_t_1_1_tree_observer_1_1_node_statistics.html", null ],
     [ "BT::Parser", "de/da6/class_b_t_1_1_parser.html", [
       [ "BT::XMLParser", "d8/d05/class_b_t_1_1_x_m_l_parser.html", null ]
-    ] ],
-    [ "lexy::dsl::prefix_op", null, [
-      [ "BT::Grammar::Expression::bit_prefix", "dc/df7/struct_b_t_1_1_grammar_1_1_expression_1_1bit__prefix.html", null ],
-      [ "BT::Grammar::Expression::math_prefix", "d0/d26/struct_b_t_1_1_grammar_1_1_expression_1_1math__prefix.html", null ]
     ] ],
     [ "BT::ProtectedQueue< T >", "d6/dee/struct_b_t_1_1_protected_queue.html", null ],
     [ "BT::Monitor::ReplyHeader", "dc/d73/struct_b_t_1_1_monitor_1_1_reply_header.html", null ],
@@ -81,22 +50,12 @@ var hierarchy =
       [ "BT::StdCoutLogger", "d1/d52/class_b_t_1_1_std_cout_logger.html", null ],
       [ "BT::TreeObserver", "d2/d2b/class_b_t_1_1_tree_observer.html", null ]
     ] ],
-    [ "BT::Grammar::stmt", "d6/db1/struct_b_t_1_1_grammar_1_1stmt.html", null ],
     [ "BT::Tree::Subtree", "d3/d23/struct_b_t_1_1_tree_1_1_subtree.html", null ],
     [ "BT::TestNodeConfig", "d6/d58/struct_b_t_1_1_test_node_config.html", null ],
     [ "BT::TimerQueue< ClockT, DurationT >", "df/d4c/class_b_t_1_1_timer_queue.html", null ],
     [ "BT::Timestamp", "d0/d59/struct_b_t_1_1_timestamp.html", null ],
-    [ "lexy::token_production", null, [
-      [ "BT::Grammar::AnyValue", "d7/d62/struct_b_t_1_1_grammar_1_1_any_value.html", null ],
-      [ "BT::Grammar::BooleanLiteral", "d8/d7c/struct_b_t_1_1_grammar_1_1_boolean_literal.html", null ],
-      [ "BT::Grammar::Integer", "dc/d75/struct_b_t_1_1_grammar_1_1_integer.html", null ],
-      [ "BT::Grammar::Real", "dc/d13/struct_b_t_1_1_grammar_1_1_real.html", null ],
-      [ "BT::Grammar::StringLiteral", "df/d4b/struct_b_t_1_1_grammar_1_1_string_literal.html", null ]
-    ] ],
+    [ "BT::Scripting::Token", "da/dd6/struct_b_t_1_1_scripting_1_1_token.html", null ],
     [ "BT::FileLogger2::Transition", "dc/d6c/struct_b_t_1_1_file_logger2_1_1_transition.html", null ],
-    [ "lexy::transparent_production", null, [
-      [ "BT::Grammar::nested_expr", "df/d99/struct_b_t_1_1_grammar_1_1nested__expr.html", null ]
-    ] ],
     [ "BT::Tree", "d1/d79/class_b_t_1_1_tree.html", null ],
     [ "BT::TreeNode", "da/d61/class_b_t_1_1_tree_node.html", [
       [ "BT::ControlNode", "d6/ddb/class_b_t_1_1_control_node.html", [
@@ -158,7 +117,6 @@ var hierarchy =
       ] ]
     ] ],
     [ "BT::TreeNodeManifest", "dc/d6c/struct_b_t_1_1_tree_node_manifest.html", null ],
-    [ "BT::Grammar::BooleanLiteral::True", "df/daf/struct_b_t_1_1_grammar_1_1_boolean_literal_1_1_true.html", null ],
     [ "std::true_type", null, [
       [ "BT::has_static_method_metadata< T, typename std::enable_if< std::is_same< decltype(T::metadata()), KeyValueVector >::value >::type >", "dc/d0f/struct_b_t_1_1has__static__method__metadata_3_01_t_00_01typename_01std_1_1enable__if_3_01std_1_1065d166f8cc1b3c83dbdb1c2230484f1.html", null ],
       [ "BT::has_static_method_providedPorts< T, typename std::enable_if< std::is_same< decltype(T::providedPorts()), PortsList >::value >::type >", "d6/d07/struct_b_t_1_1has__static__method__provided_ports_3_01_t_00_01typename_01std_1_1enable__if_3_01s8432b5486894de4ea455ef2f702667bd.html", null ]

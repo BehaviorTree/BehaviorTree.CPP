@@ -1,11 +1,7 @@
 var searchData=
 [
-  ['name_0',['Name',['../d7/d91/struct_b_t_1_1_grammar_1_1_name.html',1,'BT::Grammar']]],
-  ['name_1',['name',['../da/d61/class_b_t_1_1_tree_node.html#ac639db3ba4cca6f420b953f36350923c',1,'BT::TreeNode']]],
-  ['nested_5fexpr_2',['nested_expr',['../df/d99/struct_b_t_1_1_grammar_1_1nested__expr.html',1,'BT::Grammar']]],
-  ['nodebuilder_3',['NodeBuilder',['../d2/d8d/namespace_b_t.html#a92afa24aac8b115778d5a99099b40d5b',1,'BT']]],
-  ['nodeconfig_4',['NodeConfig',['../dc/d26/struct_b_t_1_1_node_config.html',1,'BT']]],
-  ['nodestatistics_5',['NodeStatistics',['../d7/d9d/struct_b_t_1_1_tree_observer_1_1_node_statistics.html',1,'BT::TreeObserver']]],
-  ['nodestatus_6',['NodeStatus',['../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e',1,'BT']]],
-  ['nodetype_7',['NodeType',['../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e',1,'BT']]]
+  ['onhalted_0',['onHalted',['../d0/d1f/class_b_t_1_1_stateful_action_node.html#aa7233f6c3a9854e0c626af687be0de4e',1,'BT::StatefulActionNode::onHalted()'],['../d9/d33/class_b_t_1_1_sleep_node.html#af323f98260e2854ff5beb56963df0652',1,'BT::SleepNode::onHalted()'],['../d5/d7f/class_b_t_1_1_test_node.html#a97800d6ad0d094c9f8dc44a58b381e26',1,'BT::TestNode::onHalted()']]],
+  ['onrunning_1',['onRunning',['../d0/d1f/class_b_t_1_1_stateful_action_node.html#a38b0c30c93f98b098881eff45e914aa1',1,'BT::StatefulActionNode::onRunning()'],['../d9/d33/class_b_t_1_1_sleep_node.html#afe9eb80f065e48cb68b9c571b090939b',1,'BT::SleepNode::onRunning()'],['../d5/d7f/class_b_t_1_1_test_node.html#abb5c2599dfb941076e24de3c11fc8d3d',1,'BT::TestNode::onRunning()']]],
+  ['onstart_2',['onStart',['../d0/d1f/class_b_t_1_1_stateful_action_node.html#af8c33bb580fc1e14fa3b70da06020701',1,'BT::StatefulActionNode::onStart()'],['../d9/d33/class_b_t_1_1_sleep_node.html#abb3c35a140738ca2d43d1f5498972435',1,'BT::SleepNode::onStart()'],['../d5/d7f/class_b_t_1_1_test_node.html#ac5cd14d2bc2d9aa0047d08224a080887',1,'BT::TestNode::onStart()']]],
+  ['outputport_3',['OutputPort',['../d2/d8d/namespace_b_t.html#a8ac171179c71fc0def23cf28e36b8ee2',1,'BT::OutputPort(StringView name, StringView description={})'],['../d2/d8d/namespace_b_t.html#a533a06e2f82bd5d915194dcb696f444c',1,'BT::OutputPort(StringView name, StringView default_value, StringView description)']]]
 ];

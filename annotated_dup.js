@@ -15,22 +15,13 @@ var annotated_dup =
       [ "details", "df/da8/namespace_b_t_1_1details.html", [
         [ "Semaphore", "d9/d24/class_b_t_1_1details_1_1_semaphore.html", null ]
       ] ],
-      [ "Grammar", null, [
-        [ "_xid_start_character", "df/d2d/struct_b_t_1_1_grammar_1_1__xid__start__character.html", null ],
-        [ "AnyValue", "d7/d62/struct_b_t_1_1_grammar_1_1_any_value.html", null ],
-        [ "BooleanLiteral", "d8/d7c/struct_b_t_1_1_grammar_1_1_boolean_literal.html", "d8/d7c/struct_b_t_1_1_grammar_1_1_boolean_literal" ],
-        [ "Expression", "d7/d86/struct_b_t_1_1_grammar_1_1_expression.html", "d7/d86/struct_b_t_1_1_grammar_1_1_expression" ],
-        [ "Integer", "dc/d75/struct_b_t_1_1_grammar_1_1_integer.html", "dc/d75/struct_b_t_1_1_grammar_1_1_integer" ],
-        [ "Name", "d7/d91/struct_b_t_1_1_grammar_1_1_name.html", null ],
-        [ "nested_expr", "df/d99/struct_b_t_1_1_grammar_1_1nested__expr.html", null ],
-        [ "Real", "dc/d13/struct_b_t_1_1_grammar_1_1_real.html", "dc/d13/struct_b_t_1_1_grammar_1_1_real" ],
-        [ "stmt", "d6/db1/struct_b_t_1_1_grammar_1_1stmt.html", null ],
-        [ "StringLiteral", "df/d4b/struct_b_t_1_1_grammar_1_1_string_literal.html", null ]
-      ] ],
       [ "Monitor", null, [
         [ "Hook", "dc/d6e/struct_b_t_1_1_monitor_1_1_hook.html", null ],
         [ "ReplyHeader", "dc/d73/struct_b_t_1_1_monitor_1_1_reply_header.html", null ],
         [ "RequestHeader", "dc/d05/struct_b_t_1_1_monitor_1_1_request_header.html", null ]
+      ] ],
+      [ "Scripting", null, [
+        [ "Token", "da/dd6/struct_b_t_1_1_scripting_1_1_token.html", null ]
       ] ],
       [ "ActionNodeBase", "d3/de2/class_b_t_1_1_action_node_base.html", null ],
       [ "AlwaysFailureNode", "d0/d9c/class_b_t_1_1_always_failure_node.html", null ],
