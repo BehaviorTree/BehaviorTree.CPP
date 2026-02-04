@@ -20,10 +20,11 @@
 
 namespace BT
 {
-
+namespace
+{
 // Thread-local stack tracking the current tick hierarchy.
 // Used to build a backtrace when an exception is thrown during tick().
-static thread_local std::vector<const TreeNode*> tick_stack_;
+thread_local std::vector<const TreeNode*> tick_stack_;
 
 // RAII guard to push/pop nodes from the tick stack
 class TickStackGuard
@@ -39,6 +40,8 @@ public:
   }
   TickStackGuard(const TickStackGuard&) = delete;
   TickStackGuard& operator=(const TickStackGuard&) = delete;
+  TickStackGuard(TickStackGuard&&) = delete;
+  TickStackGuard& operator=(TickStackGuard&&) = delete;
 
   // Build a backtrace from the current tick stack
   static std::vector<TickBacktraceEntry> buildBacktrace()
@@ -52,6 +55,7 @@ public:
     return backtrace;
   }
 };
+}  // namespace
 
 struct TreeNode::PImpl
 {

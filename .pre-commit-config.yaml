@@ -43,14 +43,15 @@ repos:
       - id: clang-format
         args: ['-fallback-style=none', '-i']
 
-  # C++ static analysis (installs clang-tidy automatically via pip)
-  # - repo: https://github.com/mxmlnrdr/clang_tidy_hook
-  #   rev: v0.3.1
-  #   hooks:
-  #     - id: clang-tidy
-  #       args:
-  #         - --config-file=.clang-tidy
-  #         - -p=build
+  # C++ static analysis via clangd-21 (skips if not installed)
+  - repo: local
+    hooks:
+      - id: clang-tidy
+        name: clang-tidy
+        entry: ./run_clang_tidy_hook.sh
+        language: script
+        files: \.(cpp|hpp|h)$
+        exclude: ^3rdparty/|^include/behaviortree_cpp/contrib/|^include/behaviortree_cpp/scripting/
 
   # Spell check
   - repo: https://github.com/codespell-project/codespell
