@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>BehaviorTree: Main Page</title>
+<title>BehaviorTree: BehaviorTree.CPP</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,10 +89,158 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div>
 </div>
 
-<div class="header">
-  <div class="headertitle"><div class="title">BehaviorTree Documentation</div></div>
+<div><div class="header">
+  <div class="headertitle"><div class="title">BehaviorTree.CPP </div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a class="anchor" id="mainpage"></a> C++ library for behavior tree execution.</p>
+<h1><a class="anchor" id="autotoc_md0"></a>
+Quick Start</h1>
+<ul>
+<li><a class="el" href="d6/dcd/class_b_t_1_1_behavior_tree_factory.html">BT::BehaviorTreeFactory</a> - Create and register nodes</li>
+<li><a class="el" href="d0/d51/class_b_t_1_1_blackboard.html">BT::Blackboard</a> - Shared data storage</li>
+<li><a class="el" href="da/d61/class_b_t_1_1_tree_node.html">BT::TreeNode</a> - Base class for all nodes</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md1"></a>
+Node Types</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Category   </th><th class="markdownTableHeadNone">Description   </th><th class="markdownTableHeadNone">Key Classes    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><b>Actions</b>   </td><td class="markdownTableBodyNone">Execute tasks   </td><td class="markdownTableBodyNone"><a class="el" href="da/d73/class_b_t_1_1_sync_action_node.html">BT::SyncActionNode</a>, <a class="el" href="d0/d1f/class_b_t_1_1_stateful_action_node.html">BT::StatefulActionNode</a>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><b>Conditions</b>   </td><td class="markdownTableBodyNone">Check state   </td><td class="markdownTableBodyNone"><a class="el" href="dc/dfc/class_b_t_1_1_condition_node.html">BT::ConditionNode</a>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><b>Control</b>   </td><td class="markdownTableBodyNone">Flow control   </td><td class="markdownTableBodyNone"><a class="el" href="d9/ddd/class_b_t_1_1_sequence_node.html">BT::SequenceNode</a>, <a class="el" href="dc/da6/class_b_t_1_1_fallback_node.html">BT::FallbackNode</a>, <a class="el" href="d1/dee/class_b_t_1_1_parallel_node.html">BT::ParallelNode</a>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><b>Decorators</b>   </td><td class="markdownTableBodyNone">Modify behavior   </td><td class="markdownTableBodyNone"><a class="el" href="dd/de4/class_b_t_1_1_retry_node.html">BT::RetryNode</a>, <a class="el" href="d4/d20/class_b_t_1_1_timeout_node.html">BT::TimeoutNode</a>, <a class="el" href="d2/ded/class_b_t_1_1_inverter_node.html">BT::InverterNode</a>   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md2"></a>
+Built-in Control Nodes</h1>
+<h2><a class="anchor" id="autotoc_md3"></a>
+Sequences</h2>
+<ul>
+<li><a class="el" href="d9/ddd/class_b_t_1_1_sequence_node.html">BT::SequenceNode</a></li>
+<li><a class="el" href="de/d9f/class_b_t_1_1_reactive_sequence.html">BT::ReactiveSequence</a></li>
+<li><a class="el" href="de/d69/class_b_t_1_1_sequence_with_memory.html">BT::SequenceWithMemory</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md4"></a>
+Fallbacks</h2>
+<ul>
+<li><a class="el" href="dc/da6/class_b_t_1_1_fallback_node.html">BT::FallbackNode</a></li>
+<li><a class="el" href="dc/d04/class_b_t_1_1_reactive_fallback.html">BT::ReactiveFallback</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md5"></a>
+Parallels</h2>
+<ul>
+<li><a class="el" href="d1/dee/class_b_t_1_1_parallel_node.html">BT::ParallelNode</a></li>
+<li><a class="el" href="d3/d02/class_b_t_1_1_parallel_all_node.html">BT::ParallelAllNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md6"></a>
+Conditional</h2>
+<ul>
+<li><a class="el" href="d8/d08/class_b_t_1_1_if_then_else_node.html">BT::IfThenElseNode</a></li>
+<li><a class="el" href="d7/d54/class_b_t_1_1_while_do_else_node.html">BT::WhileDoElseNode</a></li>
+<li><a class="el" href="dc/dae/class_b_t_1_1_switch_node.html">BT::SwitchNode</a></li>
+<li><a class="el" href="dc/d0b/class_b_t_1_1_manual_selector_node.html">BT::ManualSelectorNode</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md7"></a>
+Built-in Decorators</h1>
+<h2><a class="anchor" id="autotoc_md8"></a>
+Repetition</h2>
+<ul>
+<li><a class="el" href="dd/de4/class_b_t_1_1_retry_node.html">BT::RetryNode</a></li>
+<li><a class="el" href="d6/d78/class_b_t_1_1_repeat_node.html">BT::RepeatNode</a></li>
+<li><a class="el" href="dd/d32/class_b_t_1_1_loop_node.html">BT::LoopNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md9"></a>
+Timing</h2>
+<ul>
+<li><a class="el" href="d4/d20/class_b_t_1_1_timeout_node.html">BT::TimeoutNode</a></li>
+<li><a class="el" href="d4/d56/class_b_t_1_1_delay_node.html">BT::DelayNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md10"></a>
+Result Modification</h2>
+<ul>
+<li><a class="el" href="d2/ded/class_b_t_1_1_inverter_node.html">BT::InverterNode</a></li>
+<li><a class="el" href="d7/db8/class_b_t_1_1_force_success_node.html">BT::ForceSuccessNode</a></li>
+<li><a class="el" href="d4/d8c/class_b_t_1_1_force_failure_node.html">BT::ForceFailureNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md11"></a>
+Execution Control</h2>
+<ul>
+<li><a class="el" href="dd/dbd/class_b_t_1_1_run_once_node.html">BT::RunOnceNode</a></li>
+<li><a class="el" href="de/d22/class_b_t_1_1_keep_running_until_failure_node.html">BT::KeepRunningUntilFailureNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md12"></a>
+Subtrees</h2>
+<ul>
+<li><a class="el" href="df/d34/class_b_t_1_1_sub_tree_node.html">BT::SubTreeNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md13"></a>
+Preconditions</h2>
+<ul>
+<li><a class="el" href="d7/dd5/class_b_t_1_1_precondition_node.html">BT::PreconditionNode</a></li>
+<li><a class="el" href="d1/d7b/class_b_t_1_1_entry_updated_decorator.html">BT::EntryUpdatedDecorator</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md14"></a>
+Built-in Actions</h1>
+<h2><a class="anchor" id="autotoc_md15"></a>
+Status</h2>
+<ul>
+<li><a class="el" href="dd/dce/class_b_t_1_1_always_success_node.html">BT::AlwaysSuccessNode</a></li>
+<li><a class="el" href="d0/d9c/class_b_t_1_1_always_failure_node.html">BT::AlwaysFailureNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md16"></a>
+Blackboard</h2>
+<ul>
+<li><a class="el" href="d7/d4f/class_b_t_1_1_set_blackboard_node.html">BT::SetBlackboardNode</a></li>
+<li><a class="el" href="d1/d77/class_b_t_1_1_unset_blackboard_node.html">BT::UnsetBlackboardNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md17"></a>
+Utility</h2>
+<ul>
+<li><a class="el" href="d9/d33/class_b_t_1_1_sleep_node.html">BT::SleepNode</a></li>
+<li><a class="el" href="d5/d7f/class_b_t_1_1_test_node.html">BT::TestNode</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md18"></a>
+Scripting</h2>
+<ul>
+<li><a class="el" href="db/d0f/class_b_t_1_1_script_node.html">BT::ScriptNode</a></li>
+<li><a class="el" href="da/d26/class_b_t_1_1_script_condition.html">BT::ScriptCondition</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md19"></a>
+Entry Updated</h2>
+<ul>
+<li><a class="el" href="df/d9f/class_b_t_1_1_entry_updated_action.html">BT::EntryUpdatedAction</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md20"></a>
+Queue</h2>
+<ul>
+<li><a class="el" href="d7/d3a/class_b_t_1_1_pop_from_queue.html">BT::PopFromQueue</a></li>
+<li><a class="el" href="d9/d8c/class_b_t_1_1_queue_size.html">BT::QueueSize</a></li>
+</ul>
+<h1><a class="anchor" id="autotoc_md21"></a>
+Core Concepts</h1>
+<ul>
+<li><a class="el" href="d8/d5e/class_b_t_1_1_port_info.html">BT::PortInfo</a> - Type-safe port system</li>
+<li><a class="el" href="d2/d8d/namespace_b_t.html#a7ed468293f4e7dc7ebbaca1a475526f3">BT::Expected</a> - Result type for error handling</li>
+<li><a class="el" href="d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">BT::NodeStatus</a> - Node execution states</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md22"></a>
+Logging &amp; Tools</h1>
+<ul>
+<li><a class="el" href="d2/d7b/class_b_t_1_1_file_logger2.html">BT::FileLogger2</a> - File logging</li>
+<li><a class="el" href="d1/d52/class_b_t_1_1_std_cout_logger.html">BT::StdCoutLogger</a> - Console output</li>
+<li><a class="el" href="da/df5/class_b_t_1_1_groot2_publisher.html">BT::Groot2Publisher</a> - Groot2 editor integration</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md23"></a>
+Resources</h1>
+<ul>
+<li><a href="https://github.com/BehaviorTree/BehaviorTree.CPP">GitHub Repository</a></li>
+<li><a href="https://www.behaviortree.dev/">Groot2 Editor</a> </li>
+</ul>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
