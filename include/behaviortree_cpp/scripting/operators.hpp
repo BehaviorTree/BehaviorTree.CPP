@@ -81,7 +81,7 @@ struct ExprName : ExprBase
 {
   std::string name;
 
-  explicit ExprName(std::string n) : name(LEXY_MOV(n))
+  explicit ExprName(std::string n) : name(std::move(n))
   {}
 
   Any evaluate(Environment& env) const override
@@ -115,7 +115,7 @@ struct ExprUnaryArithmetic : ExprBase
   } op;
   expr_ptr rhs;
 
-  explicit ExprUnaryArithmetic(op_t op, expr_ptr e) : op(op), rhs(LEXY_MOV(e))
+  explicit ExprUnaryArithmetic(op_t op, expr_ptr e) : op(op), rhs(std::move(e))
   {}
 
   Any evaluate(Environment& env) const override
@@ -196,7 +196,7 @@ struct ExprBinaryArithmetic : ExprBase
   expr_ptr lhs, rhs;
 
   explicit ExprBinaryArithmetic(expr_ptr lhs, op_t op, expr_ptr rhs)
-    : op(op), lhs(LEXY_MOV(lhs)), rhs(LEXY_MOV(rhs))
+    : op(op), lhs(std::move(lhs)), rhs(std::move(rhs))
   {}
 
   Any evaluate(Environment& env) const override
@@ -450,7 +450,7 @@ struct ExprIf : ExprBase
   expr_ptr condition, then, else_;
 
   explicit ExprIf(expr_ptr condition, expr_ptr then, expr_ptr else_)
-    : condition(LEXY_MOV(condition)), then(LEXY_MOV(then)), else_(LEXY_MOV(else_))
+    : condition(std::move(condition)), then(std::move(then)), else_(std::move(else_))
   {}
 
   Any evaluate(Environment& env) const override
@@ -504,7 +504,7 @@ struct ExprAssignment : ExprBase
   expr_ptr lhs, rhs;
 
   explicit ExprAssignment(expr_ptr _lhs, op_t op, expr_ptr _rhs)
-    : op(op), lhs(LEXY_MOV(_lhs)), rhs(LEXY_MOV(_rhs))
+    : op(op), lhs(std::move(_lhs)), rhs(std::move(_rhs))
   {}
 
   Any evaluate(Environment& env) const override
@@ -665,226 +665,11 @@ struct ExprAssignment : ExprBase
 };
 }  // namespace BT::Ast
 
-namespace BT::Grammar
+namespace BT::Scripting
 {
-namespace dsl = lexy::dsl;
 
-constexpr auto escaped_newline = dsl::backslash >> dsl::newline;
+/// Parse a script string into a list of AST expression nodes.
+/// Throws std::runtime_error on parse failure.
+std::vector<Ast::expr_ptr> parseStatements(const std::string& script);
 
-// An expression that is nested inside another expression.
-struct nested_expr : lexy::transparent_production
-{
-  // We change the whitespace rule to allow newlines:
-  // as it's nested, the REPL can properly handle continuation lines.
-  static constexpr auto whitespace = dsl::ascii::space | escaped_newline;
-  // The rule itself just recurses back to expression, but with the adjusted whitespace now.
-  static constexpr auto rule = dsl::recurse<struct Expression>;
-
-  static constexpr auto value = lexy::forward<Ast::expr_ptr>;
-};
-
-// An arbitrary expression.
-// It uses lexy's built-in support for operator precedence parsing to automatically generate a
-// proper rule. This is done by inheriting from expression_production.
-struct Expression : lexy::expression_production
-{
-  struct expected_operand
-  {
-    static constexpr auto name = "expected operand";
-  };
-
-  // We need to specify the atomic part of an expression.
-  static constexpr auto atom = [] {
-    auto paren_expr = dsl::parenthesized(dsl::p<nested_expr>);
-    auto boolean = dsl::p<BooleanLiteral>;
-    auto var = dsl::p<Name>;
-    auto literal = dsl::p<AnyValue>;
-
-    return paren_expr | boolean | var | literal | dsl::error<expected_operand>;
-  }();
-
-  // Each of the nested classes defines one operation.
-  // They inherit from a tag type that specify the kind of operation (prefix, infix, postfix),
-  // and associativity (left, right, single (non-associative)),
-  // and specify the operator rule and operand.
-
-  // -x
-  struct math_prefix : dsl::prefix_op
-  {
-    static constexpr auto op = dsl::op<Ast::ExprUnaryArithmetic::negate>(LEXY_LIT("-"));
-    using operand = dsl::atom;
-  };
-  // x * x, x / x
-  struct math_product : dsl::infix_op_left
-  {
-    static constexpr auto op = [] {
-      // Don't confuse with *= or /=
-      auto times = dsl::not_followed_by(LEXY_LIT("*"), dsl::lit_c<'='>);
-      auto div = dsl::not_followed_by(LEXY_LIT("/"), dsl::lit_c<'='>);
-      return dsl::op<Ast::ExprBinaryArithmetic::times>(times) /
-             dsl::op<Ast::ExprBinaryArithmetic::div>(div);
-    }();
-    using operand = math_prefix;
-  };
-  // x + x, x - x
-  struct math_sum : dsl::infix_op_left
-  {
-    static constexpr auto op = [] {
-      // Don't confuse with += or -=
-      auto plus = dsl::not_followed_by(LEXY_LIT("+"), dsl::lit_c<'='>);
-      auto minus = dsl::not_followed_by(LEXY_LIT("-"), dsl::lit_c<'='>);
-      return dsl::op<Ast::ExprBinaryArithmetic::plus>(plus) /
-             dsl::op<Ast::ExprBinaryArithmetic::minus>(minus);
-    }();
-
-    using operand = math_product;
-  };
-
-  // x .. y
-  struct string_concat : dsl::infix_op_left
-  {
-    static constexpr auto op = [] {
-      return dsl::op<Ast::ExprBinaryArithmetic::concat>(LEXY_LIT(".."));
-    }();
-
-    // Use math_prefix (not math_sum) to avoid duplicating math_sum/math_product
-    // in the operation list, which would break left-associativity of +/-/*//
-    // due to conflicting binding power levels in lexy's _operation_list_of.
-    using operand = math_prefix;
-  };
-
-  // ~x
-  struct bit_prefix : dsl::prefix_op
-  {
-    static constexpr auto op = [] {
-      auto complement = LEXY_LIT("~");
-      auto logical_not = dsl::not_followed_by(LEXY_LIT("!"), dsl::lit_c<'='>);
-
-      return dsl::op<Ast::ExprUnaryArithmetic::complement>(complement) /
-             dsl::op<Ast::ExprUnaryArithmetic::logical_not>(logical_not);
-    }();
-    using operand = dsl::atom;
-  };
-
-  // x & x
-  struct bit_and : dsl::infix_op_left
-  {
-    static constexpr auto op = [] {
-      // Don't confuse with &&
-      auto bit_and = dsl::not_followed_by(LEXY_LIT("&"), dsl::lit_c<'&'>);
-      return dsl::op<Ast::ExprBinaryArithmetic::bit_and>(bit_and);
-    }();
-
-    using operand = bit_prefix;
-  };
-
-  // x | x, x ^ x
-  struct bit_or : dsl::infix_op_left
-  {
-    static constexpr auto op = [] {
-      // Don't confuse with ||
-      auto bit_or = dsl::not_followed_by(LEXY_LIT("|"), dsl::lit_c<'|'>);
-      return dsl::op<Ast::ExprBinaryArithmetic::bit_or>(bit_or) /
-             dsl::op<Ast::ExprBinaryArithmetic::bit_xor>(LEXY_LIT("^"));
-    }();
-
-    using operand = bit_and;
-  };
-
-  // Comparisons are list operators, which allows implementation of chaining.
-  // x == y < z
-  struct comparison : dsl::infix_op_list
-  {
-    // Other comparison operators omitted for simplicity.
-    static constexpr auto op = dsl::op<Ast::ExprComparison::equal>(LEXY_LIT("==")) /
-                               dsl::op<Ast::ExprComparison::not_equal>(LEXY_LIT("!=")) /
-                               dsl::op<Ast::ExprComparison::less>(LEXY_LIT("<")) /
-                               dsl::op<Ast::ExprComparison::greater>(LEXY_LIT(">")) /
-                               dsl::op<Ast::ExprComparison::less_equal>(LEXY_LIT("<=")) /
-                               dsl::op<Ast::ExprComparison::greater_equal>(LEXY_LIT(">"
-                                                                                    "="));
-
-    // The use of dsl::groups ensures that an expression can either contain math or bit or string
-    // operators. Mixing requires parenthesis.
-    using operand = dsl::groups<math_sum, bit_or, string_concat>;
-  };
-
-  // Logical operators,  || and &&
-  struct logical : dsl::infix_op_left
-  {
-    static constexpr auto op =
-        dsl::op<Ast::ExprBinaryArithmetic::logic_or>(LEXY_LIT("||")) /
-        dsl::op<Ast::ExprBinaryArithmetic::logic_and>(LEXY_LIT("&&"));
-
-    using operand = comparison;
-  };
-
-  // x ? y : z
-  struct conditional : dsl::infix_op_single
-  {
-    // We treat a conditional operator, which has three operands,
-    // as a binary operator where the operator consists of ?, the inner operator, and :.
-    // The <void> ensures that `dsl::op` does not produce a value.
-    static constexpr auto op =
-        dsl::op<void>(LEXY_LIT("?") >> (dsl::p<nested_expr> + dsl::lit_c<':'>));
-    using operand = logical;
-  };
-
-  struct assignment : dsl::infix_op_single
-  {
-    // We need to prevent `=` from matching `==`.
-    static constexpr auto op =
-        dsl::op<Ast::ExprAssignment::assign_create>(LEXY_LIT(":=")) /
-        dsl::op<Ast::ExprAssignment::assign_existing>(
-            dsl::not_followed_by(LEXY_LIT("="), dsl::lit_c<'='>)) /
-        dsl::op<Ast::ExprAssignment::assign_plus>(LEXY_LIT("+=")) /
-        dsl::op<Ast::ExprAssignment::assign_minus>(LEXY_LIT("-=")) /
-        dsl::op<Ast::ExprAssignment::assign_times>(LEXY_LIT("*=")) /
-        dsl::op<Ast::ExprAssignment::assign_div>(LEXY_LIT("/="));
-
-    using operand = conditional;
-  };
-
-  // An expression also needs to specify the operation with the lowest binding power.
-  // The operation of everything else is determined by following the `::operand` member.
-  using operation = assignment;
-
-  static constexpr auto value =
-      // We need a sink as the comparison expression generates a list.
-      lexy::fold_inplace<std::unique_ptr<Ast::ExprComparison>>(
-          [] { return std::make_unique<Ast::ExprComparison>(); },
-          [](auto& node, Ast::expr_ptr opr) { node->operands.push_back(LEXY_MOV(opr)); },
-          [](auto& node, Ast::ExprComparison::op_t op) { node->ops.push_back(op); })
-      // The result of the list feeds into a callback that handles all other cases.
-      >> lexy::callback(
-             // atoms
-             lexy::forward<Ast::expr_ptr>, lexy::new_<Ast::ExprLiteral, Ast::expr_ptr>,
-             lexy::new_<Ast::ExprName, Ast::expr_ptr>,
-             // unary/binary operators
-             lexy::new_<Ast::ExprUnaryArithmetic, Ast::expr_ptr>,
-             lexy::new_<Ast::ExprBinaryArithmetic, Ast::expr_ptr>,
-             // conditional and assignment
-             lexy::new_<Ast::ExprIf, Ast::expr_ptr>,
-             lexy::new_<Ast::ExprAssignment, Ast::expr_ptr>);
-};
-
-// A statement, which is a list of expressions separated by semicolons.
-struct stmt
-{
-  // We don't allow newlines as whitespace at the top-level.
-  // This is because we can't easily know whether we need to request more input when seeing a
-  // newline or not. Once we're having a e.g. parenthesized expression, we know that we need more
-  // input until we've reached ), so then change the whitespace rule.
-  static constexpr auto whitespace = dsl::ascii::blank | escaped_newline | dsl::newline;
-
-  static constexpr auto rule = [] {
-    // We can't use `dsl::eol` as our terminator directly,
-    // since that would try and skip whitespace, which requests more input on the REPL.
-    auto at_eol = dsl::peek(dsl::eol);
-    return dsl::terminator(at_eol).opt_list(dsl::p<Expression>, dsl::sep(dsl::semicolon));
-  }();
-
-  static constexpr auto value = lexy::as_list<std::vector<Ast::expr_ptr>>;
-};
-
-}  // namespace BT::Grammar
+}  // namespace BT::Scripting
