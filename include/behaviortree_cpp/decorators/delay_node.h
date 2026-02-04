@@ -67,7 +67,7 @@ private:
   std::atomic_bool delay_complete_ = false;
   bool delay_aborted_ = false;
   unsigned msec_;
-  bool read_parameter_from_ports_ = false;
+  bool read_parameter_from_ports_;
   std::mutex delay_mutex_;
 };
 
