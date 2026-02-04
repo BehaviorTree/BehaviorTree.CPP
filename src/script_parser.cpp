@@ -225,10 +225,7 @@ private:
     if(tok.type == TokenType::Real)
     {
       advance();
-      double val = 0;
-      const char* first = tok.text.data();
-      const char* last = first + tok.text.size();
-      std::from_chars(first, last, val);
+      double val = convertFromString<double>(tok.text);
       return std::make_shared<Ast::ExprLiteral>(Any(val));
     }
     // String literal
