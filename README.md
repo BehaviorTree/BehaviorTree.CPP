@@ -15,7 +15,7 @@ It was designed to be flexible, easy to use, reactive and fast.
 Even if our main use-case is __robotics__, you can use this library to build
 __AI for games__, or to replace Finite State Machines.
 
-There are few features which make __BehaviorTree.CPP__ unique, when compared to other implementations:
+There are a few features that make __BehaviorTree.CPP__ unique, when compared to other implementations:
 
 - It makes __asynchronous Actions__, i.e. non-blocking, a first-class citizen.
 
@@ -30,29 +30,26 @@ and load them at run-time.
   Nodes of the Tree.
 
 - It includes a __logging/profiling__ infrastructure that allows the user
-to visualize, record, replay and analyze state transitions.
+to visualize, record, replay, and analyze state transitions.
 
-## Documentation and Community
+## Documentation
 
-You can learn about the main concepts, the API and the tutorials here: https://www.behaviortree.dev/
-
-An automatically generated API documentation can be found here: https://www.behaviortree.dev/
-
-If the documentation doesn't answer your questions and/or you want to
-connect with the other **BT.CPP** users, visit [our forum](https://github.com/BehaviorTree/BehaviorTree.CPP/discussions)
+- **Tutorials and general documentation**: https://www.behaviortree.dev/
+- **Auto-generated Doxygen**: https://behaviortree.github.io/BehaviorTree.CPP/
+- **Community support and forum**: https://github.com/BehaviorTree/BehaviorTree.CPP/discussions
 
 # GUI Editor
 
 Editing a BehaviorTree is as simple as editing an XML file in your favorite text editor.
 
-If you are looking for a more fancy graphical user interface (and I know you do) check
+If you are looking for a fancier graphical user interface (and I know you do) check
 [Groot2](https://www.behaviortree.dev/groot) out.
 
 ![Groot screenshot](docs/groot-screenshot.png)
 
 # How to compile
 
-**BT.CPP** requires a compile that supports c++17.
+**BT.CPP** requires a compiler that supports C++17.
 
 Three build systems are supported:
 
@@ -104,7 +101,7 @@ The behaviortree-cpp port in vcpkg is kept up to date by Microsoft team members 
 
 #  Commercial support
 
-Are you using BT.CPP in your commercial product and do you need technical support / consulting?
+Are you using BT.CPP in your commercial product, and do you need technical support / consulting?
 You can contact the primary author, **dfaconti@aurynrobotics.com**, to discuss your use case and needs.
 
 ## Previous version
