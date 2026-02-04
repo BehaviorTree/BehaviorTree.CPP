@@ -35,10 +35,14 @@ public:
   AsyncActionTest(const std::string& name,
                   BT::Duration deadline_ms = std::chrono::milliseconds(100));
 
-  virtual ~AsyncActionTest() override
+  ~AsyncActionTest() override
   {
     halt();
   }
+  AsyncActionTest(const AsyncActionTest&) = delete;
+  AsyncActionTest& operator=(const AsyncActionTest&) = delete;
+  AsyncActionTest(AsyncActionTest&&) = delete;
+  AsyncActionTest& operator=(AsyncActionTest&&) = delete;
 
   // The method that is going to be executed by the thread
   BT::NodeStatus tick() override;

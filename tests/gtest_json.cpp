@@ -48,6 +48,7 @@ struct Time
   uint32_t nsec;
 };
 
+// NOLINTBEGIN(misc-use-internal-linkage)
 BT_JSON_CONVERTER(Vector3D, v)
 {
   add_field("x", &v.x);
@@ -70,17 +71,18 @@ BT_JSON_CONVERTER(Pose3D, v)
 }
 
 // specialized functions
-void jsonFromTime(const Time& t, nlohmann::json& j)
+inline void jsonFromTime(const Time& t, nlohmann::json& j)
 {
   j["stamp"] = double(t.sec) + 1e-9 * double(t.nsec);
 }
 
-void jsonToTime(const nlohmann::json& j, Time& t)
+inline void jsonToTime(const nlohmann::json& j, Time& t)
 {
   double sec = j["stamp"];
-  t.sec = int(sec);
-  t.nsec = (sec - t.sec) * 1e9;
+  t.sec = static_cast<uint32_t>(sec);
+  t.nsec = static_cast<uint32_t>((sec - t.sec) * 1e9);
 }
+// NOLINTEND(misc-use-internal-linkage)
 
 }  // namespace TestTypes
 

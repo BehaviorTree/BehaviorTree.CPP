@@ -32,8 +32,11 @@ struct SimpleFallbackTest : testing::Test
     root.addChild(&condition);
     root.addChild(&action);
   }
-  ~SimpleFallbackTest() override
-  {}
+  ~SimpleFallbackTest() override = default;
+  SimpleFallbackTest(const SimpleFallbackTest&) = delete;
+  SimpleFallbackTest& operator=(const SimpleFallbackTest&) = delete;
+  SimpleFallbackTest(SimpleFallbackTest&&) = delete;
+  SimpleFallbackTest& operator=(SimpleFallbackTest&&) = delete;
 };
 
 struct ReactiveFallbackTest : testing::Test
@@ -53,8 +56,11 @@ struct ReactiveFallbackTest : testing::Test
     root.addChild(&condition_2);
     root.addChild(&action_1);
   }
-  ~ReactiveFallbackTest() override
-  {}
+  ~ReactiveFallbackTest() override = default;
+  ReactiveFallbackTest(const ReactiveFallbackTest&) = delete;
+  ReactiveFallbackTest& operator=(const ReactiveFallbackTest&) = delete;
+  ReactiveFallbackTest(ReactiveFallbackTest&&) = delete;
+  ReactiveFallbackTest& operator=(ReactiveFallbackTest&&) = delete;
 };
 
 struct SimpleFallbackWithMemoryTest : testing::Test
@@ -69,8 +75,11 @@ struct SimpleFallbackWithMemoryTest : testing::Test
     root.addChild(&condition);
     root.addChild(&action);
   }
-  ~SimpleFallbackWithMemoryTest() override
-  {}
+  ~SimpleFallbackWithMemoryTest() override = default;
+  SimpleFallbackWithMemoryTest(const SimpleFallbackWithMemoryTest&) = delete;
+  SimpleFallbackWithMemoryTest& operator=(const SimpleFallbackWithMemoryTest&) = delete;
+  SimpleFallbackWithMemoryTest(SimpleFallbackWithMemoryTest&&) = delete;
+  SimpleFallbackWithMemoryTest& operator=(SimpleFallbackWithMemoryTest&&) = delete;
 };
 
 struct ComplexFallbackWithMemoryTest : testing::Test
@@ -106,8 +115,11 @@ struct ComplexFallbackWithMemoryTest : testing::Test
       fal_actions.addChild(&action_2);
     }
   }
-  ~ComplexFallbackWithMemoryTest() override
-  {}
+  ~ComplexFallbackWithMemoryTest() override = default;
+  ComplexFallbackWithMemoryTest(const ComplexFallbackWithMemoryTest&) = delete;
+  ComplexFallbackWithMemoryTest& operator=(const ComplexFallbackWithMemoryTest&) = delete;
+  ComplexFallbackWithMemoryTest(ComplexFallbackWithMemoryTest&&) = delete;
+  ComplexFallbackWithMemoryTest& operator=(ComplexFallbackWithMemoryTest&&) = delete;
 };
 
 /****************TESTS START HERE***************************/

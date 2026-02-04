@@ -17,15 +17,14 @@ NodeStatus SayHello();
 class GripperInterface
 {
 public:
-  GripperInterface() : _opened(true)
-  {}
+  GripperInterface() = default;
 
   NodeStatus open();
 
   NodeStatus close();
 
 private:
-  bool _opened;
+  bool _opened = true;
 };
 
 //--------------------------------------

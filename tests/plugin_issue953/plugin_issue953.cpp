@@ -18,9 +18,9 @@
 // Custom type defined ONLY in the plugin
 struct Issue953Type
 {
-  int id;
+  int id = 0;
   std::string name;
-  double value;
+  double value = 0.0;
 };
 
 // convertFromString specialization ONLY in the plugin - not visible to executor

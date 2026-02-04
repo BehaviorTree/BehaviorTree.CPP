@@ -6,7 +6,11 @@
 using namespace BT;
 
 // clang-format off
-static const char* xml_text = R"(
+
+namespace
+{
+
+const char* xml_text = R"(
 
 <root  BTCPP_format="4" main_tree_to_execute="BehaviorTree">
     <BehaviorTree ID="BehaviorTree">
@@ -36,7 +40,7 @@ static const char* xml_text = R"(
 
 using Milliseconds = std::chrono::milliseconds;
 
-inline std::chrono::high_resolution_clock::time_point Now()
+std::chrono::high_resolution_clock::time_point Now()
 {
   return std::chrono::high_resolution_clock::now();
 }
@@ -46,7 +50,7 @@ inline std::chrono::high_resolution_clock::time_point Now()
 class TestNode
 {
 public:
-  TestNode(const std::string& name) : _expected_result(true), _tick_count(0), _name(name)
+  TestNode(const std::string& name) : _name(name)
   {}
 
   void setExpectedResult(bool will_succeed)
@@ -74,8 +78,8 @@ public:
   }
 
 private:
-  bool _expected_result;
-  int _tick_count;
+  bool _expected_result = true;
+  int _tick_count = 0;
   std::string _name;
 };
 
@@ -120,8 +124,7 @@ class FollowPath : public ActionNodeBase, public TestNode
   std::chrono::high_resolution_clock::time_point _initial_time;
 
 public:
-  FollowPath(const std::string& name)
-    : ActionNodeBase(name, {}), TestNode(name), _halted(false)
+  FollowPath(const std::string& name) : ActionNodeBase(name, {}), TestNode(name)
   {}
 
   NodeStatus tick() override
@@ -157,7 +160,7 @@ public:
   }
 
 private:
-  bool _halted;
+  bool _halted = false;
 };
 
 //-------------------------------------
@@ -165,11 +168,13 @@ private:
 template <typename Original, typename Casted>
 void TryDynamicCastPtr(Original* ptr, Casted*& destination)
 {
-  if(dynamic_cast<Casted*>(ptr))
+  if(dynamic_cast<Casted*>(ptr) != nullptr)
   {
     destination = dynamic_cast<Casted*>(ptr);
   }
 }
+
+}  // namespace
 
 /****************TESTS START HERE***************************/
 
@@ -198,7 +203,7 @@ TEST(Navigationtest, MoveBaseRecovery)
     {
       auto ptr = node.get();
 
-      if(!first_stuck_node)
+      if(first_stuck_node == nullptr)
       {
         TryDynamicCastPtr(ptr, first_stuck_node);
       }

@@ -191,17 +191,23 @@ public:
 
   RefCountClass& operator=(const RefCountClass& from)
   {
-    sptr_ = (from.sptr_);
-    std::cout << "equal copied: ref_count " << sptr_.use_count() << std::endl;
+    if(this != &from)
+    {
+      sptr_ = (from.sptr_);
+      std::cout << "equal copied: ref_count " << sptr_.use_count() << std::endl;
+    }
     return *this;
   }
+
+  RefCountClass(RefCountClass&&) = default;
+  RefCountClass& operator=(RefCountClass&&) = default;
 
   virtual ~RefCountClass()
   {
     std::cout << ("Destructor") << std::endl;
   }
 
-  int refCount() const
+  long refCount() const
   {
     return sptr_.use_count();
   }
@@ -594,7 +600,7 @@ TEST(BlackboardTest, TimestampedInterface)
   auto bb = BT::Blackboard::create();
 
   // still empty, expected to fail
-  int value;
+  int value = 0;
   ASSERT_FALSE(bb->getStamped<int>("value"));
   ASSERT_FALSE(bb->getStamped("value", value));
 

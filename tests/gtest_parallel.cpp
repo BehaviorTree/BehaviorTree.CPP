@@ -44,8 +44,12 @@ struct SimpleParallelTest : testing::Test
     root.addChild(&condition_2);
     root.addChild(&action_2);
   }
-  ~SimpleParallelTest() override
-  {}
+  ~SimpleParallelTest() override = default;
+
+  SimpleParallelTest(const SimpleParallelTest&) = delete;
+  SimpleParallelTest& operator=(const SimpleParallelTest&) = delete;
+  SimpleParallelTest(SimpleParallelTest&&) = delete;
+  SimpleParallelTest& operator=(SimpleParallelTest&&) = delete;
 };
 
 struct ComplexParallelTest : testing::Test
@@ -90,8 +94,12 @@ struct ComplexParallelTest : testing::Test
     parallel_left.setSuccessThreshold(3);
     parallel_right.setSuccessThreshold(1);
   }
-  ~ComplexParallelTest() override
-  {}
+  ~ComplexParallelTest() override = default;
+
+  ComplexParallelTest(const ComplexParallelTest&) = delete;
+  ComplexParallelTest& operator=(const ComplexParallelTest&) = delete;
+  ComplexParallelTest(ComplexParallelTest&&) = delete;
+  ComplexParallelTest& operator=(ComplexParallelTest&&) = delete;
 };
 
 /****************TESTS START HERE***************************/
@@ -518,7 +526,7 @@ TEST(Parallel, Issue593)
   using namespace BT;
 
   BehaviorTreeFactory factory;
-  std::array<int, 1> counters;
+  std::array<int, 1> counters = {};
   RegisterTestTick(factory, "Test", counters);
 
   auto tree = factory.createTreeFromText(xml_text);

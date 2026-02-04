@@ -29,7 +29,7 @@ if [[ "${1:-}" == "--help" ]]; then
 fi
 
 
-clang_tidy_paths="$ws_dir/src $ws_dir/include"
+clang_tidy_paths="$ws_dir/src $ws_dir/include $ws_dir/tests"
 cmake_build_path="$ws_dir/${1:-build}"
 
 skip_list=(

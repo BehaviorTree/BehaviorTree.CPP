@@ -51,7 +51,7 @@ repos:
         entry: ./run_clang_tidy_hook.sh
         language: script
         files: \.(cpp|hpp|h)$
-        exclude: ^3rdparty/|^include/behaviortree_cpp/contrib/|^include/behaviortree_cpp/scripting/
+        exclude: ^3rdparty/|^include/behaviortree_cpp/contrib/|^include/behaviortree_cpp/scripting/|^include/behaviortree_cpp/flatbuffers/|^examples/|^tools/|^fuzzing/|^tests/gtest_async_action_node\.cpp$|^tests/gtest_logger_zmq\.cpp$|^tests/include/environment\.h$|^tests/gtest_groot2_publisher\.cpp$
 
   # Spell check
   - repo: https://github.com/codespell-project/codespell

@@ -13,7 +13,7 @@ using namespace BT;
 TEST(SkippingLogic, Sequence)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(
@@ -38,7 +38,7 @@ TEST(SkippingLogic, Sequence)
 TEST(SkippingLogic, SkipAll)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 3> counters;
+  std::array<int, 3> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(
@@ -66,7 +66,7 @@ TEST(SkippingLogic, SkipAll)
 TEST(SkippingLogic, SkipSubtree)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 3> counters;
+  std::array<int, 3> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(
@@ -120,7 +120,7 @@ TEST(SkippingLogic, ReactiveSingleChild)
 TEST(SkippingLogic, SkippingReactiveSequence)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text_noskip = R"(
@@ -180,7 +180,7 @@ TEST(SkippingLogic, SkippingReactiveSequence)
 TEST(SkippingLogic, WhileSkip)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text_noskip = R"(

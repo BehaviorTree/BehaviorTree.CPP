@@ -22,7 +22,9 @@ using namespace BT;
  */
 
 // clang-format off
-static const char* xml_subtree = R"(
+namespace
+{
+const char* xml_subtree = R"(
 <root BTCPP_format="4">
 
   <TreeNodesModel>
@@ -48,7 +50,7 @@ static const char* xml_subtree = R"(
  * remapped. We will use the default values for the other two.
  */
 
-static const char* xml_maintree = R"(
+const char* xml_maintree = R"(
 <root BTCPP_format="4">
 
   <BehaviorTree ID="MainTree">
@@ -62,6 +64,7 @@ static const char* xml_maintree = R"(
 
 </root>
  )";
+}  // namespace
 
 // clang-format on
 

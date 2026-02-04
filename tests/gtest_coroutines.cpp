@@ -76,9 +76,11 @@ public:
 private:
   std::chrono::milliseconds timeout_;
   Timepoint start_time_;
-  bool halted_;
+  bool halted_ = false;
 };
 
+namespace
+{
 BT::NodeStatus executeWhileRunning(BT::TreeNode& node)
 {
   auto status = node.executeTick();
@@ -89,6 +91,7 @@ BT::NodeStatus executeWhileRunning(BT::TreeNode& node)
   }
   return status;
 }
+}  // namespace
 
 TEST(CoroTest, do_action)
 {

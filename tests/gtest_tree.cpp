@@ -46,8 +46,11 @@ struct BehaviorTreeTest : testing::Test
     }
     root.addChild(&action_1);
   }
-  ~BehaviorTreeTest()
-  {}
+  ~BehaviorTreeTest() override = default;
+  BehaviorTreeTest(const BehaviorTreeTest&) = delete;
+  BehaviorTreeTest& operator=(const BehaviorTreeTest&) = delete;
+  BehaviorTreeTest(BehaviorTreeTest&&) = delete;
+  BehaviorTreeTest& operator=(BehaviorTreeTest&&) = delete;
 };
 
 /****************TESTS START HERE***************************/
@@ -88,7 +91,6 @@ TEST_F(BehaviorTreeTest, PrintWithStream)
   // verify value for with custom stream parameter
   std::stringstream stream;
   BT::printTreeRecursively(&root, stream);
-  const auto string = stream.str();
   std::string line;
 
   // first line is all dashes

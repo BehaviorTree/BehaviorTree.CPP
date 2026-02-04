@@ -17,7 +17,7 @@ public:
   }
 
   // the absolute path to the test executable
-  filesystem::path executable_path;
+  filesystem::path executable_path{};
 };
 
 // for accessing the environment within a test

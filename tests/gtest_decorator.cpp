@@ -37,6 +37,10 @@ struct DeadlineTest : testing::Test
     root.setChild(&action);
   }
   ~DeadlineTest() override = default;
+  DeadlineTest(const DeadlineTest&) = delete;
+  DeadlineTest& operator=(const DeadlineTest&) = delete;
+  DeadlineTest(DeadlineTest&&) = delete;
+  DeadlineTest& operator=(DeadlineTest&&) = delete;
 };
 
 struct RepeatTest : testing::Test
@@ -49,6 +53,10 @@ struct RepeatTest : testing::Test
     root.setChild(&action);
   }
   ~RepeatTest() override = default;
+  RepeatTest(const RepeatTest&) = delete;
+  RepeatTest& operator=(const RepeatTest&) = delete;
+  RepeatTest(RepeatTest&&) = delete;
+  RepeatTest& operator=(RepeatTest&&) = delete;
 };
 
 struct RepeatTestAsync : testing::Test
@@ -61,6 +69,10 @@ struct RepeatTestAsync : testing::Test
     root.setChild(&action);
   }
   ~RepeatTestAsync() override = default;
+  RepeatTestAsync(const RepeatTestAsync&) = delete;
+  RepeatTestAsync& operator=(const RepeatTestAsync&) = delete;
+  RepeatTestAsync(RepeatTestAsync&&) = delete;
+  RepeatTestAsync& operator=(RepeatTestAsync&&) = delete;
 };
 
 struct RetryTest : testing::Test
@@ -73,6 +85,10 @@ struct RetryTest : testing::Test
     root.setChild(&action);
   }
   ~RetryTest() override = default;
+  RetryTest(const RetryTest&) = delete;
+  RetryTest& operator=(const RetryTest&) = delete;
+  RetryTest(RetryTest&&) = delete;
+  RetryTest& operator=(RetryTest&&) = delete;
 };
 
 struct TimeoutAndRetry : testing::Test
@@ -202,7 +218,7 @@ TEST_F(TimeoutAndRetry, Issue57)
 TEST(Decorator, RunOnce)
 {
   BT::BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(

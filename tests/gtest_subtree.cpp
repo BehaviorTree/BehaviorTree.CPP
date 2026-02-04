@@ -466,7 +466,7 @@ TEST(SubTree, SubtreeIssue592)
 </root>)";
 
   BehaviorTreeFactory factory;
-  std::array<int, 1> counters;
+  std::array<int, 1> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   factory.registerBehaviorTreeFromText(xml_text);

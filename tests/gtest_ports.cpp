@@ -312,6 +312,7 @@ template <>
   return std::to_string(point.x) + "," + std::to_string(point.y);
 }
 
+// NOLINTNEXTLINE(misc-use-anonymous-namespace,misc-use-internal-linkage)
 BT_JSON_CONVERTER(Point2D, point)
 {
   add_field("x", &point.x);
@@ -444,7 +445,7 @@ TEST(PortTest, DefaultInputPoint2D)
   tree.subtrees.front()->blackboard->set<Point2D>("point", Point2D{ 3, 4 });
   tree.subtrees.front()->blackboard->set<Point2D>("pointD", Point2D{ 7, 8 });
 
-  BT::NodeStatus status;
+  BT::NodeStatus status = NodeStatus::IDLE;
   ASSERT_NO_THROW(status = tree.tickOnce());
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 
@@ -507,7 +508,7 @@ TEST(PortTest, DefaultInputStrings)
   tree.subtrees.front()->blackboard->set<std::string>("msg", "ciao");
   tree.subtrees.front()->blackboard->set<std::string>("msgC", "hola");
 
-  BT::NodeStatus status;
+  BT::NodeStatus status = NodeStatus::IDLE;
   ASSERT_NO_THROW(status = tree.tickOnce());
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 
@@ -781,6 +782,8 @@ TEST(PortTest, DefaultEmptyVector_Issue982)
 // Issue #989: JsonExporter::addConverter(std::function) had a use-after-move
 // bug where `converter` was moved into to_json_converters_ before
 // `vector_converter` captured it, causing bad_function_call at runtime.
+namespace
+{
 struct TestPoint989
 {
   double x = 0;
@@ -798,6 +801,7 @@ void TestPoint989FromJson(const nlohmann::json& j, TestPoint989& p)
   p.x = j.at("x").get<double>();
   p.y = j.at("y").get<double>();
 }
+}  // namespace
 
 TEST(PortTest, JsonExporterVectorConverter_Issue989)
 {
