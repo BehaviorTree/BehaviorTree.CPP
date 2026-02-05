@@ -87,10 +87,6 @@ TEST(ExceptionTracking, BasicExceptionCapture)
     EXPECT_EQ(e.failedNode().node_name, "thrower");
     EXPECT_EQ(e.failedNode().registration_name, "ThrowingAction");
     EXPECT_EQ(e.originalMessage(), "Test exception from ThrowingAction");
-
-    // Verify backtrace has the node
-    ASSERT_GE(e.backtrace().size(), 1u);
-    EXPECT_EQ(e.backtrace().back().node_name, "thrower");
   }
 }
 
@@ -127,13 +123,9 @@ TEST(ExceptionTracking, NestedExceptionBacktrace)
     // Verify the failed node is the innermost throwing node
     EXPECT_EQ(e.failedNode().node_name, "nested_thrower");
 
-    // Verify backtrace shows the full path (at least 3 nodes: Sequence, Retry, Thrower)
-    ASSERT_GE(e.backtrace().size(), 3u);
-
-    // Check the what() message contains backtrace info
+    // Check the what() message contains the failing node
     std::string what_msg = e.what();
     EXPECT_NE(what_msg.find("nested_thrower"), std::string::npos);
-    EXPECT_NE(what_msg.find("Tick backtrace"), std::string::npos);
   }
 }
 

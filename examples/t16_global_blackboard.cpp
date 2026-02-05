@@ -25,7 +25,9 @@ using namespace BT;
  */
 
 // clang-format off
-static const char* xml_main = R"(
+namespace
+{
+const char* xml_main = R"(
 <root BTCPP_format="4">
 
   <BehaviorTree ID="MainTree">
@@ -43,7 +45,7 @@ static const char* xml_main = R"(
   </BehaviorTree>
 </root>
  )";
-
+}  // namespace
 // clang-format on
 
 class PrintNumber : public BT::SyncActionNode

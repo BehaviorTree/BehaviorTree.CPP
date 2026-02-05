@@ -56,17 +56,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
           env.vars->set("result", result);
 
           BT::Any read_back;
-          env.vars->get("result", read_back);
+          (void)env.vars->get("result", read_back);
         }
-        catch(const BT::RuntimeError&)
-        {}
+        catch(const BT::RuntimeError&)  // NOLINT(bugprone-empty-catch)
+        {
+          // Intentionally empty - fuzzer expects exceptions
+        }
       }
     }
 
     BT::ParseScriptAndExecute(env, script);
   }
-  catch(const std::exception&)
-  {}
+  catch(const std::exception&)  // NOLINT(bugprone-empty-catch)
+  {
+    // Intentionally empty - fuzzer expects exceptions
+  }
 
   return 0;
 }

@@ -12,6 +12,7 @@ enum class Color
   Undefined
 };
 
+// NOLINTNEXTLINE(misc-use-anonymous-namespace,misc-use-internal-linkage)
 static const char* ToStr(const Color& c)
 {
   switch(c)
@@ -140,6 +141,10 @@ public:
   {}
 
   ~PrintEnum() override = default;
+  PrintEnum(const PrintEnum&) = delete;
+  PrintEnum& operator=(const PrintEnum&) = delete;
+  PrintEnum(PrintEnum&&) = delete;
+  PrintEnum& operator=(PrintEnum&&) = delete;
 
   static BT::PortsList providedPorts()
   {
@@ -171,6 +176,10 @@ public:
   {}
 
   ~IsHealthOk() override = default;
+  IsHealthOk(const IsHealthOk&) = delete;
+  IsHealthOk& operator=(const IsHealthOk&) = delete;
+  IsHealthOk(IsHealthOk&&) = delete;
+  IsHealthOk& operator=(IsHealthOk&&) = delete;
 
   static BT::PortsList providedPorts()
   {

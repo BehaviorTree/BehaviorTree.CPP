@@ -4,6 +4,7 @@
 
 // This function must be implemented in the .cpp file to create
 // a plugin that can be loaded at run-time
+// NOLINTNEXTLINE(misc-use-anonymous-namespace,misc-use-internal-linkage)
 BT_REGISTER_NODES(factory)
 {
   factory.registerNodeType<MoveBaseAction>("MoveBase");

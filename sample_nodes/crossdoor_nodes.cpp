@@ -1,9 +1,14 @@
 #include "crossdoor_nodes.h"
 
-inline void SleepMS(int ms)
+namespace
+{
+
+void SleepMS(int ms)
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
+
+}  // namespace
 
 using BT::NodeStatus;
 
@@ -77,6 +82,7 @@ void CrossDoor::reset()
 
 // This function must be implemented in the .cpp file to create
 // a plugin that can be loaded at run-time
+// NOLINTNEXTLINE(misc-use-anonymous-namespace,misc-use-internal-linkage)
 BT_REGISTER_NODES(factory)
 {
   static CrossDoor cross_door;

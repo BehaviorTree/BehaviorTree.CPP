@@ -3,8 +3,9 @@
 #include "behaviortree_cpp/bt_factory.h"
 
 // clang-format off
-
-static const char* xml_text = R"(
+namespace
+{
+const char* xml_text = R"(
 <root BTCPP_format="4">
 
   <BehaviorTree ID="MainTree">
@@ -33,7 +34,7 @@ static const char* xml_text = R"(
 
 </root>
  )";
-
+}  // namespace
 // clang-format on
 
 /**
@@ -44,7 +45,7 @@ static const char* xml_text = R"(
  * @return
  */
 
-int main(int argc, char** argv)
+int main(int /*argc*/, char** /*argv*/)
 {
   using namespace DummyNodes;
   BT::BehaviorTreeFactory factory;

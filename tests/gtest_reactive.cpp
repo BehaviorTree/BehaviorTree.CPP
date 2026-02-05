@@ -30,7 +30,7 @@ TEST(Reactive, RunningChildren)
 )";
 
   BT::BehaviorTreeFactory factory;
-  std::array<int, 6> counters;
+  std::array<int, 6> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   auto tree = factory.createTreeFromText(reactive_xml_text);
@@ -80,7 +80,7 @@ TEST(Reactive, Issue587)
 )";
 
   BT::BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   auto tree = factory.createTreeFromText(reactive_xml_text);
@@ -143,7 +143,7 @@ TEST(Reactive, TestLogging)
 
   BehaviorTreeFactory factory;
 
-  std::array<int, 1> counters;
+  std::array<int, 1> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   auto tree = factory.createTreeFromText(reactive_xml_text);
@@ -181,7 +181,7 @@ TEST(Reactive, TwoAsyncNodesInReactiveSequence)
 )";
 
   BT::BehaviorTreeFactory factory;
-  std::array<int, 6> counters;
+  std::array<int, 6> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
@@ -193,7 +193,7 @@ TEST(Reactive, ReactiveSequence_FirstChildFails)
 {
   // When first child fails, ReactiveSequence should return FAILURE immediately
   BT::BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   static const char* xml_text = R"(
@@ -294,7 +294,7 @@ TEST(Reactive, ReactiveFallback_FirstChildSucceeds)
 {
   // When first child succeeds, ReactiveFallback should return SUCCESS immediately
   BT::BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   static const char* xml_text = R"(
@@ -340,7 +340,7 @@ TEST(Reactive, ReactiveFallback_AllChildrenFail)
 TEST(Reactive, ReactiveFallback_SecondChildSucceeds)
 {
   BT::BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   static const char* xml_text = R"(
@@ -364,7 +364,7 @@ TEST(Reactive, ReactiveFallback_SecondChildSucceeds)
 TEST(Reactive, ReactiveSequence_AllChildrenSucceed)
 {
   BT::BehaviorTreeFactory factory;
-  std::array<int, 3> counters;
+  std::array<int, 3> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   static const char* xml_text = R"(

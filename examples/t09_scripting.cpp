@@ -5,7 +5,11 @@
 using namespace BT;
 
 // clang-format off
-static const char* xml_text = R"(
+
+namespace
+{
+
+const char* xml_text = R"(
  <root BTCPP_format="4">
      <BehaviorTree>
         <Sequence>
@@ -23,6 +27,8 @@ static const char* xml_text = R"(
      </BehaviorTree>
  </root>
  )";
+
+}  // namespace
 
 // clang-format on
 

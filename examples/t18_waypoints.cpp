@@ -52,7 +52,7 @@ public:
 
   NodeStatus tick() override
   {
-    double value;
+    double value = 0.0;
     if(getInput("value", value))
     {
       std::cout << "PrintNumber: " << value << "\n";
@@ -81,7 +81,7 @@ public:
 
   NodeStatus tick() override
   {
-    Pose2D wp;
+    Pose2D wp{};
     if(getInput("waypoint", wp))
     {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -101,7 +101,11 @@ public:
 };
 
 // clang-format off
-static const char* xml_tree = R"(
+
+namespace
+{
+
+const char* xml_tree = R"(
  <root BTCPP_format="4" >
      <BehaviorTree ID="TreeA">
         <Sequence>
@@ -117,6 +121,8 @@ static const char* xml_tree = R"(
      </BehaviorTree>
  </root>
  )";
+
+}  // namespace
 
 // clang-format on
 
