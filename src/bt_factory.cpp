@@ -108,11 +108,13 @@ struct BehaviorTreeFactory::PImpl
   std::shared_ptr<std::unordered_map<std::string, int>> scripting_enums;
   std::shared_ptr<BT::Parser> parser;
   std::unordered_map<std::string, SubstitutionRule> substitution_rules;
+  std::shared_ptr<PolymorphicCastRegistry> polymorphic_registry;
 };
 
 BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
 {
   _p->parser = std::make_shared<XMLParser>(*this);
+  _p->polymorphic_registry = std::make_shared<PolymorphicCastRegistry>();
   registerNodeType<FallbackNode>("Fallback");
   registerNodeType<FallbackNode>("AsyncFallback", true);
   registerNodeType<SequenceNode>("Sequence");
@@ -427,6 +429,9 @@ Tree BehaviorTreeFactory::createTreeFromText(const std::string& text,
   const std::string resolved_ID = loadXmlAndResolveTreeId(
       _p->parser.get(), main_tree_ID, [&] { _p->parser->loadFromText(text); });
 
+  // Set the polymorphic cast registry on the blackboard (Issue #943)
+  blackboard->setPolymorphicCastRegistry(_p->polymorphic_registry);
+
   Tree tree = resolved_ID.empty() ? _p->parser->instantiateTree(blackboard) :
                                     _p->parser->instantiateTree(blackboard, resolved_ID);
   tree.manifests = this->manifests();
@@ -449,6 +454,9 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path& file_p
   const std::string resolved_ID = loadXmlAndResolveTreeId(
       _p->parser.get(), main_tree_ID, [&] { _p->parser->loadFromFile(file_path); });
 
+  // Set the polymorphic cast registry on the blackboard (Issue #943)
+  blackboard->setPolymorphicCastRegistry(_p->polymorphic_registry);
+
   Tree tree = resolved_ID.empty() ? _p->parser->instantiateTree(blackboard) :
                                     _p->parser->instantiateTree(blackboard, resolved_ID);
   tree.manifests = this->manifests();
@@ -459,6 +467,9 @@ Tree BehaviorTreeFactory::createTreeFromFile(const std::filesystem::path& file_p
 Tree BehaviorTreeFactory::createTree(const std::string& tree_name,
                                      Blackboard::Ptr blackboard)
 {
+  // Set the polymorphic cast registry on the blackboard (Issue #943)
+  blackboard->setPolymorphicCastRegistry(_p->polymorphic_registry);
+
   auto tree = _p->parser->instantiateTree(blackboard, tree_name);
   tree.manifests = this->manifests();
   tree.remapManifestPointers();
@@ -562,6 +573,22 @@ const std::unordered_map<std::string, BehaviorTreeFactory::SubstitutionRule>&
 BehaviorTreeFactory::substitutionRules() const
 {
   return _p->substitution_rules;
+}
+
+PolymorphicCastRegistry& BehaviorTreeFactory::polymorphicCastRegistry()
+{
+  return *_p->polymorphic_registry;
+}
+
+const PolymorphicCastRegistry& BehaviorTreeFactory::polymorphicCastRegistry() const
+{
+  return *_p->polymorphic_registry;
+}
+
+std::shared_ptr<PolymorphicCastRegistry>
+BehaviorTreeFactory::polymorphicCastRegistryPtr() const
+{
+  return _p->polymorphic_registry;
 }
 
 Tree::Tree() = default;

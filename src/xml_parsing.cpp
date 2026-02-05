@@ -41,6 +41,7 @@
 #pragma GCC diagnostic pop
 #endif
 
+#include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
@@ -928,9 +929,21 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
         if(auto prev_info = blackboard->entryInfo(port_key))
         {
           // Check consistency of types.
-          bool const port_type_mismatch =
+          bool port_type_mismatch =
               (prev_info->isStronglyTyped() && port_info.isStronglyTyped() &&
                prev_info->type() != port_info.type());
+
+          // Allow polymorphic cast for INPUT ports (Issue #943)
+          // If a registered conversion exists (upcast or downcast), allow the
+          // connection. Downcasts use dynamic_pointer_cast and may fail at runtime.
+          if(port_type_mismatch && port_info.direction() == PortDirection::INPUT)
+          {
+            if(factory->polymorphicCastRegistry().isConvertible(prev_info->type(),
+                                                                port_info.type()))
+            {
+              port_type_mismatch = false;
+            }
+          }
 
           // special case related to convertFromString
           bool const string_input = (prev_info->type() == typeid(std::string));
@@ -1055,6 +1068,8 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     else  // special case: SubTreeNode
     {
       auto new_bb = Blackboard::create(blackboard);
+      // Inherit polymorphic cast registry from factory (Issue #943)
+      new_bb->setPolymorphicCastRegistry(factory->polymorphicCastRegistryPtr());
       const std::string subtree_ID = element->Attribute("ID");
       std::unordered_map<std::string, std::string> subtree_remapping;
       bool do_autoremap = false;

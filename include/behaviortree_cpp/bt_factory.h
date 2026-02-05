@@ -17,6 +17,7 @@
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
+#include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 
 #include <filesystem>
 #include <functional>
@@ -528,6 +529,45 @@ public:
    */
   [[nodiscard]] const std::unordered_map<std::string, SubstitutionRule>&
   substitutionRules() const;
+
+  /**
+   * @brief Register a polymorphic cast relationship between Derived and Base types.
+   *
+   * This enables passing shared_ptr<Derived> to ports expecting shared_ptr<Base>
+   * without type mismatch errors. The relationship is automatically applied
+   * to all trees created from this factory.
+   *
+   * Example:
+   *   factory.registerPolymorphicCast<Cat, Animal>();
+   *   factory.registerPolymorphicCast<Sphynx, Cat>();
+   *
+   * @tparam Derived The derived class (must inherit from Base)
+   * @tparam Base The base class (must be polymorphic)
+   */
+  template <typename Derived, typename Base>
+  void registerPolymorphicCast()
+  {
+    polymorphicCastRegistry().registerCast<Derived, Base>();
+  }
+
+  /**
+   * @brief Access the polymorphic cast registry.
+   *
+   * The registry is shared with all trees created from this factory,
+   * allowing trees to outlive the factory while maintaining access
+   * to polymorphic cast relationships.
+   */
+  [[nodiscard]] PolymorphicCastRegistry& polymorphicCastRegistry();
+  [[nodiscard]] const PolymorphicCastRegistry& polymorphicCastRegistry() const;
+
+  /**
+   * @brief Get a shared pointer to the polymorphic cast registry.
+   *
+   * This allows trees and blackboards to hold a reference to the registry
+   * that outlives the factory.
+   */
+  [[nodiscard]] std::shared_ptr<PolymorphicCastRegistry>
+  polymorphicCastRegistryPtr() const;
 
 private:
   struct PImpl;
