@@ -213,7 +213,7 @@ template <typename T>
 inline Expected<T> Blackboard::tryCastWithPolymorphicFallback(const Any* any) const
 {
   // Try direct cast first
-  auto result = any->tryCast<T>();
+  const auto result = any->tryCast<T>();
   if(result)
   {
     return result.value();
@@ -224,7 +224,7 @@ inline Expected<T> Blackboard::tryCastWithPolymorphicFallback(const Any* any) co
   {
     if(polymorphic_registry_)
     {
-      auto poly_result = any->tryCastWithRegistry<T>(*polymorphic_registry_);
+      const auto poly_result = any->tryCastWithRegistry<T>(*polymorphic_registry_);
       if(poly_result)
       {
         return poly_result.value();
@@ -246,10 +246,10 @@ inline T Blackboard::get(const std::string& key) const
       throw RuntimeError("Blackboard::get() error. Entry [", key,
                          "] hasn't been initialized, yet");
     }
-    auto result = tryCastWithPolymorphicFallback<T>(any);
+    const auto result = tryCastWithPolymorphicFallback<T>(any);
     if(!result)
     {
-      throw std::runtime_error(result.error());
+      throw RuntimeError(result.error());
     }
     return result.value();
   }
@@ -393,10 +393,10 @@ inline bool Blackboard::get(const std::string& key, T& value) const
     {
       return false;
     }
-    auto result = tryCastWithPolymorphicFallback<T>(any);
+    const auto result = tryCastWithPolymorphicFallback<T>(any);
     if(!result)
     {
-      throw std::runtime_error(result.error());
+      throw RuntimeError(result.error());
     }
     value = result.value();
     return true;
@@ -415,7 +415,7 @@ inline Expected<Timestamp> Blackboard::getStamped(const std::string& key, T& val
       return nonstd::make_unexpected(StrCat("Blackboard::getStamped() error. Entry [",
                                             key, "] hasn't been initialized, yet"));
     }
-    auto result = tryCastWithPolymorphicFallback<T>(&entry->value);
+    const auto result = tryCastWithPolymorphicFallback<T>(&entry->value);
     if(result)
     {
       value = result.value();

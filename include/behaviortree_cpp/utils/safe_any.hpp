@@ -581,7 +581,7 @@ Any::tryCastWithRegistry(const PolymorphicCastRegistry& registry) const
   }
 
   // Try to cast using the registry
-  auto result = registry.tryCast(_any, _original_type, typeid(T));
+  const auto result = registry.tryCast(_any, _original_type, typeid(T));
   if(result)
   {
     try

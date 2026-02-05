@@ -17,8 +17,8 @@ TEST(PolymorphicPortTest, AnyCast_SameType)
   registry.registerCast<Dog, Animal>();
   registry.registerCast<Sphynx, Cat>();
 
-  auto animal = std::make_shared<Animal>();
-  Any any_animal(animal);
+  const auto animal = std::make_shared<Animal>();
+  const Any any_animal(animal);
   EXPECT_NO_THROW(auto res = any_animal.cast<Animal::Ptr>());
   // Downcast should fail (returns error, doesn't throw)
   EXPECT_FALSE(any_animal.tryCastWithRegistry<Cat::Ptr>(registry).has_value());
@@ -32,12 +32,12 @@ TEST(PolymorphicPortTest, AnyCast_Upcast)
   registry.registerCast<Dog, Animal>();
   registry.registerCast<Sphynx, Cat>();
 
-  auto cat = std::make_shared<Cat>();
-  Any any_cat(cat);
+  const auto cat = std::make_shared<Cat>();
+  const Any any_cat(cat);
   // Same type works
   EXPECT_NO_THROW(auto res = any_cat.cast<Cat::Ptr>());
   // Upcast via registry
-  auto result = any_cat.tryCastWithRegistry<Animal::Ptr>(registry);
+  const auto result = any_cat.tryCastWithRegistry<Animal::Ptr>(registry);
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value()->name(), "Cat");
   // Downcast should fail
@@ -51,16 +51,16 @@ TEST(PolymorphicPortTest, AnyCast_TransitiveUpcast)
   registry.registerCast<Dog, Animal>();
   registry.registerCast<Sphynx, Cat>();
 
-  auto sphynx = std::make_shared<Sphynx>();
-  Any any_sphynx(sphynx);
+  const auto sphynx = std::make_shared<Sphynx>();
+  const Any any_sphynx(sphynx);
   // Same type works
   EXPECT_NO_THROW(auto res = any_sphynx.cast<Sphynx::Ptr>());
   // Upcast to Cat
-  auto as_cat = any_sphynx.tryCastWithRegistry<Cat::Ptr>(registry);
+  const auto as_cat = any_sphynx.tryCastWithRegistry<Cat::Ptr>(registry);
   EXPECT_TRUE(as_cat.has_value());
   EXPECT_EQ(as_cat.value()->name(), "Sphynx");
   // Transitive upcast to Animal
-  auto as_animal = any_sphynx.tryCastWithRegistry<Animal::Ptr>(registry);
+  const auto as_animal = any_sphynx.tryCastWithRegistry<Animal::Ptr>(registry);
   EXPECT_TRUE(as_animal.has_value());
   EXPECT_EQ(as_animal.value()->name(), "Sphynx");
 }
@@ -71,12 +71,12 @@ TEST(PolymorphicPortTest, AnyCast_DowncastWithRuntimeTypeCheck)
   registry.registerCast<Cat, Animal>();
   registry.registerCast<Sphynx, Cat>();
 
-  Cat::Ptr cat = std::make_shared<Sphynx>();  // Store Sphynx as Cat
-  Any any_cat(cat);
+  const Cat::Ptr cat = std::make_shared<Sphynx>();  // Store Sphynx as Cat
+  const Any any_cat(cat);
   // Same type works
   EXPECT_NO_THROW(auto res = any_cat.cast<Cat::Ptr>());
   // Downcast should work because runtime type is Sphynx
-  auto as_sphynx = any_cat.tryCastWithRegistry<Sphynx::Ptr>(registry);
+  const auto as_sphynx = any_cat.tryCastWithRegistry<Sphynx::Ptr>(registry);
   EXPECT_TRUE(as_sphynx.has_value());
   EXPECT_EQ(as_sphynx.value()->name(), "Sphynx");
 }
@@ -87,12 +87,12 @@ TEST(PolymorphicPortTest, AnyCast_UnrelatedTypes)
   registry.registerCast<Cat, Animal>();
   registry.registerCast<Dog, Animal>();
 
-  auto cat = std::make_shared<Cat>();
-  Any any_cat(cat);
+  const auto cat = std::make_shared<Cat>();
+  const Any any_cat(cat);
   EXPECT_FALSE(any_cat.tryCastWithRegistry<Dog::Ptr>(registry).has_value());
 
-  auto dog = std::make_shared<Dog>();
-  Any any_dog(dog);
+  const auto dog = std::make_shared<Dog>();
+  const Any any_dog(dog);
   EXPECT_FALSE(any_dog.tryCastWithRegistry<Cat::Ptr>(registry).has_value());
 }
 
@@ -284,8 +284,8 @@ namespace
 {
 Blackboard::Ptr createBlackboardWithRegistry()
 {
-  auto bb = Blackboard::create();
-  auto registry = std::make_shared<PolymorphicCastRegistry>();
+  const auto bb = Blackboard::create();
+  const auto registry = std::make_shared<PolymorphicCastRegistry>();
   registry->registerCast<Cat, Animal>();
   registry->registerCast<Dog, Animal>();
   registry->registerCast<Sphynx, Cat>();
@@ -296,10 +296,10 @@ Blackboard::Ptr createBlackboardWithRegistry()
 
 TEST(PolymorphicPortTest, Blackboard_UpcastAndDowncast)
 {
-  auto bb = createBlackboardWithRegistry();
+  const auto bb = createBlackboardWithRegistry();
 
   // Store a Cat, retrieve as Animal (upcast)
-  auto cat = std::make_shared<Cat>();
+  const auto cat = std::make_shared<Cat>();
   bb->set("pet", cat);
 
   Animal::Ptr animal;
@@ -318,9 +318,9 @@ TEST(PolymorphicPortTest, Blackboard_UpcastAndDowncast)
 
 TEST(PolymorphicPortTest, Blackboard_TransitiveUpcast)
 {
-  auto bb = createBlackboardWithRegistry();
+  const auto bb = createBlackboardWithRegistry();
 
-  auto sphynx = std::make_shared<Sphynx>();
+  const auto sphynx = std::make_shared<Sphynx>();
   bb->set("pet", sphynx);
 
   // Can get as Animal (transitive upcast through Cat)
@@ -345,7 +345,7 @@ TEST(PolymorphicPortTest, Blackboard_TransitiveUpcast)
 
 TEST(PolymorphicPortTest, XML_ValidUpcast)
 {
-  std::string xml_txt = R"(
+  const std::string xml_txt = R"(
   <root BTCPP_format="4" >
     <BehaviorTree ID="Main">
       <Sequence>
@@ -363,7 +363,7 @@ TEST(PolymorphicPortTest, XML_ValidUpcast)
   factory.registerNodeType<PrintAnimalName>("PrintAnimalName");
 
   auto tree = factory.createTreeFromText(xml_txt);
-  NodeStatus status = tree.tickWhileRunning();
+  const NodeStatus status = tree.tickWhileRunning();
 
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   ASSERT_EQ(PrintCatName::last_name_, "Cat");
@@ -372,7 +372,7 @@ TEST(PolymorphicPortTest, XML_ValidUpcast)
 
 TEST(PolymorphicPortTest, XML_TransitiveUpcast)
 {
-  std::string xml_txt = R"(
+  const std::string xml_txt = R"(
   <root BTCPP_format="4" >
     <BehaviorTree ID="Main">
       <Sequence>
@@ -388,7 +388,7 @@ TEST(PolymorphicPortTest, XML_TransitiveUpcast)
   factory.registerNodeType<PrintAnimalName>("PrintAnimalName");
 
   auto tree = factory.createTreeFromText(xml_txt);
-  NodeStatus status = tree.tickWhileRunning();
+  const NodeStatus status = tree.tickWhileRunning();
 
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   ASSERT_EQ(PrintAnimalName::last_name_, "Sphynx");
@@ -412,7 +412,7 @@ TEST(PolymorphicPortTest, XML_InoutRejectsTypeMismatch)
     }
   };
 
-  std::string xml_txt = R"(
+  const std::string xml_txt = R"(
   <root BTCPP_format="4" >
     <BehaviorTree ID="Main">
       <Sequence>
@@ -432,7 +432,7 @@ TEST(PolymorphicPortTest, XML_InoutRejectsTypeMismatch)
 
 TEST(PolymorphicPortTest, XML_InvalidConnection_UnrelatedTypes)
 {
-  std::string xml_txt = R"(
+  const std::string xml_txt = R"(
   <root BTCPP_format="4" >
     <BehaviorTree ID="Main">
       <Sequence>
@@ -451,7 +451,7 @@ TEST(PolymorphicPortTest, XML_InvalidConnection_UnrelatedTypes)
 
 TEST(PolymorphicPortTest, XML_DowncastSucceedsAtRuntime)
 {
-  std::string xml_txt = R"(
+  const std::string xml_txt = R"(
   <root BTCPP_format="4" >
     <BehaviorTree ID="Main">
       <Sequence>
@@ -467,7 +467,7 @@ TEST(PolymorphicPortTest, XML_DowncastSucceedsAtRuntime)
   factory.registerNodeType<PrintCatName>("PrintCatName");
 
   auto tree = factory.createTreeFromText(xml_txt);
-  NodeStatus status = tree.tickWhileRunning();
+  const NodeStatus status = tree.tickWhileRunning();
 
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   ASSERT_EQ(PrintCatName::last_name_, "Cat");
@@ -475,7 +475,7 @@ TEST(PolymorphicPortTest, XML_DowncastSucceedsAtRuntime)
 
 TEST(PolymorphicPortTest, XML_DowncastFailsAtRuntime)
 {
-  std::string xml_txt = R"(
+  const std::string xml_txt = R"(
   <root BTCPP_format="4" >
     <BehaviorTree ID="Main">
       <Sequence>

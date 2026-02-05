@@ -936,13 +936,13 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
           // Allow polymorphic cast for INPUT ports (Issue #943)
           // If a registered conversion exists (upcast or downcast), allow the
           // connection. Downcasts use dynamic_pointer_cast and may fail at runtime.
-          if(port_type_mismatch && port_info.direction() == PortDirection::INPUT)
+          const auto is_input_port = port_info.direction() == PortDirection::INPUT;
+          const auto& cast_registry = factory->polymorphicCastRegistry();
+
+          if(port_type_mismatch && is_input_port &&
+             cast_registry.isConvertible(prev_info->type(), port_info.type()))
           {
-            if(factory->polymorphicCastRegistry().isConvertible(prev_info->type(),
-                                                                port_info.type()))
-            {
-              port_type_mismatch = false;
-            }
+            port_type_mismatch = false;
           }
 
           // special case related to convertFromString

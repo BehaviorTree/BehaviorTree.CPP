@@ -591,11 +591,11 @@ inline Expected<Timestamp> TreeNode::getInputStamped(const std::string& key,
         }
         else
         {
-          auto result =
+          const auto result =
               config().blackboard->tryCastWithPolymorphicFallback<T>(&any_value);
           if(!result)
           {
-            throw std::runtime_error(result.error());
+            throw RuntimeError(result.error());
           }
           destination = result.value();
         }

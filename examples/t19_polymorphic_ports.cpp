@@ -109,7 +109,7 @@ public:
 
   NodeStatus tick() override
   {
-    auto animal = getInput<Animal::Ptr>("animal").value();
+    const auto animal = getInput<Animal::Ptr>("animal").value();
     std::cout << "Hi! I am a " << animal->name() << std::endl;
     return NodeStatus::SUCCESS;
   }
