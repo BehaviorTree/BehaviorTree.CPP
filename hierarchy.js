@@ -25,7 +25,8 @@ var hierarchy =
     ] ],
     [ "std::false_type", null, [
       [ "BT::has_static_method_metadata< T, typename >", "d1/da6/struct_b_t_1_1has__static__method__metadata.html", null ],
-      [ "BT::has_static_method_providedPorts< T, typename >", "d0/d56/struct_b_t_1_1has__static__method__provided_ports.html", null ]
+      [ "BT::has_static_method_providedPorts< T, typename >", "d0/d56/struct_b_t_1_1has__static__method__provided_ports.html", null ],
+      [ "BT::is_shared_ptr< T >", "de/dcd/struct_b_t_1_1is__shared__ptr.html", null ]
     ] ],
     [ "BT::Monitor::Hook", "dc/d6e/struct_b_t_1_1_monitor_1_1_hook.html", null ],
     [ "BT::JsonExporter", "d0/d64/class_b_t_1_1_json_exporter.html", null ],
@@ -35,6 +36,7 @@ var hierarchy =
     [ "BT::Parser", "de/da6/class_b_t_1_1_parser.html", [
       [ "BT::XMLParser", "d8/d05/class_b_t_1_1_x_m_l_parser.html", null ]
     ] ],
+    [ "BT::PolymorphicCastRegistry", "d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html", null ],
     [ "BT::ProtectedQueue< T >", "d6/dee/struct_b_t_1_1_protected_queue.html", null ],
     [ "BT::Monitor::ReplyHeader", "dc/d73/struct_b_t_1_1_monitor_1_1_reply_header.html", null ],
     [ "BT::Monitor::RequestHeader", "dc/d05/struct_b_t_1_1_monitor_1_1_request_header.html", null ],
@@ -122,7 +124,8 @@ var hierarchy =
     [ "BT::TreeNodeManifest", "dc/d6c/struct_b_t_1_1_tree_node_manifest.html", null ],
     [ "std::true_type", null, [
       [ "BT::has_static_method_metadata< T, typename std::enable_if< std::is_same< decltype(T::metadata()), KeyValueVector >::value >::type >", "dc/d0f/struct_b_t_1_1has__static__method__metadata_3_01_t_00_01typename_01std_1_1enable__if_3_01std_1_1065d166f8cc1b3c83dbdb1c2230484f1.html", null ],
-      [ "BT::has_static_method_providedPorts< T, typename std::enable_if< std::is_same< decltype(T::providedPorts()), PortsList >::value >::type >", "d6/d07/struct_b_t_1_1has__static__method__provided_ports_3_01_t_00_01typename_01std_1_1enable__if_3_01s8432b5486894de4ea455ef2f702667bd.html", null ]
+      [ "BT::has_static_method_providedPorts< T, typename std::enable_if< std::is_same< decltype(T::providedPorts()), PortsList >::value >::type >", "d6/d07/struct_b_t_1_1has__static__method__provided_ports_3_01_t_00_01typename_01std_1_1enable__if_3_01s8432b5486894de4ea455ef2f702667bd.html", null ],
+      [ "BT::is_shared_ptr< std::shared_ptr< U > >", "df/d93/struct_b_t_1_1is__shared__ptr_3_01std_1_1shared__ptr_3_01_u_01_4_01_4.html", null ]
     ] ],
     [ "BT::TypeInfo", "d0/d34/class_b_t_1_1_type_info.html", [
       [ "BT::PortInfo", "d8/d5e/class_b_t_1_1_port_info.html", null ]

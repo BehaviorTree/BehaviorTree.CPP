@@ -4,6 +4,7 @@ var dir_1573ea42ce800d213ff17f25e5e834ef =
     [ "demangle_util.h", "db/d57/demangle__util_8h_source.html", null ],
     [ "locked_reference.hpp", "d4/dd1/locked__reference_8hpp_source.html", null ],
     [ "platform.hpp", "d3/d60/platform_8hpp_source.html", null ],
+    [ "polymorphic_cast_registry.hpp", "df/d1e/polymorphic__cast__registry_8hpp_source.html", null ],
     [ "safe_any.hpp", "d4/d53/safe__any_8hpp_source.html", null ],
     [ "shared_library.h", "d5/dd6/shared__library_8h_source.html", null ],
     [ "signal.h", "d8/d39/signal_8h_source.html", null ],

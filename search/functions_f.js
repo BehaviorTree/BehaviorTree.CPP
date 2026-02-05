@@ -6,5 +6,7 @@ var searchData=
   ['tickwhilerunning_3',['tickWhileRunning',['../d1/d79/class_b_t_1_1_tree.html#ab89741eacae45161d75c7d22ded4228b',1,'BT::Tree']]],
   ['tojson_4',['toJson',['../d0/d64/class_b_t_1_1_json_exporter.html#a7b63a0b886479881ba2a5fade474b84a',1,'BT::JsonExporter']]],
   ['tostr_5',['toStr',['../d2/d8d/namespace_b_t.html#acdc7285d759ccee669271f9884941cf9',1,'BT::toStr(const T &amp;value)'],['../d2/d8d/namespace_b_t.html#a59b08b9acce3233964741ac39102abda',1,'BT::toStr(BT::NodeStatus status, bool colored)']]],
-  ['treenode_6',['TreeNode',['../da/d61/class_b_t_1_1_tree_node.html#af001be7dac6922889712e8c5f107787e',1,'BT::TreeNode']]]
+  ['treenode_6',['TreeNode',['../da/d61/class_b_t_1_1_tree_node.html#af001be7dac6922889712e8c5f107787e',1,'BT::TreeNode']]],
+  ['trycast_7',['tryCast',['../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html#adb2e0b1eb5b510510ee7e1eaa69b2165',1,'BT::PolymorphicCastRegistry']]],
+  ['trycastwithpolymorphicfallback_8',['tryCastWithPolymorphicFallback',['../d0/d51/class_b_t_1_1_blackboard.html#abbdfba5667fd8bab97732bfff885fc04',1,'BT::Blackboard']]]
 ];

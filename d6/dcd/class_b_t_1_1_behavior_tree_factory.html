@@ -213,6 +213,19 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>clearSubstitutionRule
 const std::unordered_map&lt; std::string, SubstitutionRule &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>substitutionRules</b> () const</td></tr>
 <tr class="memdesc:a6ca87931a32b5b3cbd319ce49980e28f"><td class="mdescLeft">&#160;</td><td class="mdescRight">substitutionRules return the current substitution rules. <br /></td></tr>
 <tr class="separator:a6ca87931a32b5b3cbd319ce49980e28f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bd34426318d461a097b09a36a1ed8a9"><td class="memTemplParams" colspan="2">template&lt;typename Derived , typename Base &gt; </td></tr>
+<tr class="memitem:a2bd34426318d461a097b09a36a1ed8a9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html#a2bd34426318d461a097b09a36a1ed8a9">registerPolymorphicCast</a> ()</td></tr>
+<tr class="memdesc:a2bd34426318d461a097b09a36a1ed8a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a polymorphic cast relationship between Derived and Base types.  <br /></td></tr>
+<tr class="separator:a2bd34426318d461a097b09a36a1ed8a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e60231d298ff662c4a728b1cb01ffad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">PolymorphicCastRegistry</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html#a3e60231d298ff662c4a728b1cb01ffad">polymorphicCastRegistry</a> ()</td></tr>
+<tr class="memdesc:a3e60231d298ff662c4a728b1cb01ffad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access the polymorphic cast registry.  <br /></td></tr>
+<tr class="separator:a3e60231d298ff662c4a728b1cb01ffad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b7c8d8be7f819abb8b19d12f179bb8c"><td class="memItemLeft" align="right" valign="top"><a id="a7b7c8d8be7f819abb8b19d12f179bb8c" name="a7b7c8d8be7f819abb8b19d12f179bb8c"></a>
+const <a class="el" href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">PolymorphicCastRegistry</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>polymorphicCastRegistry</b> () const</td></tr>
+<tr class="separator:a7b7c8d8be7f819abb8b19d12f179bb8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b5d0e88c62435fcf9a60100aedc1b47"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">PolymorphicCastRegistry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html#a0b5d0e88c62435fcf9a60100aedc1b47">polymorphicCastRegistryPtr</a> () const</td></tr>
+<tr class="memdesc:a0b5d0e88c62435fcf9a60100aedc1b47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a shared pointer to the polymorphic cast registry.  <br /></td></tr>
+<tr class="separator:a0b5d0e88c62435fcf9a60100aedc1b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html" title="The BehaviorTreeFactory is used to create instances of a TreeNode at run-time.">BehaviorTreeFactory</a> is used to create instances of a <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes.">TreeNode</a> at run-time. </p>
@@ -430,6 +443,46 @@ const std::unordered_map&lt; std::string, SubstitutionRule &gt; &amp;&#160;</td>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a3e60231d298ff662c4a728b1cb01ffad" name="a3e60231d298ff662c4a728b1cb01ffad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e60231d298ff662c4a728b1cb01ffad">&#9670;&#160;</a></span>polymorphicCastRegistry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">PolymorphicCastRegistry</a> &amp; BT::BehaviorTreeFactory::polymorphicCastRegistry </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Access the polymorphic cast registry. </p>
+<p>The registry is shared with all trees created from this factory, allowing trees to outlive the factory while maintaining access to polymorphic cast relationships. </p>
+
+</div>
+</div>
+<a id="a0b5d0e88c62435fcf9a60100aedc1b47" name="a0b5d0e88c62435fcf9a60100aedc1b47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b5d0e88c62435fcf9a60100aedc1b47">&#9670;&#160;</a></span>polymorphicCastRegistryPtr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">PolymorphicCastRegistry</a> &gt; BT::BehaviorTreeFactory::polymorphicCastRegistryPtr </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a shared pointer to the polymorphic cast registry. </p>
+<p>This allows trees and blackboards to hold a reference to the registry that outlives the factory. </p>
 
 </div>
 </div>
@@ -655,6 +708,44 @@ template&lt;typename T , typename... ExtraArgs&gt; </div>
 </div><div class="memdoc">
 <p>registerNodeType is the method to use to register your custom <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes.">TreeNode</a>.</p>
 <p>It accepts only classed derived from either <a class="el" href="../../d3/de2/class_b_t_1_1_action_node_base.html" title="The ActionNodeBase is the base class to use to create any kind of action. A particular derived class ...">ActionNodeBase</a>, <a class="el" href="../../d1/de7/class_b_t_1_1_decorator_node.html" title="The DecoratorNode is the base class for nodes that have exactly one child.">DecoratorNode</a>, <a class="el" href="../../d6/ddb/class_b_t_1_1_control_node.html" title="The ControlNode is the base class for nodes that can have multiple children.">ControlNode</a> or <a class="el" href="../../dc/dfc/class_b_t_1_1_condition_node.html" title="The ConditionNode is a leaf node used to check a condition.">ConditionNode</a>. </p>
+
+</div>
+</div>
+<a id="a2bd34426318d461a097b09a36a1ed8a9" name="a2bd34426318d461a097b09a36a1ed8a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bd34426318d461a097b09a36a1ed8a9">&#9670;&#160;</a></span>registerPolymorphicCast()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Derived , typename Base &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void BT::BehaviorTreeFactory::registerPolymorphicCast </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Register a polymorphic cast relationship between Derived and Base types. </p>
+<p>This enables passing shared_ptr&lt;Derived&gt; to ports expecting shared_ptr&lt;Base&gt; without type mismatch errors. The relationship is automatically applied to all trees created from this factory.</p>
+<p>Example: factory.registerPolymorphicCast&lt;Cat, Animal&gt;(); factory.registerPolymorphicCast&lt;Sphynx, Cat&gt;();</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">Derived</td><td>The derived class (must inherit from Base) </td></tr>
+    <tr><td class="paramname">Base</td><td>The base class (must be polymorphic) </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

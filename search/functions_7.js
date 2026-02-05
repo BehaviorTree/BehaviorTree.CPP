@@ -6,5 +6,6 @@ var searchData=
   ['instantiate_3',['Instantiate',['../da/d61/class_b_t_1_1_tree_node.html#a31eda57720de8dd6d97ab83d2956b0f0',1,'BT::TreeNode']]],
   ['instantiatetreenode_4',['instantiateTreeNode',['../d6/dcd/class_b_t_1_1_behavior_tree_factory.html#ac90771a825bc241f4e68efa8fa718622',1,'BT::BehaviorTreeFactory']]],
   ['isblackboardpointer_5',['isBlackboardPointer',['../da/d61/class_b_t_1_1_tree_node.html#ab157589bcee1d9f8d6ae9fc6c8a0b41b',1,'BT::TreeNode']]],
-  ['isloaded_6',['isLoaded',['../d2/ddd/class_b_t_1_1_shared_library.html#a79ab0e4030576779db5edea6cf12e763',1,'BT::SharedLibrary']]]
+  ['isconvertible_6',['isConvertible',['../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html#a30b5ff862e8cfc0fa5b1679ea77ce988',1,'BT::PolymorphicCastRegistry']]],
+  ['isloaded_7',['isLoaded',['../d2/ddd/class_b_t_1_1_shared_library.html#a79ab0e4030576779db5edea6cf12e763',1,'BT::SharedLibrary']]]
 ];
