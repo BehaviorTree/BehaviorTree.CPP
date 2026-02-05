@@ -20,8 +20,10 @@
 #include "behaviortree_cpp/contrib/expected.hpp"
 #include "behaviortree_cpp/utils/convert_impl.hpp"
 #include "behaviortree_cpp/utils/demangle_util.h"
+#include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 #include "behaviortree_cpp/utils/strcat.hpp"
 
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <typeindex>
@@ -30,6 +32,17 @@ namespace BT
 {
 
 static std::type_index UndefinedAnyType = typeid(nullptr);
+
+// Trait to detect std::shared_ptr types (used for polymorphic port support)
+template <typename T>
+struct is_shared_ptr : std::false_type
+{
+};
+
+template <typename U>
+struct is_shared_ptr<std::shared_ptr<U>> : std::true_type
+{
+};
 
 // Rational: since type erased numbers will always use at least 8 bytes
 // it is faster to cast everything to either double, uint64_t or int64_t.
@@ -143,6 +156,12 @@ public:
   // conversions between arithmetic values and from/to string.
   template <typename T>
   nonstd::expected<T, std::string> tryCast() const;
+
+  // tryCast with polymorphic registry support (Issue #943)
+  // Attempts polymorphic cast for shared_ptr types using the provided registry.
+  template <typename T>
+  nonstd::expected<T, std::string>
+  tryCastWithRegistry(const PolymorphicCastRegistry& registry) const;
 
   // same as tryCast, but throws if fails
   template <typename T>
@@ -547,6 +566,37 @@ inline nonstd::expected<T, std::string> Any::tryCast() const
   {
     return res;
   }
+}
+
+template <typename T>
+inline nonstd::expected<T, std::string>
+Any::tryCastWithRegistry(const PolymorphicCastRegistry& registry) const
+{
+  static_assert(is_shared_ptr<T>::value, "tryCastWithRegistry only works with shared_ptr "
+                                         "types");
+
+  if(_any.empty())
+  {
+    return nonstd::make_unexpected("Any::tryCastWithRegistry failed: empty value");
+  }
+
+  // Try to cast using the registry
+  auto result = registry.tryCast(_any, _original_type, typeid(T));
+  if(result)
+  {
+    try
+    {
+      return linb::any_cast<T>(result.value());
+    }
+    catch(const std::exception& e)
+    {
+      return nonstd::make_unexpected(StrCat("Polymorphic cast failed: ", e.what()));
+    }
+  }
+
+  return nonstd::make_unexpected(StrCat("[Any::tryCastWithRegistry]: ", result.error(),
+                                        " (from [", demangle(_original_type), "] to [",
+                                        demangle(typeid(T)), "])"));
 }
 
 }  // end namespace BT

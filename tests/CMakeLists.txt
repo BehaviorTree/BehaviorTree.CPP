@@ -52,6 +52,7 @@ set(BT_TESTS
   gtest_while_do_else.cpp
   gtest_interface.cpp
   gtest_simple_string.cpp
+  gtest_polymorphic_ports.cpp
   gtest_plugin_issue953.cpp
 
   script_parser_test.cpp

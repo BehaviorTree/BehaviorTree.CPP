@@ -38,6 +38,7 @@ CompileExample("t15_nodes_mocking")
 CompileExample("t16_global_blackboard")
 CompileExample("t17_blackboard_backup")
 CompileExample("t18_waypoints")
+CompileExample("t19_polymorphic_ports")
 
 CompileExample("ex01_wrap_legacy")
 CompileExample("ex02_runtime_ports")
