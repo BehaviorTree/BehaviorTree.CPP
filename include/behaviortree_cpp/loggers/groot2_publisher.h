@@ -19,9 +19,6 @@ namespace BT
  */
 class Groot2Publisher : public StatusChangeLogger
 {
-  static std::mutex used_ports_mutex;
-  static std::set<unsigned> used_ports;
-
   using Position = Monitor::Hook::Position;
 
 public:
@@ -32,8 +29,8 @@ public:
   Groot2Publisher(const Groot2Publisher& other) = delete;
   Groot2Publisher& operator=(const Groot2Publisher& other) = delete;
 
-  Groot2Publisher(Groot2Publisher&& other) = default;
-  Groot2Publisher& operator=(Groot2Publisher&& other) = default;
+  Groot2Publisher(Groot2Publisher&& other) = delete;
+  Groot2Publisher& operator=(Groot2Publisher&& other) = delete;
 
   /**
    * @brief setMaxHeartbeatDelay is used to tell the publisher
