@@ -125,17 +125,13 @@ Collaboration diagram for BT::NodeExecutionError:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af72ce0e36bb512c36a66b0e21cdc2e09"><td class="memItemLeft" align="right" valign="top"><a id="af72ce0e36bb512c36a66b0e21cdc2e09" name="af72ce0e36bb512c36a66b0e21cdc2e09"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>NodeExecutionError</b> (std::vector&lt; <a class="el" href="../../d2/d50/struct_b_t_1_1_tick_backtrace_entry.html">TickBacktraceEntry</a> &gt; <a class="el" href="../../d2/d33/class_b_t_1_1_node_execution_error.html#a3f98f1500451c4d7521664aeab1d9ff8">backtrace</a>, const std::string &amp;original_message)</td></tr>
-<tr class="separator:af72ce0e36bb512c36a66b0e21cdc2e09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98a00419028539cb1ccb74075156c4a0"><td class="memItemLeft" align="right" valign="top"><a id="a98a00419028539cb1ccb74075156c4a0" name="a98a00419028539cb1ccb74075156c4a0"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>NodeExecutionError</b> (<a class="el" href="../../d2/d50/struct_b_t_1_1_tick_backtrace_entry.html">TickBacktraceEntry</a> failed_node, const std::string &amp;original_message)</td></tr>
+<tr class="separator:a98a00419028539cb1ccb74075156c4a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a62dfb82c4a6c0c2e3b13c234c779e95d"><td class="memItemLeft" align="right" valign="top"><a id="a62dfb82c4a6c0c2e3b13c234c779e95d" name="a62dfb82c4a6c0c2e3b13c234c779e95d"></a>
 const <a class="el" href="../../d2/d50/struct_b_t_1_1_tick_backtrace_entry.html">TickBacktraceEntry</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>failedNode</b> () const</td></tr>
-<tr class="memdesc:a62dfb82c4a6c0c2e3b13c234c779e95d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node that threw the exception (innermost in the backtrace) <br /></td></tr>
+<tr class="memdesc:a62dfb82c4a6c0c2e3b13c234c779e95d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The node that threw the exception. <br /></td></tr>
 <tr class="separator:a62dfb82c4a6c0c2e3b13c234c779e95d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f98f1500451c4d7521664aeab1d9ff8"><td class="memItemLeft" align="right" valign="top"><a id="a3f98f1500451c4d7521664aeab1d9ff8" name="a3f98f1500451c4d7521664aeab1d9ff8"></a>
-const std::vector&lt; <a class="el" href="../../d2/d50/struct_b_t_1_1_tick_backtrace_entry.html">TickBacktraceEntry</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>backtrace</b> () const</td></tr>
-<tr class="memdesc:a3f98f1500451c4d7521664aeab1d9ff8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Full tick backtrace from root to failing node. <br /></td></tr>
-<tr class="separator:a3f98f1500451c4d7521664aeab1d9ff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1754ffc17bc3a53cddd4f750fe8debb3"><td class="memItemLeft" align="right" valign="top"><a id="a1754ffc17bc3a53cddd4f750fe8debb3" name="a1754ffc17bc3a53cddd4f750fe8debb3"></a>
 const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>originalMessage</b> () const</td></tr>
 <tr class="separator:a1754ffc17bc3a53cddd4f750fe8debb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -160,7 +156,7 @@ const char *&#160;</td><td class="memItemRight" valign="bottom"><b>what</b> () c
 <tr class="separator:a9e22de17980f3a266f89399ebecc1d33 inherit pub_methods_class_b_t_1_1_behavior_tree_exception"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Exception thrown when a node's tick() method throws an exception. Contains the originating node and full tick backtrace showing the path through the tree. </p>
+<div class="textblock"><p>Exception thrown when a node's tick() method throws an exception. Contains information about the node where the exception originated. </p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/<a class="el" href="../../d4/d03/exceptions_8h_source.html">exceptions.h</a></li>
 </ul>
