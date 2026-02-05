@@ -74,6 +74,7 @@ NodeStatus EntryUpdatedDecorator::tick()
 void EntryUpdatedDecorator::halt()
 {
   still_executing_child_ = false;
+  DecoratorNode::halt();
 }
 
 }  // namespace BT
