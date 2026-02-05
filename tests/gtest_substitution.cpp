@@ -6,7 +6,10 @@
 
 using namespace BT;
 
-static const char* json_text = R"(
+namespace
+{
+
+const char* json_text = R"(
 {
   "TestNodeConfigs": {
     "TestA": {
@@ -26,6 +29,8 @@ static const char* json_text = R"(
   }
 }
  )";
+
+}  // namespace
 
 TEST(Substitution, Parser)
 {
@@ -111,7 +116,7 @@ TEST(Substitution, StringSubstitutionWithSimpleAction_Issue930)
 
   // Register original action
   factory.registerSimpleAction("SaySomething",
-                               [](TreeNode& node) { return NodeStatus::SUCCESS; },
+                               [](TreeNode& /*node*/) { return NodeStatus::SUCCESS; },
                                { InputPort<std::string>("message") });
 
   // Register substitute action

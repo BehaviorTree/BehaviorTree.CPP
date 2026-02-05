@@ -169,7 +169,7 @@ TEST(Any, Cast)
     EXPECT_EQ(a.cast<double>(), 44.0);
 #if __cpp_lib_to_chars >= 201611L
     const std::string a_str = a.cast<std::string>();
-    double a_val;
+    double a_val = 0.0;
     const auto res = std::from_chars(a_str.data(), a_str.data() + a_str.size(), a_val,
                                      std::chars_format::general);
     EXPECT_TRUE(res.ec == std::errc{});
@@ -184,7 +184,7 @@ TEST(Any, Cast)
     EXPECT_EQ(b.cast<double>(), 44.1);
 #if __cpp_lib_to_chars >= 201611L
     const std::string b_str = b.cast<std::string>();
-    double b_val;
+    double b_val = 0.0;
     const auto res2 = std::from_chars(b_str.data(), b_str.data() + b_str.size(), b_val,
                                       std::chars_format::general);
     EXPECT_TRUE(res2.ec == std::errc{});

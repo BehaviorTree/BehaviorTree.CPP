@@ -20,7 +20,7 @@ inline void RegisterTestTick(BT::BehaviorTreeFactory& factory,
   {
     tick_counters[i] = false;
     char str[100];
-    snprintf(str, sizeof str, "%s%c", name_prefix.c_str(), char('A' + i));
+    (void)snprintf(str, sizeof str, "%s%c", name_prefix.c_str(), char('A' + i));
     int* counter_ptr = &(tick_counters[i]);
     factory.registerSimpleAction(str, std::bind(&TestTick, counter_ptr));
   }

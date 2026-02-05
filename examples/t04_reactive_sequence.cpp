@@ -14,7 +14,10 @@ using namespace BT;
 
 // clang-format off
 
-static const char* xml_text_sequence = R"(
+namespace
+{
+
+const char* xml_text_sequence = R"(
 
  <root BTCPP_format="4" >
 
@@ -30,7 +33,7 @@ static const char* xml_text_sequence = R"(
  </root>
  )";
 
-static const char* xml_text_reactive = R"(
+const char* xml_text_reactive = R"(
 
  <root BTCPP_format="4" >
 
@@ -47,6 +50,8 @@ static const char* xml_text_reactive = R"(
 
  </root>
  )";
+
+}  // namespace
 
 // clang-format on
 

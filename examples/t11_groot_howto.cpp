@@ -26,6 +26,7 @@ struct Position2D
 // the object to/from JSON.
 // You still need to call BT::RegisterJsonDefinition<Position2D>()
 // in main()
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 BT_JSON_CONVERTER(Position2D, pos)
 {
   add_field("x", &pos.x);
@@ -39,6 +40,7 @@ struct Waypoint
   double speed = 1.0;
 };
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 BT_JSON_CONVERTER(Waypoint, wp)
 {
   add_field("name", &wp.name);
@@ -70,6 +72,7 @@ public:
 
     // Helper to generate random offset [-range, +range]
     auto randOffset = [](double range) {
+      // NOLINTNEXTLINE(cert-msc30-c,cert-msc50-cpp,concurrency-mt-unsafe)
       return (static_cast<double>(std::rand()) / RAND_MAX - 0.5) * 2.0 * range;
     };
 
@@ -120,8 +123,9 @@ private:
 };
 
 // clang-format off
-
-static const char* xml_text = R"(
+namespace
+{
+const char* xml_text = R"(
 <root BTCPP_format="4">
 
   <BehaviorTree ID="MainTree">
@@ -150,7 +154,7 @@ static const char* xml_text = R"(
 
 </root>
  )";
-
+}  // namespace
 // clang-format on
 
 int main()
@@ -165,7 +169,7 @@ int main()
   // Groot2 editor requires a model of your registered Nodes.
   // You don't need to write that by hand, it can be automatically
   // generated using the following command.
-  const std::string xml_models = BT::writeTreeNodesModelXML(factory);
+  [[maybe_unused]] const std::string xml_models = BT::writeTreeNodesModelXML(factory);
 
   factory.registerBehaviorTreeFromText(xml_text);
 
@@ -191,7 +195,7 @@ int main()
   BT::FileLogger2 logger2(tree, "t11_groot_howto.btlog");
   BT::MinitraceLogger minilog(tree, "minitrace.json");
 
-  while(1)
+  while(true)
   {
     std::cout << "Start" << std::endl;
     cross_door.reset();

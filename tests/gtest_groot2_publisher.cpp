@@ -71,7 +71,7 @@ TEST(Groot2PublisherTest, DestructorCompletesAfterException)
                                  });
 
     auto tree = factory.createTreeFromText(xml_text);
-    BT::Groot2Publisher publisher(tree, 1667 + i * 2);
+    BT::Groot2Publisher publisher(tree, 1700 + i * 2);
     EXPECT_THROW(tree.tickExactlyOnce(), BT::RuntimeError);
   }
 }
@@ -85,7 +85,7 @@ TEST(Groot2PublisherTest, DestructorCompletesWithMultipleNodes)
   });
 
   auto tree = factory.createTreeFromText(xml_text_sequence);
-  BT::Groot2Publisher publisher(tree, 1677);
+  BT::Groot2Publisher publisher(tree, 1720);
   EXPECT_THROW(tree.tickExactlyOnce(), BT::RuntimeError);
 }
 
@@ -100,7 +100,7 @@ TEST(Groot2PublisherTest, RapidCreateDestroy)
         [](BT::TreeNode&) -> BT::NodeStatus { throw BT::RuntimeError("Rapid test"); });
 
     auto tree = factory.createTreeFromText(xml_text);
-    BT::Groot2Publisher publisher(tree, 1687 + i * 2);
+    BT::Groot2Publisher publisher(tree, 1730 + i * 2);
     EXPECT_THROW(tree.tickExactlyOnce(), BT::RuntimeError);
   }
 }

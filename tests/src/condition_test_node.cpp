@@ -17,8 +17,7 @@
 BT::ConditionTestNode::ConditionTestNode(const std::string& name)
   : ConditionNode::ConditionNode(name, {})
 {
-  expected_result_ = NodeStatus::SUCCESS;
-  tick_count_ = 0;
+  // Members are initialized via default member initializers in the header
 }
 
 BT::NodeStatus BT::ConditionTestNode::tick()

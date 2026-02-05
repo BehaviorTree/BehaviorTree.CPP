@@ -10,8 +10,6 @@
 namespace BT
 {
 //------------------------------------------------------
-std::mutex Groot2Publisher::used_ports_mutex;
-std::set<unsigned> Groot2Publisher::used_ports;
 
 enum
 {
@@ -117,20 +115,6 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree, unsigned server_port)
   : StatusChangeLogger(tree.rootNode()), _p(new PImpl())
 {
   _p->server_port = server_port;
-
-  {
-    const std::unique_lock<std::mutex> lk(Groot2Publisher::used_ports_mutex);
-    if(Groot2Publisher::used_ports.count(server_port) != 0 ||
-       Groot2Publisher::used_ports.count(server_port + 1) != 0)
-    {
-      auto msg = StrCat("Another instance of Groot2Publisher is using port ",
-                        std::to_string(server_port));
-      throw LogicError(msg);
-    }
-    Groot2Publisher::used_ports.insert(server_port);
-    Groot2Publisher::used_ports.insert(server_port + 1);
-  }
-
   _p->tree_xml = WriteTreeToXML(tree, true, true);
 
   //-------------------------------
@@ -207,11 +191,10 @@ Groot2Publisher::~Groot2Publisher()
 
   flush();
 
-  {
-    const std::unique_lock<std::mutex> lk(Groot2Publisher::used_ports_mutex);
-    Groot2Publisher::used_ports.erase(_p->server_port);
-    Groot2Publisher::used_ports.erase(_p->server_port + 1);
-  }
+  // Explicitly close sockets before context is destroyed.
+  // This ensures proper cleanup on all platforms, especially Windows.
+  _p->server.close();
+  _p->publisher.close();
 }
 
 void Groot2Publisher::callback(Duration ts, const TreeNode& node, NodeStatus prev_status,

@@ -7,6 +7,9 @@
 
 #include "../sample_nodes/dummy_nodes.h"
 
+namespace
+{
+
 BT::Any GetScriptResult(BT::Ast::Environment& environment, const char* text)
 {
   auto exprs = BT::Scripting::parseStatements(text);
@@ -20,6 +23,8 @@ BT::Any GetScriptResult(BT::Ast::Environment& environment, const char* text)
   }
   return exprs.back()->evaluate(environment);
 }
+
+}  // namespace
 
 TEST(ParserTest, AnyTypes)
 {
@@ -309,10 +314,11 @@ enum DeviceType
   CONTROLLER = 2
 };
 
+// NOLINTNEXTLINE(misc-use-anonymous-namespace,misc-use-internal-linkage)
 BT::NodeStatus checkLevel(BT::TreeNode& self)
 {
   double percent = self.getInput<double>("percentage").value();
-  DeviceType devType;
+  DeviceType devType{};
   auto res = self.getInput("deviceType", devType);
   if(!res)
   {
@@ -395,7 +401,7 @@ TEST(ParserTest, Issue595)
     </BehaviorTree>
   </root> )";
 
-  std::array<int, 1> counters;
+  std::array<int, 1> counters{};
   RegisterTestTick(factory, "Test", counters);
   factory.registerNodeType<SampleNode595>("SampleNode595");
 

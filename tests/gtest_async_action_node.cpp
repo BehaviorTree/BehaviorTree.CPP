@@ -21,6 +21,7 @@ struct MockedThreadedAction : public BT::ThreadedAction
   // Tick while the node is running.
   BT::NodeStatus spinUntilDone()
   {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-do-while)
     do
     {
       executeTick();

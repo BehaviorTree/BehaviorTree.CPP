@@ -31,7 +31,7 @@ const std::string xml_text_check = R"(
 TEST(EntryUpdates, NoEntry)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(
@@ -55,7 +55,7 @@ TEST(EntryUpdates, NoEntry)
 TEST(EntryUpdates, Initialized)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(
@@ -80,7 +80,7 @@ TEST(EntryUpdates, Initialized)
 TEST(EntryUpdates, UpdateOnce)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(
@@ -107,7 +107,7 @@ TEST(EntryUpdates, UpdateOnce)
 TEST(EntryUpdates, UpdateTwice)
 {
   BehaviorTreeFactory factory;
-  std::array<int, 2> counters;
+  std::array<int, 2> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   const std::string xml_text = R"(

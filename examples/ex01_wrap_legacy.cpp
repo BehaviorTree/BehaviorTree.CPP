@@ -39,7 +39,7 @@ Point3D convertFromString(StringView key)
   }
   else
   {
-    Point3D output;
+    Point3D output{};
     output.x = convertFromString<double>(parts[0]);
     output.y = convertFromString<double>(parts[1]);
     output.z = convertFromString<double>(parts[2]);
@@ -49,7 +49,11 @@ Point3D convertFromString(StringView key)
 }  // namespace BT
 
 // clang-format off
-static const char* xml_text = R"(
+
+namespace
+{
+
+const char* xml_text = R"(
 
  <root BTCPP_format="4">
      <BehaviorTree>
@@ -57,6 +61,8 @@ static const char* xml_text = R"(
      </BehaviorTree>
  </root>
  )";
+
+}  // namespace
 
 // clang-format on
 
@@ -68,7 +74,7 @@ int main()
 
   // Here we use a lambda that captures the reference of move_to
   auto MoveToWrapperWithLambda = [&move_to](TreeNode& parent_node) -> NodeStatus {
-    Point3D goal;
+    Point3D goal{};
     // thanks to paren_node, you can access easily the input and output ports.
     parent_node.getInput("goal", goal);
 

@@ -21,8 +21,8 @@ public:
   }
 
 private:
-  NodeStatus expected_result_;
-  int tick_count_;
+  NodeStatus expected_result_ = NodeStatus::SUCCESS;
+  int tick_count_ = 0;
 };
 }  // namespace BT
 

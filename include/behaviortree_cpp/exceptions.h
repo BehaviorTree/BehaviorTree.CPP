@@ -77,27 +77,20 @@ struct TickBacktraceEntry
 };
 
 /// Exception thrown when a node's tick() method throws an exception.
-/// Contains the originating node and full tick backtrace showing the path through the tree.
+/// Contains information about the node where the exception originated.
 class NodeExecutionError : public RuntimeError
 {
 public:
-  NodeExecutionError(std::vector<TickBacktraceEntry> backtrace,
-                     const std::string& original_message)
-    : RuntimeError(formatMessage(backtrace, original_message))
-    , backtrace_(std::move(backtrace))
+  NodeExecutionError(TickBacktraceEntry failed_node, const std::string& original_message)
+    : RuntimeError(formatMessage(failed_node, original_message))
+    , failed_node_(std::move(failed_node))
     , original_message_(original_message)
   {}
 
-  /// The node that threw the exception (innermost in the backtrace)
+  /// The node that threw the exception
   [[nodiscard]] const TickBacktraceEntry& failedNode() const
   {
-    return backtrace_.back();
-  }
-
-  /// Full tick backtrace from root to failing node
-  [[nodiscard]] const std::vector<TickBacktraceEntry>& backtrace() const
-  {
-    return backtrace_;
+    return failed_node_;
   }
 
   [[nodiscard]] const std::string& originalMessage() const
@@ -106,22 +99,14 @@ public:
   }
 
 private:
-  std::vector<TickBacktraceEntry> backtrace_;
+  TickBacktraceEntry failed_node_;
   std::string original_message_;
 
-  static std::string formatMessage(const std::vector<TickBacktraceEntry>& bt,
+  static std::string formatMessage(const TickBacktraceEntry& node,
                                    const std::string& original_msg)
   {
-    std::string msg =
-        StrCat("Exception in node '", bt.back().node_path, "': ", original_msg);
-    msg += "\nTick backtrace:";
-    for(size_t i = 0; i < bt.size(); ++i)
-    {
-      const bool is_last = (i == bt.size() - 1);
-      msg += StrCat("\n  ", is_last ? "-> " : "   ", bt[i].node_path, " (",
-                    bt[i].registration_name, ")");
-    }
-    return msg;
+    return StrCat("Exception in node '", node.node_path, "' [", node.registration_name,
+                  "]: ", original_msg);
   }
 };
 

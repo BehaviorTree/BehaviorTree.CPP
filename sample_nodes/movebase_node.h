@@ -6,13 +6,16 @@
 // Custom type
 struct Pose2D
 {
-  double x, y, theta;
+  double x = 0;
+  double y = 0;
+  double theta = 0;
 };
 
 // Add this to you main() to register this function into JsonExporter:
 //
 // BT::JsonExporter::get().addConverter<Pose2D>();
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 BT_JSON_CONVERTER(Pose2D, pose)
 {
   add_field("x", &pose.x);

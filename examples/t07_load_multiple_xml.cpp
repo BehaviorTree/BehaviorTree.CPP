@@ -9,7 +9,10 @@
 
 // clang-format off
 
-static const char* xml_text_main = R"(
+namespace
+{
+
+const char* xml_text_main = R"(
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
         <Sequence>
@@ -20,19 +23,21 @@ static const char* xml_text_main = R"(
     </BehaviorTree>
 </root>  )";
 
-static const char* xml_text_subA = R"(
+const char* xml_text_subA = R"(
 <root BTCPP_format="4">
     <BehaviorTree ID="SubA">
         <SaySomething message="Executing SubA" />
     </BehaviorTree>
 </root>  )";
 
-static const char* xml_text_subB = R"(
+const char* xml_text_subB = R"(
 <root BTCPP_format="4">
     <BehaviorTree ID="SubB">
         <SaySomething message="Executing SubB" />
     </BehaviorTree>
 </root>  )";
+
+}  // namespace
 
 // clang-format on
 

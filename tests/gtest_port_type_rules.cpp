@@ -242,7 +242,7 @@ public:
   NodeStatus tick() override
   {
     auto input = getInput<std::vector<double>>("input");
-    if(input && result_)
+    if(input && result_ != nullptr)
     {
       *result_ = input.value();
       return NodeStatus::SUCCESS;

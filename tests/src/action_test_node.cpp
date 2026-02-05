@@ -17,12 +17,13 @@
 #include <thread>
 
 BT::AsyncActionTest::AsyncActionTest(const std::string& name, BT::Duration deadline_ms)
-  : ThreadedAction(name, {}), success_count_(0), failure_count_(0)
-{
-  expected_result_ = NodeStatus::SUCCESS;
-  time_ = deadline_ms;
-  tick_count_ = 0;
-}
+  : ThreadedAction(name, {})
+  , time_(deadline_ms)
+  , expected_result_(NodeStatus::SUCCESS)
+  , tick_count_(0)
+  , success_count_(0)
+  , failure_count_(0)
+{}
 
 BT::NodeStatus BT::AsyncActionTest::tick()
 {
@@ -73,11 +74,9 @@ void BT::AsyncActionTest::setExpectedResult(BT::NodeStatus res)
 
 //----------------------------------------------
 
-BT::SyncActionTest::SyncActionTest(const std::string& name) : SyncActionNode(name, {})
-{
-  tick_count_ = 0;
-  expected_result_ = NodeStatus::SUCCESS;
-}
+BT::SyncActionTest::SyncActionTest(const std::string& name)
+  : SyncActionNode(name, {}), expected_result_(NodeStatus::SUCCESS), tick_count_(0)
+{}
 
 BT::NodeStatus BT::SyncActionTest::tick()
 {
