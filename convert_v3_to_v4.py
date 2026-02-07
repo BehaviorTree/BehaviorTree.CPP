@@ -5,6 +5,8 @@
 import argparse
 import copy
 import logging
+import os
+from pathlib import Path
 import sys
 import typing
 import xml.etree.ElementTree as ET
@@ -17,6 +19,87 @@ def strtobool(val: typing.Union[str, int, bool]) -> bool:
     origin: https://stackoverflow.com/a/715468/17094594
     """
     return str(val).lower() in ("yes", "true", "t", "1")
+
+
+def validate_file_path(file_path: str, mode: str = "r", base_dir: typing.Optional[str] = None) -> typing.TextIO:
+    """Validates and sanitizes file paths to prevent directory traversal attacks (CWE-22).
+    
+    This function implements comprehensive security checks to prevent path traversal
+    vulnerabilities. It ensures file paths cannot escape the base directory through
+    directory traversal sequences (../, ../../, etc.), symlink attacks, or other
+    path manipulation techniques.
+    
+    Security measures:
+    - Input sanitization (null byte detection)
+    - Directory traversal pattern detection
+    - Path canonicalization using pathlib.Path.resolve()
+    - Strict base directory boundary enforcement
+    
+    Args:
+        file_path (str): The file path to validate.
+        mode (str): The file open mode ('r' for read, 'w' for write).
+        base_dir (typing.Optional[str]): The base directory to restrict access to.
+                                         Defaults to current working directory.
+    
+    Returns:
+        typing.TextIO: The opened file object.
+    
+    Raises:
+        ValueError: If the path contains directory traversal sequences or escapes base_dir.
+        FileNotFoundError: If the file doesn't exist (read mode).
+        PermissionError: If the file can't be accessed.
+    """
+    # Set base directory to current working directory if not specified
+    if base_dir is None:
+        base_dir = os.getcwd()
+    
+    # Security check 1: Detect null bytes (CWE-158 - path truncation attack)
+    if "\0" in file_path:
+        raise ValueError(
+            f"Security violation: Path '{file_path}' contains null bytes"
+        )
+    
+    # Security check 2: Detect directory traversal sequences in raw input (CWE-22)
+    # Check before any normalization to catch malicious patterns early
+    dangerous_patterns = ["..", "..\\", "../", "..\\\\"]
+    for pattern in dangerous_patterns:
+        if pattern in file_path:
+            raise ValueError(
+                f"Security violation: Path '{file_path}' contains directory traversal sequence"
+            )
+    
+    # Security check 3: Use pathlib for secure path resolution
+    try:
+        # Convert to Path objects
+        base_path = Path(base_dir).resolve()
+        
+        # Resolve the target path (handles symlinks, relative paths, etc.)
+        # Construct path relative to base to prevent absolute path injection
+        target_path = (base_path / file_path).resolve()
+        
+        # Security check 4: Verify resolved path is within base directory
+        # This is the critical security boundary check
+        try:
+            # Python 3.9+ has is_relative_to()
+            if hasattr(target_path, 'is_relative_to'):
+                if not target_path.is_relative_to(base_path):
+                    raise ValueError(
+                        f"Security violation: Path escapes allowed directory"
+                    )
+            else:
+                # Python < 3.9 fallback using relative_to()
+                target_path.relative_to(base_path)
+        except ValueError:
+            raise ValueError(
+                f"Security violation: Path '{file_path}' resolves outside allowed directory"
+            )
+        
+        # All security checks passed, safe to open the file
+        return target_path.open(mode)
+        
+    except (OSError, RuntimeError) as e:
+        logger.error(f"Failed to validate or open file '{file_path}': {e}")
+        raise ValueError(f"Invalid file path '{file_path}': {e}")
 
 
 # see ``XMLParser::Pimpl::createNodeFromXML`` for all underscores
@@ -136,15 +219,15 @@ def main():
     parser.add_argument(
         "-i",
         "--in_file",
-        type=argparse.FileType("r"),
+        type=str,
         help="The file to convert from (v3). If absent, reads xml string from stdin.",
     )
     parser.add_argument(
         "-o",
         "--out_file",
         nargs="?",
-        type=argparse.FileType("w"),
-        default=sys.stdout,
+        type=str,
+        default=None,
         help="The file to write the converted xml (V4)."
         " Prints to stdout if not specified.",
     )
@@ -152,21 +235,40 @@ def main():
     class ArgsType(typing.NamedTuple):
         """Dummy class to provide type hinting to arguments parsed with argparse"""
 
-        in_file: typing.Optional[typing.TextIO]
-        out_file: typing.TextIO
+        in_file: typing.Optional[str]
+        out_file: typing.Optional[str]
 
     args: ArgsType = parser.parse_args()
 
+    # Validate and open input file
+    in_stream: typing.TextIO
     if args.in_file is None:
         if not sys.stdin.isatty():
-            args.in_file = sys.stdin
+            in_stream = sys.stdin
         else:
             logging.error(
                 "The input file was not specified, nor a stdin stream was detected."
             )
             sys.exit(1)
+    else:
+        try:
+            in_stream = validate_file_path(args.in_file, "r")
+        except (ValueError, FileNotFoundError, PermissionError) as e:
+            logging.error(f"Invalid input file: {e}")
+            sys.exit(1)
 
-    convert_stream(args.in_file, args.out_file)
+    # Validate and open output file
+    out_stream: typing.TextIO
+    if args.out_file is None:
+        out_stream = sys.stdout
+    else:
+        try:
+            out_stream = validate_file_path(args.out_file, "w")
+        except (ValueError, PermissionError, OSError) as e:
+            logging.error(f"Invalid output file: {e}")
+            sys.exit(1)
+
+    convert_stream(in_stream, out_stream)
 
 
 if __name__ == "__main__":
