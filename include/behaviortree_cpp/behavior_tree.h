@@ -33,6 +33,7 @@
 #include "behaviortree_cpp/controls/sequence_node.h"
 #include "behaviortree_cpp/controls/sequence_with_memory_node.h"
 #include "behaviortree_cpp/controls/switch_node.h"
+#include "behaviortree_cpp/controls/try_catch_node.h"
 #include "behaviortree_cpp/controls/while_do_else_node.h"
 #include "behaviortree_cpp/decorators/delay_node.h"
 #include "behaviortree_cpp/decorators/force_failure_node.h"
