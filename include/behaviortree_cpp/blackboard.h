@@ -300,8 +300,10 @@ inline void Blackboard::set(const std::string& key, const T& value)
                         GetAnyFromStringFunctor<T>());
       entry = createEntryImpl(key, new_port);
     }
-    storage_lock.lock();
 
+    // Lock entry_mutex before writing to prevent data races with
+    // concurrent readers (BUG-1/BUG-8 fix).
+    std::scoped_lock entry_lock(entry->entry_mutex);
     entry->value = new_value;
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
@@ -310,8 +312,11 @@ inline void Blackboard::set(const std::string& key, const T& value)
   {
     // this is not the first time we set this entry, we need to check
     // if the type is the same or not.
-    Entry& entry = *it->second;
+    // Copy shared_ptr to prevent use-after-free if another thread
+    // calls unset() while we hold the reference (BUG-2 fix).
+    auto entry_ptr = it->second;
     storage_lock.unlock();
+    Entry& entry = *entry_ptr;
 
     std::scoped_lock scoped_lock(entry.entry_mutex);
 
