@@ -55,6 +55,7 @@ set(BT_TESTS
   gtest_simple_string.cpp
   gtest_polymorphic_ports.cpp
   gtest_plugin_issue953.cpp
+  gtest_xml_null_subtree_id.cpp
 
   script_parser_test.cpp
   test_helper.hpp
