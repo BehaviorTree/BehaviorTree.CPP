@@ -60,7 +60,7 @@ Blackboard::getEntry(const std::string& key) const
   }
 
   {
-    const std::unique_lock<std::mutex> storage_lock(storage_mutex_);
+    const std::shared_lock<std::shared_mutex> storage_lock(storage_mutex_);
     auto it = storage_.find(key);
     if(it != storage_.end())
     {
@@ -103,9 +103,9 @@ void Blackboard::addSubtreeRemapping(StringView internal, StringView external)
 
 void Blackboard::debugMessage() const
 {
-  // Lock storage_mutex_ to prevent iterator invalidation from
+  // Lock storage_mutex_ (shared) to prevent iterator invalidation from
   // concurrent modifications (BUG-5 fix).
-  const std::unique_lock<std::mutex> storage_lock(storage_mutex_);
+  const std::shared_lock<std::shared_mutex> storage_lock(storage_mutex_);
   for(const auto& [key, entry] : storage_)
   {
     auto port_type = entry->info.type();
@@ -139,9 +139,9 @@ void Blackboard::debugMessage() const
 
 std::vector<StringView> Blackboard::getKeys() const
 {
-  // Lock storage_mutex_ to prevent iterator invalidation and
+  // Lock storage_mutex_ (shared) to prevent iterator invalidation and
   // dangling StringView from concurrent modifications (BUG-6 fix).
-  const std::unique_lock<std::mutex> storage_lock(storage_mutex_);
+  const std::shared_lock<std::shared_mutex> storage_lock(storage_mutex_);
   if(storage_.empty())
   {
     return {};
@@ -157,13 +157,8 @@ std::vector<StringView> Blackboard::getKeys() const
 
 void Blackboard::clear()
 {
-  const std::unique_lock<std::mutex> storage_lock(storage_mutex_);
+  const std::unique_lock<std::shared_mutex> storage_lock(storage_mutex_);
   storage_.clear();
-}
-
-std::recursive_mutex& Blackboard::entryMutex() const
-{
-  return entry_mutex_;
 }
 
 void Blackboard::createEntry(const std::string& key, const TypeInfo& info)
@@ -203,8 +198,8 @@ void Blackboard::cloneInto(Blackboard& dst) const
 
   // Step 1: snapshot src/dst entries under both storage_mutex_ locks.
   {
-    std::unique_lock<std::mutex> lk1(storage_mutex_, std::defer_lock);
-    std::unique_lock<std::mutex> lk2(dst.storage_mutex_, std::defer_lock);
+    std::shared_lock<std::shared_mutex> lk1(storage_mutex_, std::defer_lock);
+    std::unique_lock<std::shared_mutex> lk2(dst.storage_mutex_, std::defer_lock);
     std::lock(lk1, lk2);
 
     std::unordered_set<std::string> dst_keys;
@@ -263,7 +258,7 @@ void Blackboard::cloneInto(Blackboard& dst) const
   // Step 3: insert new entries and remove stale ones under dst.storage_mutex_.
   if(!new_entries.empty() || !keys_to_remove.empty())
   {
-    const std::unique_lock<std::mutex> dst_lock(dst.storage_mutex_);
+    const std::unique_lock<std::shared_mutex> dst_lock(dst.storage_mutex_);
     for(auto& [key, entry] : new_entries)
     {
       dst.storage_.insert({ key, std::move(entry) });
@@ -287,7 +282,7 @@ Blackboard::Ptr Blackboard::parent()
 std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string& key,
                                                                const TypeInfo& info)
 {
-  const std::unique_lock<std::mutex> storage_lock(storage_mutex_);
+  const std::unique_lock<std::shared_mutex> storage_lock(storage_mutex_);
   // This function might be called recursively, when we do remapping, because we move
   // to the top scope to find already existing  entries
 

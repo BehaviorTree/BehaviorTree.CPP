@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 
@@ -127,9 +128,6 @@ public:
   [[deprecated("This command is unsafe. Consider using Backup/Restore instead")]] void
   clear();
 
-  [[deprecated("Use getAnyLocked to access safely an Entry")]] std::recursive_mutex&
-  entryMutex() const;
-
   void createEntry(const std::string& key, const TypeInfo& info);
 
   /**
@@ -179,8 +177,7 @@ public:
   [[nodiscard]] Expected<T> tryCastWithPolymorphicFallback(const Any* any) const;
 
 private:
-  mutable std::mutex storage_mutex_;
-  mutable std::recursive_mutex entry_mutex_;
+  mutable std::shared_mutex storage_mutex_;
   std::unordered_map<std::string, std::shared_ptr<Entry>> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
@@ -279,7 +276,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     rootBlackboard()->set(key.substr(1, key.size() - 1), value);
     return;
   }
-  std::unique_lock storage_lock(storage_mutex_);
+  std::shared_lock storage_lock(storage_mutex_);
 
   // check local storage
   auto it = storage_.find(key);
