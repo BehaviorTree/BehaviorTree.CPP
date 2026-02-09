@@ -46,6 +46,7 @@ set(BT_TESTS
   gtest_subtree.cpp
   gtest_switch.cpp
   gtest_tree.cpp
+  gtest_try_catch.cpp
   gtest_exception_tracking.cpp
   gtest_updates.cpp
   gtest_wakeup.cpp
@@ -54,6 +55,8 @@ set(BT_TESTS
   gtest_simple_string.cpp
   gtest_polymorphic_ports.cpp
   gtest_plugin_issue953.cpp
+  gtest_blackboard_thread_safety.cpp
+  gtest_xml_null_subtree_id.cpp
 
   script_parser_test.cpp
   test_helper.hpp

@@ -131,6 +131,7 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
   registerNodeType<ReactiveFallback>("ReactiveFallback");
   registerNodeType<IfThenElseNode>("IfThenElse");
   registerNodeType<WhileDoElseNode>("WhileDoElse");
+  registerNodeType<TryCatchNode>("TryCatch");
 
   registerNodeType<InverterNode>("Inverter");
 

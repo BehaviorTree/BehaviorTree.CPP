@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 
@@ -127,9 +128,6 @@ public:
   [[deprecated("This command is unsafe. Consider using Backup/Restore instead")]] void
   clear();
 
-  [[deprecated("Use getAnyLocked to access safely an Entry")]] std::recursive_mutex&
-  entryMutex() const;
-
   void createEntry(const std::string& key, const TypeInfo& info);
 
   /**
@@ -179,8 +177,7 @@ public:
   [[nodiscard]] Expected<T> tryCastWithPolymorphicFallback(const Any* any) const;
 
 private:
-  mutable std::mutex storage_mutex_;
-  mutable std::recursive_mutex entry_mutex_;
+  mutable std::shared_mutex storage_mutex_;
   std::unordered_map<std::string, std::shared_ptr<Entry>> storage_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
@@ -279,7 +276,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     rootBlackboard()->set(key.substr(1, key.size() - 1), value);
     return;
   }
-  std::unique_lock storage_lock(storage_mutex_);
+  std::shared_lock storage_lock(storage_mutex_);
 
   // check local storage
   auto it = storage_.find(key);
@@ -300,8 +297,10 @@ inline void Blackboard::set(const std::string& key, const T& value)
                         GetAnyFromStringFunctor<T>());
       entry = createEntryImpl(key, new_port);
     }
-    storage_lock.lock();
 
+    // Lock entry_mutex before writing to prevent data races with
+    // concurrent readers (BUG-1/BUG-8 fix).
+    std::scoped_lock entry_lock(entry->entry_mutex);
     entry->value = new_value;
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
@@ -310,8 +309,11 @@ inline void Blackboard::set(const std::string& key, const T& value)
   {
     // this is not the first time we set this entry, we need to check
     // if the type is the same or not.
-    Entry& entry = *it->second;
+    // Copy shared_ptr to prevent use-after-free if another thread
+    // calls unset() while we hold the reference (BUG-2 fix).
+    auto entry_ptr = it->second;
     storage_lock.unlock();
+    Entry& entry = *entry_ptr;
 
     std::scoped_lock scoped_lock(entry.entry_mutex);
 

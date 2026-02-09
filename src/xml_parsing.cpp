@@ -293,6 +293,11 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
         sub_node = sub_node->NextSiblingElement("SubTree"))
     {
       auto subtree_id = sub_node->Attribute("ID");
+      if(subtree_id == nullptr)
+      {
+        throw RuntimeError("Missing attribute 'ID' in SubTree element "
+                           "within TreeNodesModel");
+      }
       auto& subtree_model = subtree_models[subtree_id];
 
       const std::pair<const char*, BT::PortDirection> port_types[3] = {
@@ -307,13 +312,13 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
             port_node = port_node->NextSiblingElement(name))
         {
           BT::PortInfo port(direction);
-          auto name = port_node->Attribute("name");
-          if(name == nullptr)
+          auto port_name = port_node->Attribute("name");
+          if(port_name == nullptr)
           {
             throw RuntimeError("Missing attribute [name] in port (SubTree model)");
           }
           // Validate port name
-          validatePortName(name, port_node->GetLineNum());
+          validatePortName(port_name, port_node->GetLineNum());
           if(auto default_value = port_node->Attribute("default"))
           {
             port.setDefaultValue(default_value);
@@ -322,7 +327,7 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
           {
             port.setDescription(description);
           }
-          subtree_model.ports[name] = std::move(port);
+          subtree_model.ports[port_name] = std::move(port);
         }
       }
     }
@@ -626,6 +631,11 @@ void VerifyXML(const std::string& xml_text,
         {
           ThrowError(line_number, std::string("The node '") + registered_name +
                                       "' must have 1 or more children");
+        }
+        if(registered_name == "TryCatch" && children_count < 2)
+        {
+          ThrowError(line_number, std::string("The node 'TryCatch' must have "
+                                              "at least 2 children"));
         }
         if(registered_name == "ReactiveSequence")
         {
