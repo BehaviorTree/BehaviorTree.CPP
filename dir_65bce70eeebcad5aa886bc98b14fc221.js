@@ -10,5 +10,6 @@ var dir_65bce70eeebcad5aa886bc98b14fc221 =
     [ "sequence_node.h", "d0/dc6/sequence__node_8h_source.html", null ],
     [ "sequence_with_memory_node.h", "df/da2/sequence__with__memory__node_8h_source.html", null ],
     [ "switch_node.h", "d3/d2f/switch__node_8h_source.html", null ],
+    [ "try_catch_node.h", "d9/d64/try__catch__node_8h_source.html", null ],
     [ "while_do_else_node.h", "de/dfa/while__do__else__node_8h_source.html", null ]
 ];

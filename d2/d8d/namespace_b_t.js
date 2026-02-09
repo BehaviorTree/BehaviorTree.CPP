@@ -87,6 +87,7 @@ var namespace_b_t =
     [ "TreeNode", "da/d61/class_b_t_1_1_tree_node.html", "da/d61/class_b_t_1_1_tree_node" ],
     [ "TreeNodeManifest", "dc/d6c/struct_b_t_1_1_tree_node_manifest.html", null ],
     [ "TreeObserver", "d2/d2b/class_b_t_1_1_tree_observer.html", "d2/d2b/class_b_t_1_1_tree_observer" ],
+    [ "TryCatchNode", "d4/dc5/class_b_t_1_1_try_catch_node.html", "d4/dc5/class_b_t_1_1_try_catch_node" ],
     [ "TypeInfo", "d0/d34/class_b_t_1_1_type_info.html", null ],
     [ "UnsetBlackboardNode", "d1/d77/class_b_t_1_1_unset_blackboard_node.html", null ],
     [ "WakeUpSignal", "da/d2f/class_b_t_1_1_wake_up_signal.html", "da/d2f/class_b_t_1_1_wake_up_signal" ],

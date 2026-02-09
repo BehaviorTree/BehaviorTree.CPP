@@ -13,5 +13,6 @@ var searchData=
   ['treenode_10',['TreeNode',['../da/d61/class_b_t_1_1_tree_node.html',1,'BT']]],
   ['treenodemanifest_11',['TreeNodeManifest',['../dc/d6c/struct_b_t_1_1_tree_node_manifest.html',1,'BT']]],
   ['treeobserver_12',['TreeObserver',['../d2/d2b/class_b_t_1_1_tree_observer.html',1,'BT']]],
-  ['typeinfo_13',['TypeInfo',['../d0/d34/class_b_t_1_1_type_info.html',1,'BT']]]
+  ['trycatchnode_13',['TryCatchNode',['../d4/dc5/class_b_t_1_1_try_catch_node.html',1,'BT']]],
+  ['typeinfo_14',['TypeInfo',['../d0/d34/class_b_t_1_1_type_info.html',1,'BT']]]
 ];

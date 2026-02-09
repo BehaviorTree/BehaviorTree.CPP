@@ -74,6 +74,7 @@ var hierarchy =
         [ "BT::SequenceNode", "d9/ddd/class_b_t_1_1_sequence_node.html", null ],
         [ "BT::SequenceWithMemory", "de/d69/class_b_t_1_1_sequence_with_memory.html", null ],
         [ "BT::SwitchNode< NUM_CASES >", "dc/dae/class_b_t_1_1_switch_node.html", null ],
+        [ "BT::TryCatchNode", "d4/dc5/class_b_t_1_1_try_catch_node.html", null ],
         [ "BT::WhileDoElseNode", "d7/d54/class_b_t_1_1_while_do_else_node.html", null ]
       ] ],
       [ "BT::DecoratorNode", "d1/de7/class_b_t_1_1_decorator_node.html", [

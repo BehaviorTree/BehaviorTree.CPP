@@ -1,0 +1,6 @@
+<map id="BT::TryCatchNode" name="BT::TryCatchNode">
+<area shape="rect" id="node1" title="The TryCatch node executes children 1..N&#45;1 as a Sequence (&quot;try&quot; block)." alt="" coords="5,256,141,281"/>
+<area shape="rect" id="node2" href="$d6/ddb/class_b_t_1_1_control_node.html" title="The ControlNode is the base class for nodes that can have multiple children." alt="" coords="10,181,137,207"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="20,5,127,31"/>
+<area shape="rect" id="node4" title=" " alt="" coords="90,93,307,119"/>
+</map>
