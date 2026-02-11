@@ -181,12 +181,45 @@ void validateInstanceName(const std::string& name, int line_number)
   }
 }
 
-}  // namespace
-
 struct SubtreeModel
 {
   std::unordered_map<std::string, BT::PortInfo> ports;
 };
+
+void parseSubtreeModelPorts(const XMLElement* sub_node, SubtreeModel& subtree_model)
+{
+  const std::pair<const char*, PortDirection> port_types[3] = {
+    { "input_port", PortDirection::INPUT },
+    { "output_port", PortDirection::OUTPUT },
+    { "inout_port", PortDirection::INOUT }
+  };
+
+  for(const auto& [name, direction] : port_types)
+  {
+    for(auto port_node = sub_node->FirstChildElement(name); port_node != nullptr;
+        port_node = port_node->NextSiblingElement(name))
+    {
+      PortInfo port(direction);
+      auto port_name = port_node->Attribute("name");
+      if(port_name == nullptr)
+      {
+        throw RuntimeError("Missing attribute [name] in port (SubTree model)");
+      }
+      validatePortName(port_name, port_node->GetLineNum());
+      if(auto default_value = port_node->Attribute("default"))
+      {
+        port.setDefaultValue(default_value);
+      }
+      if(auto description = port_node->Attribute("description"))
+      {
+        port.setDescription(description);
+      }
+      subtree_model.ports[port_name] = std::move(port);
+    }
+  }
+}
+
+}  // namespace
 
 struct XMLParser::PImpl
 {
@@ -298,38 +331,7 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
         throw RuntimeError("Missing attribute 'ID' in SubTree element "
                            "within TreeNodesModel");
       }
-      auto& subtree_model = subtree_models[subtree_id];
-
-      const std::pair<const char*, BT::PortDirection> port_types[3] = {
-        { "input_port", BT::PortDirection::INPUT },
-        { "output_port", BT::PortDirection::OUTPUT },
-        { "inout_port", BT::PortDirection::INOUT }
-      };
-
-      for(const auto& [name, direction] : port_types)
-      {
-        for(auto port_node = sub_node->FirstChildElement(name); port_node != nullptr;
-            port_node = port_node->NextSiblingElement(name))
-        {
-          BT::PortInfo port(direction);
-          auto port_name = port_node->Attribute("name");
-          if(port_name == nullptr)
-          {
-            throw RuntimeError("Missing attribute [name] in port (SubTree model)");
-          }
-          // Validate port name
-          validatePortName(port_name, port_node->GetLineNum());
-          if(auto default_value = port_node->Attribute("default"))
-          {
-            port.setDefaultValue(default_value);
-          }
-          if(auto description = port_node->Attribute("description"))
-          {
-            port.setDescription(description);
-          }
-          subtree_model.ports[port_name] = std::move(port);
-        }
-      }
+      parseSubtreeModelPorts(sub_node, subtree_models[subtree_id]);
     }
   }
 }

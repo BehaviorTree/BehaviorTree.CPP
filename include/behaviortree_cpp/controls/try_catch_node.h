@@ -56,14 +56,14 @@ public:
                              "the node is halted during the try-block") };
   }
 
-  virtual void halt() override;
+  void halt() override;
 
 private:
-  size_t current_child_idx_;
-  size_t skipped_count_;
-  bool in_catch_;
+  size_t current_child_idx_ = 0;
+  size_t skipped_count_ = 0;
+  bool in_catch_ = false;
 
-  virtual BT::NodeStatus tick() override;
+  BT::NodeStatus tick() override;
 };
 
 }  // namespace BT

@@ -16,9 +16,6 @@ namespace BT
 {
 TryCatchNode::TryCatchNode(const std::string& name, const NodeConfig& config)
   : ControlNode::ControlNode(name, config)
-  , current_child_idx_(0)
-  , skipped_count_(0)
-  , in_catch_(false)
 {
   setRegistrationID("TryCatch");
 }
