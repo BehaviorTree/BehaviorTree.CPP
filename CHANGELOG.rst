@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.9.0 (2026-02-11)
+------------------
 * Fix Blackboard thread-safety: 6 data races fixed, use shared_mutex for storage
 * Fix XML parser null pointer dereference in loadSubtreeModel on missing SubTree ID
 * Add TryCatch control node for try/catch recovery patterns
