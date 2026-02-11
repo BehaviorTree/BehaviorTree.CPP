@@ -5,7 +5,7 @@
 [![pixi (Conda)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml/badge.svg)](https://github.com/BehaviorTree/BehaviorTree.CPP/actions/workflows/pixi.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/BehaviorTree/BehaviorTree.CPP/badge.svg?branch=master)](https://coveralls.io/github/BehaviorTree/BehaviorTree.CPP?branch=master)
 
-# BehaviorTree.CPP 4.8
+# BehaviorTree.CPP 4.9
 
 <p align="center"><img width=350 src="animated.svg"></p>
 
@@ -126,7 +126,7 @@ only in the master branch.
 
 The MIT License (MIT)
 
-Copyright (c) 2019-2025 Davide Faconti
+Copyright (c) 2019-2026 Davide Faconti
 
 Copyright (c) 2018-2019 Davide Faconti, Eurecat
 

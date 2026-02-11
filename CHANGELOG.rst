@@ -2,6 +2,51 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Blackboard thread-safety: 6 data races fixed, use shared_mutex for storage
+* Fix XML parser null pointer dereference in loadSubtreeModel on missing SubTree ID
+* Add TryCatch control node for try/catch recovery patterns
+* Fix `#1111 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1111>`_: EntryUpdatedDecorator::halt() not halting its child (`#1112 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1112>`_)
+* Add polymorphic shared_ptr port support (`#943 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/943>`_) (`#1107 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1107>`_)
+* Fix `std::from_chars` compilation on older g++ versions (`#1110 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1110>`_)
+* Fix clang-tidy warnings across tests, examples, and samples (`#1109 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1109>`_)
+* Add exception tracking with node backtrace (`#990 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/990>`_) (`#1106 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1106>`_)
+* Fix `#861 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/861>`_
+* Fix `#917 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/917>`_: add comments about preconditions
+* Fix missing read_parameter_from_ports initialization in DelayNode (`#1103 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1103>`_)
+* Fix `#880 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/880>`_: createTreeFromText now finds previously registered subtrees (`#1105 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1105>`_)
+* Remove lexy dependency, replace with hand-written tokenizer and Pratt parser (`#1099 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1099>`_)
+* Fix `#953 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/953>`_: getInput() now uses stored converter for plugin custom types (`#1104 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1104>`_)
+* Improve test suite quality and coverage (`#1102 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1102>`_)
+* Fix Groot2Publisher destructor infinite loop (`#1057 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1057>`_) (`#1100 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1100>`_)
+* Fix misleading static_assert when extra args have wrong type (`#837 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/837>`_) (`#1098 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1098>`_)
+* Fix DelayNode ignoring delay_msec when created from XML (`#1097 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1097>`_)
+* Fix Windows build issues (`#762 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/762>`_, `#869 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/869>`_, `#836 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/836>`_) (`#1089 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1089>`_)
+* Fix `#989 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/989>`_: JsonExporter use-after-move in vector converter registration (`#1090 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1090>`_)
+* Fix `#672 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/672>`_: reject deeply-nested/recursive XML to prevent stack overflow (`#1091 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1091>`_)
+* Fix `#930 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/930>`_: mock substitution hangs when TestNodeConfigs is absent (`#1086 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1086>`_)
+* Detect recursive subtree cycles at parse time (`#979 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/979>`_) (`#1085 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1085>`_)
+* Fix `#1046 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1046>`_: use-after-free when factory destroyed before tree (`#1081 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1081>`_)
+* Fix `#934 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/934>`_: segfault when substituting a SubTree node (`#1083 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1083>`_)
+* Fix `#937 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/937>`_: enable returning BehaviorTreeFactory by value (`#1082 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1082>`_)
+* Add vcpkg installation instructions (`#421 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/421>`_)
+* Fix `#942 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/942>`_: getLockedPortContent creates entry for default-remapped ports (`#1078 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1078>`_)
+* Add code coverage CI with Codecov, Coveralls, Codacy, and SonarCloud (`#1068 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1068>`_)
+* Fix Groot2Publisher destructor infinite loop (`#1058 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1058>`_)
+* Remove deprecated `std::aligned_storage` (`#1061 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1061>`_)
+* Add regression test for `#1065 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1065>`_: subtree string literal to LoopDouble (`#1072 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1072>`_)
+* Add regression test for `#858 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/858>`_: getInput with default port value (`#1076 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1076>`_)
+* Add regression test for `#832 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/832>`_: script compare with negative number (`#1071 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1071>`_)
+* Add regression test for `#923 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/923>`_: ValidateScript OOB read with large scripts (`#1070 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1070>`_)
+* Fix `#948 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/948>`_: parseString supports enums with convertFromString specializations (`#1075 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1075>`_)
+* Fix `#982 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/982>`_: handle json: prefix in vector convertFromString specializations (`#1073 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1073>`_)
+* Fix `#408 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/408>`_: debugMessage shows type info for remapped subtree entries (`#1079 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1079>`_)
+* Fix `#969 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/969>`_: LoopNode accepts std::vector<T> in addition to SharedQueue<T> (`#1074 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1074>`_)
+* Fix `#1029 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1029>`_: correct left-associativity for arithmetic operators in script parser (`#1069 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1069>`_)
+* Generate .clangd in PROJECT_SOURCE_DIR for submodule/FetchContent support (`#1059 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1059>`_)
+* Contributors: Christoph Hertzberg, Copilot, Davide Faconti, Frank, Vincent PALANCHER, alvintps, dependabot[bot]
+
 4.8.4 (2026-01-09)
 ------------------
 * extend the Groot example to reproduce issues with arrays
