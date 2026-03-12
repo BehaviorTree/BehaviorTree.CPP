@@ -12,10 +12,12 @@
 
 #include "behaviortree_cpp/basic_types.h"
 
+#include <charconv>
 #include <cstdio>
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <limits>
 #include <list>
 #include <sstream>
 #include <string>
@@ -1149,10 +1151,59 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
         }
         else
         {
-          // constant string: just set that constant value into the BB
+          // constant value: set it into the BB with appropriate type
           // IMPORTANT: this must not be autoremapped!!!
           new_bb->enableAutoRemapping(false);
-          new_bb->set(attr_name, static_cast<std::string>(attr_value));
+          const std::string str_value(attr_value);
+
+          // Try to preserve numeric types so that Script expressions
+          // can perform arithmetic without type-mismatch errors.
+          // Use std::from_chars with strict full-string validation to avoid
+          // false positives on compound strings like "1;2;3" or "2.2;2.4".
+          bool stored = false;
+          if(!str_value.empty())
+          {
+            const char* begin = str_value.data();
+            const char* end = begin + str_value.size();
+            // Try integer first (no decimal point, no exponent notation).
+            // Use int when the value fits, to match the most common port
+            // declarations. Fall back to int64_t for larger values.
+            if(str_value.find('.') == std::string::npos &&
+               str_value.find('e') == std::string::npos &&
+               str_value.find('E') == std::string::npos)
+            {
+              int64_t int_val = 0;
+              auto [ptr, ec] = std::from_chars(begin, end, int_val);
+              if(ec == std::errc() && ptr == end)
+              {
+                if(int_val >= std::numeric_limits<int>::min() &&
+                   int_val <= std::numeric_limits<int>::max())
+                {
+                  new_bb->set(attr_name, static_cast<int>(int_val));
+                }
+                else
+                {
+                  new_bb->set(attr_name, int_val);
+                }
+                stored = true;
+              }
+            }
+            // Try double
+            if(!stored)
+            {
+              double dbl_val = 0;
+              auto [ptr, ec] = std::from_chars(begin, end, dbl_val);
+              if(ec == std::errc() && ptr == end)
+              {
+                new_bb->set(attr_name, dbl_val);
+                stored = true;
+              }
+            }
+          }
+          if(!stored)
+          {
+            new_bb->set(attr_name, str_value);
+          }
           new_bb->enableAutoRemapping(do_autoremap);
         }
       }
