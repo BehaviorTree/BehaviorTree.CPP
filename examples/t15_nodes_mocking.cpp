@@ -14,8 +14,14 @@ const char* xml_text = R"(
 
       <SubTree ID="MySub" name="mysub"/>
 
-      <Script name="set_message" code="msg:= 'the original message' "/>
-      <SaySomething message="{msg}"/>
+      <Script name="set_mock_flag" code="mock_should_fail:= false"/>
+      <Fallback name="report_mock_message">
+        <Sequence>
+          <Script name="set_message" code="msg:= 'the original message' "/>
+          <SaySomething message="{msg}"/>
+        </Sequence>
+        <SaySomething message="{msg}"/>
+      </Fallback>
 
       <Sequence name="counting">
         <SaySomething message="1"/>
@@ -39,7 +45,14 @@ const char* xml_text = R"(
 
 /**
  * @brief In this example we will see how we can substitute some nodes
- * in the Tree above with
+ * in the Tree above with mocks.
+ *
+ * This variant is optimized for observability: even when the substituted
+ * TestNode resolves to FAILURE, a Fallback logs the final message from inside
+ * the tree.
+ *
+ * See t15_nodes_mocking_strict_failure.cpp for the companion example that
+ * preserves strict failure propagation instead.
  * @param argc
  * @param argv
  * @return
@@ -90,12 +103,16 @@ int main(int /*argc*/, char** /*argv*/)
 
   // This is the configuration passed to the TestNode
   BT::TestNodeConfig test_config;
-  // we want this to return always SUCCESS
-  test_config.return_status = BT::NodeStatus::SUCCESS;
+  // the returned status can also be computed from a script.
+    // Change mock_should_fail to true in the XML above to see the failure path.
+  test_config.return_status.reset();
+  test_config.return_status_script =
+      "(mock_should_fail == true) ? FAILURE : SUCCESS";
   // Convert the node in asynchronous and wait 2000 ms
   test_config.async_delay = std::chrono::milliseconds(2000);
-  // Execute this postcondition, once completed
-  test_config.post_script = "msg := 'message SUBSTITUTED' ";
+  // Execute a different script depending on the resolved return status.
+  test_config.success_script = "msg := 'message SUBSTITUTED' ";
+  test_config.failure_script = "msg := 'message FAILURE branch' ";
 
   // this will be synchronous (async_delay is 0)
   BT::TestNodeConfig counting_config;
@@ -130,8 +147,9 @@ int main(int /*argc*/, char** /*argv*/)
       "TestNodeConfigs": {
         "NewMessage": {
           "async_delay": 2000,
-          "return_status": "SUCCESS",
-          "post_script": "msg ='message SUBSTITUTED'"
+          "return_status_script": "(mock_should_fail == true) ? FAILURE : SUCCESS",
+          "success_script": "msg ='message SUBSTITUTED'",
+          "failure_script": "msg ='message FAILURE branch'"
         },
         "NoCounting": {
           "return_status": "SUCCESS"
@@ -169,12 +187,16 @@ mysub
 mysub/Sequence::4
 mysub/action_subA
 mysub/action_subB
+set_mock_flag
+report_mock_message
+Sequence::9
 set_message
-SaySomething::8
-counting
-SaySomething::10
 SaySomething::11
 SaySomething::12
+counting
+SaySomething::14
+SaySomething::15
+SaySomething::16
 
 ------ Output (original) ------
 Robot says: hello world

@@ -19,13 +19,18 @@ const char* json_text = R"(
     },
     "TestB": {
       "return_status": "FAILURE"
+    },
+    "TestScript": {
+      "return_status_script": "(mock_should_fail == true) ? FAILURE : SUCCESS",
+      "failure_script": "branch := 'failure'"
     }
   },
 
   "SubstitutionRules": {
     "actionA": "TestA",
     "actionB": "TestB",
-    "actionC": "NotAConfig"
+    "actionC": "NotAConfig",
+    "actionD": "TestScript"
   }
 }
  )";
@@ -40,22 +45,174 @@ TEST(Substitution, Parser)
 
   const auto& rules = factory.substitutionRules();
 
-  ASSERT_EQ(rules.size(), 3);
+  ASSERT_EQ(rules.size(), 4);
   ASSERT_EQ(rules.count("actionA"), 1);
   ASSERT_EQ(rules.count("actionB"), 1);
   ASSERT_EQ(rules.count("actionC"), 1);
+  ASSERT_EQ(rules.count("actionD"), 1);
 
   auto configA = std::get_if<TestNodeConfig>(&rules.at("actionA"));
-  ASSERT_EQ(configA->return_status, NodeStatus::SUCCESS);
+  ASSERT_TRUE(configA->return_status.has_value());
+  ASSERT_EQ(configA->return_status.value(), NodeStatus::SUCCESS);
   ASSERT_EQ(configA->async_delay, std::chrono::milliseconds(2000));
   ASSERT_EQ(configA->post_script, "msg ='message SUBSTITUED'");
 
   auto configB = std::get_if<TestNodeConfig>(&rules.at("actionB"));
-  ASSERT_EQ(configB->return_status, NodeStatus::FAILURE);
+  ASSERT_TRUE(configB->return_status.has_value());
+  ASSERT_EQ(configB->return_status.value(), NodeStatus::FAILURE);
   ASSERT_EQ(configB->async_delay, std::chrono::milliseconds(0));
   ASSERT_TRUE(configB->post_script.empty());
 
+  auto configScript = std::get_if<TestNodeConfig>(&rules.at("actionD"));
+  ASSERT_FALSE(configScript->return_status.has_value());
+  ASSERT_EQ(configScript->return_status_script,
+            "(mock_should_fail == true) ? FAILURE : SUCCESS");
+  ASSERT_EQ(configScript->failure_script, "branch := 'failure'");
+
   ASSERT_EQ(*std::get_if<std::string>(&rules.at("actionC")), "NotAConfig");
+}
+
+TEST(Substitution, ParserRejectsMissingReturnStatusAndScript)
+{
+  static const char* invalid_json = R"(
+  {
+    "TestNodeConfigs": {
+      "BrokenConfig": {
+        "post_script": "branch := 'unused'"
+      }
+    },
+    "SubstitutionRules": {
+      "actionA": "BrokenConfig"
+    }
+  }
+  )";
+
+  BehaviorTreeFactory factory;
+  ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(invalid_json), RuntimeError);
+}
+
+TEST(Substitution, ScriptedReturnStatusFromJson)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code="mock_should_fail := true"/>
+        <AlwaysSuccess name="action_A"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  static const char* json_rules = R"(
+  {
+    "TestNodeConfigs": {
+      "ConditionalMock": {
+        "return_status_script": "(mock_should_fail == true) ? FAILURE : SUCCESS",
+        "success_script": "branch := 'success'",
+        "failure_script": "branch := 'failure'"
+      }
+    },
+    "SubstitutionRules": {
+      "action_A": "ConditionalMock"
+    }
+  }
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.loadSubstitutionRuleFromJSON(json_rules);
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  auto blackboard = Blackboard::create();
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::FAILURE);
+  ASSERT_EQ(blackboard->get<std::string>("branch"), "failure");
+}
+
+TEST(Substitution, ScriptedReturnStatusOverridesFixedStatus)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code="mock_should_fail := true"/>
+        <AlwaysSuccess name="action_A"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  TestNodeConfig test_config;
+  test_config.return_status = NodeStatus::SUCCESS;
+  test_config.return_status_script =
+      "(mock_should_fail == true) ? FAILURE : SUCCESS";
+  test_config.failure_script = "branch := 'failure'";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto blackboard = Blackboard::create();
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::FAILURE);
+  ASSERT_EQ(blackboard->get<std::string>("branch"), "failure");
+}
+
+TEST(Substitution, ScriptedReturnStatusAsyncSubstitution)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code="mock_should_fail := false"/>
+        <AlwaysSuccess name="action_A"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  TestNodeConfig test_config;
+  test_config.return_status.reset();
+  test_config.return_status_script =
+      "(mock_should_fail == true) ? FAILURE : SUCCESS";
+  test_config.async_delay = std::chrono::milliseconds(50);
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto tree = factory.createTree("MainTree");
+  auto future =
+      std::async(std::launch::async, [&tree]() { return tree.tickWhileRunning(); });
+
+  auto status = future.wait_for(std::chrono::seconds(5));
+  ASSERT_NE(status, std::future_status::timeout)
+      << "Tree hung! tickWhileRunning did not complete within 5 seconds";
+  ASSERT_EQ(future.get(), NodeStatus::SUCCESS);
+}
+
+TEST(Substitution, ScriptedReturnStatusRejectsIdle)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <AlwaysSuccess name="action_A"/>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  TestNodeConfig test_config;
+  test_config.return_status.reset();
+  test_config.return_status_script = "IDLE";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto tree = factory.createTree("MainTree");
+  ASSERT_THROW(tree.tickWhileRunning(), RuntimeError);
 }
 
 // Regression test for issue #934: segfault when substituting a SubTree node

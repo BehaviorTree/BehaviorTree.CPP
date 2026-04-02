@@ -13,6 +13,10 @@
 
 #pragma once
 
+#include <memory>
+#include <optional>
+#include <string>
+
 #include "behaviortree_cpp/action_node.h"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 #include "behaviortree_cpp/utils/timer_queue.h"
@@ -22,8 +26,19 @@ namespace BT
 
 struct TestNodeConfig
 {
-  /// status to return when the action is completed.
-  NodeStatus return_status = NodeStatus::SUCCESS;
+  /// Status to return when the action is completed.
+  ///
+  /// If both return_status and return_status_script are specified,
+  /// return_status_script takes precedence.
+  std::optional<NodeStatus> return_status = NodeStatus::SUCCESS;
+
+  /// Optional script to compute the completion status dynamically.
+  ///
+  /// This script is evaluated when the TestNode completes, after any
+  /// async_delay has elapsed, using the current blackboard state.
+  /// The result must resolve to the same set of statuses supported by
+  /// return_status, except IDLE which is always rejected.
+  std::string return_status_script;
 
   /// script to execute when complete_func() returns SUCCESS
   std::string success_script;
@@ -38,7 +53,8 @@ struct TestNodeConfig
   std::chrono::milliseconds async_delay = std::chrono::milliseconds(0);
 
   /// Function invoked when the action is completed.
-  /// If not specified, the node will return [return_status]
+  /// If not specified, the node will use return_status_script when present,
+  /// otherwise it will return [return_status].
   std::function<NodeStatus(void)> complete_func;
 };
 
@@ -46,6 +62,7 @@ struct TestNodeConfig
  * @brief The TestNode is a Node that can be configure to:
  *
  * 1. Return a specific status (SUCCESS / FAILURE)
+ * 1.b Compute the returned status from a script evaluated at completion time
  * 2. Execute a post condition script (unless halted)
  * 3. Either complete immediately (synchronous action), or after a
  *    given period of time (asynchronous action)
@@ -79,15 +96,17 @@ public:
   }
 
 protected:
-  virtual NodeStatus onStart() override;
+  NodeStatus onStart() override;
 
-  virtual NodeStatus onRunning() override;
+  NodeStatus onRunning() override;
 
-  virtual void onHalted() override;
+  void onHalted() override;
 
   NodeStatus onCompleted();
 
   std::shared_ptr<TestNodeConfig> _config;
+  EnumsTablePtr _script_enums;
+  ScriptFunction _return_status_executor;
   ScriptFunction _success_executor;
   ScriptFunction _failure_executor;
   ScriptFunction _post_executor;
