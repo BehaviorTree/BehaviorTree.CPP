@@ -65,8 +65,8 @@ TEST(Substitution, Parser)
 
   auto configScript = std::get_if<TestNodeConfig>(&rules.at("actionD"));
   ASSERT_FALSE(configScript->return_status.has_value());
-  ASSERT_EQ(configScript->return_status_script,
-            "(mock_should_fail == true) ? FAILURE : SUCCESS");
+  ASSERT_EQ(configScript->return_status_script, "(mock_should_fail == true) ? FAILURE : "
+                                                "SUCCESS");
   ASSERT_EQ(configScript->failure_script, "branch := 'failure'");
 
   ASSERT_EQ(*std::get_if<std::string>(&rules.at("actionC")), "NotAConfig");
@@ -148,8 +148,7 @@ TEST(Substitution, ScriptedReturnStatusOverridesFixedStatus)
 
   TestNodeConfig test_config;
   test_config.return_status = NodeStatus::SUCCESS;
-  test_config.return_status_script =
-      "(mock_should_fail == true) ? FAILURE : SUCCESS";
+  test_config.return_status_script = "(mock_should_fail == true) ? FAILURE : SUCCESS";
   test_config.failure_script = "branch := 'failure'";
   factory.addSubstitutionRule("action_A", test_config);
 
@@ -178,8 +177,7 @@ TEST(Substitution, ScriptedReturnStatusAsyncSubstitution)
 
   TestNodeConfig test_config;
   test_config.return_status.reset();
-  test_config.return_status_script =
-      "(mock_should_fail == true) ? FAILURE : SUCCESS";
+  test_config.return_status_script = "(mock_should_fail == true) ? FAILURE : SUCCESS";
   test_config.async_delay = std::chrono::milliseconds(50);
   factory.addSubstitutionRule("action_A", test_config);
 
@@ -188,8 +186,8 @@ TEST(Substitution, ScriptedReturnStatusAsyncSubstitution)
       std::async(std::launch::async, [&tree]() { return tree.tickWhileRunning(); });
 
   auto status = future.wait_for(std::chrono::seconds(5));
-  ASSERT_NE(status, std::future_status::timeout)
-      << "Tree hung! tickWhileRunning did not complete within 5 seconds";
+  ASSERT_NE(status, std::future_status::timeout) << "Tree hung! tickWhileRunning did not "
+                                                    "complete within 5 seconds";
   ASSERT_EQ(future.get(), NodeStatus::SUCCESS);
 }
 

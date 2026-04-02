@@ -104,10 +104,9 @@ int main(int /*argc*/, char** /*argv*/)
   // This is the configuration passed to the TestNode
   BT::TestNodeConfig test_config;
   // the returned status can also be computed from a script.
-    // Change mock_should_fail to true in the XML above to see the failure path.
+  // Change mock_should_fail to true in the XML above to see the failure path.
   test_config.return_status.reset();
-  test_config.return_status_script =
-      "(mock_should_fail == true) ? FAILURE : SUCCESS";
+  test_config.return_status_script = "(mock_should_fail == true) ? FAILURE : SUCCESS";
   // Convert the node in asynchronous and wait 2000 ms
   test_config.async_delay = std::chrono::milliseconds(2000);
   // Execute a different script depending on the resolved return status.

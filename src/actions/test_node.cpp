@@ -33,8 +33,8 @@ void validateTestNodeStatus(NodeStatus status, StringView source)
 
 EnumsTablePtr createTestNodeEnums(const EnumsTablePtr& base_enums)
 {
-  auto enums = base_enums ? std::make_shared<EnumsTable>(*base_enums)
-                          : std::make_shared<EnumsTable>();
+  auto enums = base_enums ? std::make_shared<EnumsTable>(*base_enums) :
+                            std::make_shared<EnumsTable>();
 
   (*enums)["IDLE"] = static_cast<int>(NodeStatus::IDLE);
   (*enums)["RUNNING"] = static_cast<int>(NodeStatus::RUNNING);
@@ -90,8 +90,8 @@ TestNode::TestNode(const std::string& name, const NodeConfig& config,
   if(!_config->complete_func && !_config->return_status &&
      _config->return_status_script.empty())
   {
-    throw RuntimeError(
-        "TestNode requires one of complete_func, return_status, or return_status_script");
+    throw RuntimeError("TestNode requires one of complete_func, return_status, or "
+                       "return_status_script");
   }
 
   _script_enums = createTestNodeEnums(config.enums);
@@ -170,8 +170,8 @@ NodeStatus TestNode::onCompleted()
   }
   else
   {
-    throw RuntimeError(
-        "TestNode requires one of complete_func, return_status, or return_status_script");
+    throw RuntimeError("TestNode requires one of complete_func, return_status, or "
+                       "return_status_script");
   }
 
   validateTestNodeStatus(status, "completion");

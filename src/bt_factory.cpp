@@ -540,7 +540,8 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
       }
       if(test_config.contains("return_status_script"))
       {
-        config.return_status_script = test_config["return_status_script"].get<std::string>();
+        config.return_status_script =
+            test_config["return_status_script"].get<std::string>();
       }
       if(test_config.contains("async_delay"))
       {
