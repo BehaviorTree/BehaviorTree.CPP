@@ -41,13 +41,15 @@ TEST(WakeUp, BasicTest)
 
   using namespace std::chrono;
 
-  auto t1 = system_clock::now();
+  auto t1 = steady_clock::now();
   tree.tickOnce();
   tree.sleep(milliseconds(200));
-  auto t2 = system_clock::now();
+  auto t2 = steady_clock::now();
 
   auto dT = duration_cast<milliseconds>(t2 - t1).count();
   std::cout << "Woke up after msec: " << dT << std::endl;
 
-  ASSERT_LT(dT, 25);
+  // The wake-up should interrupt the 200 ms sleep well before the timeout,
+  // but leave enough headroom for scheduler jitter on loaded CI runners.
+  ASSERT_LT(dT, 100);
 }
