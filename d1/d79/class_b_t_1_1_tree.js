@@ -6,5 +6,6 @@ var class_b_t_1_1_tree =
     [ "sleep", "d1/d79/class_b_t_1_1_tree.html#ae31f344252dd19177240917777b57e54", null ],
     [ "tickExactlyOnce", "d1/d79/class_b_t_1_1_tree.html#ac9f6b556b8395132be0b14bc4d784be5", null ],
     [ "tickOnce", "d1/d79/class_b_t_1_1_tree.html#a39a85b09e4e7203ab586e8012f381d73", null ],
-    [ "tickWhileRunning", "d1/d79/class_b_t_1_1_tree.html#ab89741eacae45161d75c7d22ded4228b", null ]
+    [ "tickWhileRunning", "d1/d79/class_b_t_1_1_tree.html#ab89741eacae45161d75c7d22ded4228b", null ],
+    [ "wakeUpSignal", "d1/d79/class_b_t_1_1_tree.html#a38ce15e248ea414dda84e6a797a8c4dc", null ]
 ];
