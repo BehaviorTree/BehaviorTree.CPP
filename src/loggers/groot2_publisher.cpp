@@ -33,6 +33,8 @@ struct Transition
 
 namespace
 {
+constexpr const char* kRootBlackboardName = "ROOT";
+
 std::array<char, 16> CreateRandomUUID()
 {
   std::random_device rd;
@@ -546,6 +548,8 @@ void Groot2Publisher::heartbeatLoop()
 std::vector<uint8_t> Groot2Publisher::generateBlackboardsDump(const std::string& bb_list)
 {
   auto json = nlohmann::json();
+  const Blackboard* exported_root = nullptr;
+
   auto const bb_names = BT::splitString(bb_list, ';');
   for(auto name : bb_names)
   {
@@ -557,7 +561,15 @@ std::vector<uint8_t> Groot2Publisher::generateBlackboardsDump(const std::string&
       // lock the weak pointer
       if(auto subtree = it->second.lock())
       {
-        json[bb_name] = ExportBlackboardToJSON(*subtree->blackboard);
+        auto* local_bb = subtree->blackboard.get();
+        json[bb_name] = ExportBlackboardToJSON(*local_bb);
+
+        auto* root_bb = subtree->blackboard->rootBlackboard();
+        if(root_bb != local_bb && root_bb != exported_root)
+        {
+          json[kRootBlackboardName] = ExportBlackboardToJSON(*root_bb);
+          exported_root = root_bb;
+        }
       }
     }
   }

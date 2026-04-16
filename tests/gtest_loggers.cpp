@@ -13,16 +13,44 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/loggers/bt_file_logger_v2.h"
+#ifdef BTCPP_GROOT_INTERFACE
+#include "behaviortree_cpp/loggers/groot2_protocol.h"
+#include "behaviortree_cpp/loggers/groot2_publisher.h"
+#endif
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
+
+#ifdef BTCPP_GROOT_INTERFACE
+#include "zmq_addon.hpp"
+#endif
 
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
+#ifdef BTCPP_GROOT_INTERFACE
+#include <atomic>
+#include <chrono>
+#include <stdexcept>
+#include <thread>
+#endif
 
 #include <gtest/gtest.h>
 
 using namespace BT;
+
+#ifdef BTCPP_GROOT_INTERFACE
+using namespace std::chrono_literals;
+
+namespace
+{
+std::atomic_uint g_next_groot2_port{ 17670 };
+
+unsigned nextGroot2Port()
+{
+  return g_next_groot2_port.fetch_add(2);
+}
+}  // namespace
+#endif
 
 class LoggerTest : public testing::Test
 {
@@ -56,6 +84,68 @@ protected:
       </root>)";
     return factory.createTreeFromText(xml_text);
   }
+
+#ifdef BTCPP_GROOT_INTERFACE
+  BT::Tree createTreeWithNamedSubtrees(
+      const Blackboard::Ptr& main_blackboard = Blackboard::create())
+  {
+    const std::string xml_text = R"(
+      <root BTCPP_format="4" main_tree_to_execute="MainTree">
+         <BehaviorTree ID="MainTree">
+            <Sequence>
+              <AlwaysSuccess name="MainAction"/>
+              <SubTree ID="ChildA" name="ChildA"/>
+              <SubTree ID="ChildB" name="ChildB"/>
+            </Sequence>
+         </BehaviorTree>
+
+         <BehaviorTree ID="ChildA">
+            <AlwaysSuccess name="ChildActionA"/>
+         </BehaviorTree>
+
+         <BehaviorTree ID="ChildB">
+            <AlwaysSuccess name="ChildActionB"/>
+         </BehaviorTree>
+      </root>)";
+
+    return factory.createTreeFromText(xml_text, main_blackboard);
+  }
+
+  nlohmann::json requestBlackboardDump(const BT::Tree& tree, unsigned port,
+                                       const std::string& bb_list)
+  {
+    Groot2Publisher publisher(tree, port);
+    std::this_thread::sleep_for(50ms);
+
+    zmq::context_t context(1);
+    zmq::socket_t client(context, ZMQ_REQ);
+    client.set(zmq::sockopt::linger, 0);
+    client.set(zmq::sockopt::rcvtimeo, 1000);
+    client.set(zmq::sockopt::sndtimeo, 1000);
+    client.connect(("tcp://127.0.0.1:" + std::to_string(port)).c_str());
+
+    zmq::multipart_t request;
+    request.addstr(Monitor::SerializeHeader(
+        Monitor::RequestHeader(Monitor::RequestType::BLACKBOARD)));
+    request.addstr(bb_list);
+    if(!request.send(client))
+    {
+      throw std::runtime_error("Failed to send Groot2 blackboard request");
+    }
+
+    zmq::multipart_t reply;
+    if(!reply.recv(client))
+    {
+      throw std::runtime_error("Failed to receive Groot2 blackboard reply");
+    }
+    if(reply.size() != 2u)
+    {
+      throw std::runtime_error("Unexpected Groot2 blackboard reply size");
+    }
+
+    return nlohmann::json::from_msgpack(reply[1].to_string());
+  }
+#endif
 };
 
 // ============ StdCoutLogger tests ============
@@ -494,3 +584,79 @@ TEST_F(LoggerTest, Logger_DisabledDuringExecution)
 
   ASSERT_TRUE(std::filesystem::exists(filepath));
 }
+
+#ifdef BTCPP_GROOT_INTERFACE
+TEST_F(LoggerTest, Groot2Publisher_DoesNotExportRootWithoutExternalBlackboard)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <AlwaysSuccess/>
+      </BehaviorTree>
+    </root>)";
+
+  auto main_blackboard = Blackboard::create();
+  main_blackboard->set("local_value", 7);
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree", main_blackboard);
+
+  auto json = requestBlackboardDump(tree, nextGroot2Port(), "MainTree");
+  ASSERT_TRUE(json.contains("MainTree"));
+  EXPECT_FALSE(json.contains("ROOT"));
+
+  ASSERT_TRUE(json["MainTree"].contains("local_value"));
+  EXPECT_EQ(json["MainTree"]["local_value"].get<int>(), 7);
+}
+
+TEST_F(LoggerTest, Groot2Publisher_ExportsExternalRootBlackboard)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <AlwaysSuccess/>
+      </BehaviorTree>
+    </root>)";
+
+  auto external_root = Blackboard::create();
+  external_root->set("shared_value", 42);
+
+  auto main_blackboard = Blackboard::create(external_root);
+  main_blackboard->set("local_value", 7);
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("MainTree", main_blackboard);
+
+  auto json = requestBlackboardDump(tree, nextGroot2Port(), "MainTree");
+  ASSERT_TRUE(json.contains("MainTree"));
+  ASSERT_TRUE(json.contains("ROOT"));
+
+  ASSERT_TRUE(json["MainTree"].contains("local_value"));
+  EXPECT_EQ(json["MainTree"]["local_value"].get<int>(), 7);
+  EXPECT_FALSE(json["MainTree"].contains("shared_value"));
+
+  ASSERT_TRUE(json["ROOT"].contains("shared_value"));
+  EXPECT_EQ(json["ROOT"]["shared_value"].get<int>(), 42);
+  EXPECT_FALSE(json["ROOT"].contains("local_value"));
+}
+
+TEST_F(LoggerTest, Groot2Publisher_DeduplicatesSharedExternalRootBlackboard)
+{
+  auto external_root = Blackboard::create();
+  external_root->set("shared_value", 99);
+
+  auto main_blackboard = Blackboard::create(external_root);
+  auto tree = createTreeWithNamedSubtrees(main_blackboard);
+  ASSERT_EQ(tree.subtrees.size(), 3u);
+
+  auto json = requestBlackboardDump(tree, nextGroot2Port(), "MainTree;ChildA;ChildB");
+  ASSERT_TRUE(json.contains("MainTree"));
+  ASSERT_TRUE(json.contains("ChildA"));
+  ASSERT_TRUE(json.contains("ChildB"));
+  ASSERT_TRUE(json.contains("ROOT"));
+  EXPECT_EQ(json.size(), 4u);
+
+  ASSERT_TRUE(json["ROOT"].contains("shared_value"));
+  EXPECT_EQ(json["ROOT"]["shared_value"].get<int>(), 99);
+}
+#endif
