@@ -572,7 +572,8 @@ Expected<std::vector<uint8_t>> Groot2Publisher::generateBlackboardsDump(
         auto* root_bb = subtree->blackboard->rootBlackboard();
         const bool needs_exported_root = (root_bb != local_bb);
 
-        if(bb_name == kRootBlackboardName && (needs_exported_root || exported_root != nullptr))
+        if(bb_name == kRootBlackboardName &&
+           (needs_exported_root || exported_root != nullptr))
         {
           return nonstd::make_unexpected(
               "blackboard dump request uses reserved name [ROOT] together with an "
