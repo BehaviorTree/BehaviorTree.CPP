@@ -311,7 +311,13 @@ void Groot2Publisher::serverLoop()
         }
         std::string const bb_names_str = requestMsg[1].to_string();
         auto msg = generateBlackboardsDump(bb_names_str);
-        reply_msg.addmem(msg.data(), msg.size());
+        if(!msg)
+        {
+          sendErrorReply(msg.error());
+          continue;
+        }
+        auto const& payload = msg.value();
+        reply_msg.addmem(payload.data(), payload.size());
       }
       break;
 
@@ -545,7 +551,8 @@ void Groot2Publisher::heartbeatLoop()
   }
 }
 
-std::vector<uint8_t> Groot2Publisher::generateBlackboardsDump(const std::string& bb_list)
+Expected<std::vector<uint8_t>> Groot2Publisher::generateBlackboardsDump(
+    const std::string& bb_list)
 {
   auto json = nlohmann::json();
   const Blackboard* exported_root = nullptr;
@@ -562,11 +569,35 @@ std::vector<uint8_t> Groot2Publisher::generateBlackboardsDump(const std::string&
       if(auto subtree = it->second.lock())
       {
         auto* local_bb = subtree->blackboard.get();
+        auto* root_bb = subtree->blackboard->rootBlackboard();
+        const bool needs_exported_root = (root_bb != local_bb);
+
+        if(bb_name == kRootBlackboardName && (needs_exported_root || exported_root != nullptr))
+        {
+          return nonstd::make_unexpected(
+              "blackboard dump request uses reserved name [ROOT] together with an "
+              "external root blackboard export");
+        }
+
         json[bb_name] = ExportBlackboardToJSON(*local_bb);
 
-        auto* root_bb = subtree->blackboard->rootBlackboard();
-        if(root_bb != local_bb && root_bb != exported_root)
+        if(needs_exported_root)
         {
+          if(root_bb == exported_root)
+          {
+            continue;
+          }
+          if(exported_root != nullptr)
+          {
+            return nonstd::make_unexpected(
+                "blackboard dump request spans multiple external root blackboards");
+          }
+          if(json.contains(kRootBlackboardName))
+          {
+            return nonstd::make_unexpected(
+                "blackboard dump request would overwrite subtree [ROOT] with an "
+                "external root blackboard export");
+          }
           json[kRootBlackboardName] = ExportBlackboardToJSON(*root_bb);
           exported_root = root_bb;
         }

@@ -111,8 +111,19 @@ protected:
     return factory.createTreeFromText(xml_text, main_blackboard);
   }
 
-  nlohmann::json requestBlackboardDump(const BT::Tree& tree, unsigned port,
-                                       const std::string& bb_list)
+  struct BlackboardDumpReply
+  {
+    std::string header;
+    std::string payload;
+
+    bool isError() const
+    {
+      return header == "error";
+    }
+  };
+
+  BlackboardDumpReply requestBlackboardDumpReply(const BT::Tree& tree, unsigned port,
+                                                 const std::string& bb_list)
   {
     Groot2Publisher publisher(tree, port);
     std::this_thread::sleep_for(50ms);
@@ -143,7 +154,18 @@ protected:
       throw std::runtime_error("Unexpected Groot2 blackboard reply size");
     }
 
-    return nlohmann::json::from_msgpack(reply[1].to_string());
+    return { reply[0].to_string(), reply[1].to_string() };
+  }
+
+  nlohmann::json requestBlackboardDump(const BT::Tree& tree, unsigned port,
+                                       const std::string& bb_list)
+  {
+    auto reply = requestBlackboardDumpReply(tree, port, bb_list);
+    if(reply.isError())
+    {
+      throw std::runtime_error("Groot2 blackboard request failed: " + reply.payload);
+    }
+    return nlohmann::json::from_msgpack(reply.payload);
   }
 #endif
 };
@@ -658,5 +680,56 @@ TEST_F(LoggerTest, Groot2Publisher_DeduplicatesSharedExternalRootBlackboard)
 
   ASSERT_TRUE(json["ROOT"].contains("shared_value"));
   EXPECT_EQ(json["ROOT"]["shared_value"].get<int>(), 99);
+}
+
+TEST_F(LoggerTest, Groot2Publisher_RejectsReservedRootNameCollision)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="ROOT">
+        <AlwaysSuccess/>
+      </BehaviorTree>
+    </root>)";
+
+  auto external_root = Blackboard::create();
+  external_root->set("shared_value", 42);
+
+  auto main_blackboard = Blackboard::create(external_root);
+  main_blackboard->set("local_value", 7);
+
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("ROOT", main_blackboard);
+
+  auto reply = requestBlackboardDumpReply(tree, nextGroot2Port(), "ROOT");
+  ASSERT_TRUE(reply.isError());
+  EXPECT_NE(reply.payload.find("reserved name [ROOT]"), std::string::npos);
+}
+
+TEST_F(LoggerTest, Groot2Publisher_RejectsConflictingExternalRootBlackboards)
+{
+  auto first_root = Blackboard::create();
+  first_root->set("shared_value", 99);
+
+  auto main_blackboard = Blackboard::create(first_root);
+  auto tree = createTreeWithNamedSubtrees(main_blackboard);
+
+  auto second_root = Blackboard::create();
+  second_root->set("other_shared_value", 123);
+
+  bool replaced_child_blackboard = false;
+  for(auto& subtree : tree.subtrees)
+  {
+    if(subtree->instance_name == "ChildB")
+    {
+      subtree->blackboard = Blackboard::create(second_root);
+      replaced_child_blackboard = true;
+      break;
+    }
+  }
+  ASSERT_TRUE(replaced_child_blackboard);
+
+  auto reply = requestBlackboardDumpReply(tree, nextGroot2Port(), "MainTree;ChildB");
+  ASSERT_TRUE(reply.isError());
+  EXPECT_NE(reply.payload.find("multiple external root blackboards"), std::string::npos);
 }
 #endif
