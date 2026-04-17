@@ -551,8 +551,8 @@ void Groot2Publisher::heartbeatLoop()
   }
 }
 
-Expected<std::vector<uint8_t>> Groot2Publisher::generateBlackboardsDump(
-    const std::string& bb_list)
+Expected<std::vector<uint8_t>>
+Groot2Publisher::generateBlackboardsDump(const std::string& bb_list)
 {
   auto json = nlohmann::json();
   const Blackboard* exported_root = nullptr;
@@ -575,9 +575,9 @@ Expected<std::vector<uint8_t>> Groot2Publisher::generateBlackboardsDump(
         if(bb_name == kRootBlackboardName &&
            (needs_exported_root || exported_root != nullptr))
         {
-          return nonstd::make_unexpected(
-              "blackboard dump request uses reserved name [ROOT] together with an "
-              "external root blackboard export");
+          return nonstd::make_unexpected("blackboard dump request uses reserved "
+                                         "name [ROOT] together with an "
+                                         "external root blackboard export");
         }
 
         json[bb_name] = ExportBlackboardToJSON(*local_bb);
@@ -590,14 +590,14 @@ Expected<std::vector<uint8_t>> Groot2Publisher::generateBlackboardsDump(
           }
           if(exported_root != nullptr)
           {
-            return nonstd::make_unexpected(
-                "blackboard dump request spans multiple external root blackboards");
+            return nonstd::make_unexpected("blackboard dump request spans "
+                                           "multiple external root blackboards");
           }
           if(json.contains(kRootBlackboardName))
           {
-            return nonstd::make_unexpected(
-                "blackboard dump request would overwrite subtree [ROOT] with an "
-                "external root blackboard export");
+            return nonstd::make_unexpected("blackboard dump request would "
+                                           "overwrite subtree [ROOT] with an "
+                                           "external root blackboard export");
           }
           json[kRootBlackboardName] = ExportBlackboardToJSON(*root_bb);
           exported_root = root_bb;
