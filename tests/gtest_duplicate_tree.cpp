@@ -18,8 +18,7 @@ class TempSubdir
 public:
   TempSubdir()
   {
-    const auto stamp =
-        std::chrono::steady_clock::now().time_since_epoch().count();
+    const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
     path = std::filesystem::temp_directory_path() /
            ("bt_duplicate_tree_" + std::to_string(stamp));
     std::filesystem::create_directories(path);
@@ -47,7 +46,8 @@ std::string minimalTreeXml(const std::string& tree_id)
 {
   return std::string(R"(
     <root BTCPP_format="4">
-      <BehaviorTree ID=")" + tree_id + R"(">
+      <BehaviorTree ID=")" +
+                     tree_id + R"(">
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>
@@ -202,14 +202,12 @@ TEST(DuplicateBehaviorTreeId, IncludeDuplicateThrows)
 )";
   writeFile(outer_path, outer_xml);
 
-  const std::string inner_abs =
-      std::filesystem::absolute(inner_path).string();
+  const std::string inner_abs = std::filesystem::absolute(inner_path).string();
 
   BehaviorTreeFactory factory;
   try
   {
-    factory.registerBehaviorTreeFromFile(
-        std::filesystem::absolute(outer_path));
+    factory.registerBehaviorTreeFromFile(std::filesystem::absolute(outer_path));
     FAIL() << "expected RuntimeError";
   }
   catch(const RuntimeError& e)
