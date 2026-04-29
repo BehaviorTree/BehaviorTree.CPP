@@ -22,8 +22,8 @@
 
   <depend>libsqlite3-dev</depend>
   <depend>libzmq3-dev</depend>
-  <depend>tinyxml2</depend>
-  <depend>tinyxml2_vendor</depend>
+  <depend condition="$ROS_DISTRO != humble and $ROS_DISTRO != jazzy and $ROS_DISTRO != kilted">tinyxml2</depend>
+  <depend condition="$ROS_DISTRO == humble or $ROS_DISTRO == jazzy or $ROS_DISTRO == kilted">tinyxml2_vendor</depend>
 
   <test_depend >ament_cmake_gtest</test_depend>
 
