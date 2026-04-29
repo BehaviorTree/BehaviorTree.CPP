@@ -94,7 +94,7 @@ if ( ament_cmake_FOUND )
     message(STATUS "------------------------------------------")
     include(cmake/ament_build.cmake)
 
-    find_package(tinyxml2_vendor REQUIRED)
+    find_package(tinyxml2_vendor QUIET)
     find_package(TinyXML2 REQUIRED)
 else()
     message(STATUS "------------------------------------------")
