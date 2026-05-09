@@ -560,7 +560,7 @@ inline nonstd::expected<T, std::string> Any::tryCast() const
 
   if(auto res = convert<T>())
   {
-    return res.value();
+    return std::move(res.value());
   }
   else
   {
