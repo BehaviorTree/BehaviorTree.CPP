@@ -458,7 +458,6 @@ inline nonstd::expected<T, std::string> Any::stringToNumber() const
     return nonstd::make_unexpected("Any failed string to number conversion");
   }
 #endif
-  return nonstd::make_unexpected("Any conversion from string failed");
 }
 
 template <typename DST>
