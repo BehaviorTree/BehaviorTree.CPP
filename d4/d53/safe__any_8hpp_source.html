@@ -657,7 +657,7 @@ $(document).ready(function(){initNavTree('d4/d53/safe__any_8hpp_source.html','..
 <div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span> </div>
 <div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>  <span class="keywordflow">if</span>(<span class="keyword">auto</span> res = convert&lt;T&gt;())</div>
 <div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>  {</div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <span class="keywordflow">return</span> res.value();</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <span class="keywordflow">return</span> std::move(res.value());</div>
 <div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>  }</div>
 <div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>  <span class="keywordflow">else</span></div>
 <div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>  {</div>
