@@ -1722,8 +1722,12 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
     XMLElement* common_attr_group = doc.NewElement("xs:attributeGroup");
     common_attr_group->SetAttribute("ref", "commonAttributeGroup");
     type->InsertEndChild(common_attr_group);
+    std::map<std::string, const BT::PortInfo*> ordered_ports;
     for(const auto& [port_name, port_info] : model->ports)
+      ordered_ports.insert({ port_name, &port_info });
+    for(const auto& [port_name, port_info_ptr] : ordered_ports)
     {
+      const auto& port_info = *port_info_ptr;
       XMLElement* attr = doc.NewElement("xs:attribute");
       attr->SetAttribute("name", port_name.c_str());
       const auto xsd_attribute_type = xsdAttributeType(port_info);
