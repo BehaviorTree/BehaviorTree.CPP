@@ -1473,7 +1473,7 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
   return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 }
 
-std::string writeTreeXSD(const BehaviorTreeFactory& factory)
+std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
 {
   // There are 2 forms of representation for a node:
   // compact: <Sequence .../>  and explicit: <Control ID="Sequence" ... />
@@ -1635,15 +1635,27 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
   XMLElement* one_node_group = doc.NewElement("xs:group");
   {
     one_node_group->SetAttribute("name", "oneNodeGroup");
-    std::ostringstream xsd;
-    xsd << "<xs:choice>";
-    for(const auto& [registration_id, model] : ordered_models)
+    if(generic)
     {
-      xsd << "<xs:element name=\"" << registration_id << "\" type=\"" << registration_id
-          << "Type\"/>";
+      // Generic: accept any element; lax processing validates known built-ins
+      // via the top-level xs:element declarations emitted at the end of this function.
+      parse_and_insert(one_node_group, "<xs:choice>"
+                                       "<xs:any namespace=\"##any\" "
+                                       "processContents=\"lax\"/>"
+                                       "</xs:choice>");
     }
-    xsd << "</xs:choice>";
-    parse_and_insert(one_node_group, xsd.str().c_str());
+    else
+    {
+      std::ostringstream xsd;
+      xsd << "<xs:choice>";
+      for(const auto& [registration_id, model] : ordered_models)
+      {
+        xsd << "<xs:element name=\"" << registration_id << "\" type=\"" << registration_id
+            << "Type\"/>";
+      }
+      xsd << "</xs:choice>";
+      parse_and_insert(one_node_group, xsd.str().c_str());
+    }
     schema_element->InsertEndChild(one_node_group);
   }
 
@@ -1737,6 +1749,20 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
       )");
     }
     schema_element->InsertEndChild(type);
+  }
+
+  // Generic mode: emit top-level xs:element declarations so that
+  // processContents="lax" in oneNodeGroup can resolve and validate
+  // known built-in node elements by name.
+  if(generic)
+  {
+    for(const auto& [registration_id, model] : ordered_models)
+    {
+      XMLElement* elem = doc.NewElement("xs:element");
+      elem->SetAttribute("name", registration_id.c_str());
+      elem->SetAttribute("type", (registration_id + "Type").c_str());
+      schema_element->InsertEndChild(elem);
+    }
   }
 
   XMLPrinter printer;
