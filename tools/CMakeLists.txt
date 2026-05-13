@@ -29,3 +29,8 @@ add_executable(bt4_nodes_model         bt_nodes_model.cpp )
 target_link_libraries(bt4_nodes_model  ${BTCPP_LIBRARY} )
 install(TARGETS bt4_nodes_model
         DESTINATION ${BTCPP_BIN_DESTINATION} )
+
+add_executable(bt4_generate_xsd         generate_xsd.cpp )
+target_link_libraries(bt4_generate_xsd  ${BTCPP_LIBRARY} )
+install(TARGETS bt4_generate_xsd
+        DESTINATION ${BTCPP_BIN_DESTINATION} )
