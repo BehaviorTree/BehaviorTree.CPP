@@ -1,0 +1,23 @@
+# scikit-build-core / setuptools build artifacts
+_skbuild/
+build/
+dist/
+wheelhouse/
+*.egg-info/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated extension modules left over from local builds
+src/pybt/_pybt*.so
+src/pybt/_pybt*.pyd
+src/pybt/_pybt*.dylib
+
+# Editable-install redirect files written by scikit-build-core
+src/pybt/*.pth
+
+.venv/

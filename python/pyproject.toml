@@ -1,0 +1,84 @@
+[build-system]
+requires = [
+    "scikit-build-core>=0.9",
+    "nanobind>=2.5,<3",
+    "setuptools-scm[toml]>=8",
+    "ninja>=1.11; sys_platform != 'win32'",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pybt"
+dynamic = ["version"]
+description = "Python bindings for BehaviorTree.CPP — author, compose, and tick behavior trees from Python."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "BehaviorTree.CPP contributors" },
+]
+keywords = ["behavior-tree", "robotics", "ai", "behaviortree", "bt"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-xdist",
+    "pytest-benchmark",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "hypothesis>=6",
+    "ninja>=1.11; sys_platform != 'win32'",
+    "nanobind>=2.5,<3",
+    "scikit-build-core>=0.9",
+    "setuptools-scm[toml]>=8",
+]
+
+[project.urls]
+Homepage = "https://github.com/BehaviorTree/BehaviorTree.CPP"
+Repository = "https://github.com/BehaviorTree/BehaviorTree.CPP"
+
+[tool.scikit-build]
+minimum-version = "0.9"
+cmake.source-dir = ".."
+cmake.args = [
+    "-DBTCPP_PYTHON=ON",
+    "-DBTCPP_BUILD_TOOLS=OFF",
+    "-DBTCPP_EXAMPLES=OFF",
+    "-DBUILD_TESTING=OFF",
+    # For now, keep system deps to zero. Groot2 + SQLite bindings will come in
+    # later; re-enable these flags then (and either vendor ZMQ/SQLite into
+    # the wheel or document them as required system packages).
+    "-DBTCPP_GROOT_INTERFACE=OFF",
+    "-DBTCPP_SQLITE_LOGGING=OFF",
+]
+wheel.packages = ["src/pybt"]
+build-dir = "build/{wheel_tag}"
+
+[tool.scikit-build.editable]
+mode = "redirect"
+rebuild = true
+
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.setuptools_scm"
+
+[tool.setuptools_scm]
+root = ".."
+version_scheme = "post-release"
+local_scheme = "no-local-version"
+fallback_version = "4.9.0"
