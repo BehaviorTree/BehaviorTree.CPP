@@ -22,7 +22,7 @@ def _run_in_subprocess(script: str, timeout: float = 10.0) -> subprocess.Complet
     )
 
 
-def test_atexit_halts_running_tree():
+def test_clean_thread_shutdown_with_stop_flag():
     """A tree ticking in a background thread exits cleanly via a node-level stop flag.
     """
     
@@ -84,4 +84,38 @@ def test_clean_module_load_and_shutdown():
     )
     assert result.returncode == 0, (
         f"clean import + exit failed: stderr={result.stderr}"
+    )
+
+
+def test_no_nanobind_leaks():
+    """The standalone smoke runner shuts down with no nanobind leak warnings.
+
+    nanobind prints `nanobind: leaked N instances/types/...` to stderr at
+    interpreter teardown when any registered C++ object outlives its Python
+    wrapper. Running the smoke suite as a standalone script (functions get
+    called and return, so locals release deterministically) should leave the
+    registry empty by the time nanobind's atexit check fires.
+    """
+    import pathlib
+
+    test_smoke_path = pathlib.Path(__file__).parent / "test_smoke.py"
+    result = subprocess.run(
+        [sys.executable, str(test_smoke_path)],
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert result.returncode == 0, (
+        f"standalone smoke runner failed:\n"
+        f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    )
+
+    combined = result.stdout + result.stderr
+    leak_lines = [
+        line
+        for line in combined.splitlines()
+        if "nanobind" in line and "leak" in line.lower()
+    ]
+    assert not leak_lines, (
+        "nanobind reported leaks at shutdown:\n  " + "\n  ".join(leak_lines)
     )

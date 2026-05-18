@@ -154,6 +154,21 @@ def test_simple_action_callback():
     assert invoked[0] == 1
 
 
+def test_simple_action_decorator():
+    """@pybt.simple_action(factory, id) decorator registers the wrapped function."""
+    f = pybt.BehaviorTreeFactory()
+    invoked = [0]
+
+    @pybt.simple_action(f, "Deco")
+    def deco(node):
+        invoked[0] += 1
+        return pybt.NodeStatus.SUCCESS
+
+    t = f.create_tree_from_text(XML_SINGLE.format("<Deco/>"))
+    assert t.tick_while_running() == pybt.NodeStatus.SUCCESS
+    assert invoked[0] == 1
+
+
 # ---------------------------------------------------------------------------
 # Exception translation
 # ---------------------------------------------------------------------------
@@ -248,6 +263,66 @@ def test_set_output_undeclared_port_raises():
         assert "never_declared" in str(e), f"unexpected message: {e!r}"
         return
     raise AssertionError("set_output of an undeclared port should have raised")
+
+
+# ---------------------------------------------------------------------------
+# Registration validation
+# ---------------------------------------------------------------------------
+
+
+def test_register_non_action_class_raises():
+    """Registering a class that does not derive from SyncActionNode/StatefulActionNode fails clearly.
+
+    The error may surface at registration or at first tree construction (when
+    the factory's builder tries to cast the Python instance to a C++ TreeNode).
+    Either is acceptable; what matters is that a Python exception is raised
+    rather than a segfault.
+    """
+
+    class NotANode:
+        def tick(self):
+            return pybt.NodeStatus.SUCCESS
+
+    f = pybt.BehaviorTreeFactory()
+    try:
+        f.register_node_type(NotANode, "NotANode")
+        t = f.create_tree_from_text(XML_SINGLE.format("<NotANode/>"))
+        t.tick_while_running()
+    except Exception:
+        return
+    raise AssertionError(
+        "registering or ticking a non-action class should have raised"
+    )
+
+
+def test_register_duplicate_id_raises():
+    """Registering two node types with the same ID raises (does not silently replace)."""
+
+    class A(pybt.SyncActionNode):
+        def tick(self):
+            return pybt.NodeStatus.SUCCESS
+
+    class B(pybt.SyncActionNode):
+        def tick(self):
+            return pybt.NodeStatus.SUCCESS
+
+    f = pybt.BehaviorTreeFactory()
+    f.register_node_type(A, "Dup")
+    try:
+        f.register_node_type(B, "Dup")
+    except Exception:
+        return
+    raise AssertionError("duplicate-id registration should have raised")
+
+
+def test_create_tree_from_malformed_xml_raises():
+    """Malformed XML raises a clear Python exception, not a crash."""
+    f = pybt.BehaviorTreeFactory()
+    try:
+        f.create_tree_from_text("<this is not valid xml")
+    except Exception:
+        return
+    raise AssertionError("malformed XML should have raised")
 
 
 # ---------------------------------------------------------------------------
