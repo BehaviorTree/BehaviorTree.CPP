@@ -3,13 +3,19 @@
 Run any of:
     python python/tests/test_smoke.py
     pytest python/tests/test_smoke.py -v
+    pytest -m smoke
     pytest python/tests/test_smoke.py::test_sync_action_node
 """
 
 import multiprocessing
 import sys
 
+import pytest
+
 import pybt
+
+# Every test in this file participates in the `-m smoke` selection.
+pytestmark = pytest.mark.smoke
 
 XML_SINGLE = '<root BTCPP_format="4"><BehaviorTree>{}</BehaviorTree></root>'
 
@@ -286,9 +292,122 @@ def test_fork_safety_raises_btruntimeerror():
 
 
 # ---------------------------------------------------------------------------
-# Standalone runner
+# SIGINT / Ctrl-C
 # ---------------------------------------------------------------------------
 
+def test_sigint_interrupts_tick():
+    """SIGINT during tick_while_running raises KeyboardInterrupt within ~50ms."""
+    import signal
+    import threading
+    import time
+
+    class Forever(pybt.StatefulActionNode):
+        def on_start(self):
+            return pybt.NodeStatus.RUNNING
+
+        def on_running(self):
+            return pybt.NodeStatus.RUNNING
+
+    f = pybt.BehaviorTreeFactory()
+    f.register_node_type(Forever, "Forever")
+    t = f.create_tree_from_text(XML_SINGLE.format("<Forever/>"))
+
+    # Schedule SIGINT to self after 50ms. signal.raise_signal targets the
+    # current process; CPython delivers the resulting signal to the main
+    # thread, where tick_while_running's PyErr_CheckSignals picks it up.
+    timer = threading.Timer(0.05, lambda: signal.raise_signal(signal.SIGINT))
+    timer.start()
+
+    start = time.monotonic()
+    try:
+        t.tick_while_running(sleep_ms=5)
+    except KeyboardInterrupt:
+        elapsed = time.monotonic() - start
+        # Be generous: the per-iter signal check + sleep_ms can stack.
+        assert elapsed < 1.0, f"SIGINT took too long: {elapsed:.3f}s"
+        return
+    finally:
+        timer.cancel()
+    raise AssertionError("tick_while_running should have raised KeyboardInterrupt")
+
+
+# ---------------------------------------------------------------------------
+# GIL release — two threads, two trees, concurrent
+# ---------------------------------------------------------------------------
+
+def test_two_threads_two_trees_run_concurrently():
+    """Two threads ticking two trees in parallel finish in ~one tree's worth of wall time."""
+    import threading
+    import time
+
+    class Burner(pybt.StatefulActionNode):
+        def __init__(self, name, config):
+            super().__init__(name, config)
+            self.iters = 0
+
+        def on_start(self):
+            return pybt.NodeStatus.RUNNING
+
+        def on_running(self):
+            self.iters += 1
+            return (
+                pybt.NodeStatus.SUCCESS
+                if self.iters >= 8
+                else pybt.NodeStatus.RUNNING
+            )
+
+    def run_tree():
+        f = pybt.BehaviorTreeFactory()
+        f.register_node_type(Burner, "Burner")
+        t = f.create_tree_from_text(XML_SINGLE.format("<Burner/>"))
+        t.tick_while_running(sleep_ms=10)
+
+    # Single-thread baseline first (fewer iters to keep test snappy).
+    one_start = time.monotonic()
+    run_tree()
+    one_elapsed = time.monotonic() - one_start
+
+    # Two threads in parallel.
+    two_start = time.monotonic()
+    t1 = threading.Thread(target=run_tree)
+    t2 = threading.Thread(target=run_tree)
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+    two_elapsed = time.monotonic() - two_start
+
+    # If the GIL were held throughout, two_elapsed ≈ 2 * one_elapsed.
+    # With proper GIL release, two_elapsed ≈ one_elapsed.
+    # Allow generous headroom (CI is noisy): pass if two-thread is < 1.7× single.
+    ratio = two_elapsed / max(one_elapsed, 1e-6)
+    assert ratio < 1.7, (
+        f"two threads took {two_elapsed:.3f}s vs single {one_elapsed:.3f}s "
+        f"(ratio {ratio:.2f}) — GIL probably not released during ticks"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Module reload
+# ---------------------------------------------------------------------------
+
+def test_module_reload_does_not_crash():
+    """importlib.reload(pybt) either succeeds or raises cleanly — must not segfault."""
+    import importlib
+
+    try:
+        importlib.reload(pybt)
+    except (ImportError, RuntimeError) as e:
+        # Some nanobind versions reject reload of extension modules — that's
+        # acceptable as long as it raises cleanly rather than crashing.
+        print(f"  (reload raised cleanly: {type(e).__name__}: {e})")
+    # Module must still be functional afterward.
+    assert pybt.NodeStatus.SUCCESS != pybt.NodeStatus.FAILURE
+
+
+# ---------------------------------------------------------------------------
+# Standalone runner
+# ---------------------------------------------------------------------------
 
 def _collect_tests():
     g = globals()

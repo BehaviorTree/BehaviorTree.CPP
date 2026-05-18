@@ -12,6 +12,9 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# pytest-benchmark result history
+benchmarks/.benchmarks/
+
 # Generated extension modules left over from local builds
 src/pybt/_pybt*.so
 src/pybt/_pybt*.pyd

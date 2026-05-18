@@ -133,12 +133,27 @@ tick_while_running_with_signals(BT::Tree& self, std::chrono::milliseconds sleep_
         nb::gil_scoped_acquire gil;
         if(PyErr_CheckSignals() != 0)
         {
-          // GIL acquired and an exception is set (e.g. KeyboardInterrupt).
-          // Halt the tree before throwing so background work stops cleanly.
+          // A signal handler raised a Python exception (typically
+          // KeyboardInterrupt). Stash it so the halt path runs WITHOUT a
+          // pending exception — Python C-API calls (including the trampoline
+          // attribute lookups in adapters' onHalted) are undefined behavior
+          // when an exception is already set, and have been observed to
+          // std::abort the process.
+          PyObject *exc_type = nullptr, *exc_value = nullptr, *exc_tb = nullptr;
+          PyErr_Fetch(&exc_type, &exc_value, &exc_tb);
           {
             nb::gil_scoped_release release_for_halt;
-            self.haltTree();
+            try
+            {
+              self.haltTree();
+            }
+            catch(...)
+            {
+              // Swallow halt-time failures — the original signal is what we
+              // want to surface, not noise from a node's cleanup.
+            }
           }
+          PyErr_Restore(exc_type, exc_value, exc_tb);
           throw nb::python_error();
         }
       }
@@ -152,10 +167,27 @@ tick_while_running_with_signals(BT::Tree& self, std::chrono::milliseconds sleep_
 
 void register_tree(nb::module_& m)
 {
-  // Register atexit halt — once per interpreter.
+  // Halt every live tree at interpreter shutdown.
+  //
+  // We register via Python-level `atexit`, not `Py_AtExit`. Order matters:
+  //   * `atexit.register` callbacks run during finalization BEFORE the module
+  //     dict is cleared. We halt while Tree objects (and their daemon
+  //     ticking threads) are still alive.
+  //   * `Py_AtExit` callbacks run AFTER module cleanup — by which point the
+  //     Python Tree wrapper has been dropped, the C++ Tree destructor has
+  //     already run, and a daemon thread mid-`tickOnce` is touching freed
+  //     memory. That ordering produced `terminate called without an active
+  //     exception` (SIGABRT) on shutdown.
+  //
+  // The C-level Py_AtExit hook is kept as a safety net
+  // for the unlikely case the Python halt is bypassed (e.g. _Py_Finalize
+  // skipped Python atexit due to an early error).
   static bool atexit_registered = false;
   if(!atexit_registered)
   {
+    nb::module_::import_("atexit").attr("register")(nb::cpp_function([]() {
+      LiveTreeRegistry::get().halt_all();
+    }));
     Py_AtExit(&on_python_exit);
     atexit_registered = true;
   }

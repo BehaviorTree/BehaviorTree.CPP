@@ -82,3 +82,18 @@ root = ".."
 version_scheme = "post-release"
 local_scheme = "no-local-version"
 fallback_version = "4.9.0"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+# Discover both unit tests (test_*.py) and benchmarks (bench_*.py) when the
+# corresponding directory is passed explicitly. `testpaths` above means
+# benchmarks/ is opt-in: `pytest benchmarks/ --benchmark-only`.
+python_files = ["test_*.py", "bench_*.py"]
+python_functions = ["test_*", "bench_*"]
+markers = [
+    "smoke: Phase 1 smoke tests — must always pass to consider pybt healthy.",
+    "slow: tests taking more than ~1 second; opt-out via `-m 'not slow'`.",
+    "benchmark: pytest-benchmark microbenchmarks (also receive the `benchmark` fixture).",
+]
