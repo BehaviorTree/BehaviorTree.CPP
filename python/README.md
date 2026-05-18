@@ -6,7 +6,7 @@ Python bindings for [BehaviorTree.CPP](https://github.com/BehaviorTree/BehaviorT
 
 ```bash
 cd python
-python -m venv .venv # Only needs to be done once.
+python3 -m venv .venv # Only needs to be done once.
 source .venv/bin/activate
 pip install -e .[dev] -v
 python -c "import pybt; print(pybt.__version__, pybt._pybt.__phase__)"

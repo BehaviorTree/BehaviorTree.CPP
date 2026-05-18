@@ -1,19 +1,25 @@
-// bind_tree_node.cpp — TreeNode binding plus trampolines for the two
-// user-subclassable kinds of action node.
+// bind_tree_node.cpp — TreeNode binding plus user-subclassable shell
+// classes and the adapters that bridge Python to BT.CPP at tree-tick time.
 //
-// Trampoline pattern: each trampoline class inherits the BT.CPP type,
-// declares NB_TRAMPOLINE for the methods Python may override, and forwards
-// the virtual calls back to Python under nb::gil_scoped_acquire (the tick
-// loop drops the GIL by default; trampolines reacquire to call into Python).
+// Design (adapter pattern, see Phase 1 Subagent B notes):
 //
-// Lifetime: Python users construct trampoline subclasses; the factory's
-// NodeBuilder lambda calls the Python class with (name, config) to produce
-// a fresh instance per tree. The Python instance is parked in
-// PythonInstanceRegistry so it outlives the unique_ptr handed to the
-// C++ tree; the trampoline destructor evicts itself from the registry.
-
-#include <mutex>
-#include <unordered_map>
+//   * `PySyncActionNode` / `PyStatefulActionNode` are nanobind trampoline
+//     "shells". They exist so Python can `class Foo(pybt.SyncActionNode):`
+//     and have a real, instantiable Python base. Their tick / on_* methods
+//     are placeholders — they should never be invoked at tree-tick time.
+//
+//   * `PythonSyncActionAdapter` / `PythonStatefulActionAdapter` are the
+//     actual C++ tree nodes. They hold a strong `nb::object` reference to
+//     the user's Python instance and forward virtual calls into Python.
+//     They are allocated via standard `new` (`std::make_unique`) so the
+//     `std::unique_ptr<TreeNode>` BT.CPP holds can `delete` them safely.
+//
+// Why two classes per kind? Combining "Python wrapper trampoline" with
+// "tree-owned C++ object" produced an allocator mismatch: nanobind
+// allocates trampoline instances as part of the Python wrapper object,
+// but `unique_ptr<TreeNode>::~unique_ptr` calls plain `delete` — which
+// targets a different allocator and triggered `free(): invalid pointer`
+// on tree teardown. Splitting the roles fixes the lifetime model.
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
@@ -31,44 +37,10 @@ using namespace nb::literals;
 namespace pybt {
 
 // --------------------------------------------------------------------------
-// Python instance registry
+// Trampoline shells
 //
-// Keeps the Python wrapper alive as long as the C++ trampoline lives.
-// Without this, the user's Python instance can be garbage-collected the
-// moment the factory builder returns — then the trampoline's NB_OVERRIDE_PURE
-// would fail to find a Python tick() method.
-// --------------------------------------------------------------------------
-
-class PythonInstanceRegistry
-{
-public:
-  static PythonInstanceRegistry& get()
-  {
-    static PythonInstanceRegistry r;
-    return r;
-  }
-
-  void store(BT::TreeNode* node, nb::object instance)
-  {
-    std::lock_guard<std::mutex> lock(mu_);
-    map_[node] = std::move(instance);
-  }
-
-  void remove(BT::TreeNode* node)
-  {
-    // Drop the nb::object with the GIL held (its destructor decrefs).
-    nb::gil_scoped_acquire gil;
-    std::lock_guard<std::mutex> lock(mu_);
-    map_.erase(node);
-  }
-
-private:
-  std::mutex mu_;
-  std::unordered_map<BT::TreeNode*, nb::object> map_;
-};
-
-// --------------------------------------------------------------------------
-// Trampolines
+// These exist solely so Python can subclass them with a stable C++ base.
+// The factory does NOT use these as tree nodes; the adapters below do.
 // --------------------------------------------------------------------------
 
 struct PySyncActionNode : public BT::SyncActionNode
@@ -79,15 +51,13 @@ struct PySyncActionNode : public BT::SyncActionNode
     : BT::SyncActionNode(name, config)
   {}
 
-  ~PySyncActionNode() override
-  {
-    PythonInstanceRegistry::get().remove(this);
-  }
-
+  // Placeholder. The actual tick goes through PythonSyncActionAdapter.
+  // If this fires, the factory wiring is broken.
   BT::NodeStatus tick() override
   {
-    nb::gil_scoped_acquire gil;
-    NB_OVERRIDE_PURE(tick);
+    throw BT::LogicError(
+        "PySyncActionNode::tick() invoked directly — should go through "
+        "PythonSyncActionAdapter. This is a binding bug.");
   }
 };
 
@@ -99,28 +69,91 @@ struct PyStatefulActionNode : public BT::StatefulActionNode
     : BT::StatefulActionNode(name, config)
   {}
 
-  ~PyStatefulActionNode() override
+  BT::NodeStatus onStart() override
   {
-    PythonInstanceRegistry::get().remove(this);
+    throw BT::LogicError("PyStatefulActionNode::onStart() invoked directly — "
+                         "should go through PythonStatefulActionAdapter.");
+  }
+  BT::NodeStatus onRunning() override
+  {
+    throw BT::LogicError("PyStatefulActionNode::onRunning() invoked directly.");
+  }
+  void onHalted() override
+  {
+    // No-op default for the shell (never reached at tick time).
+  }
+};
+
+// --------------------------------------------------------------------------
+// Adapters
+//
+// Each adapter is allocated by us via `new` and owned by Tree's
+// `unique_ptr<TreeNode>`. It holds the user's Python instance and forwards
+// virtual calls into Python under `gil_scoped_acquire`.
+// --------------------------------------------------------------------------
+
+class PythonSyncActionAdapter : public BT::SyncActionNode
+{
+public:
+  PythonSyncActionAdapter(const std::string& name, const BT::NodeConfig& config,
+                          nb::object py_inst)
+    : BT::SyncActionNode(name, config), py_inst_(std::move(py_inst))
+  {}
+
+  ~PythonSyncActionAdapter() override
+  {
+    nb::gil_scoped_acquire gil;
+    py_inst_.reset();
+  }
+
+  BT::NodeStatus tick() override
+  {
+    nb::gil_scoped_acquire gil;
+    return nb::cast<BT::NodeStatus>(py_inst_.attr("tick")());
+  }
+
+private:
+  nb::object py_inst_;
+};
+
+class PythonStatefulActionAdapter : public BT::StatefulActionNode
+{
+public:
+  PythonStatefulActionAdapter(const std::string& name,
+                              const BT::NodeConfig& config, nb::object py_inst)
+    : BT::StatefulActionNode(name, config), py_inst_(std::move(py_inst))
+  {}
+
+  ~PythonStatefulActionAdapter() override
+  {
+    nb::gil_scoped_acquire gil;
+    py_inst_.reset();
   }
 
   BT::NodeStatus onStart() override
   {
     nb::gil_scoped_acquire gil;
-    NB_OVERRIDE_PURE_NAME("on_start", onStart);
+    return nb::cast<BT::NodeStatus>(py_inst_.attr("on_start")());
   }
 
   BT::NodeStatus onRunning() override
   {
     nb::gil_scoped_acquire gil;
-    NB_OVERRIDE_PURE_NAME("on_running", onRunning);
+    return nb::cast<BT::NodeStatus>(py_inst_.attr("on_running")());
   }
 
   void onHalted() override
   {
     nb::gil_scoped_acquire gil;
-    NB_OVERRIDE_PURE_NAME("on_halted", onHalted);
+    // `on_halted` is optional — user may skip it when they have no cleanup.
+    if(nb::hasattr(py_inst_, "on_halted"))
+    {
+      py_inst_.attr("on_halted")();
+    }
   }
+
+private:
+  nb::object py_inst_;
 };
 
 // --------------------------------------------------------------------------
@@ -226,6 +259,14 @@ static void set_output_impl(BT::TreeNode& self, const std::string& name, nb::obj
 
 void register_tree_node(nb::module_& m)
 {
+  // Opaque NodeConfig binding — never constructed or inspected from Python,
+  // but must be visible so the factory's builder can pass it through
+  // `py_cls(name, config)` to the user's class's super().__init__.
+  nb::class_<BT::NodeConfig>(m, "NodeConfig",
+                             "Opaque per-node configuration handed in by the "
+                             "factory. Pass through to super().__init__; do "
+                             "not construct or inspect.");
+
   nb::class_<BT::TreeNode>(m, "TreeNode",
                            "Abstract base of every behavior-tree node. Cannot be "
                            "constructed directly; use SyncActionNode, "
@@ -266,10 +307,24 @@ void register_tree_node(nb::module_& m)
            "config"_a, "Built by the factory; users rarely call this directly.");
 }
 
-// Exposed for bind_factory.cpp: parks `instance` in the registry keyed by `node`.
-void park_python_instance(BT::TreeNode* node, nb::object instance)
+// --------------------------------------------------------------------------
+// Adapter factories — called from bind_factory.cpp's NodeBuilder lambda.
+// --------------------------------------------------------------------------
+
+std::unique_ptr<BT::TreeNode>
+make_sync_action_adapter(const std::string& name, const BT::NodeConfig& config,
+                         nb::object py_inst)
 {
-  PythonInstanceRegistry::get().store(node, std::move(instance));
+  return std::make_unique<PythonSyncActionAdapter>(name, config,
+                                                   std::move(py_inst));
+}
+
+std::unique_ptr<BT::TreeNode>
+make_stateful_action_adapter(const std::string& name,
+                             const BT::NodeConfig& config, nb::object py_inst)
+{
+  return std::make_unique<PythonStatefulActionAdapter>(name, config,
+                                                       std::move(py_inst));
 }
 
 }  // namespace pybt

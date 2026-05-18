@@ -14,6 +14,11 @@
 #include <mutex>
 #include <vector>
 
+#if defined(__unix__) || defined(__APPLE__)
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/shared_ptr.h>
 
@@ -81,11 +86,32 @@ void on_python_exit()
   LiveTreeRegistry::get().halt_all();
 }
 
+#if defined(__unix__) || defined(__APPLE__)
+// Captured at module init. If getpid() differs from this when a tick is
+// attempted, we know we're running in a forked child — and BT.CPP holds
+// state (parallel-node threads, atomic flags, signal handlers) that does
+// not survive fork. Detect and refuse rather than crash unpredictably.
+pid_t g_startup_pid = 0;
+
+void detect_fork_or_throw()
+{
+  if(g_startup_pid != 0 && getpid() != g_startup_pid)
+  {
+    throw BT::RuntimeError("pybt is not fork-safe — create the tree in the "
+                           "child process");
+  }
+}
+#else
+inline void detect_fork_or_throw() {}
+#endif
+
 // tick_while_running re-implemented to interleave PyErr_CheckSignals
 // between ticks. Mirrors Tree::tickWhileRunning but with signal-check.
 BT::NodeStatus
 tick_while_running_with_signals(BT::Tree& self, std::chrono::milliseconds sleep_dur)
 {
+  detect_fork_or_throw();
+
   BT::NodeStatus status = BT::NodeStatus::IDLE;
 
   // Drop the GIL for the whole loop. Trampolines reacquire when they
@@ -133,6 +159,14 @@ void register_tree(nb::module_& m)
     Py_AtExit(&on_python_exit);
     atexit_registered = true;
   }
+
+#if defined(__unix__) || defined(__APPLE__)
+  // Capture startup pid for fork-safety detection (see detect_fork_or_throw).
+  if(g_startup_pid == 0)
+  {
+    g_startup_pid = getpid();
+  }
+#endif
 
   nb::class_<BT::Tree>(m, "Tree",
                        "An instantiated behavior tree. Construct via the "

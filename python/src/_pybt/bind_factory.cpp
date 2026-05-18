@@ -10,6 +10,7 @@
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
 
+#include "behaviortree_cpp/action_node.h"
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/tree_node.h"
@@ -19,9 +20,15 @@ using namespace nb::literals;
 
 namespace pybt {
 
-// Defined in bind_tree_node.cpp — keeps the Python wrapper alive as long
-// as the corresponding C++ TreeNode lives.
-void park_python_instance(BT::TreeNode* node, nb::object instance);
+// Defined in bind_tree_node.cpp — construct an adapter that owns `py_inst`
+// and forwards virtual calls into Python. The adapter is allocated via
+// standard `new` so Tree's unique_ptr can `delete` it safely.
+std::unique_ptr<BT::TreeNode>
+make_sync_action_adapter(const std::string& name, const BT::NodeConfig& config,
+                         nb::object py_inst);
+std::unique_ptr<BT::TreeNode>
+make_stateful_action_adapter(const std::string& name,
+                             const BT::NodeConfig& config, nb::object py_inst);
 
 // Defined in bind_tree.cpp — atexit halt walks this registry.
 void register_live_tree(std::shared_ptr<BT::Tree> tree);
@@ -87,14 +94,26 @@ void register_node_type_impl(BT::BehaviorTreeFactory& self, nb::object py_cls,
   // Condition / Control / Decorator come in later phases.
   BT::TreeNodeManifest manifest{ BT::NodeType::ACTION, id, ports, {} };
 
+  // Detect once, at registration time, which adapter the user's class needs.
+  // The choice is captured by reference into the builder lambda.
+  nb::object pybt_mod = nb::module_::import_("pybt._pybt");
+  nb::object stateful_cls = pybt_mod.attr("StatefulActionNode");
+  const bool is_stateful =
+      PyObject_IsSubclass(py_cls.ptr(), stateful_cls.ptr()) == 1;
+
   BT::NodeBuilder builder =
-      [py_cls](const std::string& name,
-               const BT::NodeConfig& config) -> std::unique_ptr<BT::TreeNode> {
+      [py_cls, is_stateful](const std::string& name, const BT::NodeConfig& config)
+      -> std::unique_ptr<BT::TreeNode> {
     nb::gil_scoped_acquire gil;
+    // Construct the user's Python instance. The Python wrapper owns the
+    // underlying C++ trampoline shell — we don't touch it. We only need
+    // the Python object so the adapter can forward method calls into it.
     nb::object py_inst = py_cls(name, config);
-    BT::TreeNode* raw = nb::cast<BT::TreeNode*>(py_inst);
-    park_python_instance(raw, std::move(py_inst));
-    return std::unique_ptr<BT::TreeNode>(raw);
+    if(is_stateful)
+    {
+      return make_stateful_action_adapter(name, config, std::move(py_inst));
+    }
+    return make_sync_action_adapter(name, config, std::move(py_inst));
   };
 
   self.registerBuilder(manifest, builder);
