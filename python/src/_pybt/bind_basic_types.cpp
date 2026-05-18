@@ -1,12 +1,13 @@
 // bind_basic_types.cpp — enum bindings: NodeStatus, NodeType, PortDirection.
 
-#include <nanobind/nanobind.h>
-
 #include "behaviortree_cpp/basic_types.h"
+
+#include <nanobind/nanobind.h>
 
 namespace nb = nanobind;
 
-namespace pybt {
+namespace pybt
+{
 
 void register_basic_types(nb::module_& m)
 {

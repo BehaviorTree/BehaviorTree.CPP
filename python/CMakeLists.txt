@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.18)
 
 # pybt — Python bindings for BehaviorTree.CPP.
 #
-# Every pybind/nanobind/Python symbol must live in _pybt only. 
-# The behaviortree_cpp target must remain Python-unaware. 
+# Every pybind/nanobind/Python symbol must live in _pybt only.
+# The behaviortree_cpp target must remain Python-unaware.
 # Linkage is one-way: _pybt -> behaviortree_cpp.
 
 find_package(Python 3.9
@@ -43,3 +43,21 @@ endif()
 # Install the compiled extension into the pybt package directory so the
 # scikit-build-core wheel ships pybt/_pybt*.so alongside pybt/__init__.py.
 install(TARGETS _pybt LIBRARY DESTINATION pybt)
+
+if(UNIX AND NOT APPLE)
+    # No Python/nanobind symbols may appear in libbehaviortree_cpp.
+    # This must NEVER FAIL. Otherwise the architecture rule is fundamentally broken.
+    add_test(NAME pybt_no_python_symbols_in_core
+        COMMAND sh -c "! nm -D $<TARGET_FILE:${BTCPP_LIBRARY}> | grep -qE 'PyObject|pybind|nanobind|nb::'"
+    )
+
+    # Smoke import under the manylinux-equivalent compile flags.
+    # The workflow re-runs the whole build with those flags and invokes
+    # this test to verify `import pybt` still resolves cleanly.
+    add_test(NAME pybt_import_under_hidden_lto
+        COMMAND ${Python_EXECUTABLE} -c "import pybt; pybt.BehaviorTreeFactory()"
+    )
+    set_tests_properties(pybt_import_under_hidden_lto PROPERTIES
+        ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/src:$<TARGET_FILE_DIR:_pybt>"
+    )
+endif()

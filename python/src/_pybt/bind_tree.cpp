@@ -19,15 +19,16 @@
 #include <unistd.h>
 #endif
 
+#include "behaviortree_cpp/bt_factory.h"
+
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/shared_ptr.h>
-
-#include "behaviortree_cpp/bt_factory.h"
 
 namespace nb = nanobind;
 using namespace nb::literals;
 
-namespace pybt {
+namespace pybt
+{
 
 // --------------------------------------------------------------------------
 // Live-tree tracking + atexit halt
@@ -79,7 +80,8 @@ void register_live_tree(std::shared_ptr<BT::Tree> tree)
   LiveTreeRegistry::get().add(tree);
 }
 
-namespace {
+namespace
+{
 
 void on_python_exit()
 {
@@ -102,13 +104,14 @@ void detect_fork_or_throw()
   }
 }
 #else
-inline void detect_fork_or_throw() {}
+inline void detect_fork_or_throw()
+{}
 #endif
 
 // tick_while_running re-implemented to interleave PyErr_CheckSignals
 // between ticks. Mirrors Tree::tickWhileRunning but with signal-check.
-BT::NodeStatus
-tick_while_running_with_signals(BT::Tree& self, std::chrono::milliseconds sleep_dur)
+BT::NodeStatus tick_while_running_with_signals(BT::Tree& self,
+                                               std::chrono::milliseconds sleep_dur)
 {
   detect_fork_or_throw();
 
@@ -185,9 +188,8 @@ void register_tree(nb::module_& m)
   static bool atexit_registered = false;
   if(!atexit_registered)
   {
-    nb::module_::import_("atexit").attr("register")(nb::cpp_function([]() {
-      LiveTreeRegistry::get().halt_all();
-    }));
+    nb::module_::import_("atexit").attr("register")(
+        nb::cpp_function([]() { LiveTreeRegistry::get().halt_all(); }));
     Py_AtExit(&on_python_exit);
     atexit_registered = true;
   }
@@ -218,32 +220,31 @@ void register_tree(nb::module_& m)
       .def(
           "tick_while_running",
           [](BT::Tree& self, int sleep_ms) {
-            return tick_while_running_with_signals(
-                self, std::chrono::milliseconds(sleep_ms));
+            return tick_while_running_with_signals(self,
+                                                   std::chrono::milliseconds(sleep_ms));
           },
           "sleep_ms"_a = 10,
           "Tick repeatedly until the tree returns SUCCESS or FAILURE. Sleeps "
           "`sleep_ms` between iterations. Releases the GIL between ticks and "
           "checks for KeyboardInterrupt every iteration.")
 
-      .def("halt_tree", &BT::Tree::haltTree,
-           "Halt every running node in the tree.")
+      .def("halt_tree", &BT::Tree::haltTree, "Halt every running node in the tree.")
 
       .def("root_blackboard", &BT::Tree::rootBlackboard,
            "Return the root Blackboard (opaque in Phase 1 — full binding lands "
            "in a later phase).")
 
-      .def("sleep",
-           [](BT::Tree& self, int ms) {
-             return self.sleep(std::chrono::milliseconds(ms));
-           },
-           "duration_ms"_a,
-           "Sleep, interruptible by a wake signal. Returns True if a wake "
-           "signal arrived before the timeout.")
+      .def(
+          "sleep",
+          [](BT::Tree& self, int ms) {
+            return self.sleep(std::chrono::milliseconds(ms));
+          },
+          "duration_ms"_a,
+          "Sleep, interruptible by a wake signal. Returns True if a wake "
+          "signal arrived before the timeout.")
 
       .def_prop_ro(
-          "root_node",
-          [](BT::Tree& self) -> BT::TreeNode* { return self.rootNode(); },
+          "root_node", [](BT::Tree& self) -> BT::TreeNode* { return self.rootNode(); },
           nb::rv_policy::reference_internal,
           "The root TreeNode of this tree (or None if empty).");
 }

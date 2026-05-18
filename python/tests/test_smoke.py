@@ -126,6 +126,7 @@ def test_stateful_on_halted_optional():
 
         def on_running(self):
             return pybt.NodeStatus.SUCCESS
+
         # Intentionally no on_halted.
 
     f = pybt.BehaviorTreeFactory()
@@ -236,10 +237,10 @@ def test_output_then_input_roundtrip():
     f.register_node_type(Writer, "Writer")
     f.register_node_type(Reader, "Reader")
     xml = XML_SINGLE.format(
-        '<Sequence>'
+        "<Sequence>"
         '<Writer value="{shared}"/>'
         '<Reader value="{shared}"/>'
-        '</Sequence>'
+        "</Sequence>"
     )
     t = f.create_tree_from_text(xml)
     assert t.tick_while_running() == pybt.NodeStatus.SUCCESS
@@ -290,9 +291,7 @@ def test_register_non_action_class_raises():
         t.tick_while_running()
     except Exception:
         return
-    raise AssertionError(
-        "registering or ticking a non-action class should have raised"
-    )
+    raise AssertionError("registering or ticking a non-action class should have raised")
 
 
 def test_register_duplicate_id_raises():
@@ -370,6 +369,7 @@ def test_fork_safety_raises_btruntimeerror():
 # SIGINT / Ctrl-C
 # ---------------------------------------------------------------------------
 
+
 def test_sigint_interrupts_tick():
     """SIGINT during tick_while_running raises KeyboardInterrupt within ~50ms."""
     import signal
@@ -410,6 +410,7 @@ def test_sigint_interrupts_tick():
 # GIL release — two threads, two trees, concurrent
 # ---------------------------------------------------------------------------
 
+
 def test_two_threads_two_trees_run_concurrently():
     """Two threads ticking two trees in parallel finish in ~one tree's worth of wall time."""
     import threading
@@ -426,9 +427,7 @@ def test_two_threads_two_trees_run_concurrently():
         def on_running(self):
             self.iters += 1
             return (
-                pybt.NodeStatus.SUCCESS
-                if self.iters >= 8
-                else pybt.NodeStatus.RUNNING
+                pybt.NodeStatus.SUCCESS if self.iters >= 8 else pybt.NodeStatus.RUNNING
             )
 
     def run_tree():
@@ -466,6 +465,7 @@ def test_two_threads_two_trees_run_concurrently():
 # Module reload
 # ---------------------------------------------------------------------------
 
+
 def test_module_reload_does_not_crash():
     """importlib.reload(pybt) either succeeds or raises cleanly — must not segfault."""
     import importlib
@@ -483,6 +483,7 @@ def test_module_reload_does_not_crash():
 # ---------------------------------------------------------------------------
 # Standalone runner
 # ---------------------------------------------------------------------------
+
 
 def _collect_tests():
     g = globals()
@@ -503,7 +504,9 @@ def _run_all():
             passed += 1
             print(f"PASS  {name}")
     print()
-    print(f"{passed}/{len(tests)} passed", "" if not failed else f"({len(failed)} failed)")
+    print(
+        f"{passed}/{len(tests)} passed", "" if not failed else f"({len(failed)} failed)"
+    )
     return 0 if not failed else 1
 
 

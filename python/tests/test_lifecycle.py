@@ -13,7 +13,9 @@ import pytest
 pytestmark = [pytest.mark.smoke, pytest.mark.slow]
 
 
-def _run_in_subprocess(script: str, timeout: float = 10.0) -> subprocess.CompletedProcess:
+def _run_in_subprocess(
+    script: str, timeout: float = 10.0
+) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, "-c", textwrap.dedent(script)],
         capture_output=True,
@@ -23,9 +25,8 @@ def _run_in_subprocess(script: str, timeout: float = 10.0) -> subprocess.Complet
 
 
 def test_clean_thread_shutdown_with_stop_flag():
-    """A tree ticking in a background thread exits cleanly via a node-level stop flag.
-    """
-    
+    """A tree ticking in a background thread exits cleanly via a node-level stop flag."""
+
     script = """
         import threading
         import time
@@ -69,9 +70,9 @@ def test_clean_thread_shutdown_with_stop_flag():
         f"interpreter exited with {result.returncode}\n"
         f"stdout: {result.stdout}\nstderr: {result.stderr}"
     )
-    assert "MAIN_DONE" in result.stdout, (
-        f"main thread didn't reach the end: stdout={result.stdout}"
-    )
+    assert (
+        "MAIN_DONE" in result.stdout
+    ), f"main thread didn't reach the end: stdout={result.stdout}"
 
 
 def test_clean_module_load_and_shutdown():
@@ -82,9 +83,7 @@ def test_clean_module_load_and_shutdown():
         assert pybt.NodeStatus.SUCCESS
         """
     )
-    assert result.returncode == 0, (
-        f"clean import + exit failed: stderr={result.stderr}"
-    )
+    assert result.returncode == 0, f"clean import + exit failed: stderr={result.stderr}"
 
 
 def test_no_nanobind_leaks():
@@ -116,6 +115,6 @@ def test_no_nanobind_leaks():
         for line in combined.splitlines()
         if "nanobind" in line and "leak" in line.lower()
     ]
-    assert not leak_lines, (
-        "nanobind reported leaks at shutdown:\n  " + "\n  ".join(leak_lines)
+    assert not leak_lines, "nanobind reported leaks at shutdown:\n  " + "\n  ".join(
+        leak_lines
     )

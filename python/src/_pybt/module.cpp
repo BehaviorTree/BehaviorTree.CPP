@@ -6,7 +6,8 @@
 
 namespace nb = nanobind;
 
-namespace pybt {
+namespace pybt
+{
 void register_exceptions(nb::module_& m);
 void register_basic_types(nb::module_& m);
 void register_ports(nb::module_& m);

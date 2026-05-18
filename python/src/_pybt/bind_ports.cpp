@@ -4,16 +4,17 @@
 // the JSON serialization layer in bind_tree_node.cpp. Custom strongly-typed
 // ports are an advanced use case and not needed for Phase 1.
 
+#include "behaviortree_cpp/basic_types.h"
+
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/pair.h>
 #include <nanobind/stl/string.h>
 
-#include "behaviortree_cpp/basic_types.h"
-
 namespace nb = nanobind;
 using namespace nb::literals;
 
-namespace pybt {
+namespace pybt
+{
 
 void register_ports(nb::module_& m)
 {

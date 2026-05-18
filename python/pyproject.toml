@@ -93,7 +93,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "bench_*.py"]
 python_functions = ["test_*", "bench_*"]
 markers = [
-    "smoke: Phase 1 smoke tests — must always pass to consider pybt healthy.",
+    "smoke: Smoke tests — must always pass to consider pybt healthy.",
     "slow: tests taking more than ~1 second; opt-out via `-m 'not slow'`.",
     "benchmark: pytest-benchmark microbenchmarks (also receive the `benchmark` fixture).",
 ]

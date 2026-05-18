@@ -21,20 +21,21 @@
 // targets a different allocator and triggered `free(): invalid pointer`
 // on tree teardown. Splitting the roles fixes the lifetime model.
 
-#include <nanobind/nanobind.h>
-#include <nanobind/stl/string.h>
-#include <nanobind/trampoline.h>
+#include "json_bridge.hpp"
 
 #include "behaviortree_cpp/action_node.h"
 #include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/tree_node.h"
 
-#include "json_bridge.hpp"
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/trampoline.h>
 
 namespace nb = nanobind;
 using namespace nb::literals;
 
-namespace pybt {
+namespace pybt
+{
 
 // --------------------------------------------------------------------------
 // Trampoline shells
@@ -55,9 +56,8 @@ struct PySyncActionNode : public BT::SyncActionNode
   // If this fires, the factory wiring is broken.
   BT::NodeStatus tick() override
   {
-    throw BT::LogicError(
-        "PySyncActionNode::tick() invoked directly — should go through "
-        "PythonSyncActionAdapter. This is a binding bug.");
+    throw BT::LogicError("PySyncActionNode::tick() invoked directly — should go through "
+                         "PythonSyncActionAdapter. This is a binding bug.");
   }
 };
 
@@ -119,8 +119,8 @@ private:
 class PythonStatefulActionAdapter : public BT::StatefulActionNode
 {
 public:
-  PythonStatefulActionAdapter(const std::string& name,
-                              const BT::NodeConfig& config, nb::object py_inst)
+  PythonStatefulActionAdapter(const std::string& name, const BT::NodeConfig& config,
+                              nb::object py_inst)
     : BT::StatefulActionNode(name, config), py_inst_(std::move(py_inst))
   {}
 
@@ -238,8 +238,7 @@ static void set_output_impl(BT::TreeNode& self, const std::string& name, nb::obj
       if(!entry)
       {
         throw BT::RuntimeError("set_output('", name,
-                               "'): cannot convert value to a BT type: ",
-                               entry.error());
+                               "'): cannot convert value to a BT type: ", entry.error());
       }
       any = entry->first;
       break;
@@ -271,10 +270,8 @@ void register_tree_node(nb::module_& m)
                            "Abstract base of every behavior-tree node. Cannot be "
                            "constructed directly; use SyncActionNode, "
                            "StatefulActionNode, or build a tree via the factory.")
-      .def_prop_ro("name", &BT::TreeNode::name,
-                   "The instance name assigned in the XML.")
-      .def_prop_ro("status", &BT::TreeNode::status,
-                   "Current NodeStatus.")
+      .def_prop_ro("name", &BT::TreeNode::name, "The instance name assigned in the XML.")
+      .def_prop_ro("status", &BT::TreeNode::status, "Current NodeStatus.")
       .def_prop_ro("uid", &BT::TreeNode::UID,
                    "Numeric unique identifier assigned by the factory.")
       .def_prop_ro("full_path", &BT::TreeNode::fullPath,
@@ -289,42 +286,64 @@ void register_tree_node(nb::module_& m)
            "Write a value to a declared output port. Raises BTRuntimeError if "
            "the port was not declared.");
 
-  nb::class_<BT::SyncActionNode, BT::TreeNode, PySyncActionNode>(
-      m, "SyncActionNode",
-      "Synchronous action. Subclass and implement `tick(self)` returning "
-      "NodeStatus.SUCCESS or NodeStatus.FAILURE. Returning RUNNING is "
-      "forbidden — use StatefulActionNode instead.")
-      .def(nb::init<const std::string&, const BT::NodeConfig&>(), "name"_a,
-           "config"_a, "Built by the factory; users rarely call this directly.");
+  nb::class_<BT::SyncActionNode, BT::TreeNode, PySyncActionNode>(m, "SyncActionNode",
+                                                                 "Synchronous action. "
+                                                                 "Subclass and implement "
+                                                                 "`tick(self)` returning "
+                                                                 "NodeStatus.SUCCESS or "
+                                                                 "NodeStatus.FAILURE. "
+                                                                 "Returning RUNNING is "
+                                                                 "forbidden — use "
+                                                                 "StatefulActionNode "
+                                                                 "instead.")
+      .def(nb::init<const std::string&, const BT::NodeConfig&>(), "name"_a, "config"_a,
+           "Built by the factory; users rarely call this directly.");
 
-  nb::class_<BT::StatefulActionNode, BT::TreeNode, PyStatefulActionNode>(
-      m, "StatefulActionNode",
-      "Stateful action for asynchronous work. Subclass and implement "
-      "`on_start`, `on_running`, `on_halted`. The factory calls on_start once, "
-      "then on_running until the node returns SUCCESS or FAILURE; on_halted "
-      "runs if the parent halts the node while RUNNING.")
-      .def(nb::init<const std::string&, const BT::NodeConfig&>(), "name"_a,
-           "config"_a, "Built by the factory; users rarely call this directly.");
+  nb::class_<BT::StatefulActionNode, BT::TreeNode, PyStatefulActionNode>(m,
+                                                                         "StatefulActionN"
+                                                                         "ode",
+                                                                         "Stateful "
+                                                                         "action for "
+                                                                         "asynchronous "
+                                                                         "work. Subclass "
+                                                                         "and implement "
+                                                                         "`on_start`, "
+                                                                         "`on_running`, "
+                                                                         "`on_halted`. "
+                                                                         "The factory "
+                                                                         "calls on_start "
+                                                                         "once, "
+                                                                         "then "
+                                                                         "on_running "
+                                                                         "until the node "
+                                                                         "returns "
+                                                                         "SUCCESS or "
+                                                                         "FAILURE; "
+                                                                         "on_halted "
+                                                                         "runs if the "
+                                                                         "parent halts "
+                                                                         "the node while "
+                                                                         "RUNNING.")
+      .def(nb::init<const std::string&, const BT::NodeConfig&>(), "name"_a, "config"_a,
+           "Built by the factory; users rarely call this directly.");
 }
 
 // --------------------------------------------------------------------------
 // Adapter factories — called from bind_factory.cpp's NodeBuilder lambda.
 // --------------------------------------------------------------------------
 
-std::unique_ptr<BT::TreeNode>
-make_sync_action_adapter(const std::string& name, const BT::NodeConfig& config,
-                         nb::object py_inst)
+std::unique_ptr<BT::TreeNode> make_sync_action_adapter(const std::string& name,
+                                                       const BT::NodeConfig& config,
+                                                       nb::object py_inst)
 {
-  return std::make_unique<PythonSyncActionAdapter>(name, config,
-                                                   std::move(py_inst));
+  return std::make_unique<PythonSyncActionAdapter>(name, config, std::move(py_inst));
 }
 
-std::unique_ptr<BT::TreeNode>
-make_stateful_action_adapter(const std::string& name,
-                             const BT::NodeConfig& config, nb::object py_inst)
+std::unique_ptr<BT::TreeNode> make_stateful_action_adapter(const std::string& name,
+                                                           const BT::NodeConfig& config,
+                                                           nb::object py_inst)
 {
-  return std::make_unique<PythonStatefulActionAdapter>(name, config,
-                                                       std::move(py_inst));
+  return std::make_unique<PythonStatefulActionAdapter>(name, config, std::move(py_inst));
 }
 
 }  // namespace pybt

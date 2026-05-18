@@ -1,5 +1,10 @@
 // bind_factory.cpp — BehaviorTreeFactory binding.
 
+#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/tree_node.h"
+
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -10,25 +15,21 @@
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
 
-#include "behaviortree_cpp/action_node.h"
-#include "behaviortree_cpp/basic_types.h"
-#include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/tree_node.h"
-
 namespace nb = nanobind;
 using namespace nb::literals;
 
-namespace pybt {
+namespace pybt
+{
 
 // Defined in bind_tree_node.cpp — construct an adapter that owns `py_inst`
 // and forwards virtual calls into Python. The adapter is allocated via
 // standard `new` so Tree's unique_ptr can `delete` it safely.
-std::unique_ptr<BT::TreeNode>
-make_sync_action_adapter(const std::string& name, const BT::NodeConfig& config,
-                         nb::object py_inst);
-std::unique_ptr<BT::TreeNode>
-make_stateful_action_adapter(const std::string& name,
-                             const BT::NodeConfig& config, nb::object py_inst);
+std::unique_ptr<BT::TreeNode> make_sync_action_adapter(const std::string& name,
+                                                       const BT::NodeConfig& config,
+                                                       nb::object py_inst);
+std::unique_ptr<BT::TreeNode> make_stateful_action_adapter(const std::string& name,
+                                                           const BT::NodeConfig& config,
+                                                           nb::object py_inst);
 
 // Defined in bind_tree.cpp — atexit halt walks this registry.
 void register_live_tree(std::shared_ptr<BT::Tree> tree);
@@ -41,7 +42,8 @@ static std::shared_ptr<BT::Tree> wrap_and_track(BT::Tree&& tree)
   return sp;
 }
 
-namespace {
+namespace
+{
 
 // Build a PortsList from one of:
 //   1. Explicit list of (name, PortInfo) tuples (e.g. [pybt.input_port("x")])
@@ -68,8 +70,7 @@ BT::PortsList resolve_ports(nb::handle py_cls, nb::object ports_obj)
     for(nb::handle name : py_cls.attr("input_ports"))
     {
       std::string n = nb::cast<std::string>(name);
-      ports.insert(
-          BT::CreatePort<BT::AnyTypeAllowed>(BT::PortDirection::INPUT, n));
+      ports.insert(BT::CreatePort<BT::AnyTypeAllowed>(BT::PortDirection::INPUT, n));
     }
   }
   if(nb::hasattr(py_cls, "output_ports"))
@@ -77,8 +78,7 @@ BT::PortsList resolve_ports(nb::handle py_cls, nb::object ports_obj)
     for(nb::handle name : py_cls.attr("output_ports"))
     {
       std::string n = nb::cast<std::string>(name);
-      ports.insert(
-          BT::CreatePort<BT::AnyTypeAllowed>(BT::PortDirection::OUTPUT, n));
+      ports.insert(BT::CreatePort<BT::AnyTypeAllowed>(BT::PortDirection::OUTPUT, n));
     }
   }
 
@@ -98,12 +98,12 @@ void register_node_type_impl(BT::BehaviorTreeFactory& self, nb::object py_cls,
   // The choice is captured by reference into the builder lambda.
   nb::object pybt_mod = nb::module_::import_("pybt._pybt");
   nb::object stateful_cls = pybt_mod.attr("StatefulActionNode");
-  const bool is_stateful =
-      PyObject_IsSubclass(py_cls.ptr(), stateful_cls.ptr()) == 1;
+  const bool is_stateful = PyObject_IsSubclass(py_cls.ptr(), stateful_cls.ptr()) == 1;
 
   BT::NodeBuilder builder =
-      [py_cls, is_stateful](const std::string& name, const BT::NodeConfig& config)
-      -> std::unique_ptr<BT::TreeNode> {
+      [py_cls,
+       is_stateful](const std::string& name,
+                    const BT::NodeConfig& config) -> std::unique_ptr<BT::TreeNode> {
     nb::gil_scoped_acquire gil;
     // Construct the user's Python instance. The Python wrapper owns the
     // underlying C++ trampoline shell — we don't touch it. We only need
@@ -119,9 +119,8 @@ void register_node_type_impl(BT::BehaviorTreeFactory& self, nb::object py_cls,
   self.registerBuilder(manifest, builder);
 }
 
-void register_simple_action_impl(BT::BehaviorTreeFactory& self,
-                                 const std::string& id, nb::object callable,
-                                 nb::object ports_obj)
+void register_simple_action_impl(BT::BehaviorTreeFactory& self, const std::string& id,
+                                 nb::object callable, nb::object ports_obj)
 {
   BT::PortsList ports = resolve_ports(nb::none(), ports_obj);
 
@@ -139,9 +138,9 @@ void register_simple_action_impl(BT::BehaviorTreeFactory& self,
 
 void register_factory(nb::module_& m)
 {
-  nb::class_<BT::BehaviorTreeFactory>(
-      m, "BehaviorTreeFactory",
-      "Registers node types and builds Tree instances from XML.")
+  nb::class_<BT::BehaviorTreeFactory>(m, "BehaviorTreeFactory",
+                                      "Registers node types and builds Tree instances "
+                                      "from XML.")
       .def(nb::init<>(), "Construct an empty factory.")
 
       .def("register_node_type", &register_node_type_impl, "cls"_a, "id"_a,
@@ -166,11 +165,9 @@ void register_factory(nb::module_& m)
           [](BT::BehaviorTreeFactory& self, const std::string& path) {
             self.registerBehaviorTreeFromFile(std::filesystem::path(path));
           },
-          "path"_a,
-          "Pre-register the <BehaviorTree> definitions from a file on disk.")
+          "path"_a, "Pre-register the <BehaviorTree> definitions from a file on disk.")
 
-      .def("registered_behavior_trees",
-           &BT::BehaviorTreeFactory::registeredBehaviorTrees,
+      .def("registered_behavior_trees", &BT::BehaviorTreeFactory::registeredBehaviorTrees,
            "Names of every behavior tree currently registered with the factory.")
 
       .def("clear_registered_behavior_trees",
@@ -190,8 +187,7 @@ void register_factory(nb::module_& m)
       .def(
           "create_tree_from_file",
           [](BT::BehaviorTreeFactory& self, const std::string& path) {
-            return wrap_and_track(
-                self.createTreeFromFile(std::filesystem::path(path)));
+            return wrap_and_track(self.createTreeFromFile(std::filesystem::path(path)));
           },
           "path"_a, "Read XML from a file and instantiate the resulting Tree.")
 
@@ -200,8 +196,7 @@ void register_factory(nb::module_& m)
           [](BT::BehaviorTreeFactory& self, const std::string& tree_name) {
             return wrap_and_track(self.createTree(tree_name));
           },
-          "tree_name"_a,
-          "Instantiate a previously registered behavior tree by name.");
+          "tree_name"_a, "Instantiate a previously registered behavior tree by name.");
 }
 
 }  // namespace pybt

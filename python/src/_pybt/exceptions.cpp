@@ -11,13 +11,14 @@
 // (IndexError, ValueError, RuntimeError) by nanobind's defaults — we do
 // not register translators for those here.
 
-#include <nanobind/nanobind.h>
-
 #include "behaviortree_cpp/exceptions.h"
+
+#include <nanobind/nanobind.h>
 
 namespace nb = nanobind;
 
-namespace pybt {
+namespace pybt
+{
 
 void register_exceptions(nb::module_& m)
 {

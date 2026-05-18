@@ -9,15 +9,16 @@
 
 #pragma once
 
-#include <nanobind/nanobind.h>
-#include <nanobind/stl/string.h>
+#include "behaviortree_cpp/contrib/json.hpp"
 
 #include <stdexcept>
 #include <string>
 
-#include "behaviortree_cpp/contrib/json.hpp"
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
 
-namespace pybt {
+namespace pybt
+{
 
 namespace nb = nanobind;
 using nlohmann::json;
