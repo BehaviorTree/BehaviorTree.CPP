@@ -16,11 +16,29 @@ nanobind_add_module(_pybt
     NB_STATIC
     STABLE_ABI
     src/_pybt/module.cpp
+    src/_pybt/exceptions.cpp
+    src/_pybt/bind_basic_types.cpp
+    src/_pybt/bind_ports.cpp
+    src/_pybt/bind_tree_node.cpp
+    src/_pybt/bind_factory.cpp
+    src/_pybt/bind_tree.cpp
 )
 
 target_link_libraries(_pybt PRIVATE ${BTCPP_LIBRARY})
 
 target_compile_features(_pybt PRIVATE cxx_std_17)
+
+if(UNIX AND NOT APPLE)
+    set_target_properties(_pybt PROPERTIES
+        INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib"
+        BUILD_WITH_INSTALL_RPATH TRUE
+    )
+elseif(APPLE)
+    set_target_properties(_pybt PROPERTIES
+        INSTALL_RPATH "@loader_path;@loader_path/../lib"
+        BUILD_WITH_INSTALL_RPATH TRUE
+    )
+endif()
 
 # Install the compiled extension into the pybt package directory so the
 # scikit-build-core wheel ships pybt/_pybt*.so alongside pybt/__init__.py.
