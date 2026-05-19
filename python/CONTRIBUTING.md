@@ -30,6 +30,16 @@ pytest benchmarks/ --benchmark-only
 
 Results written in `benchmarks/.benchmarks/` (git-ignored). See [`benchmarks/README.md`](benchmarks/README.md).
 
+## Run examples
+
+```bash
+python examples/t01_build_your_first_tree.py
+python examples/t02_basic_ports.py
+python examples/t03_passing_data.py
+```
+
+Each script prints what it's doing and exits 0 on success. `pytest tests/test_examples.py` runs all three in subprocesses and asserts clean exits — that's the rot-prevention gate.
+
 ## Pre-commit hooks
 
 Install once:
@@ -51,9 +61,10 @@ This runs `ruff`, `mypy`, the no-C++-refs check, and the project's standard hook
 |---|---|
 | `src/pybt/` | Python package (the user-facing surface) |
 | `src/_pybt/` | C++ binding code (nanobind) |
-| `tests/` | pytest suite — smoke + lifecycle |
+| `tests/` | pytest suite — smoke + lifecycle + example runner |
+| `examples/` | Runnable tutorial scripts (t01..t03 so far) |
 | `benchmarks/` | pytest-benchmark microbenchmarks |
-| `docs/` | Sphinx site (stub in Phase 1) |
+| `docs/` | Sphinx site (stub for now) |
 | `pyproject.toml` | Build config (scikit-build-core, nanobind, pytest) |
 | `CMakeLists.txt` | nanobind extension + CTest regression guards |
 
@@ -61,4 +72,3 @@ This runs `ruff`, `mypy`, the no-C++-refs check, and the project's standard hook
 
 - Python: `ruff` for lint and format, `mypy` for types.
 - C++: project root `.clang-format` (Google C++ with 2-space indent, 90-char line limit).
-- Docs: per the Documentation Standards in the project plan — standalone, brief, no C++ references outside this file and `README.md`.
