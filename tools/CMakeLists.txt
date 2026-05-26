@@ -34,3 +34,8 @@ add_executable(bt4_generate_xsd         generate_xsd.cpp )
 target_link_libraries(bt4_generate_xsd  ${BTCPP_LIBRARY} )
 install(TARGETS bt4_generate_xsd
         DESTINATION ${BTCPP_BIN_DESTINATION} )
+
+add_executable(bt4_generate_schematron         generate_schematron.cpp )
+target_link_libraries(bt4_generate_schematron  ${BTCPP_LIBRARY} )
+install(TARGETS bt4_generate_schematron
+        DESTINATION ${BTCPP_BIN_DESTINATION} )
