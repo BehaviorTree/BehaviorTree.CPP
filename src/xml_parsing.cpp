@@ -53,6 +53,8 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
 
+#include "schematron_template.gen.h"
+
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_cpp/utils/demangle_util.h"
@@ -1772,6 +1774,25 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
   XMLPrinter printer;
   doc.Print(&printer);
   return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
+}
+
+std::string writeTreeSchematron(const BehaviorTreeFactory& factory)
+{
+  // Build the pipe-delimited builtin node list, e.g. "|AlwaysFailure|Fallback|...|",
+  // then substitute the ##BUILTIN_PIPE## placeholder in the embedded template.
+  // The template itself lives in src/btcpp4_schematron.sch (human-readable);
+  // schematron_template.gen.h is generated from it by CMake.
+  std::ostringstream builtin_pipe_ss;
+  builtin_pipe_ss << "|";
+  for(const auto& name : factory.builtinNodes())
+    builtin_pipe_ss << name << "|";
+
+  std::string result = BT::detail::schematron_template;
+  const std::string placeholder = "##BUILTIN_PIPE##";
+  const auto pos = result.find(placeholder);
+  if(pos != std::string::npos)
+    result.replace(pos, placeholder.size(), builtin_pipe_ss.str());
+  return result;
 }
 
 std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin_models)

@@ -75,6 +75,29 @@ void VerifyXML(const std::string& xml_text,
                                        bool generic = false);
 
 /**
+ * @brief writeTreeSchematron generates an ISO Schematron schema for BehaviorTree.CPP XML files.
+ *
+ * XSD alone cannot express cross-reference constraints.  This Schematron
+ * complements writeTreeXSD() with three rule patterns:
+ *   - treeNodesModel: every custom (non-built-in) node element appearing in a
+ *     BehaviorTree body must have a matching TreeNodesModel entry (required by
+ *     Groot2 for port display and editing).
+ *   - subtreeResolution: every <SubTree ID="X"/> must resolve to a
+ *     <BehaviorTree ID="X"> in the same file (relaxed when <include> is present).
+ *   - rootStructure: main_tree_to_execute must name an existing BehaviorTree.
+ *
+ * The built-in node list is derived from factory.builtinNodes() so that the
+ * schema stays in sync as new built-ins are added.
+ *
+ * @param factory  factory from which the built-in node names are taken;
+ *                 a default-constructed BehaviorTreeFactory suffices for most uses.
+ *
+ * @return  string containing the Schematron XML (queryBinding="xslt",
+ *          compatible with xsltproc and lxml.isoschematron).
+ */
+[[nodiscard]] std::string writeTreeSchematron(const BehaviorTreeFactory& factory);
+
+/**
  * @brief WriteTreeToXML create a string that contains the XML that corresponds to a given tree.
  * When using this function with a logger, you should probably set both add_metadata and
  * add_builtin_models to true.
