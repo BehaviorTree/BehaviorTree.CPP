@@ -777,3 +777,112 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
   BehaviorTreeFactory factory;
   EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
 }
+
+// ---------------------------------------------------------------------------
+// writeTreeXSD tests
+// ---------------------------------------------------------------------------
+
+TEST(WriteTreeXSD, WellFormedOutput)
+{
+  BehaviorTreeFactory factory;
+  auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find("<?xml"), std::string::npos);
+  EXPECT_NE(xsd.find("<xs:schema"), std::string::npos);
+  EXPECT_NE(xsd.find("</xs:schema>"), std::string::npos);
+}
+
+TEST(WriteTreeXSD, ContainsBuiltinNodes)
+{
+  BehaviorTreeFactory factory;
+  auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find("name=\"Sequence\""), std::string::npos);
+  EXPECT_NE(xsd.find("name=\"Fallback\""), std::string::npos);
+  EXPECT_NE(xsd.find("name=\"Inverter\""), std::string::npos);
+}
+
+TEST(WriteTreeXSD, CustomNodeAppearsInOutput)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find("name=\"SaySomething\""), std::string::npos);
+  EXPECT_NE(xsd.find("name=\"message\""), std::string::npos);
+}
+
+TEST(WriteTreeXSD, GenericModeUsesXsAny)
+{
+  BehaviorTreeFactory factory;
+  auto xsd_strict = writeTreeXSD(factory, false);
+  auto xsd_generic = writeTreeXSD(factory, true);
+  EXPECT_EQ(xsd_strict.find("processContents=\"lax\""), std::string::npos);
+  EXPECT_NE(xsd_generic.find("processContents=\"lax\""), std::string::npos);
+}
+
+TEST(WriteTreeXSD, GenericModeExcludesCustomNodes)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto xsd_strict = writeTreeXSD(factory, false);
+  auto xsd_generic = writeTreeXSD(factory, true);
+  // Custom nodes must appear in strict but not in generic (generic accepts them via xs:any)
+  EXPECT_NE(xsd_strict.find("SaySomething"), std::string::npos);
+  EXPECT_EQ(xsd_generic.find("SaySomething"), std::string::npos);
+}
+
+TEST(WriteTreeXSD, Deterministic)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto xsd1 = writeTreeXSD(factory);
+  auto xsd2 = writeTreeXSD(factory);
+  EXPECT_EQ(xsd1, xsd2);
+}
+
+// ---------------------------------------------------------------------------
+// writeTreeSchematron tests
+// ---------------------------------------------------------------------------
+
+TEST(WriteTreeSchematron, WellFormedOutput)
+{
+  BehaviorTreeFactory factory;
+  auto sch = writeTreeSchematron(factory);
+  EXPECT_NE(sch.find("<?xml"), std::string::npos);
+  EXPECT_NE(sch.find("sch:schema"), std::string::npos);
+  EXPECT_NE(sch.find("</sch:schema>"), std::string::npos);
+}
+
+TEST(WriteTreeSchematron, PlaceholderReplaced)
+{
+  BehaviorTreeFactory factory;
+  auto sch = writeTreeSchematron(factory);
+  EXPECT_EQ(sch.find("##BUILTIN_PIPE##"), std::string::npos);
+}
+
+TEST(WriteTreeSchematron, BuiltinNodesInPipeList)
+{
+  BehaviorTreeFactory factory;
+  auto sch = writeTreeSchematron(factory);
+  EXPECT_NE(sch.find("|Sequence|"), std::string::npos);
+  EXPECT_NE(sch.find("|Fallback|"), std::string::npos);
+  EXPECT_NE(sch.find("|Inverter|"), std::string::npos);
+}
+
+TEST(WriteTreeSchematron, ContainsAllPatternIds)
+{
+  BehaviorTreeFactory factory;
+  auto sch = writeTreeSchematron(factory);
+  EXPECT_NE(sch.find("id=\"treeNodesModel\""), std::string::npos);
+  EXPECT_NE(sch.find("id=\"subtreeResolution\""), std::string::npos);
+  EXPECT_NE(sch.find("id=\"rootStructure\""), std::string::npos);
+}
+
+TEST(WriteTreeSchematron, CustomNodeNotInBuiltinPipe)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto sch = writeTreeSchematron(factory);
+  // Custom nodes must not appear in the builtin pipe exclusion list
+  EXPECT_EQ(sch.find("|SaySomething|"), std::string::npos);
+  // Builtins must still be present
+  EXPECT_NE(sch.find("|Sequence|"), std::string::npos);
+}
