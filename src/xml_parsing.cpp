@@ -1569,6 +1569,15 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
+    <xs:complexType name="inoutPortType">
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" type="xs:string" use="required"/>
+          <xs:attribute name="type" type="xs:string" use="optional"/>
+          <xs:attribute name="default" type="xs:string" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
     <xs:attributeGroup name="preconditionAttributeGroup">
       <xs:attribute name="_failureIf" type="xs:string" use="optional"/>
       <xs:attribute name="_skipIf" type="xs:string" use="optional"/>
@@ -1602,6 +1611,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
         <xs:choice minOccurs="0" maxOccurs="unbounded">
           <xs:element name="input_port" type="inputPortType"/>
           <xs:element name="output_port" type="outputPortType"/>
+          <xs:element name="inout_port" type="inoutPortType"/>
         </xs:choice>
         <xs:element name="description" type="descriptionType" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
