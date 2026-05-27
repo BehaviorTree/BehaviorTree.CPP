@@ -1487,7 +1487,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
   std::map<std::string, const TreeNodeManifest*> ordered_models;
   for(const auto& [registration_id, model] : factory.manifests())
   {
-    if(!generic || builtin_set.count(registration_id))
+    if(!generic || builtin_set.count(registration_id) != 0)
       ordered_models.insert({ registration_id, &model });
   }
 
