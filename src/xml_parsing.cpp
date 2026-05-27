@@ -1483,10 +1483,12 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
   // make sense with XSD since we would need to allow any attribute.
   // Prepare the data
 
+  const auto& builtin_set = factory.builtinNodes();
   std::map<std::string, const TreeNodeManifest*> ordered_models;
   for(const auto& [registration_id, model] : factory.manifests())
   {
-    ordered_models.insert({ registration_id, &model });
+    if(!generic || builtin_set.count(registration_id))
+      ordered_models.insert({ registration_id, &model });
   }
 
   XMLDocument doc;
