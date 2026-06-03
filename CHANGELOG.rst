@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.8.8 (2026-06-03)
+------------------
 * Require C++17 to match ament_index_cpp 1.8.3+
 * Contributors: Davide Faconti, Marco A. Gutierrez
 
