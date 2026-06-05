@@ -7,6 +7,17 @@ Changelog for package behaviortree_cpp
 * Require C++17 to match ament_index_cpp 1.8.3+
 * Contributors: Davide Faconti, Marco A. Gutierrez
 
+Forthcoming
+-----------
+* Merge pull request `#1148 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1148>`_ from marcoag/v3.8
+  Jazzy release 3.8.8
+* 3.8.8
+* Changelog.
+* Merge pull request `#1123 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1123>`_ from marcoag/marcoag/v3.8_v++17
+  Require C++17 to match ament_index_cpp 1.8.3+
+* Require C++17 to match ament_index_cpp 1.8.3+
+* Contributors: Davide Faconti, Marco A. Gutierrez
+
 3.8.7 (2024-06-26)
 ------------------
 * Backport of some build-related flatbuffers changes (`#825 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/825>`_)
