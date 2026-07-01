@@ -16,7 +16,9 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: rolling, ROS_REPO: main}
+          # rolling now targets Ubuntu 26.04 (resolute), which has no rolling
+          # debs yet. Pin to noble (24.04) until resolute is published.
+          - {ROS_DISTRO: rolling, ROS_REPO: main, OS_CODE_NAME: noble}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
