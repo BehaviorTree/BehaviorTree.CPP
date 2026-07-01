@@ -14,9 +14,13 @@ concurrency:
 jobs:
   pixi_conda_build:
     strategy:
+      fail-fast: false
       matrix:
         os:
-          - windows-latest
+          # Pinned to windows-2022: windows-latest now ships Visual Studio 2026,
+          # but cmake defaults to the "Visual Studio 17 2022" generator, which is
+          # no longer present ("could not find any instance of Visual Studio").
+          - windows-2022
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
