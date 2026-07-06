@@ -679,6 +679,11 @@ void Tree::emitWakeUpSignal()
   wake_up_->emitSignal();
 }
 
+std::shared_ptr<WakeUpSignal> Tree::wakeUpSignal() const
+{
+  return wake_up_;
+}
+
 Tree::~Tree()
 {
   haltTree();

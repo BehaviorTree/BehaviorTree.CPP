@@ -35,8 +35,8 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#ifndef Foundation_SharedLibrary_INCLUDED
-#define Foundation_SharedLibrary_INCLUDED
+#ifndef BT_Foundation_SharedLibrary_INCLUDED
+#define BT_Foundation_SharedLibrary_INCLUDED
 
 #include "platform.hpp"
 
@@ -143,4 +143,4 @@ private:
 
 }  // namespace BT
 
-#endif  // Foundation_SharedLibrary_INCLUDED
+#endif  // BT_Foundation_SharedLibrary_INCLUDED

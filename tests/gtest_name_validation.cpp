@@ -136,7 +136,7 @@ TEST_F(NameValidationXMLTest, ValidBehaviorTreeID)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, ValidBehaviorTreeID_WithUnderscore)
@@ -147,7 +147,7 @@ TEST_F(NameValidationXMLTest, ValidBehaviorTreeID_WithUnderscore)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_Root)
@@ -158,7 +158,7 @@ TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_Root)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_root_lowercase)
@@ -169,7 +169,7 @@ TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_root_lowercase)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_WithSpace)
@@ -180,7 +180,7 @@ TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_WithSpace)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_WithPeriod)
@@ -191,7 +191,7 @@ TEST_F(NameValidationXMLTest, InvalidBehaviorTreeID_WithPeriod)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST_F(NameValidationXMLTest, ValidInstanceName)
@@ -202,7 +202,7 @@ TEST_F(NameValidationXMLTest, ValidInstanceName)
         <AlwaysSuccess name="my_success_node"/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, ValidInstanceName_WithSpace)
@@ -214,7 +214,7 @@ TEST_F(NameValidationXMLTest, ValidInstanceName_WithSpace)
         <AlwaysSuccess name="my success node"/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, ValidInstanceName_WithPeriod)
@@ -226,7 +226,7 @@ TEST_F(NameValidationXMLTest, ValidInstanceName_WithPeriod)
         <AlwaysSuccess name="node.name"/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, ValidSubTreeID)
@@ -240,7 +240,7 @@ TEST_F(NameValidationXMLTest, ValidSubTreeID)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, InvalidSubTreeID_WithSpace)
@@ -254,7 +254,7 @@ TEST_F(NameValidationXMLTest, InvalidSubTreeID_WithSpace)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 // ============== Tests for Unicode support ==============
@@ -267,7 +267,7 @@ TEST_F(NameValidationXMLTest, UnicodeTreeID_Chinese)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, UnicodeInstanceName_Japanese)
@@ -278,7 +278,7 @@ TEST_F(NameValidationXMLTest, UnicodeInstanceName_Japanese)
         <AlwaysSuccess name="成功ノード"/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, UnicodeTreeID_German)
@@ -289,7 +289,7 @@ TEST_F(NameValidationXMLTest, UnicodeTreeID_German)
         <AlwaysSuccess/>
       </BehaviorTree>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 // ============== Tests for SubTree port validation ==============
@@ -310,7 +310,7 @@ TEST_F(NameValidationXMLTest, ValidSubTreePortName)
         </SubTree>
       </TreeNodesModel>
     </root>)";
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST_F(NameValidationXMLTest, InvalidSubTreePortName_WithSpace)
@@ -326,7 +326,7 @@ TEST_F(NameValidationXMLTest, InvalidSubTreePortName_WithSpace)
         </SubTree>
       </TreeNodesModel>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST_F(NameValidationXMLTest, InvalidSubTreePortName_Reserved)
@@ -342,7 +342,7 @@ TEST_F(NameValidationXMLTest, InvalidSubTreePortName_Reserved)
         </SubTree>
       </TreeNodesModel>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST_F(NameValidationXMLTest, InvalidSubTreePortName_StartsWithDigit)
@@ -358,5 +358,5 @@ TEST_F(NameValidationXMLTest, InvalidSubTreePortName_StartsWithDigit)
         </SubTree>
       </TreeNodesModel>
     </root>)";
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }

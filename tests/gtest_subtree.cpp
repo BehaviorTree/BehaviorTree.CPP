@@ -974,3 +974,41 @@ TEST(SubTree, NestedDuplicateNames_ShouldFail)
   // Should throw RuntimeError because of duplicate SubTree names
   ASSERT_THROW((void)factory.createTreeFromText(xml_text), RuntimeError);
 }
+
+// Regression test: literal numeric values passed to subtrees should preserve
+// their numeric type so that Script expressions can do arithmetic.
+TEST(SubTree, LiteralNumericPortsPreserveType)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <SubTree ID="DoMath" int_val="42" dbl_val="3.14" str_val="hello"
+                     remapped_val="{from_parent}" />
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="DoMath">
+        <Sequence>
+            <ScriptCondition code=" int_val + 1 == 43 " />
+            <ScriptCondition code=" dbl_val > 3.0 " />
+            <ScriptCondition code=" remapped_val + 1 == 101 " />
+        </Sequence>
+    </BehaviorTree>
+
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+
+  auto tree = factory.createTreeFromText(xml_text);
+
+  // Set the remapped parent value as an integer
+  tree.rootBlackboard()->set("from_parent", 100);
+
+  const auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
