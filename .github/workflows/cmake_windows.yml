@@ -23,7 +23,7 @@ jobs:
         build_type: [Release, Debug]
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Install Conan
       id: conan

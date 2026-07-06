@@ -28,9 +28,11 @@ option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
 option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
 option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
 
-set(BTCPP_LIB_DESTINATION     lib)
-set(BTCPP_INCLUDE_DESTINATION include)
-set(BTCPP_BIN_DESTINATION     bin)
+include(GNUInstallDirs)
+
+set(BTCPP_LIB_DESTINATION     "${CMAKE_INSTALL_LIBDIR}"     CACHE STRING "Library installation directory")
+set(BTCPP_INCLUDE_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" CACHE STRING "Header installation directory")
+set(BTCPP_BIN_DESTINATION     "${CMAKE_INSTALL_BINDIR}"     CACHE STRING "Binary installation directory")
 
 set(BASE_FLAGS "")
 
