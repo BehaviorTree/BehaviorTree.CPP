@@ -806,9 +806,6 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
     const std::string port_value = att->Value();
     if(IsAllowedPortName(port_name))
     {
-      const std::string port_name = att->Name();
-      const std::string port_value = att->Value();
-
       if(manifest != nullptr)
       {
         auto port_model_it = manifest->ports.find(port_name);
