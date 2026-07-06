@@ -2,6 +2,42 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.9.1 (2026-07-06)
+------------------
+* Merge pull request `#1139 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1139>`_ from mini-1235/patch-3
+  Fix -Wfree-nonheap-object and -Wunused-result
+* Fix -Wfree-nonheap-object and -Wnull-dereference
+* Merge pull request `#1128 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1128>`_ from XinyuKhan/patch-1
+  Rename header guard for shared_library.h
+* Rename header guard for shared_library.h
+* Merge pull request `#1126 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1126>`_ from BehaviorTree/dependabot/github_actions/prefix-dev/setup-pixi-0.9.5
+  Bump prefix-dev/setup-pixi from 0.9.4 to 0.9.5
+* Merge pull request `#1127 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1127>`_ from botsandus/add-sleep-override
+  Add `Tree::wakeUpSignal()` getter
+* Merge pull request `#1121 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1121>`_ from PickNikRobotics/fix-subtree-literal-numeric-types
+  Preserve numeric types for literal subtree port values
+* version 2
+* lint
+* Add support for custom sleep override function in Tree class
+* Bump prefix-dev/setup-pixi from 0.9.4 to 0.9.5
+  Bumps [prefix-dev/setup-pixi](https://github.com/prefix-dev/setup-pixi) from 0.9.4 to 0.9.5.
+  - [Release notes](https://github.com/prefix-dev/setup-pixi/releases)
+  - [Commits](https://github.com/prefix-dev/setup-pixi/compare/v0.9.4...v0.9.5)
+  ---
+  updated-dependencies:
+  - dependency-name: prefix-dev/setup-pixi
+  dependency-version: 0.9.5
+  dependency-type: direct:production
+  update-type: version-update:semver-patch
+  ...
+* Preserve numeric types for literal subtree port values
+  When literal values are passed to SubTree ports (not blackboard remapping),
+  detect numeric types (int64_t, double) before storing them in the child
+  blackboard. Previously all literals were stored as std::string, which caused
+  type-mismatch errors in Script expressions that tried to do arithmetic.
+  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+* Contributors: Davide Faconti, Ladislav Skvarka, Tony Najjar, Xinyu Han, dependabot[bot], mini-1235
+
 4.9.0 (2026-02-11)
 ------------------
 * Fix Blackboard thread-safety: 6 data races fixed, use shared_mutex for storage

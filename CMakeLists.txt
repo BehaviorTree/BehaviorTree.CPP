@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.9.0 LANGUAGES C CXX)
+project(behaviortree_cpp VERSION 4.9.1 LANGUAGES C CXX)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -28,9 +28,11 @@ option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
 option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
 option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
 
-set(BTCPP_LIB_DESTINATION     lib)
-set(BTCPP_INCLUDE_DESTINATION include)
-set(BTCPP_BIN_DESTINATION     bin)
+include(GNUInstallDirs)
+
+set(BTCPP_LIB_DESTINATION     "${CMAKE_INSTALL_LIBDIR}"     CACHE STRING "Library installation directory")
+set(BTCPP_INCLUDE_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" CACHE STRING "Header installation directory")
+set(BTCPP_BIN_DESTINATION     "${CMAKE_INSTALL_BINDIR}"     CACHE STRING "Binary installation directory")
 
 set(BASE_FLAGS "")
 
@@ -92,7 +94,7 @@ if ( ament_cmake_FOUND )
     message(STATUS "------------------------------------------")
     include(cmake/ament_build.cmake)
 
-    find_package(tinyxml2_vendor REQUIRED)
+    find_package(tinyxml2_vendor QUIET)
     find_package(TinyXML2 REQUIRED)
 else()
     message(STATUS "------------------------------------------")
