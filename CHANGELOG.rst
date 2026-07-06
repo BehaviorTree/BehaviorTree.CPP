@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.9.1 (2026-07-06)
+------------------
 * Merge pull request `#1139 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1139>`_ from mini-1235/patch-3
   Fix -Wfree-nonheap-object and -Wunused-result
 * Fix -Wfree-nonheap-object and -Wnull-dereference
