@@ -13,6 +13,7 @@
 #include "behaviortree_cpp/basic_types.h"
 
 #include <charconv>
+#include <clocale>
 #include <cstdio>
 #include <cstring>
 #include <functional>
@@ -1189,8 +1190,24 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
             if(!stored)
             {
               double dbl_val = 0;
+#if __cpp_lib_to_chars >= 201611L
               auto [ptr, ec] = std::from_chars(begin, end, dbl_val);
               if(ec == std::errc() && ptr == end)
+#else
+              const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
+              std::ignore = setlocale(LC_NUMERIC, "C");
+              std::size_t dbl_pos = 0;
+              try
+              {
+                dbl_val = std::stod(str_value, &dbl_pos);
+              }
+              catch(...)
+              {
+                dbl_pos = 0;
+              }
+              std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
+              if(dbl_pos == str_value.size())
+#endif
               {
                 new_bb->set(attr_name, dbl_val);
                 stored = true;
