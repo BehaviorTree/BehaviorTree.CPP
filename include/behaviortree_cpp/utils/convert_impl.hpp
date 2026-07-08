@@ -114,8 +114,15 @@ inline void checkTruncation(const From& from)
   // Handle floating point to integer
   else if constexpr(std::is_floating_point_v<From> && std::is_integral_v<To>)
   {
-    if(from > static_cast<From>(std::numeric_limits<To>::max()) ||
-       from < static_cast<From>(std::numeric_limits<To>::lowest()) ||
+    // static_cast<From>(To::max) rounds up to an out-of-range value when To has
+    // more significant bits than From's mantissa (e.g. double -> int64_t). In
+    // that case a plain `>` lets the rounded boundary through and the cast to To
+    // below overflows, so use a half-open upper bound to reject it first.
+    constexpr bool max_rounds_up =
+        std::numeric_limits<To>::digits > std::numeric_limits<From>::digits;
+    const From max_limit = static_cast<From>(std::numeric_limits<To>::max());
+    const bool over = max_rounds_up ? (from >= max_limit) : (from > max_limit);
+    if(over || from < static_cast<From>(std::numeric_limits<To>::lowest()) ||
        from != std::nearbyint(from))
     {
       throw std::runtime_error("Invalid floating point to integer conversion");
