@@ -403,8 +403,9 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
         std::string ros_pkg_path;  // NOLINT(misc-const-correctness)
 #if defined USING_ROS2
 #if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 2)
-        ros_pkg_path = ament_index_cpp::get_package_share_path(ros_pkg_relative_path)
-                           .string();
+        std::filesystem::path pkg_share_dir =
+            ament_index_cpp::get_package_share_path(ros_pkg_relative_path);
+        ros_pkg_path = pkg_share_dir.string();
 #else
         ros_pkg_path =
             ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
