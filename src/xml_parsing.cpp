@@ -50,7 +50,12 @@
 #include <map>
 
 #ifdef USING_ROS2
+#include "ament_index_cpp/version.h"
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 2)
+#include <ament_index_cpp/get_package_share_path.hpp>
+#else
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#endif
 #endif
 
 #include "behaviortree_cpp/blackboard.h"
@@ -397,8 +402,13 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       {
         std::string ros_pkg_path;  // NOLINT(misc-const-correctness)
 #if defined USING_ROS2
+#if AMENT_INDEX_CPP_VERSION_GTE(1, 13, 2)
+        ros_pkg_path = ament_index_cpp::get_package_share_path(ros_pkg_relative_path)
+                           .string();
+#else
         ros_pkg_path =
             ament_index_cpp::get_package_share_directory(ros_pkg_relative_path);
+#endif
 #else
         throw RuntimeError("Using attribute [ros_pkg] in <include>, but this library was "
                            "compiled without ROS support. Recompile the BehaviorTree.CPP "
