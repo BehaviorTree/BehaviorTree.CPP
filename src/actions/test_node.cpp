@@ -27,7 +27,8 @@ void validateTestNodeStatus(NodeStatus status, StringView source)
   if(!isAllowedTestNodeStatus(status))
   {
     throw RuntimeError("TestNode ", std::string(source),
-                       " resolved to invalid status IDLE");
+                       " resolved to invalid status (integer value: ",
+                       std::to_string(static_cast<int>(status)), ")");
   }
 }
 
@@ -82,16 +83,9 @@ TestNode::TestNode(const std::string& name, const NodeConfig& config,
 {
   setRegistrationID("TestNode");
 
-  if(_config->return_status)
+  if(_config->return_status_script.empty())
   {
-    validateTestNodeStatus(_config->return_status.value(), "return_status");
-  }
-
-  if(!_config->complete_func && !_config->return_status &&
-     _config->return_status_script.empty())
-  {
-    throw RuntimeError("TestNode requires one of complete_func, return_status, or "
-                       "return_status_script");
+    validateTestNodeStatus(_config->return_status, "return_status");
   }
 
   _script_enums = createTestNodeEnums(config.enums);
@@ -164,14 +158,9 @@ NodeStatus TestNode::onCompleted()
   {
     status = convertScriptResultToStatus(_return_status_executor(env));
   }
-  else if(_config->return_status)
-  {
-    status = _config->return_status.value();
-  }
   else
   {
-    throw RuntimeError("TestNode requires one of complete_func, return_status, or "
-                       "return_status_script");
+    status = _config->return_status;
   }
 
   validateTestNodeStatus(status, "completion");

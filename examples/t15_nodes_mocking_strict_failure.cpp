@@ -78,7 +78,6 @@ int main(int /*argc*/, char** /*argv*/)
   });
 
   BT::TestNodeConfig test_config;
-  test_config.return_status.reset();
   test_config.return_status_script = "(mock_should_fail == true) ? FAILURE : SUCCESS";
   test_config.async_delay = std::chrono::milliseconds(2000);
   test_config.success_script = "msg := 'message SUBSTITUTED' ";

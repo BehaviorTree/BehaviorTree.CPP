@@ -18,7 +18,6 @@
 #include "behaviortree_cpp/utils/timer_queue.h"
 
 #include <memory>
-#include <optional>
 #include <string>
 
 namespace BT
@@ -27,10 +26,8 @@ namespace BT
 struct TestNodeConfig
 {
   /// Status to return when the action is completed.
-  ///
-  /// If both return_status and return_status_script are specified,
-  /// return_status_script takes precedence.
-  std::optional<NodeStatus> return_status = NodeStatus::SUCCESS;
+  /// If return_status_script is also set, the script takes precedence.
+  NodeStatus return_status = NodeStatus::SUCCESS;
 
   /// Optional script to compute the completion status dynamically.
   ///
@@ -38,6 +35,7 @@ struct TestNodeConfig
   /// async_delay has elapsed, using the current blackboard state.
   /// The result must resolve to the same set of statuses supported by
   /// return_status, except IDLE which is always rejected.
+  /// When set, this takes precedence over return_status.
   std::string return_status_script;
 
   /// script to execute when complete_func() returns SUCCESS

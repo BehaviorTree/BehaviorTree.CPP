@@ -52,19 +52,17 @@ TEST(Substitution, Parser)
   ASSERT_EQ(rules.count("actionD"), 1);
 
   auto configA = std::get_if<TestNodeConfig>(&rules.at("actionA"));
-  ASSERT_TRUE(configA->return_status.has_value());
-  ASSERT_EQ(configA->return_status.value(), NodeStatus::SUCCESS);
+  ASSERT_EQ(configA->return_status, NodeStatus::SUCCESS);
   ASSERT_EQ(configA->async_delay, std::chrono::milliseconds(2000));
   ASSERT_EQ(configA->post_script, "msg ='message SUBSTITUED'");
 
   auto configB = std::get_if<TestNodeConfig>(&rules.at("actionB"));
-  ASSERT_TRUE(configB->return_status.has_value());
-  ASSERT_EQ(configB->return_status.value(), NodeStatus::FAILURE);
+  ASSERT_EQ(configB->return_status, NodeStatus::FAILURE);
   ASSERT_EQ(configB->async_delay, std::chrono::milliseconds(0));
   ASSERT_TRUE(configB->post_script.empty());
 
   auto configScript = std::get_if<TestNodeConfig>(&rules.at("actionD"));
-  ASSERT_FALSE(configScript->return_status.has_value());
+  ASSERT_FALSE(configScript->return_status_script.empty());
   ASSERT_EQ(configScript->return_status_script, "(mock_should_fail == true) ? FAILURE : "
                                                 "SUCCESS");
   ASSERT_EQ(configScript->failure_script, "branch := 'failure'");
@@ -176,7 +174,6 @@ TEST(Substitution, ScriptedReturnStatusAsyncSubstitution)
   factory.registerBehaviorTreeFromText(xml_text);
 
   TestNodeConfig test_config;
-  test_config.return_status.reset();
   test_config.return_status_script = "(mock_should_fail == true) ? FAILURE : SUCCESS";
   test_config.async_delay = std::chrono::milliseconds(50);
   factory.addSubstitutionRule("action_A", test_config);
@@ -205,7 +202,6 @@ TEST(Substitution, ScriptedReturnStatusRejectsIdle)
   factory.registerBehaviorTreeFromText(xml_text);
 
   TestNodeConfig test_config;
-  test_config.return_status.reset();
   test_config.return_status_script = "IDLE";
   factory.addSubstitutionRule("action_A", test_config);
 
