@@ -103,7 +103,7 @@ Collaboration diagram for BT::TestNodeConfig:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d9/da7/struct_b_t_1_1_test_node_config__coll__graph.png" border="0" usemap="#a_b_t_1_1_test_node_config_coll__map" alt="Collaboration graph"/></div>
 <map name="a_b_t_1_1_test_node_config_coll__map" id="a_b_t_1_1_test_node_config_coll__map">
-<area shape="rect" title=" " alt="" coords="5,212,152,237"/>
+<area shape="rect" title=" " alt="" coords="5,227,152,252"/>
 <area shape="rect" title=" " alt="" coords="35,95,122,120"/>
 <area shape="rect" title=" " alt="" coords="9,5,148,45"/>
 </map>
@@ -111,9 +111,7 @@ Collaboration diagram for BT::TestNodeConfig:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a87934348c6c5ba67e18e31ad5014961a"><td class="memItemLeft" align="right" valign="top"><a id="a87934348c6c5ba67e18e31ad5014961a" name="a87934348c6c5ba67e18e31ad5014961a"></a>
-<a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a>&#160;</td><td class="memItemRight" valign="bottom"><b>return_status</b> = NodeStatus::SUCCESS</td></tr>
-<tr class="memdesc:a87934348c6c5ba67e18e31ad5014961a"><td class="mdescLeft">&#160;</td><td class="mdescRight">status to return when the action is completed. <br /></td></tr>
+<tr class="memitem:a87934348c6c5ba67e18e31ad5014961a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d58/struct_b_t_1_1_test_node_config.html#a87934348c6c5ba67e18e31ad5014961a">return_status</a> = NodeStatus::SUCCESS</td></tr>
 <tr class="separator:a87934348c6c5ba67e18e31ad5014961a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0dc6a6937186ebddc37a52b06d8e3fbd"><td class="memItemLeft" align="right" valign="top"><a id="a0dc6a6937186ebddc37a52b06d8e3fbd" name="a0dc6a6937186ebddc37a52b06d8e3fbd"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>success_script</b></td></tr>
@@ -133,6 +131,8 @@ std::chrono::milliseconds&#160;</td><td class="memItemRight" valign="bottom"><b>
 <tr class="separator:a24e48bd8764c98aeb4ea762333e19d39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98806d4cf69c3d88a72d4e5c6230b60d"><td class="memItemLeft" align="right" valign="top">std::function&lt; <a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a>(void)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d58/struct_b_t_1_1_test_node_config.html#a98806d4cf69c3d88a72d4e5c6230b60d">complete_func</a></td></tr>
 <tr class="separator:a98806d4cf69c3d88a72d4e5c6230b60d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9afb9cb0f246140c86f383a349a04df2"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d58/struct_b_t_1_1_test_node_config.html#a9afb9cb0f246140c86f383a349a04df2">return_status_script</a></td></tr>
+<tr class="separator:a9afb9cb0f246140c86f383a349a04df2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a98806d4cf69c3d88a72d4e5c6230b60d" name="a98806d4cf69c3d88a72d4e5c6230b60d"></a>
@@ -146,7 +146,39 @@ std::chrono::milliseconds&#160;</td><td class="memItemRight" valign="bottom"><b>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Function invoked when the action is completed. If not specified, the node will return [return_status] </p>
+<p>Function invoked when the action is completed. If not specified, the node will use return_status_script when present, otherwise it will return [return_status]. </p>
+
+</div>
+</div>
+<a id="a87934348c6c5ba67e18e31ad5014961a" name="a87934348c6c5ba67e18e31ad5014961a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87934348c6c5ba67e18e31ad5014961a">&#9670;&#160;</a></span>return_status</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> BT::TestNodeConfig::return_status = NodeStatus::SUCCESS</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Status to return when the action is completed. If return_status_script is also set, the script takes precedence. </p>
+
+</div>
+</div>
+<a id="a9afb9cb0f246140c86f383a349a04df2" name="a9afb9cb0f246140c86f383a349a04df2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9afb9cb0f246140c86f383a349a04df2">&#9670;&#160;</a></span>return_status_script</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string BT::TestNodeConfig::return_status_script</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Optional script to compute the completion status dynamically.</p>
+<p>This script is evaluated when the <a class="el" href="../../d5/d7f/class_b_t_1_1_test_node.html" title="The TestNode is a Node that can be configure to:">TestNode</a> completes, after any async_delay has elapsed, using the current blackboard state. The result must resolve to the same set of statuses supported by return_status, except IDLE which is always rejected. When set, this takes precedence over return_status.</p>
+<p>NOTE: kept last to preserve the byte offsets of the fields above. </p>
 
 </div>
 </div>
