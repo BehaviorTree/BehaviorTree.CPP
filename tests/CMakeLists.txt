@@ -108,6 +108,9 @@ endif()
 
 target_include_directories(behaviortree_cpp_test PRIVATE include)
 target_link_libraries(behaviortree_cpp_test ${BTCPP_LIBRARY} bt_sample_nodes)
+if(MSVC)
+  target_compile_options(behaviortree_cpp_test PRIVATE "/utf-8")
+endif()
 target_compile_definitions(behaviortree_cpp_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Ensure plugin is built before tests run, and tests can find it
