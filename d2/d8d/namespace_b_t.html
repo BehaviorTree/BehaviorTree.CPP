@@ -553,6 +553,9 @@ template&lt;&gt; </td></tr>
 template&lt;&gt; </td></tr>
 <tr class="memitem:a6ae8d75f5737e98269534175b0f518e5"><td class="memTemplItemLeft" align="right" valign="top">double&#160;</td><td class="memTemplItemRight" valign="bottom"><b>convertFromString&lt; double &gt;</b> (StringView str)</td></tr>
 <tr class="separator:a6ae8d75f5737e98269534175b0f518e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40aa7769fe2484e5edf4b0b6d781ba01"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d8d/namespace_b_t.html#a40aa7769fe2484e5edf4b0b6d781ba01">parseDouble</a> (StringView str, double &amp;out, bool require_full_consumption)</td></tr>
+<tr class="memdesc:a40aa7769fe2484e5edf4b0b6d781ba01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a double from a string using the semantics of std::from_chars(std::chars_format::general): locale-independent (only '.' as the decimal separator), rejecting leading whitespace, a leading '+', and hex floats. Includes a thread-safe fallback for standard libraries that lack the floating-point std::from_chars overload (e.g. Apple libc++).  <br /></td></tr>
+<tr class="separator:a40aa7769fe2484e5edf4b0b6d781ba01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaabf14b96cfc38e30d65755d7ba1a032"><td class="memItemLeft" align="right" valign="top"><a id="aaabf14b96cfc38e30d65755d7ba1a032" name="aaabf14b96cfc38e30d65755d7ba1a032"></a>
 template&lt;&gt; </td></tr>
 <tr class="memitem:aaabf14b96cfc38e30d65755d7ba1a032"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; int &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><b>convertFromString&lt; std::vector&lt; int &gt; &gt;</b> (StringView str)</td></tr>
@@ -1560,6 +1563,51 @@ template&lt;typename T  = AnyTypeAllowed&gt; </div>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a40aa7769fe2484e5edf4b0b6d781ba01" name="a40aa7769fe2484e5edf4b0b6d781ba01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40aa7769fe2484e5edf4b0b6d781ba01">&#9670;&#160;</a></span>parseDouble()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool BT::parseDouble </td>
+          <td>(</td>
+          <td class="paramtype">StringView&#160;</td>
+          <td class="paramname"><em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>require_full_consumption</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Parse a double from a string using the semantics of std::from_chars(std::chars_format::general): locale-independent (only '.' as the decimal separator), rejecting leading whitespace, a leading '+', and hex floats. Includes a thread-safe fallback for standard libraries that lack the floating-point std::from_chars overload (e.g. Apple libc++). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">str</td><td>the input string. </td></tr>
+    <tr><td class="paramname">out</td><td>set to the parsed value on success (left untouched on failure). </td></tr>
+    <tr><td class="paramname">require_full_consumption</td><td>when true, the whole string must be a valid double (trailing characters cause failure); when false, parsing stops at the first non-numeric character. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success. </dd></dl>
 
 </div>
 </div>
