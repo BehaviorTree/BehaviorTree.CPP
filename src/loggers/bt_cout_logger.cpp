@@ -5,7 +5,11 @@ namespace BT
 
 StdCoutLogger::StdCoutLogger(const BT::Tree& tree) : StatusChangeLogger(tree.rootNode())
 {}
-StdCoutLogger::~StdCoutLogger() = default;
+StdCoutLogger::~StdCoutLogger()
+{
+  // Stop status callbacks while the derived object is still intact.
+  unsubscribeFromTreeChanges();
+}
 
 void StdCoutLogger::callback(Duration timestamp, const TreeNode& node,
                              NodeStatus prev_status, NodeStatus status)

@@ -259,8 +259,16 @@ inline bool ValidCast(const SRC& val)
     // Handle conversion to integral
     else if constexpr(std::is_integral_v<TO>)
     {
-      if(val > static_cast<SRC>(std::numeric_limits<TO>::max()) ||
-         val < static_cast<SRC>(std::numeric_limits<TO>::lowest()))
+      // static_cast<SRC>(TO::max) rounds up to an out-of-range value when TO has
+      // more significant bits than a floating SRC's mantissa (e.g. double ->
+      // int64_t). A plain `>` would let that rounded boundary through and the
+      // cast to TO below overflows, so use a half-open upper bound in that case.
+      constexpr bool max_rounds_up =
+          std::is_floating_point_v<SRC> &&
+          std::numeric_limits<TO>::digits > std::numeric_limits<SRC>::digits;
+      const SRC max_limit = static_cast<SRC>(std::numeric_limits<TO>::max());
+      const bool over = max_rounds_up ? (val >= max_limit) : (val > max_limit);
+      if(over || val < static_cast<SRC>(std::numeric_limits<TO>::lowest()))
       {
         return false;
       }
