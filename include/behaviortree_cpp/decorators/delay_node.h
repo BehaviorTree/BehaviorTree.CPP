@@ -41,7 +41,14 @@ public:
 
   ~DelayNode() override
   {
-    halt();
+    // Only stop the timer thread here; do NOT call halt(). During tree
+    // destruction the child node may already be gone: nodes are owned by a
+    // flat std::vector<TreeNode::Ptr> whose element-destruction order is
+    // unspecified (libstdc++ tears down front-to-back, libc++ back-to-front),
+    // so the child can outlive or predecease this decorator. halt() ->
+    // DecoratorNode::halt() -> resetChild() dereferences that child and
+    // segfaults on libc++ (macOS). This mirrors TimeoutNode's destructor.
+    timer_.cancelAll();
   }
 
   DelayNode(const DelayNode&) = delete;
