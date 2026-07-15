@@ -14,15 +14,19 @@
 #pragma once
 
 #include "behaviortree_cpp/action_node.h"
-#include "behaviortree_cpp/scripting/script_parser.hpp"
-#include "behaviortree_cpp/utils/timer_queue.h"
+
+#include <chrono>
+#include <functional>
+#include <memory>
+#include <string>
 
 namespace BT
 {
 
 struct TestNodeConfig
 {
-  /// status to return when the action is completed.
+  /// Status to return when the action is completed.
+  /// If return_status_script is also set, the script takes precedence.
   NodeStatus return_status = NodeStatus::SUCCESS;
 
   /// script to execute when complete_func() returns SUCCESS
@@ -38,14 +42,27 @@ struct TestNodeConfig
   std::chrono::milliseconds async_delay = std::chrono::milliseconds(0);
 
   /// Function invoked when the action is completed.
-  /// If not specified, the node will return [return_status]
+  /// If not specified, the node will use return_status_script when present,
+  /// otherwise it will return [return_status].
   std::function<NodeStatus(void)> complete_func;
+
+  /// Optional script to compute the completion status dynamically.
+  ///
+  /// This script is evaluated when the TestNode completes, after any
+  /// async_delay has elapsed, using the current blackboard state.
+  /// The result must resolve to the same set of statuses supported by
+  /// return_status, except IDLE which is always rejected.
+  /// When set, this takes precedence over return_status.
+  ///
+  /// NOTE: kept last to preserve the byte offsets of the fields above.
+  std::string return_status_script;
 };
 
 /**
  * @brief The TestNode is a Node that can be configure to:
  *
  * 1. Return a specific status (SUCCESS / FAILURE)
+ * 1.b Compute the returned status from a script evaluated at completion time
  * 2. Execute a post condition script (unless halted)
  * 3. Either complete immediately (synchronous action), or after a
  *    given period of time (asynchronous action)
@@ -73,26 +90,32 @@ public:
   TestNode(const std::string& name, const NodeConfig& config,
            std::shared_ptr<TestNodeConfig> test_config);
 
+  ~TestNode() override;
+
+  TestNode(const TestNode& other) = delete;
+  TestNode& operator=(const TestNode& other) = delete;
+
+  TestNode(TestNode&& other) = delete;
+  TestNode& operator=(TestNode&& other) = delete;
+
   static PortsList providedPorts()
   {
     return {};
   }
 
 protected:
-  virtual NodeStatus onStart() override;
+  NodeStatus onStart() override;
 
-  virtual NodeStatus onRunning() override;
+  NodeStatus onRunning() override;
 
-  virtual void onHalted() override;
+  void onHalted() override;
 
   NodeStatus onCompleted();
 
-  std::shared_ptr<TestNodeConfig> _config;
-  ScriptFunction _success_executor;
-  ScriptFunction _failure_executor;
-  ScriptFunction _post_executor;
-  TimerQueue<> _timer;
-  std::atomic_bool _completed = false;
+  // All state lives behind this pointer, so that adding or changing it does not
+  // alter the layout that consumers compile against.
+  struct PImpl;
+  std::unique_ptr<PImpl> _p;
 };
 
 }  // namespace BT
