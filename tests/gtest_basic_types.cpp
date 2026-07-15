@@ -123,6 +123,31 @@ TEST(BasicTypes, ConvertFromString_Double)
   ASSERT_THROW((void)convertFromString<double>("not_a_number"), RuntimeError);
 }
 
+TEST(BasicTypes, DoubleToIntBoundary)
+{
+  // A double that lands exactly on 2^63 must be rejected before the cast, not
+  // static_cast to int64_t (which is out of range and undefined behavior).
+  // 2^63 = 9223372036854775808.0; INT64_MAX is 9223372036854775807.
+  const double two_pow_63 = 9223372036854775808.0;
+  EXPECT_ANY_THROW((void)BT::Any(two_pow_63).cast<int64_t>());
+
+  // 2^64 lands one past UINT64_MAX and must likewise be rejected.
+  const double two_pow_64 = 18446744073709551616.0;
+  EXPECT_ANY_THROW((void)BT::Any(two_pow_64).cast<uint64_t>());
+
+  // In-range integral doubles still convert cleanly.
+  const double in_range = 4611686018427387904.0;  // 2^62
+  EXPECT_EQ(BT::Any(in_range).cast<int64_t>(), int64_t(4611686018427387904LL));
+  EXPECT_EQ(BT::Any(1000.0).cast<int64_t>(), int64_t(1000));
+
+  // Same boundary reached through Blackboard::set, which routes the numeric
+  // safe-cast check (isCastingSafe/ValidCast) instead of Any::convert.
+  auto bb = BT::Blackboard::create();
+  bb->set("k", int64_t(1));  // lock the entry to int64_t
+  EXPECT_ANY_THROW(bb->set("k", two_pow_63));
+  EXPECT_NO_THROW(bb->set("k", in_range));
+}
+
 TEST(BasicTypes, ConvertFromString_Bool)
 {
   ASSERT_TRUE(convertFromString<bool>("true"));
