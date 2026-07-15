@@ -52,4 +52,21 @@ jobs:
       run: cmake --build --preset conan-${{ env.BUILD_TYPE_LOWERCASE }}
 
     - name: run test (macOS)
-      run: ctest --test-dir build/${{env.BUILD_TYPE}}
+      run: ctest --test-dir build/${{env.BUILD_TYPE}} --output-on-failure
+
+    # TEMPORARY diagnostic: capture lldb backtraces for any crashing tests.
+    # Remove once the macOS-specific failures are fixed.
+    - name: Backtraces for crashing tests (diagnostic)
+      if: failure()
+      working-directory: ${{ github.workspace }}/build/${{ env.BUILD_TYPE }}
+      run: |
+        BIN=tests/behaviortree_cpp_test
+        for t in \
+          "Decorator.DelayWithXML" \
+          "Substitution.StringSubstitutionWithSimpleAction_Issue930" \
+          "Substitution.JsonStringSubstitutionWithDelay_Issue930" \
+          "Parallel.Issue819_SequenceVsReactiveSequence" ; do
+          echo "==================== $t ===================="
+          lldb --batch -o "run" -k "thread backtrace all" -k "quit" \
+            -- "$BIN" "--gtest_filter=$t" 2>&1 | tail -80 || true
+        done
