@@ -156,15 +156,44 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>enableTransitionToIdl
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:af6061864fcbd1ddccc42ed7d8429e859"><td class="memItemLeft" align="right" valign="top"><a id="af6061864fcbd1ddccc42ed7d8429e859" name="af6061864fcbd1ddccc42ed7d8429e859"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>StatusChangeLogger</b> ()=default</td></tr>
-<tr class="memdesc:af6061864fcbd1ddccc42ed7d8429e859"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor for deferred subscription. Call <a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63" title="Subscribe to status changes. Call at end of constructor for deferred subscription.">subscribeToTreeChanges()</a> when ready. <br /></td></tr>
-<tr class="separator:af6061864fcbd1ddccc42ed7d8429e859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb4a953122a7cd99b995d6ece35090fd"><td class="memItemLeft" align="right" valign="top"><a id="afb4a953122a7cd99b995d6ece35090fd" name="afb4a953122a7cd99b995d6ece35090fd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>StatusChangeLogger</b> ()</td></tr>
+<tr class="memdesc:afb4a953122a7cd99b995d6ece35090fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor for deferred subscription. Call <a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63" title="Subscribe to status changes. Call at end of constructor for deferred subscription.">subscribeToTreeChanges()</a> when ready. <br /></td></tr>
+<tr class="separator:afb4a953122a7cd99b995d6ece35090fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1637783134697d20616bd96797b1db63"><td class="memItemLeft" align="right" valign="top"><a id="a1637783134697d20616bd96797b1db63" name="a1637783134697d20616bd96797b1db63"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>subscribeToTreeChanges</b> (<a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html">TreeNode</a> *root_node)</td></tr>
 <tr class="memdesc:a1637783134697d20616bd96797b1db63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subscribe to status changes. Call at end of constructor for deferred subscription. <br /></td></tr>
 <tr class="separator:a1637783134697d20616bd96797b1db63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c1f5f5c70d22b81d8422c798abcac89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/dbb/class_b_t_1_1_status_change_logger.html#a5c1f5f5c70d22b81d8422c798abcac89">unsubscribeFromTreeChanges</a> ()</td></tr>
+<tr class="separator:a5c1f5f5c70d22b81d8422c798abcac89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5c1f5f5c70d22b81d8422c798abcac89" name="a5c1f5f5c70d22b81d8422c798abcac89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c1f5f5c70d22b81d8422c798abcac89">&#9670;&#160;</a></span>unsubscribeFromTreeChanges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void BT::StatusChangeLogger::unsubscribeFromTreeChanges </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Stop new callbacks and wait until callbacks already in progress have completed. Derived destructors must call this before destroying state used by callback(). </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/loggers/<a class="el" href="../../d1/dbb/abstract__logger_8h_source.html">abstract_logger.h</a></li>
 </ul>

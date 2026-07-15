@@ -4,6 +4,7 @@ var hierarchy =
     [ "BT::AnyTypeAllowed", "d4/df1/struct_b_t_1_1_any_type_allowed.html", null ],
     [ "BT::BehaviorTreeFactory", "d6/dcd/class_b_t_1_1_behavior_tree_factory.html", null ],
     [ "BT::Blackboard", "d0/d51/class_b_t_1_1_blackboard.html", null ],
+    [ "BT::details::CallbackGate", "dd/dbe/class_b_t_1_1details_1_1_callback_gate.html", null ],
     [ "BT::Blackboard::Entry", "d8/de8/struct_b_t_1_1_blackboard_1_1_entry.html", null ],
     [ "BT::Ast::Environment", "d0/de8/struct_b_t_1_1_ast_1_1_environment.html", null ],
     [ "std::exception", null, [
@@ -28,6 +29,7 @@ var hierarchy =
       [ "BT::has_static_method_providedPorts< T, typename >", "d0/d56/struct_b_t_1_1has__static__method__provided_ports.html", null ],
       [ "BT::is_shared_ptr< T >", "de/dcd/struct_b_t_1_1is__shared__ptr.html", null ]
     ] ],
+    [ "BT::details::CallbackGate::Guard", "d4/d39/class_b_t_1_1details_1_1_callback_gate_1_1_guard.html", null ],
     [ "BT::Monitor::Hook", "dc/d6e/struct_b_t_1_1_monitor_1_1_hook.html", null ],
     [ "BT::JsonExporter", "d0/d64/class_b_t_1_1_json_exporter.html", null ],
     [ "BT::LockedPtr< T >", "d4/d98/class_b_t_1_1_locked_ptr.html", null ],

@@ -10,5 +10,6 @@ var searchData=
   ['getpath_7',['getPath',['../d2/ddd/class_b_t_1_1_shared_library.html#ade65992bafd0d0c0809c63d2385804b3',1,'BT::SharedLibrary']]],
   ['getsymbol_8',['getSymbol',['../d2/ddd/class_b_t_1_1_shared_library.html#a5ab4789785c0f37caaf1955bab03b034',1,'BT::SharedLibrary']]],
   ['gettype_9',['getType',['../d2/d8d/namespace_b_t.html#aa8bda3dd22bdb1c2aaa354a610e25ac9',1,'BT']]],
-  ['groot2publisher_10',['Groot2Publisher',['../da/df5/class_b_t_1_1_groot2_publisher.html',1,'BT']]]
+  ['groot2publisher_10',['Groot2Publisher',['../da/df5/class_b_t_1_1_groot2_publisher.html',1,'BT']]],
+  ['guard_11',['Guard',['../d4/d39/class_b_t_1_1details_1_1_callback_gate_1_1_guard.html',1,'BT::details::CallbackGate']]]
 ];

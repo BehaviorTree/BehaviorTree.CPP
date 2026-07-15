@@ -30,7 +30,7 @@ var searchData=
   ['sqlitelogger_27',['SqliteLogger',['../df/ddb/class_b_t_1_1_sqlite_logger.html',1,'BT::SqliteLogger'],['../df/ddb/class_b_t_1_1_sqlite_logger.html#a4e1e513a4d32778b5015b1d4ab82819d',1,'BT::SqliteLogger::SqliteLogger()']]],
   ['stampedvalue_28',['StampedValue',['../d6/dfa/struct_b_t_1_1_stamped_value.html',1,'BT']]],
   ['statefulactionnode_29',['StatefulActionNode',['../d0/d1f/class_b_t_1_1_stateful_action_node.html',1,'BT']]],
-  ['statuschangelogger_30',['StatusChangeLogger',['../d9/dbb/class_b_t_1_1_status_change_logger.html',1,'BT::StatusChangeLogger'],['../d9/dbb/class_b_t_1_1_status_change_logger.html#a6629af7405c338ba503443165ff49e44',1,'BT::StatusChangeLogger::StatusChangeLogger(TreeNode *root_node)'],['../d9/dbb/class_b_t_1_1_status_change_logger.html#af6061864fcbd1ddccc42ed7d8429e859',1,'BT::StatusChangeLogger::StatusChangeLogger()=default']]],
+  ['statuschangelogger_30',['StatusChangeLogger',['../d9/dbb/class_b_t_1_1_status_change_logger.html',1,'BT::StatusChangeLogger'],['../d9/dbb/class_b_t_1_1_status_change_logger.html#a6629af7405c338ba503443165ff49e44',1,'BT::StatusChangeLogger::StatusChangeLogger(TreeNode *root_node)'],['../d9/dbb/class_b_t_1_1_status_change_logger.html#afb4a953122a7cd99b995d6ece35090fd',1,'BT::StatusChangeLogger::StatusChangeLogger()']]],
   ['stdcoutlogger_31',['StdCoutLogger',['../d1/d52/class_b_t_1_1_std_cout_logger.html',1,'BT']]],
   ['subscribetostatuschange_32',['subscribeToStatusChange',['../da/d61/class_b_t_1_1_tree_node.html#afb4606479245153e183b0530e517b3cc',1,'BT::TreeNode']]],
   ['subscribetotreechanges_33',['subscribeToTreeChanges',['../d9/dbb/class_b_t_1_1_status_change_logger.html#a1637783134697d20616bd96797b1db63',1,'BT::StatusChangeLogger']]],
