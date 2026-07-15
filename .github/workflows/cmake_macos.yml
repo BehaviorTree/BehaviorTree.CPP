@@ -28,9 +28,10 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
+    # Install via Homebrew rather than turtlebrowser/get-conan: on macOS runners
+    # that action's `pip3 install` fails with PEP 668 (externally-managed-environment).
     - name: Install Conan
-      id: conan
-      uses: turtlebrowser/get-conan@main
+      run: brew install conan
 
     - name: Create default profile
       run: conan profile detect
