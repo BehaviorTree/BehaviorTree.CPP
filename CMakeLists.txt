@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.9.0 LANGUAGES C CXX)
+project(behaviortree_cpp VERSION 4.9.1 LANGUAGES C CXX)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -94,7 +94,7 @@ if ( ament_cmake_FOUND )
     message(STATUS "------------------------------------------")
     include(cmake/ament_build.cmake)
 
-    find_package(tinyxml2_vendor REQUIRED)
+    find_package(tinyxml2_vendor QUIET)
     find_package(TinyXML2 REQUIRED)
 else()
     message(STATUS "------------------------------------------")
