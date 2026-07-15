@@ -30,6 +30,14 @@ const char* json_text = R"(
 }
  )";
 
+const char* single_action_xml = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <AlwaysSuccess name="action_A"/>
+  </BehaviorTree>
+</root>
+ )";
+
 }  // namespace
 
 TEST(Substitution, Parser)
@@ -56,6 +64,42 @@ TEST(Substitution, Parser)
   ASSERT_TRUE(configB->post_script.empty());
 
   ASSERT_EQ(*std::get_if<std::string>(&rules.at("actionC")), "NotAConfig");
+}
+
+TEST(Substitution, TestNodePostScriptUsesRegisteredEnums)
+{
+  BehaviorTreeFactory factory;
+  factory.registerScriptingEnum("EXPECTED_VALUE", 42);
+  factory.registerBehaviorTreeFromText(single_action_xml);
+
+  TestNodeConfig test_config;
+  test_config.return_status = NodeStatus::SUCCESS;
+  test_config.post_script = "observed := EXPECTED_VALUE";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto blackboard = Blackboard::create();
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(blackboard->get<int>("observed"), 42);
+}
+
+TEST(Substitution, TestNodePostScriptReadsStatusNamedBlackboardKey)
+{
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(single_action_xml);
+
+  TestNodeConfig test_config;
+  test_config.return_status = NodeStatus::SUCCESS;
+  test_config.post_script = "observed := SUCCESS";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto blackboard = Blackboard::create();
+  blackboard->set("SUCCESS", 99);
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(blackboard->get<int>("observed"), 99);
 }
 
 // Regression test for issue #934: segfault when substituting a SubTree node
