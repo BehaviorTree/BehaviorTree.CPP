@@ -175,6 +175,23 @@ template <>
 template <>
 [[nodiscard]] double convertFromString<double>(StringView str);
 
+/**
+ * @brief Parse a double from a string using the semantics of
+ * std::from_chars(std::chars_format::general): locale-independent (only '.' as
+ * the decimal separator), rejecting leading whitespace, a leading '+', and hex
+ * floats. Includes a thread-safe fallback for standard libraries that lack the
+ * floating-point std::from_chars overload (e.g. Apple libc++).
+ *
+ * @param str  the input string.
+ * @param out  set to the parsed value on success (left untouched on failure).
+ * @param require_full_consumption  when true, the whole string must be a valid
+ *        double (trailing characters cause failure); when false, parsing stops
+ *        at the first non-numeric character.
+ * @return true on success.
+ */
+[[nodiscard]] bool parseDouble(StringView str, double& out,
+                               bool require_full_consumption);
+
 // Integer numbers separated by the character ";"
 template <>
 [[nodiscard]] std::vector<int> convertFromString<std::vector<int>>(StringView str);

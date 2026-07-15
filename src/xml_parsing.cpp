@@ -13,18 +13,6 @@
 #include "behaviortree_cpp/basic_types.h"
 
 #include <charconv>
-// Apple's libc++ deletes the floating-point std::from_chars overload (and
-// undefines __cpp_lib_to_chars). Where it is unavailable we fall back to
-// strtod_l with a private "C" locale, which needs these headers.
-#if !defined(__cpp_lib_to_chars) || (__cpp_lib_to_chars < 201611L)
-#include <cctype>
-#include <cerrno>
-
-#include <locale.h>
-#if defined(__APPLE__)
-#include <xlocale.h>
-#endif
-#endif
 #include <cstdio>
 #include <cstring>
 #include <functional>
@@ -76,62 +64,6 @@
 
 namespace
 {
-// Parse a double with the exact semantics of
-// std::from_chars(begin, end, out, std::chars_format::general): locale-independent
-// ('.' as the only decimal separator), rejecting leading whitespace, a leading
-// '+', and hexadecimal floats, and requiring the whole [begin, end) to be
-// consumed.
-//
-// Most standard libraries just forward to std::from_chars. Apple's libc++ lacks
-// the floating-point overload, so there we use strtod_l with a "C" locale created
-// once (thread-safe, no global setlocale mutation) plus a guard that rejects the
-// inputs strtod would accept but from_chars would not.
-bool parseDoubleStrict(const char* begin, const char* end, double& out)
-{
-#if defined(__cpp_lib_to_chars) && (__cpp_lib_to_chars >= 201611L)
-  auto [ptr, ec] = std::from_chars(begin, end, out);
-  return ec == std::errc() && ptr == end;
-#else
-  if(begin == end)
-  {
-    return false;
-  }
-  // from_chars rejects a leading '+' and leading whitespace; strtod accepts both.
-  // A leading '-' is allowed by both.
-  const char first = *begin;
-  if(first == '+' || std::isspace(static_cast<unsigned char>(first)) != 0)
-  {
-    return false;
-  }
-  // from_chars(general) does not parse hex floats ("0x1p4"); strtod does.
-  const char* mantissa = (first == '-') ? begin + 1 : begin;
-  if(mantissa != end && *mantissa == '0' && (mantissa + 1) != end &&
-     (mantissa[1] == 'x' || mantissa[1] == 'X'))
-  {
-    return false;
-  }
-  // A "C" locale created once keeps '.' as the decimal separator regardless of
-  // the global locale, without the thread-unsafe setlocale() mutation.
-  static ::locale_t c_locale =
-      ::newlocale(LC_NUMERIC_MASK, "C", static_cast< ::locale_t>(0));
-  if(c_locale == static_cast< ::locale_t>(0))
-  {
-    return false;
-  }
-  errno = 0;
-  char* parse_end = nullptr;
-  const double value = ::strtod_l(begin, &parse_end, c_locale);
-  // Reject trailing junk and, like from_chars (which returns result_out_of_range),
-  // values that overflow or underflow the double range.
-  if(parse_end != end || errno == ERANGE)
-  {
-    return false;
-  }
-  out = value;
-  return true;
-#endif
-}
-
 std::string xsdAttributeType(const BT::PortInfo& port_info)
 {
   if(port_info.direction() == BT::PortDirection::OUTPUT)
@@ -1268,7 +1200,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
             if(!stored)
             {
               double dbl_val = 0;
-              if(parseDoubleStrict(begin, end, dbl_val))
+              if(parseDouble(str_value, dbl_val, /*require_full_consumption=*/true))
               {
                 new_bb->set(attr_name, dbl_val);
                 stored = true;
