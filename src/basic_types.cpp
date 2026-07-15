@@ -196,6 +196,39 @@ uint32_t convertFromString<uint32_t>(StringView str)
   return ConvertWithBoundCheck<uint32_t>(str);
 }
 
+#if !defined(__cpp_lib_to_chars) || (__cpp_lib_to_chars < 201611L)
+namespace
+{
+// Fallback for standard libraries without floating-point std::from_chars (Apple
+// libc++): parse with std::stod under a temporary "C" locale so '.' is always
+// the decimal separator (see issue #120; note setlocale is not thread-safe). An
+// RAII guard restores the previous locale on every path, and stod's exception is
+// translated into the RuntimeError that the from_chars branch throws.
+double stodClassicLocale(StringView str, const char* type_name)
+{
+  const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
+  std::ignore = setlocale(LC_NUMERIC, "C");
+  struct LocaleRestore
+  {
+    const std::string& previous;
+    ~LocaleRestore()
+    {
+      std::ignore = setlocale(LC_NUMERIC, previous.c_str());
+    }
+  } restore{ old_locale };
+
+  try
+  {
+    return std::stod(std::string(str.data(), str.size()));
+  }
+  catch(...)
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to ", type_name));
+  }
+}
+}  // namespace
+#endif
+
 template <>
 double convertFromString<double>(StringView str)
 {
@@ -209,25 +242,7 @@ double convertFromString<double>(StringView str)
   }
   return result;
 #else
-  // Fallback: stod is locale-dependent, so force "C" locale.
-  // See issue #120.  Note: setlocale is not thread-safe.
-  const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
-  std::ignore = setlocale(LC_NUMERIC, "C");
-  const std::string str_copy(str.data(), str.size());
-  double val = 0;
-  try
-  {
-    val = std::stod(str_copy);
-  }
-  catch(...)
-  {
-    // Restore the locale before propagating, and match the from_chars branch,
-    // which throws RuntimeError (not std::invalid_argument) on bad input.
-    std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
-    throw RuntimeError(StrCat("Can't convert string [", str, "] to double"));
-  }
-  std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
-  return val;
+  return stodClassicLocale(str, "double");
 #endif
 }
 
@@ -243,21 +258,7 @@ float convertFromString<float>(StringView str)
   }
   return result;
 #else
-  const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
-  std::ignore = setlocale(LC_NUMERIC, "C");
-  const std::string str_copy(str.data(), str.size());
-  double val = 0;
-  try
-  {
-    val = std::stod(str_copy);
-  }
-  catch(...)
-  {
-    std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
-    throw RuntimeError(StrCat("Can't convert string [", str, "] to float"));
-  }
-  std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
-  return static_cast<float>(val);
+  return static_cast<float>(stodClassicLocale(str, "float"));
 #endif
 }
 
