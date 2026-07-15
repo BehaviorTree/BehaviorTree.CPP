@@ -140,6 +140,9 @@ SqliteLogger::SqliteLogger(const Tree& tree, std::filesystem::path const& filepa
 
 SqliteLogger::~SqliteLogger()
 {
+  // Stop status callbacks before tearing down the state they use.
+  unsubscribeFromTreeChanges();
+
   try
   {
     loop_ = false;

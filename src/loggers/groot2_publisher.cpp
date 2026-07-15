@@ -3,6 +3,7 @@
 #include "zmq_addon.hpp"
 
 #include "behaviortree_cpp/loggers/groot2_protocol.h"
+#include "behaviortree_cpp/utils/callback_gate.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <tuple>
@@ -59,54 +60,6 @@ std::array<char, 16> CreateRandomUUID()
 
 struct Groot2Publisher::PImpl
 {
-  struct HookCallbackState
-  {
-    bool tryStartCallback()
-    {
-      const std::lock_guard lk(mutex);
-      if(!accepting_callbacks)
-      {
-        return false;
-      }
-      running_callbacks++;
-      return true;
-    }
-
-    void callbackCompleted()
-    {
-      const std::lock_guard lk(mutex);
-      running_callbacks--;
-      if(running_callbacks == 0)
-      {
-        condition_variable.notify_all();
-      }
-    }
-
-    std::mutex mutex;
-    std::condition_variable condition_variable;
-    bool accepting_callbacks = true;
-    size_t running_callbacks = 0;
-  };
-
-  struct HookCallbackGuard
-  {
-    explicit HookCallbackGuard(std::shared_ptr<HookCallbackState> state)
-      : state(std::move(state))
-    {}
-
-    HookCallbackGuard(const HookCallbackGuard&) = delete;
-    HookCallbackGuard& operator=(const HookCallbackGuard&) = delete;
-    HookCallbackGuard(HookCallbackGuard&&) = delete;
-    HookCallbackGuard& operator=(HookCallbackGuard&&) = delete;
-
-    ~HookCallbackGuard()
-    {
-      state->callbackCompleted();
-    }
-
-    std::shared_ptr<HookCallbackState> state;
-  };
-
   PImpl() : context(), server(context, ZMQ_REP), publisher(context, ZMQ_PUB)
   {
     server.set(zmq::sockopt::linger, 0);
@@ -120,6 +73,9 @@ struct Groot2Publisher::PImpl
     server.set(zmq::sockopt::sndtimeo, timeout_ms);
     publisher.set(zmq::sockopt::sndtimeo, timeout_ms);
   }
+
+  /// Body of the pre/post tick callback installed by insertHook().
+  NodeStatus runHook(const Monitor::Hook::Ptr& hook, TreeNode& node);
 
   unsigned server_port = 0;
   std::string server_address;
@@ -152,8 +108,7 @@ struct Groot2Publisher::PImpl
   std::deque<Transition> transitions_buffer;
   std::chrono::microseconds recording_fist_time{};
 
-  std::shared_ptr<HookCallbackState> hook_callback_state =
-      std::make_shared<HookCallbackState>();
+  details::CallbackGate::Ptr hook_gate = std::make_shared<details::CallbackGate>();
   std::mutex publisher_mutex;
 
   std::thread heartbeat_thread;
@@ -164,7 +119,7 @@ struct Groot2Publisher::PImpl
 };
 
 Groot2Publisher::Groot2Publisher(const BT::Tree& tree, unsigned server_port)
-  : StatusChangeLogger(), _p(new PImpl())
+  : StatusChangeLogger(), _p(std::make_unique<PImpl>())
 {
   _p->server_port = server_port;
   _p->tree_xml = WriteTreeToXML(tree, true, true);
@@ -227,11 +182,8 @@ Groot2Publisher::~Groot2Publisher()
   // Stop status callbacks before tearing down any state they access.
   unsubscribeFromTreeChanges();
 
-  auto hook_callback_state = _p->hook_callback_state;
-  {
-    const std::lock_guard lk(hook_callback_state->mutex);
-    hook_callback_state->accepting_callbacks = false;
-  }
+  // Prevent new hook callbacks from starting.
+  _p->hook_gate->close();
 
   // First, signal threads to stop
   _p->active_server = false;
@@ -252,16 +204,10 @@ Groot2Publisher::~Groot2Publisher()
     _p->heartbeat_thread.join();
   }
 
-  // Prevent copied node callbacks from starting, then remove installed hooks
-  // and wake callbacks currently blocked at breakpoints.
+  // Remove installed hooks, waking callbacks currently blocked at breakpoints,
+  // then wait for the callbacks still running to complete.
   removeAllHooks();
-
-  {
-    std::unique_lock lk(hook_callback_state->mutex);
-    hook_callback_state->condition_variable.wait(lk, [&hook_callback_state] {
-      return hook_callback_state->running_callbacks == 0;
-    });
-  }
+  _p->hook_gate->closeAndDrain();
 
   flush();
 
@@ -502,27 +448,16 @@ void Groot2Publisher::serverLoop()
         break;
 
         case Monitor::RequestType::HOOKS_DUMP: {
-          std::vector<Monitor::Hook::Ptr> hooks;
-          {
-            const std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
-            hooks.reserve(_p->pre_hooks.size() + _p->post_hooks.size());
-            for(const auto& [node_uid, hook] : _p->pre_hooks)
-            {
-              std::ignore = node_uid;
-              hooks.push_back(hook);
-            }
-            for(const auto& [node_uid, hook] : _p->post_hooks)
-            {
-              std::ignore = node_uid;
-              hooks.push_back(hook);
-            }
-          }
-
           auto json_out = nlohmann::json::array();
-          for(const auto& hook : hooks)
+          const std::unique_lock map_lk(_p->hooks_map_mutex);
+          for(const auto* hooks : { &_p->pre_hooks, &_p->post_hooks })
           {
-            const std::unique_lock<std::mutex> lk(hook->mutex);
-            json_out.push_back(*hook);
+            for(const auto& entry : *hooks)
+            {
+              const auto& hook = entry.second;
+              const std::unique_lock lk(hook->mutex);
+              json_out.push_back(*hook);
+            }
           }
           reply_msg.addstr(json_out.dump());
         }
@@ -561,11 +496,17 @@ void Groot2Publisher::serverLoop()
         break;
 
         case Monitor::RequestType::GET_TRANSITIONS: {
+          // Move the transitions out, then serialize without holding the mutex
+          // that the status callback contends on.
+          std::deque<Transition> transitions;
+          {
+            const std::unique_lock lk(_p->status_mutex);
+            std::swap(transitions, _p->transitions_buffer);
+          }
           thread_local std::string trans_buffer;
-          const std::unique_lock<std::mutex> lk(_p->status_mutex);
-          trans_buffer.resize(9 * _p->transitions_buffer.size());
+          trans_buffer.resize(9 * transitions.size());
           size_t offset = 0;
-          for(const auto& trans : _p->transitions_buffer)
+          for(const auto& trans : transitions)
           {
             std::memcpy(&trans_buffer[offset], &trans.timestamp_usec, 6);
             offset += 6;
@@ -574,7 +515,6 @@ void Groot2Publisher::serverLoop()
             std::memcpy(&trans_buffer[offset], &trans.status, 1);
             offset += 1;
           }
-          _p->transitions_buffer.clear();
           trans_buffer.resize(offset);
           reply_msg.addstr(trans_buffer);
         }
@@ -617,35 +557,22 @@ void Groot2Publisher::serverLoop()
 
 void BT::Groot2Publisher::enableAllHooks(bool enable)
 {
-  std::vector<Monitor::Hook::Ptr> hooks;
+  // Holding hooks_map_mutex while locking each hook is safe: all code paths
+  // acquire hooks_map_mutex before hook->mutex, never the other way around.
+  const std::unique_lock map_lk(_p->hooks_map_mutex);
+  for(const auto* hooks : { &_p->pre_hooks, &_p->post_hooks })
   {
-    const std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
-    hooks.reserve(_p->pre_hooks.size() + _p->post_hooks.size());
-    for(const auto& [node_uid, hook] : _p->pre_hooks)
+    for(const auto& entry : *hooks)
     {
-      std::ignore = node_uid;
-      hooks.push_back(hook);
-    }
-    for(const auto& [node_uid, hook] : _p->post_hooks)
-    {
-      std::ignore = node_uid;
-      hooks.push_back(hook);
-    }
-  }
-
-  for(const auto& hook : hooks)
-  {
-    std::unique_lock<std::mutex> lk(hook->mutex);
-    if(hook->removed)
-    {
-      continue;
-    }
-    hook->enabled = enable;
-    // when disabling, remember to wake up blocked ones
-    if(!hook->enabled && hook->mode == Monitor::Hook::Mode::BREAKPOINT)
-    {
-      lk.unlock();
-      hook->wakeup.notify_all();
+      const auto& hook = entry.second;
+      std::unique_lock lk(hook->mutex);
+      hook->enabled = enable;
+      // when disabling, remember to wake up blocked ones
+      if(!hook->enabled && hook->mode == Monitor::Hook::Mode::BREAKPOINT)
+      {
+        lk.unlock();
+        hook->wakeup.notify_all();
+      }
     }
   }
 }
@@ -709,95 +636,16 @@ bool Groot2Publisher::insertHook(std::shared_ptr<Monitor::Hook> hook)
     return false;
   }
 
-  auto callback_state = _p->hook_callback_state;
-  auto injectedCallback = [hook, this, callback_state](TreeNode& node) -> NodeStatus {
-    if(!callback_state->tryStartCallback())
+  auto injectedCallback = [hook, this, gate = _p->hook_gate](TreeNode& node) {
+    if(!gate->tryStart())
     {
       return NodeStatus::SKIPPED;
     }
-    const PImpl::HookCallbackGuard callback_guard(callback_state);
-
-    auto executeHook = [&]() -> NodeStatus {
-      bool remove_when_done = false;
-      NodeStatus desired_status = NodeStatus::SKIPPED;
-      Position position = Position::PRE;
-
-      {
-        std::unique_lock<std::mutex> lk(hook->mutex);
-        if(hook->removed || !hook->enabled)
-        {
-          return NodeStatus::SKIPPED;
-        }
-
-        // Notify that a breakpoint was reached, using the _p->publisher.
-        // ZeroMQ sockets must not be used concurrently from multiple callbacks.
-        try
-        {
-          const std::lock_guard publisher_lk(_p->publisher_mutex);
-          const Monitor::RequestHeader breakpoint_request(Monitor::BREAKPOINT_REACHED);
-          zmq::multipart_t request_msg;
-          request_msg.addstr(Monitor::SerializeHeader(breakpoint_request));
-          request_msg.addstr(std::to_string(hook->node_uid));
-          request_msg.send(_p->publisher);
-        }
-        catch(const zmq::error_t&)
-        {
-          return NodeStatus::SKIPPED;
-        }
-
-        // wait until someone wakes us up
-        if(hook->mode == Monitor::Hook::Mode::BREAKPOINT)
-        {
-          hook->wakeup.wait(lk, [hook]() { return hook->ready || !hook->enabled; });
-
-          hook->ready = false;
-          // wait was unblocked but it could be the breakpoint becoming disabled.
-          // in this case, just skip
-          if(!hook->enabled)
-          {
-            return NodeStatus::SKIPPED;
-          }
-        }
-
-        remove_when_done = hook->remove_when_done;
-        desired_status = hook->desired_status;
-        position = hook->position;
-        if(remove_when_done)
-        {
-          // A TreeNode may already have copied this callback before it is removed.
-          // Keep such stale copies from executing the one-shot hook again.
-          hook->removed = true;
-          hook->enabled = false;
-        }
-      }
-
-      if(remove_when_done)
-      {
-        // The hook mutex is deliberately released before taking hooks_map_mutex.
-        // This keeps a single lock order and avoids deadlocking enableAllHooks().
-        const std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
-        auto* hooks = position == Position::PRE ? &_p->pre_hooks : &_p->post_hooks;
-        auto hook_it = hooks->find(hook->node_uid);
-        if(hook_it != hooks->end() && hook_it->second == hook)
-        {
-          hooks->erase(hook_it);
-          if(position == Position::PRE)
-          {
-            node.setPreTickFunction({});
-          }
-          else
-          {
-            node.setPostTickFunction({});
-          }
-        }
-      }
-      return desired_status;
-    };
-
-    return executeHook();
+    const details::CallbackGate::Guard callback_guard(gate);
+    return _p->runHook(hook, node);
   };
 
-  const std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
+  const std::unique_lock lk(_p->hooks_map_mutex);
   if(hook->position == Position::PRE)
   {
     _p->pre_hooks[node_uid] = hook;
@@ -806,12 +654,90 @@ bool Groot2Publisher::insertHook(std::shared_ptr<Monitor::Hook> hook)
   else
   {
     _p->post_hooks[node_uid] = hook;
-    node->setPostTickFunction([injectedCallback](TreeNode& node, NodeStatus) {
-      return injectedCallback(node);
-    });
+    node->setPostTickFunction([callback = std::move(injectedCallback)](
+                                  TreeNode& node, NodeStatus) { return callback(node); });
   }
 
   return true;
+}
+
+NodeStatus Groot2Publisher::PImpl::runHook(const Monitor::Hook::Ptr& hook, TreeNode& node)
+{
+  {
+    const std::unique_lock lk(hook->mutex);
+    if(!hook->enabled)
+    {
+      return NodeStatus::SKIPPED;
+    }
+  }
+
+  // Notify that a breakpoint was reached, using the publisher socket.
+  // ZeroMQ sockets must not be used concurrently from multiple callbacks.
+  try
+  {
+    const std::lock_guard publisher_lk(publisher_mutex);
+    const Monitor::RequestHeader breakpoint_request(Monitor::BREAKPOINT_REACHED);
+    zmq::multipart_t request_msg;
+    request_msg.addstr(Monitor::SerializeHeader(breakpoint_request));
+    request_msg.addstr(std::to_string(hook->node_uid));
+    request_msg.send(publisher);
+  }
+  catch(const zmq::error_t&)
+  {
+    return NodeStatus::SKIPPED;
+  }
+
+  bool remove_when_done = false;
+  NodeStatus desired_status = NodeStatus::SKIPPED;
+  Position position = Position::PRE;
+  {
+    std::unique_lock lk(hook->mutex);
+    // wait until someone wakes us up. The predicate makes this robust to the
+    // hook being unlocked or disabled before the wait starts.
+    if(hook->mode == Monitor::Hook::Mode::BREAKPOINT)
+    {
+      hook->wakeup.wait(lk, [hook]() { return hook->ready || !hook->enabled; });
+      hook->ready = false;
+    }
+    // skip if the hook was disabled, either before the notification
+    // or to unblock the wait above.
+    if(!hook->enabled)
+    {
+      return NodeStatus::SKIPPED;
+    }
+
+    remove_when_done = hook->remove_when_done;
+    desired_status = hook->desired_status;
+    position = hook->position;
+    if(remove_when_done)
+    {
+      // A TreeNode may already have copied this callback before it is removed.
+      // Keep such stale copies from executing the one-shot hook again.
+      hook->enabled = false;
+    }
+  }
+
+  if(remove_when_done)
+  {
+    // The hook mutex is deliberately released before taking hooks_map_mutex,
+    // to keep a single lock order (hooks_map_mutex first).
+    const std::unique_lock lk(hooks_map_mutex);
+    auto* hooks = position == Position::PRE ? &pre_hooks : &post_hooks;
+    auto hook_it = hooks->find(hook->node_uid);
+    if(hook_it != hooks->end() && hook_it->second == hook)
+    {
+      hooks->erase(hook_it);
+      if(position == Position::PRE)
+      {
+        node.setPreTickFunction({});
+      }
+      else
+      {
+        node.setPostTickFunction({});
+      }
+    }
+  }
+  return desired_status;
 }
 
 bool Groot2Publisher::unlockBreakpoint(Position pos, uint16_t node_uid, NodeStatus result,
@@ -864,7 +790,7 @@ bool Groot2Publisher::removeHook(Position pos, uint16_t node_uid)
   Monitor::Hook::Ptr hook;
   bool notify_breakpoint = false;
   {
-    const std::unique_lock<std::mutex> lk(_p->hooks_map_mutex);
+    const std::unique_lock lk(_p->hooks_map_mutex);
     auto* hooks = pos == Position::PRE ? &_p->pre_hooks : &_p->post_hooks;
     auto hook_it = hooks->find(node_uid);
     if(hook_it == hooks->end())
@@ -873,11 +799,10 @@ bool Groot2Publisher::removeHook(Position pos, uint16_t node_uid)
     }
     hook = hook_it->second;
 
-    // Tombstone while the hook is still in the map. A stale enableAllHooks()
-    // snapshot checks this flag before changing the hook again.
+    // Disable before erasing: stale copies of the injected callback check
+    // this flag, and an erased hook can never be re-enabled.
     {
-      const std::unique_lock<std::mutex> hook_lk(hook->mutex);
-      hook->removed = true;
+      const std::unique_lock hook_lk(hook->mutex);
       hook->enabled = false;
       notify_breakpoint = hook->mode == Monitor::Hook::Mode::BREAKPOINT;
     }

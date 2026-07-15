@@ -110,12 +110,9 @@ TEST(Groot2PublisherThreadSafety, DisableThenRemoveOneShotHookUsesConsistentLock
   auto [publisher, port] = Groot2Test::makePublisher(tree);
   Groot2Test::Client client(port);
 
-  auto hook = nlohmann::json{ { "enabled", true },
-                              { "uid", tree.rootNode()->UID() },
-                              { "mode", int(BT::Monitor::Hook::Mode::REPLACE) },
-                              { "once", false },
-                              { "desired_status", "FAILURE" },
-                              { "position", int(BT::Monitor::Hook::Position::PRE) } };
+  auto hook =
+      Groot2Test::makeHook(tree.rootNode()->UID(), BT::Monitor::Hook::Mode::REPLACE,
+                           BT::Monitor::Hook::Position::PRE);
 
   client.request(BT::Monitor::RequestType::HOOK_INSERT, hook.dump());
   client.request(BT::Monitor::RequestType::DISABLE_ALL_HOOKS);
@@ -136,12 +133,8 @@ TEST(Groot2PublisherThreadSafety, DestroyWhileBreakpointCallbackIsBlocked)
   Groot2Test::Client client(port);
 
   const auto hook =
-      nlohmann::json{ { "enabled", true },
-                      { "uid", tree.rootNode()->UID() },
-                      { "mode", int(BT::Monitor::Hook::Mode::BREAKPOINT) },
-                      { "once", false },
-                      { "desired_status", "FAILURE" },
-                      { "position", int(BT::Monitor::Hook::Position::PRE) } };
+      Groot2Test::makeHook(tree.rootNode()->UID(), BT::Monitor::Hook::Mode::BREAKPOINT,
+                           BT::Monitor::Hook::Position::PRE);
   client.request(BT::Monitor::RequestType::HOOK_INSERT, hook.dump());
 
   auto tick_result =

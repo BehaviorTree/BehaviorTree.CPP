@@ -45,7 +45,10 @@ TreeObserver::TreeObserver(const BT::Tree& tree) : StatusChangeLogger(tree.rootN
 }
 
 TreeObserver::~TreeObserver()
-{}
+{
+  // Stop status callbacks before the statistics map is destroyed.
+  unsubscribeFromTreeChanges();
+}
 
 void TreeObserver::callback(Duration timestamp, const TreeNode& node,
                             NodeStatus /*prev_status*/, NodeStatus status)

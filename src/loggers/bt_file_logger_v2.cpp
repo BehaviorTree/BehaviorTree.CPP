@@ -94,6 +94,9 @@ FileLogger2::FileLogger2(const BT::Tree& tree, std::filesystem::path const& file
 
 FileLogger2::~FileLogger2()
 {
+  // Stop status callbacks before tearing down the state they use.
+  unsubscribeFromTreeChanges();
+
   _p->loop = false;
   _p->queue_cv.notify_one();
   _p->writer_thread.join();

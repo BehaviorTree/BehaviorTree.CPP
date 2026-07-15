@@ -3,8 +3,7 @@
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
-
-#include <condition_variable>
+#include "behaviortree_cpp/utils/callback_gate.h"
 
 namespace BT
 {
@@ -76,52 +75,9 @@ protected:
   void unsubscribeFromTreeChanges();
 
 private:
-  struct CallbackState
-  {
-    bool tryStartCallback()
-    {
-      const std::lock_guard lk(mutex);
-      if(!accepting_callbacks)
-      {
-        return false;
-      }
-      running_callbacks++;
-      return true;
-    }
-
-    void callbackCompleted()
-    {
-      const std::lock_guard lk(mutex);
-      running_callbacks--;
-      if(running_callbacks == 0)
-      {
-        condition_variable.notify_all();
-      }
-    }
-
-    std::mutex mutex;
-    std::condition_variable condition_variable;
-    bool accepting_callbacks = true;
-    size_t running_callbacks = 0;
-  };
-
-  struct CallbackGuard
-  {
-    explicit CallbackGuard(std::shared_ptr<CallbackState> state) : state(std::move(state))
-    {}
-
-    CallbackGuard(const CallbackGuard&) = delete;
-    CallbackGuard& operator=(const CallbackGuard&) = delete;
-    CallbackGuard(CallbackGuard&&) = delete;
-    CallbackGuard& operator=(CallbackGuard&&) = delete;
-
-    ~CallbackGuard()
-    {
-      state->callbackCompleted();
-    }
-
-    std::shared_ptr<CallbackState> state;
-  };
+  /// Forward a status transition to callback(), unless disabled.
+  void handleStatusChange(TimePoint timestamp, const TreeNode& node, NodeStatus prev,
+                          NodeStatus status);
 
   bool enabled_ = true;
   bool show_transition_to_idle_ = true;
@@ -129,7 +85,7 @@ private:
   TimestampType type_ = TimestampType::absolute;
   BT::TimePoint first_timestamp_ = {};
   mutable std::mutex callback_mutex_;
-  std::shared_ptr<CallbackState> callback_state_ = std::make_shared<CallbackState>();
+  details::CallbackGate::Ptr callback_gate_ = std::make_shared<details::CallbackGate>();
 };
 
 //--------------------------------------------
@@ -147,42 +103,17 @@ inline StatusChangeLogger::~StatusChangeLogger()
 inline void StatusChangeLogger::subscribeToTreeChanges(TreeNode* root_node)
 {
   first_timestamp_ = std::chrono::high_resolution_clock::now();
-  auto callback_state = callback_state_;
 
-  {
-    const std::lock_guard lk(callback_state->mutex);
-    callback_state->accepting_callbacks = true;
-  }
-
-  auto subscribeCallback = [this, callback_state](TimePoint timestamp,
-                                                  const TreeNode& node, NodeStatus prev,
-                                                  NodeStatus status) {
-    if(!callback_state->tryStartCallback())
-    {
-      return;
-    }
-    const CallbackGuard callback_guard(callback_state);
-
-    // Copy state under lock, then release before calling user code
-    // This prevents recursive mutex locking when multiple nodes change status
-    bool should_callback = false;
-    Duration adjusted_timestamp;
-    {
-      std::unique_lock lk(callback_mutex_);
-      if(enabled_ && (status != NodeStatus::IDLE || show_transition_to_idle_))
-      {
-        should_callback = true;
-        adjusted_timestamp = (type_ == TimestampType::absolute) ?
-                                 timestamp.time_since_epoch() :
-                                 (timestamp - first_timestamp_);
-      }
-    }
-
-    if(should_callback)
-    {
-      this->callback(adjusted_timestamp, node, prev, status);
-    }
-  };
+  auto subscribeCallback =
+      [this, gate = callback_gate_](TimePoint timestamp, const TreeNode& node,
+                                    NodeStatus prev, NodeStatus status) {
+        if(!gate->tryStart())
+        {
+          return;
+        }
+        const details::CallbackGate::Guard callback_guard(gate);
+        handleStatusChange(timestamp, node, prev, status);
+      };
 
   auto visitor = [this, subscribeCallback](TreeNode* node) {
     subscribers_.push_back(node->subscribeToStatusChange(std::move(subscribeCallback)));
@@ -191,19 +122,35 @@ inline void StatusChangeLogger::subscribeToTreeChanges(TreeNode* root_node)
   applyRecursiveVisitor(root_node, visitor);
 }
 
-inline void StatusChangeLogger::unsubscribeFromTreeChanges()
+inline void StatusChangeLogger::handleStatusChange(TimePoint timestamp,
+                                                   const TreeNode& node, NodeStatus prev,
+                                                   NodeStatus status)
 {
-  auto callback_state = callback_state_;
+  // Copy state under lock, then release before calling user code
+  // This prevents recursive mutex locking when multiple nodes change status
+  bool should_callback = false;
+  Duration adjusted_timestamp;
   {
-    const std::lock_guard lk(callback_state->mutex);
-    callback_state->accepting_callbacks = false;
+    std::unique_lock lk(callback_mutex_);
+    if(enabled_ && (status != NodeStatus::IDLE || show_transition_to_idle_))
+    {
+      should_callback = true;
+      adjusted_timestamp = (type_ == TimestampType::absolute) ?
+                               timestamp.time_since_epoch() :
+                               (timestamp - first_timestamp_);
+    }
   }
 
-  subscribers_.clear();
+  if(should_callback)
+  {
+    this->callback(adjusted_timestamp, node, prev, status);
+  }
+}
 
-  std::unique_lock lk(callback_state->mutex);
-  callback_state->condition_variable.wait(
-      lk, [&callback_state] { return callback_state->running_callbacks == 0; });
+inline void StatusChangeLogger::unsubscribeFromTreeChanges()
+{
+  callback_gate_->closeAndDrain();
+  subscribers_.clear();
 }
 }  // namespace BT
 

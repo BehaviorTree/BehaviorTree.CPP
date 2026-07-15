@@ -10,6 +10,7 @@
 #include <behaviortree_cpp/loggers/groot2_protocol.h>
 #include <behaviortree_cpp/loggers/groot2_publisher.h>
 
+#include <behaviortree_cpp/contrib/json.hpp>
 #include <zmq_addon.hpp>
 
 namespace Groot2Test
@@ -43,6 +44,18 @@ inline PublisherAndPort makePublisher(const BT::Tree& tree)
     }
   }
   throw std::runtime_error("Could not find two free ports for Groot2Publisher");
+}
+
+/// JSON payload for a HOOK_INSERT request, as Groot2 would send it.
+inline nlohmann::json makeHook(uint16_t uid, BT::Monitor::Hook::Mode mode,
+                               BT::Monitor::Hook::Position position, bool once = false)
+{
+  return { { "enabled", true },
+           { "uid", uid },
+           { "mode", int(mode) },
+           { "once", once },
+           { "desired_status", "FAILURE" },
+           { "position", int(position) } };
 }
 
 class Client

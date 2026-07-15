@@ -18,17 +18,6 @@ constexpr auto kHookTreeXml = R"(
 </root>
 )";
 
-nlohmann::json makeReplaceHook(uint16_t uid, BT::Monitor::Hook::Position position,
-                               bool once = false)
-{
-  return { { "enabled", true },
-           { "uid", uid },
-           { "mode", int(BT::Monitor::Hook::Mode::REPLACE) },
-           { "once", once },
-           { "desired_status", "FAILURE" },
-           { "position", int(position) } };
-}
-
 void malformedRequestScenario()
 {
   BT::BehaviorTreeFactory factory;
@@ -71,7 +60,8 @@ TEST(Groot2PublisherIntegration, PostHookRunsAfterNodeAndCanBeRemoved)
   Groot2Test::Client client(port);
   const auto uid = tree.rootNode()->UID();
 
-  const auto hook = makeReplaceHook(uid, BT::Monitor::Hook::Position::POST);
+  const auto hook = Groot2Test::makeHook(uid, BT::Monitor::Hook::Mode::REPLACE,
+                                         BT::Monitor::Hook::Position::POST);
   client.request(BT::Monitor::RequestType::HOOK_INSERT, hook.dump());
 
   auto dump_reply = client.request(BT::Monitor::RequestType::HOOKS_DUMP);

@@ -205,9 +205,6 @@ struct Hook
   // used to enable/disable the breakpoint
   bool enabled = true;
 
-  // Internal tombstone used to keep stale callback/map snapshots inert.
-  bool removed = false;
-
   enum class Position
   {
     PRE = 0,
