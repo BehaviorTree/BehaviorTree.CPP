@@ -592,12 +592,7 @@ TEST(Parallel, PauseWithRetry)
 
   // tolerate an error in time measurement within this margin
   // CI runners (especially Windows) can overshoot Sleep by 50ms+ under load
-#if defined(__APPLE__)
-  // The shared macOS runners overshoot much more (observed 130-150ms).
-  const int margin_msec = 250;
-#else
   const int margin_msec = 80;
-#endif
 
   // the second branch with the RetryUntilSuccessful should take about 150 ms
   ASSERT_LE(toMsec(done_time - t1) - 150, margin_msec);

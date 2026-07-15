@@ -12,25 +12,14 @@ using Millisecond = std::chrono::milliseconds;
 using Timepoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 // Timing constants for coroutine tests
-// Keep durations short for fast test execution while maintaining reliable relative timing.
-// macOS CI runners are much slower/noisier, so these sub-50ms thresholds race scheduling
-// jitter there. Scale the absolute durations up on macOS (only the relative ordering
-// matters) so the timeout reliably fires between the short and long actions.
-#if defined(__APPLE__)
-constexpr int kTimeScale = 5;
-#else
-constexpr int kTimeScale = 1;
-#endif
-constexpr auto SHORT_ACTION_DURATION =
-    milliseconds(10 * kTimeScale);  // Quick action for success path
-constexpr auto MEDIUM_ACTION_DURATION =
-    milliseconds(20 * kTimeScale);  // Medium action duration
-constexpr auto LONG_ACTION_DURATION =
-    milliseconds(50 * kTimeScale);  // Longer action that may timeout
+// Keep durations short for fast test execution while maintaining reliable relative timing
+constexpr auto SHORT_ACTION_DURATION = milliseconds(10);  // Quick action for success path
+constexpr auto MEDIUM_ACTION_DURATION = milliseconds(20);  // Medium action duration
+constexpr auto LONG_ACTION_DURATION = milliseconds(50);  // Longer action that may timeout
 constexpr auto TIMEOUT_DURATION =
-    milliseconds(30 * kTimeScale);  // Timeout threshold (between short and long)
+    milliseconds(30);  // Timeout threshold (between short and long)
 constexpr auto SEQUENCE_TIMEOUT =
-    milliseconds(35 * kTimeScale);  // Timeout for sequence (allows 1 action, not 2)
+    milliseconds(35);  // Timeout for sequence (allows 1 action, not 2)
 
 class SimpleCoroAction : public BT::CoroActionNode
 {

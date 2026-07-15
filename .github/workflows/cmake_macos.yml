@@ -53,11 +53,9 @@ jobs:
 
     # The tests below assert tight wall-clock timing that the shared macOS
     # runners cannot meet reliably (they are much slower/noisier under load).
-    # They are not macOS-specific logic and keep running on Linux and Windows;
-    # exclude them here so this job is deterministic. --repeat until-pass absorbs
-    # any residual flakiness in the remaining tests. A few of these also have
-    # __APPLE__-gated wider tolerances (gtest_coroutines, gtest_parallel) so they
-    # can be re-enabled here later once the timing is made runner-robust.
+    # They are not macOS-specific logic and keep running on Linux and Windows,
+    # so exclude them here to keep this job deterministic without touching the
+    # shared tests. --repeat until-pass absorbs residual flakiness in the rest.
     - name: run test (macOS)
       run: |
         EXCLUDE='SimpleParallelTest.ConditionsTrue|ComplexParallelTest.ConditionRightFalseAction1Done|Parallel.PauseWithRetry|Parallel.Issue819_SequenceVsReactiveSequence|SequenceTripleActionTest.TripleAction|SimpleSequenceWithMemoryTest.ConditionTrue|SwitchTest.CaseSwitchToDefault|CoroTest.do_action_timeout|CoroTest.sequence_child|DeadlineTest.DeadlineTriggeredTest|Decorator.DelayWithXML'
