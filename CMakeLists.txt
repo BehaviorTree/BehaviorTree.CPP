@@ -185,6 +185,7 @@ list(APPEND BT_SOURCE
     src/controls/try_catch_node.cpp
     src/controls/while_do_else_node.cpp
 
+    src/loggers/abstract_logger.cpp
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger_v2.cpp
     src/loggers/bt_minitrace_logger.cpp

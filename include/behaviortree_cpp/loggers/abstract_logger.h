@@ -3,7 +3,8 @@
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/utils/callback_gate.h"
+
+#include <memory>
 
 namespace BT
 {
@@ -32,40 +33,20 @@ public:
 
   virtual void flush() = 0;
 
-  void setEnabled(bool enabled)
-  {
-    const std::lock_guard lk(callback_mutex_);
-    enabled_ = enabled;
-  }
+  void setEnabled(bool enabled);
 
-  void setTimestampType(TimestampType type)
-  {
-    const std::lock_guard lk(callback_mutex_);
-    type_ = type;
-  }
+  void setTimestampType(TimestampType type);
 
-  bool enabled() const
-  {
-    const std::lock_guard lk(callback_mutex_);
-    return enabled_;
-  }
+  bool enabled() const;
 
   // false by default.
-  bool showsTransitionToIdle() const
-  {
-    const std::lock_guard lk(callback_mutex_);
-    return show_transition_to_idle_;
-  }
+  bool showsTransitionToIdle() const;
 
-  void enableTransitionToIdle(bool enable)
-  {
-    const std::lock_guard lk(callback_mutex_);
-    show_transition_to_idle_ = enable;
-  }
+  void enableTransitionToIdle(bool enable);
 
 protected:
   /// Default constructor for deferred subscription. Call subscribeToTreeChanges() when ready.
-  StatusChangeLogger() = default;
+  StatusChangeLogger();
 
   /// Subscribe to status changes. Call at end of constructor for deferred subscription.
   void subscribeToTreeChanges(TreeNode* root_node);
@@ -79,79 +60,11 @@ private:
   void handleStatusChange(TimePoint timestamp, const TreeNode& node, NodeStatus prev,
                           NodeStatus status);
 
-  bool enabled_ = true;
-  bool show_transition_to_idle_ = true;
-  std::vector<TreeNode::StatusChangeSubscriber> subscribers_;
-  TimestampType type_ = TimestampType::absolute;
-  BT::TimePoint first_timestamp_ = {};
-  mutable std::mutex callback_mutex_;
-  details::CallbackGate::Ptr callback_gate_ = std::make_shared<details::CallbackGate>();
+  // All state lives behind this pointer, so that changing it does not alter the
+  // layout that derived classes (including user-defined loggers) compile against.
+  struct PImpl;
+  std::unique_ptr<PImpl> _p;
 };
-
-//--------------------------------------------
-
-inline StatusChangeLogger::StatusChangeLogger(TreeNode* root_node)
-{
-  subscribeToTreeChanges(root_node);
-}
-
-inline StatusChangeLogger::~StatusChangeLogger()
-{
-  unsubscribeFromTreeChanges();
-}
-
-inline void StatusChangeLogger::subscribeToTreeChanges(TreeNode* root_node)
-{
-  first_timestamp_ = std::chrono::high_resolution_clock::now();
-
-  auto subscribeCallback =
-      [this, gate = callback_gate_](TimePoint timestamp, const TreeNode& node,
-                                    NodeStatus prev, NodeStatus status) {
-        if(!gate->tryStart())
-        {
-          return;
-        }
-        const details::CallbackGate::Guard callback_guard(gate);
-        handleStatusChange(timestamp, node, prev, status);
-      };
-
-  auto visitor = [this, subscribeCallback](TreeNode* node) {
-    subscribers_.push_back(node->subscribeToStatusChange(std::move(subscribeCallback)));
-  };
-
-  applyRecursiveVisitor(root_node, visitor);
-}
-
-inline void StatusChangeLogger::handleStatusChange(TimePoint timestamp,
-                                                   const TreeNode& node, NodeStatus prev,
-                                                   NodeStatus status)
-{
-  // Copy state under lock, then release before calling user code
-  // This prevents recursive mutex locking when multiple nodes change status
-  bool should_callback = false;
-  Duration adjusted_timestamp;
-  {
-    std::unique_lock lk(callback_mutex_);
-    if(enabled_ && (status != NodeStatus::IDLE || show_transition_to_idle_))
-    {
-      should_callback = true;
-      adjusted_timestamp = (type_ == TimestampType::absolute) ?
-                               timestamp.time_since_epoch() :
-                               (timestamp - first_timestamp_);
-    }
-  }
-
-  if(should_callback)
-  {
-    this->callback(adjusted_timestamp, node, prev, status);
-  }
-}
-
-inline void StatusChangeLogger::unsubscribeFromTreeChanges()
-{
-  callback_gate_->closeAndDrain();
-  subscribers_.clear();
-}
 }  // namespace BT
 
 #endif  // ABSTRACT_LOGGER_H
