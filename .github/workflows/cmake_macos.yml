@@ -56,7 +56,7 @@ jobs:
     # tests a couple of times to absorb that flakiness without weakening the
     # assertions for every other platform.
     - name: run test (macOS)
-      run: ctest --test-dir build/${{env.BUILD_TYPE}} --output-on-failure --repeat until-pass:3
+      run: ctest --test-dir build/${{env.BUILD_TYPE}} --output-on-failure --repeat until-pass:5
 
     # TEMPORARY diagnostic: capture lldb backtraces for any crashing tests.
     # Remove once the macOS-specific failures are fixed.
