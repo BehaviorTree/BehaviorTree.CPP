@@ -214,7 +214,18 @@ double convertFromString<double>(StringView str)
   const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
   std::ignore = setlocale(LC_NUMERIC, "C");
   const std::string str_copy(str.data(), str.size());
-  const double val = std::stod(str_copy);
+  double val = 0;
+  try
+  {
+    val = std::stod(str_copy);
+  }
+  catch(...)
+  {
+    // Restore the locale before propagating, and match the from_chars branch,
+    // which throws RuntimeError (not std::invalid_argument) on bad input.
+    std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to double"));
+  }
   std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
   return val;
 #endif
@@ -235,7 +246,16 @@ float convertFromString<float>(StringView str)
   const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
   std::ignore = setlocale(LC_NUMERIC, "C");
   const std::string str_copy(str.data(), str.size());
-  const double val = std::stod(str_copy);
+  double val = 0;
+  try
+  {
+    val = std::stod(str_copy);
+  }
+  catch(...)
+  {
+    std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to float"));
+  }
   std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
   return static_cast<float>(val);
 #endif
