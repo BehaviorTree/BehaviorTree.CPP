@@ -48,6 +48,36 @@ void malformedRequestScenario()
   std::exit(EXIT_SUCCESS);
 }
 
+void incompleteHookScenario()
+{
+  BT::BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>
+)");
+  auto [publisher, port] = Groot2Test::makePublisher(tree);
+  Groot2Test::Client client(port);
+
+  // Well-formed JSON object, but missing the required "uid"/"position" keys.
+  auto error_reply =
+      client.rawRequest(BT::Monitor::RequestType::HOOK_INSERT, R"({"enabled":true})");
+  if(error_reply.size() != 2 || error_reply[0].to_string() != "error")
+  {
+    std::exit(EXIT_FAILURE);
+  }
+
+  // The server thread must remain usable after rejecting the incomplete request.
+  auto valid_reply = client.request(BT::Monitor::RequestType::FULLTREE);
+  if(valid_reply.size() != 2)
+  {
+    std::exit(EXIT_FAILURE);
+  }
+  std::exit(EXIT_SUCCESS);
+}
+
 BT::Tree createTreeWithNamedSubtrees(BT::BehaviorTreeFactory& factory,
                                      const BT::Blackboard::Ptr& main_blackboard)
 {
@@ -137,6 +167,12 @@ TEST(Groot2PublisherIntegration, MalformedRequestDoesNotTerminateServer)
 {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_EXIT(malformedRequestScenario(), ::testing::ExitedWithCode(EXIT_SUCCESS), ".*");
+}
+
+TEST(Groot2PublisherIntegration, IncompleteHookRequestDoesNotTerminateServer)
+{
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_EXIT(incompleteHookScenario(), ::testing::ExitedWithCode(EXIT_SUCCESS), ".*");
 }
 
 TEST(Groot2PublisherIntegration, BlackboardDump_NoRootWithoutExternalBlackboard)
