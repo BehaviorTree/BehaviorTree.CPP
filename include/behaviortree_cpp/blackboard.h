@@ -123,7 +123,7 @@ public:
 
   void debugMessage() const;
 
-  [[nodiscard]] std::vector<StringView> getKeys() const;
+  [[nodiscard]] std::vector<std::string> getKeys() const;
 
   [[deprecated("This command is unsafe. Consider using Backup/Restore instead")]] void
   clear();

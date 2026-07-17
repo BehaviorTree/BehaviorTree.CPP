@@ -137,16 +137,14 @@ void Blackboard::debugMessage() const
   }
 }
 
-std::vector<StringView> Blackboard::getKeys() const
+std::vector<std::string> Blackboard::getKeys() const
 {
-  // Lock storage_mutex_ (shared) to prevent iterator invalidation and
-  // dangling StringView from concurrent modifications (BUG-6 fix).
+  // Return owning copies of the keys, made while holding the shared lock.
+  // Returning StringView into storage_ would dangle as soon as another thread
+  // erased an entry (Blackboard::unset / the UnsetBlackboard action) after the
+  // lock is released but before the caller reads the view.
   const std::shared_lock storage_lock(storage_mutex_);
-  if(storage_.empty())
-  {
-    return {};
-  }
-  std::vector<StringView> out;
+  std::vector<std::string> out;
   out.reserve(storage_.size());
   for(const auto& entry_it : storage_)
   {
@@ -337,9 +335,8 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
 nlohmann::json ExportBlackboardToJSON(const Blackboard& blackboard)
 {
   nlohmann::json dest;
-  for(auto entry_name : blackboard.getKeys())
+  for(const auto& name : blackboard.getKeys())
   {
-    const std::string name(entry_name);
     if(auto any_ref = blackboard.getAnyLocked(name))
     {
       if(auto any_ptr = any_ref.get())

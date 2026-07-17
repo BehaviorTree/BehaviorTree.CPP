@@ -335,3 +335,48 @@ TEST(BlackboardThreadSafety, GetKeysWhileModifying_Bug6)
 
   SUCCEED();
 }
+
+// BUG-6 (continued): getKeys() used to return StringView pointing into the
+// std::string keys of storage_. The shared lock is released when getKeys()
+// returns, so a concurrent erase (unset() / the UnsetBlackboard action) frees
+// the underlying key while the caller still reads the view. This is exactly
+// what ExportBlackboardToJSON does on the Groot2 server thread.
+// Under ASan/TSan this reports a heap-use-after-free before the fix.
+TEST(BlackboardThreadSafety, GetKeysReadWhileErasing_Bug6)
+{
+  auto bb = Blackboard::create();
+
+  constexpr int kIterations = 200000;
+  std::atomic<bool> stop{ false };
+
+  auto reader = [&]() {
+    while(!stop.load())
+    {
+      for(const auto& key : bb->getKeys())
+      {
+        // Read the key content after getKeys() released the lock.
+        volatile size_t s = std::string(key).size();
+        (void)s;
+      }
+    }
+  };
+
+  auto mutator = [&]() {
+    for(int i = 0; i < kIterations; i++)
+    {
+      const std::string key = "key_" + std::to_string(i % 64);
+      bb->set(key, i);
+      bb->unset(key);  // erase -> frees the map key's std::string
+    }
+    stop.store(true);
+  };
+
+  std::thread t1(reader);
+  std::thread t2(mutator);
+
+  t2.join();
+  stop.store(true);
+  t1.join();
+
+  SUCCEED();
+}
