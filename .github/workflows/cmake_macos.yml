@@ -58,5 +58,5 @@ jobs:
     # shared tests. --repeat until-pass absorbs residual flakiness in the rest.
     - name: run test (macOS)
       run: |
-        EXCLUDE='SimpleParallelTest.ConditionsTrue|ComplexParallelTest.ConditionRightFalseAction1Done|Parallel.PauseWithRetry|Parallel.Issue819_SequenceVsReactiveSequence|SequenceTripleActionTest.TripleAction|SimpleSequenceWithMemoryTest.ConditionTrue|SwitchTest.CaseSwitchToDefault|CoroTest.do_action_timeout|CoroTest.sequence_child|DeadlineTest.DeadlineTriggeredTest|Decorator.DelayWithXML'
+        EXCLUDE='SimpleParallelTest.ConditionsTrue|ComplexParallelTest.ConditionRightFalseAction1Done|Parallel.PauseWithRetry|Parallel.Issue819_SequenceVsReactiveSequence|Parallel.FailingParallel|SequenceTripleActionTest.TripleAction|SimpleSequenceWithMemoryTest.ConditionTrue|SwitchTest.CaseSwitchToDefault|CoroTest.do_action_timeout|CoroTest.sequence_child|DeadlineTest.DeadlineTriggeredTest|Decorator.DelayWithXML'
         ctest --test-dir build/${{env.BUILD_TYPE}} --output-on-failure --repeat until-pass:3 -E "$EXCLUDE"

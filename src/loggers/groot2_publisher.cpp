@@ -352,8 +352,8 @@ void Groot2Publisher::serverLoop()
           }
 
           auto InsertHook = [this](nlohmann::json const& json) {
-            uint16_t const node_uid = json["uid"].get<uint16_t>();
-            Position const pos = static_cast<Position>(json["position"].get<int>());
+            uint16_t const node_uid = json.at("uid").get<uint16_t>();
+            Position const pos = static_cast<Position>(json.at("position").get<int>());
 
             if(auto hook = getHook(pos, node_uid))
             {
