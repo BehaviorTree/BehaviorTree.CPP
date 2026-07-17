@@ -79,7 +79,6 @@ NodeStatus convertScriptResultToStatus(const Any& result)
 
 struct TestNode::PImpl
 {
-  std::shared_ptr<TestNodeConfig> config;
   ScriptFunction return_status_executor;
   ScriptFunction success_executor;
   ScriptFunction failure_executor;
@@ -95,14 +94,15 @@ TestNode::TestNode(const std::string& name, const NodeConfig& config,
 
 TestNode::TestNode(const std::string& name, const NodeConfig& config,
                    std::shared_ptr<TestNodeConfig> test_config)
-  : StatefulActionNode(name, config), _p(std::make_unique<PImpl>())
+  : StatefulActionNode(name, config)
+  , _config(std::move(test_config))
+  , _p(std::make_unique<PImpl>())
 {
-  _p->config = std::move(test_config);
   setRegistrationID("TestNode");
 
-  if(_p->config->return_status_script.empty())
+  if(_config->return_status_script.empty())
   {
-    validateTestNodeStatus(_p->config->return_status, "return_status");
+    validateTestNodeStatus(_config->return_status, "return_status");
   }
 
   auto prepareScript = [](const std::string& script, auto& executor) {
@@ -116,24 +116,24 @@ TestNode::TestNode(const std::string& name, const NodeConfig& config,
       executor = result.value();
     }
   };
-  prepareScript(_p->config->return_status_script, _p->return_status_executor);
-  prepareScript(_p->config->success_script, _p->success_executor);
-  prepareScript(_p->config->failure_script, _p->failure_executor);
-  prepareScript(_p->config->post_script, _p->post_executor);
+  prepareScript(_config->return_status_script, _p->return_status_executor);
+  prepareScript(_config->success_script, _p->success_executor);
+  prepareScript(_config->failure_script, _p->failure_executor);
+  prepareScript(_config->post_script, _p->post_executor);
 }
 
 TestNode::~TestNode() = default;
 
 NodeStatus TestNode::onStart()
 {
-  if(_p->config->async_delay <= std::chrono::milliseconds(0))
+  if(_config->async_delay <= std::chrono::milliseconds(0))
   {
     return onCompleted();
   }
   // convert this in an asynchronous operation. Use another thread to count
   // a certain amount of time.
   _p->completed = false;
-  _p->timer.add(std::chrono::milliseconds(_p->config->async_delay), [this](bool aborted) {
+  _p->timer.add(std::chrono::milliseconds(_config->async_delay), [this](bool aborted) {
     if(!aborted)
     {
       _p->completed.store(true);
@@ -165,9 +165,9 @@ NodeStatus TestNode::onCompleted()
 {
   NodeStatus status = NodeStatus::IDLE;
 
-  if(_p->config->complete_func)
+  if(_config->complete_func)
   {
-    status = _p->config->complete_func();
+    status = _config->complete_func();
   }
   else if(_p->return_status_executor)
   {
@@ -180,7 +180,7 @@ NodeStatus TestNode::onCompleted()
   }
   else
   {
-    status = _p->config->return_status;
+    status = _config->return_status;
   }
 
   validateTestNodeStatus(status, "completion");

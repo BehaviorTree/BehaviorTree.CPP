@@ -15,6 +15,11 @@
 
 #include "behaviortree_cpp/action_node.h"
 
+// Not used by this header anymore, but included since 4.x: kept so that
+// consumers relying on them transitively do not break.
+#include "behaviortree_cpp/scripting/script_parser.hpp"  // IWYU pragma: keep
+#include "behaviortree_cpp/utils/timer_queue.h"          // IWYU pragma: keep
+
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -112,8 +117,12 @@ protected:
 
   NodeStatus onCompleted();
 
-  // All state lives behind this pointer, so that adding or changing it does not
-  // alter the layout that consumers compile against.
+  // Kept as a direct member (first, at the same offset as in 4.9) for
+  // compatibility with subclasses that access it. Everything else lives behind
+  // the PImpl, so that adding or changing state does not alter the layout that
+  // consumers compile against.
+  std::shared_ptr<TestNodeConfig> _config;
+
   struct PImpl;
   std::unique_ptr<PImpl> _p;
 };
