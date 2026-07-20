@@ -857,14 +857,14 @@ TEST(InsideXmlComment, BasicCases)
   //  ^      ^  ^         ^   ^
   //  0      7  10        20  24
   const std::string s = "before <!-- comment --> after";
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 0));   // 'b' — before any comment
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 6));   // ' ' — space right before <!--
-  EXPECT_TRUE(BT::detail::insideXmlComment(s, 7));    // '<' — at the opening '<' of <!--
-  EXPECT_TRUE(BT::detail::insideXmlComment(s, 10));   // '-' — at the last '-' of <!--
-  EXPECT_TRUE(BT::detail::insideXmlComment(s, 13));   // 'o' — inside comment body
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 20));  // '-' — at the first '-' of -->
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 22));  // '>' — at the '>' of -->
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 24));  // 'a' — after comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 0));   // 'b' - before any comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 6));   // ' ' - space right before <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 7));    // '<' - at the opening '<' of <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 10));   // '-' - at the last '-' of <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 13));   // 'o' - inside comment body
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 20));  // '-' - at the first '-' of -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 22));  // '>' - at the '>' of -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 24));  // 'a' - after comment
   EXPECT_FALSE(BT::detail::insideXmlComment("no comment", 3));
 }
 
@@ -874,17 +874,17 @@ TEST(InsideXmlComment, MultipleComments)
   //  ^          ^          ^           ^   ^
   //  0          11         22          34  38
   const std::string s = "<!-- first --> middle <!-- second --> end";
-  EXPECT_TRUE(BT::detail::insideXmlComment(s, 0));    // '<' — at first <!--
-  EXPECT_TRUE(BT::detail::insideXmlComment(s, 5));    // 'f' — inside first comment
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 11));  // '-' — at first -->
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 13));  // '>' — at '>' of first -->
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 15));  // 'm' — between comments
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 21));  // ' ' — space right before second <!--
-  EXPECT_TRUE(BT::detail::insideXmlComment(s, 22));   // '<' — at second <!--
-  EXPECT_TRUE(BT::detail::insideXmlComment(s, 27));   // 's' — inside second comment
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 34));  // '-' — at second -->
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 36));  // '>' — at '>' of second -->
-  EXPECT_FALSE(BT::detail::insideXmlComment(s, 38));  // 'e' — after both comments
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 0));    // '<' - at first <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 5));    // 'f' - inside first comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 11));  // '-' - at first -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 13));  // '>' - at '>' of first -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 15));  // 'm' - between comments
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 21));  // ' ' - space before second <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 22));   // '<' - at second <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 27));   // 's' - inside second comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 34));  // '-' - at second -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 36));  // '>' - at '>' of second -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 38));  // 'e' - after both comments
 }
 
 TEST(WriteTreeSchematron, PlaceholderReplaced)
