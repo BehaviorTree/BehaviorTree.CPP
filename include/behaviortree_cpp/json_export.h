@@ -3,8 +3,11 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 
-// Use the version nlohmann::json embedded in BT.CPP
+#ifdef BTCPP_VENDORED_JSON
 #include "behaviortree_cpp/contrib/json.hpp"
+#else
+#include <nlohmann/json.hpp>
+#endif
 
 namespace BT
 {
