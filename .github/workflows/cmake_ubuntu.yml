@@ -50,6 +50,17 @@ jobs:
     - name: run test (Linux)
       run: ctest --test-dir build/${{env.BUILD_TYPE}}
 
+    - name: Check generated schemas are up to date
+      run: |
+        ./build/${{env.BUILD_TYPE}}/tools/bt4_generate_xsd         > /tmp/bt4.xsd
+        ./build/${{env.BUILD_TYPE}}/tools/bt4_generate_schematron  > /tmp/bt4.sch
+        fail=0
+        diff tools/generated/bt4.xsd /tmp/bt4.xsd || \
+          { echo "XSD is stale - regenerate: ./build/Release/tools/bt4_generate_xsd > tools/generated/bt4.xsd"; fail=1; }
+        diff tools/generated/bt4.sch /tmp/bt4.sch || \
+          { echo "Schematron is stale - regenerate: ./build/Release/tools/bt4_generate_schematron > tools/generated/bt4.sch"; fail=1; }
+        exit $fail
+
   coverage:
     runs-on: ubuntu-24.04
 
