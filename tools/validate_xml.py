@@ -95,6 +95,9 @@ examples:
 
     args = parser.parse_args()
 
+    if args.no_xsd and args.no_sch:
+        parser.error("--no-xsd and --no-sch together disable all validation; nothing to do")
+
     if not Path(args.xml_file).exists():
         parser.error(f"file not found: {args.xml_file}")
 
