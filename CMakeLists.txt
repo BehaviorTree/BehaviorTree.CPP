@@ -214,7 +214,10 @@ if (WIN32)
 endif()
 
 # Embed src/btcpp4_schematron.sch as a C++ string constant.
-# configure_file tracks the input file: CMake reruns automatically when it changes.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch"
+)
+
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch" BTCPP_SCHEMATRON_TEMPLATE)
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/schematron_template.h.in"
