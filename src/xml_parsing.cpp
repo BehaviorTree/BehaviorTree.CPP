@@ -1483,6 +1483,11 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
   return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 }
 
+std::string writeTreeXSD(const BehaviorTreeFactory& factory)
+{
+  return writeTreeXSD(factory, false);
+}
+
 std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
 {
   // There are 2 forms of representation for a node:

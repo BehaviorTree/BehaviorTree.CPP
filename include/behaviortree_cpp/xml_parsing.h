@@ -62,17 +62,24 @@ void VerifyXML(const std::string& xml_text,
  * @brief writeTreeXSD generates an XSD for the nodes defined in the factory.
  *
  * @param factory     the factory with the registered types
+ *
+ * @return  string containing the XSD XML (strict, closed-vocabulary schema).
+ */
+[[nodiscard]] std::string writeTreeXSD(const BehaviorTreeFactory& factory);
+
+/**
+ * @brief writeTreeXSD generates an XSD for the nodes defined in the factory.
+ *
+ * @param factory     the factory with the registered types
  * @param generic     if true, oneNodeGroup uses xs:any processContents="lax"
  *                    instead of a closed xs:choice, allowing unknown custom
  *                    node elements to pass validation.  Top-level xs:element
  *                    declarations are also emitted so that lax processing can
  *                    still resolve and validate the known built-in node types.
- *                    Defaults to false (strict, closed-vocabulary schema).
  *
  * @return  string containing the XSD XML.
  */
-[[nodiscard]] std::string writeTreeXSD(const BehaviorTreeFactory& factory,
-                                       bool generic = false);
+[[nodiscard]] std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic);
 
 /**
  * @brief writeTreeSchematron generates an ISO Schematron schema for BehaviorTree.CPP XML files.
