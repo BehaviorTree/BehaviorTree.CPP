@@ -118,6 +118,12 @@ void VerifyXML(const std::string& xml_text,
 [[nodiscard]] std::string WriteTreeToXML(const Tree& tree, bool add_metadata,
                                          bool add_builtin_models);
 
+namespace detail
+{
+/// Returns true when @p pos inside @p s falls within an XML comment (<!-- ... -->).
+[[nodiscard]] bool insideXmlComment(const std::string& s, std::size_t pos);
+}  // namespace detail
+
 }  // namespace BT
 
 #endif  // XML_PARSING_BT_H

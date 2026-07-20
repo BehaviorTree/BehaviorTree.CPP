@@ -851,11 +851,23 @@ TEST(WriteTreeSchematron, WellFormedOutput)
   EXPECT_NE(sch.find("</sch:schema>"), std::string::npos);
 }
 
+TEST(InsideXmlComment, BasicCases)
+{
+  const std::string s = "before <!-- comment --> after";
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 0));           // "before"
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 13));           // inside comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 24));          // "after"
+  EXPECT_FALSE(BT::detail::insideXmlComment("no comment", 3));
+}
+
 TEST(WriteTreeSchematron, PlaceholderReplaced)
 {
+  // Every ##BUILTIN_PIPE## that survives in the output must be inside a comment.
   BehaviorTreeFactory factory;
-  auto sch = writeTreeSchematron(factory);
-  EXPECT_EQ(sch.find("##BUILTIN_PIPE##"), std::string::npos);
+  const auto sch = writeTreeSchematron(factory);
+  const std::string ph = "##BUILTIN_PIPE##";
+  for(std::size_t p = sch.find(ph); p != std::string::npos; p = sch.find(ph, p + 1))
+    EXPECT_TRUE(BT::detail::insideXmlComment(sch, p));
 }
 
 TEST(WriteTreeSchematron, BuiltinNodesInPipeList)

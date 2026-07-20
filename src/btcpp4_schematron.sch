@@ -9,7 +9,7 @@
     Built-in node types are excluded — they are always known to the library
     and do not need an explicit declaration.
 
-    \#\#BUILTIN_PIPE\#\# is a placeholder expanded at runtime by writeTreeSchematron()
+    ##BUILTIN_PIPE## is a placeholder expanded at runtime by writeTreeSchematron()
     with a pipe-delimited list of all built-in node names derived from the factory,
     e.g. |AlwaysFailure|AlwaysSuccess|Fallback|Sequence|...|.
 
