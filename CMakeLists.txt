@@ -213,6 +213,18 @@ if (WIN32)
     list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
 endif()
 
+# Embed src/btcpp4_schematron.sch as a C++ string constant.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch"
+)
+
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch" BTCPP_SCHEMATRON_TEMPLATE)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/schematron_template.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/schematron_template.gen.h"
+    @ONLY
+)
+
 if (BTCPP_SHARED_LIBS)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_library(${BTCPP_LIBRARY} SHARED ${BT_SOURCE})
@@ -255,6 +267,7 @@ target_include_directories(${BTCPP_LIBRARY}
         $<INSTALL_INTERFACE:include>
     PRIVATE
         ${BTCPP_EXTRA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
     )
 
 target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAKE_PROJECT_VERSION}")

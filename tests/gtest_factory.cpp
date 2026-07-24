@@ -777,3 +777,152 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
   BehaviorTreeFactory factory;
   EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
+
+// ---------------------------------------------------------------------------
+// writeTreeXSD tests
+// ---------------------------------------------------------------------------
+
+TEST(WriteTreeXSD, WellFormedOutput)
+{
+  BehaviorTreeFactory factory;
+  auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find("<?xml"), std::string::npos);
+  EXPECT_NE(xsd.find("<xs:schema"), std::string::npos);
+  EXPECT_NE(xsd.find("</xs:schema>"), std::string::npos);
+}
+
+TEST(WriteTreeXSD, ContainsBuiltinNodes)
+{
+  BehaviorTreeFactory factory;
+  auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find("name=\"Sequence\""), std::string::npos);
+  EXPECT_NE(xsd.find("name=\"Fallback\""), std::string::npos);
+  EXPECT_NE(xsd.find("name=\"Inverter\""), std::string::npos);
+}
+
+TEST(WriteTreeXSD, CustomNodeAppearsInOutput)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find("name=\"SaySomething\""), std::string::npos);
+  EXPECT_NE(xsd.find("name=\"message\""), std::string::npos);
+}
+
+TEST(WriteTreeXSD, GenericModeUsesXsAny)
+{
+  BehaviorTreeFactory factory;
+  auto xsd_strict = writeTreeXSD(factory, false);
+  auto xsd_generic = writeTreeXSD(factory, true);
+  EXPECT_EQ(xsd_strict.find("processContents=\"lax\""), std::string::npos);
+  EXPECT_NE(xsd_generic.find("processContents=\"lax\""), std::string::npos);
+}
+
+TEST(WriteTreeXSD, GenericModeExcludesCustomNodes)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto xsd_strict = writeTreeXSD(factory, false);
+  auto xsd_generic = writeTreeXSD(factory, true);
+  // Custom nodes must appear in strict but not in generic (generic accepts them via xs:any)
+  EXPECT_NE(xsd_strict.find("SaySomething"), std::string::npos);
+  EXPECT_EQ(xsd_generic.find("SaySomething"), std::string::npos);
+}
+
+TEST(WriteTreeXSD, Deterministic)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto xsd1 = writeTreeXSD(factory);
+  auto xsd2 = writeTreeXSD(factory);
+  EXPECT_EQ(xsd1, xsd2);
+}
+
+// ---------------------------------------------------------------------------
+// writeTreeSchematron tests
+// ---------------------------------------------------------------------------
+
+TEST(WriteTreeSchematron, WellFormedOutput)
+{
+  BehaviorTreeFactory factory;
+  auto sch = writeTreeSchematron(factory);
+  EXPECT_NE(sch.find("<?xml"), std::string::npos);
+  EXPECT_NE(sch.find("sch:schema"), std::string::npos);
+  EXPECT_NE(sch.find("</sch:schema>"), std::string::npos);
+}
+
+TEST(InsideXmlComment, BasicCases)
+{
+  // "before <!-- comment --> after"
+  //  ^      ^  ^         ^   ^
+  //  0      7  10        20  24
+  const std::string s = "before <!-- comment --> after";
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 0));   // 'b' - before any comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 6));   // ' ' - space right before <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 7));    // '<' - at the opening '<' of <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 10));   // '-' - at the last '-' of <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 13));   // 'o' - inside comment body
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 20));  // '-' - at the first '-' of -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 22));  // '>' - at the '>' of -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 24));  // 'a' - after comment
+  EXPECT_FALSE(BT::detail::insideXmlComment("no comment", 3));
+}
+
+TEST(InsideXmlComment, MultipleComments)
+{
+  // "<!-- first --> middle <!-- second --> end"
+  //  ^          ^          ^           ^   ^
+  //  0          11         22          34  38
+  const std::string s = "<!-- first --> middle <!-- second --> end";
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 0));    // '<' - at first <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 5));    // 'f' - inside first comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 11));  // '-' - at first -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 13));  // '>' - at '>' of first -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 15));  // 'm' - between comments
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 21));  // ' ' - space before second <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 22));   // '<' - at second <!--
+  EXPECT_TRUE(BT::detail::insideXmlComment(s, 27));   // 's' - inside second comment
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 34));  // '-' - at second -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 36));  // '>' - at '>' of second -->
+  EXPECT_FALSE(BT::detail::insideXmlComment(s, 38));  // 'e' - after both comments
+}
+
+TEST(WriteTreeSchematron, PlaceholderReplaced)
+{
+  // Every ##BUILTIN_PIPE## that survives in the output must be inside a comment.
+  BehaviorTreeFactory factory;
+  const auto sch = writeTreeSchematron(factory);
+  const std::string ph = "##BUILTIN_PIPE##";
+  for(std::size_t p = sch.find(ph); p != std::string::npos; p = sch.find(ph, p + 1))
+    EXPECT_TRUE(BT::detail::insideXmlComment(sch, p));
+}
+
+TEST(WriteTreeSchematron, BuiltinNodesInPipeList)
+{
+  BehaviorTreeFactory factory;
+  auto sch = writeTreeSchematron(factory);
+  EXPECT_NE(sch.find("|Sequence|"), std::string::npos);
+  EXPECT_NE(sch.find("|Fallback|"), std::string::npos);
+  EXPECT_NE(sch.find("|Inverter|"), std::string::npos);
+}
+
+TEST(WriteTreeSchematron, ContainsAllPatternIds)
+{
+  BehaviorTreeFactory factory;
+  auto sch = writeTreeSchematron(factory);
+  EXPECT_NE(sch.find("id=\"treeNodesModel\""), std::string::npos);
+  EXPECT_NE(sch.find("id=\"explicitNodeStructure\""), std::string::npos);
+  EXPECT_NE(sch.find("id=\"subtreeResolution\""), std::string::npos);
+  EXPECT_NE(sch.find("id=\"rootStructure\""), std::string::npos);
+}
+
+TEST(WriteTreeSchematron, CustomNodeNotInBuiltinPipe)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<DummyNodes::SaySomething>("SaySomething");
+  auto sch = writeTreeSchematron(factory);
+  // Custom nodes must not appear in the builtin pipe exclusion list
+  EXPECT_EQ(sch.find("|SaySomething|"), std::string::npos);
+  // Builtins must still be present
+  EXPECT_NE(sch.find("|Sequence|"), std::string::npos);
+}
