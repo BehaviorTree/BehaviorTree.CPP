@@ -1202,8 +1202,7 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
             if(!stored)
             {
               double dbl_val = 0;
-              auto [ptr, ec] = std::from_chars(begin, end, dbl_val);
-              if(ec == std::errc() && ptr == end)
+              if(parseDouble(str_value, dbl_val, /*require_full_consumption=*/true))
               {
                 new_bb->set(attr_name, dbl_val);
                 stored = true;

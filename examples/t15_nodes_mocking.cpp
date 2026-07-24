@@ -39,7 +39,7 @@ const char* xml_text = R"(
 
 /**
  * @brief In this example we will see how we can substitute some nodes
- * in the Tree above with
+ * in the Tree above with mocks.
  * @param argc
  * @param argv
  * @return

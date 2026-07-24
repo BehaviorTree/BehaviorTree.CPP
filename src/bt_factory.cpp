@@ -531,9 +531,19 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
     for(auto const& [name, test_config] : test_configs.items())
     {
       auto& config = configs[name];
+      bool has_return_status = false;
 
-      auto return_status = test_config.at("return_status").get<std::string>();
-      config.return_status = convertFromString<NodeStatus>(return_status);
+      if(test_config.contains("return_status"))
+      {
+        auto return_status = test_config.at("return_status").get<std::string>();
+        config.return_status = convertFromString<NodeStatus>(return_status);
+        has_return_status = true;
+      }
+      if(test_config.contains("return_status_script"))
+      {
+        config.return_status_script =
+            test_config["return_status_script"].get<std::string>();
+      }
       if(test_config.contains("async_delay"))
       {
         config.async_delay =
@@ -550,6 +560,12 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
       if(test_config.contains("failure_script"))
       {
         config.failure_script = test_config["failure_script"].get<std::string>();
+      }
+
+      if(!has_return_status && config.return_status_script.empty())
+      {
+        throw RuntimeError("TestNodeConfig [", name,
+                           "] must contain return_status or return_status_script");
       }
     }
   }

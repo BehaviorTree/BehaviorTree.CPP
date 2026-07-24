@@ -55,7 +55,7 @@ private:
 
   void updateStatusBuffer();
 
-  std::vector<uint8_t> generateBlackboardsDump(const std::string& bb_list);
+  Expected<std::vector<uint8_t>> generateBlackboardsDump(const std::string& bb_list);
 
   bool insertHook(Monitor::Hook::Ptr breakpoint);
 

@@ -2,6 +2,262 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.10.0 (2026-07-24)
+-------------------
+* reject trailing characters in SwitchNode numeric comparison (`#1178 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1178>`_)
+* Pin ament install destinations to lib/include/bin (fixes `#1175 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1175>`_) (`#1176 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1176>`_)
+  The ROS build farm (bloom/debhelper) configures with
+  -DCMAKE_INSTALL_LIBDIR=lib/<multiarch-triplet>. Since `#1152 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1152>`_ made the
+  BTCPP\_*_DESTINATION variables honor GNUInstallDirs, farm binaries
+  installed libbehaviortree_cpp.so to /opt/ros/<distro>/lib/x86_64-linux-gnu,
+  which breaks ament_export_libraries lookup in downstream packages and is
+  not on the LD_LIBRARY_PATH set by the ament environment hooks.
+  Shadow the cache variables with plain set() in the ament build path, so
+  ROS builds always install to $prefix/lib regardless of
+  CMAKE_INSTALL_LIBDIR, while standalone builds keep the GNUInstallDirs
+  override behavior introduced for `#1120 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1120>`_.
+  Also add a ros2-lyrical CI job that emulates the build farm flags and
+  asserts the library lands in $prefix/lib.
+  Co-authored-by: Claude Fable 5 <noreply@anthropic.com>
+* fix out-of-bounds read in Groot2 hook insert handler (`#1170 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1170>`_)
+  * fix out-of-bounds read in Groot2 hook insert handler
+  * exclude Parallel.FailingParallel from macOS CI test run
+* Add scripted return status support for TestNode mocks (`#1169 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1169>`_)
+  Introduce `return_status_script` on TestNodeConfig, allowing a mock's
+  completion status to be computed at runtime from blackboard state instead
+  of being fixed. When set, it takes precedence over `return_status`; it may
+  reference the NodeStatus names (SUCCESS/FAILURE/...) and is rejected if it
+  resolves to IDLE.
+  The NodeStatus enum names are injected only into the return_status_script
+  environment. The pre-existing success_script/failure_script/post_script
+  continue to evaluate against the node's own enums, so a blackboard entry
+  named like a status (e.g. "SUCCESS") is not shadowed.
+  To pay the ABI break only once, TestNode's state is moved behind a PImpl,
+  so future changes to it no longer alter the layout consumers link against
+  (mirroring StatusChangeLogger). The new return_status_script field is
+  appended at the end of TestNodeConfig, preserving the byte offsets of the
+  existing fields.
+  Also add JSON validation rejecting a TestNodeConfig with neither a
+  return_status nor a return_status_script, and a tutorial example
+  (t15_nodes_mocking_strict_failure) demonstrating the strict-failure flow.
+  Addresses `#995 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/995>`_.
+  Co-authored-by: Pepe <pepe@ross-robotics.co.uk>
+  Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
+* Fix ROOT blackboard export in Groot2 publisher (`#1132 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1132>`_) (`#1168 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1168>`_)
+  When a subtree's blackboard is backed by a separate root blackboard
+  (e.g. created via `Blackboard::create(external_root)` to expose `@`
+  globals), the Groot2 publisher never exported those root entries, so
+  they were invisible in Groot2. Export the root blackboard under the
+  reserved name `ROOT` whenever a requested subtree resolves to a
+  distinct root blackboard.
+  - Deduplicate the `ROOT` payload when several subtrees share the same
+  root blackboard.
+  - Return the dump as `Expected<>` and send an error reply for
+  ambiguous requests: a subtree literally named `ROOT`, or a request
+  spanning multiple distinct root blackboards.
+  - Add functional coverage to gtest_groot2_publisher_integration.cpp
+  using the shared Groot2Test helpers (makePublisher/Client).
+  - Enable `/utf-8` for behaviortree_cpp_test on MSVC so the Unicode
+  name-validation tests build on Windows.
+  Closes `#1130 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1130>`_
+  Co-authored-by: magic-alt <zaqwerss@outlook.com>
+  Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
+* Add macOS CI and fix Apple libc++ build (`#1167 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1167>`_)
+  * Add macOS build to CI
+  Add a Conan + CMake workflow running on macos-latest (Apple Silicon,
+  AppleClang + libc++). This exercises the Apple standard-library toolchain
+  that other CI jobs (Ubuntu/GCC, Windows/MSVC, conda/Clang) do not, catching
+  Apple-specific breakage such as the missing floating-point std::from_chars.
+  The job mirrors the existing cmake_ubuntu.yml Conan flow (conan install ->
+  cmake --preset conan-release -> ctest), pinning compiler.cppstd=17 as the
+  Windows job does.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * Fix Apple libc++ build: guard floating-point std::from_chars
+  Apple's libc++ deletes the floating-point std::from_chars overload (and
+  undefines __cpp_lib_to_chars), so the unguarded double parse in
+  recursivelyCreateSubtree fails to compile on macOS. This is the same code
+  path the new cmake_macos.yml CI job exercises, so guard it here to keep that
+  job green.
+  Introduce parseDoubleStrict(), which uses std::from_chars where available and,
+  where it is not (Apple libc++), falls back to strtod_l with a "C" locale
+  created once. Unlike setlocale(), this does not mutate process-global state,
+  so it is thread-safe. A small guard rejects the inputs strtod would accept but
+  std::from_chars(general) rejects -- leading whitespace, a leading '+', and hex
+  floats -- so the parsed blackboard-entry type is identical on every platform.
+  Verified byte-for-byte against std::from_chars over a battery of inputs
+  (including "+1.5", " 1.5", "0x1p4", "1.", ".5", inf/nan, overflow/underflow).
+  The integer std::from_chars just above is available on Apple libc++ and is
+  left unchanged.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * CI: install Conan via Homebrew on macOS
+  turtlebrowser/get-conan runs `pip3 install`, which fails on macOS runners with
+  PEP 668 (externally-managed-environment). Use `brew install conan` instead,
+  which provides Conan 2.x without touching the system Python.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * Fix convertFromString<double/float> error type on Apple libc++
+  On platforms without floating-point std::from_chars (Apple libc++), the
+  fallback used std::stod but let its std::invalid_argument/out_of_range escape,
+  whereas the from_chars path throws BT::RuntimeError. This made
+  BasicTypes.ConvertFromString_Double fail on macOS (it expects RuntimeError for
+  "not_a_number"). The throw also skipped the setlocale restore, leaking the "C"
+  locale process-wide. Wrap stod in try/catch: restore the locale and rethrow as
+  RuntimeError on both success and failure paths.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * CI: macOS diagnostics for remaining test failures (temporary)
+  Add --output-on-failure and an lldb backtrace step (on failure) to capture
+  assertion messages and stack traces for the macOS-only segfaults/timeouts.
+  To be removed once those are fixed.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * Fix macOS segfault: don't touch child in DelayNode destructor
+  ~DelayNode called halt(), which via DecoratorNode::halt() -> resetChild()
+  dereferences the child node (child_node\_->status()). During Tree destruction
+  nodes are owned by a flat std::vector<TreeNode::Ptr> whose element-destruction
+  order is unspecified: libstdc++ tears down front-to-back (child outlives the
+  decorator) but libc++ back-to-front (child destroyed first). On libc++ (macOS)
+  the child is already gone, so status() locks a mutex through a null PImpl and
+  segfaults. This crashed every tree containing a <Delay> node on macOS
+  (Decorator.DelayWithXML and the Substitution Issue930 tests).
+  Only cancel the timer in the destructor, mirroring TimeoutNode's destructor,
+  which already does exactly this. The halt() method is unchanged for normal
+  (non-destruction) halting.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * CI: retry timing-flaky tests on macOS (--repeat until-pass:3)
+  The shared macOS runners cannot reliably meet several tests' tight wall-clock
+  tolerances (e.g. elapsed 222 vs 200 ms), and the failing set varies run to run.
+  Retry to absorb the flakiness without loosening assertions on other platforms.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * tests: widen timing tolerances on macOS (platform-gated)
+  The shared macOS CI runners are much slower/noisier than Linux/Windows, so a
+  few tests with tight wall-clock tolerances fail there (not library bugs). Gate
+  the tolerances behind __APPLE_\_ so other platforms keep the strict values:
+  - gtest_coroutines: scale the sub-50ms action/timeout durations by 5x on macOS
+  (only relative ordering matters), so the timeout reliably fires between the
+  short and long actions instead of racing scheduling jitter.
+  - gtest_parallel PauseWithRetry: widen margin_msec 80 -> 250 on macOS
+  (observed overshoot was 130-150ms).
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * CI: bump macOS test retries to until-pass:5
+  A couple of timing tests (Parallel.Issue819, SwitchTest.CaseSwitchToDefault)
+  are flaky under runner load rather than consistently over a single tolerance,
+  so retry a bit more to absorb that.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * CI: exclude timing-flaky tests on macOS; drop lldb diagnostic
+  The shared macOS runners are too slow/noisy to reliably meet the tight
+  wall-clock tolerances in ~11 tests (a rotating subset fails each run). They are
+  not macOS-specific logic and keep running on Linux and Windows, so exclude them
+  on macOS with ctest -E to make the job deterministic. --repeat until-pass:3
+  absorbs residual flakiness in the rest. The __APPLE_\_-gated tolerances added
+  earlier (gtest_coroutines, gtest_parallel) remain so these can be re-enabled
+  here later.
+  Also remove the temporary lldb backtrace step now that the DelayNode
+  destruction segfault is fixed.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * Revert macOS timing-margin edits; rely on exclusion only
+  Since the timing-sensitive tests are excluded on macOS (ctest -E), there is no
+  reason to also widen their wall-clock tolerances. Restore gtest_coroutines.cpp
+  and gtest_parallel.cpp to their original values so the shared tests stay
+  pristine for every platform, and drop the stale workflow comment that mentioned
+  the __APPLE_\_-gated tolerances.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * Simplify: dedup convertFromString double/float Apple fallback
+  /simplify cleanup. The macOS (no floating-point std::from_chars) fallback was
+  duplicated between convertFromString<double> and <float>, each restoring the
+  locale twice (catch + fall-through). Extract a single guarded file-local helper
+  stodClassicLocale() with an RAII locale-restore, so the fallback lives in one
+  place and the restore happens on every path without the duplicated try/catch.
+  Behavior is unchanged (still stod under a temporary "C" locale, still throws
+  RuntimeError on bad input).
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  * Unify double parsing into a single BT::parseDouble primitive
+  Previously the "parse a double locale-independently" logic existed in two
+  divergent forms: xml_parsing.cpp's parseDoubleStrict (from_chars, or strtod_l +
+  "C" locale on Apple libc++ -- thread-safe, strict) and basic_types.cpp's
+  convertFromString<double>/<float> Apple fallback (stod + global setlocale --
+  thread-unsafe, lenient). They also disagreed on Apple: convertFromString
+  accepted leading '+'/whitespace/hex that std::from_chars (and thus the other
+  platforms) reject.
+  Extract one shared BT::parseDouble(str, out, require_full_consumption) that both
+  build on:
+  - xml_parsing passes require_full_consumption=true (strict full-string check,
+  so compound values like "2.2;2.4" stay strings).
+  - convertFromString<double>/<float> pass false (lenient, matching the previous
+  from_chars behavior of accepting trailing characters).
+  The single implementation uses std::from_chars where available and the
+  thread-safe strtod_l + static "C" locale fallback otherwise, reproducing
+  from_chars(general) semantics exactly (verified against std::from_chars over a
+  battery of inputs, both modes). This removes the duplicated fallback and the
+  thread-unsafe setlocale path from basic_types.cpp. On Apple, convertFromString
+  now rejects '+'/whitespace/hex, matching Linux/Windows.
+  convertFromString<float> keeps std::from_chars<float> on platforms that have it
+  (preserving float-range semantics) and uses parseDouble only on the fallback.
+  Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+  ---------
+  Co-authored-by: Claude Opus 4.8 <noreply@anthropic.com>
+* test(test_node): cover script enum resolution (`#1166 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1166>`_)
+* Fix Groot2 publisher thread safety and hook handling (`#1165 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1165>`_)
+  * Fix Groot2 publisher thread safety
+  * Simplify Groot2 publisher thread-safety machinery
+  Apply code-review cleanups to the thread-safety fix:
+  - Extract the duplicated callback drain-gate (CallbackState/CallbackGuard
+  and HookCallbackState/HookCallbackGuard were byte-identical) into a
+  single shared BT::details::CallbackGate in utils/callback_gate.h.
+  notify_all() now fires only when a drain is actually waiting.
+  - Replace the 69-line injected hook lambda and its immediately-invoked
+  inner lambda with PImpl::runHook(). The BREAKPOINT_REACHED message is
+  now built and sent without holding hook->mutex, and only the ZMQ send
+  holds publisher_mutex.
+  - Drop the Hook::removed tombstone from the public protocol header:
+  with the single lock order established (hooks_map_mutex before
+  hook->mutex), enableAllHooks() and HOOKS_DUMP traverse the maps under
+  hooks_map_mutex, so no stale snapshot can resurrect an erased hook and
+  'enabled = false' suffices for stale callback copies.
+  - GET_TRANSITIONS: swap the transitions buffer out under status_mutex
+  and serialize outside the lock the status callback contends on.
+  - Call unsubscribeFromTreeChanges() in the destructors of the five other
+  StatusChangeLogger subclasses; the base-class destructor call runs too
+  late to protect derived state, so each dtor must drain callbacks first.
+  - Deduplicate the hook-JSON literals in the Groot2 tests into
+  Groot2Test::makeHook(); use make_unique for PImpl; rely on CTAD for
+  lock guards in touched code.
+  Verified: 495/495 tests (Release), 499/499 under TSan with the CI
+  suppressions file, zero ThreadSanitizer warnings.
+  Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+  * Extend TSan suppressions to statically linked ZeroMQ
+  CI builds zmq from source with Conan and links it statically, so the
+  module-based rule 'race:libzmq.so' does not match and zmq-internal
+  false positives (encoder_base_t::encode, msg_t::close) fail the
+  Groot2 hook tests. Match the zmq namespace instead, which works
+  regardless of how the library is linked.
+  Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+  * Move StatusChangeLogger state behind a PImpl
+  StatusChangeLogger is the base class of a public extension point: every
+  logger, including user-defined ones, embeds its layout. The thread-safety
+  fix already changes that layout (and, being header-only, the old inlined
+  implementation survives in consumer binaries even after a library
+  upgrade), so take the opportunity to pay the ABI break only once:
+  - all data members move into a PImpl defined in the new
+  src/loggers/abstract_logger.cpp
+  - the member functions are no longer inline, so future behavior fixes in
+  this class can ship as an ABI-compatible library update
+  Adding or changing state in StatusChangeLogger no longer affects the
+  layout derived classes compile against. Note that changing its virtual
+  interface would still break ABI.
+  Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+  ---------
+  Co-authored-by: Claude Fable 5 <noreply@anthropic.com>
+* fix undefined float-to-integer cast at the numeric limit boundary (`#1162 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1162>`_)
+* fix out-of-bounds read in isBlackboardPointer whitespace trim (`#1161 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1161>`_)
+  Co-authored-by: Davide Faconti <davide.faconti@gmail.com>
+* Fix package share path API for newer ament_index_cpp (`#1163 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1163>`_)
+  * Fix package share path API for newer ament_index_cpp
+  * Style: format package share path update
+  ---------
+  Co-authored-by: Davide Faconti <davide.faconti@gmail.com>
+* Fix WakeUp test flakiness by using steady_clock (`#1164 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1164>`_)
+  The `WakeUp.BasicTest` previously used `system_clock`, which is not monotonic and can be affected by system time adjustments (NTP, DST). This made the test susceptible to flaky failures.
+  This change switches to `steady_clock` for robust, monotonic time measurement. Additionally, the assertion threshold is increased from `25ms` to `100ms` to provide adequate headroom for scheduler jitter, especially on loaded CI environments.
+* Contributors: Aysha Afrah Ziya, Davide Faconti, Maurice Alexander Purnawan, pepeRossRobotics
+
 4.9.1 (2026-07-06)
 ------------------
 * Merge pull request `#1139 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1139>`_ from mini-1235/patch-3

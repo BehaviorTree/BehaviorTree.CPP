@@ -6,8 +6,16 @@
 #include <algorithm>
 #include <array>
 #include <charconv>
-#if __cpp_lib_to_chars < 201611L
-#include <clocale>
+// Apple's libc++ lacks the floating-point std::from_chars overload; parseDouble
+// falls back to strtod_l with a private "C" locale, which needs these headers.
+#if !defined(__cpp_lib_to_chars) || (__cpp_lib_to_chars < 201611L)
+#include <cctype>
+#include <cerrno>
+
+#include <locale.h>
+#if defined(__APPLE__)
+#include <xlocale.h>
+#endif
 #endif
 #include <cstdlib>
 #include <cstring>
@@ -196,34 +204,88 @@ uint32_t convertFromString<uint32_t>(StringView str)
   return ConvertWithBoundCheck<uint32_t>(str);
 }
 
+bool parseDouble(StringView str, double& out, bool require_full_consumption)
+{
+#if defined(__cpp_lib_to_chars) && (__cpp_lib_to_chars >= 201611L)
+  // std::from_chars is locale-independent and thread-safe.
+  const char* begin = str.data();
+  const char* end = begin + str.size();
+  const auto [ptr, ec] = std::from_chars(begin, end, out);
+  if(ec != std::errc())
+  {
+    return false;
+  }
+  return !require_full_consumption || ptr == end;
+#else
+  // Apple's libc++ lacks the floating-point std::from_chars overload. Reproduce
+  // its std::chars_format::general semantics with strtod_l under a "C" locale
+  // created once (thread-safe, no global setlocale mutation), plus a guard that
+  // rejects the leading whitespace, leading '+', and hex floats that strtod
+  // would otherwise accept.
+  if(str.empty())
+  {
+    return false;
+  }
+  const char first = str.front();
+  if(first == '+' || std::isspace(static_cast<unsigned char>(first)) != 0)
+  {
+    return false;
+  }
+  // std::from_chars(general) does not recognise a "0x"/"0X" hex-float prefix; it
+  // parses only the leading "0" and stops at the 'x'. strtod would consume the
+  // whole hex float, so emulate from_chars here: the value is 0, and everything
+  // from the 'x' onward is unparsed (a failure only in the full-consumption case).
+  const std::size_t mantissa = (first == '-') ? 1u : 0u;
+  if(str.size() > mantissa + 1 && str[mantissa] == '0' &&
+     (str[mantissa + 1] == 'x' || str[mantissa + 1] == 'X'))
+  {
+    if(require_full_consumption)
+    {
+      return false;
+    }
+    out = (first == '-') ? -0.0 : 0.0;
+    return true;
+  }
+  static ::locale_t c_locale =
+      ::newlocale(LC_NUMERIC_MASK, "C", static_cast<::locale_t>(0));
+  if(c_locale == static_cast<::locale_t>(0))
+  {
+    return false;
+  }
+  // strtod_l needs a null-terminated buffer.
+  const std::string buffer(str.data(), str.size());
+  errno = 0;
+  char* parse_end = nullptr;
+  const double value = ::strtod_l(buffer.c_str(), &parse_end, c_locale);
+  if(parse_end == buffer.c_str() || errno == ERANGE)
+  {
+    return false;
+  }
+  if(require_full_consumption && parse_end != buffer.c_str() + buffer.size())
+  {
+    return false;
+  }
+  out = value;
+  return true;
+#endif
+}
+
 template <>
 double convertFromString<double>(StringView str)
 {
-#if __cpp_lib_to_chars >= 201611L
-  // from_chars is locale-independent and thread-safe
   double result = 0;
-  const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
-  if(ec != std::errc())
+  if(!parseDouble(str, result, /*require_full_consumption=*/false))
   {
     throw RuntimeError(StrCat("Can't convert string [", str, "] to double"));
   }
   return result;
-#else
-  // Fallback: stod is locale-dependent, so force "C" locale.
-  // See issue #120.  Note: setlocale is not thread-safe.
-  const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
-  std::ignore = setlocale(LC_NUMERIC, "C");
-  const std::string str_copy(str.data(), str.size());
-  const double val = std::stod(str_copy);
-  std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
-  return val;
-#endif
 }
 
 template <>
 float convertFromString<float>(StringView str)
 {
 #if __cpp_lib_to_chars >= 201611L
+  // Parse directly as float to preserve std::from_chars<float> range semantics.
   float result = 0;
   const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
   if(ec != std::errc())
@@ -232,12 +294,12 @@ float convertFromString<float>(StringView str)
   }
   return result;
 #else
-  const std::string old_locale = setlocale(LC_NUMERIC, nullptr);
-  std::ignore = setlocale(LC_NUMERIC, "C");
-  const std::string str_copy(str.data(), str.size());
-  const double val = std::stod(str_copy);
-  std::ignore = setlocale(LC_NUMERIC, old_locale.c_str());
-  return static_cast<float>(val);
+  double result = 0;
+  if(!parseDouble(str, result, /*require_full_consumption=*/false))
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to float"));
+  }
+  return static_cast<float>(result);
 #endif
 }
 
