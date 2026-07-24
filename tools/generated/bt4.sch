@@ -3,11 +3,12 @@
   <sch:title>BehaviorTree.CPP XML validation rules</sch:title>
 
   <!--
-    Rules A and B check that every custom node appearing in a BehaviorTree
-    body has a corresponding entry in TreeNodesModel. Groot2 and other
-    graphical editors require this metadata to display nodes and their ports.
-    Built-in node types are excluded — they are always known to the library
-    and do not need an explicit declaration.
+    Rule A checks that every compact-notation custom node appearing in a BehaviorTree
+    body has a corresponding entry in TreeNodesModel. Groot2 and other graphical
+    editors require this because compact notation alone gives no port information.
+    Explicit notation (<Action ID="X"/>) is already sufficient for Groot2 and does
+    not require a TreeNodesModel entry (see behaviortree.dev/docs/learn-the-basics/xml_format).
+    Built-in node types are excluded - they are always known to the library.
 
     ##BUILTIN_PIPE## is a placeholder expanded at runtime by writeTreeSchematron()
     with a pipe-delimited list of all built-in node names derived from the factory,
@@ -29,20 +30,6 @@
       ]">
       <sch:assert test="/root/TreeNodesModel/*[@ID = local-name(current())]">
         Custom node '<sch:value-of select="local-name()"/>' used in tree
-        '<sch:value-of select="ancestor::BehaviorTree/@ID"/>'
-        has no &lt;TreeNodesModel&gt; entry.
-      </sch:assert>
-    </sch:rule>
-
-    <!-- Rule B: explicit-notation nodes (<Action ID="..."/>, <Condition ID="..."/>, etc.) -->
-    <sch:rule context="/root/BehaviorTree//*[
-        @ID and (
-          local-name() = 'Action' or local-name() = 'Condition' or
-          local-name() = 'Control' or local-name() = 'Decorator'
-        )
-      ]">
-      <sch:assert test="/root/TreeNodesModel/*[@ID = current()/@ID]">
-        Node with ID='<sch:value-of select="@ID"/>' used in tree
         '<sch:value-of select="ancestor::BehaviorTree/@ID"/>'
         has no &lt;TreeNodesModel&gt; entry.
       </sch:assert>
