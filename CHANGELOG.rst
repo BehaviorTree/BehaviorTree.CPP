@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.10.0 (2026-07-24)
+-------------------
 * reject trailing characters in SwitchNode numeric comparison (`#1178 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1178>`_)
 * Pin ament install destinations to lib/include/bin (fixes `#1175 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1175>`_) (`#1176 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1176>`_)
   The ROS build farm (bloom/debhelper) configures with
