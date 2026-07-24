@@ -77,7 +77,6 @@ private:
 
   void halt() override;
 
-  TimerQueue<> timer_;
   std::atomic_bool child_halted_ = false;
   uint64_t timer_id_;
 
@@ -85,6 +84,9 @@ private:
   bool read_parameter_from_ports_;
   std::atomic_bool timeout_started_ = false;
   std::mutex timeout_mutex_;
+  // Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed
+  // before timeout_mutex_, which the timer handler locks.
+  TimerQueue<> timer_;
 };
 
 }  // namespace BT
