@@ -98,6 +98,28 @@ TEST(ParserTest, AnyTypes_Failing)
   EXPECT_FALSE(BT::ParseScriptAndExecute(env, "foo").has_value());
 }
 
+TEST(ParserTest, DeeplyNestedScriptIsRejected)
+{
+  // A script with thousands of nested parentheses or unary prefixes used to add
+  // one recursion level per character and overflow the stack (SIGSEGV) at parse
+  // time. The parser now caps the nesting depth and returns an error instead.
+  const std::string deep_parens = std::string(20000, '(') + "0" + std::string(20000, ')');
+  EXPECT_FALSE(BT::ValidateScript(deep_parens));
+
+  const std::string deep_unary = std::string(20000, '!') + "0";
+  EXPECT_FALSE(BT::ValidateScript(deep_unary));
+
+  // The depth cap must not reject ordinary scripts: a long flat expression is
+  // parsed iteratively (shallow recursion) and light nesting is well within it.
+  std::string wide = "1";
+  for(int i = 0; i < 1000; ++i)
+  {
+    wide += "+1";
+  }
+  EXPECT_TRUE(BT::ValidateScript(wide));
+  EXPECT_TRUE(BT::ValidateScript("((((1))))"));
+}
+
 TEST(ParserTest, Equations)
 {
   BT::Ast::Environment environment = { BT::Blackboard::create(), {} };

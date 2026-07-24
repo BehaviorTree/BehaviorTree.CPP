@@ -46,6 +46,14 @@ public:
 private:
   std::vector<Token> tokens_;
   size_t current_ = 0;
+  int depth_ = 0;
+
+  // Upper bound on the nesting of the recursive-descent grammar. Each open
+  // paren / unary prefix / right-hand operand adds one parseExpr frame, so a
+  // crafted expression like "((((...0...))))" would otherwise recurse until the
+  // native stack is exhausted. This mirrors the kMaxNestingDepth cap the XML
+  // parser already applies in VerifyXML and recursivelyCreateSubtree.
+  static constexpr int kMaxNestingDepth = 256;
 
   // Binding power constants.  Higher value = tighter binding.
   static constexpr int kAssignmentBP = 2;
@@ -254,6 +262,18 @@ private:
   /// Main Pratt expression parser
   Ast::expr_ptr parseExpr(int minBP)
   {
+    // Bound the recursion so a deeply nested expression can't overflow the
+    // stack. Every open paren / unary prefix / right-hand operand adds one
+    // parseExpr frame; depth_ is decremented before the normal return below so
+    // it tracks the current nesting rather than the total call count. A parse
+    // failure throws and discards the parser, so the error paths need no reset.
+    if(++depth_ > kMaxNestingDepth)
+    {
+      throw RuntimeError(StrCat("Parse error at position ", std::to_string(peek().pos),
+                                ": expression nesting is too deep (limit ",
+                                std::to_string(kMaxNestingDepth), ")"));
+    }
+
     auto left = parsePrefix();
 
     while(true)
@@ -293,6 +313,7 @@ private:
       left = makeBinary(std::move(left), opTok.type, std::move(right));
     }
 
+    --depth_;
     return left;
   }
 
