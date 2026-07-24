@@ -911,6 +911,7 @@ TEST(WriteTreeSchematron, ContainsAllPatternIds)
   BehaviorTreeFactory factory;
   auto sch = writeTreeSchematron(factory);
   EXPECT_NE(sch.find("id=\"treeNodesModel\""), std::string::npos);
+  EXPECT_NE(sch.find("id=\"explicitNodeStructure\""), std::string::npos);
   EXPECT_NE(sch.find("id=\"subtreeResolution\""), std::string::npos);
   EXPECT_NE(sch.find("id=\"rootStructure\""), std::string::npos);
 }
