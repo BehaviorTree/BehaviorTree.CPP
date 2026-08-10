@@ -53,18 +53,26 @@ If `battery_ok` becomes false while `MyAction` is running, the action is interru
 - **`_successIf`**: Succeed early based on a condition
 - **`_while`**: Guard that must remain true for the entire execution
 
-### Re-evaluating Conditions Every Tick
+### The `<Precondition>` Decorator
 
-If you need a condition to be checked on every tick (not just when transitioning from IDLE), use the `<Precondition>` decorator node instead of inline attributes:
+The `<Precondition>` decorator follows the same one-shot behavior: it evaluates its `if` expression before starting the child, but does not re-evaluate it while the child is RUNNING.
 
 ```xml
-<!-- This checks the condition on every tick while child is RUNNING -->
-<Precondition if="my_condition" else="RUNNING">
+<Precondition if="my_condition" else="FAILURE">
   <MyAction/>
 </Precondition>
 ```
 
-With `else="RUNNING"`, if the condition is false, the decorator returns RUNNING (keeping the tree alive) rather than SUCCESS/FAILURE/SKIPPED.
+The `else` port selects the status returned when the condition is false before the child starts. With `else="RUNNING"`, the condition is checked again on subsequent ticks while it remains false. Once the condition becomes true and the child returns RUNNING, it is no longer re-evaluated until the child completes.
+
+To guard a running node directly, use the `_while` pre-condition described above. If you need explicit SUCCESS/FAILURE condition semantics, place a condition before the running node in a `ReactiveSequence`; for example:
+
+```xml
+<ReactiveSequence>
+  <ScriptCondition code="my_condition"/>
+  <MyAction/>
+</ReactiveSequence>
+```
 
 ## Post-conditions
 
