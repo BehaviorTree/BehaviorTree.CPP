@@ -257,7 +257,7 @@ target_include_directories(${BTCPP_LIBRARY}
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
 
-target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAKE_PROJECT_VERSION}")
+target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${PROJECT_VERSION}")
 
 target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 

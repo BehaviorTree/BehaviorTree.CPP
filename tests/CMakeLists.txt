@@ -106,6 +106,15 @@ else()
 
 endif()
 
+add_test(
+    NAME cmake_subproject_version
+    COMMAND ${CMAKE_COMMAND}
+        -S ${CMAKE_CURRENT_SOURCE_DIR}/cmake/subproject_version
+        -B ${CMAKE_CURRENT_BINARY_DIR}/cmake/subproject_version
+        "-DBTCPP_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DBTCPP_EXPECTED_VERSION=${PROJECT_VERSION}"
+)
+
 target_include_directories(behaviortree_cpp_test PRIVATE include)
 target_link_libraries(behaviortree_cpp_test ${BTCPP_LIBRARY} bt_sample_nodes)
 if(MSVC)
