@@ -114,7 +114,7 @@ only in the master branch.
 
 # Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=BehaviorTree/BehaviorTree.CPP&type=Date)](https://star-history.com/#BehaviorTree/BehaviorTree.CPP&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=BehaviorTree/BehaviorTree.CPP&type=Date)](https://star-history.dera.page/#BehaviorTree/BehaviorTree.CPP&Date)
 
 # Contributors
 
