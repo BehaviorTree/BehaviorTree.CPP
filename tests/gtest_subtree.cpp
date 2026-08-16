@@ -1012,3 +1012,81 @@ TEST(SubTree, LiteralNumericPortsPreserveType)
   const auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
+
+// Regression test: logical NOT should accept literal boolean values passed to
+// subtrees without changing their string representation in the blackboard.
+TEST(SubTree, LiteralBooleanPortsSupportLogicalNot)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+
+    <BehaviorTree ID="MainTree">
+        <SubTree ID="CheckBooleans" enabled="true" disabled="false"
+                 enabled_upper="TRUE" disabled_title="False"
+                 enabled_numeric="{enabled_numeric}"
+                 disabled_numeric="{disabled_numeric}" />
+    </BehaviorTree>
+
+    <BehaviorTree ID="CheckBooleans">
+        <Sequence>
+            <AlwaysSuccess _skipIf="!enabled" />
+            <ScriptCondition code="!disabled" />
+            <ScriptCondition code="!!enabled_upper" />
+            <ScriptCondition code="!disabled_title" />
+            <ScriptCondition code="!!enabled_numeric" />
+            <ScriptCondition code="!disabled_numeric" />
+        </Sequence>
+    </BehaviorTree>
+
+    <TreeNodesModel>
+        <SubTree ID="CheckBooleans">
+            <input_port name="enabled" type="bool" />
+            <input_port name="disabled" type="bool" />
+            <input_port name="enabled_upper" type="bool" />
+            <input_port name="disabled_title" type="bool" />
+            <input_port name="enabled_numeric" type="bool" />
+            <input_port name="disabled_numeric" type="bool" />
+        </SubTree>
+    </TreeNodesModel>
+
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("enabled_numeric", std::string("1"));
+  tree.rootBlackboard()->set("disabled_numeric", std::string("0"));
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(tree.subtrees[1]->blackboard->get<std::string>("enabled"), "true");
+  ASSERT_EQ(tree.subtrees[1]->blackboard->get<std::string>("disabled"), "false");
+  ASSERT_EQ(tree.subtrees[1]->blackboard->get<std::string>("enabled_upper"), "TRUE");
+  ASSERT_EQ(tree.subtrees[1]->blackboard->get<std::string>("disabled_title"), "False");
+}
+
+TEST(SubTree, LiteralNonBooleanPortsRejectLogicalNot)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+
+    <BehaviorTree ID="MainTree">
+        <SubTree ID="CheckValue" value="1not_bool" />
+    </BehaviorTree>
+
+    <BehaviorTree ID="CheckValue">
+        <ScriptCondition code="!value" />
+    </BehaviorTree>
+
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  ASSERT_THROW((void)tree.tickWhileRunning(), RuntimeError);
+  ASSERT_EQ(tree.subtrees[1]->blackboard->get<std::string>("value"), "1not_bool");
+}
