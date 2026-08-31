@@ -137,14 +137,16 @@ $(document).ready(function(){initNavTree('d2/db6/sleep__node_8h_source.html','..
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  }</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  TimerQueue&lt;&gt; timer_;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  uint64_t timer_id_ = 0;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  std::atomic_bool timer_waiting_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  std::mutex delay_mutex_;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>};</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>}  <span class="comment">// namespace BT</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  uint64_t timer_id_ = 0;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  std::atomic_bool timer_waiting_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  std::mutex delay_mutex_;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="comment">// Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="comment">// before delay_mutex_ and timer_waiting_, which the timer handler touches.</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  TimerQueue&lt;&gt; timer_;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>};</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>}  <span class="comment">// namespace BT</span></div>
 <div class="ttc" id="aclass_b_t_1_1_sleep_node_html"><div class="ttname"><a href="../../d9/d33/class_b_t_1_1_sleep_node.html">BT::SleepNode</a></div><div class="ttdoc">Sleep for a certain amount of time. Consider also using the decorator &lt;Delay&gt;</div><div class="ttdef"><b>Definition:</b> sleep_node.h:17</div></div>
 <div class="ttc" id="aclass_b_t_1_1_sleep_node_html_abb3c35a140738ca2d43d1f5498972435"><div class="ttname"><a href="../../d9/d33/class_b_t_1_1_sleep_node.html#abb3c35a140738ca2d43d1f5498972435">BT::SleepNode::onStart</a></div><div class="ttdeci">NodeStatus onStart() override</div></div>
 <div class="ttc" id="aclass_b_t_1_1_sleep_node_html_af323f98260e2854ff5beb56963df0652"><div class="ttname"><a href="../../d9/d33/class_b_t_1_1_sleep_node.html#af323f98260e2854ff5beb56963df0652">BT::SleepNode::onHalted</a></div><div class="ttdeci">void onHalted() override</div></div>

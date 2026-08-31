@@ -174,17 +174,19 @@ $(document).ready(function(){initNavTree('d2/dae/timeout__node_8h_source.html','
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  <span class="keywordtype">void</span> halt() <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  TimerQueue&lt;&gt; timer_;</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  std::atomic_bool child_halted_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  uint64_t timer_id_;</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keywordtype">unsigned</span> msec_;</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  <span class="keywordtype">bool</span> read_parameter_from_ports_;</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  std::atomic_bool timeout_started_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  std::mutex timeout_mutex_;</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>};</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>}  <span class="comment">// namespace BT</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  std::atomic_bool child_halted_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  uint64_t timer_id_;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  <span class="keywordtype">unsigned</span> msec_;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keywordtype">bool</span> read_parameter_from_ports_;</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  std::atomic_bool timeout_started_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  std::mutex timeout_mutex_;</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  <span class="comment">// Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  <span class="comment">// before timeout_mutex_, which the timer handler locks.</span></div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  TimerQueue&lt;&gt; timer_;</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>};</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>}  <span class="comment">// namespace BT</span></div>
 <div class="ttc" id="aclass_b_t_1_1_decorator_node_html"><div class="ttname"><a href="../../d1/de7/class_b_t_1_1_decorator_node.html">BT::DecoratorNode</a></div><div class="ttdoc">The DecoratorNode is the base class for nodes that have exactly one child.</div><div class="ttdef"><b>Definition:</b> decorator_node.h:19</div></div>
 <div class="ttc" id="aclass_b_t_1_1_timeout_node_html"><div class="ttname"><a href="../../d4/d20/class_b_t_1_1_timeout_node.html">BT::TimeoutNode</a></div><div class="ttdoc">The TimeoutNode will halt() a running child if the latter has been RUNNING longer than a given time....</div><div class="ttdef"><b>Definition:</b> timeout_node.h:37</div></div>
 <div class="ttc" id="anamespace_b_t_html"><div class="ttname"><a href="../../d2/d8d/namespace_b_t.html">BT</a></div><div class="ttdef"><b>Definition:</b> action_node.h:24</div></div>

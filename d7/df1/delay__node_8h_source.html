@@ -162,20 +162,22 @@ $(document).ready(function(){initNavTree('d7/df1/delay__node_8h_source.html','..
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d4/d56/class_b_t_1_1_delay_node.html#ac1442f8346a289ae98dd82be5e0c85a6">halt</a>() <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  TimerQueue&lt;&gt; timer_;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  uint64_t timer_id_;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  <span class="keyword">virtual</span> <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::<a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> tick() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  <span class="keywordtype">bool</span> delay_started_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  std::atomic_bool delay_complete_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  <span class="keywordtype">bool</span> delay_aborted_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordtype">unsigned</span> msec_;</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <span class="keywordtype">bool</span> read_parameter_from_ports_;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  std::mutex delay_mutex_;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>};</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>}  <span class="comment">// namespace BT</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  uint64_t timer_id_;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keyword">virtual</span> <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a>::<a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> tick() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  <span class="keywordtype">bool</span> delay_started_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  std::atomic_bool delay_complete_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <span class="keywordtype">bool</span> delay_aborted_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  <span class="keywordtype">unsigned</span> msec_;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordtype">bool</span> read_parameter_from_ports_;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  std::mutex delay_mutex_;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  <span class="comment">// Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  <span class="comment">// before delay_mutex_, which the timer handler locks.</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  TimerQueue&lt;&gt; timer_;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>};</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>}  <span class="comment">// namespace BT</span></div>
 <div class="ttc" id="aclass_b_t_1_1_decorator_node_html"><div class="ttname"><a href="../../d1/de7/class_b_t_1_1_decorator_node.html">BT::DecoratorNode</a></div><div class="ttdoc">The DecoratorNode is the base class for nodes that have exactly one child.</div><div class="ttdef"><b>Definition:</b> decorator_node.h:19</div></div>
 <div class="ttc" id="aclass_b_t_1_1_delay_node_html"><div class="ttname"><a href="../../d4/d56/class_b_t_1_1_delay_node.html">BT::DelayNode</a></div><div class="ttdoc">The delay node will introduce a delay and then tick the child returning the status of the child as it...</div><div class="ttdef"><b>Definition:</b> delay_node.h:36</div></div>
 <div class="ttc" id="aclass_b_t_1_1_delay_node_html_ac1442f8346a289ae98dd82be5e0c85a6"><div class="ttname"><a href="../../d4/d56/class_b_t_1_1_delay_node.html#ac1442f8346a289ae98dd82be5e0c85a6">BT::DelayNode::halt</a></div><div class="ttdeci">void halt() override</div><div class="ttdoc">The method used to interrupt the execution of this node.</div></div>
