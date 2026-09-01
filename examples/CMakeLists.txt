@@ -1,5 +1,3 @@
-include_directories( ../sample_nodes )
-
 set(CMAKE_DEBUG_POSTFIX "")
 
 function(CompileExample name)
@@ -11,10 +9,12 @@ endfunction()
 # The plugin libdummy_nodes.so can be linked statically or
 # loaded dynamically at run-time.
 add_executable(t01_first_tree_static  t01_build_your_first_tree.cpp )
+target_include_directories(t01_first_tree_static PRIVATE ../sample_nodes)
 target_compile_definitions(t01_first_tree_static PRIVATE "MANUAL_STATIC_LINKING")
 target_link_libraries(t01_first_tree_static ${BTCPP_LIBRARY}   bt_sample_nodes )
 
 add_executable(t01_first_tree_dynamic  t01_build_your_first_tree.cpp )
+target_include_directories(t01_first_tree_dynamic PRIVATE ../sample_nodes)
 target_link_libraries(t01_first_tree_dynamic ${BTCPP_LIBRARY}  )
 
 CompileExample("t02_basic_ports")
@@ -46,6 +46,23 @@ CompileExample("ex02_runtime_ports")
 if(BTCPP_SQLITE_LOGGING)
   CompileExample("ex03_sqlite_log")
 endif()
+
+set(SAMPLE_NODE_EXAMPLES
+    t02_basic_ports
+    t04_reactive_sequence
+    t05_crossdoor
+    t06_subtree_port_remapping
+    t07_load_multiple_xml
+    t09_scripting
+    t11_groot_howto
+    t15_nodes_mocking
+    t17_blackboard_backup
+    ex03_sqlite_log)
+foreach(EXAMPLE IN LISTS SAMPLE_NODE_EXAMPLES)
+  if(TARGET ${EXAMPLE})
+    target_include_directories(${EXAMPLE} PRIVATE ../sample_nodes)
+  endif()
+endforeach()
 
 
 ############ Create plugin and executor in folder plugin_example ##########
