@@ -44,7 +44,8 @@ private:
 };
 
 void VerifyXML(const std::string& xml_text,
-               const std::unordered_map<std::string, NodeType>& registered_nodes);
+               const std::unordered_map<std::string, TreeNodeManifest>&
+                   registered_nodes);
 
 /**
  * @brief writeTreeNodesModelXML generates an XMl that contains the manifests in the

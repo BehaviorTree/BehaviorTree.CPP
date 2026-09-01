@@ -1,5 +1,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 
+#include "action_test_node.h"
+
 #include <filesystem>
 #include <string>
 #include <utility>
@@ -495,6 +497,19 @@ TEST(BehaviorTreeFactory, addMetadataToManifest)
   EXPECT_EQ(modified_manifest.metadata, makeTestMetadata());
 }
 
+TEST(BehaviorTreeFactory, addMetadataToManifestPreservesAsyncMarker)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<BT::AsyncActionTest>("AsyncActionTest");
+
+  factory.addMetadataToManifest("AsyncActionTest", makeTestMetadata());
+
+  const auto& manifest = factory.manifests().at("AsyncActionTest");
+  EXPECT_TRUE(IsNodeManifestAsync(manifest));
+  EXPECT_EQ(manifest.metadata[0], makeTestMetadata()[0]);
+  EXPECT_EQ(manifest.metadata[1], makeTestMetadata()[1]);
+}
+
 // Action node used to reproduce issue #1046 (use-after-free on
 // manifest pointer). It calls getInput() for a port name that is
 // NOT in the XML, so getInputStamped falls through to the
@@ -776,4 +791,43 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
 
   BehaviorTreeFactory factory;
   EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, VerifyXMLRejectsManualAsyncControlInReactiveSequence)
+{
+  const char* xml_text_issue = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <ManualAsyncFallback>
+        <AlwaysFailure/>
+        <AlwaysSuccess/>
+      </ManualAsyncFallback>
+      <AsyncSequence>
+        <AlwaysSuccess/>
+      </AsyncSequence>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root> )";
+
+  BehaviorTreeFactory factory;
+
+  TreeNodeManifest manifest{ NodeType::CONTROL, "ManualAsyncFallback", {}, {} };
+  SetNodeManifestAsync(manifest);
+  factory.registerBuilder(
+      manifest, [](const std::string& name, const NodeConfig&) -> std::unique_ptr<TreeNode> {
+        return std::make_unique<FallbackNode>(name, true);
+      });
+
+  EXPECT_THROW((void)factory.createTreeFromText(xml_text_issue), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, WriteTreeNodesModelXMLSkipsInternalAsyncMetadata)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<BT::AsyncActionTest>("AsyncActionTest");
+
+  const auto xml = writeTreeNodesModelXML(factory, false);
+
+  EXPECT_EQ(xml.find("__bt_async"), std::string::npos);
 }

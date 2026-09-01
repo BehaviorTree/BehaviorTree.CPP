@@ -439,18 +439,12 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
   }
 
   // Collect the names of all nodes registered with the behavior tree factory
-  std::unordered_map<std::string, BT::NodeType> registered_nodes;
-  for(const auto& it : factory->manifests())
-  {
-    registered_nodes.insert({ it.first, it.second.type });
-  }
-
   XMLPrinter printer;
   doc->Print(&printer);
   auto xml_text = std::string(printer.CStr(), size_t(printer.CStrSize()));
 
   // Verify the validity of the XML before adding any behavior trees to the parser's list of registered trees
-  VerifyXML(xml_text, registered_nodes);
+  VerifyXML(xml_text, factory->manifests());
 
   loadSubtreeModel(xml_root);
 
@@ -473,7 +467,8 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 }
 
 void VerifyXML(const std::string& xml_text,
-               const std::unordered_map<std::string, BT::NodeType>& registered_nodes)
+               const std::unordered_map<std::string, BT::TreeNodeManifest>&
+                   registered_nodes)
 {
   XMLDocument doc;
   auto xml_error = doc.Parse(xml_text.c_str(), xml_text.size());
@@ -629,7 +624,7 @@ void VerifyXML(const std::string& xml_text,
         ThrowError(line_number, std::string("Node not recognized: ") + lookup_name);
       }
 
-      const auto node_type = search->second;
+      const auto node_type = search->second.type;
       const std::string& registered_name = search->first;
 
       if(node_type == NodeType::DECORATOR)
@@ -665,11 +660,12 @@ void VerifyXML(const std::string& xml_text,
               ThrowError(child->GetLineNum(),
                          std::string("Unknown node type: ") + child_name);
             }
-            const auto child_type = child_search->second;
-            if(child_type == NodeType::CONTROL &&
-               ((child_name == "ThreadedAction") ||
-                (child_name == "StatefulActionNode") ||
-                (child_name == "CoroActionNode") || (child_name == "AsyncSequence")))
+            const auto& child_manifest = child_search->second;
+            const bool is_async_child =
+                IsNodeManifestAsync(child_manifest) &&
+                (child_manifest.type == NodeType::ACTION ||
+                 child_manifest.type == NodeType::CONTROL);
+            if(is_async_child)
             {
               ++async_count;
               if(async_count > 1)
@@ -1340,12 +1336,19 @@ void addNodeModelToXML(const TreeNodeManifest& model, XMLDocument& doc,
 
     for(const auto& [name, value] : model.metadata)
     {
+      if(IsReservedNodeMetadataField(name))
+      {
+        continue;
+      }
       auto metadata_element = doc.NewElement("Metadata");
       metadata_element->SetAttribute(name.c_str(), value.c_str());
       metadata_root->InsertEndChild(metadata_element);
     }
 
-    element->InsertEndChild(metadata_root);
+    if(metadata_root->FirstChildElement() != nullptr)
+    {
+      element->InsertEndChild(metadata_root);
+    }
   }
 
   model_root->InsertEndChild(element);

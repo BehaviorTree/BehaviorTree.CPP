@@ -41,6 +41,63 @@ struct TreeNodeManifest
   KeyValueVector metadata;
 };
 
+[[nodiscard]] inline bool IsReservedNodeMetadataField(StringView key)
+{
+  return key == "__bt_async";
+}
+
+inline void SetNodeManifestAsync(TreeNodeManifest& manifest, bool is_async = true)
+{
+  auto async_it = manifest.metadata.end();
+  for(auto it = manifest.metadata.begin(); it != manifest.metadata.end();)
+  {
+    if(IsReservedNodeMetadataField(it->first))
+    {
+      if(async_it == manifest.metadata.end())
+      {
+        async_it = it;
+        ++it;
+      }
+      else
+      {
+        it = manifest.metadata.erase(it);
+      }
+    }
+    else
+    {
+      ++it;
+    }
+  }
+
+  if(is_async)
+  {
+    if(async_it == manifest.metadata.end())
+    {
+      manifest.metadata.emplace_back("__bt_async", "true");
+    }
+    else
+    {
+      async_it->second = "true";
+    }
+  }
+  else if(async_it != manifest.metadata.end())
+  {
+    manifest.metadata.erase(async_it);
+  }
+}
+
+[[nodiscard]] inline bool IsNodeManifestAsync(const TreeNodeManifest& manifest)
+{
+  for(const auto& [key, value] : manifest.metadata)
+  {
+    if(IsReservedNodeMetadataField(key))
+    {
+      return value == "true";
+    }
+  }
+  return false;
+}
+
 using PortsRemapping = std::unordered_map<std::string, std::string>;
 using NonPortAttributes = std::unordered_map<std::string, std::string>;
 

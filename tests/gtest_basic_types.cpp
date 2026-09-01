@@ -408,6 +408,19 @@ TEST(BasicTypes, TreeNodeManifest)
   ASSERT_EQ(manifest.ports.size(), 2u);
 }
 
+TEST(BasicTypes, TreeNodeManifestAsyncMetadata)
+{
+  TreeNodeManifest manifest;
+  EXPECT_FALSE(IsNodeManifestAsync(manifest));
+
+  SetNodeManifestAsync(manifest);
+  EXPECT_TRUE(IsNodeManifestAsync(manifest));
+  EXPECT_TRUE(IsReservedNodeMetadataField("__bt_async"));
+
+  SetNodeManifestAsync(manifest, false);
+  EXPECT_FALSE(IsNodeManifestAsync(manifest));
+}
+
 // ============ Result type tests ============
 
 TEST(BasicTypes, Result_Success)

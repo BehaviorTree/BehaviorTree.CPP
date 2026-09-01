@@ -41,14 +41,30 @@ inline NodeBuilder CreateBuilder(Args... args)
 }
 
 template <typename T>
+inline constexpr bool IsManifestAsync()
+{
+  return std::is_base_of_v<ThreadedAction, T> ||
+         std::is_base_of_v<StatefulActionNode, T> ||
+         std::is_base_of_v<CoroActionNode, T>;
+}
+
+template <typename T>
 inline TreeNodeManifest CreateManifest(const std::string& ID,
                                        PortsList portlist = getProvidedPorts<T>())
 {
+  TreeNodeManifest manifest;
+  manifest.type = getType<T>();
+  manifest.registration_ID = ID;
+  manifest.ports = std::move(portlist);
   if constexpr(has_static_method_metadata<T>::value)
   {
-    return { getType<T>(), ID, portlist, T::metadata() };
+    manifest.metadata = T::metadata();
   }
-  return { getType<T>(), ID, portlist, {} };
+  if constexpr(IsManifestAsync<T>())
+  {
+    SetNodeManifestAsync(manifest);
+  }
+  return manifest;
 }
 
 #ifdef BT_PLUGIN_EXPORT
@@ -471,6 +487,9 @@ public:
   /// Add metadata to a specific manifest. This metadata will be added
   /// to <TreeNodesModel> with the function writeTreeNodesModelXML()
   void addMetadataToManifest(const std::string& node_id, const KeyValueVector& metadata);
+
+  /// Mark a registered node as asynchronous for XML validation.
+  void markNodeAsAsynchronous(const std::string& node_id, bool is_async = true);
 
   /**
    * @brief Add an Enum to the scripting language.

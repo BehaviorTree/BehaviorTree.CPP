@@ -119,6 +119,8 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
   registerNodeType<FallbackNode>("AsyncFallback", true);
   registerNodeType<SequenceNode>("Sequence");
   registerNodeType<SequenceNode>("AsyncSequence", true);
+  markNodeAsAsynchronous("AsyncFallback");
+  markNodeAsAsynchronous("AsyncSequence");
   registerNodeType<SequenceWithMemory>("SequenceWithMemory");
 
 #ifdef USE_BTCPP3_OLD_NAMES
@@ -485,7 +487,23 @@ void BehaviorTreeFactory::addMetadataToManifest(const std::string& node_id,
   {
     throw std::runtime_error("addMetadataToManifest: wrong ID");
   }
+  const bool is_async = IsNodeManifestAsync(it->second);
   it->second.metadata = metadata;
+  if(is_async)
+  {
+    SetNodeManifestAsync(it->second);
+  }
+}
+
+void BehaviorTreeFactory::markNodeAsAsynchronous(const std::string& node_id,
+                                                 bool is_async)
+{
+  auto it = _p->manifests.find(node_id);
+  if(it == _p->manifests.end())
+  {
+    throw std::runtime_error("markNodeAsAsynchronous: wrong ID");
+  }
+  SetNodeManifestAsync(it->second, is_async);
 }
 
 void BehaviorTreeFactory::registerScriptingEnum(StringView name, int value)

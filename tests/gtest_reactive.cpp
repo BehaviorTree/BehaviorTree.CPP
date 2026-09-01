@@ -1,5 +1,6 @@
 #include "test_helper.hpp"
 
+#include "action_test_node.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/bt_observer.h"
 
@@ -182,6 +183,51 @@ TEST(Reactive, TwoAsyncNodesInReactiveSequence)
 
   BT::BehaviorTreeFactory factory;
   std::array<int, 6> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+TEST(Reactive, TwoAsyncActionNodesInReactiveSequence)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <AsyncActionTest name="first"/>
+      <AsyncActionTest name="second"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<BT::AsyncActionTest>("AsyncActionTest");
+
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+TEST(Reactive, AsyncFallbackAndAsyncSequenceInReactiveSequence)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <AsyncFallback name="first">
+        <TestA/>
+        <TestB/>
+      </AsyncFallback>
+      <AsyncSequence name="second">
+        <TestC/>
+        <TestD/>
+      </AsyncSequence>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  std::array<int, 4> counters{};
   RegisterTestTick(factory, "Test", counters);
 
   EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));

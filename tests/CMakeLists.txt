@@ -12,6 +12,14 @@ set_target_properties(plugin_issue953 PROPERTIES
 )
 target_link_libraries(plugin_issue953 ${BTCPP_LIBRARY})
 
+add_library(plugin_issue1184 SHARED plugin_issue1184/plugin_issue1184.cpp)
+target_compile_definitions(plugin_issue1184 PRIVATE BT_PLUGIN_EXPORT)
+set_target_properties(plugin_issue1184 PROPERTIES
+  PREFIX ""
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
+target_link_libraries(plugin_issue1184 ${BTCPP_LIBRARY})
+
 ######################################################
 
 set(BT_TESTS
@@ -55,6 +63,7 @@ set(BT_TESTS
   gtest_simple_string.cpp
   gtest_polymorphic_ports.cpp
   gtest_plugin_issue953.cpp
+  gtest_plugin_issue1184.cpp
   gtest_blackboard_thread_safety.cpp
   gtest_xml_null_subtree_id.cpp
 
@@ -123,7 +132,8 @@ endif()
 target_compile_definitions(behaviortree_cpp_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Ensure plugin is built before tests run, and tests can find it
-add_dependencies(behaviortree_cpp_test plugin_issue953)
+add_dependencies(behaviortree_cpp_test plugin_issue953 plugin_issue1184)
 target_compile_definitions(behaviortree_cpp_test PRIVATE
   BT_PLUGIN_ISSUE953_PATH="$<TARGET_FILE:plugin_issue953>"
+  BT_PLUGIN_ISSUE1184_PATH="$<TARGET_FILE:plugin_issue1184>"
 )
