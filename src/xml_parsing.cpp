@@ -1081,10 +1081,20 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
     // common case: iterate through all children
     if(node->type() != NodeType::SUBTREE)
     {
+      // Include the current node in the prefix passed to children so that
+      // TreeNode::fullPath() identifies the node's complete hierarchy.
+      // Previously every sibling was created with the same prefix, causing
+      // fullPath() to contain only the node name (issue #1114).
+      std::string child_prefix = prefix;
+      if(!node->name().empty())
+      {
+        child_prefix += node->name();
+        child_prefix += "/";
+      }
       for(auto child_element = element->FirstChildElement(); child_element != nullptr;
           child_element = child_element->NextSiblingElement())
       {
-        recursiveStep(node, subtree, prefix, child_element, depth + 1);
+        recursiveStep(node, subtree, child_prefix, child_element, depth + 1);
       }
     }
     else  // special case: SubTreeNode
