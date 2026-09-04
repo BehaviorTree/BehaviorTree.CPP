@@ -914,6 +914,34 @@ TEST(SubTree, UniqueSubTreeNames_WorksCorrectly)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
 }
 
+// Regression test for issue #1114: fullPath() must include the hierarchy of
+// control/decorator nodes, not just the leaf node's name.
+TEST(SubTree, FullPathIncludesNodeHierarchy_Issue1114)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+      <Sequence name="outer_sequence">
+        <Fallback name="fallback">
+          <AlwaysSuccess name="leaf_action"/>
+        </Fallback>
+      </Sequence>
+    </BehaviorTree>
+</root>
+  )";
+
+  BehaviorTreeFactory factory;
+  Tree tree = factory.createTreeFromText(xml_text);
+
+  std::vector<std::string> paths;
+  tree.applyVisitor([&](TreeNode* node) { paths.push_back(node->fullPath()); });
+
+  ASSERT_EQ(paths.size(), 3);
+  EXPECT_EQ(paths[0], "outer_sequence");
+  EXPECT_EQ(paths[1], "outer_sequence/fallback");
+  EXPECT_EQ(paths[2], "outer_sequence/fallback/leaf_action");
+}
+
 // Test that omitting name attribute auto-generates unique paths
 TEST(SubTree, NoNameAttribute_AutoGeneratesUniquePaths)
 {
