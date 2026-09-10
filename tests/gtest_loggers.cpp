@@ -16,7 +16,10 @@
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 
+#include <array>
+#include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 
@@ -190,6 +193,102 @@ TEST_F(LoggerTest, FileLogger2_MultipleTicks)
   }
 
   ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
+// A minimal action that stays RUNNING until halted -- SimpleActionNode/SyncActionNode explicitly
+// forbid returning RUNNING, so the drain-race repro below needs a real (if synchronous) action
+// node instead.
+namespace
+{
+class AlwaysRunningNode : public BT::ActionNodeBase
+{
+public:
+  AlwaysRunningNode(const std::string& name, const BT::NodeConfig& config)
+    : BT::ActionNodeBase(name, config)
+  {}
+
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+
+  BT::NodeStatus tick() override
+  {
+    return BT::NodeStatus::RUNNING;
+  }
+
+  void halt() override
+  {}
+};
+}  // namespace
+
+// FileLogger2's destructor used to join the writer thread without draining
+// _p->transitions_queue afterward: a transition pushed after the writer's last swap (typically
+// the root's RUNNING->IDLE from a haltTree() issued right before the logger is destroyed) could
+// be lost, leaving the .btlog missing its final transition. The window is a scheduling race, not
+// deterministic, so this loops many iterations rather than asserting on a single run.
+TEST_F(LoggerTest, FileLogger2_DrainsQueueAfterHaltThenImmediateDestroy)
+{
+  BT::BehaviorTreeFactory local_factory;
+  local_factory.registerNodeType<AlwaysRunningNode>("AlwaysRunning");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Sequence>
+            <AlwaysRunning name="ActionA"/>
+          </Sequence>
+       </BehaviorTree>
+    </root>)";
+
+  constexpr int kIterations = 300;
+
+  for(int i = 0; i < kIterations; i++)
+  {
+    auto tree = local_factory.createTreeFromText(xml_text);
+    const std::string filepath = test_dir + "/drain_" + std::to_string(i) + ".btlog";
+    const uint16_t root_uid = tree.rootNode()->UID();
+
+    {
+      FileLogger2 logger(tree, filepath);
+      tree.tickOnce();  // root -> RUNNING, pushed onto the queue
+      tree.haltTree();  // root -> IDLE, pushed right before the logger is destroyed
+    }  // ~FileLogger2() runs here: join the writer thread, then (with the fix) drain the queue
+
+    // Parse the .btlog by hand (format documented in bt_file_logger_v2.h): 18-byte magic
+    // ("BTCPP4-FileLogger2"), 1-byte protocol, 4-byte XML length, the XML itself, 8-byte first
+    // timestamp, then a sequence of 9-byte Transition records (6 bytes timestamp, 2 bytes
+    // node_uid, 1 byte status).
+    std::ifstream file(filepath, std::ios::binary);
+    ASSERT_TRUE(file.is_open()) << "iteration " << i;
+
+    file.seekg(18 + 1);
+    int32_t xml_len = 0;
+    file.read(reinterpret_cast<char*>(&xml_len), sizeof(xml_len));
+    ASSERT_TRUE(file.good()) << "iteration " << i;
+    file.seekg(xml_len, std::ios::cur);
+    file.seekg(8, std::ios::cur);  // skip the first timestamp
+
+    uint8_t last_root_status = 0xFF;
+    std::array<char, 9> record{};
+    while(file.read(record.data(), record.size()))
+    {
+      uint16_t uid = 0;
+      uint8_t status = 0xFF;
+      std::memcpy(&uid, record.data() + 6, sizeof(uid));
+      std::memcpy(&status, record.data() + 8, sizeof(status));
+      if(uid == root_uid)
+      {
+        last_root_status = status;
+      }
+    }
+
+    ASSERT_EQ(last_root_status, static_cast<uint8_t>(NodeStatus::IDLE))
+        << "iteration " << i << ": the root's last recorded transition is status "
+        << int(last_root_status)
+        << ", not IDLE(0) -- the tree's halt never reached the .btlog before the file "
+           "closed";
+  }
 }
 
 // ============ MinitraceLogger tests ============
