@@ -567,7 +567,7 @@ TEST(Substitution, IncompatibleTypeSubstitutionThrows)
     BehaviorTreeFactory factory;
     factory.registerBehaviorTreeFromText(xml_text);
     factory.addSubstitutionRule("action_A", "SubTree");
-    EXPECT_THROW(factory.createTree("MainTree"), RuntimeError);
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
   }
 
   // leaf -> Decorator: element has no child
@@ -575,7 +575,7 @@ TEST(Substitution, IncompatibleTypeSubstitutionThrows)
     BehaviorTreeFactory factory;
     factory.registerBehaviorTreeFromText(xml_text);
     factory.addSubstitutionRule("action_A", "Inverter");
-    EXPECT_THROW(factory.createTree("MainTree"), RuntimeError);
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
   }
 
   // leaf -> leaf stays valid (the common mock case)
