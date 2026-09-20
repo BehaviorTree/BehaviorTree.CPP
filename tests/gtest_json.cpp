@@ -210,6 +210,42 @@ TEST_F(JsonTest, BlackboardInOut)
   ASSERT_EQ(vect_out.z, 3.3);
 }
 
+TEST_F(JsonTest, LargeIntegerPreserved)
+{
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
+
+  // Values outside the int32 range used to be silently wrapped by get<int>().
+  {
+    auto json = nlohmann::json::parse(R"({"a": 2147483648, "b": 5000000000,
+                                          "c": 4294967296})");
+    auto bb = BT::Blackboard::create();
+    ImportBlackboardFromJSON(json, *bb);
+    ASSERT_EQ(bb->get<int64_t>("a"), 2147483648LL);
+    ASSERT_EQ(bb->get<int64_t>("b"), 5000000000LL);
+    ASSERT_EQ(bb->get<int64_t>("c"), 4294967296LL);
+  }
+  // Negative values below the int32 minimum are preserved too.
+  {
+    auto res = exporter.fromJson(nlohmann::json(int64_t(-5000000000LL)));
+    ASSERT_TRUE(res) << res.error();
+    ASSERT_EQ(res->first.cast<int64_t>(), -5000000000LL);
+  }
+  // Values that fit keep the int type, unchanged from before.
+  {
+    auto res = exporter.fromJson(nlohmann::json(100));
+    ASSERT_TRUE(res) << res.error();
+    ASSERT_EQ(res->first.cast<int>(), 100);
+  }
+  // An int64_t entry survives an Export/Import round-trip.
+  {
+    auto bb_in = BT::Blackboard::create();
+    bb_in->set("big", int64_t(5000000000LL));
+    auto bb_out = BT::Blackboard::create();
+    ImportBlackboardFromJSON(ExportBlackboardToJSON(*bb_in), *bb_out);
+    ASSERT_EQ(bb_out->get<int64_t>("big"), 5000000000LL);
+  }
+}
+
 TEST_F(JsonTest, VectorInteger)
 {
   BT::JsonExporter& exporter = BT::JsonExporter::get();
