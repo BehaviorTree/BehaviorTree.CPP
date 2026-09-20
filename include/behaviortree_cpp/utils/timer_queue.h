@@ -85,8 +85,11 @@ public:
 
   ~TimerQueue()
   {
-    m_finish.store(true);
+    // Cancel before raising m_finish: once the worker sees the flag, every
+    // item is already due, so its final checkWork() drains the whole queue.
     cancelAll();
+    m_finish.store(true);
+    m_checkWork.notify();
     if(m_thread.joinable())
     {
       m_thread.join();
@@ -203,6 +206,10 @@ private:
       // timers
       checkWork();
     }
+
+    // The loop may exit without a last pass (e.g. woken up by cancel() right
+    // before the shutdown), leaving cancelled items in the queue.
+    checkWork();
 
     // If we are shutting down, we should not have any items left,
     // since the shutdown cancels all items
