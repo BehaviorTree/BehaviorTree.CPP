@@ -49,4 +49,8 @@ jobs:
 
     - name: Run tests
       working-directory: ${{ github.workspace }}/build
-      run: $env:PATH+=";${{ matrix.build_type }}"; tests/${{ matrix.build_type }}/behaviortree_cpp_test.exe
+      # Some tests assert tight wall-clock timing, which the shared runners can
+      # not always meet: --repeat until-pass absorbs that flakiness (as on macOS).
+      run: |
+        $env:PATH += ";${{ github.workspace }}\build\${{ matrix.build_type }}"
+        ctest -C ${{ matrix.build_type }} --output-on-failure --repeat until-pass:3

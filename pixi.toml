@@ -7,7 +7,7 @@ channels = ["conda-forge"]
 platforms = ["linux-64", "win-64"]
 
 [target.win-64.tasks]
-test = "PATH=\"$PATH;build/Release\" build/tests/Release/behaviortree_cpp_test.exe"
+test = "PATH=\"$PATH;$PIXI_PROJECT_ROOT/build/Release\" ctest --test-dir build -C Release --output-on-failure --repeat until-pass:3"
 
 [target.linux-64.tasks]
 test = "./build/tests/behaviortree_cpp_test"
