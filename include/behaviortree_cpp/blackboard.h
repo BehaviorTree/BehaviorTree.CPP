@@ -255,6 +255,8 @@ inline T Blackboard::get(const std::string& key) const
 
 inline void Blackboard::unset(const std::string& key)
 {
+  // the entry (i.e. the stored value) is destroyed outside the lock
+  std::shared_ptr<Entry> removed;
   std::unique_lock storage_lock(storage_mutex_);
 
   // check local storage
@@ -265,6 +267,7 @@ inline void Blackboard::unset(const std::string& key)
     return;
   }
 
+  removed = std::move(it->second);
   storage_.erase(it);
 }
 

@@ -415,9 +415,9 @@ TEST(BlackboardTest, AnyPtrLockedDeferredEntryIsDestroyed)
     // still alive, since we hold the lock
     ASSERT_FALSE(weak_value.expired());
   }
-  // the lock was released: the entry is destroyed by the next removal
+  // the lock was released: the entry is destroyed when the next one is
+  // created (or removed)
   blackboard->set("other", 1);
-  blackboard->unset("other");
   ASSERT_TRUE(weak_value.expired());
 }
 
