@@ -141,6 +141,18 @@ struct ExprUnaryArithmetic : ExprBase
     }
     else if(rhs_v.isString())
     {
+      if(op == logical_not)
+      {
+        const auto str = rhs_v.cast<std::string>();
+        if(str == "true" || str == "True" || str == "TRUE" || str == "1")
+        {
+          return Any(0.0);
+        }
+        if(str == "false" || str == "False" || str == "FALSE" || str == "0")
+        {
+          return Any(1.0);
+        }
+      }
       throw RuntimeError("Invalid operator for std::string");
     }
     throw RuntimeError("ExprUnaryArithmetic: undefined");
