@@ -365,6 +365,28 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     }
   }
 
+  // A substitution rule must not turn a node into a structurally incompatible
+  // type. The XML was validated (children count, mandatory ID) against the
+  // original node type, so replacing a leaf with a SubTree, Decorator or
+  // Control leaves the builder with a node whose child or "ID" attribute the
+  // XML never supplied. That later dereferences a null child pointer or builds
+  // a std::string from a null Attribute("ID"). Allow same-type swaps and swaps
+  // to a leaf (the common "replace with a mock action" case, including the
+  // SubTree -> TestNode substitution used for mocking).
+  if(substituted)
+  {
+    const NodeType original_type = it_manifest->second.type;
+    const NodeType new_type = node->type();
+    if(new_type != original_type && new_type != NodeType::ACTION &&
+       new_type != NodeType::CONDITION)
+    {
+      throw RuntimeError("Substitution of node [", ID, "] of type [",
+                         toStr(original_type), "] with a node of type [", toStr(new_type),
+                         "] is not allowed: a substitution may only keep the same "
+                         "type or replace the node with a leaf (Action/Condition)");
+    }
+  }
+
   // No substitution rule applied: default behavior
   if(!substituted)
   {

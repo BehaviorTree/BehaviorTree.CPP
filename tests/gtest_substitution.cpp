@@ -546,3 +546,46 @@ TEST(Substitution, StringSubstitutionRegistrationID_Issue930)
   // The substituted node should still work correctly
   ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
 }
+
+// Regression test: a substitution rule must not turn a node into a
+// structurally incompatible type. The XML for a compact leaf (<AlwaysSuccess/>)
+// carries no "ID" attribute and no children, so replacing it with a SubTree
+// (which reads element->Attribute("ID")) or a Decorator (which needs a child)
+// used to segfault at tree construction / first tick. It must now throw.
+TEST(Substitution, IncompatibleTypeSubstitutionThrows)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <AlwaysSuccess name="action_A"/>
+    </BehaviorTree>
+  </root>
+  )";
+
+  // leaf -> SubTree: element has no ID attribute
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.addSubstitutionRule("action_A", "SubTree");
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
+  }
+
+  // leaf -> Decorator: element has no child
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.addSubstitutionRule("action_A", "Inverter");
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
+  }
+
+  // leaf -> leaf stays valid (the common mock case)
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.registerSimpleAction("MyMock", [](TreeNode&) { return NodeStatus::SUCCESS; });
+    factory.addSubstitutionRule("action_A", "MyMock");
+    Tree tree;
+    ASSERT_NO_THROW(tree = factory.createTree("MainTree"));
+    EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  }
+}
