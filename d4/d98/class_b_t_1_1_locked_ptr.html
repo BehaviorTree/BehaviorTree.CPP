@@ -147,7 +147,8 @@ template&lt;typename OtherT &gt; </td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;typename T&gt;<br />
 class BT::LockedPtr&lt; T &gt;</div><p>The <a class="el" href="../../d4/d98/class_b_t_1_1_locked_ptr.html" title="The LockedPtr class is used to share a pointer to an object and a mutex that protects the read/write ...">LockedPtr</a> class is used to share a pointer to an object and a mutex that protects the read/write access to that object. </p>
-<p>As long as the object remains in scope, the mutex is locked, therefore you must destroy this instance as soon as the pointer was used. </p>
+<p>As long as the object remains in scope, the mutex is locked, therefore you must destroy this instance as soon as the pointer was used.</p>
+<p><a class="el" href="../../d4/d98/class_b_t_1_1_locked_ptr.html" title="The LockedPtr class is used to share a pointer to an object and a mutex that protects the read/write ...">LockedPtr</a> does not own the object it points to: the owner is only expected to keep it alive while the mutex is locked. In particular, the pointer must not be considered valid after calling unlock(). </p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/utils/<a class="el" href="../../d4/dd1/locked__reference_8hpp_source.html">locked_reference.hpp</a></li>
 </ul>
