@@ -123,7 +123,14 @@ public:
 
   void debugMessage() const;
 
-  [[nodiscard]] std::vector<StringView> getKeys() const;
+  /// The names of all the entries stored in this blackboard (copies).
+  [[nodiscard]] std::vector<std::string> getKeyNames() const;
+
+  // The views point into the storage: they dangle as soon as another thread
+  // removes the entry.
+  [[deprecated(
+      "The views may dangle: use getKeyNames")]] [[nodiscard]] std::vector<StringView>
+  getKeys() const;
 
   [[deprecated("This command is unsafe. Consider using Backup/Restore instead")]] void
   clear();

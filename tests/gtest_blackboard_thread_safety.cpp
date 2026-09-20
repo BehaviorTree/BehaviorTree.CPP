@@ -301,7 +301,7 @@ TEST(BlackboardThreadSafety, DebugMessageWhileModifying_Bug5)
   SUCCEED();
 }
 
-// BUG-6: getKeys() iterates storage_ without holding storage_mutex_.
+// BUG-6: getKeyNames() iterates storage_ without holding storage_mutex_.
 // Also returns StringView into map keys which can dangle if entries are erased.
 TEST(BlackboardThreadSafety, GetKeysWhileModifying_Bug6)
 {
@@ -320,7 +320,7 @@ TEST(BlackboardThreadSafety, GetKeysWhileModifying_Bug6)
   auto key_reader = [&]() {
     for(int i = 0; i < kIterations; i++)
     {
-      auto keys = bb->getKeys();
+      auto keys = bb->getKeyNames();
       // Just access the keys to detect any race
       volatile size_t count = keys.size();
       (void)count;
@@ -334,4 +334,32 @@ TEST(BlackboardThreadSafety, GetKeysWhileModifying_Bug6)
   t2.join();
 
   SUCCEED();
+}
+
+// ExportBlackboardToJSON used the StringViews returned by getKeyNames() after the
+// storage lock was released: a concurrent unset() frees the key they point to.
+// Meaningful with ASan/TSan. The keys are longer than the small string buffer,
+// so that they live on the heap.
+TEST(BlackboardThreadSafety, ExportToJsonWhileKeysAreRemoved)
+{
+  auto bb = Blackboard::create();
+  std::atomic_bool stop = false;
+
+  std::thread exporter([&]() {
+    while(!stop)
+    {
+      const auto json = ExportBlackboardToJSON(*bb);
+      ASSERT_LE(json.size(), 8U);
+    }
+  });
+
+  const std::string prefix = "a_key_that_is_too_long_for_the_small_string_buffer_";
+  for(int i = 0; i < 20000; i++)
+  {
+    const std::string key = prefix + std::to_string(i % 8);
+    bb->set(key, i);
+    bb->unset(key);
+  }
+  stop = true;
+  exporter.join();
 }

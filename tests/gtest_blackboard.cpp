@@ -320,7 +320,7 @@ TEST(BlackboardTest, AnyPtrLockedSurvivesUnset)
   ASSERT_TRUE(bool(locked));
 
   blackboard->unset("value");
-  ASSERT_TRUE(blackboard->getKeys().empty());
+  ASSERT_TRUE(blackboard->getKeyNames().empty());
 
   // the entry must stay alive as long as we hold the lock
   ASSERT_EQ(locked.get()->cast<int>(), 42);
@@ -338,7 +338,7 @@ TEST(BlackboardTest, AnyPtrLockedSurvivesClear)
   ASSERT_TRUE(bool(locked));
 
   blackboard->clear();
-  ASSERT_TRUE(blackboard->getKeys().empty());
+  ASSERT_TRUE(blackboard->getKeyNames().empty());
   ASSERT_EQ(locked.get()->cast<int>(), 42);
 }
 
@@ -353,7 +353,7 @@ TEST(BlackboardTest, AnyPtrLockedSurvivesCloneInto)
 
   // "stale" doesn't exist in src, so cloneInto() removes it from dst
   src->cloneInto(*dst);
-  ASSERT_TRUE(dst->getKeys().empty());
+  ASSERT_TRUE(dst->getKeyNames().empty());
   ASSERT_EQ(locked.get()->cast<int>(), 42);
 }
 
@@ -397,7 +397,7 @@ TEST(BlackboardTest, AnyPtrLockedCrossUnsetDoesNotDeadlock)
 
   ASSERT_EQ(values[0], 1);
   ASSERT_EQ(values[1], 2);
-  ASSERT_TRUE(blackboard->getKeys().empty());
+  ASSERT_TRUE(blackboard->getKeyNames().empty());
 }
 
 TEST(BlackboardTest, AnyPtrLockedDeferredEntryIsDestroyed)
@@ -674,7 +674,7 @@ TEST(BlackboardTest, BlackboardBackup)
   for(const auto& sub : tree.subtrees)
   {
     std::vector<std::string> keys;
-    for(const auto& str_view : sub->blackboard->getKeys())
+    for(const auto& str_view : sub->blackboard->getKeyNames())
     {
       keys.push_back(std::string(str_view));
     }
@@ -691,7 +691,7 @@ TEST(BlackboardTest, BlackboardBackup)
 
   for(size_t i = 0; i < tree.subtrees.size(); i++)
   {
-    const auto keys = tree.subtrees[i]->blackboard->getKeys();
+    const auto keys = tree.subtrees[i]->blackboard->getKeyNames();
     ASSERT_EQ(expected_keys[i].size(), keys.size());
     for(size_t a = 0; a < keys.size(); a++)
     {
