@@ -13,6 +13,10 @@
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/bt_factory.h"
 
+#include <atomic>
+#include <memory>
+#include <thread>
+
 #include <gtest/gtest.h>
 
 #include "../sample_nodes/dummy_nodes.h"
@@ -302,6 +306,162 @@ TEST(BlackboardTest, AnyPtrLocked)
   }
 }
 #endif
+
+// An entry removed from the blackboard must stay alive as long as an
+// AnyPtrLocked refers to it, and removing it must never block, not even
+// from the thread holding the lock.
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesUnset)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("value", 42);
+
+  auto locked = blackboard->getAnyLocked("value");
+  ASSERT_TRUE(bool(locked));
+
+  blackboard->unset("value");
+  ASSERT_TRUE(blackboard->getKeys().empty());
+
+  // the entry must stay alive as long as we hold the lock
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+
+  locked = {};
+  ASSERT_FALSE(bool(blackboard->getAnyLocked("value")));
+}
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesClear)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("value", 42);
+
+  auto locked = blackboard->getAnyLocked("value");
+  ASSERT_TRUE(bool(locked));
+
+  blackboard->clear();
+  ASSERT_TRUE(blackboard->getKeys().empty());
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+}
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesCloneInto)
+{
+  auto src = Blackboard::create();
+  auto dst = Blackboard::create();
+  dst->set("stale", 42);
+
+  auto locked = dst->getAnyLocked("stale");
+  ASSERT_TRUE(bool(locked));
+
+  // "stale" doesn't exist in src, so cloneInto() removes it from dst
+  src->cloneInto(*dst);
+  ASSERT_TRUE(dst->getKeys().empty());
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+}
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesBlackboardDestruction)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("value", 42);
+
+  auto locked = blackboard->getAnyLocked("value");
+  ASSERT_TRUE(bool(locked));
+
+  blackboard.reset();
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+}
+
+TEST(BlackboardTest, AnyPtrLockedCrossUnsetDoesNotDeadlock)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("A", 1);
+  blackboard->set("B", 2);
+
+  // Each thread holds a lock on one entry and removes the other one, while
+  // the other thread does the opposite.
+  std::atomic<int> ready = 0;
+  int values[2] = { 0, 0 };
+  auto hold_and_unset = [&](const char* held, const char* removed, int& out) {
+    auto locked = blackboard->getAnyLocked(held);
+    ready++;
+    while(ready < 2)
+    {
+      std::this_thread::yield();
+    }
+    blackboard->unset(removed);
+    out = locked ? locked.get()->cast<int>() : 0;
+  };
+
+  std::thread t1(hold_and_unset, "A", "B", std::ref(values[0]));
+  std::thread t2(hold_and_unset, "B", "A", std::ref(values[1]));
+  t1.join();
+  t2.join();
+
+  ASSERT_EQ(values[0], 1);
+  ASSERT_EQ(values[1], 2);
+  ASSERT_TRUE(blackboard->getKeys().empty());
+}
+
+TEST(BlackboardTest, AnyPtrLockedDeferredEntryIsDestroyed)
+{
+  auto blackboard = Blackboard::create();
+  auto value = std::make_shared<int>(42);
+  std::weak_ptr<int> weak_value = value;
+  blackboard->set("value", value);
+  value.reset();
+
+  {
+    auto locked = blackboard->getAnyLocked("value");
+    ASSERT_TRUE(bool(locked));
+    blackboard->unset("value");
+    // still alive, since we hold the lock
+    ASSERT_FALSE(weak_value.expired());
+  }
+  // the lock was released: the entry is destroyed by the next removal
+  blackboard->set("other", 1);
+  blackboard->unset("other");
+  ASSERT_TRUE(weak_value.expired());
+}
+
+// Stress test, meaningful with ASan/TSan: readers hold an AnyPtrLocked while
+// another thread keeps removing and re-creating the same entry.
+TEST(BlackboardTest, AnyPtrLockedConcurrentUnsetStress)
+{
+  auto blackboard = Blackboard::create();
+  std::atomic_bool stop = false;
+  std::atomic_int reads = 0;
+
+  auto reader = [&]() {
+    while(!stop)
+    {
+      if(auto locked = blackboard->getAnyLocked("value"))
+      {
+        // set() inserts the entry before assigning the value: it may be empty.
+        // Otherwise, read it while the writer may unset the key.
+        if(!locked->empty())
+        {
+          ASSERT_EQ(locked->cast<int>(), 42);
+          reads++;
+        }
+      }
+    }
+  };
+  std::thread reader_a(reader);
+  std::thread reader_b(reader);
+
+  for(int i = 0; i < 5000; i++)
+  {
+    blackboard->set("value", 42);
+    blackboard->unset("value");
+  }
+  // make sure that the readers had the chance to run
+  blackboard->set("value", 42);
+  while(reads == 0)
+  {
+    std::this_thread::yield();
+  }
+  stop = true;
+  reader_a.join();
+  reader_b.join();
+}
 
 TEST(BlackboardTest, SetStringView)
 {
