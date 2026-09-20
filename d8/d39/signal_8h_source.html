@@ -105,7 +105,7 @@ $(document).ready(function(){initNavTree('d8/d39/signal_8h_source.html','../../'
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">namespace</span> <a class="code hl_namespace" href="../../d2/d8d/namespace_b_t.html">BT</a></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>{</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">/**</span></div>
-<div class="line"><span class="lineno">   11</span><span class="comment"> * Super simple Signal/Slop implementation, AKA &quot;Observable pattern&quot;.</span></div>
+<div class="line"><span class="lineno">   11</span><span class="comment"> * Super simple Signal/Slot implementation, AKA &quot;Observable pattern&quot;.</span></div>
 <div class="line"><span class="lineno">   12</span><span class="comment"> * The subscriber is active until it goes out of scope or Subscriber::reset() is called.</span></div>
 <div class="line"><span class="lineno">   13</span><span class="comment"> */</span></div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... CallableArgs&gt;</div>
@@ -131,7 +131,7 @@ $(document).ready(function(){initNavTree('d8/d39/signal_8h_source.html','../../'
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    }</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  }</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  Subscriber subscribe(CallableFunction func)</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  [[<a class="code hl_class" href="../../d1/d73/class_b_t_1_1_signal.html">nodiscard</a>]] Subscriber subscribe(CallableFunction func)</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  {</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    Subscriber sub = std::make_shared&lt;CallableFunction&gt;(std::move(func));</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    subscribers_.emplace_back(sub);</div>
