@@ -679,6 +679,12 @@ void Tree::haltTree()
   BT::applyRecursiveVisitor(rootNode(), visitor);
 
   rootNode()->resetStatus();
+
+  // interrupt the sleep of tickWhileRunning(), if called from another thread
+  if(wake_up_)
+  {
+    wake_up_->emitSignal();
+  }
 }
 
 TreeNode* Tree::rootNode() const
@@ -767,6 +773,13 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
     throw RuntimeError("Empty Tree");
   }
 
+  // haltTree() resets the root to IDLE. If that happens (from another thread)
+  // while the last tick returned RUNNING, we must not tick again, because that
+  // would restart the tree (issue #686).
+  const auto halted = [&]() {
+    return status == NodeStatus::RUNNING && rootNode()->status() == NodeStatus::IDLE;
+  };
+
   while(status == NodeStatus::IDLE ||
         (opt == TickOption::WHILE_RUNNING && status == NodeStatus::RUNNING))
   {
@@ -774,7 +787,7 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
 
     // Inner loop. The previous tick might have triggered the wake-up
     // in this case, unless TickOption::EXACTLY_ONCE, we tick again
-    while(opt != TickOption::EXACTLY_ONCE && status == NodeStatus::RUNNING &&
+    while(opt != TickOption::EXACTLY_ONCE && !halted() && status == NodeStatus::RUNNING &&
           wake_up_->waitFor(std::chrono::milliseconds(0)))
     {
       status = rootNode()->executeTick();
@@ -787,6 +800,10 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
     if(status == NodeStatus::RUNNING && sleep_time.count() > 0)
     {
       sleep(std::chrono::milliseconds(sleep_time));
+    }
+    if(halted())
+    {
+      return NodeStatus::IDLE;
     }
   }
 
