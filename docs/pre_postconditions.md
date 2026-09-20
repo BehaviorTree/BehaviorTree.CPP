@@ -53,18 +53,43 @@ If `battery_ok` becomes false while `MyAction` is running, the action is interru
 - **`_successIf`**: Succeed early based on a condition
 - **`_while`**: Guard that must remain true for the entire execution
 
-### Re-evaluating Conditions Every Tick
+### The `<Precondition>` Decorator
 
-If you need a condition to be checked on every tick (not just when transitioning from IDLE), use the `<Precondition>` decorator node instead of inline attributes:
+The `<Precondition>` decorator evaluates its `if` condition **once per activation** — when the node transitions from IDLE. Once its child returns RUNNING, the condition is **not** re-evaluated on subsequent ticks: the decorator keeps ticking the child until it completes, and only then re-checks the condition on the next activation.
 
 ```xml
-<!-- This checks the condition on every tick while child is RUNNING -->
-<Precondition if="my_condition" else="RUNNING">
+<!-- Evaluated at activation; NOT re-checked while the child is RUNNING -->
+<Precondition if="my_condition" else="FAILURE">
   <MyAction/>
 </Precondition>
 ```
 
-With `else="RUNNING"`, if the condition is false, the decorator returns RUNNING (keeping the tree alive) rather than SUCCESS/FAILURE/SKIPPED.
+This mirrors `_skipIf`/`_failureIf`/`_successIf`: a one-time gate at the start of a node, not a per-tick guard.
+
+### Re-evaluating Conditions Every Tick
+
+If you need a condition re-checked on **every** tick, you have two options:
+
+1. **Guard a running action** — use the `_while` attribute (the only pre-condition re-evaluated on every tick, including while the node is RUNNING):
+
+```xml
+<MyAction _while="battery_ok"/>
+```
+
+2. **Gate a sub-tree on every tick** — place the `<Precondition>` inside a `ReactiveSequence` and give it a child that completes immediately (e.g. `<AlwaysSuccess/>`). Because the child completes each tick, the decorator re-enters its activation check on the next cycle:
+
+```xml
+<ReactiveSequence>
+  <Precondition if="battery_ok" else="FAILURE">
+    <AlwaysSuccess/>
+  </Precondition>
+  <Sequence>
+    ...
+  </Sequence>
+</ReactiveSequence>
+```
+
+If the child inside `<Precondition>` stays RUNNING, the condition is not re-checked until that child completes.
 
 ## Post-conditions
 
