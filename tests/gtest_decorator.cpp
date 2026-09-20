@@ -514,3 +514,69 @@ TEST(Decorator, KeepRunningUntilFailure)
   ASSERT_EQ(status, NodeStatus::FAILURE);
   ASSERT_EQ(tick_count, 3);
 }
+
+// An asynchronous child (ThreadedAction) may complete right after the tick()
+// of its decorator has seen it RUNNING. DecoratorNode::executeTick() used to
+// reset such a child to IDLE: its result was lost and the action executed
+// again. This was the cause of the flaky RepeatTestAsync.
+// Here the race is reproduced deterministically: the decorator itself marks
+// the child as completed, right after having observed RUNNING.
+TEST(Decorator, ChildCompletedAfterTickIsNotDiscarded)
+{
+  class AsyncChild : public BT::ActionNodeBase
+  {
+  public:
+    AsyncChild() : ActionNodeBase("child", {})
+    {}
+    int starts = 0;
+
+    // what the thread of a ThreadedAction does when the work is done
+    void completeFromAnotherThread()
+    {
+      setStatus(NodeStatus::SUCCESS);
+    }
+    NodeStatus executeTick() override
+    {
+      if(status() == NodeStatus::IDLE)
+      {
+        starts++;
+        setStatus(NodeStatus::RUNNING);
+      }
+      return status();
+    }
+    NodeStatus tick() override
+    {
+      return status();
+    }
+    void halt() override
+    {}
+  };
+
+  class WaitChild : public BT::DecoratorNode
+  {
+  public:
+    WaitChild() : DecoratorNode("decorator", {})
+    {}
+    NodeStatus tick() override
+    {
+      setStatus(NodeStatus::RUNNING);
+      const auto child_status = child_node_->executeTick();
+      if(child_status == NodeStatus::RUNNING)
+      {
+        dynamic_cast<AsyncChild&>(*child_node_).completeFromAnotherThread();
+        return NodeStatus::RUNNING;
+      }
+      resetChild();
+      return child_status;
+    }
+  };
+
+  AsyncChild child;
+  WaitChild decorator;
+  decorator.setChild(&child);
+
+  ASSERT_EQ(decorator.executeTick(), NodeStatus::RUNNING);
+  // the result of the child must be seen by the next tick
+  ASSERT_EQ(decorator.executeTick(), NodeStatus::SUCCESS);
+  ASSERT_EQ(child.starts, 1);
+}
