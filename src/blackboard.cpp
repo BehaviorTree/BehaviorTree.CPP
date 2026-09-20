@@ -229,6 +229,18 @@ void Blackboard::debugMessage() const
   }
 }
 
+std::vector<std::string> Blackboard::getKeyNames() const
+{
+  const std::shared_lock storage_lock(storage_mutex_);
+  std::vector<std::string> out;
+  out.reserve(storage_.size());
+  for(const auto& entry_it : storage_)
+  {
+    out.push_back(entry_it.first);
+  }
+  return out;
+}
+
 std::vector<StringView> Blackboard::getKeys() const
 {
   // Lock storage_mutex_ (shared) to prevent iterator invalidation and
@@ -452,9 +464,8 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
 nlohmann::json ExportBlackboardToJSON(const Blackboard& blackboard)
 {
   nlohmann::json dest;
-  for(auto entry_name : blackboard.getKeys())
+  for(const auto& name : blackboard.getKeyNames())
   {
-    const std::string name(entry_name);
     if(auto any_ref = blackboard.getAnyLocked(name))
     {
       if(auto any_ptr = any_ref.get())

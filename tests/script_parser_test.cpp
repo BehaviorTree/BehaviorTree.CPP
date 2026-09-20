@@ -130,7 +130,7 @@ TEST(ParserTest, Equations)
   //-------------------
   const auto& variables = environment.vars;
   EXPECT_EQ(GetResult("x:= 3; y:=5; x+y").cast<double>(), 8.0);
-  EXPECT_EQ(variables->getKeys().size(), 2);
+  EXPECT_EQ(variables->getKeyNames().size(), 2);
   EXPECT_EQ(variables->get<double>("x"), 3.0);
   EXPECT_EQ(variables->get<double>("y"), 5.0);
 
@@ -170,7 +170,7 @@ TEST(ParserTest, Equations)
                                                                                     "o "
                                                                                     "worl"
                                                                                     "d");
-  EXPECT_EQ(variables->getKeys().size(), 5);
+  EXPECT_EQ(variables->getKeyNames().size(), 5);
   EXPECT_EQ(variables->get<std::string>("A"), "hello");
   EXPECT_EQ(variables->get<std::string>("B"), " ");
   EXPECT_EQ(variables->get<std::string>("C"), "world");
@@ -181,7 +181,7 @@ TEST(ParserTest, Equations)
                          "C= 'left    '  ")
                    .empty());
 
-  EXPECT_EQ(variables->getKeys().size(), 5);
+  EXPECT_EQ(variables->getKeyNames().size(), 5);
   EXPECT_EQ(variables->get<std::string>("A"), "   right");
   EXPECT_EQ(variables->get<std::string>("B"), " center ");
   EXPECT_EQ(variables->get<std::string>("C"), "left    ");
@@ -196,9 +196,9 @@ TEST(ParserTest, Equations)
   EXPECT_ANY_THROW(GetResult(" 'hello' = 2.0 "));
   EXPECT_ANY_THROW(GetResult(" 3.0 = 2.0 "));
 
-  size_t prev_size = variables->getKeys().size();
+  size_t prev_size = variables->getKeyNames().size();
   EXPECT_ANY_THROW(GetResult("new_var=69"));
-  EXPECT_EQ(variables->getKeys().size(), prev_size);  // shouldn't increase
+  EXPECT_EQ(variables->getKeyNames().size(), prev_size);  // shouldn't increase
 
   // check comparisons
   EXPECT_EQ(GetResult("x < y").cast<int>(), 1);
