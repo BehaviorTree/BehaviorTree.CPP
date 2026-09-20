@@ -30,6 +30,7 @@ DeferredEntries& GetDeferredEntries()
 {
   // Never destroyed: a Blackboard with static storage duration may be
   // destroyed after this object during program exit.
+  // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
   static auto* const instance = new DeferredEntries();
   return *instance;
 }
