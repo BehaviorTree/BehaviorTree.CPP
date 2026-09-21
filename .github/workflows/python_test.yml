@@ -1,0 +1,150 @@
+name: python (pybt)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'python/**'
+      - 'include/behaviortree_cpp/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/python_test.yml'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'python/**'
+      - 'include/behaviortree_cpp/**'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/python_test.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Lint, type-check, smoke tests, and benchmarks across the supported Python
+  # versions. STABLE_ABI means one abi3 wheel covers 3.12+, so the matrix is
+  # just (3.12, 3.13) — plus 3.13t (free-threaded) as opt-in / allowed-to-fail.
+  # ---------------------------------------------------------------------------
+  test:
+    name: test (cp${{ matrix.python }})
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
+        include:
+          - python: "3.13t"
+            continue-on-error: true
+    continue-on-error: ${{ matrix.continue-on-error || false }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # setuptools-scm needs full history
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-py${{ matrix.python }}-${{ hashFiles('python/pyproject.toml') }}
+
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ccache-${{ runner.os }}-py${{ matrix.python }}
+
+      - name: Install pybt (editable, with dev extras)
+        run: pip install -e python/[dev] -v
+
+      - name: ruff check
+        run: ruff check python/
+
+      - name: mypy
+        run: mypy python/src/pybt/
+        continue-on-error: true  # mypy on a fresh nanobind extension surfaces noise until stub gen lands
+
+      - name: pytest -m smoke
+        run: pytest python/tests -n auto -m smoke
+
+      - name: pytest benchmarks (record only, no thresholds yet)
+        run: pytest python/benchmarks/ --benchmark-only --benchmark-json=bench.json
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-cp${{ matrix.python }}
+          path: bench.json
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Symbol hygiene: assert that no Python/nanobind symbols appear in
+  # libbehaviortree_cpp.
+  # ---------------------------------------------------------------------------
+  symbol-hygiene:
+    name: symbol hygiene (nm scan)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install nanobind (for CMake config)
+        run: pip install "nanobind>=2.5,<3"
+
+      - name: Configure + build (BTCPP_PYTHON=ON, no examples/tools/tests on core)
+        run: |
+          cmake -S . -B build \
+            -DBTCPP_PYTHON=ON \
+            -DBTCPP_BUILD_TOOLS=OFF \
+            -DBTCPP_EXAMPLES=OFF \
+            -DBUILD_TESTING=OFF \
+            -DBTCPP_GROOT_INTERFACE=OFF \
+            -DBTCPP_SQLITE_LOGGING=OFF \
+            -Dnanobind_DIR=$(python -c "import nanobind, pathlib; print(pathlib.Path(nanobind.__file__).parent / 'cmake')")
+          cmake --build build --parallel
+
+      - name: ctest -R pybt_no_python_symbols_in_core
+        run: ctest --test-dir build --output-on-failure -R pybt_no_python_symbols_in_core
+
+  # ---------------------------------------------------------------------------
+  # Hidden-visibility + LTO build. `import pybt` must still resolve cleanly here.
+  # ---------------------------------------------------------------------------
+  hidden-lto:
+    name: hidden-visibility + LTO import
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install nanobind (for CMake config)
+        run: pip install "nanobind>=2.5,<3"
+
+      - name: Configure + build with -fvisibility=hidden -flto
+        run: |
+          cmake -S . -B build \
+            -DBTCPP_PYTHON=ON \
+            -DBTCPP_BUILD_TOOLS=OFF \
+            -DBTCPP_EXAMPLES=OFF \
+            -DBUILD_TESTING=OFF \
+            -DBTCPP_GROOT_INTERFACE=OFF \
+            -DBTCPP_SQLITE_LOGGING=OFF \
+            -DCMAKE_C_FLAGS="-fvisibility=hidden -flto" \
+            -DCMAKE_CXX_FLAGS="-fvisibility=hidden -flto" \
+            -Dnanobind_DIR=$(python -c "import nanobind, pathlib; print(pathlib.Path(nanobind.__file__).parent / 'cmake')")
+          cmake --build build --parallel
+
+      - name: ctest -R pybt_import_under_hidden_lto
+        run: ctest --test-dir build --output-on-failure -R pybt_import_under_hidden_lto

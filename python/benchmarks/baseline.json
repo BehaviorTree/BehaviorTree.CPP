@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "machine": null,
+  "btcpp_version": null,
+  "captured_at": null,
+  "metrics": {
+    "tick_rate_100_node_hz": null,
+    "port_get_set_ns": null,
+    "python_node_overhead_us": null
+  }
+}
