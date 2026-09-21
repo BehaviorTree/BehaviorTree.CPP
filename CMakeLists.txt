@@ -27,6 +27,7 @@ option(USE_VENDORED_CPPZMQ "Use the bundled version of cppzmq" ON)
 option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
 option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
 option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
+option(USE_VENDORED_JSON "Use the bundled version of nlohmann::json" ON)
 
 include(GNUInstallDirs)
 
@@ -145,6 +146,10 @@ else()
     find_package(minitrace REQUIRED)
 endif()
 
+if(NOT USE_VENDORED_JSON)
+    find_package(nlohmann_json REQUIRED)
+endif()
+
 list(APPEND BT_SOURCE
     src/action_node.cpp
     src/basic_types.cpp
@@ -258,6 +263,11 @@ target_include_directories(${BTCPP_LIBRARY}
     )
 
 target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${PROJECT_VERSION}")
+
+if(NOT USE_VENDORED_JSON)
+    target_link_libraries(${BTCPP_LIBRARY} PUBLIC nlohmann_json::nlohmann_json)
+    target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_USE_EXTERNAL_JSON)
+endif()
 
 target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
