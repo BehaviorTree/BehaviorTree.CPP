@@ -187,6 +187,102 @@ TEST(Reactive, TwoAsyncNodesInReactiveSequence)
   EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
 }
 
+TEST(Reactive, TwoAsyncFallbacksInReactiveSequence)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <AsyncFallback name="first">
+        <TestA/>
+        <TestB/>
+        <TestC/>
+      </AsyncFallback>
+      <AsyncFallback name="second">
+        <TestD/>
+        <TestE/>
+        <TestF/>
+      </AsyncFallback>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  std::array<int, 6> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+TEST(Reactive, AsyncSequenceAndAsyncFallbackInReactiveSequence)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <AsyncSequence name="first">
+        <TestA/>
+        <TestB/>
+      </AsyncSequence>
+      <AsyncFallback name="second">
+        <TestC/>
+        <TestD/>
+      </AsyncFallback>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  std::array<int, 6> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+// DISABLED: fails, not yet fixed.
+TEST(Reactive, DISABLED_TwoAsyncActionsInReactiveSequence)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <Sleep msec="100" name="first"/>
+      <Sleep msec="200" name="second"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+TEST(Reactive, SingleAsyncChildInReactiveSequenceIsAllowed)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <TestA/>
+      <AsyncFallback name="only_async">
+        <TestB/>
+        <TestC/>
+      </AsyncFallback>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  std::array<int, 6> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  EXPECT_NO_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
 // ============ Phase 4: Additional Reactive Tests ============
 
 TEST(Reactive, ReactiveSequence_FirstChildFails)

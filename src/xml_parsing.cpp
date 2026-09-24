@@ -666,10 +666,11 @@ void VerifyXML(const std::string& xml_text,
                          std::string("Unknown node type: ") + child_name);
             }
             const auto child_type = child_search->second;
+            // Only the asynchronous CONTROL nodes can be detected here: the
+            // manifest does not record whether an ACTION is asynchronous, so
+            // async leaf actions are not caught.
             if(child_type == NodeType::CONTROL &&
-               ((child_name == "ThreadedAction") ||
-                (child_name == "StatefulActionNode") ||
-                (child_name == "CoroActionNode") || (child_name == "AsyncSequence")))
+               ((child_name == "AsyncSequence") || (child_name == "AsyncFallback")))
             {
               ++async_count;
               if(async_count > 1)
