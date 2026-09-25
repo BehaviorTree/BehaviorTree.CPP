@@ -353,6 +353,14 @@ void mtr_flush_with_state(int is_last) {
 		len = snprintf(linebuf, ARRAY_SIZE(linebuf), "%s{\"cat\":\"%s\",\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64 ",\"ph\":\"%c\",\"name\":\"%s\",\"args\":{%s}%s}",
 				first_line ? "" : ",\n",
 				cat, raw->pid, raw->tid, raw->ts - time_offset, raw->ph, raw->name, arg_buf, id_buf);
+		// snprintf returns the length the line would have needed, not what it
+		// wrote, and a negative value on error, so clamp before using it as a
+		// write length.
+		if (len < 0) {
+			len = 0;
+		} else if ((size_t)len >= sizeof(linebuf)) {
+			len = (int)sizeof(linebuf) - 1;
+		}
 		fwrite(linebuf, 1, len, f);
 		first_line = 0;
 
