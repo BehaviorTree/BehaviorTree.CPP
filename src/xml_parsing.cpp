@@ -58,6 +58,8 @@
 #endif
 #endif
 
+#include "schematron_template.gen.h"
+
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_cpp/utils/demangle_util.h"
@@ -1482,16 +1484,23 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
 
 std::string writeTreeXSD(const BehaviorTreeFactory& factory)
 {
+  return writeTreeXSD(factory, false);
+}
+
+std::string writeTreeXSD(const BehaviorTreeFactory& factory, bool generic)
+{
   // There are 2 forms of representation for a node:
   // compact: <Sequence .../>  and explicit: <Control ID="Sequence" ... />
   // Only the compact form is supported because the explicit form doesn't
   // make sense with XSD since we would need to allow any attribute.
   // Prepare the data
 
+  const auto& builtin_set = factory.builtinNodes();
   std::map<std::string, const TreeNodeManifest*> ordered_models;
   for(const auto& [registration_id, model] : factory.manifests())
   {
-    ordered_models.insert({ registration_id, &model });
+    if(!generic || builtin_set.count(registration_id) != 0)
+      ordered_models.insert({ registration_id, &model });
   }
 
   XMLDocument doc;
@@ -1572,6 +1581,15 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
+    <xs:complexType name="inoutPortType">
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" type="xs:string" use="required"/>
+          <xs:attribute name="type" type="xs:string" use="optional"/>
+          <xs:attribute name="default" type="xs:string" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
     <xs:attributeGroup name="preconditionAttributeGroup">
       <xs:attribute name="_failureIf" type="xs:string" use="optional"/>
       <xs:attribute name="_skipIf" type="xs:string" use="optional"/>
@@ -1605,6 +1623,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
         <xs:choice minOccurs="0" maxOccurs="unbounded">
           <xs:element name="input_port" type="inputPortType"/>
           <xs:element name="output_port" type="outputPortType"/>
+          <xs:element name="inout_port" type="inoutPortType"/>
         </xs:choice>
         <xs:element name="description" type="descriptionType" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
@@ -1642,15 +1661,27 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
   XMLElement* one_node_group = doc.NewElement("xs:group");
   {
     one_node_group->SetAttribute("name", "oneNodeGroup");
-    std::ostringstream xsd;
-    xsd << "<xs:choice>";
-    for(const auto& [registration_id, model] : ordered_models)
+    if(generic)
     {
-      xsd << "<xs:element name=\"" << registration_id << "\" type=\"" << registration_id
-          << "Type\"/>";
+      // Generic: accept any element; lax processing validates known built-ins
+      // via the top-level xs:element declarations emitted at the end of this function.
+      parse_and_insert(one_node_group, "<xs:choice>"
+                                       "<xs:any namespace=\"##any\" "
+                                       "processContents=\"lax\"/>"
+                                       "</xs:choice>");
     }
-    xsd << "</xs:choice>";
-    parse_and_insert(one_node_group, xsd.str().c_str());
+    else
+    {
+      std::ostringstream xsd;
+      xsd << "<xs:choice>";
+      for(const auto& [registration_id, model] : ordered_models)
+      {
+        xsd << "<xs:element name=\"" << registration_id << "\" type=\"" << registration_id
+            << "Type\"/>";
+      }
+      xsd << "</xs:choice>";
+      parse_and_insert(one_node_group, xsd.str().c_str());
+    }
     schema_element->InsertEndChild(one_node_group);
   }
 
@@ -1717,8 +1748,12 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
     XMLElement* common_attr_group = doc.NewElement("xs:attributeGroup");
     common_attr_group->SetAttribute("ref", "commonAttributeGroup");
     type->InsertEndChild(common_attr_group);
+    std::map<std::string, const BT::PortInfo*> ordered_ports;
     for(const auto& [port_name, port_info] : model->ports)
+      ordered_ports.insert({ port_name, &port_info });
+    for(const auto& [port_name, port_info_ptr] : ordered_ports)
     {
+      const auto& port_info = *port_info_ptr;
       XMLElement* attr = doc.NewElement("xs:attribute");
       attr->SetAttribute("name", port_name.c_str());
       const auto xsd_attribute_type = xsdAttributeType(port_info);
@@ -1746,9 +1781,57 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
     schema_element->InsertEndChild(type);
   }
 
+  // Generic mode: emit top-level xs:element declarations so that
+  // processContents="lax" in oneNodeGroup can resolve and validate
+  // known built-in node elements by name.
+  if(generic)
+  {
+    for(const auto& [registration_id, model] : ordered_models)
+    {
+      XMLElement* elem = doc.NewElement("xs:element");
+      elem->SetAttribute("name", registration_id.c_str());
+      elem->SetAttribute("type", (registration_id + "Type").c_str());
+      schema_element->InsertEndChild(elem);
+    }
+  }
+
   XMLPrinter printer;
   doc.Print(&printer);
   return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
+}
+
+std::string writeTreeSchematron(const BehaviorTreeFactory& factory)
+{
+  // Build the pipe-delimited builtin node list, e.g. "|AlwaysFailure|Fallback|...|",
+  // then substitute the ##BUILTIN_PIPE## placeholder in the embedded template.
+  // The template itself lives in src/btcpp4_schematron.sch (human-readable);
+  // schematron_template.gen.h is generated from it by CMake.
+  std::ostringstream builtin_pipe_ss;
+  builtin_pipe_ss << "|";
+  for(const auto& name : factory.builtinNodes())
+    builtin_pipe_ss << name << "|";
+
+  std::string result = BT::detail::schematron_template;
+  const std::string placeholder = "##BUILTIN_PIPE##";
+  const std::string builtin_pipe = builtin_pipe_ss.str();
+  int replacements = 0;
+
+  for(std::size_t pos = result.find(placeholder); pos != std::string::npos;
+      pos = result.find(placeholder, pos))
+  {
+    if(detail::insideXmlComment(result, pos))
+    {
+      pos += placeholder.size();
+      continue;
+    }
+    result.replace(pos, placeholder.size(), builtin_pipe);
+    pos += builtin_pipe.size();
+    ++replacements;
+  }
+  if(replacements == 0)
+    throw RuntimeError("writeTreeSchematron: placeholder '", placeholder,
+                       "' not found outside comments in schematron template");
+  return result;
 }
 
 std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin_models)
@@ -1765,5 +1848,17 @@ std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin
   doc.Print(&printer);
   return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 }
+
+namespace detail
+{
+bool insideXmlComment(const std::string& s, std::size_t pos)
+{
+  const auto open = s.rfind("<!--", pos);
+  if(open == std::string::npos)
+    return false;
+  const auto close = s.rfind("-->", pos);
+  return close == std::string::npos || close < open;
+}
+}  // namespace detail
 
 }  // namespace BT
