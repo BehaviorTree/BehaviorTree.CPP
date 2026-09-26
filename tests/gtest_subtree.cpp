@@ -126,6 +126,8 @@ TEST(SubTree, BadRemapping)
   Tree tree_bad_in = factory.createTree("MainTree");
   EXPECT_ANY_THROW(tree_bad_in.tickWhileRunning());
 
+  factory.clearRegisteredBehaviorTrees();
+
   static const char* xml_text_bad_out = R"(
 <root BTCPP_format="4" >
 

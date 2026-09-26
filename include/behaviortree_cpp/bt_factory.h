@@ -316,11 +316,20 @@ public:
      *
      * where "tree_id" come from the XML attribute <BehaviorTree ID="tree_id">
      *
+     * @throws RuntimeError if the XML registers a BehaviorTree ID that is
+     *         already known to this factory. Call clearRegisteredBehaviorTrees()
+     *         first to replace previous definitions intentionally.
      */
   void registerBehaviorTreeFromFile(const std::filesystem::path& filename);
 
-  /// Same of registerBehaviorTreeFromFile, but passing the XML text,
-  /// instead of the filename.
+  /**
+     * @brief Same as registerBehaviorTreeFromFile, but passing the XML text
+     *        instead of the filename.
+     *
+     * @throws RuntimeError if the XML registers a BehaviorTree ID that is
+     *         already known to this factory. Call clearRegisteredBehaviorTrees()
+     *         first to replace previous definitions intentionally.
+     */
   void registerBehaviorTreeFromText(const std::string& xml_text);
 
   /// Returns the ID of the trees registered either with
@@ -446,6 +455,10 @@ public:
    * @param text        string containing the XML
    * @param blackboard  blackboard of the root tree
    * @return the newly created tree
+   *
+   * @throws RuntimeError if the XML registers a BehaviorTree ID that is
+   *         already known to this factory. Call clearRegisteredBehaviorTrees()
+   *         first to replace previous definitions intentionally.
    */
   [[nodiscard]] Tree createTreeFromText(
       const std::string& text, Blackboard::Ptr blackboard = Blackboard::create());
@@ -460,11 +473,25 @@ public:
    * @param file_path   location of the file to load
    * @param blackboard  blackboard of the root tree
    * @return the newly created tree
+   *
+   * @throws RuntimeError if the XML registers a BehaviorTree ID that is
+   *         already known to this factory. Call clearRegisteredBehaviorTrees()
+   *         first to replace previous definitions intentionally.
    */
   [[nodiscard]] Tree
   createTreeFromFile(const std::filesystem::path& file_path,
                      Blackboard::Ptr blackboard = Blackboard::create());
 
+  /**
+   * @brief createTree instantiates a tree by ID from definitions already
+   *        present in the factory's parser. It does not load or parse XML;
+   *        duplicate-ID errors come from registerBehaviorTreeFrom* or
+   *        createTreeFrom*, not from createTree().
+   *
+   * @param tree_name   ID of the tree to instantiate
+   * @param blackboard  blackboard of the root tree
+   * @return the newly created tree
+   */
   [[nodiscard]] Tree createTree(const std::string& tree_name,
                                 Blackboard::Ptr blackboard = Blackboard::create());
 
