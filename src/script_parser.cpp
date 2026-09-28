@@ -242,11 +242,46 @@ private:
       advance();
       return std::make_shared<Ast::ExprLiteral>(Any(std::string(tok.text)));
     }
-    // Identifier
+    // Identifier (variable reference or function call)
     if(tok.type == TokenType::Identifier)
     {
+      std::string name(tok.text);
       advance();
-      return std::make_shared<Ast::ExprName>(std::string(tok.text));
+
+      // Function call: identifier followed by a parenthesized argument list.
+      if(check(TokenType::LeftParen))
+      {
+        advance();  // consume '('
+        std::vector<Ast::expr_ptr> args;
+        if(!check(TokenType::RightParen))
+        {
+          args.push_back(parseExpr(0));
+          while(check(TokenType::Comma))
+          {
+            advance();  // consume ','
+            args.push_back(parseExpr(0));
+          }
+        }
+        expect(TokenType::RightParen, "expected ')' after function arguments");
+
+        // Fail fast on unknown functions and wrong arity so ValidateScript
+        // reports the problem at parse time instead of at evaluation time.
+        const int arity = Ast::BuiltinFunctionArity(name);
+        if(arity < 0)
+        {
+          throw RuntimeError(StrCat("Unknown function [", name, "] at position ",
+                                    std::to_string(tok.pos)));
+        }
+        if(static_cast<int>(args.size()) != arity)
+        {
+          throw RuntimeError(StrCat("Function [", name, "] expects ",
+                                    std::to_string(arity), " argument(s), got ",
+                                    std::to_string(args.size()), " at position ",
+                                    std::to_string(tok.pos)));
+        }
+        return std::make_shared<Ast::ExprFunction>(std::move(name), std::move(args));
+      }
+      return std::make_shared<Ast::ExprName>(std::move(name));
     }
     // Error token from tokenizer
     if(tok.type == TokenType::Error)

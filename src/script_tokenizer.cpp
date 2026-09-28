@@ -211,6 +211,8 @@ TokenType matchSingleCharOp(char c)
       return TokenType::LeftParen;
     case ')':
       return TokenType::RightParen;
+    case ',':
+      return TokenType::Comma;
     case ';':
       return TokenType::Semicolon;
     default:

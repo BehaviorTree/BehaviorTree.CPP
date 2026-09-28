@@ -66,6 +66,7 @@ enum class TokenType
   // Delimiters
   LeftParen,
   RightParen,
+  Comma,
   Semicolon,
   // Control
   EndOfInput,

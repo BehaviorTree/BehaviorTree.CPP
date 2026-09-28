@@ -50,6 +50,87 @@ inline double StringToDouble(const Any& value, const Environment& env)
   return value.cast<double>();
 }
 
+// Number of arguments expected by a built-in math function, or -1 if the name
+// is not a known function. Used both by the parser (fail fast on unknown
+// functions / wrong arity) and by the evaluator.
+inline int BuiltinFunctionArity(const std::string& name)
+{
+  if(name == "abs" || name == "sqrt" || name == "sin" || name == "cos" ||
+     name == "tan" || name == "asin" || name == "acos" || name == "atan" ||
+     name == "exp" || name == "log" || name == "log10" || name == "floor" ||
+     name == "ceil" || name == "round")
+  {
+    return 1;
+  }
+  if(name == "pow" || name == "atan2" || name == "min" || name == "max")
+  {
+    return 2;
+  }
+  if(name == "clamp")
+  {
+    return 3;
+  }
+  return -1;
+}
+
+// Apply a built-in math function to already-evaluated numeric arguments.
+// Throws RuntimeError for unknown functions (defensive; the parser should
+// already have rejected them).
+inline double ApplyMathFunction(const std::string& name, const std::vector<double>& args)
+{
+  const int arity = BuiltinFunctionArity(name);
+  if(arity < 0)
+  {
+    throw RuntimeError(StrCat("Unknown function [", name, "]"));
+  }
+  if(static_cast<int>(args.size()) != arity)
+  {
+    throw RuntimeError(StrCat("Function [", name, "] expects ", std::to_string(arity),
+                              " argument(s), got ", std::to_string(args.size())));
+  }
+
+  if(name == "abs")
+    return std::abs(args[0]);
+  if(name == "sqrt")
+    return std::sqrt(args[0]);
+  if(name == "pow")
+    return std::pow(args[0], args[1]);
+  if(name == "sin")
+    return std::sin(args[0]);
+  if(name == "cos")
+    return std::cos(args[0]);
+  if(name == "tan")
+    return std::tan(args[0]);
+  if(name == "asin")
+    return std::asin(args[0]);
+  if(name == "acos")
+    return std::acos(args[0]);
+  if(name == "atan")
+    return std::atan(args[0]);
+  if(name == "atan2")
+    return std::atan2(args[0], args[1]);
+  if(name == "exp")
+    return std::exp(args[0]);
+  if(name == "log")
+    return std::log(args[0]);
+  if(name == "log10")
+    return std::log10(args[0]);
+  if(name == "floor")
+    return std::floor(args[0]);
+  if(name == "ceil")
+    return std::ceil(args[0]);
+  if(name == "round")
+    return std::round(args[0]);
+  if(name == "min")
+    return std::min(args[0], args[1]);
+  if(name == "max")
+    return std::max(args[0], args[1]);
+  if(name == "clamp")
+    return std::min(std::max(args[0], args[1]), args[2]);
+
+  return 0.0;  // unreachable
+}
+
 struct ExprBase
 {
   using Ptr = std::shared_ptr<ExprBase>;
@@ -102,6 +183,38 @@ struct ExprName : ExprBase
       throw RuntimeError(StrCat("Variable not found: ", name));
     }
     return *any_ref.get();
+  }
+};
+
+struct ExprFunction : ExprBase
+{
+  std::string name;
+  std::vector<expr_ptr> args;
+
+  explicit ExprFunction(std::string n, std::vector<expr_ptr> a)
+    : name(std::move(n)), args(std::move(a))
+  {}
+
+  Any evaluate(Environment& env) const override
+  {
+    std::vector<double> values;
+    values.reserve(args.size());
+    for(const auto& arg : args)
+    {
+      auto v = arg->evaluate(env);
+      if(v.empty())
+      {
+        throw RuntimeError(StrCat("Argument of function [", name,
+                                  "] is not initialized"));
+      }
+      if(!v.isNumber())
+      {
+        throw RuntimeError(StrCat("Function [", name,
+                                  "] expects numeric arguments"));
+      }
+      values.push_back(v.cast<double>());
+    }
+    return Any(ApplyMathFunction(name, values));
   }
 };
 

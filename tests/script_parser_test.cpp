@@ -647,6 +647,57 @@ TEST(ParserTest, UnaryOperators)
   EXPECT_EQ(Parse("10 + -3").value().cast<double>(), 7.0);
 }
 
+// https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1141
+TEST(ParserTest, MathFunctions)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  constexpr double EPS = 1e-9;
+
+  // Unary functions
+  EXPECT_NEAR(Parse("abs(-3)").value().cast<double>(), 3.0, EPS);
+  EXPECT_NEAR(Parse("abs(3)").value().cast<double>(), 3.0, EPS);
+  EXPECT_NEAR(Parse("sqrt(9)").value().cast<double>(), 3.0, EPS);
+  EXPECT_NEAR(Parse("sin(0)").value().cast<double>(), 0.0, EPS);
+  EXPECT_NEAR(Parse("cos(0)").value().cast<double>(), 1.0, EPS);
+  EXPECT_NEAR(Parse("tan(0)").value().cast<double>(), 0.0, EPS);
+  EXPECT_NEAR(Parse("asin(1)").value().cast<double>(), std::asin(1.0), EPS);
+  EXPECT_NEAR(Parse("acos(1)").value().cast<double>(), std::acos(1.0), EPS);
+  EXPECT_NEAR(Parse("atan(1)").value().cast<double>(), std::atan(1.0), EPS);
+  EXPECT_NEAR(Parse("exp(0)").value().cast<double>(), 1.0, EPS);
+  EXPECT_NEAR(Parse("log(1)").value().cast<double>(), 0.0, EPS);
+  EXPECT_NEAR(Parse("log10(100)").value().cast<double>(), 2.0, EPS);
+  EXPECT_NEAR(Parse("floor(3.7)").value().cast<double>(), 3.0, EPS);
+  EXPECT_NEAR(Parse("ceil(3.2)").value().cast<double>(), 4.0, EPS);
+  EXPECT_NEAR(Parse("round(3.5)").value().cast<double>(), 4.0, EPS);
+
+  // Binary / ternary functions
+  EXPECT_NEAR(Parse("pow(2, 10)").value().cast<double>(), 1024.0, EPS);
+  EXPECT_NEAR(Parse("atan2(1, 1)").value().cast<double>(), std::atan2(1.0, 1.0), EPS);
+  EXPECT_NEAR(Parse("min(3, 5)").value().cast<double>(), 3.0, EPS);
+  EXPECT_NEAR(Parse("max(3, 5)").value().cast<double>(), 5.0, EPS);
+  EXPECT_NEAR(Parse("clamp(10, 0, 5)").value().cast<double>(), 5.0, EPS);
+  EXPECT_NEAR(Parse("clamp(-1, 0, 5)").value().cast<double>(), 0.0, EPS);
+  EXPECT_NEAR(Parse("clamp(3, 0, 5)").value().cast<double>(), 3.0, EPS);
+
+  // Composition with operators and variables
+  EXPECT_NEAR(Parse("sqrt(9) + 1").value().cast<double>(), 4.0, EPS);
+  EXPECT_NEAR(Parse("-sqrt(9)").value().cast<double>(), -3.0, EPS);
+  EXPECT_NEAR(Parse("pow(abs(-2), 3)").value().cast<double>(), 8.0, EPS);
+  EXPECT_NEAR(Parse("x:=3; abs(x - 5)").value().cast<double>(), 2.0, EPS);
+  EXPECT_EQ(Parse("min(3, 5) == 3 ? 'yes' : 'no'").value().cast<std::string>(), "yes");
+
+  // Unknown function and wrong arity are rejected at parse time
+  EXPECT_FALSE(BT::ValidateScript("nosuchfunc(1)"));
+  EXPECT_FALSE(BT::ValidateScript("abs(1, 2)"));
+  EXPECT_FALSE(BT::ValidateScript("pow(2)"));
+  EXPECT_FALSE(BT::ValidateScript("clamp(1, 2)"));
+
+  // Function names remain usable as plain variable references
+  EXPECT_EQ(Parse("abs:=7; abs").value().cast<double>(), 7.0);
+}
+
 TEST(ParserTest, TernaryExpressions)
 {
   BT::Ast::Environment env = { BT::Blackboard::create(), {} };
