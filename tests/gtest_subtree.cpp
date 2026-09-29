@@ -1090,3 +1090,79 @@ TEST(SubTree, LiteralNonBooleanPortsRejectLogicalNot)
   ASSERT_THROW((void)tree.tickWhileRunning(), RuntimeError);
   ASSERT_EQ(tree.subtrees[1]->blackboard->get<std::string>("value"), "1not_bool");
 }
+
+// A SubTree model can declare a port whose name no node can bind.
+// validatePortName only rejects a leading digit, while IsAllowedPortName, which
+// classifies instance attributes and which InputPort()/OutputPort() enforce,
+// requires an alphabetic first character. Before the fix the remapping below was
+// diverted into other_attributes and the SubTree read its declared default, with
+// no exception and no log.
+TEST(SubTree, DeclaredPortNameThatCannotBeBound)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Script code="outer:='from_parent'"/>
+      <SubTree ID="Sub" _myPort="{outer}"/>
+    </Sequence>
+  </BehaviorTree>
+  <BehaviorTree ID="Sub">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Sub">
+      <input_port name="_myPort" default="never_wired"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
+}
+
+// The same underscore attribute on a SubTree that does not declare it is not a
+// port. It must keep landing in other_attributes and must not throw.
+TEST(SubTree, UndeclaredUnderscoreAttributeIsNotAPort)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <SubTree ID="Sub" _my_editor_state="true"/>
+  </BehaviorTree>
+  <BehaviorTree ID="Sub">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Sub">
+      <input_port name="goal" default="g"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_NO_THROW(factory.createTreeFromText(xml_text));
+}
+
+// A declared port nobody remaps stays inert and keeps loading, so existing trees
+// carrying such a declaration are unaffected.
+TEST(SubTree, DeclaredUnbindablePortLoadsWhenNotRemapped)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <SubTree ID="Sub"/>
+  </BehaviorTree>
+  <BehaviorTree ID="Sub">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Sub">
+      <input_port name="_myPort" default="inert"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  EXPECT_NO_THROW(factory.createTreeFromText(xml_text));
+}

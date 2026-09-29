@@ -857,6 +857,29 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
     }
     else if(!IsReservedAttribute(port_name))
     {
+      // The name may still match a declared port. validatePortName only rejects
+      // a leading digit, so a SubTree model can declare
+      // <input_port name="_myPort"/>, a name IsAllowedPortName refuses and no
+      // C++ InputPort() can create. Falling through to other_attributes would
+      // drop the remapping without a word and leave the node on its declared
+      // default, so report it instead.
+      bool is_declared_port = manifest != nullptr && manifest->ports.count(port_name) > 0;
+      if(!is_declared_port && node_type == NodeType::SUBTREE)
+      {
+        auto model_it = subtree_models.find(type_ID);
+        is_declared_port = model_it != subtree_models.end() &&
+                           model_it->second.ports.count(port_name) > 0;
+      }
+      if(is_declared_port)
+      {
+        const std::string reason = " and is declared, but the name cannot be used"
+                                   " as a port. A port name must begin with an"
+                                   " alphabetic character. Rename the port, for"
+                                   " example [_my_port] to [my_port].";
+        throw RuntimeError(StrCat("A port with name [", port_name,
+                                  "] is found in the XML (", type_ID, ", line ",
+                                  std::to_string(element->GetLineNum()), ")", reason));
+      }
       other_attributes[port_name] = port_value;
     }
   }
