@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <typeindex>
 
@@ -32,6 +33,12 @@ namespace BT
 {
 
 static std::type_index UndefinedAnyType = typeid(nullptr);
+
+// Declared here (defined in basic_types.cpp, documented in basic_types.h) so that
+// Any can share the locale-independent double parser without including
+// basic_types.h, which itself includes this header.
+[[nodiscard]] bool parseDouble(std::string_view str, double& out,
+                               bool require_full_consumption);
 
 // Trait to detect std::shared_ptr types (used for polymorphic port support)
 template <typename T>
@@ -458,7 +465,15 @@ inline nonstd::expected<T, std::string> Any::stringToNumber() const
     }
     if constexpr(std::is_floating_point_v<T>)
     {
-      return std::stod(str.toStdString());
+      // std::stod honors LC_NUMERIC, so under a locale that uses ',' as decimal
+      // separator "3.5" would silently parse as 3. parseDouble reproduces the
+      // std::from_chars semantics of the branch above, on every platform.
+      double value = 0.0;
+      if(parseDouble(str.toStdStringView(), value, /*require_full_consumption=*/false))
+      {
+        return static_cast<T>(value);
+      }
+      return nonstd::make_unexpected("Any failed string to number conversion");
     }
   }
   catch(...)
