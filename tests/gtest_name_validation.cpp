@@ -120,6 +120,32 @@ TEST(NameValidation, IsAllowedPortName_Invalid)
   EXPECT_FALSE(IsAllowedPortName("port<T>"));    // angle brackets
 }
 
+TEST(NameValidation, CreatePort_NamesForbiddenChar)
+{
+  try
+  {
+    (void)InputPort<std::string>("goal.pose");
+    FAIL() << "Expected RuntimeError to be thrown";
+  }
+  catch(const RuntimeError& e)
+  {
+    const std::string msg = e.what();
+    EXPECT_NE(msg.find("goal.pose"), std::string::npos) << msg;
+    EXPECT_NE(msg.find("forbidden character '.'"), std::string::npos) << msg;
+  }
+
+  try
+  {
+    (void)InputPort<std::string>("goal\tpose");
+    FAIL() << "Expected RuntimeError to be thrown";
+  }
+  catch(const RuntimeError& e)
+  {
+    const std::string msg = e.what();
+    EXPECT_NE(msg.find("control character (ASCII 9)"), std::string::npos) << msg;
+  }
+}
+
 // ============== Tests for XML parsing validation ==============
 
 class NameValidationXMLTest : public testing::Test

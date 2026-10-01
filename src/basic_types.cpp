@@ -613,6 +613,15 @@ char findForbiddenChar(StringView name)
   return '\0';
 }
 
+std::string formatForbiddenChar(char c)
+{
+  if(c < 32 || c == 127)
+  {
+    return "control character (ASCII " + std::to_string(static_cast<int>(c)) + ")";
+  }
+  return std::string("'") + c + "'";
+}
+
 Any convertFromJSON(StringView json_text, std::type_index type)
 {
   const nlohmann::json json = nlohmann::json::parse(json_text);
