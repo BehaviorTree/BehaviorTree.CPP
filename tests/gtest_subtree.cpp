@@ -815,7 +815,7 @@ TEST(SubTree, SubstringTreeIDsAreNotRecursive)
 // Test for Groot2 issue #56: duplicate _fullpath when multiple subtrees have the same name
 // https://github.com/BehaviorTree/Groot2/issues/56
 //
-// When two SubTree nodes under the same parent have the same "name" attribute,
+// When two SubTree nodes in the same tree have the same "name" attribute,
 // tree creation should fail with a clear error message.
 TEST(SubTree, DuplicateSubTreeName_Groot2Issue56)
 {
@@ -876,6 +876,48 @@ TEST(SubTree, DuplicateSubTreeName_ErrorMessage)
         << "Error message should mention 'Duplicate SubTree path'. Got: " << msg;
     EXPECT_TRUE(msg.find("my_task") != std::string::npos)
         << "Error message should mention the duplicate path 'my_task'. Got: " << msg;
+  }
+}
+
+// The duplicate check covers the whole tree, so the message must not suggest
+// that moving one SubTree under another parent fixes it.
+TEST(SubTree, DuplicateSubTreeName_DifferentParents)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <Fallback>
+            <Sequence>
+                <SubTree ID="Task" name="my_task"/>
+            </Sequence>
+            <Sequence>
+                <SubTree ID="Task" name="my_task"/>
+            </Sequence>
+        </Fallback>
+    </BehaviorTree>
+
+    <BehaviorTree ID="Task">
+        <AlwaysSuccess/>
+    </BehaviorTree>
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+
+  try
+  {
+    (void)factory.createTreeFromText(xml_text);
+    FAIL() << "Expected RuntimeError to be thrown";
+  }
+  catch(const RuntimeError& e)
+  {
+    std::string msg = e.what();
+    EXPECT_TRUE(msg.find("Duplicate SubTree path") != std::string::npos)
+        << "Error message should mention 'Duplicate SubTree path'. Got: " << msg;
+    EXPECT_TRUE(msg.find("same parent") == std::string::npos)
+        << "Error message should not limit the rule to one parent. Got: " << msg;
   }
 }
 
