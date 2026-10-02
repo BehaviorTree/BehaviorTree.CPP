@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <charconv>
 // Apple's libc++ lacks the floating-point std::from_chars overload; parseDouble
 // falls back to strtod_l with a private "C" locale, which needs these headers.
@@ -562,6 +563,35 @@ bool IsAllowedPortName(StringView str)
     return false;
   }
   return !IsReservedAttribute(str);
+}
+
+void ThrowInvalidPortName(StringView name)
+{
+  // The same checks as IsAllowedPortName, in the same order, so the reason
+  // named is the one that failed.
+  const std::string sname(name);
+  std::string reason;
+  if(sname.empty())
+  {
+    reason = "cannot be empty";
+  }
+  else if(std::isalpha(static_cast<unsigned char>(sname.front())) == 0)
+  {
+    reason = "must start with an alphabetic character, since a leading "
+             "underscore is reserved";
+  }
+  else if(const char c = findForbiddenChar(sname); c != '\0')
+  {
+    reason = (c < 32 || c == 127) ?
+                 "contains a control character (ASCII " +
+                     std::to_string(static_cast<int>(c)) + ")" :
+                 std::string("contains forbidden character '") + c + "'";
+  }
+  else
+  {
+    reason = "is a reserved attribute name";
+  }
+  throw RuntimeError("Port name '", sname, "' ", reason);
 }
 
 bool IsReservedAttribute(StringView str)

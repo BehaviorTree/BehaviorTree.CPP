@@ -2,6 +2,10 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 using namespace BT;
@@ -118,6 +122,48 @@ TEST(NameValidation, IsAllowedPortName_Invalid)
   EXPECT_FALSE(IsAllowedPortName("port name"));  // space
   EXPECT_FALSE(IsAllowedPortName("port.name"));  // period
   EXPECT_FALSE(IsAllowedPortName("port<T>"));    // angle brackets
+}
+
+// CreatePort's error names the port and the IsAllowedPortName check that failed.
+TEST(NameValidation, CreatePort_ErrorNamesTheCause)
+{
+  const auto message_for = [](const std::string& port_name) -> std::string {
+    try
+    {
+      (void)InputPort<int>(port_name);
+    }
+    catch(const RuntimeError& err)
+    {
+      return err.what();
+    }
+    return "<no exception>";
+  };
+  // {port name, expected reason, a reason that must not appear}
+  const std::vector<std::vector<std::string>> cases = {
+    { "target.x", "contains forbidden character '.'", "alphabetic" },
+    { "goal pose", "contains forbidden character ' '", "alphabetic" },
+    { "a\tb", "control character (ASCII 9)", "alphabetic" },
+    { std::string("a\x7f"), "control character (ASCII 127)", "alphabetic" },
+    { "_foo", "must start with an alphabetic character", "forbidden" },
+    { "1abc", "must start with an alphabetic character", "forbidden" },
+    { "name", "is a reserved attribute name", "alphabetic" },
+    { "ID", "is a reserved attribute name", "alphabetic" },
+    { "", "cannot be empty", "alphabetic" },
+    // Two checks fail at once; the first in IsAllowedPortName's order is named.
+    { "_a.b", "must start with an alphabetic character", "forbidden" },
+    { ".x", "must start with an alphabetic character", "forbidden" },
+    { "1.5", "must start with an alphabetic character", "forbidden" },
+  };
+  for(const auto& c : cases)
+  {
+    const std::string message = message_for(c[0]);
+    EXPECT_NE(message.find(c[1]), std::string::npos)
+        << "port [" << c[0] << "]: " << message;
+    EXPECT_EQ(message.find(c[2]), std::string::npos)
+        << "port [" << c[0] << "] names the wrong reason: " << message;
+    EXPECT_NE(message.find("'" + c[0] + "'"), std::string::npos)
+        << "port name missing from: " << message;
+  }
 }
 
 // ============== Tests for XML parsing validation ==============

@@ -363,6 +363,9 @@ struct Timestamp
 
 [[nodiscard]] bool IsAllowedPortName(StringView str);
 
+/// Throws a RuntimeError naming the port and the IsAllowedPortName check it fails.
+[[noreturn]] void ThrowInvalidPortName(StringView name);
+
 [[nodiscard]] bool IsReservedAttribute(StringView str);
 
 /// Returns the first forbidden character found in the name, or '\0' if valid.
@@ -468,9 +471,7 @@ template <typename T = AnyTypeAllowed>
   auto sname = static_cast<std::string>(name);
   if(!IsAllowedPortName(sname))
   {
-    throw RuntimeError("The name of a port must not be `name` or `ID` "
-                       "and must start with an alphabetic character. "
-                       "Underscore is reserved.");
+    ThrowInvalidPortName(sname);
   }
 
   std::pair<std::string, PortInfo> out;
