@@ -370,6 +370,9 @@ struct Timestamp
 /// and control characters (ASCII 0-31, 127). UTF-8 multibyte sequences are allowed.
 [[nodiscard]] char findForbiddenChar(StringView name);
 
+/// Describes a character returned by findForbiddenChar() for an error message.
+[[nodiscard]] std::string formatForbiddenChar(char c);
+
 class TypeInfo
 {
 public:
@@ -468,6 +471,11 @@ template <typename T = AnyTypeAllowed>
   auto sname = static_cast<std::string>(name);
   if(!IsAllowedPortName(sname))
   {
+    if(const char c = findForbiddenChar(sname); c != '\0')
+    {
+      throw RuntimeError("Port name '", sname, "' contains forbidden character ",
+                         formatForbiddenChar(c));
+    }
     throw RuntimeError("The name of a port must not be `name` or `ID` "
                        "and must start with an alphabetic character. "
                        "Underscore is reserved.");

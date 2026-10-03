@@ -103,16 +103,6 @@ auto StrEqual = [](const char* str1, const char* str2) -> bool {
   return strcmp(str1, str2) == 0;
 };
 
-// Helper to format forbidden character for error messages
-std::string formatForbiddenChar(char c)
-{
-  if(c < 32 || c == 127)
-  {
-    return "control character (ASCII " + std::to_string(static_cast<int>(c)) + ")";
-  }
-  return std::string("'") + c + "'";
-}
-
 void validateModelName(const std::string& name, int line_number)
 {
   const auto line_str = std::to_string(line_number);
