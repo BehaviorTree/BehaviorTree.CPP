@@ -98,6 +98,29 @@ TEST(ParserTest, AnyTypes_Failing)
   EXPECT_FALSE(BT::ParseScriptAndExecute(env, "foo").has_value());
 }
 
+TEST(ParserTest, IntegerLiteralOutOfRangeIsRejected)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+
+  // These literals overflow int64_t. std::from_chars leaves its output untouched
+  // on result_out_of_range, so the parser used to accept them and silently
+  // evaluate the literal as 0 (e.g. the all-bits mask 0xFFFFFFFFFFFFFFFF).
+  EXPECT_FALSE(BT::ValidateScript("9223372036854775808"));  // INT64_MAX + 1
+  EXPECT_FALSE(BT::ValidateScript("99999999999999999999999"));
+  EXPECT_FALSE(BT::ValidateScript("0xFFFFFFFFFFFFFFFF"));
+  EXPECT_FALSE(BT::ValidateScript("0x8000000000000000"));
+  EXPECT_FALSE(BT::ParseScriptAndExecute(env, "0xFFFFFFFFFFFFFFFF").has_value());
+
+  // The boundary values that do fit must still parse and keep their value.
+  auto max_val = BT::ParseScriptAndExecute(env, "9223372036854775807");
+  ASSERT_TRUE(max_val.has_value());
+  EXPECT_EQ(max_val.value().cast<int64_t>(), 9223372036854775807LL);
+
+  auto hex_val = BT::ParseScriptAndExecute(env, "0x7FFFFFFFFFFFFFFF");
+  ASSERT_TRUE(hex_val.has_value());
+  EXPECT_EQ(hex_val.value().cast<int64_t>(), 9223372036854775807LL);
+}
+
 TEST(ParserTest, DeeplyNestedScriptIsRejected)
 {
   // A script with thousands of nested parentheses or unary prefixes used to add
