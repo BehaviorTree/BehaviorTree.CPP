@@ -1226,8 +1226,8 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
         if(sub->instance_name == subtree_path)
         {
           throw RuntimeError("Duplicate SubTree path detected: '", subtree_path,
-                             "'. Multiple SubTree nodes with the same 'name' attribute "
-                             "under the same parent are not allowed. "
+                             "'. SubTree nodes in the same tree cannot share a 'name' "
+                             "attribute, even under different parent nodes. "
                              "Please use unique names or omit the 'name' attribute "
                              "to auto-generate unique paths.");
         }
