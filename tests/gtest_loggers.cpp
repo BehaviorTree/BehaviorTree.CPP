@@ -360,6 +360,33 @@ TEST_F(LoggerTest, MinitraceLogger_TransitionTypes)
   ASSERT_TRUE(std::filesystem::exists(filepath));
 }
 
+TEST_F(LoggerTest, MinitraceLogger_LongNodeName)
+{
+  // The node name goes into a 1024 byte line buffer. A name long enough to
+  // overflow it used to be written out with snprintf's would-be length, which
+  // reads past the buffer and copies stack bytes into the trace file.
+  const std::string long_name(1000, 'A');
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <AlwaysSuccess name=")" +
+                               long_name + R"("/>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  std::string filepath = test_dir + "/trace_long_name.json";
+
+  {
+    MinitraceLogger logger(tree, filepath.c_str());
+    tree.tickWhileRunning();
+    logger.flush();
+  }
+
+  ASSERT_TRUE(std::filesystem::exists(filepath));
+  ASSERT_LT(std::filesystem::file_size(filepath), 4096u);
+}
+
 // ============ SqliteLogger tests ============
 
 TEST_F(LoggerTest, SqliteLogger_Creation_db3)
