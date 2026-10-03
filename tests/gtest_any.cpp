@@ -10,6 +10,8 @@
 *   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "test_helper.hpp"
+
 #include <charconv>  // std::{from_chars,from_chars_result},
 #include <string>
 #include <system_error>  // std::errc.
@@ -249,4 +251,21 @@ TEST(Any, Cast)
     Any a(v);
     EXPECT_EQ(a.cast<std::vector<int>>(), v);
   }
+}
+
+TEST(Any, StringToNumberIgnoresLocale)
+{
+  // The string -> number conversion must use '.' as decimal separator
+  // regardless of the locale selected by the host application.
+  const ScopedCommaDecimalLocale comma_locale;
+  if(!comma_locale.active())
+  {
+    GTEST_SKIP() << "no locale with ',' as decimal separator on this machine";
+  }
+
+  EXPECT_DOUBLE_EQ(Any(std::string("3.5")).cast<double>(), 3.5);
+  EXPECT_DOUBLE_EQ(Any(std::string("-0.25")).cast<double>(), -0.25);
+  EXPECT_FLOAT_EQ(Any(std::string("1.5e2")).cast<float>(), 150.0f);
+  EXPECT_EQ(Any(std::string("42")).cast<int>(), 42);
+  EXPECT_ANY_THROW(auto res = Any(std::string("fifty")).cast<double>());
 }
