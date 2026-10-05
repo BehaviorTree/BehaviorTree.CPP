@@ -743,6 +743,57 @@ TEST(BlackboardTest, BlackboardRestoreSizeMismatch)
   ASSERT_NO_THROW(BlackboardRestore(big_backup, big_tree));
 }
 
+TEST(BlackboardTest, ImportTreeFromJSONMatchesByName)
+{
+  BT::BehaviorTreeFactory factory;
+
+  // The subtrees are created in the order [MainTree, Zeta, Alpha], but the
+  // JSON object is sorted by name: [Alpha, MainTree, Zeta].
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code=" owner:='main' " />
+        <SubTree ID="Zeta" />
+        <SubTree ID="Alpha" />
+      </Sequence>
+    </BehaviorTree>
+    <BehaviorTree ID="Zeta">
+      <Script code=" owner:='zeta' " />
+    </BehaviorTree>
+    <BehaviorTree ID="Alpha">
+      <Script code=" owner:='alpha'; only_in_alpha:=42 " />
+    </BehaviorTree>
+  </root> )";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(tree.subtrees.size(), 3u);
+
+  const std::vector<std::string> expected_owner = { "main", "zeta", "alpha" };
+
+  // Each blackboard must be restored into the subtree it was exported from.
+  const auto json = ExportTreeToJSON(tree);
+  ImportTreeFromJSON(json, tree);
+
+  for(size_t i = 0; i < tree.subtrees.size(); i++)
+  {
+    const auto& blackboard = tree.subtrees[i]->blackboard;
+    ASSERT_EQ(blackboard->get<std::string>("owner"), expected_owner[i]);
+  }
+  // this entry exists only in the blackboard of the last subtree
+  ASSERT_EQ(tree.subtrees[0]->blackboard->getEntry("only_in_alpha"), nullptr);
+  ASSERT_EQ(tree.subtrees[1]->blackboard->getEntry("only_in_alpha"), nullptr);
+  ASSERT_NE(tree.subtrees[2]->blackboard->getEntry("only_in_alpha"), nullptr);
+
+  // A JSON that doesn't describe one of the subtrees is rejected, instead of
+  // being imported into whichever subtree has the same position.
+  auto renamed = json;
+  renamed["Unknown"] = renamed["MainTree"];
+  renamed.erase("MainTree");
+  ASSERT_THROW(ImportTreeFromJSON(renamed, tree), std::runtime_error);
+}
+
 TEST(BlackboardTest, RootBlackboard)
 {
   BT::BehaviorTreeFactory factory;
