@@ -182,6 +182,7 @@ list(APPEND BT_SOURCE
     src/controls/sequence_node.cpp
     src/controls/sequence_with_memory_node.cpp
     src/controls/switch_node.cpp
+    src/controls/finally_node.cpp
     src/controls/try_catch_node.cpp
     src/controls/while_do_else_node.cpp
 
