@@ -1,10 +1,116 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/control_node.h"
 #include "behaviortree_cpp/xml_parsing.h"
+
+#include <array>
+#include <string>
 
 #include <gtest/gtest.h>
 
 using namespace BT;
+
+namespace
+{
+
+class NameValidationTestControlNode : public ControlNode
+{
+public:
+  NameValidationTestControlNode(const std::string& name, const NodeConfig& config)
+    : ControlNode(name, config)
+  {}
+
+  static PortsList providedPorts()
+  {
+    return {};
+  }
+
+  NodeStatus tick() override
+  {
+    return NodeStatus::SUCCESS;
+  }
+};
+
+struct ExplicitNodeCase
+{
+  const char* tag;
+  const char* child_xml;
+};
+
+constexpr std::array<ExplicitNodeCase, 4> kExplicitNodeCases = {
+  ExplicitNodeCase{ "Action", "" }, ExplicitNodeCase{ "Condition", "" },
+  ExplicitNodeCase{ "Decorator", "<AlwaysSuccess/>" },
+  ExplicitNodeCase{ "Control", "<AlwaysSuccess/>" }
+};
+
+constexpr std::array<const char*, 3> kValidASCIIModelNames = { "Valid_Name", "Valid-Name",
+                                                               "1LeadingDigit" };
+
+constexpr std::array<const char*, 1> kValidUnicodeModelNames = { "检查门状态" };
+
+constexpr std::array<const char*, 2> kInvalidExplicitModelNames = { "Node.With.Dot",
+                                                                    "Root" };
+
+std::string MakeExplicitNodeXML(const ExplicitNodeCase& node_case,
+                                const std::string& model_name,
+                                const char* instance_name = nullptr)
+{
+  std::string xml = "\n"
+                    "    <root BTCPP_format=\"4\">\n"
+                    "      <BehaviorTree ID=\"MainTree\">\n"
+                    "        <";
+  xml += node_case.tag;
+  xml += " ID=\"";
+  xml += model_name;
+  xml += "\"";
+  if(instance_name != nullptr)
+  {
+    xml += " name=\"";
+    xml += instance_name;
+    xml += "\"";
+  }
+  if(node_case.child_xml[0] == '\0')
+  {
+    xml += "/>\n";
+  }
+  else
+  {
+    xml += ">";
+    xml += node_case.child_xml;
+    xml += "</";
+    xml += node_case.tag;
+    xml += ">\n";
+  }
+  xml += "      </BehaviorTree>\n"
+         "    </root>";
+  return xml;
+}
+
+void RegisterExplicitNodeModel(BehaviorTreeFactory& factory, std::string_view tag,
+                               const std::string& model_name)
+{
+  if(tag == "Action")
+  {
+    auto tick = [](TreeNode&) { return NodeStatus::SUCCESS; };
+    factory.registerSimpleAction(model_name, tick);
+  }
+  else if(tag == "Condition")
+  {
+    auto tick = [](TreeNode&) { return NodeStatus::SUCCESS; };
+    factory.registerSimpleCondition(model_name, tick);
+  }
+  else if(tag == "Decorator")
+  {
+    auto tick = [](NodeStatus child_status, TreeNode&) { return child_status; };
+    factory.registerSimpleDecorator(model_name, tick);
+  }
+  else if(tag == "Control")
+  {
+    factory.registerNodeType<NameValidationTestControlNode>(model_name);
+  }
+}
+
+}  // namespace
 
 // ============== Tests for findForbiddenChar() ==============
 
@@ -253,6 +359,80 @@ TEST_F(NameValidationXMLTest, ValidInstanceName_WithPeriod)
       </BehaviorTree>
     </root>)";
   EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
+}
+
+TEST_F(NameValidationXMLTest, ExplicitNodeIDs_InvalidModelNamesThrowHelpfulErrors)
+{
+  for(const auto& node_case : kExplicitNodeCases)
+  {
+    for(const char* invalid_model_name : kInvalidExplicitModelNames)
+    {
+      BehaviorTreeFactory explicit_factory;
+      RegisterExplicitNodeModel(explicit_factory, node_case.tag, invalid_model_name);
+
+      SCOPED_TRACE(std::string(node_case.tag) + " / " + invalid_model_name);
+      const auto xml = MakeExplicitNodeXML(node_case, invalid_model_name);
+
+      try
+      {
+        (void)explicit_factory.createTreeFromText(xml);
+        FAIL() << "Expected RuntimeError for explicit model name: " << invalid_model_name;
+      }
+      catch(const RuntimeError& e)
+      {
+        const std::string msg = e.what();
+        EXPECT_NE(msg.find(invalid_model_name), std::string::npos) << msg;
+        if(std::string(invalid_model_name) == "Node.With.Dot")
+        {
+          EXPECT_NE(msg.find("forbidden character '.'"), std::string::npos) << msg;
+        }
+        else
+        {
+          EXPECT_NE(msg.find("reserved name"), std::string::npos) << msg;
+        }
+      }
+    }
+  }
+}
+
+TEST_F(NameValidationXMLTest, ExplicitNodeIDs_ValidASCIIAndUnicodeAreAccepted)
+{
+  for(const auto& node_case : kExplicitNodeCases)
+  {
+    for(const char* valid_model_name : kValidASCIIModelNames)
+    {
+      BehaviorTreeFactory explicit_factory;
+      RegisterExplicitNodeModel(explicit_factory, node_case.tag, valid_model_name);
+
+      SCOPED_TRACE(std::string(node_case.tag) + " / " + valid_model_name);
+      const auto xml = MakeExplicitNodeXML(node_case, valid_model_name);
+      EXPECT_NO_THROW((void)explicit_factory.createTreeFromText(xml));
+    }
+
+    for(const char* valid_model_name : kValidUnicodeModelNames)
+    {
+      BehaviorTreeFactory explicit_factory;
+      RegisterExplicitNodeModel(explicit_factory, node_case.tag, valid_model_name);
+
+      SCOPED_TRACE(std::string(node_case.tag) + " / " + valid_model_name);
+      const auto xml = MakeExplicitNodeXML(node_case, valid_model_name);
+      EXPECT_NO_THROW((void)explicit_factory.createTreeFromText(xml));
+    }
+  }
+}
+
+TEST_F(NameValidationXMLTest, ExplicitNodeIDs_PreserveRelaxedInstanceNames)
+{
+  for(const auto& node_case : kExplicitNodeCases)
+  {
+    BehaviorTreeFactory explicit_factory;
+    RegisterExplicitNodeModel(explicit_factory, node_case.tag, "Valid_Name");
+
+    SCOPED_TRACE(node_case.tag);
+    const auto xml =
+        MakeExplicitNodeXML(node_case, "Valid_Name", "node.name with spaces");
+    EXPECT_NO_THROW((void)explicit_factory.createTreeFromText(xml));
+  }
 }
 
 TEST_F(NameValidationXMLTest, ValidSubTreeID)
