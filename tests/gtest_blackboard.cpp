@@ -1064,3 +1064,34 @@ TEST(BlackboardTest, GetLockedPortContentWithDefault_Issue942)
   // The value should be accessible from the blackboard
   ASSERT_EQ(tree.rootBlackboard()->get<int>("value"), 42);
 }
+
+TEST(BlackboardTest, SetThroughSubtreeRemappingChecksType)
+{
+  // set() must apply the same type check and string conversion when the key
+  // is remapped to the parent blackboard, like <SubTree local="{value}"> does.
+  auto parent_bb = Blackboard::create();
+  parent_bb->set("value", 42);  // strongly typed as int
+
+  auto child_bb = Blackboard::create(parent_bb);
+  child_bb->addSubtreeRemapping("local", "value");
+
+  // a string that can't be converted to int is rejected, as it is on the parent
+  ASSERT_ANY_THROW(parent_bb->set("value", std::string("garbage")));
+  ASSERT_ANY_THROW(child_bb->set("local", std::string("garbage")));
+
+  // the entry must keep both its declared type and its stored type
+  const auto entry = parent_bb->getEntry("value");
+  ASSERT_EQ(entry->info.type(), typeid(int));
+  ASSERT_EQ(entry->value.type(), typeid(int));
+
+  // a convertible string is parsed to the declared type, not stored as string
+  child_bb->set("local", std::string("99"));
+  ASSERT_EQ(entry->value.type(), typeid(int));
+  ASSERT_EQ(parent_bb->get<int>("value"), 99);
+
+  // a safe numeric conversion is accepted, as it is on the parent
+  parent_bb->set("small", static_cast<uint8_t>(1));
+  child_bb->addSubtreeRemapping("local_small", "small");
+  ASSERT_NO_THROW(child_bb->set("local_small", 100));
+  ASSERT_EQ(parent_bb->get<uint8_t>("small"), 100);
+}
