@@ -486,6 +486,8 @@ TEST(Parallel, ParallelAll)
     ASSERT_EQ(1, observer.getStatistics("third").success_count);
   }
 
+  factory.clearRegisteredBehaviorTrees();
+
   {
     const char* xml_text = R"(
 <root BTCPP_format="4">
