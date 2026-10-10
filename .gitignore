@@ -31,3 +31,5 @@ TODO.md
 /coverage_report/*
 /coverage.info
 /doc/html/*
+
+.claude/

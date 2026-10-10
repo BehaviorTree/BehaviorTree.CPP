@@ -13,6 +13,7 @@ option(BTCPP_EXAMPLES   "Build tutorials and examples" ON)
 option(BUILD_TESTING "Build the unit tests" ON)
 option(BTCPP_GROOT_INTERFACE "Add Groot2 connection. Requires ZeroMQ" ON)
 option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
+option(BTCPP_PYTHON "Build Python bindings (pybt)" OFF)
 option(BTCPP_ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BTCPP_ENABLE_UBSAN "Enable Undefined Behavior Sanitizer" OFF)
 option(BTCPP_ENABLE_TSAN "Enable Thread Sanitizer" OFF)
@@ -300,6 +301,10 @@ endif()
 
 if(BTCPP_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(BTCPP_PYTHON)
+    add_subdirectory(python)
 endif()
 
 ######################################################

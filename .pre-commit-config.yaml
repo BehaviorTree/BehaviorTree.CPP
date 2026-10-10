@@ -62,3 +62,30 @@ repos:
         -   tomli
         args:
             [--toml=./pyproject.toml]
+
+  # Python lint + format (pybt)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.0
+    hooks:
+      - id: ruff
+        files: ^python/
+      - id: ruff-format
+        files: ^python/
+
+  # Python type-check (pybt)
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        files: ^python/src/pybt/
+        additional_dependencies: []
+
+  # No C++ references in pybt user-facing docs/examples (allows READMEs).
+  - repo: local
+    hooks:
+      - id: pybt-no-cpp-refs
+        name: pybt no-C++-refs
+        entry: python python/docs/check_no_cpp_refs.py
+        language: system
+        files: ^python/(src|examples|docs)/
+        pass_filenames: false
