@@ -14,6 +14,7 @@
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/loggers/bt_file_logger_v2.h"
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp/loggers/bt_observer.h"
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 
 #include <array>
@@ -619,4 +620,36 @@ TEST_F(LoggerTest, Logger_DisabledDuringExecution)
   }
 
   ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
+TEST(TreeObserverTest, NodesWithTheSameName)
+{
+  // Two siblings with the same name have the same fullPath()
+  static const char* xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Sequence>
+          <AlwaysSuccess name="step"/>
+          <AlwaysSuccess name="step"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  std::unique_ptr<TreeObserver> observer;
+  ASSERT_NO_THROW(observer = std::make_unique<TreeObserver>(tree));
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+
+  const auto& nodes = tree.subtrees.front()->nodes;
+  ASSERT_EQ(nodes.size(), 3u);
+  EXPECT_EQ(observer->statistics().size(), 3u);
+  EXPECT_EQ(observer->uidToPath().size(), 3u);
+  for(const auto& node : nodes)
+  {
+    EXPECT_EQ(observer->uidToPath().at(node->UID()), node->fullPath());
+    EXPECT_EQ(observer->getStatistics(node->UID()).success_count, 1u);
+  }
+  EXPECT_EQ(observer->pathToUID().at("step"), nodes[1]->UID());
 }

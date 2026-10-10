@@ -25,22 +25,16 @@ TreeObserver::TreeObserver(const BT::Tree& tree) : StatusChangeLogger(tree.rootN
       }
     }
 
-    if(_path_to_uid.count(node.fullPath()) != 0)
-    {
-      throw LogicError("TreeObserver not built correctly. Report issue");
-    }
-    _path_to_uid[node.fullPath()] = node.UID();
+    // Nodes with the same name in the same subtree share the same path:
+    // keep the first one, the others can be found by UID.
+    _path_to_uid.emplace(node.fullPath(), node.UID());
+    _uid_to_path[node.UID()] = node.fullPath();
+    _statistics[node.UID()] = {};
   };
 
   for(const auto& subtree : tree.subtrees)
   {
     recursiveStep(*subtree->nodes.front());
-  }
-
-  for(const auto& [path, uid] : _path_to_uid)
-  {
-    _statistics[uid] = {};
-    _uid_to_path[uid] = path;
   }
 }
 
