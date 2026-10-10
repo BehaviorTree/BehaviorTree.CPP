@@ -1,7 +1,11 @@
 #pragma once
 
 #include "behaviortree_cpp/basic_types.h"
+#ifdef BTCPP_SYSTEM_JSON
+#include <nlohmann/json.hpp>
+#else
 #include "behaviortree_cpp/contrib/json.hpp"
+#endif
 #include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/utils/locked_reference.hpp"
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"

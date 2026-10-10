@@ -50,6 +50,27 @@ jobs:
     - name: run test (Linux)
       run: ctest --test-dir build/${{env.BUILD_TYPE}}
 
+  # USE_VENDORED_JSON=OFF, with the oldest supported nlohmann_json (3.10.5 on 22.04)
+  system-json:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nlohmann-json3-dev libzmq3-dev libsqlite3-dev libgtest-dev
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_VENDORED_JSON=OFF
+
+    - name: Build
+      run: cmake --build build --parallel
+
+    - name: run test
+      run: ctest --test-dir build --output-on-failure
+
   coverage:
     runs-on: ubuntu-24.04
 
