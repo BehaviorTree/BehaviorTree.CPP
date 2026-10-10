@@ -858,11 +858,23 @@ void ImportTreeFromJSON(const nlohmann::json& json, Tree& tree)
     throw std::runtime_error("Number of blackboards don't match:");
   }
 
-  size_t index = 0;
-  for(const auto& [key, array] : json.items())
+  // The JSON object is keyed by subtree name (see ExportTreeToJSON) and is
+  // iterated in alphabetical order, which is unrelated to the order of
+  // tree.subtrees. Look up each blackboard by name, not by position.
+  for(const auto& subtree : tree.subtrees)
   {
-    auto& subtree = tree.subtrees.at(index++);
-    ImportBlackboardFromJSON(array, *subtree->blackboard);
+    auto sub_name = subtree->instance_name;
+    if(sub_name.empty())
+    {
+      sub_name = subtree->tree_ID;
+    }
+    const auto it = json.find(sub_name);
+    if(it == json.end())
+    {
+      throw std::runtime_error(
+          StrCat("ImportTreeFromJSON: missing blackboard of subtree [", sub_name, "]"));
+    }
+    ImportBlackboardFromJSON(*it, *subtree->blackboard);
   }
 }
 
