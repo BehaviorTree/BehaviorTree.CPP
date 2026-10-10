@@ -66,7 +66,7 @@ jobs:
       run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_VENDORED_JSON=OFF
 
     - name: Build
-      run: cmake --build build --parallel
+      run: cmake --build build --parallel $(nproc)
 
     - name: run test
       run: ctest --test-dir build --output-on-failure
