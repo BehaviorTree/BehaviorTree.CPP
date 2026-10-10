@@ -8,8 +8,6 @@
 #include <behaviortree_cpp/bt_factory.h>
 #include <gtest/gtest.h>
 
-#include <behaviortree_cpp/contrib/json.hpp>
-
 namespace
 {
 constexpr auto kHookTreeXml = R"(

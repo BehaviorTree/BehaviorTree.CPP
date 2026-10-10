@@ -15,7 +15,11 @@
 #define BT_FACTORY_H
 
 #include "behaviortree_cpp/behavior_tree.h"
+#ifdef BTCPP_SYSTEM_JSON
+#include <nlohmann/json.hpp>
+#else
 #include "behaviortree_cpp/contrib/json.hpp"
+#endif
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 

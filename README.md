@@ -79,6 +79,11 @@ cmake -S . -B build_release
 cmake --build build_release --parallel
 ```
 
+BT.CPP includes its own copy of [nlohmann/json](https://github.com/nlohmann/json).
+To use the one installed in your system instead (version 3.10 or newer), add `-DUSE_VENDORED_JSON=OFF`.
+Since `nlohmann::json` is part of the public API, everything that links BT.CPP must then be
+compiled with that same version.
+
 If you want to build in a [pixi](https://pixi.sh/) project (conda virtual environment).
 ```
 pixi run build
