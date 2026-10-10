@@ -21,6 +21,7 @@ ControlNode::ControlNode(const std::string& name, const NodeConfig& config)
 
 void ControlNode::addChild(TreeNode* child)
 {
+  child->setParent(this);
   children_nodes_.push_back(child);
 }
 
