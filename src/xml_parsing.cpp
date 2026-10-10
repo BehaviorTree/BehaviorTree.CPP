@@ -607,11 +607,8 @@ void VerifyXML(const std::string& xml_text,
     {
       // use ID for builtin node types, otherwise use the element name
       const auto lookup_name = is_builtin ? ID : name;
-      // Validate model name for custom node types (non-builtin element names)
-      if(!is_builtin)
-      {
-        validateModelName(name, line_number);
-      }
+      // Validate the resolved node type name for both compact and explicit forms.
+      validateModelName(lookup_name, line_number);
       const auto search = registered_nodes.find(lookup_name);
       const bool found = (search != registered_nodes.end());
       if(!found)
