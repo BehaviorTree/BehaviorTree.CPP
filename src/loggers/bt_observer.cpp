@@ -27,7 +27,7 @@ TreeObserver::TreeObserver(const BT::Tree& tree) : StatusChangeLogger(tree.rootN
 
     // Nodes with the same name in the same subtree share the same path:
     // keep the first one, the others can be found by UID.
-    _path_to_uid.emplace(node.fullPath(), node.UID());
+    _path_to_uid.try_emplace(node.fullPath(), node.UID());
     _uid_to_path[node.UID()] = node.fullPath();
     _statistics[node.UID()] = {};
   };
