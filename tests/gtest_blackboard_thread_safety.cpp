@@ -7,6 +7,7 @@
  */
 
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 #include <atomic>
 #include <condition_variable>
@@ -334,6 +335,45 @@ TEST(BlackboardThreadSafety, GetKeysWhileModifying_Bug6)
   t2.join();
 
   SUCCEED();
+}
+
+// SetBlackboardNode::tick() copied Entry::value (and read Entry::info) of the
+// source entry without locking entry_mutex. A concurrent Blackboard::set() on
+// the same entry reassigns the stored Any under entry_mutex, so the unlocked
+// copy races with the destruction of the previous string buffer.
+// Meaningful with ASan/TSan. The strings are longer than the small string
+// buffer, so that the content lives on the heap.
+TEST(BlackboardThreadSafety, SetBlackboardNodeWhileWriting)
+{
+  static const char* xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <SetBlackboard value="{src}" output_key="dst"/>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  auto bb = tree.subtrees.front()->blackboard;
+
+  const std::string prefix = "a_value_that_is_too_long_for_the_small_string_buffer_";
+  bb->set("src", prefix);
+
+  std::atomic_bool stop = false;
+  std::thread writer([&]() {
+    int i = 0;
+    while(!stop)
+    {
+      bb->set("src", prefix + std::to_string(i++ % 8));
+    }
+  });
+
+  for(int i = 0; i < 20000; i++)
+  {
+    tree.tickWhileRunning();
+  }
+  stop = true;
+  writer.join();
 }
 
 // ExportBlackboardToJSON used the StringViews returned by getKeyNames() after the
