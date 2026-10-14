@@ -22,6 +22,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <thread>
 
 #include <gtest/gtest.h>
 
@@ -518,6 +519,59 @@ TEST_F(LoggerTest, SqliteLogger_MultipleTicks)
     SqliteLogger logger(tree, filepath);
 
     for(int i = 0; i < 5; i++)
+    {
+      tree.tickWhileRunning();
+      tree.haltTree();
+    }
+  }
+
+  ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
+// A ThreadedAction completes on its own worker thread, so the logger callback
+// of each instance runs concurrently with the ones invoked by the main thread.
+namespace
+{
+class ConcurrentAction : public BT::ThreadedAction
+{
+public:
+  ConcurrentAction(const std::string& name, const BT::NodeConfig& config)
+    : BT::ThreadedAction(name, config)
+  {}
+
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+
+  BT::NodeStatus tick() override
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+}  // namespace
+
+TEST_F(LoggerTest, SqliteLogger_ConcurrentTransitions)
+{
+  factory.registerNodeType<ConcurrentAction>("ConcurrentAction");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Parallel>
+            <ConcurrentAction name="A"/>
+            <ConcurrentAction name="B"/>
+          </Parallel>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  std::string filepath = test_dir + "/concurrent.db3";
+
+  {
+    SqliteLogger logger(tree, filepath);
+    for(int i = 0; i < 50; i++)
     {
       tree.tickWhileRunning();
       tree.haltTree();

@@ -168,28 +168,8 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
 {
   using namespace std::chrono;
   const int64_t tm_usec = int64_t(duration_cast<microseconds>(timestamp).count());
-  monotonic_timestamp_ = std::max(monotonic_timestamp_ + 1, tm_usec);
-
-  long elapsed_time = 0;
-
-  if(prev_status == NodeStatus::IDLE && status == NodeStatus::RUNNING)
-  {
-    starting_time_[&node] = monotonic_timestamp_;
-  }
-
-  if(prev_status == NodeStatus::RUNNING && status != NodeStatus::RUNNING)
-  {
-    elapsed_time = monotonic_timestamp_;
-    auto it = starting_time_.find(&node);
-    if(it != starting_time_.end())
-    {
-      elapsed_time -= it->second;
-    }
-  }
 
   Transition trans;
-  trans.timestamp = monotonic_timestamp_;
-  trans.duration = elapsed_time;
   trans.node_uid = node.UID();
   trans.status = status;
 
@@ -199,7 +179,31 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
   }
 
   {
+    // This callback may be invoked concurrently from multiple threads
+    // (e.g. two ThreadedAction completing at the same time), so
+    // monotonic_timestamp_ and starting_time_ must be guarded too.
     const std::scoped_lock lk(queue_mutex_);
+    monotonic_timestamp_ = std::max(monotonic_timestamp_ + 1, tm_usec);
+
+    long elapsed_time = 0;
+
+    if(prev_status == NodeStatus::IDLE && status == NodeStatus::RUNNING)
+    {
+      starting_time_[&node] = monotonic_timestamp_;
+    }
+
+    if(prev_status == NodeStatus::RUNNING && status != NodeStatus::RUNNING)
+    {
+      elapsed_time = monotonic_timestamp_;
+      auto it = starting_time_.find(&node);
+      if(it != starting_time_.end())
+      {
+        elapsed_time -= it->second;
+      }
+    }
+
+    trans.timestamp = monotonic_timestamp_;
+    trans.duration = elapsed_time;
     transitions_queue_.push_back(trans);
   }
   queue_cv_.notify_one();
