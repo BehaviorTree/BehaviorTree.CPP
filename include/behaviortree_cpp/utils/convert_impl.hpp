@@ -102,7 +102,11 @@ inline void checkTruncation(const From& from)
     }
     else
     {
-      doesnt_fit = std::abs(static_cast<int64_t>(from)) > static_cast<int64_t>(max_exact);
+      // Negate in unsigned arithmetic: std::abs(INT64_MIN) overflows.
+      const auto value = static_cast<int64_t>(from);
+      const uint64_t magnitude =
+          value < 0 ? 0 - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
+      doesnt_fit = magnitude > max_exact;
     }
     if(doesnt_fit)
     {

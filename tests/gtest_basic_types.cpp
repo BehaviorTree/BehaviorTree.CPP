@@ -148,6 +148,25 @@ TEST(BasicTypes, DoubleToIntBoundary)
   EXPECT_NO_THROW(bb->set("k", in_range));
 }
 
+TEST(BasicTypes, IntToDoubleBoundary)
+{
+  // The precision check must not negate INT64_MIN (signed overflow, undefined
+  // behavior). Its magnitude is above 2^53, so it is rejected like INT64_MAX.
+  EXPECT_ANY_THROW((void)BT::Any(INT64_MIN).cast<double>());
+  EXPECT_ANY_THROW((void)BT::Any(INT64_MAX).cast<double>());
+  EXPECT_EQ(BT::Any(int64_t(-4503599627370496LL)).cast<double>(), -4503599627370496.0);
+
+  // Through Blackboard::set, INT64_MAX rounds up to 2^63 as a double, which must
+  // not be cast back to int64_t. All three extremes are beyond 2^53.
+  auto bb = BT::Blackboard::create();
+  bb->set("d", 1.0);  // lock the entry to double
+  EXPECT_ANY_THROW(bb->set("d", INT64_MAX));
+  EXPECT_ANY_THROW(bb->set("d", UINT64_MAX));
+  EXPECT_ANY_THROW(bb->set("d", INT64_MIN));
+  EXPECT_NO_THROW(bb->set("d", int64_t(1000)));
+  EXPECT_EQ(bb->get<double>("d"), 1000.0);
+}
+
 TEST(BasicTypes, ConvertFromString_Bool)
 {
   ASSERT_TRUE(convertFromString<bool>("true"));

@@ -259,6 +259,12 @@ inline bool ValidCast(const SRC& val)
       {
         // For integral to float, check if we can represent the value exactly
         TO as_float = static_cast<TO>(val);
+        // as_float can round up to 2^digits (e.g. INT64_MAX -> 2^63), one past
+        // the max of SRC. Casting that back to SRC would overflow.
+        if(as_float >= std::ldexp(TO(1), std::numeric_limits<SRC>::digits))
+        {
+          return false;
+        }
         SRC back_conv = static_cast<SRC>(as_float);
         return back_conv == val;
       }
