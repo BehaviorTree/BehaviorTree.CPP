@@ -670,6 +670,26 @@ TEST(ParserTest, UnaryOperators)
   EXPECT_EQ(Parse("10 + -3").value().cast<double>(), 7.0);
 }
 
+TEST(ParserTest, BitwiseComplementRejectsNonIntegers)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  // The operand was cast to int64_t after a hand-written range check that
+  // accepted NaN and exactly 2^63 (undefined conversion, reported by UBSan)
+  // and silently truncated fractional values.
+  EXPECT_FALSE(Parse("~(0.0 / 0.0)").has_value());
+  EXPECT_FALSE(Parse("~9223372036854775808.0").has_value());  // 2^63
+  EXPECT_FALSE(Parse("~1.5").has_value());
+  EXPECT_FALSE(Parse("~(1.0 / 0.0)").has_value());
+
+  // Integral values, including the int64_t boundaries, still work.
+  EXPECT_EQ(Parse("~0").value().cast<int64_t>(), ~int64_t(0));
+  EXPECT_EQ(Parse("~(2 * 3)").value().cast<int64_t>(), ~int64_t(6));
+  EXPECT_EQ(Parse("~-9223372036854775808.0").value().cast<double>(),
+            static_cast<double>(~std::numeric_limits<int64_t>::min()));
+}
+
 TEST(ParserTest, TernaryExpressions)
 {
   BT::Ast::Environment env = { BT::Blackboard::create(), {} };
