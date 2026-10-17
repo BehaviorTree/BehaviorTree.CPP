@@ -3,6 +3,9 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 
+#include <limits>
+#include <type_traits>
+
 // Use the version of nlohmann::json embedded in BT.CPP,
 // or the system one if BT.CPP was built with USE_VENDORED_JSON=OFF
 #ifdef BTCPP_SYSTEM_JSON
@@ -248,6 +251,45 @@ template <typename T>
 inline void RegisterJsonDefinition()
 {
   JsonExporter::get().addConverter<T>();
+}
+
+/**
+ * @brief Read a JSON integer that must be representable as T.
+ *
+ * json.get<T>() converts a floating point value or an out-of-range integer
+ * with a plain static_cast, which truncates, wraps, or (for a value outside
+ * the range of T) is undefined behavior. This throws RuntimeError instead.
+ */
+template <typename T>
+[[nodiscard]] inline T JsonToInteger(const nlohmann::json& value)
+{
+  static_assert(std::is_integral_v<T> && !std::is_same_v<T, bool>);
+  if(value.is_number_unsigned())
+  {
+    const auto number = value.get<uint64_t>();
+    if(number <= static_cast<uint64_t>(std::numeric_limits<T>::max()))
+    {
+      return static_cast<T>(number);
+    }
+  }
+  else if(value.is_number_integer())
+  {
+    const auto number = value.get<int64_t>();
+    if constexpr(std::is_signed_v<T>)
+    {
+      if(number >= static_cast<int64_t>(std::numeric_limits<T>::min()) &&
+         number <= static_cast<int64_t>(std::numeric_limits<T>::max()))
+      {
+        return static_cast<T>(number);
+      }
+    }
+    else if(number >= 0 && static_cast<uint64_t>(number) <= std::numeric_limits<T>::max())
+    {
+      return static_cast<T>(number);
+    }
+  }
+  throw RuntimeError(StrCat("JSON value [", value.dump(), "] is not an integer of type ",
+                            BT::demangle(typeid(T))));
 }
 
 }  // namespace BT

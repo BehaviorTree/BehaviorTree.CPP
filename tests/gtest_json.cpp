@@ -271,6 +271,52 @@ TEST_F(JsonTest, VectorInteger)
   }
 }
 
+TEST_F(JsonTest, IntegerValuesAreRangeChecked)
+{
+  using nlohmann::json;
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
+
+  ASSERT_EQ(BT::JsonToInteger<int>(json(-7)), -7);
+  ASSERT_EQ(BT::JsonToInteger<uint16_t>(json(65535)), 65535);
+  ASSERT_EQ(BT::JsonToInteger<int64_t>(json(INT64_MIN)), INT64_MIN);
+  ASSERT_EQ(BT::JsonToInteger<uint64_t>(json(UINT64_MAX)), UINT64_MAX);
+  ASSERT_THROW(std::ignore = BT::JsonToInteger<uint16_t>(json(65536)), BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::JsonToInteger<uint16_t>(json(-1)), BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::JsonToInteger<int>(json(2.5)), BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::JsonToInteger<int>(json(1e300)), BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::JsonToInteger<int>(json(true)), BT::RuntimeError);
+
+  // The type of the array is taken from the first element. The other elements
+  // used to be truncated, wrapped, or cast out of range (undefined behavior).
+  for(const char* text :
+      { "[1, 2.5]", "[1, 1e300]", "[1, 5000000000]", "[1, -3000000000]" })
+  {
+    ASSERT_THROW(std::ignore = exporter.fromJson(json::parse(text)), BT::RuntimeError)
+        << text;
+    auto bb = BT::Blackboard::create();
+    ASSERT_THROW(BT::ImportBlackboardFromJSON(
+                     json::parse(R"({"v":)" + std::string(text) + "}"), *bb),
+                 BT::RuntimeError)
+        << text;
+  }
+  auto result = exporter.fromJson(json::parse("[1, -2, 2147483647]"));
+  ASSERT_TRUE(result) << result.error();
+  ASSERT_EQ(result->first.cast<std::vector<int>>(),
+            (std::vector<int>{ 1, -2, 2147483647 }));
+
+  // Same for the "json:" prefix of a std::vector<int> port
+  ASSERT_EQ(BT::convertFromString<std::vector<int>>("json:[3, -4]"),
+            (std::vector<int>{ 3, -4 }));
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:[1e300]"),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:[1.5]"),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:[4294967297]"),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:{\"a\":1}"),
+               BT::RuntimeError);
+}
+
 TEST_F(JsonTest, VectorSring)
 {
   BT::JsonExporter& exporter = BT::JsonExporter::get();

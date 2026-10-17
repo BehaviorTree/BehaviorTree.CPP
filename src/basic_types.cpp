@@ -309,7 +309,18 @@ std::vector<int> convertFromString<std::vector<int>>(StringView str)
   if(StartWith(str, "json:"))
   {
     str.remove_prefix(5);
-    return nlohmann::json::parse(str).get<std::vector<int>>();
+    const auto json = nlohmann::json::parse(str);
+    if(!json.is_array())
+    {
+      throw RuntimeError(StrCat("Can't convert string [", str, "] to std::vector<int>"));
+    }
+    std::vector<int> output;
+    output.reserve(json.size());
+    for(const auto& element : json)
+    {
+      output.push_back(JsonToInteger<int>(element));
+    }
+    return output;
   }
   auto parts = splitString(str, ';');
   std::vector<int> output;

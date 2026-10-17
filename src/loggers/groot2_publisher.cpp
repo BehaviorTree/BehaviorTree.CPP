@@ -352,8 +352,9 @@ void Groot2Publisher::serverLoop()
           }
 
           auto InsertHook = [this](nlohmann::json const& json) {
-            uint16_t const node_uid = json.at("uid").get<uint16_t>();
-            Position const pos = static_cast<Position>(json.at("position").get<int>());
+            uint16_t const node_uid = JsonToInteger<uint16_t>(json.at("uid"));
+            int const position = JsonToInteger<int>(json.at("position"));
+            Position const pos = static_cast<Position>(position);
 
             if(auto hook = getHook(pos, node_uid))
             {
@@ -403,9 +404,9 @@ void Groot2Publisher::serverLoop()
           }
 
           auto json = nlohmann::json::parse(requestMsg[1].to_string());
-          const uint16_t node_uid = json.at("uid").get<uint16_t>();
+          const uint16_t node_uid = JsonToInteger<uint16_t>(json.at("uid"));
           const std::string status_str = json.at("desired_status").get<std::string>();
-          auto position = static_cast<Position>(json.at("position").get<int>());
+          auto position = static_cast<Position>(JsonToInteger<int>(json.at("position")));
           const bool remove = json.at("remove_when_done").get<bool>();
 
           NodeStatus desired_status = NodeStatus::SKIPPED;
@@ -444,8 +445,8 @@ void Groot2Publisher::serverLoop()
           }
 
           auto json = nlohmann::json::parse(requestMsg[1].to_string());
-          const uint16_t node_uid = json.at("uid").get<uint16_t>();
-          auto position = static_cast<Position>(json.at("position").get<int>());
+          const uint16_t node_uid = JsonToInteger<uint16_t>(json.at("uid"));
+          auto position = static_cast<Position>(JsonToInteger<int>(json.at("position")));
 
           if(!removeHook(position, node_uid))
           {

@@ -116,8 +116,14 @@ JsonExporter::ExpectedEntry JsonExporter::fromJson(const nlohmann::json& source)
     }
     if(first_element.is_number_integer())
     {
-      return Entry{ BT::Any(source.get<std::vector<int>>()),
-                    BT::TypeInfo::Create<std::vector<int>>() };
+      // the type comes from the first element only: check every element
+      std::vector<int> values;
+      values.reserve(source.size());
+      for(const auto& element : source)
+      {
+        values.push_back(JsonToInteger<int>(element));
+      }
+      return Entry{ BT::Any(values), BT::TypeInfo::Create<std::vector<int>>() };
     }
     if(first_element.is_number_float())
     {
