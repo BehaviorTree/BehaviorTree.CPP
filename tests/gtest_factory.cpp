@@ -1,6 +1,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -776,4 +777,19 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
 
   BehaviorTreeFactory factory;
   EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, TooManyNodesForUID)
+{
+  // UIDs are 16 bits wide. Past 65535 nodes the counter used to wrap around
+  // and the next nodes got the same UID (and path) as the first ones.
+  Tree tree;
+  std::set<uint16_t> uids;
+  for(int i = 0; i < 65535; i++)
+  {
+    uids.insert(tree.getUID());
+  }
+  EXPECT_EQ(uids.size(), 65535u);
+  EXPECT_EQ(uids.count(0), 0u);
+  EXPECT_THROW((void)tree.getUID(), RuntimeError);
 }
