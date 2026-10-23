@@ -113,6 +113,65 @@ void Blackboard::enableAutoRemapping(bool remapping)
   autoremapping_ = remapping;
 }
 
+std::shared_ptr<Blackboard::EntryUpdatedSignal>
+Blackboard::getUpdateSignal(const std::string& key, bool create)
+{
+  if(StartWith(key, '@'))
+  {
+    return rootBlackboard()->getUpdateSignal(key.substr(1), create);
+  }
+
+  std::unique_lock lock(storage_mutex_);
+  // Match getEntry(): an existing local entry takes precedence over remapping.
+  if(storage_.find(key) == storage_.end())
+  {
+    if(auto parent = parent_bb_.lock())
+    {
+      auto it = internal_to_external_.find(key);
+      if(it != internal_to_external_.end())
+      {
+        const auto remapped_key = it->second;
+        lock.unlock();
+        return parent->getUpdateSignal(remapped_key, create);
+      }
+      if(autoremapping_ && !IsPrivateKey(key))
+      {
+        lock.unlock();
+        return parent->getUpdateSignal(key, create);
+      }
+    }
+  }
+  if(auto it = update_signals_.find(key); it != update_signals_.end())
+  {
+    return it->second;
+  }
+  if(!create)
+  {
+    return {};
+  }
+  auto signal = std::make_shared<EntryUpdatedSignal>();
+  update_signals_.emplace(key, signal);
+  return signal;
+}
+
+Blackboard::EntryUpdatedSubscriber
+Blackboard::subscribeToEntry(const std::string& key, EntryUpdatedCallback callback)
+{
+  if(!callback)
+  {
+    throw LogicError("subscribeToEntry(): empty callback");
+  }
+  return getUpdateSignal(key, true)->subscribe(std::move(callback));
+}
+
+void Blackboard::notifyEntryUpdated(const std::string& key)
+{
+  if(auto signal = getUpdateSignal(key, false))
+  {
+    signal->notify();
+  }
+}
+
 AnyPtrLocked Blackboard::getAnyLocked(const std::string& key)
 {
   if(auto entry = getEntry(key))
@@ -380,6 +439,12 @@ void Blackboard::cloneInto(Blackboard& dst) const
       }
     }
   }
+  // Publish only after the complete snapshot has been restored and all locks
+  // released, so callbacks can read other restored entries as well.
+  for(const auto& task : tasks)
+  {
+    dst.notifyEntryUpdated(task.key);
+  }
 }
 
 Blackboard::Ptr Blackboard::parent()
@@ -490,8 +555,11 @@ void ImportBlackboardFromJSON(const nlohmann::json& json, Blackboard& blackboard
         entry = blackboard.getEntry(it.key());
       }
       // Lock entry_mutex before writing to prevent data races (BUG-4 fix).
-      std::scoped_lock lk(entry->entry_mutex);
-      entry->value = res->first;
+      {
+        std::scoped_lock lk(entry->entry_mutex);
+        entry->value = res->first;
+      }
+      blackboard.notifyEntryUpdated(it.key());
     }
   }
 }

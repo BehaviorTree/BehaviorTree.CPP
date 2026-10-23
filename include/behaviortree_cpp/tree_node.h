@@ -214,6 +214,19 @@ public:
   [[nodiscard]] StatusChangeSubscriber
   subscribeToStatusChange(StatusChangeCallback callback);
 
+  /** Subscribe to writes to the blackboard key backing an input port.
+   * Unlike providedPorts(), this is an instance method: a callback may use
+   * node-specific state and getInput(). Retain the returned handle for as long
+   * as the callback should remain active. See Blackboard::subscribeToEntry()
+   * for threading and lifetime requirements.
+   *
+   * Constant inputs return an empty handle. Missing inputs, output-only ports
+   * and empty callbacks throw LogicError. Defaults and {=} remapping are
+   * supported. Changing the port mapping later does not rebind subscriptions.
+   */
+  [[nodiscard]] Blackboard::EntryUpdatedSubscriber
+  subscribeToInputPort(const std::string& key, Blackboard::EntryUpdatedCallback callback);
+
   /** This method attaches to the TreeNode a callback with signature:
      *
      *     NodeStatus callback(TreeNode& node)

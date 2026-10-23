@@ -330,6 +330,55 @@ TreeNode::subscribeToStatusChange(TreeNode::StatusChangeCallback callback)
   return _p->state_change_signal.subscribe(std::move(callback));
 }
 
+Blackboard::EntryUpdatedSubscriber TreeNode::subscribeToInputPort(
+    const std::string& key, Blackboard::EntryUpdatedCallback callback)
+{
+  if(!callback)
+  {
+    throw LogicError("subscribeToInputPort(): empty callback");
+  }
+  const PortInfo* info = nullptr;
+  if(config().manifest != nullptr)
+  {
+    auto it = config().manifest->ports.find(key);
+    if(it == config().manifest->ports.end() ||
+       it->second.direction() == PortDirection::OUTPUT)
+    {
+      throw LogicError("subscribeToInputPort(): not an input port [", key, "]");
+    }
+    info = &it->second;
+  }
+
+  std::string mapping;
+  if(auto it = config().input_ports.find(key); it != config().input_ports.end())
+  {
+    mapping = it->second;
+  }
+  else if(info != nullptr && !info->defaultValue().empty())
+  {
+    if(!info->defaultValue().isString())
+    {
+      return {};
+    }
+    mapping = info->defaultValue().cast<std::string>();
+  }
+  else
+  {
+    throw LogicError("subscribeToInputPort(): missing input [", key, "]");
+  }
+
+  if(auto remapped_key = getRemappedKey(key, mapping))
+  {
+    if(!config().blackboard)
+    {
+      throw LogicError("subscribeToInputPort(): invalid blackboard");
+    }
+    return config().blackboard->subscribeToEntry(std::string(*remapped_key),
+                                                 std::move(callback));
+  }
+  return {};
+}
+
 void TreeNode::setPreTickFunction(PreTickCallback callback)
 {
   const std::unique_lock lk(_p->callback_injection_mutex);

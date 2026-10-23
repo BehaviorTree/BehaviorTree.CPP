@@ -10,6 +10,7 @@
 #include "behaviortree_cpp/utils/locked_reference.hpp"
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 #include "behaviortree_cpp/utils/safe_any.hpp"
+#include "behaviortree_cpp/utils/thread_safe_signal.h"
 
 #include <memory>
 #include <mutex>
@@ -39,6 +40,9 @@ class Blackboard
 {
 public:
   using Ptr = std::shared_ptr<Blackboard>;
+  using EntryUpdatedSignal = ThreadSafeSignal<>;
+  using EntryUpdatedSubscriber = EntryUpdatedSignal::Subscriber;
+  using EntryUpdatedCallback = EntryUpdatedSignal::CallableFunction;
 
 protected:
   // This is intentionally protected. Use Blackboard::create instead
@@ -119,6 +123,27 @@ public:
   template <typename T>
   void set(const std::string& key, const T& value);
 
+  /** Subscribe to successful writes to a key, including its first assignment.
+   * Subtree remapping and root keys are resolved at subscription time.
+   * The subscription survives unset()/set() of the same key. No initial
+   * notification is sent, and assigning the same value still notifies.
+   *
+   * Callbacks run synchronously on the writer's thread, outside blackboard
+   * locks, and may read the latest value. Concurrent writers may invoke a
+   * callback concurrently; intermediate values are not retained. Exceptions
+   * propagate to the writer after the value has been stored.
+   * Resetting the handle prevents future calls but does not wait for a call
+   * already in progress. Stop writers before destroying callback targets.
+   */
+  [[nodiscard]] EntryUpdatedSubscriber subscribeToEntry(const std::string& key,
+                                                        EntryUpdatedCallback callback);
+
+  /** Notify subscribers after directly modifying an entry. Release its lock
+   * before calling this function. Raw Entry/AnyPtrLocked mutations do not
+   * notify automatically; set(), scripts, JSON import and cloneInto() do.
+   */
+  void notifyEntryUpdated(const std::string& key);
+
   void unset(const std::string& key);
 
   [[nodiscard]] const TypeInfo* entryInfo(const std::string& key);
@@ -190,10 +215,14 @@ public:
 private:
   mutable std::shared_mutex storage_mutex_;
   std::unordered_map<std::string, std::shared_ptr<Entry>> storage_;
+  std::unordered_map<std::string, std::shared_ptr<EntryUpdatedSignal>> update_signals_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
 
   std::shared_ptr<Entry> createEntryImpl(const std::string& key, const TypeInfo& info);
+
+  std::shared_ptr<EntryUpdatedSignal> getUpdateSignal(const std::string& key,
+                                                      bool create);
 
   bool autoremapping_ = false;
 
@@ -326,7 +355,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     // if the type is the same or not.
     Entry& entry = *entry_ptr;
 
-    std::scoped_lock scoped_lock(entry.entry_mutex);
+    std::unique_lock scoped_lock(entry.entry_mutex);
 
     Any& previous_any = entry.value;
     Any new_value(value);
@@ -339,6 +368,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
       entry.sequence_id++;
       entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
       previous_any = std::move(new_value);
+      scoped_lock.unlock();
+      notifyEntryUpdated(key);
       return;
     }
 
@@ -394,6 +425,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     entry.sequence_id++;
     entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
   }
+  notifyEntryUpdated(key);
 }
 
 template <typename T>
