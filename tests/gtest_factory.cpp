@@ -361,6 +361,24 @@ TEST(
   ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesItself)
+{
+  BehaviorTreeFactory factory;
+
+  // must throw instead of recursing until the stack overflows
+  std::string path = FilePath("trees/include_self.xml");
+  EXPECT_THROW(auto tree = factory.createTreeFromFile(path), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWithIncludeCycle)
+{
+  BehaviorTreeFactory factory;
+
+  // include_cycle_a.xml includes child/include_cycle_b.xml, which includes it back
+  std::string path = FilePath("trees/include_cycle_a.xml");
+  EXPECT_THROW(auto tree = factory.createTreeFromFile(path), RuntimeError);
+}
+
 TEST(BehaviorTreeFactory, WrongTreeName)
 {
   const char* xmlA = R"(

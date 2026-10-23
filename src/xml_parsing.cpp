@@ -234,7 +234,8 @@ struct XMLParser::PImpl
   void getPortsRecursively(const XMLElement* element,
                            std::vector<std::string>& output_ports);
 
-  void loadDocImpl(XMLDocument* doc, bool add_includes);
+  void loadDocImpl(XMLDocument* doc, bool add_includes,
+                   std::unordered_set<std::string>& ancestors);
 
   std::list<std::unique_ptr<XMLDocument> > opened_documents;
   std::map<std::string, const XMLElement*> tree_roots;
@@ -290,7 +291,10 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
 
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
 
-  _p->loadDocImpl(doc, add_includes);
+  std::unordered_set<std::string> ancestors = {
+    std::filesystem::weakly_canonical(filepath).string()
+  };
+  _p->loadDocImpl(doc, add_includes, ancestors);
 }
 
 void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
@@ -300,7 +304,8 @@ void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
   XMLDocument* doc = _p->opened_documents.back().get();
   doc->Parse(xml_text.c_str(), xml_text.size());
 
-  _p->loadDocImpl(doc, add_includes);
+  std::unordered_set<std::string> ancestors;
+  _p->loadDocImpl(doc, add_includes, ancestors);
 }
 
 std::vector<std::string> XMLParser::registeredBehaviorTrees() const
@@ -333,7 +338,8 @@ void BT::XMLParser::PImpl::loadSubtreeModel(const XMLElement* xml_root)
   }
 }
 
-void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
+void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes,
+                                   std::unordered_set<std::string>& ancestors)
 {
   if(doc->Error())
   {
@@ -414,6 +420,15 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       file_path = current_path / file_path;
     }
 
+    // A file that includes itself, directly or through other files, would
+    // otherwise be loaded again and again until the stack overflows.
+    const std::string include_key = std::filesystem::weakly_canonical(file_path).string();
+    if(!ancestors.insert(include_key).second)
+    {
+      throw RuntimeError("Recursive <include> detected: file '", file_path.string(),
+                         "' includes itself (directly or indirectly)");
+    }
+
     opened_documents.push_back(std::make_unique<XMLDocument>());
     XMLDocument* next_doc = opened_documents.back().get();
 
@@ -422,10 +437,11 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
     current_path = std::filesystem::absolute(file_path.parent_path());
 
     next_doc->LoadFile(file_path.string().c_str());
-    loadDocImpl(next_doc, add_includes);
+    loadDocImpl(next_doc, add_includes, ancestors);
 
     // reset current path to the previous value
     current_path = previous_path;
+    ancestors.erase(include_key);
   }
 
   // Collect the names of all nodes registered with the behavior tree factory

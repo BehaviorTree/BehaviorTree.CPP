@@ -1,0 +1,7 @@
+<root BTCPP_format="4" main_tree_to_execute = "IncludeSelf">
+  <include path="include_self.xml" />
+
+  <BehaviorTree ID="IncludeSelf">
+    <AlwaysSuccess />
+  </BehaviorTree>
+</root>

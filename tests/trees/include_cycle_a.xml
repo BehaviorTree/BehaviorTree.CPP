@@ -1,0 +1,10 @@
+<root BTCPP_format="4" main_tree_to_execute = "IncludeCycleA">
+  <include path="child/include_cycle_b.xml" />
+
+  <BehaviorTree ID="IncludeCycleA">
+    <Sequence>
+      <SubTree ID="IncludeCycleB" />
+      <AlwaysSuccess />
+    </Sequence>
+  </BehaviorTree>
+</root>
