@@ -173,6 +173,37 @@ TEST(Groot2PublisherIntegration, IncompleteHookRequestDoesNotTerminateServer)
   EXPECT_EXIT(incompleteHookScenario(), ::testing::ExitedWithCode(EXIT_SUCCESS), ".*");
 }
 
+TEST(Groot2PublisherIntegration, BindToLoopbackAddress)
+{
+  BT::BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>
+)");
+  auto [publisher, port] = Groot2Test::makePublisher(tree, "127.0.0.1");
+  Groot2Test::Client client(port);
+
+  auto reply = client.request(BT::Monitor::RequestType::FULLTREE);
+  ASSERT_EQ(reply.size(), 2);
+  EXPECT_NE(reply[1].to_string().find("MainTree"), std::string::npos);
+}
+
+TEST(Groot2PublisherIntegration, InvalidBindAddressThrows)
+{
+  BT::BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>
+)");
+  EXPECT_THROW(BT::Groot2Publisher(tree, 1667, "not-an-interface"), zmq::error_t);
+}
+
 TEST(Groot2PublisherIntegration, BlackboardDump_NoRootWithoutExternalBlackboard)
 {
   BT::BehaviorTreeFactory factory;
