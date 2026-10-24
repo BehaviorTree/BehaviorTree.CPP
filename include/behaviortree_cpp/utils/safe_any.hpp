@@ -453,12 +453,10 @@ inline nonstd::expected<T, std::string> Any::stringToNumber() const
 #else
   try
   {
-    if constexpr(std::is_same_v<T, uint16_t>)
-    {
-      return std::stoul(str.toStdString());
-    }
     if constexpr(std::is_integral_v<T>)
     {
+      // convert<T>() rejects values that don't fit in T, matching the
+      // std::from_chars branch above.
       const int64_t val = std::stol(str.toStdString());
       Any temp_any(val);
       return temp_any.convert<T>();
