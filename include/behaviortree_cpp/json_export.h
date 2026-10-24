@@ -112,19 +112,33 @@ public:
    *
    * @param to_json the function with signature void(const T&, nlohmann::json&)
    * @param add_type if true, add a field called [__type] with the name of the type.
+   * @param type_name the name stored in [__type]. If empty, the demangled name of T
+   *        is used. Pass the same name to the from_json overload.
    */
   template <typename T>
   void addConverter(std::function<void(const T&, nlohmann::json&)> to_json,
-                    bool add_type = true);
+                    bool add_type = true, const std::string& type_name = {});
+
+  /// Same as above with add_type = true. Without this overload, a string literal
+  /// passed as second argument would silently convert to add_type.
+  template <typename T>
+  void addConverter(std::function<void(const T&, nlohmann::json&)> to_json,
+                    const char* type_name)
+  {
+    addConverter<T>(std::move(to_json), true, type_name);
+  }
 
   /**
    * @brief addConverter register a from_json function that converts a json to a type T.
    * The conversions from std::vector<T> is automatically registered.
    *
    * @param from_json the function with signature void(const nlohmann::json&, T&)
+   * @param type_name an additional name of T accepted in the field [__type]. The
+   *        demangled name of T is always accepted.
    */
   template <typename T>
-  void addConverter(std::function<void(const nlohmann::json&, T&)> from_json);
+  void addConverter(std::function<void(const nlohmann::json&, T&)> from_json,
+                    const std::string& type_name = {});
 
 private:
   using ToJonConverter = std::function<void(const BT::Any&, nlohmann::json&)>;
@@ -196,14 +210,16 @@ inline void JsonExporter::addConverter()
 }
 
 template <typename T>
-inline void JsonExporter::addConverter(
-    std::function<void(const T&, nlohmann::json&)> func, bool add_type)
+inline void
+JsonExporter::addConverter(std::function<void(const T&, nlohmann::json&)> func,
+                           bool add_type, const std::string& type_name)
 {
-  auto converter = [func, add_type](const BT::Any& entry, nlohmann::json& json) {
+  const std::string name = type_name.empty() ? BT::demangle(typeid(T)) : type_name;
+  auto converter = [func, add_type, name](const BT::Any& entry, nlohmann::json& json) {
     func(entry.cast<T>(), json);
     if(add_type)
     {
-      json["__type"] = BT::demangle(typeid(T));
+      json["__type"] = name;
     }
   };
   //---------------------------------------------
@@ -222,8 +238,8 @@ inline void JsonExporter::addConverter(
 }
 
 template <typename T>
-inline void
-JsonExporter::addConverter(std::function<void(const nlohmann::json&, T&)> func)
+inline void JsonExporter::addConverter(
+    std::function<void(const nlohmann::json&, T&)> func, const std::string& type_name)
 {
   auto converter = [func](const nlohmann::json& json) -> Entry {
     T tmp;
@@ -231,6 +247,10 @@ JsonExporter::addConverter(std::function<void(const nlohmann::json&, T&)> func)
     return { BT::Any(tmp), BT::TypeInfo::Create<T>() };
   };
   type_names_.insert({ BT::demangle(typeid(T)), BT::TypeInfo::Create<T>() });
+  if(!type_name.empty())
+  {
+    type_names_.insert({ type_name, BT::TypeInfo::Create<T>() });
+  }
   from_json_converters_.insert({ typeid(T), std::move(converter) });
   //---------------------------------------------
   // add the vector<T> converter

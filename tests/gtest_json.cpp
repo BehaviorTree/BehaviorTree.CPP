@@ -48,6 +48,11 @@ struct Time
   uint32_t nsec;
 };
 
+struct Temperature
+{
+  double celsius = 0;
+};
+
 // NOLINTBEGIN(misc-use-internal-linkage)
 BT_JSON_CONVERTER(Vector3D, v)
 {
@@ -81,6 +86,16 @@ inline void jsonToTime(const nlohmann::json& j, Time& t)
   double sec = j["stamp"];
   t.sec = static_cast<uint32_t>(sec);
   t.nsec = static_cast<uint32_t>((sec - t.sec) * 1e9);
+}
+
+inline void jsonFromTemperature(const Temperature& t, nlohmann::json& j)
+{
+  j["celsius"] = t.celsius;
+}
+
+inline void jsonToTemperature(const nlohmann::json& j, Temperature& t)
+{
+  t.celsius = j["celsius"];
 }
 // NOLINTEND(misc-use-internal-linkage)
 
@@ -175,6 +190,46 @@ TEST_F(JsonTest, CustomTime)
     ASSERT_EQ(stamp.sec, stamp_out->sec);
     ASSERT_EQ(stamp.nsec, stamp_out->nsec);
   }
+}
+
+// Issue #877: the name stored in "__type" can be chosen when registering lambdas
+TEST_F(JsonTest, CustomTypeName)
+{
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
+  const std::string name = "Temperature";
+  // a string literal as second argument is the type name, not add_type
+  using TestTypes::Temperature;
+  exporter.addConverter<Temperature>(TestTypes::jsonFromTemperature, "Temperature");
+  exporter.addConverter<TestTypes::Temperature>(TestTypes::jsonToTemperature, name);
+
+  TestTypes::Temperature temp = { 21.5 };
+  nlohmann::json json;
+  ASSERT_TRUE(exporter.toJson(BT::Any(temp), json));
+  ASSERT_EQ(json["__type"], name);
+
+  auto res = exporter.fromJson<TestTypes::Temperature>(json);
+  ASSERT_TRUE(res) << res.error();
+  ASSERT_EQ(res->celsius, 21.5);
+
+  // the demangled name is still accepted
+  json["__type"] = BT::demangle(typeid(TestTypes::Temperature));
+  ASSERT_TRUE(exporter.fromJson<TestTypes::Temperature>(json));
+
+  // vectors use the same name
+  std::vector<TestTypes::Temperature> temps = { { 1.5 }, { 2.5 } };
+  nlohmann::json json_vec;
+  ASSERT_TRUE(exporter.toJson(BT::Any(temps), json_vec));
+  ASSERT_EQ(json_vec[1]["__type"], name);
+
+  auto res_vec = exporter.fromJson<std::vector<TestTypes::Temperature>>(json_vec);
+  ASSERT_TRUE(res_vec) << res_vec.error();
+  ASSERT_EQ(res_vec->size(), 2u);
+  ASSERT_EQ((*res_vec)[1].celsius, 2.5);
+
+  // without a name, the demangled name of the type is used
+  TestTypes::Time stamp = { 3, 8000000 };
+  ASSERT_TRUE(exporter.toJson(BT::Any(stamp), json));
+  ASSERT_EQ(json["__type"], BT::demangle(typeid(TestTypes::Time)));
 }
 
 TEST_F(JsonTest, ConvertFromString)
