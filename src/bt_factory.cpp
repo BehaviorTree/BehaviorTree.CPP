@@ -571,7 +571,8 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
       if(test_config.contains("async_delay"))
       {
         config.async_delay =
-            std::chrono::milliseconds(JsonToInteger<int>(test_config["async_delay"]));
+            std::chrono::milliseconds(details::JsonToInteger<int>(test_config["async_"
+                                                                              "delay"]));
       }
       if(test_config.contains("post_script"))
       {

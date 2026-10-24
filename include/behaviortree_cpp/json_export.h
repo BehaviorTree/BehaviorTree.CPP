@@ -253,17 +253,26 @@ inline void RegisterJsonDefinition()
   JsonExporter::get().addConverter<T>();
 }
 
+namespace details
+{
 /**
- * @brief Read a JSON integer that must be representable as T.
+ * @brief Read a JSON number that must be representable as the integer T.
+ * Internal helper, not part of the public API.
  *
  * json.get<T>() converts a floating point value or an out-of-range integer
  * with a plain static_cast, which truncates, wraps, or (for a value outside
  * the range of T) is undefined behavior. This throws RuntimeError instead.
+ * A floating point value with no fractional part (e.g. 100.0) is accepted,
+ * like Any::cast<T>() does.
  */
 template <typename T>
 [[nodiscard]] inline T JsonToInteger(const nlohmann::json& value)
 {
   static_assert(std::is_integral_v<T> && !std::is_same_v<T, bool>);
+  const auto not_an_integer = [&value]() {
+    return RuntimeError(StrCat("JSON value [", value.dump(),
+                               "] is not an integer of type ", BT::demangle(typeid(T))));
+  };
   if(value.is_number_unsigned())
   {
     const auto number = value.get<uint64_t>();
@@ -288,9 +297,22 @@ template <typename T>
       return static_cast<T>(number);
     }
   }
-  throw RuntimeError(StrCat("JSON value [", value.dump(), "] is not an integer of type ",
-                            BT::demangle(typeid(T))));
+  else if(value.is_number_float())
+  {
+    const auto number = value.get<double>();
+    try
+    {
+      SafeAny::details::checkTruncation<double, T>(number);
+      return static_cast<T>(number);
+    }
+    catch(const std::runtime_error&)
+    {
+      throw not_an_integer();
+    }
+  }
+  throw not_an_integer();
 }
+}  // namespace details
 
 }  // namespace BT
 

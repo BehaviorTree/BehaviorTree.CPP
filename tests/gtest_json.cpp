@@ -276,15 +276,32 @@ TEST_F(JsonTest, IntegerValuesAreRangeChecked)
   using nlohmann::json;
   BT::JsonExporter& exporter = BT::JsonExporter::get();
 
-  ASSERT_EQ(BT::JsonToInteger<int>(json(-7)), -7);
-  ASSERT_EQ(BT::JsonToInteger<uint16_t>(json(65535)), 65535);
-  ASSERT_EQ(BT::JsonToInteger<int64_t>(json(INT64_MIN)), INT64_MIN);
-  ASSERT_EQ(BT::JsonToInteger<uint64_t>(json(UINT64_MAX)), UINT64_MAX);
-  ASSERT_THROW(std::ignore = BT::JsonToInteger<uint16_t>(json(65536)), BT::RuntimeError);
-  ASSERT_THROW(std::ignore = BT::JsonToInteger<uint16_t>(json(-1)), BT::RuntimeError);
-  ASSERT_THROW(std::ignore = BT::JsonToInteger<int>(json(2.5)), BT::RuntimeError);
-  ASSERT_THROW(std::ignore = BT::JsonToInteger<int>(json(1e300)), BT::RuntimeError);
-  ASSERT_THROW(std::ignore = BT::JsonToInteger<int>(json(true)), BT::RuntimeError);
+  ASSERT_EQ(BT::details::JsonToInteger<int>(json(-7)), -7);
+  ASSERT_EQ(BT::details::JsonToInteger<uint16_t>(json(65535)), 65535);
+  ASSERT_EQ(BT::details::JsonToInteger<int64_t>(json(INT64_MIN)), INT64_MIN);
+  ASSERT_EQ(BT::details::JsonToInteger<uint64_t>(json(UINT64_MAX)), UINT64_MAX);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<uint16_t>(json(65536)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<uint16_t>(json(-1)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(2.5)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(1e300)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(true)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(std::nan(""))),
+               BT::RuntimeError);
+  // A floating point value with no fractional part converts, like Any::cast<int>()
+  ASSERT_EQ(BT::details::JsonToInteger<int>(json(100.0)), 100);
+  ASSERT_EQ(BT::details::JsonToInteger<int>(json(-3.0)), -3);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<uint16_t>(json(65536.0)),
+               BT::RuntimeError);
+  {
+    auto result = exporter.fromJson(json::parse("[1, 2.0]"));
+    ASSERT_TRUE(result);
+    ASSERT_EQ(result->first.cast<std::vector<int>>(), (std::vector<int>{ 1, 2 }));
+  }
 
   // The type of the array is taken from the first element. The other elements
   // used to be truncated, wrapped, or cast out of range (undefined behavior).

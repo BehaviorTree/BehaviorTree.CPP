@@ -318,7 +318,7 @@ std::vector<int> convertFromString<std::vector<int>>(StringView str)
     output.reserve(json.size());
     for(const auto& element : json)
     {
-      output.push_back(JsonToInteger<int>(element));
+      output.push_back(details::JsonToInteger<int>(element));
     }
     return output;
   }

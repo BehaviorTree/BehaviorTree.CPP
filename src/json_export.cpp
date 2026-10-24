@@ -121,7 +121,7 @@ JsonExporter::ExpectedEntry JsonExporter::fromJson(const nlohmann::json& source)
       values.reserve(source.size());
       for(const auto& element : source)
       {
-        values.push_back(JsonToInteger<int>(element));
+        values.push_back(details::JsonToInteger<int>(element));
       }
       return Entry{ BT::Any(values), BT::TypeInfo::Create<std::vector<int>>() };
     }
