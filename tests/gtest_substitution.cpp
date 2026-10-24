@@ -589,3 +589,18 @@ TEST(Substitution, IncompatibleTypeSubstitutionThrows)
     EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
   }
 }
+
+// Destroying a TestNode while its async_delay timer is pending makes
+// ~TimerQueue() run the handler (aborted) during the PImpl deletion. The
+// handler used to reach the PImpl through _p, which std::unique_ptr may have
+// already reset to nullptr at that point (libc++ does).
+TEST(Substitution, DestroyTestNodeWithPendingAsyncDelay)
+{
+  auto test_config = std::make_shared<TestNodeConfig>();
+  test_config->return_status = NodeStatus::SUCCESS;
+  test_config->async_delay = std::chrono::milliseconds(10000);
+
+  auto node = std::make_unique<TestNode>("mock", NodeConfig{}, test_config);
+  ASSERT_EQ(node->executeTick(), NodeStatus::RUNNING);
+  node.reset();
+}

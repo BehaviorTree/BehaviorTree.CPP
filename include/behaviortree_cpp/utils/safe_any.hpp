@@ -259,6 +259,12 @@ inline bool ValidCast(const SRC& val)
       {
         // For integral to float, check if we can represent the value exactly
         TO as_float = static_cast<TO>(val);
+        // as_float can round up to 2^digits (e.g. INT64_MAX -> 2^63), one past
+        // the max of SRC. Casting that back to SRC would overflow.
+        if(as_float >= std::ldexp(TO(1), std::numeric_limits<SRC>::digits))
+        {
+          return false;
+        }
         SRC back_conv = static_cast<SRC>(as_float);
         return back_conv == val;
       }
@@ -453,12 +459,10 @@ inline nonstd::expected<T, std::string> Any::stringToNumber() const
 #else
   try
   {
-    if constexpr(std::is_same_v<T, uint16_t>)
-    {
-      return std::stoul(str.toStdString());
-    }
     if constexpr(std::is_integral_v<T>)
     {
+      // convert<T>() rejects values that don't fit in T, matching the
+      // std::from_chars branch above.
       const int64_t val = std::stol(str.toStdString());
       Any temp_any(val);
       return temp_any.convert<T>();

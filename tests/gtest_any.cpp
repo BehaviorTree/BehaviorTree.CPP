@@ -269,3 +269,16 @@ TEST(Any, StringToNumberIgnoresLocale)
   EXPECT_EQ(Any(std::string("42")).cast<int>(), 42);
   EXPECT_ANY_THROW(auto res = Any(std::string("fifty")).cast<double>());
 }
+
+TEST(Any, StringToUint16IsRangeChecked)
+{
+  // A string that doesn't fit in uint16_t must be rejected, not wrapped.
+  EXPECT_EQ(Any(std::string("65535")).cast<uint16_t>(), 65535);
+  EXPECT_ANY_THROW(auto res = Any(std::string("65536")).cast<uint16_t>());
+  EXPECT_ANY_THROW(auto res = Any(std::string("70000")).cast<uint16_t>());
+  EXPECT_ANY_THROW(auto res = Any(std::string("-1")).cast<uint16_t>());
+
+  auto bb = Blackboard::create();
+  bb->set("value", std::string("70000"));
+  EXPECT_ANY_THROW(auto res = bb->get<uint16_t>("value"));
+}

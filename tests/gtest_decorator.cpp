@@ -15,6 +15,9 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 
+#include <atomic>
+#include <thread>
+
 #include <gtest/gtest.h>
 
 using BT::NodeStatus;
@@ -471,6 +474,96 @@ TEST(Decorator, DestroyTreeWhileTimerIsPending)
     // each canceled handler runs on its TimerQueue worker thread, racing
     // with the destruction of the node members.
   }
+}
+
+// Regression test: the Timeout timer fires on the TimerQueue worker thread
+// and halts the child from there. halt() on the tick thread (a parent halting
+// the Timeout, or Tree::haltTree) used to run concurrently with that handler,
+// so the child was halted from two threads at the same time, and when the
+// tree was destroyed right after, the handler kept using a child that no
+// longer existed.
+TEST(Decorator, TimeoutHaltWhileTimerIsHaltingTheChild)
+{
+  struct HaltCounters
+  {
+    std::atomic<int> active{ 0 };
+    std::atomic<int> max_active{ 0 };
+    std::atomic<int> total{ 0 };
+  };
+
+  // An action whose onHalted() takes a while, like one that must cancel a
+  // remote goal before it can return.
+  class SlowHaltAction : public BT::StatefulActionNode
+  {
+  public:
+    SlowHaltAction(const std::string& name, const BT::NodeConfig& config,
+                   HaltCounters* counters)
+      : StatefulActionNode(name, config), counters_(counters)
+    {}
+
+    static BT::PortsList providedPorts()
+    {
+      return {};
+    }
+
+    NodeStatus onStart() override
+    {
+      return NodeStatus::RUNNING;
+    }
+
+    NodeStatus onRunning() override
+    {
+      return NodeStatus::RUNNING;
+    }
+
+    void onHalted() override
+    {
+      const int active = ++counters_->active;
+      int max_active = counters_->max_active.load();
+      while(active > max_active &&
+            !counters_->max_active.compare_exchange_weak(max_active, active))
+      {
+      }
+      // the first cancellation does the slow work; a cancellation that
+      // arrives while it is in progress has nothing left to do
+      if(active == 1)
+      {
+        std::this_thread::sleep_for(milliseconds(200));
+      }
+      ++counters_->total;
+      --counters_->active;
+    }
+
+  private:
+    HaltCounters* counters_;
+  };
+
+  HaltCounters counters;
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<SlowHaltAction>("SlowHalt", &counters);
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree ID="MainTree">
+          <Timeout msec="10">
+            <SlowHalt/>
+          </Timeout>
+       </BehaviorTree>
+    </root>)";
+
+  {
+    auto tree = factory.createTreeFromText(xml_text);
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    // let the timeout expire: its handler is now halting the child on the
+    // timer thread
+    std::this_thread::sleep_for(milliseconds(60));
+    tree.haltTree();
+    // the tree, child included, is destroyed here
+  }
+
+  // the child must be halted once, never from two threads at the same time
+  ASSERT_EQ(counters.max_active.load(), 1);
+  ASSERT_EQ(counters.total.load(), 1);
 }
 
 // Test KeepRunningUntilFailure decorator

@@ -58,6 +58,10 @@ public:
 
   ~TimeoutNode() override
   {
+    {
+      const std::unique_lock<std::mutex> lk(timeout_mutex_);
+      timeout_started_ = false;
+    }
     timer_.cancelAll();
   }
 
