@@ -98,6 +98,51 @@ TEST(ParserTest, AnyTypes_Failing)
   EXPECT_FALSE(BT::ParseScriptAndExecute(env, "foo").has_value());
 }
 
+TEST(ParserTest, IntegerLiteralOutOfRangeIsRejected)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+
+  // These literals overflow int64_t. std::from_chars leaves its output untouched
+  // on result_out_of_range, so the parser used to accept them and silently
+  // evaluate the literal as 0 (e.g. the all-bits mask 0xFFFFFFFFFFFFFFFF).
+  EXPECT_FALSE(BT::ValidateScript("9223372036854775808"));  // INT64_MAX + 1
+  EXPECT_FALSE(BT::ValidateScript("99999999999999999999999"));
+  EXPECT_FALSE(BT::ValidateScript("0xFFFFFFFFFFFFFFFF"));
+  EXPECT_FALSE(BT::ValidateScript("0x8000000000000000"));
+  EXPECT_FALSE(BT::ParseScriptAndExecute(env, "0xFFFFFFFFFFFFFFFF").has_value());
+
+  // The boundary values that do fit must still parse and keep their value.
+  auto max_val = BT::ParseScriptAndExecute(env, "9223372036854775807");
+  ASSERT_TRUE(max_val.has_value());
+  EXPECT_EQ(max_val.value().cast<int64_t>(), 9223372036854775807LL);
+
+  auto hex_val = BT::ParseScriptAndExecute(env, "0x7FFFFFFFFFFFFFFF");
+  ASSERT_TRUE(hex_val.has_value());
+  EXPECT_EQ(hex_val.value().cast<int64_t>(), 9223372036854775807LL);
+}
+
+TEST(ParserTest, DeeplyNestedScriptIsRejected)
+{
+  // A script with thousands of nested parentheses or unary prefixes used to add
+  // one recursion level per character and overflow the stack (SIGSEGV) at parse
+  // time. The parser now caps the nesting depth and returns an error instead.
+  const std::string deep_parens = std::string(20000, '(') + "0" + std::string(20000, ')');
+  EXPECT_FALSE(BT::ValidateScript(deep_parens));
+
+  const std::string deep_unary = std::string(20000, '!') + "0";
+  EXPECT_FALSE(BT::ValidateScript(deep_unary));
+
+  // The depth cap must not reject ordinary scripts: a long flat expression is
+  // parsed iteratively (shallow recursion) and light nesting is well within it.
+  std::string wide = "1";
+  for(int i = 0; i < 1000; ++i)
+  {
+    wide += "+1";
+  }
+  EXPECT_TRUE(BT::ValidateScript(wide));
+  EXPECT_TRUE(BT::ValidateScript("((((1))))"));
+}
+
 TEST(ParserTest, Equations)
 {
   BT::Ast::Environment environment = { BT::Blackboard::create(), {} };
@@ -108,7 +153,7 @@ TEST(ParserTest, Equations)
   //-------------------
   const auto& variables = environment.vars;
   EXPECT_EQ(GetResult("x:= 3; y:=5; x+y").cast<double>(), 8.0);
-  EXPECT_EQ(variables->getKeys().size(), 2);
+  EXPECT_EQ(variables->getKeyNames().size(), 2);
   EXPECT_EQ(variables->get<double>("x"), 3.0);
   EXPECT_EQ(variables->get<double>("y"), 5.0);
 
@@ -148,7 +193,7 @@ TEST(ParserTest, Equations)
                                                                                     "o "
                                                                                     "worl"
                                                                                     "d");
-  EXPECT_EQ(variables->getKeys().size(), 5);
+  EXPECT_EQ(variables->getKeyNames().size(), 5);
   EXPECT_EQ(variables->get<std::string>("A"), "hello");
   EXPECT_EQ(variables->get<std::string>("B"), " ");
   EXPECT_EQ(variables->get<std::string>("C"), "world");
@@ -159,7 +204,7 @@ TEST(ParserTest, Equations)
                          "C= 'left    '  ")
                    .empty());
 
-  EXPECT_EQ(variables->getKeys().size(), 5);
+  EXPECT_EQ(variables->getKeyNames().size(), 5);
   EXPECT_EQ(variables->get<std::string>("A"), "   right");
   EXPECT_EQ(variables->get<std::string>("B"), " center ");
   EXPECT_EQ(variables->get<std::string>("C"), "left    ");
@@ -174,9 +219,9 @@ TEST(ParserTest, Equations)
   EXPECT_ANY_THROW(GetResult(" 'hello' = 2.0 "));
   EXPECT_ANY_THROW(GetResult(" 3.0 = 2.0 "));
 
-  size_t prev_size = variables->getKeys().size();
+  size_t prev_size = variables->getKeyNames().size();
   EXPECT_ANY_THROW(GetResult("new_var=69"));
-  EXPECT_EQ(variables->getKeys().size(), prev_size);  // shouldn't increase
+  EXPECT_EQ(variables->getKeyNames().size(), prev_size);  // shouldn't increase
 
   // check comparisons
   EXPECT_EQ(GetResult("x < y").cast<int>(), 1);
@@ -623,6 +668,26 @@ TEST(ParserTest, UnaryOperators)
 
   // Unary minus in expressions
   EXPECT_EQ(Parse("10 + -3").value().cast<double>(), 7.0);
+}
+
+TEST(ParserTest, BitwiseComplementRejectsNonIntegers)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  // The operand was cast to int64_t after a hand-written range check that
+  // accepted NaN and exactly 2^63 (undefined conversion, reported by UBSan)
+  // and silently truncated fractional values.
+  EXPECT_FALSE(Parse("~(0.0 / 0.0)").has_value());
+  EXPECT_FALSE(Parse("~9223372036854775808.0").has_value());  // 2^63
+  EXPECT_FALSE(Parse("~1.5").has_value());
+  EXPECT_FALSE(Parse("~(1.0 / 0.0)").has_value());
+
+  // Integral values, including the int64_t boundaries, still work.
+  EXPECT_EQ(Parse("~0").value().cast<int64_t>(), ~int64_t(0));
+  EXPECT_EQ(Parse("~(2 * 3)").value().cast<int64_t>(), ~int64_t(6));
+  EXPECT_EQ(Parse("~-9223372036854775808.0").value().cast<double>(),
+            static_cast<double>(~std::numeric_limits<int64_t>::min()));
 }
 
 TEST(ParserTest, TernaryExpressions)

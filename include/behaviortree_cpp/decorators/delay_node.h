@@ -65,7 +65,6 @@ public:
   void halt() override;
 
 private:
-  TimerQueue<> timer_;
   uint64_t timer_id_;
 
   virtual BT::NodeStatus tick() override;
@@ -76,6 +75,9 @@ private:
   unsigned msec_;
   bool read_parameter_from_ports_;
   std::mutex delay_mutex_;
+  // Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed
+  // before delay_mutex_, which the timer handler locks.
+  TimerQueue<> timer_;
 };
 
 }  // namespace BT

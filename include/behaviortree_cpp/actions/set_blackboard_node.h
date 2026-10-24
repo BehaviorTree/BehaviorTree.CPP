@@ -15,6 +15,8 @@
 
 #include "behaviortree_cpp/action_node.h"
 
+#include <mutex>
+
 namespace BT
 {
 /**
@@ -76,13 +78,18 @@ private:
       {
         throw RuntimeError("Can't find the port referred by [value]");
       }
+      // Entry::value and Entry::info are shared with any thread that writes
+      // the same entry (Blackboard::set holds entry_mutex while reassigning
+      // them), so they must be copied under the same mutex.
+      std::unique_lock src_lock(src_entry->entry_mutex);
+      out_value = src_entry->value;
+      const TypeInfo src_info = src_entry->info;
+      src_lock.unlock();
       if(!dst_entry)
       {
-        config().blackboard->createEntry(output_key, src_entry->info);
+        config().blackboard->createEntry(output_key, src_info);
         dst_entry = config().blackboard->getEntry(output_key);
       }
-
-      out_value = src_entry->value;
     }
     else
     {
@@ -94,17 +101,24 @@ private:
 
     // avoid type issues when port is remapped: current implementation of the set might be a little bit problematic for initialized on the fly values
     // this still does not attack math issues
-    if(dst_entry && dst_entry->info.type() != typeid(std::string) && out_value.isString())
+    if(dst_entry && out_value.isString())
     {
-      try
+      // same as above: Entry::info may be reassigned under entry_mutex by a
+      // concurrent Blackboard::set, so take a copy under the same mutex.
+      std::unique_lock dst_lock(dst_entry->entry_mutex);
+      const TypeInfo dst_info = dst_entry->info;
+      dst_lock.unlock();
+      if(dst_info.type() != typeid(std::string))
       {
-        out_value = dst_entry->info.parseString(out_value.cast<std::string>());
-      }
-      catch(const std::exception& e)
-      {
-        throw LogicError("Can't convert string [", out_value.cast<std::string>(),
-                         "] to type [", BT::demangle(dst_entry->info.type()),
-                         "]: ", e.what());
+        try
+        {
+          out_value = dst_info.parseString(out_value.cast<std::string>());
+        }
+        catch(const std::exception& e)
+        {
+          throw LogicError("Can't convert string [", out_value.cast<std::string>(),
+                           "] to type [", BT::demangle(dst_info.type()), "]: ", e.what());
+        }
       }
     }
 

@@ -77,10 +77,17 @@ NodeStatus SimpleDecoratorNode::tick()
 NodeStatus DecoratorNode::executeTick()
 {
   const NodeStatus status = TreeNode::executeTick();
-  const NodeStatus child_status = child()->status();
-  if(child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE)
+  // Safety net for the decorators that don't reset a completed child.
+  // Not applied while the decorator is RUNNING: an asynchronous child
+  // (ThreadedAction) may complete right after tick() has seen it RUNNING, and
+  // resetting it here would discard its result, i.e. execute the action twice.
+  if(status != NodeStatus::RUNNING)
   {
-    child()->resetStatus();
+    const NodeStatus child_status = child()->status();
+    if(child_status == NodeStatus::SUCCESS || child_status == NodeStatus::FAILURE)
+    {
+      child()->resetStatus();
+    }
   }
   return status;
 }

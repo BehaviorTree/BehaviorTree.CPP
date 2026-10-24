@@ -84,8 +84,10 @@ struct TestNode::PImpl
   ScriptFunction success_executor;
   ScriptFunction failure_executor;
   ScriptFunction post_executor;
-  TimerQueue<> timer;
   std::atomic_bool completed = false;
+  // Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed
+  // before completed, which the timer handler touches.
+  TimerQueue<> timer;
 };
 
 TestNode::TestNode(const std::string& name, const NodeConfig& config,
@@ -133,17 +135,20 @@ NodeStatus TestNode::onStart()
   // convert this in an asynchronous operation. Use another thread to count
   // a certain amount of time.
   _p->completed = false;
-  _p->timer.add(std::chrono::milliseconds(_p->config->async_delay), [this](bool aborted) {
-    if(!aborted)
-    {
-      _p->completed.store(true);
-      this->emitWakeUpSignal();
-    }
-    else
-    {
-      _p->completed.store(false);
-    }
-  });
+  // The handler must not read _p: ~TimerQueue() runs it (aborted) while the
+  // PImpl is being deleted, and std::unique_ptr may already hold nullptr then.
+  _p->timer.add(std::chrono::milliseconds(_p->config->async_delay),
+                [this, p = _p.get()](bool aborted) {
+                  if(!aborted)
+                  {
+                    p->completed.store(true);
+                    this->emitWakeUpSignal();
+                  }
+                  else
+                  {
+                    p->completed.store(false);
+                  }
+                });
   return NodeStatus::RUNNING;
 }
 

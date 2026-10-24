@@ -12,6 +12,7 @@
 
 #include "behaviortree_cpp/basic_types.h"
 
+#include <algorithm>
 #include <charconv>
 #include <cstdio>
 #include <cstring>
@@ -103,14 +104,13 @@ auto StrEqual = [](const char* str1, const char* str2) -> bool {
   return strcmp(str1, str2) == 0;
 };
 
-// Helper to format forbidden character for error messages
-std::string formatForbiddenChar(char c)
+// Normalized form of an included file path, so that different spellings of
+// the same file ("a.xml", "./a.xml", "dir/../a.xml") compare equal.
+std::filesystem::path IncludeKey(const std::filesystem::path& absolute_path)
 {
-  if(c < 32 || c == 127)
-  {
-    return "control character (ASCII " + std::to_string(static_cast<int>(c)) + ")";
-  }
-  return std::string("'") + c + "'";
+  std::error_code err;
+  auto canonical = std::filesystem::weakly_canonical(absolute_path, err);
+  return err ? absolute_path.lexically_normal() : canonical;
 }
 
 void validateModelName(const std::string& name, int line_number)
@@ -252,6 +252,8 @@ struct XMLParser::PImpl
   const BehaviorTreeFactory* factory = nullptr;
 
   std::filesystem::path current_path;
+  // files currently being loaded through <include>, used to detect cycles
+  std::vector<std::filesystem::path> include_stack;
   std::map<std::string, SubtreeModel> subtree_models;
 
   int suffix_count = 0;
@@ -299,6 +301,7 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
   doc->LoadFile(filepath.string().c_str());
 
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
+  _p->include_stack = { IncludeKey(std::filesystem::absolute(filepath)) };
 
   _p->loadDocImpl(doc, add_includes);
 }
@@ -310,6 +313,7 @@ void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
   XMLDocument* doc = _p->opened_documents.back().get();
   doc->Parse(xml_text.c_str(), xml_text.size());
 
+  _p->include_stack.clear();
   _p->loadDocImpl(doc, add_includes);
 }
 
@@ -424,6 +428,16 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       file_path = current_path / file_path;
     }
 
+    // A file that includes itself, directly or through other files, would
+    // otherwise recurse until the stack overflows.
+    auto include_key = IncludeKey(file_path);
+    if(std::find(include_stack.begin(), include_stack.end(), include_key) !=
+       include_stack.end())
+    {
+      throw RuntimeError("Cyclic <include> detected: the file [", include_key.string(),
+                         "] includes itself, directly or through other files");
+    }
+
     opened_documents.push_back(std::make_unique<XMLDocument>());
     XMLDocument* next_doc = opened_documents.back().get();
 
@@ -431,8 +445,10 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
     const auto previous_path = current_path;
     current_path = std::filesystem::absolute(file_path.parent_path());
 
+    include_stack.push_back(std::move(include_key));
     next_doc->LoadFile(file_path.string().c_str());
     loadDocImpl(next_doc, add_includes);
+    include_stack.pop_back();
 
     // reset current path to the previous value
     current_path = previous_path;
@@ -617,11 +633,8 @@ void VerifyXML(const std::string& xml_text,
     {
       // use ID for builtin node types, otherwise use the element name
       const auto lookup_name = is_builtin ? ID : name;
-      // Validate model name for custom node types (non-builtin element names)
-      if(!is_builtin)
-      {
-        validateModelName(name, line_number);
-      }
+      // Validate the resolved node type name for both compact and explicit forms.
+      validateModelName(lookup_name, line_number);
       const auto search = registered_nodes.find(lookup_name);
       const bool found = (search != registered_nodes.end());
       if(!found)
@@ -858,6 +871,29 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
     }
     else if(!IsReservedAttribute(port_name))
     {
+      // The name may still match a declared port. validatePortName only rejects
+      // a leading digit, so a SubTree model can declare
+      // <input_port name="_myPort"/>, a name IsAllowedPortName refuses and no
+      // C++ InputPort() can create. Falling through to other_attributes would
+      // drop the remapping without a word and leave the node on its declared
+      // default, so report it instead.
+      bool is_declared_port = manifest != nullptr && manifest->ports.count(port_name) > 0;
+      if(!is_declared_port && node_type == NodeType::SUBTREE)
+      {
+        auto model_it = subtree_models.find(type_ID);
+        is_declared_port = model_it != subtree_models.end() &&
+                           model_it->second.ports.count(port_name) > 0;
+      }
+      if(is_declared_port)
+      {
+        const std::string reason = " and is declared, but the name cannot be used"
+                                   " as a port. A port name must begin with an"
+                                   " alphabetic character. Rename the port, for"
+                                   " example [_my_port] to [my_port].";
+        throw RuntimeError(StrCat("A port with name [", port_name,
+                                  "] is found in the XML (", type_ID, ", line ",
+                                  std::to_string(element->GetLineNum()), ")", reason));
+      }
       other_attributes[port_name] = port_value;
     }
   }
@@ -1237,8 +1273,8 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
         if(sub->instance_name == subtree_path)
         {
           throw RuntimeError("Duplicate SubTree path detected: '", subtree_path,
-                             "'. Multiple SubTree nodes with the same 'name' attribute "
-                             "under the same parent are not allowed. "
+                             "'. SubTree nodes in the same tree cannot share a 'name' "
+                             "attribute, even under different parent nodes. "
                              "Please use unique names or omit the 'name' attribute "
                              "to auto-generate unique paths.");
         }

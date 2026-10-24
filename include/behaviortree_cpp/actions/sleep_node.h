@@ -40,11 +40,13 @@ public:
   }
 
 private:
-  TimerQueue<> timer_;
   uint64_t timer_id_ = 0;
 
   std::atomic_bool timer_waiting_ = false;
   std::mutex delay_mutex_;
+  // Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed
+  // before delay_mutex_ and timer_waiting_, which the timer handler touches.
+  TimerQueue<> timer_;
 };
 
 }  // namespace BT

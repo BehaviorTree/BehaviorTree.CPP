@@ -129,18 +129,38 @@ struct ExprUnaryArithmetic : ExprBase
         case negate:
           return Any(-rv);
         case complement:
-          if(rv > static_cast<double>(std::numeric_limits<int64_t>::max()) ||
-             rv < static_cast<double>(std::numeric_limits<int64_t>::min()))
+          // Use the checked conversion, like the binary bitwise operators do.
+          // A plain static_cast is undefined for NaN and for values at or
+          // beyond the int64_t range: the hand-written comparison used here
+          // before let NaN (every comparison is false) and 2^63 (not greater
+          // than double(INT64_MAX), which rounds up to 2^63) through, and
+          // silently truncated fractional values.
+          try
+          {
+            return Any(static_cast<double>(~rhs_v.cast<int64_t>()));
+          }
+          catch(const std::exception&)
           {
             throw RuntimeError("Number out of range for bitwise operation");
           }
-          return Any(static_cast<double>(~static_cast<int64_t>(rv)));
         case logical_not:
           return Any(static_cast<double>(!static_cast<bool>(rv)));
       }
     }
     else if(rhs_v.isString())
     {
+      if(op == logical_not)
+      {
+        const auto str = rhs_v.cast<std::string>();
+        if(str == "true" || str == "True" || str == "TRUE" || str == "1")
+        {
+          return Any(0.0);
+        }
+        if(str == "false" || str == "False" || str == "FALSE" || str == "0")
+        {
+          return Any(1.0);
+        }
+      }
       throw RuntimeError("Invalid operator for std::string");
     }
     throw RuntimeError("ExprUnaryArithmetic: undefined");
