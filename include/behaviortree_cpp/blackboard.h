@@ -10,6 +10,7 @@
 #include "behaviortree_cpp/utils/locked_reference.hpp"
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 #include "behaviortree_cpp/utils/safe_any.hpp"
+#include "behaviortree_cpp/utils/thread_safe_signal.h"
 
 #include <memory>
 #include <mutex>
@@ -39,6 +40,9 @@ class Blackboard
 {
 public:
   using Ptr = std::shared_ptr<Blackboard>;
+  using EntryUpdatedSignal = ThreadSafeSignal<>;
+  using EntryUpdatedSubscriber = EntryUpdatedSignal::Subscriber;
+  using EntryUpdatedCallback = EntryUpdatedSignal::CallableFunction;
 
 protected:
   // This is intentionally protected. Use Blackboard::create instead
@@ -61,6 +65,12 @@ public:
     uint64_t sequence_id = 0;
     // timestamp since epoch
     std::chrono::nanoseconds stamp = std::chrono::nanoseconds{ 0 };
+
+    // Subscribers of subscribeToEntry(), created on the first subscription.
+    // Protected by entry_mutex. It must remain the last member: Entry is
+    // allocated only inside the library, so appending it keeps the offsets of
+    // the members above (accessed by inline code) unchanged.
+    std::shared_ptr<EntryUpdatedSignal> update_signal;
 
     Entry(const TypeInfo& _info) : info(_info)
     {}
@@ -118,6 +128,30 @@ public:
   /// Update the entry with the given key
   template <typename T>
   void set(const std::string& key, const T& value);
+
+  /** Subscribe to successful writes to the entry of a key.
+   * Subtree remapping and root keys are resolved at subscription time. If the
+   * entry doesn't exist, a generic (AnyTypeAllowed) one is created: the first
+   * strongly typed write sets its type, as usual. The subscription is bound to
+   * that entry: unset() drops it and a re-created entry is not observed.
+   * No initial notification is sent, and assigning the same value still notifies.
+   * Writes compiled against headers older than this API do not notify.
+   *
+   * Callbacks run synchronously on the writer's thread, outside blackboard
+   * locks, and may read the latest value. Concurrent writers may invoke a
+   * callback concurrently; intermediate values are not retained. Exceptions
+   * propagate to the writer after the value has been stored.
+   * Resetting the handle prevents future calls but does not wait for a call
+   * already in progress. Stop writers before destroying callback targets.
+   */
+  [[nodiscard]] EntryUpdatedSubscriber subscribeToEntry(const std::string& key,
+                                                        EntryUpdatedCallback callback);
+
+  /** Notify subscribers after directly modifying an entry. Release its lock
+   * before calling this function. Raw Entry/AnyPtrLocked mutations do not
+   * notify automatically; set(), scripts, JSON import and cloneInto() do.
+   */
+  void notifyEntryUpdated(const std::string& key);
 
   void unset(const std::string& key);
 
@@ -296,6 +330,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
   // follow the same remapping and return the pre-existing entry, and writing
   // to it blindly bypasses the type lock and the string conversion.
   auto entry_ptr = getEntry(key);
+  // copied under entry_mutex, notified after releasing it
+  std::shared_ptr<EntryUpdatedSignal> update_signal;
   if(!entry_ptr)
   {
     // create a new entry
@@ -319,6 +355,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     entry->value = new_value;
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
+    update_signal = entry->update_signal;
   }
   else
   {
@@ -326,7 +363,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     // if the type is the same or not.
     Entry& entry = *entry_ptr;
 
-    std::scoped_lock scoped_lock(entry.entry_mutex);
+    std::unique_lock scoped_lock(entry.entry_mutex);
 
     Any& previous_any = entry.value;
     Any new_value(value);
@@ -339,6 +376,12 @@ inline void Blackboard::set(const std::string& key, const T& value)
       entry.sequence_id++;
       entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
       previous_any = std::move(new_value);
+      update_signal = entry.update_signal;
+      scoped_lock.unlock();
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
       return;
     }
 
@@ -393,6 +436,11 @@ inline void Blackboard::set(const std::string& key, const T& value)
     }
     entry.sequence_id++;
     entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
+    update_signal = entry.update_signal;
+  }
+  if(update_signal)
+  {
+    update_signal->notify();
   }
 }
 

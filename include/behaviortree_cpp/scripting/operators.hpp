@@ -596,7 +596,7 @@ struct ExprAssignment : ExprBase
     }
     auto value = rhs->evaluate(env);
 
-    std::scoped_lock lock(entry->entry_mutex);
+    std::unique_lock lock(entry->entry_mutex);
     auto* dst_ptr = &entry->value;
 
     auto errorPrefix = [dst_ptr, &key]() {
@@ -658,7 +658,14 @@ struct ExprAssignment : ExprBase
       }
       entry->sequence_id++;
       entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
-      return *dst_ptr;
+      const Any result = *dst_ptr;
+      auto update_signal = entry->update_signal;
+      lock.unlock();
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
+      return result;
     }
 
     if(dst_ptr->empty())
@@ -714,7 +721,14 @@ struct ExprAssignment : ExprBase
     temp_variable.copyInto(*dst_ptr);
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
-    return *dst_ptr;
+    const Any result = *dst_ptr;
+    auto update_signal = entry->update_signal;
+    lock.unlock();
+    if(update_signal)
+    {
+      update_signal->notify();
+    }
+    return result;
   }
 };
 }  // namespace BT::Ast

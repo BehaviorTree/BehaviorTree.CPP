@@ -32,6 +32,7 @@ set(BT_TESTS
   gtest_parallel.cpp
   gtest_preconditions.cpp
   gtest_ports.cpp
+  gtest_input_port_callbacks.cpp
   gtest_port_type_rules.cpp
   gtest_postconditions.cpp
   gtest_match.cpp
