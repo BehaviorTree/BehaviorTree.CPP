@@ -1,6 +1,7 @@
 #pragma once
 #include "behaviortree_cpp/loggers/abstract_logger.h"
 
+#include <deque>
 #include <filesystem>
 #include <memory>
 
@@ -61,6 +62,11 @@ private:
   std::unique_ptr<Pimpl> _p;
 
   void writerLoop();
+  // Write one batch of transitions to the file (the loop's own 9-byte layout, one place).
+  void writeBatch(std::deque<Transition>& transitions);
+  // Move whatever is queued onto this thread and write it: the destructor's drain after the
+  // writer thread has joined.
+  void drainQueue();
 };
 
 }  // namespace BT

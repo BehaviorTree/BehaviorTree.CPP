@@ -13,6 +13,10 @@
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/bt_factory.h"
 
+#include <atomic>
+#include <memory>
+#include <thread>
+
 #include <gtest/gtest.h>
 
 #include "../sample_nodes/dummy_nodes.h"
@@ -303,6 +307,162 @@ TEST(BlackboardTest, AnyPtrLocked)
 }
 #endif
 
+// An entry removed from the blackboard must stay alive as long as an
+// AnyPtrLocked refers to it, and removing it must never block, not even
+// from the thread holding the lock.
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesUnset)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("value", 42);
+
+  auto locked = blackboard->getAnyLocked("value");
+  ASSERT_TRUE(bool(locked));
+
+  blackboard->unset("value");
+  ASSERT_TRUE(blackboard->getKeyNames().empty());
+
+  // the entry must stay alive as long as we hold the lock
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+
+  locked = {};
+  ASSERT_FALSE(bool(blackboard->getAnyLocked("value")));
+}
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesClear)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("value", 42);
+
+  auto locked = blackboard->getAnyLocked("value");
+  ASSERT_TRUE(bool(locked));
+
+  blackboard->clear();
+  ASSERT_TRUE(blackboard->getKeyNames().empty());
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+}
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesCloneInto)
+{
+  auto src = Blackboard::create();
+  auto dst = Blackboard::create();
+  dst->set("stale", 42);
+
+  auto locked = dst->getAnyLocked("stale");
+  ASSERT_TRUE(bool(locked));
+
+  // "stale" doesn't exist in src, so cloneInto() removes it from dst
+  src->cloneInto(*dst);
+  ASSERT_TRUE(dst->getKeyNames().empty());
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+}
+
+TEST(BlackboardTest, AnyPtrLockedSurvivesBlackboardDestruction)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("value", 42);
+
+  auto locked = blackboard->getAnyLocked("value");
+  ASSERT_TRUE(bool(locked));
+
+  blackboard.reset();
+  ASSERT_EQ(locked.get()->cast<int>(), 42);
+}
+
+TEST(BlackboardTest, AnyPtrLockedCrossUnsetDoesNotDeadlock)
+{
+  auto blackboard = Blackboard::create();
+  blackboard->set("A", 1);
+  blackboard->set("B", 2);
+
+  // Each thread holds a lock on one entry and removes the other one, while
+  // the other thread does the opposite.
+  std::atomic<int> ready = 0;
+  int values[2] = { 0, 0 };
+  auto hold_and_unset = [&](const char* held, const char* removed, int& out) {
+    auto locked = blackboard->getAnyLocked(held);
+    ready++;
+    while(ready < 2)
+    {
+      std::this_thread::yield();
+    }
+    blackboard->unset(removed);
+    out = locked ? locked.get()->cast<int>() : 0;
+  };
+
+  std::thread t1(hold_and_unset, "A", "B", std::ref(values[0]));
+  std::thread t2(hold_and_unset, "B", "A", std::ref(values[1]));
+  t1.join();
+  t2.join();
+
+  ASSERT_EQ(values[0], 1);
+  ASSERT_EQ(values[1], 2);
+  ASSERT_TRUE(blackboard->getKeyNames().empty());
+}
+
+TEST(BlackboardTest, AnyPtrLockedDeferredEntryIsDestroyed)
+{
+  auto blackboard = Blackboard::create();
+  auto value = std::make_shared<int>(42);
+  std::weak_ptr<int> weak_value = value;
+  blackboard->set("value", value);
+  value.reset();
+
+  {
+    auto locked = blackboard->getAnyLocked("value");
+    ASSERT_TRUE(bool(locked));
+    blackboard->unset("value");
+    // still alive, since we hold the lock
+    ASSERT_FALSE(weak_value.expired());
+  }
+  // the lock was released: the entry is destroyed when the next one is
+  // created (or removed)
+  blackboard->set("other", 1);
+  ASSERT_TRUE(weak_value.expired());
+}
+
+// Stress test, meaningful with ASan/TSan: readers hold an AnyPtrLocked while
+// another thread keeps removing and re-creating the same entry.
+TEST(BlackboardTest, AnyPtrLockedConcurrentUnsetStress)
+{
+  auto blackboard = Blackboard::create();
+  std::atomic_bool stop = false;
+  std::atomic_int reads = 0;
+
+  auto reader = [&]() {
+    while(!stop)
+    {
+      if(auto locked = blackboard->getAnyLocked("value"))
+      {
+        // set() inserts the entry before assigning the value: it may be empty.
+        // Otherwise, read it while the writer may unset the key.
+        if(!locked->empty())
+        {
+          ASSERT_EQ(locked->cast<int>(), 42);
+          reads++;
+        }
+      }
+    }
+  };
+  std::thread reader_a(reader);
+  std::thread reader_b(reader);
+
+  for(int i = 0; i < 5000; i++)
+  {
+    blackboard->set("value", 42);
+    blackboard->unset("value");
+  }
+  // make sure that the readers had the chance to run
+  blackboard->set("value", 42);
+  while(reads == 0)
+  {
+    std::this_thread::yield();
+  }
+  stop = true;
+  reader_a.join();
+  reader_b.join();
+}
+
 TEST(BlackboardTest, SetStringView)
 {
   auto bb = Blackboard::create();
@@ -514,7 +674,7 @@ TEST(BlackboardTest, BlackboardBackup)
   for(const auto& sub : tree.subtrees)
   {
     std::vector<std::string> keys;
-    for(const auto& str_view : sub->blackboard->getKeys())
+    for(const auto& str_view : sub->blackboard->getKeyNames())
     {
       keys.push_back(std::string(str_view));
     }
@@ -531,7 +691,7 @@ TEST(BlackboardTest, BlackboardBackup)
 
   for(size_t i = 0; i < tree.subtrees.size(); i++)
   {
-    const auto keys = tree.subtrees[i]->blackboard->getKeys();
+    const auto keys = tree.subtrees[i]->blackboard->getKeyNames();
     ASSERT_EQ(expected_keys[i].size(), keys.size());
     for(size_t a = 0; a < keys.size(); a++)
     {
@@ -540,6 +700,98 @@ TEST(BlackboardTest, BlackboardBackup)
   }
   status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+}
+
+TEST(BlackboardTest, BlackboardRestoreSizeMismatch)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string one_subtree = R"(
+  <root BTCPP_format="4" main_tree_to_execute="SmallTree">
+    <BehaviorTree ID="SmallTree">
+      <AlwaysSuccess />
+    </BehaviorTree>
+  </root> )";
+
+  const std::string four_subtrees = R"(
+  <root BTCPP_format="4" main_tree_to_execute="BigTree">
+    <BehaviorTree ID="MySubtree">
+      <AlwaysSuccess />
+    </BehaviorTree>
+    <BehaviorTree ID="BigTree">
+      <Sequence>
+        <SubTree ID="MySubtree" />
+        <SubTree ID="MySubtree" name="second" />
+        <SubTree ID="MySubtree" name="third" />
+      </Sequence>
+    </BehaviorTree>
+  </root> )";
+
+  auto small_tree = factory.createTreeFromText(one_subtree);
+  const auto bb_backup = BlackboardBackup(small_tree);
+  ASSERT_EQ(bb_backup.size(), 1u);
+
+  auto big_tree = factory.createTreeFromText(four_subtrees);
+  ASSERT_EQ(big_tree.subtrees.size(), 4u);
+
+  // The backup is shorter than the number of subtrees: reject it instead of
+  // indexing past the end of the vector.
+  ASSERT_THROW(BlackboardRestore(bb_backup, big_tree), BT::RuntimeError);
+
+  // A backup taken from the same tree must still be accepted.
+  const auto big_backup = BlackboardBackup(big_tree);
+  ASSERT_NO_THROW(BlackboardRestore(big_backup, big_tree));
+}
+
+TEST(BlackboardTest, ImportTreeFromJSONMatchesByName)
+{
+  BT::BehaviorTreeFactory factory;
+
+  // The subtrees are created in the order [MainTree, Zeta, Alpha], but the
+  // JSON object is sorted by name: [Alpha, MainTree, Zeta].
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code=" owner:='main' " />
+        <SubTree ID="Zeta" />
+        <SubTree ID="Alpha" />
+      </Sequence>
+    </BehaviorTree>
+    <BehaviorTree ID="Zeta">
+      <Script code=" owner:='zeta' " />
+    </BehaviorTree>
+    <BehaviorTree ID="Alpha">
+      <Script code=" owner:='alpha'; only_in_alpha:=42 " />
+    </BehaviorTree>
+  </root> )";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(tree.subtrees.size(), 3u);
+
+  const std::vector<std::string> expected_owner = { "main", "zeta", "alpha" };
+
+  // Each blackboard must be restored into the subtree it was exported from.
+  const auto json = ExportTreeToJSON(tree);
+  ImportTreeFromJSON(json, tree);
+
+  for(size_t i = 0; i < tree.subtrees.size(); i++)
+  {
+    const auto& blackboard = tree.subtrees[i]->blackboard;
+    ASSERT_EQ(blackboard->get<std::string>("owner"), expected_owner[i]);
+  }
+  // this entry exists only in the blackboard of the last subtree
+  ASSERT_EQ(tree.subtrees[0]->blackboard->getEntry("only_in_alpha"), nullptr);
+  ASSERT_EQ(tree.subtrees[1]->blackboard->getEntry("only_in_alpha"), nullptr);
+  ASSERT_NE(tree.subtrees[2]->blackboard->getEntry("only_in_alpha"), nullptr);
+
+  // A JSON that doesn't describe one of the subtrees is rejected, instead of
+  // being imported into whichever subtree has the same position.
+  auto renamed = json;
+  renamed["Unknown"] = renamed["MainTree"];
+  renamed.erase("MainTree");
+  ASSERT_THROW(ImportTreeFromJSON(renamed, tree), std::runtime_error);
 }
 
 TEST(BlackboardTest, RootBlackboard)
@@ -593,6 +845,29 @@ TEST(BlackboardTest, RootBlackboard)
   ASSERT_EQ(3, tree.rootBlackboard()->get<int>("var3"));
   ASSERT_EQ(4, tree.rootBlackboard()->get<int>("var4"));
   ASSERT_EQ(4, tree.rootBlackboard()->get<int>("var5"));
+}
+
+TEST(BlackboardTest, RemapToRootBlackboard)
+{
+  // A subtree port remapped to a root key (XML: param="{@shared}") must resolve
+  // to the "shared" entry in the root blackboard. createEntryImpl used to create
+  // it as a literal "@shared" entry instead, so getEntry("param") -- which strips
+  // the '@' and looks up "shared" in the root -- never found it again. That made
+  // ImportBlackboardFromJSON dereference a null entry, and set()/get() disagree.
+  auto root = Blackboard::create();
+  auto child = Blackboard::create(root);
+  child->addSubtreeRemapping("param", "@shared");
+
+  nlohmann::json js;
+  js["param"] = 42;
+  ASSERT_NO_THROW(ImportBlackboardFromJSON(js, *child));
+
+  ASSERT_EQ(42, child->get<int>("param"));
+  ASSERT_EQ(42, root->get<int>("shared"));
+
+  child->set("param", 7);
+  ASSERT_EQ(7, child->get<int>("param"));
+  ASSERT_EQ(7, root->get<int>("shared"));
 }
 
 TEST(BlackboardTest, TimestampedInterface)
@@ -839,4 +1114,35 @@ TEST(BlackboardTest, GetLockedPortContentWithDefault_Issue942)
 
   // The value should be accessible from the blackboard
   ASSERT_EQ(tree.rootBlackboard()->get<int>("value"), 42);
+}
+
+TEST(BlackboardTest, SetThroughSubtreeRemappingChecksType)
+{
+  // set() must apply the same type check and string conversion when the key
+  // is remapped to the parent blackboard, like <SubTree local="{value}"> does.
+  auto parent_bb = Blackboard::create();
+  parent_bb->set("value", 42);  // strongly typed as int
+
+  auto child_bb = Blackboard::create(parent_bb);
+  child_bb->addSubtreeRemapping("local", "value");
+
+  // a string that can't be converted to int is rejected, as it is on the parent
+  ASSERT_ANY_THROW(parent_bb->set("value", std::string("garbage")));
+  ASSERT_ANY_THROW(child_bb->set("local", std::string("garbage")));
+
+  // the entry must keep both its declared type and its stored type
+  const auto entry = parent_bb->getEntry("value");
+  ASSERT_EQ(entry->info.type(), typeid(int));
+  ASSERT_EQ(entry->value.type(), typeid(int));
+
+  // a convertible string is parsed to the declared type, not stored as string
+  child_bb->set("local", std::string("99"));
+  ASSERT_EQ(entry->value.type(), typeid(int));
+  ASSERT_EQ(parent_bb->get<int>("value"), 99);
+
+  // a safe numeric conversion is accepted, as it is on the parent
+  parent_bb->set("small", static_cast<uint8_t>(1));
+  child_bb->addSubtreeRemapping("local_small", "small");
+  ASSERT_NO_THROW(child_bb->set("local_small", 100));
+  ASSERT_EQ(parent_bb->get<uint8_t>("small"), 100);
 }

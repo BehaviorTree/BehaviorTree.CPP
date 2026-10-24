@@ -869,3 +869,21 @@ TEST(PortTest, SubtreeStringLiteralToLoopDouble_Issue1065)
   EXPECT_DOUBLE_EQ(collected[1], 2.0);
   EXPECT_DOUBLE_EQ(collected[2], 3.0);
 }
+
+TEST(PortTest, IsBlackboardPointerAllWhitespaceView)
+{
+  // A view made only of spaces must not be read past its end while trimming.
+  // Use a buffer that is not null-terminated so AddressSanitizer catches the
+  // over-read on the character after the last space.
+  std::vector<char> only_spaces(3, ' ');
+  const StringView spaces_view(only_spaces.data(), only_spaces.size());
+  EXPECT_FALSE(TreeNode::isBlackboardPointer(spaces_view));
+
+  // Trimming and detection of real pointers is unchanged.
+  StringView stripped;
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("{key}", &stripped));
+  EXPECT_EQ(stripped, "key");
+  EXPECT_TRUE(TreeNode::isBlackboardPointer("  {key}  ", &stripped));
+  EXPECT_EQ(stripped, "key");
+  EXPECT_FALSE(TreeNode::isBlackboardPointer("value"));
+}

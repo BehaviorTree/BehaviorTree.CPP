@@ -1,8 +1,10 @@
 #include "action_test_node.h"
 #include "condition_test_node.h"
+#include "test_helper.hpp"
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/controls/switch_node.h"
 #include "behaviortree_cpp/tree_node.h"
 
 #include <gtest/gtest.h>
@@ -244,4 +246,38 @@ TEST_F(SwitchTest, ActionFailure)
   ASSERT_EQ(NodeStatus::IDLE, action_1.status());
   ASSERT_EQ(NodeStatus::IDLE, action_42.status());
   ASSERT_EQ(NodeStatus::IDLE, action_def.status());
+}
+
+TEST(SwitchStringEquality, RejectsTrailingCharacters)
+{
+  using BT::details::CheckStringEquality;
+
+  // legitimate matches must keep working
+  EXPECT_TRUE(CheckStringEquality("5", "5", nullptr));
+  EXPECT_TRUE(CheckStringEquality("5", "5.0", nullptr));
+  EXPECT_TRUE(CheckStringEquality("42", "42", nullptr));
+  EXPECT_TRUE(CheckStringEquality("-7", "-7", nullptr));
+
+  // a selector with trailing bytes must not match a numeric case
+  EXPECT_FALSE(CheckStringEquality("5abc", "5", nullptr));
+  EXPECT_FALSE(CheckStringEquality("42xxxx", "42", nullptr));
+  EXPECT_FALSE(CheckStringEquality("1.0junk", "1.0", nullptr));
+  EXPECT_FALSE(CheckStringEquality("5 ", "5", nullptr));
+  EXPECT_FALSE(CheckStringEquality("none", "1", nullptr));
+}
+
+TEST(SwitchStringEquality, RealComparisonIgnoresLocale)
+{
+  using BT::details::CheckStringEquality;
+
+  const ScopedCommaDecimalLocale comma_locale;
+  if(!comma_locale.active())
+  {
+    GTEST_SKIP() << "no locale with ',' as decimal separator on this machine";
+  }
+
+  EXPECT_TRUE(CheckStringEquality("3.50", "3.5", nullptr));
+  EXPECT_TRUE(CheckStringEquality("5", "5.0", nullptr));
+  EXPECT_FALSE(CheckStringEquality("3.5", "3", nullptr));
+  EXPECT_FALSE(CheckStringEquality("0.5", "1", nullptr));
 }

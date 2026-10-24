@@ -1,6 +1,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -112,7 +113,7 @@ const char* xml_text_subtree_part2 = R"(
 TEST(BehaviorTreeFactory, NotRegisteredNode)
 {
   BehaviorTreeFactory factory;
-  ASSERT_ANY_THROW(factory.createTreeFromText(xml_text));
+  ASSERT_ANY_THROW((void)factory.createTreeFromText(xml_text));
   ASSERT_ANY_THROW(std::make_shared<BT::Tree>(factory.createTreeFromText(xml_text)));
 }
 
@@ -358,6 +359,24 @@ TEST(
   // should not throw
   std::string path = FilePath("trees/parent_include_child_include_parent.xml");
   Tree tree = factory.createTreeFromFile(path);
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesItself)
+{
+  BehaviorTreeFactory factory;
+  std::string path = FilePath("trees/self_include.xml");
+  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWithCyclicIncludes)
+{
+  BehaviorTreeFactory factory;
+  std::string path = FilePath("trees/parent_include_child_cycle.xml");
+  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+
+  // a failed load must not leave stale state behind in the factory's parser
+  Tree tree = factory.createTreeFromFile(FilePath("trees/parent_include_child.xml"));
   ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
@@ -624,7 +643,7 @@ TEST(BehaviorTreeFactory, MalformedXML_InvalidRoot)
 {
   // XML that is not valid XML at all
   BehaviorTreeFactory factory;
-  EXPECT_ANY_THROW(factory.createTreeFromText("<not valid xml!!!"));
+  EXPECT_ANY_THROW((void)factory.createTreeFromText("<not valid xml!!!"));
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_MissingRootElement)
@@ -638,7 +657,7 @@ TEST(BehaviorTreeFactory, MalformedXML_MissingRootElement)
   </something>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_EmptyBehaviorTree)
@@ -651,7 +670,7 @@ TEST(BehaviorTreeFactory, MalformedXML_EmptyBehaviorTree)
   </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_EmptyBehaviorTreeID)
@@ -668,7 +687,7 @@ TEST(BehaviorTreeFactory, MalformedXML_EmptyBehaviorTreeID)
   </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_MissingBehaviorTreeID)
@@ -685,7 +704,7 @@ TEST(BehaviorTreeFactory, MalformedXML_MissingBehaviorTreeID)
   </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_DeeplyNestedElements)
@@ -707,7 +726,7 @@ TEST(BehaviorTreeFactory, MalformedXML_DeeplyNestedElements)
   xml += "</BehaviorTree></root>";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_ModerateNestingIsOK)
@@ -728,7 +747,7 @@ TEST(BehaviorTreeFactory, MalformedXML_ModerateNestingIsOK)
 
   BehaviorTreeFactory factory;
   // Should not throw
-  EXPECT_NO_THROW(factory.createTreeFromText(xml));
+  EXPECT_NO_THROW((void)factory.createTreeFromText(xml));
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_MultipleBTChildElements)
@@ -743,14 +762,14 @@ TEST(BehaviorTreeFactory, MalformedXML_MultipleBTChildElements)
   </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_CompletelyEmpty)
 {
   // Completely empty string
   BehaviorTreeFactory factory;
-  EXPECT_ANY_THROW(factory.createTreeFromText(""));
+  EXPECT_ANY_THROW((void)factory.createTreeFromText(""));
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_EmptyRoot)
@@ -762,7 +781,7 @@ TEST(BehaviorTreeFactory, MalformedXML_EmptyRoot)
   // No BehaviorTree elements: registering succeeds but creating
   // a tree should fail because there is nothing to instantiate.
   factory.registerBehaviorTreeFromText(xml);
-  EXPECT_ANY_THROW(factory.createTree("MainTree"));
+  EXPECT_ANY_THROW((void)factory.createTree("MainTree"));
 }
 
 TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
@@ -776,5 +795,20 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
   </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml), RuntimeError);
+  EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, TooManyNodesForUID)
+{
+  // UIDs are 16 bits wide. Past 65535 nodes the counter used to wrap around
+  // and the next nodes got the same UID (and path) as the first ones.
+  Tree tree;
+  std::set<uint16_t> uids;
+  for(int i = 0; i < 65535; i++)
+  {
+    uids.insert(tree.getUID());
+  }
+  EXPECT_EQ(uids.size(), 65535u);
+  EXPECT_EQ(uids.count(0), 0u);
+  EXPECT_THROW((void)tree.getUID(), RuntimeError);
 }

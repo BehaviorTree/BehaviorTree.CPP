@@ -377,6 +377,31 @@ TEST(SimpleStringTest, EmptyStringComparison)
   EXPECT_TRUE(nonEmpty >= empty1);
 }
 
+// Test comparison of strings that hold embedded NUL bytes
+TEST(SimpleStringTest, ComparisonWithEmbeddedNull)
+{
+  const SimpleString s1(std::string("a\0b", 3));
+  const SimpleString s2(std::string("a\0c", 3));
+  const SimpleString s3(std::string("a\0b", 3));
+
+  EXPECT_FALSE(s1 == s2);
+  EXPECT_TRUE(s1 != s2);
+  EXPECT_TRUE(s1 < s2);
+  EXPECT_FALSE(s1 > s2);
+
+  EXPECT_TRUE(s1 == s3);
+  EXPECT_FALSE(s1 != s3);
+
+  // same thing with the heap representation
+  const SimpleString l1(std::string("0123456789abcdef\0b", 18));
+  const SimpleString l2(std::string("0123456789abcdef\0c", 18));
+
+  EXPECT_FALSE(l1.isSOO());
+  EXPECT_FALSE(l1 == l2);
+  EXPECT_TRUE(l1 != l2);
+  EXPECT_TRUE(l1 < l2);
+}
+
 // Test that SimpleString size is as expected (16 bytes)
 TEST(SimpleStringTest, SizeOfSimpleString)
 {

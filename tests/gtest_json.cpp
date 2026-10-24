@@ -210,6 +210,42 @@ TEST_F(JsonTest, BlackboardInOut)
   ASSERT_EQ(vect_out.z, 3.3);
 }
 
+TEST_F(JsonTest, LargeIntegerPreserved)
+{
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
+
+  // Values outside the int32 range used to be silently wrapped by get<int>().
+  {
+    auto json = nlohmann::json::parse(R"({"a": 2147483648, "b": 5000000000,
+                                          "c": 4294967296})");
+    auto bb = BT::Blackboard::create();
+    ImportBlackboardFromJSON(json, *bb);
+    ASSERT_EQ(bb->get<int64_t>("a"), 2147483648LL);
+    ASSERT_EQ(bb->get<int64_t>("b"), 5000000000LL);
+    ASSERT_EQ(bb->get<int64_t>("c"), 4294967296LL);
+  }
+  // Negative values below the int32 minimum are preserved too.
+  {
+    auto res = exporter.fromJson(nlohmann::json(int64_t(-5000000000LL)));
+    ASSERT_TRUE(res) << res.error();
+    ASSERT_EQ(res->first.cast<int64_t>(), -5000000000LL);
+  }
+  // Values that fit keep the int type, unchanged from before.
+  {
+    auto res = exporter.fromJson(nlohmann::json(100));
+    ASSERT_TRUE(res) << res.error();
+    ASSERT_EQ(res->first.cast<int>(), 100);
+  }
+  // An int64_t entry survives an Export/Import round-trip.
+  {
+    auto bb_in = BT::Blackboard::create();
+    bb_in->set("big", int64_t(5000000000LL));
+    auto bb_out = BT::Blackboard::create();
+    ImportBlackboardFromJSON(ExportBlackboardToJSON(*bb_in), *bb_out);
+    ASSERT_EQ(bb_out->get<int64_t>("big"), 5000000000LL);
+  }
+}
+
 TEST_F(JsonTest, VectorInteger)
 {
   BT::JsonExporter& exporter = BT::JsonExporter::get();
@@ -233,6 +269,69 @@ TEST_F(JsonTest, VectorInteger)
   {
     ASSERT_EQ(vec[i], vec_out[i]);
   }
+}
+
+TEST_F(JsonTest, IntegerValuesAreRangeChecked)
+{
+  using nlohmann::json;
+  BT::JsonExporter& exporter = BT::JsonExporter::get();
+
+  ASSERT_EQ(BT::details::JsonToInteger<int>(json(-7)), -7);
+  ASSERT_EQ(BT::details::JsonToInteger<uint16_t>(json(65535)), 65535);
+  ASSERT_EQ(BT::details::JsonToInteger<int64_t>(json(INT64_MIN)), INT64_MIN);
+  ASSERT_EQ(BT::details::JsonToInteger<uint64_t>(json(UINT64_MAX)), UINT64_MAX);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<uint16_t>(json(65536)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<uint16_t>(json(-1)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(2.5)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(1e300)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(true)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json(std::nan(""))),
+               BT::RuntimeError);
+  // A floating point value with no fractional part converts, like Any::cast<int>()
+  ASSERT_EQ(BT::details::JsonToInteger<int>(json(100.0)), 100);
+  ASSERT_EQ(BT::details::JsonToInteger<int>(json(-3.0)), -3);
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<uint16_t>(json(65536.0)),
+               BT::RuntimeError);
+  {
+    auto result = exporter.fromJson(json::parse("[1, 2.0]"));
+    ASSERT_TRUE(result);
+    ASSERT_EQ(result->first.cast<std::vector<int>>(), (std::vector<int>{ 1, 2 }));
+  }
+
+  // The type of the array is taken from the first element. The other elements
+  // used to be truncated, wrapped, or cast out of range (undefined behavior).
+  for(const char* text :
+      { "[1, 2.5]", "[1, 1e300]", "[1, 5000000000]", "[1, -3000000000]" })
+  {
+    ASSERT_THROW(std::ignore = exporter.fromJson(json::parse(text)), BT::RuntimeError)
+        << text;
+    auto bb = BT::Blackboard::create();
+    ASSERT_THROW(BT::ImportBlackboardFromJSON(
+                     json::parse(R"({"v":)" + std::string(text) + "}"), *bb),
+                 BT::RuntimeError)
+        << text;
+  }
+  auto result = exporter.fromJson(json::parse("[1, -2, 2147483647]"));
+  ASSERT_TRUE(result) << result.error();
+  ASSERT_EQ(result->first.cast<std::vector<int>>(),
+            (std::vector<int>{ 1, -2, 2147483647 }));
+
+  // Same for the "json:" prefix of a std::vector<int> port
+  ASSERT_EQ(BT::convertFromString<std::vector<int>>("json:[3, -4]"),
+            (std::vector<int>{ 3, -4 }));
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:[1e300]"),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:[1.5]"),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:[4294967297]"),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:{\"a\":1}"),
+               BT::RuntimeError);
 }
 
 TEST_F(JsonTest, VectorSring)

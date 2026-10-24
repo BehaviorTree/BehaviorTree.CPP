@@ -1,0 +1,36 @@
+name: ros2-lyrical
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  industrial_ci:
+    strategy:
+      matrix:
+        env:
+          # TARGET_CMAKE_ARGS emulates the ROS build farm (bloom/debhelper),
+          # which configures with -DCMAKE_INSTALL_LIBDIR=lib/<multiarch>.
+          # AFTER_SCRIPT asserts that the library is still installed to
+          # $prefix/lib, as required by ament tooling (see issue #1175).
+          - ROS_DISTRO: lyrical
+            ROS_REPO: main
+            TARGET_CMAKE_ARGS: -DCMAKE_INSTALL_LIBDIR=lib/x86_64-linux-gnu
+            AFTER_SCRIPT: >-
+              lib=$(find "$BASEDIR/target_ws/install" -name libbehaviortree_cpp.so);
+              echo "libbehaviortree_cpp.so installed at: ${lib:-NOT FOUND}";
+              [[ "$lib" == */install/behaviortree_cpp/lib/libbehaviortree_cpp.so ]]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}
+        with:
+            package-name: behaviortree_cpp

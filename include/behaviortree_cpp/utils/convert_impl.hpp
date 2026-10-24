@@ -87,6 +87,29 @@ inline void checkLowerLimit(const From& from)
   }
 }
 
+// Rounding to a narrower floating point type is accepted, but a finite value
+// beyond the range of To has no representation there: the conversion is
+// undefined and in practice produces an infinity.
+template <typename From, typename To>
+inline void checkFloatingPointRange(const From& from)
+{
+  if constexpr(std::numeric_limits<To>::max_exponent <
+               std::numeric_limits<From>::max_exponent)
+  {
+    // Values below max + half an ulp still round to max (e.g. 3.4028235e38,
+    // the usual printout of FLT_MAX); from there on they round to infinity.
+    constexpr int half_ulp_exp =
+        std::numeric_limits<To>::max_exponent - std::numeric_limits<To>::digits - 1;
+    const From limit = static_cast<From>(std::numeric_limits<To>::max()) +
+                       std::ldexp(From(1), half_ulp_exp);
+    if(std::isfinite(from) && std::fabs(from) >= limit)
+    {
+      throw std::runtime_error("Value outside the numeric limits of the floating point "
+                               "type");
+    }
+  }
+}
+
 template <typename From, typename To>
 inline void checkTruncation(const From& from)
 {
@@ -102,7 +125,11 @@ inline void checkTruncation(const From& from)
     }
     else
     {
-      doesnt_fit = std::abs(static_cast<int64_t>(from)) > static_cast<int64_t>(max_exact);
+      // Negate in unsigned arithmetic: std::abs(INT64_MIN) overflows.
+      const auto value = static_cast<int64_t>(from);
+      const uint64_t magnitude =
+          value < 0 ? 0 - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
+      doesnt_fit = magnitude > max_exact;
     }
     if(doesnt_fit)
     {
@@ -114,12 +141,24 @@ inline void checkTruncation(const From& from)
   // Handle floating point to integer
   else if constexpr(std::is_floating_point_v<From> && std::is_integral_v<To>)
   {
-    if(from > static_cast<From>(std::numeric_limits<To>::max()) ||
-       from < static_cast<From>(std::numeric_limits<To>::lowest()) ||
+    // static_cast<From>(To::max) rounds up to an out-of-range value when To has
+    // more significant bits than From's mantissa (e.g. double -> int64_t). In
+    // that case a plain `>` lets the rounded boundary through and the cast to To
+    // below overflows, so use a half-open upper bound to reject it first.
+    constexpr bool max_rounds_up =
+        std::numeric_limits<To>::digits > std::numeric_limits<From>::digits;
+    const From max_limit = static_cast<From>(std::numeric_limits<To>::max());
+    const bool over = max_rounds_up ? (from >= max_limit) : (from > max_limit);
+    if(over || from < static_cast<From>(std::numeric_limits<To>::lowest()) ||
        from != std::nearbyint(from))
     {
       throw std::runtime_error("Invalid floating point to integer conversion");
     }
+  }
+  // Handle floating point to floating point (e.g. double to float)
+  else if constexpr(std::is_floating_point_v<From> && std::is_floating_point_v<To>)
+  {
+    checkFloatingPointRange<From, To>(from);
   }
   // Handle other conversions
   else
@@ -191,13 +230,7 @@ void convertNumber(const SRC& source, DST& target)
   else if constexpr(std::is_floating_point<SRC>::value ||
                     std::is_floating_point<DST>::value)
   {
-    bool both_float =
-        std::is_floating_point<SRC>::value && std::is_floating_point<DST>::value;
-    // to avoid being too pedantic, let's accept casting between double and float
-    if(!both_float)
-    {
-      checkTruncation<SRC, DST>(source);
-    }
+    checkTruncation<SRC, DST>(source);
     target = static_cast<DST>(source);
   }
 }

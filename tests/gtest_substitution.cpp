@@ -19,15 +19,28 @@ const char* json_text = R"(
     },
     "TestB": {
       "return_status": "FAILURE"
+    },
+    "TestScript": {
+      "return_status_script": "(mock_should_fail == true) ? FAILURE : SUCCESS",
+      "failure_script": "branch := 'failure'"
     }
   },
 
   "SubstitutionRules": {
     "actionA": "TestA",
     "actionB": "TestB",
-    "actionC": "NotAConfig"
+    "actionC": "NotAConfig",
+    "actionD": "TestScript"
   }
 }
+ )";
+
+const char* single_action_xml = R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <AlwaysSuccess name="action_A"/>
+  </BehaviorTree>
+</root>
  )";
 
 }  // namespace
@@ -40,10 +53,11 @@ TEST(Substitution, Parser)
 
   const auto& rules = factory.substitutionRules();
 
-  ASSERT_EQ(rules.size(), 3);
+  ASSERT_EQ(rules.size(), 4);
   ASSERT_EQ(rules.count("actionA"), 1);
   ASSERT_EQ(rules.count("actionB"), 1);
   ASSERT_EQ(rules.count("actionC"), 1);
+  ASSERT_EQ(rules.count("actionD"), 1);
 
   auto configA = std::get_if<TestNodeConfig>(&rules.at("actionA"));
   ASSERT_EQ(configA->return_status, NodeStatus::SUCCESS);
@@ -55,7 +69,208 @@ TEST(Substitution, Parser)
   ASSERT_EQ(configB->async_delay, std::chrono::milliseconds(0));
   ASSERT_TRUE(configB->post_script.empty());
 
+  auto configScript = std::get_if<TestNodeConfig>(&rules.at("actionD"));
+  ASSERT_FALSE(configScript->return_status_script.empty());
+  ASSERT_EQ(configScript->return_status_script, "(mock_should_fail == true) ? FAILURE : "
+                                                "SUCCESS");
+  ASSERT_EQ(configScript->failure_script, "branch := 'failure'");
+
   ASSERT_EQ(*std::get_if<std::string>(&rules.at("actionC")), "NotAConfig");
+}
+
+TEST(Substitution, TestNodePostScriptUsesRegisteredEnums)
+{
+  BehaviorTreeFactory factory;
+  factory.registerScriptingEnum("EXPECTED_VALUE", 42);
+  factory.registerBehaviorTreeFromText(single_action_xml);
+
+  TestNodeConfig test_config;
+  test_config.return_status = NodeStatus::SUCCESS;
+  test_config.post_script = "observed := EXPECTED_VALUE";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto blackboard = Blackboard::create();
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(blackboard->get<int>("observed"), 42);
+}
+
+TEST(Substitution, TestNodePostScriptReadsStatusNamedBlackboardKey)
+{
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(single_action_xml);
+
+  TestNodeConfig test_config;
+  test_config.return_status = NodeStatus::SUCCESS;
+  test_config.post_script = "observed := SUCCESS";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto blackboard = Blackboard::create();
+  blackboard->set("SUCCESS", 99);
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(blackboard->get<int>("observed"), 99);
+}
+
+TEST(Substitution, ParserRejectsMissingReturnStatusAndScript)
+{
+  static const char* invalid_json = R"(
+  {
+    "TestNodeConfigs": {
+      "BrokenConfig": {
+        "post_script": "branch := 'unused'"
+      }
+    },
+    "SubstitutionRules": {
+      "actionA": "BrokenConfig"
+    }
+  }
+  )";
+
+  BehaviorTreeFactory factory;
+  ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(invalid_json), RuntimeError);
+}
+
+TEST(Substitution, ParserRejectsNonIntegerAsyncDelay)
+{
+  // async_delay used to be read with get<int>(), which truncates a real
+  // number and casts an out-of-range one to int (undefined behavior).
+  for(const char* delay : { "1e300", "2.5", "5000000000" })
+  {
+    const std::string json_text = std::string(R"(
+    {
+      "TestNodeConfigs": {
+        "Delayed": { "return_status": "SUCCESS", "async_delay": )") +
+                                  delay + R"( }
+      },
+      "SubstitutionRules": { "actionA": "Delayed" }
+    })";
+
+    BehaviorTreeFactory factory;
+    ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(json_text), RuntimeError) << delay;
+  }
+}
+
+TEST(Substitution, ScriptedReturnStatusFromJson)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code="mock_should_fail := true"/>
+        <AlwaysSuccess name="action_A"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  static const char* json_rules = R"(
+  {
+    "TestNodeConfigs": {
+      "ConditionalMock": {
+        "return_status_script": "(mock_should_fail == true) ? FAILURE : SUCCESS",
+        "success_script": "branch := 'success'",
+        "failure_script": "branch := 'failure'"
+      }
+    },
+    "SubstitutionRules": {
+      "action_A": "ConditionalMock"
+    }
+  }
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.loadSubstitutionRuleFromJSON(json_rules);
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  auto blackboard = Blackboard::create();
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::FAILURE);
+  ASSERT_EQ(blackboard->get<std::string>("branch"), "failure");
+}
+
+TEST(Substitution, ScriptedReturnStatusOverridesFixedStatus)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code="mock_should_fail := true"/>
+        <AlwaysSuccess name="action_A"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  TestNodeConfig test_config;
+  test_config.return_status = NodeStatus::SUCCESS;
+  test_config.return_status_script = "(mock_should_fail == true) ? FAILURE : SUCCESS";
+  test_config.failure_script = "branch := 'failure'";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto blackboard = Blackboard::create();
+  auto tree = factory.createTree("MainTree", blackboard);
+
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::FAILURE);
+  ASSERT_EQ(blackboard->get<std::string>("branch"), "failure");
+}
+
+TEST(Substitution, ScriptedReturnStatusAsyncSubstitution)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code="mock_should_fail := false"/>
+        <AlwaysSuccess name="action_A"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  TestNodeConfig test_config;
+  test_config.return_status_script = "(mock_should_fail == true) ? FAILURE : SUCCESS";
+  test_config.async_delay = std::chrono::milliseconds(50);
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto tree = factory.createTree("MainTree");
+  auto future =
+      std::async(std::launch::async, [&tree]() { return tree.tickWhileRunning(); });
+
+  auto status = future.wait_for(std::chrono::seconds(5));
+  ASSERT_NE(status, std::future_status::timeout) << "Tree hung! tickWhileRunning did not "
+                                                    "complete within 5 seconds";
+  ASSERT_EQ(future.get(), NodeStatus::SUCCESS);
+}
+
+TEST(Substitution, ScriptedReturnStatusRejectsIdle)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <AlwaysSuccess name="action_A"/>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerBehaviorTreeFromText(xml_text);
+
+  TestNodeConfig test_config;
+  test_config.return_status_script = "IDLE";
+  factory.addSubstitutionRule("action_A", test_config);
+
+  auto tree = factory.createTree("MainTree");
+  ASSERT_THROW(tree.tickWhileRunning(), RuntimeError);
 }
 
 // Regression test for issue #934: segfault when substituting a SubTree node
@@ -350,4 +565,62 @@ TEST(Substitution, StringSubstitutionRegistrationID_Issue930)
 
   // The substituted node should still work correctly
   ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
+// Regression test: a substitution rule must not turn a node into a
+// structurally incompatible type. The XML for a compact leaf (<AlwaysSuccess/>)
+// carries no "ID" attribute and no children, so replacing it with a SubTree
+// (which reads element->Attribute("ID")) or a Decorator (which needs a child)
+// used to segfault at tree construction / first tick. It must now throw.
+TEST(Substitution, IncompatibleTypeSubstitutionThrows)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <AlwaysSuccess name="action_A"/>
+    </BehaviorTree>
+  </root>
+  )";
+
+  // leaf -> SubTree: element has no ID attribute
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.addSubstitutionRule("action_A", "SubTree");
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
+  }
+
+  // leaf -> Decorator: element has no child
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.addSubstitutionRule("action_A", "Inverter");
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
+  }
+
+  // leaf -> leaf stays valid (the common mock case)
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.registerSimpleAction("MyMock", [](TreeNode&) { return NodeStatus::SUCCESS; });
+    factory.addSubstitutionRule("action_A", "MyMock");
+    Tree tree;
+    ASSERT_NO_THROW(tree = factory.createTree("MainTree"));
+    EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  }
+}
+
+// Destroying a TestNode while its async_delay timer is pending makes
+// ~TimerQueue() run the handler (aborted) during the PImpl deletion. The
+// handler used to reach the PImpl through _p, which std::unique_ptr may have
+// already reset to nullptr at that point (libc++ does).
+TEST(Substitution, DestroyTestNodeWithPendingAsyncDelay)
+{
+  auto test_config = std::make_shared<TestNodeConfig>();
+  test_config->return_status = NodeStatus::SUCCESS;
+  test_config->async_delay = std::chrono::milliseconds(10000);
+
+  auto node = std::make_unique<TestNode>("mock", NodeConfig{}, test_config);
+  ASSERT_EQ(node->executeTick(), NodeStatus::RUNNING);
+  node.reset();
 }

@@ -14,12 +14,14 @@
 
 #include "tinyxml2.h"
 
+#include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/utils/wildcards.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
 #include <functional>
+#include <limits>
 
 namespace BT
 {
@@ -365,6 +367,28 @@ std::unique_ptr<TreeNode> BehaviorTreeFactory::instantiateTreeNode(
     }
   }
 
+  // A substitution rule must not turn a node into a structurally incompatible
+  // type. The XML was validated (children count, mandatory ID) against the
+  // original node type, so replacing a leaf with a SubTree, Decorator or
+  // Control leaves the builder with a node whose child or "ID" attribute the
+  // XML never supplied. That later dereferences a null child pointer or builds
+  // a std::string from a null Attribute("ID"). Allow same-type swaps and swaps
+  // to a leaf (the common "replace with a mock action" case, including the
+  // SubTree -> TestNode substitution used for mocking).
+  if(substituted)
+  {
+    const NodeType original_type = it_manifest->second.type;
+    const NodeType new_type = node->type();
+    if(new_type != original_type && new_type != NodeType::ACTION &&
+       new_type != NodeType::CONDITION)
+    {
+      throw RuntimeError("Substitution of node [", ID, "] of type [",
+                         toStr(original_type), "] with a node of type [", toStr(new_type),
+                         "] is not allowed: a substitution may only keep the same "
+                         "type or replace the node with a leaf (Action/Condition)");
+    }
+  }
+
   // No substitution rule applied: default behavior
   if(!substituted)
   {
@@ -531,13 +555,24 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
     for(auto const& [name, test_config] : test_configs.items())
     {
       auto& config = configs[name];
+      bool has_return_status = false;
 
-      auto return_status = test_config.at("return_status").get<std::string>();
-      config.return_status = convertFromString<NodeStatus>(return_status);
+      if(test_config.contains("return_status"))
+      {
+        auto return_status = test_config.at("return_status").get<std::string>();
+        config.return_status = convertFromString<NodeStatus>(return_status);
+        has_return_status = true;
+      }
+      if(test_config.contains("return_status_script"))
+      {
+        config.return_status_script =
+            test_config["return_status_script"].get<std::string>();
+      }
       if(test_config.contains("async_delay"))
       {
         config.async_delay =
-            std::chrono::milliseconds(test_config["async_delay"].get<int>());
+            std::chrono::milliseconds(details::JsonToInteger<int>(test_config["async_"
+                                                                              "delay"]));
       }
       if(test_config.contains("post_script"))
       {
@@ -550,6 +585,12 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
       if(test_config.contains("failure_script"))
       {
         config.failure_script = test_config["failure_script"].get<std::string>();
+      }
+
+      if(!has_return_status && config.return_status_script.empty())
+      {
+        throw RuntimeError("TestNodeConfig [", name,
+                           "] must contain return_status or return_status_script");
       }
     }
   }
@@ -641,6 +682,12 @@ void Tree::haltTree()
   BT::applyRecursiveVisitor(rootNode(), visitor);
 
   rootNode()->resetStatus();
+
+  // interrupt the sleep of tickWhileRunning(), if called from another thread
+  if(wake_up_)
+  {
+    wake_up_->emitSignal();
+  }
 }
 
 TreeNode* Tree::rootNode() const
@@ -711,6 +758,13 @@ void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
 
 uint16_t Tree::getUID()
 {
+  // UIDs are 16 bits wide (and serialized as such by Groot2 and the loggers):
+  // wrapping around would silently give two nodes the same UID.
+  if(uid_counter_ == std::numeric_limits<uint16_t>::max())
+  {
+    throw RuntimeError("Tree::getUID(): too many nodes, a tree can't have more than ",
+                       std::to_string(std::numeric_limits<uint16_t>::max()), " nodes");
+  }
   auto uid = ++uid_counter_;
   return uid;
 }
@@ -729,6 +783,13 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
     throw RuntimeError("Empty Tree");
   }
 
+  // haltTree() resets the root to IDLE. If that happens (from another thread)
+  // while the last tick returned RUNNING, we must not tick again, because that
+  // would restart the tree (issue #686).
+  const auto halted = [&]() {
+    return status == NodeStatus::RUNNING && rootNode()->status() == NodeStatus::IDLE;
+  };
+
   while(status == NodeStatus::IDLE ||
         (opt == TickOption::WHILE_RUNNING && status == NodeStatus::RUNNING))
   {
@@ -736,7 +797,7 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
 
     // Inner loop. The previous tick might have triggered the wake-up
     // in this case, unless TickOption::EXACTLY_ONCE, we tick again
-    while(opt != TickOption::EXACTLY_ONCE && status == NodeStatus::RUNNING &&
+    while(opt != TickOption::EXACTLY_ONCE && !halted() && status == NodeStatus::RUNNING &&
           wake_up_->waitFor(std::chrono::milliseconds(0)))
     {
       status = rootNode()->executeTick();
@@ -750,6 +811,10 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
     {
       sleep(std::chrono::milliseconds(sleep_time));
     }
+    if(halted())
+    {
+      return NodeStatus::IDLE;
+    }
   }
 
   return status;
@@ -757,7 +822,12 @@ NodeStatus Tree::tickRoot(TickOption opt, std::chrono::milliseconds sleep_time)
 
 void BlackboardRestore(const std::vector<Blackboard::Ptr>& backup, Tree& tree)
 {
-  assert(backup.size() == tree.subtrees.size());
+  if(backup.size() != tree.subtrees.size())
+  {
+    throw RuntimeError("BlackboardRestore: the backup contains ",
+                       std::to_string(backup.size()), " blackboards, but the tree has ",
+                       std::to_string(tree.subtrees.size()), " subtrees");
+  }
   for(size_t i = 0; i < tree.subtrees.size(); i++)
   {
     backup[i]->cloneInto(*(tree.subtrees[i]->blackboard));
@@ -798,11 +868,23 @@ void ImportTreeFromJSON(const nlohmann::json& json, Tree& tree)
     throw std::runtime_error("Number of blackboards don't match:");
   }
 
-  size_t index = 0;
-  for(const auto& [key, array] : json.items())
+  // The JSON object is keyed by subtree name (see ExportTreeToJSON) and is
+  // iterated in alphabetical order, which is unrelated to the order of
+  // tree.subtrees. Look up each blackboard by name, not by position.
+  for(const auto& subtree : tree.subtrees)
   {
-    auto& subtree = tree.subtrees.at(index++);
-    ImportBlackboardFromJSON(array, *subtree->blackboard);
+    auto sub_name = subtree->instance_name;
+    if(sub_name.empty())
+    {
+      sub_name = subtree->tree_ID;
+    }
+    const auto it = json.find(sub_name);
+    if(it == json.end())
+    {
+      throw std::runtime_error(
+          StrCat("ImportTreeFromJSON: missing blackboard of subtree [", sub_name, "]"));
+    }
+    ImportBlackboardFromJSON(*it, *subtree->blackboard);
   }
 }
 

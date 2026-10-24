@@ -50,7 +50,8 @@ public:
     Duration last_timestamp = {};
   };
 
-  // find the statistics of a node, based on its path
+  // find the statistics of a node, based on its path.
+  // If more nodes have the same path, this is the first one in depth-first order.
   const NodeStatistics& getStatistics(const std::string& path) const;
 
   // find the statistics of a node, based on its TreeNode::UID()

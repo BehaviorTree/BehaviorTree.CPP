@@ -63,6 +63,17 @@ set(BT_TESTS
   test_helper.hpp
 )
 
+# Functional coverage for the real Groot2 ZMQ protocol.
+if(BTCPP_GROOT_INTERFACE AND NOT WIN32)
+  list(APPEND BT_TESTS gtest_groot2_publisher_integration.cpp)
+endif()
+
+# These stress tests are useful only with TSan instrumentation, where the
+# otherwise invisible data races and lock-order inversions are reported.
+if(BTCPP_GROOT_INTERFACE AND BTCPP_ENABLE_TSAN AND NOT WIN32)
+  list(APPEND BT_TESTS gtest_groot2_publisher_thread_safety.cpp)
+endif()
+
 if(ament_cmake_FOUND)
 
     find_package(ament_cmake_gtest REQUIRED)
@@ -96,8 +107,20 @@ else()
 
 endif()
 
+add_test(
+    NAME cmake_subproject_version
+    COMMAND ${CMAKE_COMMAND}
+        -S ${CMAKE_CURRENT_SOURCE_DIR}/cmake/subproject_version
+        -B ${CMAKE_CURRENT_BINARY_DIR}/cmake/subproject_version
+        "-DBTCPP_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DBTCPP_EXPECTED_VERSION=${PROJECT_VERSION}"
+)
+
 target_include_directories(behaviortree_cpp_test PRIVATE include)
 target_link_libraries(behaviortree_cpp_test ${BTCPP_LIBRARY} bt_sample_nodes)
+if(MSVC)
+  target_compile_options(behaviortree_cpp_test PRIVATE "/utf-8")
+endif()
 target_compile_definitions(behaviortree_cpp_test PRIVATE BT_TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Ensure plugin is built before tests run, and tests can find it

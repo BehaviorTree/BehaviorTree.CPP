@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.9.0 LANGUAGES C CXX)
+project(behaviortree_cpp VERSION 4.10.0 LANGUAGES C CXX)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -25,12 +25,15 @@ option(FORCE_STATIC_LINKING "Force static linking of all dependencies" OFF)
 
 option(USE_VENDORED_CPPZMQ "Use the bundled version of cppzmq" ON)
 option(USE_VENDORED_FLATBUFFERS "Use the bundled version of flatbuffers" ON)
+option(USE_VENDORED_JSON "Use the bundled version of nlohmann/json" ON)
 option(USE_VENDORED_MINICORO "Use the bundled version of minicoro" ON)
 option(USE_VENDORED_MINITRACE "Use the bundled version of minitrace" ON)
 
-set(BTCPP_LIB_DESTINATION     lib)
-set(BTCPP_INCLUDE_DESTINATION include)
-set(BTCPP_BIN_DESTINATION     bin)
+include(GNUInstallDirs)
+
+set(BTCPP_LIB_DESTINATION     "${CMAKE_INSTALL_LIBDIR}"     CACHE STRING "Library installation directory")
+set(BTCPP_INCLUDE_DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" CACHE STRING "Header installation directory")
+set(BTCPP_BIN_DESTINATION     "${CMAKE_INSTALL_BINDIR}"     CACHE STRING "Binary installation directory")
 
 set(BASE_FLAGS "")
 
@@ -92,7 +95,7 @@ if ( ament_cmake_FOUND )
     message(STATUS "------------------------------------------")
     include(cmake/ament_build.cmake)
 
-    find_package(tinyxml2_vendor REQUIRED)
+    find_package(tinyxml2_vendor QUIET)
     find_package(TinyXML2 REQUIRED)
 else()
     message(STATUS "------------------------------------------")
@@ -129,6 +132,10 @@ if(USE_VENDORED_FLATBUFFERS)
     add_subdirectory(3rdparty/flatbuffers)
 else()
     find_package(flatbuffers REQUIRED)
+endif()
+
+if(NOT USE_VENDORED_JSON)
+    find_package(nlohmann_json 3.10 REQUIRED)
 endif()
 
 if(USE_VENDORED_MINICORO)
@@ -183,6 +190,7 @@ list(APPEND BT_SOURCE
     src/controls/try_catch_node.cpp
     src/controls/while_do_else_node.cpp
 
+    src/loggers/abstract_logger.cpp
     src/loggers/bt_cout_logger.cpp
     src/loggers/bt_file_logger_v2.cpp
     src/loggers/bt_minitrace_logger.cpp
@@ -254,7 +262,13 @@ target_include_directories(${BTCPP_LIBRARY}
         ${BTCPP_EXTRA_INCLUDE_DIRS}
     )
 
-target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${CMAKE_PROJECT_VERSION}")
+target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${PROJECT_VERSION}")
+
+if(NOT USE_VENDORED_JSON)
+    # The public headers include <nlohmann/json.hpp> instead of the bundled copy
+    target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_SYSTEM_JSON)
+    target_link_libraries(${BTCPP_LIBRARY} PUBLIC nlohmann_json::nlohmann_json)
+endif()
 
 target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
@@ -324,8 +338,14 @@ INSTALL(TARGETS ${BTCPP_LIBRARY}
     INCLUDES DESTINATION ${BTCPP_INCLUDE_DESTINATION}
     )
 
+if(NOT USE_VENDORED_JSON)
+    # Don't install the bundled copy: a user that doesn't get BTCPP_SYSTEM_JSON
+    # must fail to compile, rather than mix two versions of nlohmann::json
+    set(BTCPP_INSTALL_EXCLUDE REGEX "contrib/json\\.hpp$" EXCLUDE)
+endif()
+
 INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
     DESTINATION ${BTCPP_INCLUDE_DESTINATION}
-    FILES_MATCHING PATTERN "*.h*")
+    FILES_MATCHING PATTERN "*.h*" ${BTCPP_INSTALL_EXCLUDE})
 
 export_btcpp_package()

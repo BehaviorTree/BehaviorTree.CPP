@@ -175,6 +175,23 @@ template <>
 template <>
 [[nodiscard]] double convertFromString<double>(StringView str);
 
+/**
+ * @brief Parse a double from a string using the semantics of
+ * std::from_chars(std::chars_format::general): locale-independent (only '.' as
+ * the decimal separator), rejecting leading whitespace, a leading '+', and hex
+ * floats. Includes a thread-safe fallback for standard libraries that lack the
+ * floating-point std::from_chars overload (e.g. Apple libc++).
+ *
+ * @param str  the input string.
+ * @param out  set to the parsed value on success (left untouched on failure).
+ * @param require_full_consumption  when true, the whole string must be a valid
+ *        double (trailing characters cause failure); when false, parsing stops
+ *        at the first non-numeric character.
+ * @return true on success.
+ */
+[[nodiscard]] bool parseDouble(StringView str, double& out,
+                               bool require_full_consumption);
+
 // Integer numbers separated by the character ";"
 template <>
 [[nodiscard]] std::vector<int> convertFromString<std::vector<int>>(StringView str);
@@ -353,6 +370,9 @@ struct Timestamp
 /// and control characters (ASCII 0-31, 127). UTF-8 multibyte sequences are allowed.
 [[nodiscard]] char findForbiddenChar(StringView name);
 
+/// Describes a character returned by findForbiddenChar() for an error message.
+[[nodiscard]] std::string formatForbiddenChar(char c);
+
 class TypeInfo
 {
 public:
@@ -451,6 +471,11 @@ template <typename T = AnyTypeAllowed>
   auto sname = static_cast<std::string>(name);
   if(!IsAllowedPortName(sname))
   {
+    if(const char c = findForbiddenChar(sname); c != '\0')
+    {
+      throw RuntimeError("Port name '", sname, "' contains forbidden character ",
+                         formatForbiddenChar(c));
+    }
     throw RuntimeError("The name of a port must not be `name` or `ID` "
                        "and must start with an alphabetic character. "
                        "Underscore is reserved.");

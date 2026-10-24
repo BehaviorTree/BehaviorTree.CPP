@@ -59,6 +59,8 @@ public:
     if(status() == NodeStatus::IDLE)
     {
       child_running_ = false;
+      current_queue_.reset();
+
       // special case: the port contains a string that was converted to SharedQueue<T>
       if(static_queue_)
       {

@@ -396,11 +396,11 @@ bool TreeNode::isBlackboardPointer(StringView str, StringView* stripped_pointer)
   // strip leading and following spaces
   size_t front_index = 0;
   size_t last_index = str.size() - 1;
-  while(str[front_index] == ' ' && front_index <= last_index)
+  while(front_index <= last_index && str[front_index] == ' ')
   {
     front_index++;
   }
-  while(str[last_index] == ' ' && front_index <= last_index)
+  while(front_index <= last_index && str[last_index] == ' ')
   {
     last_index--;
   }

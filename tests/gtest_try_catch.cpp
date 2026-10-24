@@ -209,7 +209,7 @@ TEST_F(TryCatchTest, MinimumTwoChildren_ParseTimeValidation)
     </root>)";
 
   // Error should be caught at parse time, not tick time
-  ASSERT_THROW(factory.createTreeFromText(xml_text), BT::RuntimeError);
+  ASSERT_THROW((void)factory.createTreeFromText(xml_text), BT::RuntimeError);
 }
 
 TEST_F(TryCatchTest, ReExecuteAfterSuccess)

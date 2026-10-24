@@ -41,7 +41,14 @@ public:
 
   ~DelayNode() override
   {
-    halt();
+    // Only stop the timer thread here; do NOT call halt(). During tree
+    // destruction the child node may already be gone: nodes are owned by a
+    // flat std::vector<TreeNode::Ptr> whose element-destruction order is
+    // unspecified (libstdc++ tears down front-to-back, libc++ back-to-front),
+    // so the child can outlive or predecease this decorator. halt() ->
+    // DecoratorNode::halt() -> resetChild() dereferences that child and
+    // segfaults on libc++ (macOS). This mirrors TimeoutNode's destructor.
+    timer_.cancelAll();
   }
 
   DelayNode(const DelayNode&) = delete;
@@ -58,7 +65,6 @@ public:
   void halt() override;
 
 private:
-  TimerQueue<> timer_;
   uint64_t timer_id_;
 
   virtual BT::NodeStatus tick() override;
@@ -69,6 +75,9 @@ private:
   unsigned msec_;
   bool read_parameter_from_ports_;
   std::mutex delay_mutex_;
+  // Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed
+  // before delay_mutex_, which the timer handler locks.
+  TimerQueue<> timer_;
 };
 
 }  // namespace BT

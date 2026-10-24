@@ -14,11 +14,16 @@
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/loggers/bt_file_logger_v2.h"
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp/loggers/bt_observer.h"
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 
+#include <array>
+#include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <thread>
 
 #include <gtest/gtest.h>
 
@@ -192,6 +197,102 @@ TEST_F(LoggerTest, FileLogger2_MultipleTicks)
   ASSERT_TRUE(std::filesystem::exists(filepath));
 }
 
+// A minimal action that stays RUNNING until halted -- SimpleActionNode/SyncActionNode explicitly
+// forbid returning RUNNING, so the drain-race repro below needs a real (if synchronous) action
+// node instead.
+namespace
+{
+class AlwaysRunningNode : public BT::ActionNodeBase
+{
+public:
+  AlwaysRunningNode(const std::string& name, const BT::NodeConfig& config)
+    : BT::ActionNodeBase(name, config)
+  {}
+
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+
+  BT::NodeStatus tick() override
+  {
+    return BT::NodeStatus::RUNNING;
+  }
+
+  void halt() override
+  {}
+};
+}  // namespace
+
+// FileLogger2's destructor used to join the writer thread without draining
+// _p->transitions_queue afterward: a transition pushed after the writer's last swap (typically
+// the root's RUNNING->IDLE from a haltTree() issued right before the logger is destroyed) could
+// be lost, leaving the .btlog missing its final transition. The window is a scheduling race, not
+// deterministic, so this loops many iterations rather than asserting on a single run.
+TEST_F(LoggerTest, FileLogger2_DrainsQueueAfterHaltThenImmediateDestroy)
+{
+  BT::BehaviorTreeFactory local_factory;
+  local_factory.registerNodeType<AlwaysRunningNode>("AlwaysRunning");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Sequence>
+            <AlwaysRunning name="ActionA"/>
+          </Sequence>
+       </BehaviorTree>
+    </root>)";
+
+  constexpr int kIterations = 300;
+
+  for(int i = 0; i < kIterations; i++)
+  {
+    auto tree = local_factory.createTreeFromText(xml_text);
+    const std::string filepath = test_dir + "/drain_" + std::to_string(i) + ".btlog";
+    const uint16_t root_uid = tree.rootNode()->UID();
+
+    {
+      FileLogger2 logger(tree, filepath);
+      tree.tickOnce();  // root -> RUNNING, pushed onto the queue
+      tree.haltTree();  // root -> IDLE, pushed right before the logger is destroyed
+    }  // ~FileLogger2() runs here: join the writer thread, then (with the fix) drain the queue
+
+    // Parse the .btlog by hand (format documented in bt_file_logger_v2.h): 18-byte magic
+    // ("BTCPP4-FileLogger2"), 1-byte protocol, 4-byte XML length, the XML itself, 8-byte first
+    // timestamp, then a sequence of 9-byte Transition records (6 bytes timestamp, 2 bytes
+    // node_uid, 1 byte status).
+    std::ifstream file(filepath, std::ios::binary);
+    ASSERT_TRUE(file.is_open()) << "iteration " << i;
+
+    file.seekg(18 + 1);
+    int32_t xml_len = 0;
+    file.read(reinterpret_cast<char*>(&xml_len), sizeof(xml_len));
+    ASSERT_TRUE(file.good()) << "iteration " << i;
+    file.seekg(xml_len, std::ios::cur);
+    file.seekg(8, std::ios::cur);  // skip the first timestamp
+
+    uint8_t last_root_status = 0xFF;
+    std::array<char, 9> record{};
+    while(file.read(record.data(), record.size()))
+    {
+      uint16_t uid = 0;
+      uint8_t status = 0xFF;
+      std::memcpy(&uid, record.data() + 6, sizeof(uid));
+      std::memcpy(&status, record.data() + 8, sizeof(status));
+      if(uid == root_uid)
+      {
+        last_root_status = status;
+      }
+    }
+
+    ASSERT_EQ(last_root_status, static_cast<uint8_t>(NodeStatus::IDLE))
+        << "iteration " << i << ": the root's last recorded transition is status "
+        << int(last_root_status)
+        << ", not IDLE(0) -- the tree's halt never reached the .btlog before the file "
+           "closed";
+  }
+}
+
 // ============ MinitraceLogger tests ============
 
 TEST_F(LoggerTest, MinitraceLogger_Creation)
@@ -259,6 +360,33 @@ TEST_F(LoggerTest, MinitraceLogger_TransitionTypes)
   }
 
   ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
+TEST_F(LoggerTest, MinitraceLogger_LongNodeName)
+{
+  // The node name goes into a 1024 byte line buffer. A name long enough to
+  // overflow it used to be written out with snprintf's would-be length, which
+  // reads past the buffer and copies stack bytes into the trace file.
+  const std::string long_name(1000, 'A');
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <AlwaysSuccess name=")" +
+                               long_name + R"("/>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  std::string filepath = test_dir + "/trace_long_name.json";
+
+  {
+    MinitraceLogger logger(tree, filepath.c_str());
+    tree.tickWhileRunning();
+    logger.flush();
+  }
+
+  ASSERT_TRUE(std::filesystem::exists(filepath));
+  ASSERT_LT(std::filesystem::file_size(filepath), 4096u);
 }
 
 // ============ SqliteLogger tests ============
@@ -401,6 +529,59 @@ TEST_F(LoggerTest, SqliteLogger_MultipleTicks)
   ASSERT_TRUE(std::filesystem::exists(filepath));
 }
 
+// A ThreadedAction completes on its own worker thread, so the logger callback
+// of each instance runs concurrently with the ones invoked by the main thread.
+namespace
+{
+class ConcurrentAction : public BT::ThreadedAction
+{
+public:
+  ConcurrentAction(const std::string& name, const BT::NodeConfig& config)
+    : BT::ThreadedAction(name, config)
+  {}
+
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+
+  BT::NodeStatus tick() override
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+}  // namespace
+
+TEST_F(LoggerTest, SqliteLogger_ConcurrentTransitions)
+{
+  factory.registerNodeType<ConcurrentAction>("ConcurrentAction");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Parallel>
+            <ConcurrentAction name="A"/>
+            <ConcurrentAction name="B"/>
+          </Parallel>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  std::string filepath = test_dir + "/concurrent.db3";
+
+  {
+    SqliteLogger logger(tree, filepath);
+    for(int i = 0; i < 50; i++)
+    {
+      tree.tickWhileRunning();
+      tree.haltTree();
+    }
+  }
+
+  ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
 // ============ Multiple loggers simultaneously ============
 
 TEST_F(LoggerTest, MultipleLoggers)
@@ -493,4 +674,36 @@ TEST_F(LoggerTest, Logger_DisabledDuringExecution)
   }
 
   ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
+TEST(TreeObserverTest, NodesWithTheSameName)
+{
+  // Two siblings with the same name have the same fullPath()
+  static const char* xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Sequence>
+          <AlwaysSuccess name="step"/>
+          <AlwaysSuccess name="step"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  std::unique_ptr<TreeObserver> observer;
+  ASSERT_NO_THROW(observer = std::make_unique<TreeObserver>(tree));
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+
+  const auto& nodes = tree.subtrees.front()->nodes;
+  ASSERT_EQ(nodes.size(), 3u);
+  EXPECT_EQ(observer->statistics().size(), 3u);
+  EXPECT_EQ(observer->uidToPath().size(), 3u);
+  for(const auto& node : nodes)
+  {
+    EXPECT_EQ(observer->uidToPath().at(node->UID()), node->fullPath());
+    EXPECT_EQ(observer->getStatistics(node->UID()).success_count, 1u);
+  }
+  EXPECT_EQ(observer->pathToUID().at("step"), nodes[1]->UID());
 }

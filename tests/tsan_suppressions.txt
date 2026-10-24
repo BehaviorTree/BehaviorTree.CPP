@@ -1,7 +1,11 @@
 # ThreadSanitizer suppressions file for behaviortree_cpp_test
 
-# ZeroMQ false positives (third-party library)
-race:zmq::epoll_t::add_fd
+# ZeroMQ false positives (third-party library). libzmq is not built with TSan
+# instrumentation and uses hand-rolled atomics that TSan cannot understand.
+# The module rule covers a system-installed shared library; the namespace rule
+# covers the Conan build, where zmq is compiled from source and linked
+# statically, so its symbols do not live in a libzmq.so module.
+race:zmq::*
 race:libzmq.so
 
 # False positive: std::swap of std::deque under mutex provides proper synchronization

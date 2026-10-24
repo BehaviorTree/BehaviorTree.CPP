@@ -3,8 +3,16 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 
-// Use the version nlohmann::json embedded in BT.CPP
+#include <limits>
+#include <type_traits>
+
+// Use the version of nlohmann::json embedded in BT.CPP,
+// or the system one if BT.CPP was built with USE_VENDORED_JSON=OFF
+#ifdef BTCPP_SYSTEM_JSON
+#include <nlohmann/json.hpp>
+#else
 #include "behaviortree_cpp/contrib/json.hpp"
+#endif
 
 namespace BT
 {
@@ -244,6 +252,67 @@ inline void RegisterJsonDefinition()
 {
   JsonExporter::get().addConverter<T>();
 }
+
+namespace details
+{
+/**
+ * @brief Read a JSON number that must be representable as the integer T.
+ * Internal helper, not part of the public API.
+ *
+ * json.get<T>() converts a floating point value or an out-of-range integer
+ * with a plain static_cast, which truncates, wraps, or (for a value outside
+ * the range of T) is undefined behavior. This throws RuntimeError instead.
+ * A floating point value with no fractional part (e.g. 100.0) is accepted,
+ * like Any::cast<T>() does.
+ */
+template <typename T>
+[[nodiscard]] inline T JsonToInteger(const nlohmann::json& value)
+{
+  static_assert(std::is_integral_v<T> && !std::is_same_v<T, bool>);
+  const auto not_an_integer = [&value]() {
+    return RuntimeError(StrCat("JSON value [", value.dump(),
+                               "] is not an integer of type ", BT::demangle(typeid(T))));
+  };
+  if(value.is_number_unsigned())
+  {
+    const auto number = value.get<uint64_t>();
+    if(number <= static_cast<uint64_t>(std::numeric_limits<T>::max()))
+    {
+      return static_cast<T>(number);
+    }
+  }
+  else if(value.is_number_integer())
+  {
+    const auto number = value.get<int64_t>();
+    if constexpr(std::is_signed_v<T>)
+    {
+      if(number >= static_cast<int64_t>(std::numeric_limits<T>::min()) &&
+         number <= static_cast<int64_t>(std::numeric_limits<T>::max()))
+      {
+        return static_cast<T>(number);
+      }
+    }
+    else if(number >= 0 && static_cast<uint64_t>(number) <= std::numeric_limits<T>::max())
+    {
+      return static_cast<T>(number);
+    }
+  }
+  else if(value.is_number_float())
+  {
+    const auto number = value.get<double>();
+    try
+    {
+      SafeAny::details::checkTruncation<double, T>(number);
+      return static_cast<T>(number);
+    }
+    catch(const std::runtime_error&)
+    {
+      throw not_an_integer();
+    }
+  }
+  throw not_an_integer();
+}
+}  // namespace details
 
 }  // namespace BT
 

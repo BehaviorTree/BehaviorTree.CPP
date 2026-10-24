@@ -12,6 +12,10 @@ namespace BT
  *
  * As long as the object remains in scope, the mutex is locked, therefore
  * you must destroy this instance as soon as the pointer was used.
+ *
+ * LockedPtr does not own the object it points to: the owner is only expected
+ * to keep it alive while the mutex is locked. In particular, the pointer must
+ * not be considered valid after calling unlock().
  */
 template <typename T>
 class LockedPtr

@@ -123,6 +123,92 @@ TEST(BasicTypes, ConvertFromString_Double)
   ASSERT_THROW((void)convertFromString<double>("not_a_number"), RuntimeError);
 }
 
+TEST(BasicTypes, DoubleToIntBoundary)
+{
+  // A double that lands exactly on 2^63 must be rejected before the cast, not
+  // static_cast to int64_t (which is out of range and undefined behavior).
+  // 2^63 = 9223372036854775808.0; INT64_MAX is 9223372036854775807.
+  const double two_pow_63 = 9223372036854775808.0;
+  EXPECT_ANY_THROW((void)BT::Any(two_pow_63).cast<int64_t>());
+
+  // 2^64 lands one past UINT64_MAX and must likewise be rejected.
+  const double two_pow_64 = 18446744073709551616.0;
+  EXPECT_ANY_THROW((void)BT::Any(two_pow_64).cast<uint64_t>());
+
+  // In-range integral doubles still convert cleanly.
+  const double in_range = 4611686018427387904.0;  // 2^62
+  EXPECT_EQ(BT::Any(in_range).cast<int64_t>(), int64_t(4611686018427387904LL));
+  EXPECT_EQ(BT::Any(1000.0).cast<int64_t>(), int64_t(1000));
+
+  // Same boundary reached through Blackboard::set, which routes the numeric
+  // safe-cast check (isCastingSafe/ValidCast) instead of Any::convert.
+  auto bb = BT::Blackboard::create();
+  bb->set("k", int64_t(1));  // lock the entry to int64_t
+  EXPECT_ANY_THROW(bb->set("k", two_pow_63));
+  EXPECT_NO_THROW(bb->set("k", in_range));
+}
+
+TEST(BasicTypes, IntToDoubleBoundary)
+{
+  // The precision check must not negate INT64_MIN (signed overflow, undefined
+  // behavior). Its magnitude is above 2^53, so it is rejected like INT64_MAX.
+  EXPECT_ANY_THROW((void)BT::Any(INT64_MIN).cast<double>());
+  EXPECT_ANY_THROW((void)BT::Any(INT64_MAX).cast<double>());
+  EXPECT_EQ(BT::Any(int64_t(-4503599627370496LL)).cast<double>(), -4503599627370496.0);
+
+  // Through Blackboard::set, INT64_MAX rounds up to 2^63 as a double, which must
+  // not be cast back to int64_t. All three extremes are beyond 2^53.
+  auto bb = BT::Blackboard::create();
+  bb->set("d", 1.0);  // lock the entry to double
+  EXPECT_ANY_THROW(bb->set("d", INT64_MAX));
+  EXPECT_ANY_THROW(bb->set("d", UINT64_MAX));
+  EXPECT_ANY_THROW(bb->set("d", INT64_MIN));
+  EXPECT_NO_THROW(bb->set("d", int64_t(1000)));
+  EXPECT_EQ(bb->get<double>("d"), 1000.0);
+}
+
+TEST(BasicTypes, FloatConversionLimits)
+{
+  // A double beyond the float range has no float representation: the cast is
+  // undefined and used to return an infinity. Reject it like every other
+  // out-of-range narrowing.
+  EXPECT_ANY_THROW((void)BT::Any(1e300).cast<float>());
+  EXPECT_ANY_THROW((void)BT::Any(-1e300).cast<float>());
+
+  // Rounding to float is still accepted, as are values close to the limit.
+  EXPECT_FLOAT_EQ(BT::Any(0.1).cast<float>(), 0.1f);
+  EXPECT_FLOAT_EQ(BT::Any(3.4e38).cast<float>(), 3.4e38f);
+  EXPECT_FLOAT_EQ(BT::Any(-3.4e38).cast<float>(), -3.4e38f);
+
+  // 3.4028235e38 (the usual printout of FLT_MAX) is a bit above FLT_MAX as a
+  // double, but below FLT_MAX + half an ulp, so it rounds to FLT_MAX.
+  constexpr float flt_max = std::numeric_limits<float>::max();
+  EXPECT_EQ(BT::Any(3.4028235e38).cast<float>(), flt_max);
+  EXPECT_EQ(BT::Any(-3.4028235e38).cast<float>(), -flt_max);
+  EXPECT_EQ(convertFromString<float>("3.4028235e38"), flt_max);
+  // FLT_MAX + half an ulp rounds to infinity.
+  EXPECT_ANY_THROW((void)BT::Any(0x1.ffffffp+127).cast<float>());
+  EXPECT_ANY_THROW((void)convertFromString<float>("6.8056473e38"));
+  // Widening never throws, and non-finite values pass through.
+  EXPECT_EQ(BT::Any(flt_max).cast<double>(), double(flt_max));
+  EXPECT_TRUE(std::isinf(BT::Any(std::numeric_limits<double>::infinity()).cast<float>()));
+
+  // Same path through a blackboard entry holding a double.
+  auto bb = BT::Blackboard::create();
+  bb->set("v", 1e300);
+  EXPECT_ANY_THROW((void)bb->get<float>("v"));
+  bb->set("v", 2.5);
+  EXPECT_FLOAT_EQ(bb->get<float>("v"), 2.5f);
+
+  // The string conversions must agree with std::from_chars<float>, which
+  // reports result_out_of_range for these literals.
+  EXPECT_ANY_THROW((void)convertFromString<float>("1e300"));
+  EXPECT_ANY_THROW((void)convertFromString<float>("-1e300"));
+  EXPECT_FLOAT_EQ(convertFromString<float>("1.5"), 1.5f);
+  EXPECT_ANY_THROW((void)BT::Any(std::string("1e300")).cast<float>());
+  EXPECT_FLOAT_EQ(BT::Any(std::string("1.5")).cast<float>(), 1.5f);
+}
+
 TEST(BasicTypes, ConvertFromString_Bool)
 {
   ASSERT_TRUE(convertFromString<bool>("true"));

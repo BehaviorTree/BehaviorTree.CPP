@@ -17,6 +17,9 @@ MinitraceLogger::MinitraceLogger(const Tree& tree, const char* filename_json)
 
 MinitraceLogger::~MinitraceLogger()
 {
+  // Stop status callbacks before shutting down minitrace.
+  unsubscribeFromTreeChanges();
+
   mtr_flush();
   mtr_shutdown();
 }

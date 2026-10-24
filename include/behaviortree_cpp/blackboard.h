@@ -1,7 +1,11 @@
 #pragma once
 
 #include "behaviortree_cpp/basic_types.h"
+#ifdef BTCPP_SYSTEM_JSON
+#include <nlohmann/json.hpp>
+#else
 #include "behaviortree_cpp/contrib/json.hpp"
+#endif
 #include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/utils/locked_reference.hpp"
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
@@ -123,7 +127,14 @@ public:
 
   void debugMessage() const;
 
-  [[nodiscard]] std::vector<StringView> getKeys() const;
+  /// The names of all the entries stored in this blackboard (copies).
+  [[nodiscard]] std::vector<std::string> getKeyNames() const;
+
+  // The views point into the storage: they dangle as soon as another thread
+  // removes the entry.
+  [[deprecated(
+      "The views may dangle: use getKeyNames")]] [[nodiscard]] std::vector<StringView>
+  getKeys() const;
 
   [[deprecated("This command is unsafe. Consider using Backup/Restore instead")]] void
   clear();
@@ -255,6 +266,8 @@ inline T Blackboard::get(const std::string& key) const
 
 inline void Blackboard::unset(const std::string& key)
 {
+  // the entry (i.e. the stored value) is destroyed outside the lock
+  std::shared_ptr<Entry> removed;
   std::unique_lock storage_lock(storage_mutex_);
 
   // check local storage
@@ -265,6 +278,7 @@ inline void Blackboard::unset(const std::string& key)
     return;
   }
 
+  removed = std::move(it->second);
   storage_.erase(it);
 }
 
@@ -276,15 +290,16 @@ inline void Blackboard::set(const std::string& key, const T& value)
     rootBlackboard()->set(key.substr(1, key.size() - 1), value);
     return;
   }
-  std::shared_lock storage_lock(storage_mutex_);
-
-  // check local storage
-  auto it = storage_.find(key);
-  if(it == storage_.end())
+  // getEntry() follows the remapping to the parent blackboard, exactly like
+  // the readers do. A key that resolves to an existing entry (local or
+  // remapped) must go through the type check below: createEntryImpl() would
+  // follow the same remapping and return the pre-existing entry, and writing
+  // to it blindly bypasses the type lock and the string conversion.
+  auto entry_ptr = getEntry(key);
+  if(!entry_ptr)
   {
     // create a new entry
     Any new_value(value);
-    storage_lock.unlock();
     std::shared_ptr<Blackboard::Entry> entry;
     // if a new generic port is created with a string, it's type should be AnyTypeAllowed
     if constexpr(std::is_same_v<std::string, T>)
@@ -309,10 +324,6 @@ inline void Blackboard::set(const std::string& key, const T& value)
   {
     // this is not the first time we set this entry, we need to check
     // if the type is the same or not.
-    // Copy shared_ptr to prevent use-after-free if another thread
-    // calls unset() while we hold the reference (BUG-2 fix).
-    auto entry_ptr = it->second;
-    storage_lock.unlock();
     Entry& entry = *entry_ptr;
 
     std::scoped_lock scoped_lock(entry.entry_mutex);

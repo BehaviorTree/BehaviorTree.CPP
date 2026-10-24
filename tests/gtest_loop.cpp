@@ -410,6 +410,42 @@ TEST(LoopNode, RestartAfterCompletion)
   ASSERT_EQ(tick_count, 3);  // Should iterate over queue again
 }
 
+TEST(LoopNode, RestartAfterCompletion_VectorFromBlackboard)
+{
+  BehaviorTreeFactory factory;
+
+  int tick_count = 0;
+  factory.registerSimpleAction("CountTicks", [&tick_count](TreeNode&) {
+    tick_count++;
+    return NodeStatus::SUCCESS;
+  });
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <LoopInt queue="{my_vector}" value="{val}">
+            <CountTicks/>
+          </LoopInt>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("my_vector", std::vector{ 1, 2, 3 });
+
+  // First execution
+  auto status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(tick_count, 3);
+
+  // Reset and execute again
+  tree.haltTree();
+  tick_count = 0;
+  tree.rootBlackboard()->set("my_vector", std::vector{ 1, 2, 3 });
+  status = tree.tickWhileRunning();
+  ASSERT_EQ(status, NodeStatus::SUCCESS);
+  ASSERT_EQ(tick_count, 3);  // Should iterate over vector again
+}
+
 // ============ convertFromString tests for SharedQueue ============
 
 TEST(LoopNode, ConvertFromString_Int)

@@ -1,0 +1,7 @@
+<root BTCPP_format="4" main_tree_to_execute = "ChildIncludeParentCycle">
+  <include path="../parent_include_child_cycle.xml" />
+
+  <BehaviorTree ID="ChildIncludeParentCycle">
+    <AlwaysSuccess />
+  </BehaviorTree>
+</root>

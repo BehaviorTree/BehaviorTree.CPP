@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <typeindex>
 
@@ -32,6 +33,12 @@ namespace BT
 {
 
 static std::type_index UndefinedAnyType = typeid(nullptr);
+
+// Declared here (defined in basic_types.cpp, documented in basic_types.h) so that
+// Any can share the locale-independent double parser without including
+// basic_types.h, which itself includes this header.
+[[nodiscard]] bool parseDouble(std::string_view str, double& out,
+                               bool require_full_consumption);
 
 // Trait to detect std::shared_ptr types (used for polymorphic port support)
 template <typename T>
@@ -252,6 +259,12 @@ inline bool ValidCast(const SRC& val)
       {
         // For integral to float, check if we can represent the value exactly
         TO as_float = static_cast<TO>(val);
+        // as_float can round up to 2^digits (e.g. INT64_MAX -> 2^63), one past
+        // the max of SRC. Casting that back to SRC would overflow.
+        if(as_float >= std::ldexp(TO(1), std::numeric_limits<SRC>::digits))
+        {
+          return false;
+        }
         SRC back_conv = static_cast<SRC>(as_float);
         return back_conv == val;
       }
@@ -259,8 +272,16 @@ inline bool ValidCast(const SRC& val)
     // Handle conversion to integral
     else if constexpr(std::is_integral_v<TO>)
     {
-      if(val > static_cast<SRC>(std::numeric_limits<TO>::max()) ||
-         val < static_cast<SRC>(std::numeric_limits<TO>::lowest()))
+      // static_cast<SRC>(TO::max) rounds up to an out-of-range value when TO has
+      // more significant bits than a floating SRC's mantissa (e.g. double ->
+      // int64_t). A plain `>` would let that rounded boundary through and the
+      // cast to TO below overflows, so use a half-open upper bound in that case.
+      constexpr bool max_rounds_up =
+          std::is_floating_point_v<SRC> &&
+          std::numeric_limits<TO>::digits > std::numeric_limits<SRC>::digits;
+      const SRC max_limit = static_cast<SRC>(std::numeric_limits<TO>::max());
+      const bool over = max_rounds_up ? (val >= max_limit) : (val > max_limit);
+      if(over || val < static_cast<SRC>(std::numeric_limits<TO>::lowest()))
       {
         return false;
       }
@@ -438,19 +459,28 @@ inline nonstd::expected<T, std::string> Any::stringToNumber() const
 #else
   try
   {
-    if constexpr(std::is_same_v<T, uint16_t>)
-    {
-      return std::stoul(str.toStdString());
-    }
     if constexpr(std::is_integral_v<T>)
     {
+      // convert<T>() rejects values that don't fit in T, matching the
+      // std::from_chars branch above.
       const int64_t val = std::stol(str.toStdString());
       Any temp_any(val);
       return temp_any.convert<T>();
     }
     if constexpr(std::is_floating_point_v<T>)
     {
-      return std::stod(str.toStdString());
+      // std::stod honors LC_NUMERIC, so under a locale that uses ',' as decimal
+      // separator "3.5" would silently parse as 3. parseDouble reproduces the
+      // std::from_chars semantics of the branch above, on every platform.
+      double value = 0.0;
+      if(parseDouble(str.toStdStringView(), value, /*require_full_consumption=*/false))
+      {
+        // same range check as the integral branch: a value that does not fit
+        // in a float is an error, like std::from_chars reports above
+        Any temp_any(value);
+        return temp_any.convert<T>();
+      }
+      return nonstd::make_unexpected("Any failed string to number conversion");
     }
   }
   catch(...)
@@ -560,7 +590,7 @@ inline nonstd::expected<T, std::string> Any::tryCast() const
 
   if(auto res = convert<T>())
   {
-    return res.value();
+    return std::move(res.value());
   }
   else
   {
