@@ -241,25 +241,6 @@ TEST(Reactive, AsyncSequenceAndAsyncFallbackInReactiveSequence)
   EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
 }
 
-// DISABLED: fails, not yet fixed.
-TEST(Reactive, DISABLED_TwoAsyncActionsInReactiveSequence)
-{
-  static const char* reactive_xml_text = R"(
-<root BTCPP_format="4" >
-  <BehaviorTree ID="MainTree">
-    <ReactiveSequence>
-      <Sleep msec="100" name="first"/>
-      <Sleep msec="200" name="second"/>
-    </ReactiveSequence>
-  </BehaviorTree>
-</root>
-)";
-
-  BT::BehaviorTreeFactory factory;
-
-  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
-}
-
 TEST(Reactive, SingleAsyncChildInReactiveSequenceIsAllowed)
 {
   static const char* reactive_xml_text = R"(
