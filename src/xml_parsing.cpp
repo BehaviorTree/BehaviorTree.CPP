@@ -12,6 +12,7 @@
 
 #include "behaviortree_cpp/basic_types.h"
 
+#include <algorithm>
 #include <charconv>
 #include <cstdio>
 #include <cstring>
@@ -102,6 +103,15 @@ namespace
 auto StrEqual = [](const char* str1, const char* str2) -> bool {
   return strcmp(str1, str2) == 0;
 };
+
+// Normalized form of an included file path, so that different spellings of
+// the same file ("a.xml", "./a.xml", "dir/../a.xml") compare equal.
+std::filesystem::path IncludeKey(const std::filesystem::path& absolute_path)
+{
+  std::error_code err;
+  auto canonical = std::filesystem::weakly_canonical(absolute_path, err);
+  return err ? absolute_path.lexically_normal() : canonical;
+}
 
 void validateModelName(const std::string& name, int line_number)
 {
@@ -242,6 +252,8 @@ struct XMLParser::PImpl
   const BehaviorTreeFactory* factory = nullptr;
 
   std::filesystem::path current_path;
+  // files currently being loaded through <include>, used to detect cycles
+  std::vector<std::filesystem::path> include_stack;
   std::map<std::string, SubtreeModel> subtree_models;
 
   int suffix_count = 0;
@@ -289,6 +301,7 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
   doc->LoadFile(filepath.string().c_str());
 
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
+  _p->include_stack = { IncludeKey(std::filesystem::absolute(filepath)) };
 
   _p->loadDocImpl(doc, add_includes);
 }
@@ -300,6 +313,7 @@ void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
   XMLDocument* doc = _p->opened_documents.back().get();
   doc->Parse(xml_text.c_str(), xml_text.size());
 
+  _p->include_stack.clear();
   _p->loadDocImpl(doc, add_includes);
 }
 
@@ -414,6 +428,16 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       file_path = current_path / file_path;
     }
 
+    // A file that includes itself, directly or through other files, would
+    // otherwise recurse until the stack overflows.
+    auto include_key = IncludeKey(file_path);
+    if(std::find(include_stack.begin(), include_stack.end(), include_key) !=
+       include_stack.end())
+    {
+      throw RuntimeError("Cyclic <include> detected: the file [", include_key.string(),
+                         "] includes itself, directly or through other files");
+    }
+
     opened_documents.push_back(std::make_unique<XMLDocument>());
     XMLDocument* next_doc = opened_documents.back().get();
 
@@ -421,8 +445,10 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
     const auto previous_path = current_path;
     current_path = std::filesystem::absolute(file_path.parent_path());
 
+    include_stack.push_back(std::move(include_key));
     next_doc->LoadFile(file_path.string().c_str());
     loadDocImpl(next_doc, add_includes);
+    include_stack.pop_back();
 
     // reset current path to the previous value
     current_path = previous_path;

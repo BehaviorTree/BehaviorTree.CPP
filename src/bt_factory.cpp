@@ -14,12 +14,14 @@
 
 #include "tinyxml2.h"
 
+#include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/utils/wildcards.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
 #include <functional>
+#include <limits>
 
 namespace BT
 {
@@ -569,7 +571,8 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
       if(test_config.contains("async_delay"))
       {
         config.async_delay =
-            std::chrono::milliseconds(test_config["async_delay"].get<int>());
+            std::chrono::milliseconds(details::JsonToInteger<int>(test_config["async_"
+                                                                              "delay"]));
       }
       if(test_config.contains("post_script"))
       {
@@ -755,6 +758,13 @@ void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
 
 uint16_t Tree::getUID()
 {
+  // UIDs are 16 bits wide (and serialized as such by Groot2 and the loggers):
+  // wrapping around would silently give two nodes the same UID.
+  if(uid_counter_ == std::numeric_limits<uint16_t>::max())
+  {
+    throw RuntimeError("Tree::getUID(): too many nodes, a tree can't have more than ",
+                       std::to_string(std::numeric_limits<uint16_t>::max()), " nodes");
+  }
   auto uid = ++uid_counter_;
   return uid;
 }
