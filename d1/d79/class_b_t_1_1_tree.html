@@ -260,7 +260,8 @@ template&lt;typename <a class="el" href="../../d2/d8d/namespace_b_t.html#a86a645
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>true if the timeout was NOT reached and the signal was received. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the timeout was NOT reached and the signal was received.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>On MSVC, std::condition_variable::wait_for() rounds the timeout up to the system timer resolution (about 15.6 ms), see microsoft/STL#2173. A short sleep, e.g. in <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html#ab89741eacae45161d75c7d22ded4228b">tickWhileRunning()</a>, can take much longer there. Calling timeBeginPeriod(1) once at startup (Windows API, links winmm) restores a 1 ms resolution. </dd></dl>
 
 </div>
 </div>
