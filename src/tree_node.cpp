@@ -13,6 +13,8 @@
 
 #include "behaviortree_cpp/tree_node.h"
 
+#include "behaviortree_cpp/control_node.h"
+
 #include <array>
 #include <atomic>
 #include <cstring>
@@ -51,6 +53,8 @@ struct TreeNode::PImpl
 
   std::array<ScriptFunction, size_t(PreCond::COUNT_)> pre_parsed;
   std::array<ScriptFunction, size_t(PostCond::COUNT_)> post_parsed;
+
+  TreeNode* parent = nullptr;
 };
 
 TreeNode::TreeNode(std::string name, NodeConfig config)
@@ -351,6 +355,45 @@ void TreeNode::setTickMonitorCallback(TickMonitorCallback callback)
 uint16_t TreeNode::UID() const
 {
   return _p->config.uid;
+}
+
+TreeNode* TreeNode::parent() const
+{
+  return _p->parent;
+}
+
+void TreeNode::setParent(TreeNode* parent)
+{
+  _p->parent = parent;
+}
+
+void TreeNode::haltRunningSiblings()
+{
+  TreeNode* child = this;
+
+  for(TreeNode* ancestor = _p->parent; ancestor != nullptr; ancestor = ancestor->parent())
+  {
+    // A Parallel node is the only one allowed to have several children RUNNING
+    // at the same time, so its other branches must be left untouched.
+    if(ancestor->allowsConcurrentChildren())
+    {
+      return;
+    }
+
+    if(auto* control = dynamic_cast<ControlNode*>(ancestor))
+    {
+      const auto& children = control->children();
+      for(size_t i = 0; i < children.size(); i++)
+      {
+        if(children[i] != child && children[i]->status() == NodeStatus::RUNNING)
+        {
+          control->haltChild(i);
+        }
+      }
+    }
+
+    child = ancestor;
+  }
 }
 
 const std::string& TreeNode::fullPath() const

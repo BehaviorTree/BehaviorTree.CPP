@@ -36,6 +36,11 @@ class ParallelAllNode : public ControlNode
 public:
   ParallelAllNode(const std::string& name, const NodeConfig& config);
 
+  [[nodiscard]] bool allowsConcurrentChildren() const override
+  {
+    return true;
+  }
+
   static PortsList providedPorts()
   {
     return { InputPort<int>("max_failures", 1,

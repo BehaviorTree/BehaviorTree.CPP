@@ -193,6 +193,21 @@ public:
 
   virtual NodeType type() const = 0;
 
+  /// Parent of this node in the tree, or nullptr for the root of a subtree.
+  [[nodiscard]] TreeNode* parent() const;
+
+  /// Set by the parent when the node is added to the tree.
+  void setParent(TreeNode* parent);
+
+  /** Control nodes that are meant to keep several children RUNNING at the same
+   * time (only Parallel) override this to true, so that the branches below
+   * them are not halted when an asynchronous node is (re)started.
+   */
+  [[nodiscard]] virtual bool allowsConcurrentChildren() const
+  {
+    return false;
+  }
+
   using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus, NodeStatus>;
   using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
   using StatusChangeCallback = StatusChangeSignal::CallableFunction;
@@ -411,6 +426,20 @@ protected:
 
   /// Set the status to IDLE
   void resetStatus();
+
+  /** Halt the siblings that are still RUNNING while this node is about to
+   * start, walking up the tree to the root.
+   *
+   * Reactive control nodes such as ReactiveSequence and ReactiveFallback are
+   * only able to halt the siblings of the child that returned RUNNING, and
+   * they do so *after* that child has been ticked. An asynchronous node in a
+   * different branch of the tree is therefore still RUNNING when the new
+   * action starts, which is the race described in issue #1031.
+   *
+   * Asynchronous nodes call this method when they transition from IDLE, so
+   * that the previously running branch is halted before onStart().
+   */
+  void haltRunningSiblings();
 
   // Only BehaviorTreeFactory should call this
   void setRegistrationID(StringView ID);

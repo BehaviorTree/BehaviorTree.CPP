@@ -109,6 +109,10 @@ NodeStatus CoroActionNode::executeTick()
   // create a new coroutine, if necessary
   if(_p->coro == nullptr)
   {
+    // The previous branch must be stopped before this action starts, otherwise
+    // both would be running at the same time (see issue #1031).
+    haltRunningSiblings();
+
     // First initialize a `desc` object through `mco_desc_init`.
     _p->desc = mco_desc_init(CoroEntry, 0);
     _p->desc.user_data = this;
@@ -169,6 +173,9 @@ NodeStatus StatefulActionNode::tick()
 
   if(prev_status == NodeStatus::IDLE)
   {
+    // The previous branch must be stopped before this action starts, otherwise
+    // both would be running at the same time (see issue #1031).
+    haltRunningSiblings();
     const NodeStatus new_status = onStart();
     if(new_status == NodeStatus::IDLE)
     {
@@ -206,6 +213,10 @@ NodeStatus BT::ThreadedAction::executeTick()
   // The other thread is in charge for changing the status
   if(status() == NodeStatus::IDLE)
   {
+    // The previous branch must be stopped before this action starts, otherwise
+    // both would be running at the same time (see issue #1031).
+    haltRunningSiblings();
+
     setStatus(NodeStatus::RUNNING);
     halt_requested_ = false;
     thread_handle_ = std::async(std::launch::async, [this]() {
