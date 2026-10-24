@@ -66,6 +66,12 @@ public:
     // timestamp since epoch
     std::chrono::nanoseconds stamp = std::chrono::nanoseconds{ 0 };
 
+    // Subscribers of subscribeToEntry(), created on the first subscription.
+    // Protected by entry_mutex. It must remain the last member: Entry is
+    // allocated only inside the library, so appending it keeps the offsets of
+    // the members above (accessed by inline code) unchanged.
+    std::shared_ptr<EntryUpdatedSignal> update_signal;
+
     Entry(const TypeInfo& _info) : info(_info)
     {}
 
@@ -123,10 +129,13 @@ public:
   template <typename T>
   void set(const std::string& key, const T& value);
 
-  /** Subscribe to successful writes to a key, including its first assignment.
-   * Subtree remapping and root keys are resolved at subscription time.
-   * The subscription survives unset()/set() of the same key. No initial
-   * notification is sent, and assigning the same value still notifies.
+  /** Subscribe to successful writes to the entry of a key.
+   * Subtree remapping and root keys are resolved at subscription time. If the
+   * entry doesn't exist, a generic (AnyTypeAllowed) one is created: the first
+   * strongly typed write sets its type, as usual. The subscription is bound to
+   * that entry: unset() drops it and a re-created entry is not observed.
+   * No initial notification is sent, and assigning the same value still notifies.
+   * Writes compiled against headers older than this API do not notify.
    *
    * Callbacks run synchronously on the writer's thread, outside blackboard
    * locks, and may read the latest value. Concurrent writers may invoke a
@@ -215,14 +224,10 @@ public:
 private:
   mutable std::shared_mutex storage_mutex_;
   std::unordered_map<std::string, std::shared_ptr<Entry>> storage_;
-  std::unordered_map<std::string, std::shared_ptr<EntryUpdatedSignal>> update_signals_;
   std::weak_ptr<Blackboard> parent_bb_;
   std::unordered_map<std::string, std::string> internal_to_external_;
 
   std::shared_ptr<Entry> createEntryImpl(const std::string& key, const TypeInfo& info);
-
-  std::shared_ptr<EntryUpdatedSignal> getUpdateSignal(const std::string& key,
-                                                      bool create);
 
   bool autoremapping_ = false;
 
@@ -325,6 +330,8 @@ inline void Blackboard::set(const std::string& key, const T& value)
   // follow the same remapping and return the pre-existing entry, and writing
   // to it blindly bypasses the type lock and the string conversion.
   auto entry_ptr = getEntry(key);
+  // copied under entry_mutex, notified after releasing it
+  std::shared_ptr<EntryUpdatedSignal> update_signal;
   if(!entry_ptr)
   {
     // create a new entry
@@ -348,6 +355,7 @@ inline void Blackboard::set(const std::string& key, const T& value)
     entry->value = new_value;
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
+    update_signal = entry->update_signal;
   }
   else
   {
@@ -368,8 +376,12 @@ inline void Blackboard::set(const std::string& key, const T& value)
       entry.sequence_id++;
       entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
       previous_any = std::move(new_value);
+      update_signal = entry.update_signal;
       scoped_lock.unlock();
-      notifyEntryUpdated(key);
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
       return;
     }
 
@@ -424,8 +436,12 @@ inline void Blackboard::set(const std::string& key, const T& value)
     }
     entry.sequence_id++;
     entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
+    update_signal = entry.update_signal;
   }
-  notifyEntryUpdated(key);
+  if(update_signal)
+  {
+    update_signal->notify();
+  }
 }
 
 template <typename T>

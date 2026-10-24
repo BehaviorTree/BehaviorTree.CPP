@@ -625,8 +625,12 @@ struct ExprAssignment : ExprBase
       entry->sequence_id++;
       entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
       const Any result = *dst_ptr;
+      auto update_signal = entry->update_signal;
       lock.unlock();
-      env.vars->notifyEntryUpdated(key);
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
       return result;
     }
 
@@ -684,8 +688,12 @@ struct ExprAssignment : ExprBase
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
     const Any result = *dst_ptr;
+    auto update_signal = entry->update_signal;
     lock.unlock();
-    env.vars->notifyEntryUpdated(key);
+    if(update_signal)
+    {
+      update_signal->notify();
+    }
     return result;
   }
 };

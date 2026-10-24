@@ -67,9 +67,20 @@ returns an empty handle because it cannot change through the blackboard.
 Missing inputs, output-only ports, invalid blackboards, and empty callbacks are
 reported with `LogicError`.
 
-Subscriptions bind to the resolved key at registration time. Reconfiguring port
-or subtree remapping requires a new subscription. Subscriptions survive removing
-and recreating that key. Removal itself does not notify.
+Subscriptions bind to the blackboard entry the key resolves to at registration
+time. Reconfiguring port or subtree remapping requires a new subscription.
+A subscription lives in the entry: `unset()` (or `cloneInto()` removing the key)
+drops it, without notifying, and an entry re-created afterwards under the same
+name is not observed. Subscribe again after re-creating the key.
+
+If the entry doesn't exist yet, subscribing creates it, so the key is listed by
+`getKeyNames()` before its first assignment, with an empty value.
+`subscribeToInputPort()` creates it with the port's type, as tree creation does
+for remapped ports. `Blackboard::subscribeToEntry()` creates a generic
+(`AnyTypeAllowed`) entry, like `set<std::string>()` does: the first strongly typed
+write sets its type. Note that, as for any existing generic entry, a first write
+of a `std::string` locks such an entry to `std::string`, whereas without the
+subscription `set<std::string>()` would have created a generic entry.
 
 Writes through `Blackboard::set()`, `TreeNode::setOutput()`, scripting assignments,
 JSON import, and `Blackboard::cloneInto()` notify. Clone notifications run after
@@ -78,12 +89,14 @@ entries. Raw writes through `Entry`, `AnyPtrLocked`, or shared objects are not
 observable automatically. Call `Blackboard::notifyEntryUpdated()` after releasing
 the entry lock to explicitly publish such a write.
 
-The lower-level `Blackboard::subscribeToEntry()` supports subscriptions before
-the first assignment without creating or changing the type of an entry.
-
 ## Compatibility
 
 This adds an opt-in API; existing port declarations and unsubscribed nodes keep
-their behavior. The additional subscription storage changes `Blackboard`'s
-binary layout. Rebuild the library and clients together; this API is proposed
-for the next major version, as requested by issue #872's BT.CPP-5 label.
+their behavior. It is ABI compatible with 4.x: the subscribers are stored in a
+member appended at the end of `Blackboard::Entry`, which is allocated only inside
+the library, and the layout of `Blackboard` is unchanged. Without subscribers, a
+write only checks that member for null under the entry lock it already holds.
+
+Every write path (`set()`, `setOutput()`, scripting assignments) is inline code
+in the headers. Writes performed by binaries compiled against older headers
+(4.10 and earlier) store the value but do not notify, until they are rebuilt.

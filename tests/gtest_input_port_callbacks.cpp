@@ -104,6 +104,18 @@ TEST(InputPortCallbacks, SubtreePort)
       "value", [&] { observed = node->getInput<int>("value").value(); });
   tree.rootBlackboard()->set("source", 17);
   EXPECT_EQ(observed, 17);
+  // Writes through the remapped key of the subtree reach the same entry
+  tree.subtrees.at(1)->blackboard->set("input", 23);
+  EXPECT_EQ(observed, 23);
+
+  // A missing entry is created in the parent blackboard, with the port's type
+  tree.rootBlackboard()->unset("source");
+  subscription = node->subscribeToInputPort(
+      "value", [&] { observed = node->getInput<int>("value").value(); });
+  ASSERT_NE(tree.rootBlackboard()->entryInfo("source"), nullptr);
+  EXPECT_EQ(tree.rootBlackboard()->entryInfo("source")->type(), typeid(int));
+  tree.rootBlackboard()->set("source", std::string("5"));
+  EXPECT_EQ(observed, 5);
 }
 
 TEST(InputPortCallbacks, DefaultsConstantsIdentityAndValidation)
@@ -147,18 +159,56 @@ TEST(InputPortCallbacks, FirstWriteUnsetAndFailedAssignment)
 {
   auto bb = Blackboard::create();
   int count = 0;
-  auto subscription = bb->subscribeToEntry("key", [&] {
-    EXPECT_TRUE(bb->getEntry("key"));
-    ++count;
-  });
-  EXPECT_FALSE(bb->getEntry("key"));
+  auto subscription = bb->subscribeToEntry("key", [&] { ++count; });
+  // Subscribing creates a generic entry: the first strongly typed write sets its type
+  ASSERT_NE(bb->entryInfo("key"), nullptr);
+  EXPECT_FALSE(bb->entryInfo("key")->isStronglyTyped());
+  EXPECT_EQ(count, 0);
   bb->set("key", 1);
+  EXPECT_EQ(bb->entryInfo("key")->type(), typeid(int));
   EXPECT_THROW(bb->set("key", std::string("not a number")), RuntimeError);
   EXPECT_EQ(count, 1);
-  bb->unset("key");
-  bb->set("key", 2);
+  bb->set("key", std::string("2"));
   EXPECT_EQ(count, 2);
   EXPECT_THROW((void)bb->subscribeToEntry("key", {}), LogicError);
+}
+
+TEST(InputPortCallbacks, SubscriptionIsBoundToTheEntry)
+{
+  auto bb = Blackboard::create();
+  int count = 0;
+  auto subscription = bb->subscribeToEntry("key", [&] { ++count; });
+  bb->set("key", 1);
+  EXPECT_EQ(count, 1);
+  // unset() drops the subscription: the re-created entry is not observed
+  bb->unset("key");
+  bb->set("key", 2);
+  EXPECT_EQ(count, 1);
+  bb->notifyEntryUpdated("key");
+  EXPECT_EQ(count, 1);
+}
+
+TEST(InputPortCallbacks, WritesWithoutSubscribersDoNotAllocateSignal)
+{
+  auto bb = Blackboard::create();
+  bb->set("key", 1);
+  bb->set("key", 2);
+  bb->set("text", std::string("a"));
+  ImportBlackboardFromJSON(nlohmann::json{ { "key", 3 } }, *bb);
+  Ast::Environment environment = { bb, {} };
+  EXPECT_TRUE(ParseScriptAndExecute(environment, "key = 4; created := 5"));
+  bb->notifyEntryUpdated("key");
+  auto copy = Blackboard::create();
+  bb->cloneInto(*copy);
+  for(const auto& blackboard : { bb, copy })
+  {
+    for(const auto& name : blackboard->getKeyNames())
+    {
+      EXPECT_FALSE(blackboard->getEntry(name)->update_signal) << name;
+    }
+  }
+  auto subscription = bb->subscribeToEntry("key", [] {});
+  EXPECT_TRUE(bb->getEntry("key")->update_signal);
 }
 
 TEST(InputPortCallbacks, ScriptsAndOutputPorts)
@@ -194,10 +244,11 @@ TEST(InputPortCallbacks, ImportAndRestore)
   backup->cloneInto(*bb);
   EXPECT_EQ(observed, 4);
   restore_subscription.reset();
+  // The entry re-created by cloneInto() is not observed
   bb->unset("key");
   backup->set("key", 6);
   backup->cloneInto(*bb);
-  EXPECT_EQ(observed, 6);
+  EXPECT_EQ(observed, 4);
 }
 
 TEST(InputPortCallbacks, CallbackExceptionLeavesValueCommitted)

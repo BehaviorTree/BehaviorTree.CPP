@@ -223,6 +223,8 @@ public:
    * Constant inputs return an empty handle. Missing inputs, output-only ports
    * and empty callbacks throw LogicError. Defaults and {=} remapping are
    * supported. Changing the port mapping later does not rebind subscriptions.
+   * The subscription is bound to the blackboard entry, which is created with
+   * the port's type if it doesn't exist yet; unset() of the key drops it.
    */
   [[nodiscard]] Blackboard::EntryUpdatedSubscriber
   subscribeToInputPort(const std::string& key, Blackboard::EntryUpdatedCallback callback);

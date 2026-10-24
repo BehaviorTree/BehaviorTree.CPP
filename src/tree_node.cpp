@@ -373,8 +373,13 @@ Blackboard::EntryUpdatedSubscriber TreeNode::subscribeToInputPort(
     {
       throw LogicError("subscribeToInputPort(): invalid blackboard");
     }
-    return config().blackboard->subscribeToEntry(std::string(*remapped_key),
-                                                 std::move(callback));
+    const auto bb_key = std::string(*remapped_key);
+    if(info != nullptr && !config().blackboard->getEntry(bb_key))
+    {
+      // Like getLockedPortContent(): create the entry with the port's type.
+      config().blackboard->createEntry(bb_key, *info);
+    }
+    return config().blackboard->subscribeToEntry(bb_key, std::move(callback));
   }
   return {};
 }
