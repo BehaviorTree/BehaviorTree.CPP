@@ -254,7 +254,6 @@ struct XMLParser::PImpl
   const BehaviorTreeFactory* factory = nullptr;
 
   std::filesystem::path current_path;
-  std::string current_file = "<unknown>";
   // files currently being loaded through <include>, used to detect cycles
   std::vector<std::filesystem::path> include_stack;
   std::map<std::string, SubtreeModel> subtree_models;
@@ -272,7 +271,6 @@ struct XMLParser::PImpl
     opened_documents.clear();
     tree_roots.clear();
     tree_sources.clear();
-    current_file = "<unknown>";
   }
 
 private:
@@ -306,7 +304,6 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
   doc->LoadFile(filepath.string().c_str());
 
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
-  _p->current_file = std::filesystem::absolute(filepath).string();
   _p->include_stack = { IncludeKey(std::filesystem::absolute(filepath)) };
 
   _p->loadDocImpl(doc, add_includes);
@@ -319,7 +316,6 @@ void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
   XMLDocument* doc = _p->opened_documents.back().get();
   doc->Parse(xml_text.c_str(), xml_text.size());
 
-  _p->current_file = "<inline XML>";
   _p->include_stack.clear();
   _p->loadDocImpl(doc, add_includes);
 }
@@ -450,9 +446,7 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 
     // change current path to the included file for handling additional relative paths
     const auto previous_path = current_path;
-    const std::string previous_file = current_file;
     current_path = std::filesystem::absolute(file_path.parent_path());
-    current_file = std::filesystem::absolute(file_path).string();
 
     include_stack.push_back(std::move(include_key));
     next_doc->LoadFile(file_path.string().c_str());
@@ -461,7 +455,6 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 
     // reset current path to the previous value
     current_path = previous_path;
-    current_file = previous_file;
   }
 
   // Collect the names of all nodes registered with the behavior tree factory
@@ -481,6 +474,9 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
   loadSubtreeModel(xml_root);
 
   // Register each BehaviorTree within the XML
+  const std::string source =
+      include_stack.empty() ? "<inline XML>" : include_stack.back().string();
+  std::unordered_set<std::string> ids_in_document;
   for(auto bt_node = xml_root->FirstChildElement("BehaviorTree"); bt_node != nullptr;
       bt_node = bt_node->NextSiblingElement("BehaviorTree"))
   {
@@ -494,17 +490,20 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       tree_name = "BehaviorTree_" + std::to_string(suffix_count++);
     }
 
-    const auto existing = tree_sources.find(tree_name);
-    if(existing != tree_sources.end())
+    // An ID that is already registered is replaced by the new definition.
+    // Warn when the previous one came from another source, or from this same
+    // document; reloading a file, or including it twice, stays silent.
+    const auto previous = tree_sources.find(tree_name);
+    const bool repeated_in_document = !ids_in_document.insert(tree_name).second;
+    if(repeated_in_document ||
+       (previous != tree_sources.end() && previous->second != source))
     {
-      throw RuntimeError("Duplicate BehaviorTree ID '", tree_name,
-                         "': first registered from '", existing->second,
-                         "', re-registered from '", current_file,
-                         "'. Call clearRegisteredBehaviorTrees() if you "
-                         "intend to reload.");
+      std::cout << "Warning: BehaviorTree ID [" << tree_name << "] in [" << source
+                << "] replaces the one previously registered from ["
+                << (repeated_in_document ? source : previous->second) << "]" << std::endl;
     }
     tree_roots[tree_name] = bt_node;
-    tree_sources[tree_name] = current_file;
+    tree_sources[tree_name] = source;
   }
 }
 

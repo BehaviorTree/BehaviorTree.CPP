@@ -419,7 +419,6 @@ TEST(BehaviorTreeReload, ReloadSameTree)
     ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
   }
 
-  factory.clearRegisteredBehaviorTrees();
   factory.registerBehaviorTreeFromText(xmlB);
   {
     auto tree = factory.createTree("MainTree");
