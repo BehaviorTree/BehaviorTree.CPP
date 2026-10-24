@@ -161,6 +161,40 @@ TEST(Groot2PublisherIntegration, PostHookRunsAfterNodeAndCanBeRemoved)
   EXPECT_EQ(tick_count, 2);
 }
 
+TEST(Groot2PublisherIntegration, HookRequestRejectsNonIntegerUid)
+{
+  BT::BehaviorTreeFactory factory;
+  factory.registerSimpleAction("CountAction",
+                               [](BT::TreeNode&) { return BT::NodeStatus::SUCCESS; });
+  auto tree = factory.createTreeFromText(kHookTreeXml);
+  auto [publisher, port] = Groot2Test::makePublisher(tree);
+  Groot2Test::Client client(port);
+  const auto uid = tree.rootNode()->UID();
+
+  // get<uint16_t>() used to wrap uid + 65536 and truncate uid + 0.5 to the uid
+  // of the node, and to cast 1e300 out of range (undefined behavior).
+  for(const nlohmann::json bad_uid :
+      { nlohmann::json(uid + 65536), nlohmann::json(uid + 0.5), nlohmann::json(1e300) })
+  {
+    auto hook = Groot2Test::makeHook(uid, BT::Monitor::Hook::Mode::REPLACE,
+                                     BT::Monitor::Hook::Position::PRE);
+    hook["uid"] = bad_uid;
+    auto reply = client.rawRequest(BT::Monitor::RequestType::HOOK_INSERT, hook.dump());
+    ASSERT_EQ(reply.size(), 2);
+    EXPECT_EQ(reply[0].to_string(), "error") << bad_uid;
+
+    const auto remove = nlohmann::json{ { "uid", bad_uid }, { "position", 0 } };
+    reply = client.rawRequest(BT::Monitor::RequestType::HOOK_REMOVE, remove.dump());
+    ASSERT_EQ(reply.size(), 2);
+    EXPECT_EQ(reply[0].to_string(), "error") << bad_uid;
+  }
+
+  auto dump_reply = client.request(BT::Monitor::RequestType::HOOKS_DUMP);
+  ASSERT_EQ(dump_reply.size(), 2);
+  EXPECT_TRUE(nlohmann::json::parse(dump_reply[1].to_string()).empty());
+  EXPECT_EQ(tree.tickExactlyOnce(), BT::NodeStatus::SUCCESS);
+}
+
 TEST(Groot2PublisherIntegration, MalformedRequestDoesNotTerminateServer)
 {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";

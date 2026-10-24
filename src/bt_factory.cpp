@@ -14,6 +14,7 @@
 
 #include "tinyxml2.h"
 
+#include "behaviortree_cpp/json_export.h"
 #include "behaviortree_cpp/utils/shared_library.h"
 #include "behaviortree_cpp/utils/wildcards.hpp"
 #include "behaviortree_cpp/xml_parsing.h"
@@ -570,7 +571,8 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
       if(test_config.contains("async_delay"))
       {
         config.async_delay =
-            std::chrono::milliseconds(test_config["async_delay"].get<int>());
+            std::chrono::milliseconds(details::JsonToInteger<int>(test_config["async_"
+                                                                              "delay"]));
       }
       if(test_config.contains("post_script"))
       {

@@ -133,6 +133,26 @@ TEST(Substitution, ParserRejectsMissingReturnStatusAndScript)
   ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(invalid_json), RuntimeError);
 }
 
+TEST(Substitution, ParserRejectsNonIntegerAsyncDelay)
+{
+  // async_delay used to be read with get<int>(), which truncates a real
+  // number and casts an out-of-range one to int (undefined behavior).
+  for(const char* delay : { "1e300", "2.5", "5000000000" })
+  {
+    const std::string json_text = std::string(R"(
+    {
+      "TestNodeConfigs": {
+        "Delayed": { "return_status": "SUCCESS", "async_delay": )") +
+                                  delay + R"( }
+      },
+      "SubstitutionRules": { "actionA": "Delayed" }
+    })";
+
+    BehaviorTreeFactory factory;
+    ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(json_text), RuntimeError) << delay;
+  }
+}
+
 TEST(Substitution, ScriptedReturnStatusFromJson)
 {
   static const char* xml_text = R"(
