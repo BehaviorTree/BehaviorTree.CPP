@@ -320,6 +320,10 @@ public:
      *
      * where "tree_id" come from the XML attribute <BehaviorTree ID="tree_id">
      *
+     * If a tree with the same ID is already registered, the new definition
+     * replaces it. A warning is printed when the previous definition came from
+     * a different file (or from the same document); reloading the same file
+     * is silent.
      */
   void registerBehaviorTreeFromFile(const std::filesystem::path& filename);
 

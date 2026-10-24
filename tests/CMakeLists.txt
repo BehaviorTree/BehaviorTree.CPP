@@ -23,6 +23,7 @@ set(BT_TESTS
   gtest_blackboard.cpp
   gtest_coroutines.cpp
   gtest_decorator.cpp
+  gtest_duplicate_tree.cpp
   gtest_enums.cpp
   gtest_factory.cpp
   gtest_fallback.cpp

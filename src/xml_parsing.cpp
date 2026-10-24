@@ -49,6 +49,7 @@
 
 #include <filesystem>
 #include <map>
+#include <unordered_map>
 
 #ifdef USING_ROS2
 #include "ament_index_cpp/version.h"
@@ -248,6 +249,7 @@ struct XMLParser::PImpl
 
   std::list<std::unique_ptr<XMLDocument> > opened_documents;
   std::map<std::string, const XMLElement*> tree_roots;
+  std::unordered_map<std::string, std::string> tree_sources;
 
   const BehaviorTreeFactory* factory = nullptr;
 
@@ -268,6 +270,7 @@ struct XMLParser::PImpl
     current_path = std::filesystem::current_path();
     opened_documents.clear();
     tree_roots.clear();
+    tree_sources.clear();
   }
 
 private:
@@ -471,6 +474,9 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
   loadSubtreeModel(xml_root);
 
   // Register each BehaviorTree within the XML
+  const std::string source =
+      include_stack.empty() ? "<inline XML>" : include_stack.back().string();
+  std::unordered_set<std::string> ids_in_document;
   for(auto bt_node = xml_root->FirstChildElement("BehaviorTree"); bt_node != nullptr;
       bt_node = bt_node->NextSiblingElement("BehaviorTree"))
   {
@@ -484,7 +490,20 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
       tree_name = "BehaviorTree_" + std::to_string(suffix_count++);
     }
 
+    // An ID that is already registered is replaced by the new definition.
+    // Warn when the previous one came from another source, or from this same
+    // document; reloading a file, or including it twice, stays silent.
+    const auto previous = tree_sources.find(tree_name);
+    const bool repeated_in_document = !ids_in_document.insert(tree_name).second;
+    if(repeated_in_document ||
+       (previous != tree_sources.end() && previous->second != source))
+    {
+      std::cout << "Warning: BehaviorTree ID [" << tree_name << "] in [" << source
+                << "] replaces the one previously registered from ["
+                << (repeated_in_document ? source : previous->second) << "]" << std::endl;
+    }
     tree_roots[tree_name] = bt_node;
+    tree_sources[tree_name] = source;
   }
 }
 
