@@ -21,6 +21,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <limits>
 
 namespace BT
 {
@@ -756,6 +757,13 @@ void Tree::applyVisitor(const std::function<void(TreeNode*)>& visitor)
 
 uint16_t Tree::getUID()
 {
+  // UIDs are 16 bits wide (and serialized as such by Groot2 and the loggers):
+  // wrapping around would silently give two nodes the same UID.
+  if(uid_counter_ == std::numeric_limits<uint16_t>::max())
+  {
+    throw RuntimeError("Tree::getUID(): too many nodes, a tree can't have more than ",
+                       std::to_string(std::numeric_limits<uint16_t>::max()), " nodes");
+  }
   auto uid = ++uid_counter_;
   return uid;
 }

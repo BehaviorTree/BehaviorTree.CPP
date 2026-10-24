@@ -121,6 +121,11 @@ struct Groot2Publisher::PImpl
 };
 
 Groot2Publisher::Groot2Publisher(const BT::Tree& tree, unsigned server_port)
+  : Groot2Publisher(tree, server_port, "*")
+{}
+
+Groot2Publisher::Groot2Publisher(const BT::Tree& tree, unsigned server_port,
+                                 const std::string& bind_address)
   : StatusChangeLogger(), _p(std::make_unique<PImpl>())
 {
   _p->server_port = server_port;
@@ -154,8 +159,9 @@ Groot2Publisher::Groot2Publisher(const BT::Tree& tree, unsigned server_port)
     }
   }
   //-------------------------------
-  _p->server_address = StrCat("tcp://*:", std::to_string(server_port));
-  _p->publisher_address = StrCat("tcp://*:", std::to_string(server_port + 1));
+  _p->server_address = StrCat("tcp://", bind_address, ":", std::to_string(server_port));
+  _p->publisher_address =
+      StrCat("tcp://", bind_address, ":", std::to_string(server_port + 1));
 
   _p->server.bind(_p->server_address.c_str());
   _p->publisher.bind(_p->publisher_address.c_str());
