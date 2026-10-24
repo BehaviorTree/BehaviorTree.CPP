@@ -270,6 +270,37 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(GetResult(" par1:='3'; par2:=4; par1!=par2").cast<int>(), 1);
 }
 
+// Issue #1246: a numeric string mixed with a number is used as that number
+TEST(ParserTest, NumericStringArithmetic)
+{
+  BT::Ast::Environment environment = { BT::Blackboard::create(), {} };
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+  environment.vars->set("int_str", std::string("42"));
+  environment.vars->set("dbl_str", std::string("1.5"));
+  environment.vars->set("text", std::string("hello"));
+
+  EXPECT_EQ(GetResult("int_str + 1").cast<double>(), 43.0);
+  EXPECT_EQ(GetResult("1 + int_str").cast<double>(), 43.0);
+  EXPECT_EQ(GetResult("int_str - 2").cast<double>(), 40.0);
+  EXPECT_EQ(GetResult("int_str * 2").cast<double>(), 84.0);
+  EXPECT_EQ(GetResult("3 / dbl_str").cast<double>(), 2.0);
+  EXPECT_EQ(GetResult("'1e3' + 1").cast<double>(), 1001.0);
+
+  // the whole string must be a number
+  EXPECT_ANY_THROW(GetResult("text + 1"));
+  EXPECT_ANY_THROW(GetResult("'42abc' + 1"));
+  EXPECT_ANY_THROW(GetResult("'true' + 1"));
+  EXPECT_ANY_THROW(GetResult("' 42' + 1"));
+
+  // unchanged: two strings concatenate, bitwise operators require numbers
+  EXPECT_EQ(GetResult("int_str + int_str").cast<std::string>(), "4242");
+  EXPECT_EQ(GetResult("int_str .. 1").cast<std::string>(), "421");
+  EXPECT_ANY_THROW(GetResult("int_str & 1"));
+}
+
 TEST(ParserTest, NotInitializedComparison)
 {
   BT::Ast::Environment environment = { BT::Blackboard::create(), {} };

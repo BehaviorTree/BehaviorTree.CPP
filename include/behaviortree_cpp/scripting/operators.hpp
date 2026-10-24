@@ -15,6 +15,7 @@
 #include "behaviortree_cpp/scripting/any_types.hpp"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 
+#include <charconv>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -48,6 +49,25 @@ inline double StringToDouble(const Any& value, const Environment& env)
     }
   }
   return value.cast<double>();
+}
+
+// Replace a string holding a whole number (e.g. "42" or "1.5") with that number.
+// Unlike StringToDouble, it rejects numeric prefixes, booleans and enums.
+inline void NumericStringToNumber(Any& value)
+{
+  const auto str = value.cast<std::string>();
+  const char* end = str.data() + str.size();
+  int64_t int_val = 0;
+  const auto [ptr, ec] = std::from_chars(str.data(), end, int_val);
+  double dbl_val = 0;
+  if(ec == std::errc() && ptr == end)
+  {
+    value = Any(int_val);
+  }
+  else if(parseDouble(str, dbl_val, /*require_full_consumption=*/true))
+  {
+    value = Any(dbl_val);
+  }
 }
 
 struct ExprBase
@@ -231,6 +251,20 @@ struct ExprBinaryArithmetic : ExprBase
     if(rhs_v.empty())
     {
       throw RuntimeError(ErrorNotInit("right", opStr()));
+    }
+
+    // A numeric string mixed with a number is used as that number, e.g. the
+    // literal SubTree port int_val="42" in "int_val + 1"
+    if(op == plus || op == minus || op == times || op == div)
+    {
+      if(lhs_v.isString() && rhs_v.isNumber())
+      {
+        NumericStringToNumber(lhs_v);
+      }
+      else if(lhs_v.isNumber() && rhs_v.isString())
+      {
+        NumericStringToNumber(rhs_v);
+      }
     }
 
     if(rhs_v.isNumber() && lhs_v.isNumber())
