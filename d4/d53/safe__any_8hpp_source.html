@@ -572,158 +572,161 @@ $(document).ready(function(){initNavTree('d4/d53/safe__any_8hpp_source.html','..
 <div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span>      <span class="keywordtype">double</span> value = 0.0;</div>
 <div class="line"><a id="l00476" name="l00476"></a><span class="lineno">  476</span>      <span class="keywordflow">if</span>(parseDouble(str.toStdStringView(), value, <span class="comment">/*require_full_consumption=*/</span><span class="keyword">false</span>))</div>
 <div class="line"><a id="l00477" name="l00477"></a><span class="lineno">  477</span>      {</div>
-<div class="line"><a id="l00478" name="l00478"></a><span class="lineno">  478</span>        <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;T&gt;(value);</div>
-<div class="line"><a id="l00479" name="l00479"></a><span class="lineno">  479</span>      }</div>
-<div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span>      <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any failed string to number conversion&quot;</span>);</div>
-<div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span>    }</div>
-<div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span>  }</div>
-<div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span>  <span class="keywordflow">catch</span>(...)</div>
-<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>  {</div>
-<div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any failed string to number conversion&quot;</span>);</div>
-<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>  }</div>
-<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span><span class="preprocessor">#</span><span class="preprocessor">endif</span></div>
-<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span>  <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any conversion from string failed&quot;</span>);</div>
-<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>}</div>
-<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span> </div>
-<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DST&gt;</div>
-<div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span><span class="keyword">inline</span> nonstd::expected&lt;DST, std::string&gt; <a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::convert(EnableEnum&lt;DST&gt;) <span class="keyword">const</span></div>
-<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span>{</div>
-<div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span>  <span class="keyword">using</span> SafeAny::details::convertNumber;</div>
-<div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span> </div>
-<div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span>  <span class="keyword">const</span> <span class="keyword">auto</span>&amp; type = _any.type();</div>
-<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span> </div>
-<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>  <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(int64_t))</div>
-<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>  {</div>
-<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span>    <span class="keyword">auto</span> out = linb::any_cast&lt;int64_t&gt;(_any);</div>
-<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span>    <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;DST&gt;(out);</div>
-<div class="line"><a id="l00502" name="l00502"></a><span class="lineno">  502</span>  }</div>
-<div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span>  <span class="keywordflow">else</span> <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(uint64_t))</div>
-<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>  {</div>
-<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>    <span class="keyword">auto</span> out = linb::any_cast&lt;uint64_t&gt;(_any);</div>
-<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>    <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;DST&gt;(out);</div>
-<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>  }</div>
-<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span> </div>
-<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>  <span class="keywordflow">return</span> nonstd::make_unexpected(errorMsg&lt;DST&gt;());</div>
-<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>}</div>
+<div class="line"><a id="l00478" name="l00478"></a><span class="lineno">  478</span>        <span class="comment">// same range check as the integral branch: a value that does not fit</span></div>
+<div class="line"><a id="l00479" name="l00479"></a><span class="lineno">  479</span>        <span class="comment">// in a float is an error, like std::from_chars reports above</span></div>
+<div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span>        Any temp_any(value);</div>
+<div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span>        <span class="keywordflow">return</span> temp_any.convert&lt;T&gt;();</div>
+<div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span>      }</div>
+<div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span>      <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any failed string to number conversion&quot;</span>);</div>
+<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>    }</div>
+<div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span>  }</div>
+<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>  <span class="keywordflow">catch</span>(...)</div>
+<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>  {</div>
+<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any failed string to number conversion&quot;</span>);</div>
+<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>  }</div>
+<div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span><span class="preprocessor">#</span><span class="preprocessor">endif</span></div>
+<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span>  <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any conversion from string failed&quot;</span>);</div>
+<div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span>}</div>
+<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span> </div>
+<div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DST&gt;</div>
+<div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span><span class="keyword">inline</span> nonstd::expected&lt;DST, std::string&gt; <a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::convert(EnableEnum&lt;DST&gt;) <span class="keyword">const</span></div>
+<div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span>{</div>
+<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>  <span class="keyword">using</span> SafeAny::details::convertNumber;</div>
+<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span> </div>
+<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>  <span class="keyword">const</span> <span class="keyword">auto</span>&amp; type = _any.type();</div>
+<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span> </div>
+<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span>  <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(int64_t))</div>
+<div class="line"><a id="l00502" name="l00502"></a><span class="lineno">  502</span>  {</div>
+<div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span>    <span class="keyword">auto</span> out = linb::any_cast&lt;int64_t&gt;(_any);</div>
+<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>    <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;DST&gt;(out);</div>
+<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>  }</div>
+<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>  <span class="keywordflow">else</span> <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(uint64_t))</div>
+<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>  {</div>
+<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>    <span class="keyword">auto</span> out = linb::any_cast&lt;uint64_t&gt;(_any);</div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>    <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;DST&gt;(out);</div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>  }</div>
 <div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span> </div>
-<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DST&gt;</div>
-<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span><span class="keyword">inline</span> nonstd::expected&lt;DST, std::string&gt; <a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::convert(EnableArithmetic&lt;DST&gt;) <span class="keyword">const</span></div>
-<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>{</div>
-<div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>  <span class="keyword">using</span> SafeAny::details::convertNumber;</div>
-<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>  DST out;</div>
-<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span> </div>
-<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>  <span class="keyword">const</span> <span class="keyword">auto</span>&amp; type = _any.type();</div>
-<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span> </div>
-<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span>  <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(int64_t))</div>
-<div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span>  {</div>
-<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span>    convertNumber&lt;int64_t, DST&gt;(linb::any_cast&lt;int64_t&gt;(_any), out);</div>
-<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>  }</div>
-<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>  <span class="keywordflow">else</span> <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(uint64_t))</div>
-<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>  {</div>
-<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>    convertNumber&lt;uint64_t, DST&gt;(linb::any_cast&lt;uint64_t&gt;(_any), out);</div>
-<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>  }</div>
-<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>  <span class="keywordflow">else</span> <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(<span class="keywordtype">double</span>))</div>
-<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>  {</div>
-<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>    convertNumber&lt;<span class="keywordtype">double</span>, DST&gt;(linb::any_cast&lt;<span class="keywordtype">double</span>&gt;(_any), out);</div>
-<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>  }</div>
-<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>  <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>  {</div>
-<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(errorMsg&lt;DST&gt;());</div>
-<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>  }</div>
-<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>  <span class="keywordflow">return</span> out;</div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>}</div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span> </div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span><span class="keyword">inline</span> nonstd::expected&lt;T, std::string&gt; <a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::tryCast() <span class="keyword">const</span></div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>{</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>  <span class="keyword">static_assert</span>(!std::is_reference&lt;T&gt;::value, <span class="stringliteral">&quot;Any::cast uses value semantic, &quot;</span></div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>                                              <span class="stringliteral">&quot;can not cast to reference&quot;</span>);</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span> </div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>  <span class="keywordflow">if</span>(_any.empty())</div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>  {</div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>    <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Any::cast failed because it is empty&quot;</span>);</div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>  }</div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span> </div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>  <span class="keywordflow">if</span>(castedType() == <span class="keyword">typeid</span>(T))</div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>  {</div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>    <span class="keywordflow">return</span> linb::any_cast&lt;T&gt;(_any);</div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>  }</div>
-<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span> </div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>  <span class="comment">// special case when the output is an enum.</span></div>
-<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>  <span class="comment">// We will try first a int conversion</span></div>
-<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_enum_v&lt;T&gt;)</div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>  {</div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>    <span class="keywordflow">if</span>(isNumber())</div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>    {</div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>      <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;T&gt;(convert&lt;<span class="keywordtype">int</span>&gt;().value());</div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>    }</div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    <span class="keywordflow">if</span>(isString())</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>    {</div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>      <span class="keywordflow">if</span>(<span class="keyword">auto</span> out = stringToNumber&lt;int64_t&gt;())</div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>      {</div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>        <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;T&gt;(out.value());</div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>      }</div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>    }</div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any::cast failed to cast to enum type&quot;</span>);</div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>  }</div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span> </div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>  <span class="keywordflow">if</span>(isString())</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>  {</div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>    <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_arithmetic_v&lt;T&gt; &amp;&amp; !std::is_same_v&lt;T, <span class="keywordtype">bool</span>&gt;)</div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>    {</div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>      <span class="keywordflow">if</span>(<span class="keyword">auto</span> out = stringToNumber&lt;T&gt;())</div>
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>      {</div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>        <span class="keywordflow">return</span> out.value();</div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>      }</div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>      <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>      {</div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>        <span class="keywordflow">return</span> out;</div>
-<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>      }</div>
-<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>    }</div>
-<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>  }</div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span> </div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>  <span class="keywordflow">if</span>(<span class="keyword">auto</span> res = convert&lt;T&gt;())</div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>  {</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>    <span class="keywordflow">return</span> std::move(res.value());</div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>  }</div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>  <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>  {</div>
-<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>    <span class="keywordflow">return</span> res;</div>
-<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>  }</div>
-<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>}</div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span> </div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span><span class="keyword">inline</span> nonstd::expected&lt;T, std::string&gt;</div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span><a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::tryCastWithRegistry(<span class="keyword">const</span> <a class="code hl_class" href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">PolymorphicCastRegistry</a>&amp; registry) <span class="keyword">const</span></div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>{</div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>  <span class="keyword">static_assert</span>(<a class="code hl_struct" href="../../de/dcd/struct_b_t_1_1is__shared__ptr.html">is_shared_ptr</a>&lt;T&gt;::value, <span class="stringliteral">&quot;tryCastWithRegistry only works with shared_ptr &quot;</span></div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>                                         <span class="stringliteral">&quot;types&quot;</span>);</div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span> </div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>  <span class="keywordflow">if</span>(_any.empty())</div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>  {</div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any::tryCastWithRegistry failed: empty value&quot;</span>);</div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>  }</div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span> </div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>  <span class="comment">// Try to cast using the registry</span></div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>  <span class="keyword">auto</span> result = registry.tryCast(_any, _original_type, <span class="keyword">typeid</span>(T));</div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>  <span class="keywordflow">if</span>(result)</div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>  {</div>
-<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>    <span class="keywordflow">try</span></div>
-<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>    {</div>
-<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>      <span class="keywordflow">return</span> linb::any_cast&lt;T&gt;(result.value());</div>
-<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    }</div>
-<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>    <span class="keywordflow">catch</span>(<span class="keyword">const</span> std::exception&amp; e)</div>
-<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>    {</div>
-<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>      <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;Polymorphic cast failed: &quot;</span>, e.what()));</div>
-<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>    }</div>
-<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>  }</div>
-<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span> </div>
-<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>  <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;[Any::tryCastWithRegistry]: &quot;</span>, result.error(),</div>
-<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>                                        <span class="stringliteral">&quot; (from [&quot;</span>, demangle(_original_type), <span class="stringliteral">&quot;] to [&quot;</span>,</div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>                                        demangle(<span class="keyword">typeid</span>(T)), <span class="stringliteral">&quot;])&quot;</span>));</div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>}</div>
-<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span> </div>
-<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>}  <span class="comment">// end namespace BT</span></div>
+<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>  <span class="keywordflow">return</span> nonstd::make_unexpected(errorMsg&lt;DST&gt;());</div>
+<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>}</div>
+<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span> </div>
+<div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> DST&gt;</div>
+<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span><span class="keyword">inline</span> nonstd::expected&lt;DST, std::string&gt; <a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::convert(EnableArithmetic&lt;DST&gt;) <span class="keyword">const</span></div>
+<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>{</div>
+<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>  <span class="keyword">using</span> SafeAny::details::convertNumber;</div>
+<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span>  DST out;</div>
+<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span> </div>
+<div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span>  <span class="keyword">const</span> <span class="keyword">auto</span>&amp; type = _any.type();</div>
+<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span> </div>
+<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>  <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(int64_t))</div>
+<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>  {</div>
+<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>    convertNumber&lt;int64_t, DST&gt;(linb::any_cast&lt;int64_t&gt;(_any), out);</div>
+<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>  }</div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>  <span class="keywordflow">else</span> <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(uint64_t))</div>
+<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>  {</div>
+<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>    convertNumber&lt;uint64_t, DST&gt;(linb::any_cast&lt;uint64_t&gt;(_any), out);</div>
+<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>  }</div>
+<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>  <span class="keywordflow">else</span> <span class="keywordflow">if</span>(type == <span class="keyword">typeid</span>(<span class="keywordtype">double</span>))</div>
+<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>  {</div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>    convertNumber&lt;<span class="keywordtype">double</span>, DST&gt;(linb::any_cast&lt;<span class="keywordtype">double</span>&gt;(_any), out);</div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>  }</div>
+<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>  <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>  {</div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(errorMsg&lt;DST&gt;());</div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>  }</div>
+<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>  <span class="keywordflow">return</span> out;</div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>}</div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span> </div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span><span class="keyword">inline</span> nonstd::expected&lt;T, std::string&gt; <a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::tryCast() <span class="keyword">const</span></div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>{</div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>  <span class="keyword">static_assert</span>(!std::is_reference&lt;T&gt;::value, <span class="stringliteral">&quot;Any::cast uses value semantic, &quot;</span></div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>                                              <span class="stringliteral">&quot;can not cast to reference&quot;</span>);</div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span> </div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>  <span class="keywordflow">if</span>(_any.empty())</div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>  {</div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>    <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Any::cast failed because it is empty&quot;</span>);</div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>  }</div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span> </div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>  <span class="keywordflow">if</span>(castedType() == <span class="keyword">typeid</span>(T))</div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>  {</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>    <span class="keywordflow">return</span> linb::any_cast&lt;T&gt;(_any);</div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>  }</div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span> </div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>  <span class="comment">// special case when the output is an enum.</span></div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>  <span class="comment">// We will try first a int conversion</span></div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_enum_v&lt;T&gt;)</div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>  {</div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>    <span class="keywordflow">if</span>(isNumber())</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>    {</div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>      <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;T&gt;(convert&lt;<span class="keywordtype">int</span>&gt;().value());</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>    }</div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>    <span class="keywordflow">if</span>(isString())</div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>    {</div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>      <span class="keywordflow">if</span>(<span class="keyword">auto</span> out = stringToNumber&lt;int64_t&gt;())</div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>      {</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>        <span class="keywordflow">return</span> <span class="keyword">static_cast</span>&lt;T&gt;(out.value());</div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>      }</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    }</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any::cast failed to cast to enum type&quot;</span>);</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>  }</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span> </div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>  <span class="keywordflow">if</span>(isString())</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>  {</div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>    <span class="keywordflow">if</span> <span class="keyword">constexpr</span>(std::is_arithmetic_v&lt;T&gt; &amp;&amp; !std::is_same_v&lt;T, <span class="keywordtype">bool</span>&gt;)</div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>    {</div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>      <span class="keywordflow">if</span>(<span class="keyword">auto</span> out = stringToNumber&lt;T&gt;())</div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>      {</div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>        <span class="keywordflow">return</span> out.value();</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>      }</div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>      <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>      {</div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>        <span class="keywordflow">return</span> out;</div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>      }</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>    }</div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>  }</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span> </div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>  <span class="keywordflow">if</span>(<span class="keyword">auto</span> res = convert&lt;T&gt;())</div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>  {</div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>    <span class="keywordflow">return</span> std::move(res.value());</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>  }</div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>  <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>  {</div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>  }</div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>}</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span> </div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span><span class="keyword">inline</span> nonstd::expected&lt;T, std::string&gt;</div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span><a class="code hl_class" href="../../d7/df4/class_b_t_1_1_any.html">Any</a>::tryCastWithRegistry(<span class="keyword">const</span> <a class="code hl_class" href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">PolymorphicCastRegistry</a>&amp; registry) <span class="keyword">const</span></div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>{</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>  <span class="keyword">static_assert</span>(<a class="code hl_struct" href="../../de/dcd/struct_b_t_1_1is__shared__ptr.html">is_shared_ptr</a>&lt;T&gt;::value, <span class="stringliteral">&quot;tryCastWithRegistry only works with shared_ptr &quot;</span></div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>                                         <span class="stringliteral">&quot;types&quot;</span>);</div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span> </div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>  <span class="keywordflow">if</span>(_any.empty())</div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>  {</div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>    <span class="keywordflow">return</span> nonstd::make_unexpected(<span class="stringliteral">&quot;Any::tryCastWithRegistry failed: empty value&quot;</span>);</div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>  }</div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span> </div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>  <span class="comment">// Try to cast using the registry</span></div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>  <span class="keyword">auto</span> result = registry.tryCast(_any, _original_type, <span class="keyword">typeid</span>(T));</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>  <span class="keywordflow">if</span>(result)</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>  {</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    <span class="keywordflow">try</span></div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>    {</div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>      <span class="keywordflow">return</span> linb::any_cast&lt;T&gt;(result.value());</div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>    }</div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>    <span class="keywordflow">catch</span>(<span class="keyword">const</span> std::exception&amp; e)</div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>    {</div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>      <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;Polymorphic cast failed: &quot;</span>, e.what()));</div>
+<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>    }</div>
+<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>  }</div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span> </div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>  <span class="keywordflow">return</span> nonstd::make_unexpected(StrCat(<span class="stringliteral">&quot;[Any::tryCastWithRegistry]: &quot;</span>, result.error(),</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>                                        <span class="stringliteral">&quot; (from [&quot;</span>, demangle(_original_type), <span class="stringliteral">&quot;] to [&quot;</span>,</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>                                        demangle(<span class="keyword">typeid</span>(T)), <span class="stringliteral">&quot;])&quot;</span>));</div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>}</div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span> </div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>}  <span class="comment">// end namespace BT</span></div>
 <div class="ttc" id="aclass_b_t_1_1_any_html"><div class="ttname"><a href="../../d7/df4/class_b_t_1_1_any.html">BT::Any</a></div><div class="ttdef"><b>Definition:</b> safe_any.hpp:57</div></div>
 <div class="ttc" id="aclass_b_t_1_1_polymorphic_cast_registry_html"><div class="ttname"><a href="../../d1/ddb/class_b_t_1_1_polymorphic_cast_registry.html">BT::PolymorphicCastRegistry</a></div><div class="ttdoc">Registry for polymorphic shared_ptr cast relationships.</div><div class="ttdef"><b>Definition:</b> polymorphic_cast_registry.hpp:47</div></div>
 <div class="ttc" id="aclass_safe_any_1_1_simple_string_html"><div class="ttname"><a href="../../de/d34/class_safe_any_1_1_simple_string.html">SafeAny::SimpleString</a></div><div class="ttdef"><b>Definition:</b> simple_string.hpp:19</div></div>

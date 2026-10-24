@@ -119,6 +119,10 @@ template&lt;typename T  = AnyTypeAllowed, typename DefaultT  = T&gt; </td></tr>
 <tr class="memitem:a524ae9092d0880b1efa91399ba3a0428"><td class="memItemLeft" align="right" valign="top"><a id="a524ae9092d0880b1efa91399ba3a0428" name="a524ae9092d0880b1efa91399ba3a0428"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>CheckStringEquality</b> (const std::string &amp;v1, const std::string &amp;v2, const ScriptingEnumsRegistry *enums)</td></tr>
 <tr class="separator:a524ae9092d0880b1efa91399ba3a0428"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa948940cbf75224c1c5d85a3d06297a5"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aa948940cbf75224c1c5d85a3d06297a5"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../df/da8/namespace_b_t_1_1details.html#aa948940cbf75224c1c5d85a3d06297a5">JsonToInteger</a> (const nlohmann::json &amp;value)</td></tr>
+<tr class="memdesc:aa948940cbf75224c1c5d85a3d06297a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a JSON number that must be representable as the integer T. Internal helper, not part of the public API.  <br /></td></tr>
+<tr class="separator:aa948940cbf75224c1c5d85a3d06297a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="../../dc/dae/class_b_t_1_1_switch_node.html">SwitchNode</a> is equivalent to a switch statement, where a certain branch (child) is executed according to the value of a blackboard entry. </p>
@@ -126,7 +130,39 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>CheckStringEquality</
 <p>Example usage:</p>
 <p>&lt;Switch3 variable="{var}"  case_1="1" case_2="42" case_3="666" &gt; <a class="anchor" id="action_when_var_eq_1"></a> <a class="anchor" id="action_when_var_eq_42"></a> <a class="anchor" id="action_when_var_eq_666"></a> <a class="anchor" id="default_action"></a> &lt;/Switch3&gt;</p>
 <p>When the <a class="el" href="../../dc/dae/class_b_t_1_1_switch_node.html">SwitchNode</a> is executed (Switch3 is a node with 3 cases) the "variable" will be compared to the cases and execute the correct child or the default one (last). </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="aa948940cbf75224c1c5d85a3d06297a5" name="aa948940cbf75224c1c5d85a3d06297a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa948940cbf75224c1c5d85a3d06297a5">&#9670;&#160;</a></span>JsonToInteger()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T BT::details::JsonToInteger </td>
+          <td>(</td>
+          <td class="paramtype">const nlohmann::json &amp;&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read a JSON number that must be representable as the integer T. Internal helper, not part of the public API. </p>
+<p>json.get&lt;T&gt;() converts a floating point value or an out-of-range integer with a plain static_cast, which truncates, wraps, or (for a value outside the range of T) is undefined behavior. This throws <a class="el" href="../../da/d35/class_b_t_1_1_runtime_error.html">RuntimeError</a> instead. A floating point value with no fractional part (e.g. 100.0) is accepted, like Any::cast&lt;T&gt;() does. </p>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
