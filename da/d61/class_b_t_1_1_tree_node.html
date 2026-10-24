@@ -230,6 +230,8 @@ virtual <a class="el" href="../../d2/d8d/namespace_b_t.html#a86a6454c13791311dfa
 <tr class="memitem:afb4606479245153e183b0530e517b3cc"><td class="memItemLeft" align="right" valign="top">StatusChangeSubscriber&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#afb4606479245153e183b0530e517b3cc">subscribeToStatusChange</a> (StatusChangeCallback callback)</td></tr>
 <tr class="memdesc:afb4606479245153e183b0530e517b3cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">subscribeToStatusChange is used to attach a callback to a status change. When StatusChangeSubscriber goes out of scope (it is a shared_ptr) the callback is unsubscribed automatically.  <br /></td></tr>
 <tr class="separator:afb4606479245153e183b0530e517b3cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21f16a5696745956ffeda2b53322a393"><td class="memItemLeft" align="right" valign="top">Blackboard::EntryUpdatedSubscriber&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a21f16a5696745956ffeda2b53322a393">subscribeToInputPort</a> (const std::string &amp;key, Blackboard::EntryUpdatedCallback callback)</td></tr>
+<tr class="separator:a21f16a5696745956ffeda2b53322a393"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebc95976e7923c048021b553c56489b5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#aebc95976e7923c048021b553c56489b5">setPreTickFunction</a> (PreTickCallback callback)</td></tr>
 <tr class="separator:aebc95976e7923c048021b553c56489b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afddcc0047aceb3e2d4116c072078be72"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#afddcc0047aceb3e2d4116c072078be72">setPostTickFunction</a> (PostTickCallback callback)</td></tr>
@@ -813,6 +815,36 @@ template&lt;typename T &gt; </div>
 </div><div class="memdoc">
 <p>This method attaches to the <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes.">TreeNode</a> a callback with signature: </p><pre class="fragment">void myCallback(TreeNode&amp; node, NodeStatus status, std::chrono::microseconds duration)
 </pre><p> This callback is executed AFTER the <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#a15ea206d20defd764035481ceda1de3e" title="Method to be implemented by the user.">tick()</a> and will inform the user about its status and the execution time. Works only if the tick was not substituted by a pre-condition. </p>
+
+</div>
+</div>
+<a id="a21f16a5696745956ffeda2b53322a393" name="a21f16a5696745956ffeda2b53322a393"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21f16a5696745956ffeda2b53322a393">&#9670;&#160;</a></span>subscribeToInputPort()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Blackboard::EntryUpdatedSubscriber BT::TreeNode::subscribeToInputPort </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Blackboard::EntryUpdatedCallback&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Subscribe to writes to the blackboard key backing an input port. Unlike providedPorts(), this is an instance method: a callback may use node-specific state and <a class="el" href="../../da/d61/class_b_t_1_1_tree_node.html#ae921e5800a82b7591cb711c710d49725">getInput()</a>. Retain the returned handle for as long as the callback should remain active. See <a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html#a539660ed774f2144308dee30956210d8">Blackboard::subscribeToEntry()</a> for threading and lifetime requirements.</p>
+<p>Constant inputs return an empty handle. Missing inputs, output-only ports and empty callbacks throw <a class="el" href="../../df/d4f/class_b_t_1_1_logic_error.html">LogicError</a>. Defaults and {=} remapping are supported. Changing the port mapping later does not rebind subscriptions. The subscription is bound to the blackboard entry, which is created with the port's type if it doesn't exist yet; unset() of the key drops it. </p>
 
 </div>
 </div>

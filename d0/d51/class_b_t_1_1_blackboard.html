@@ -118,6 +118,15 @@ Public Types</h2></td></tr>
 <tr class="memitem:a83361916fa78399240ec7b0a03a46475"><td class="memItemLeft" align="right" valign="top"><a id="a83361916fa78399240ec7b0a03a46475" name="a83361916fa78399240ec7b0a03a46475"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>Ptr</b> = std::shared_ptr&lt; <a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html">Blackboard</a> &gt;</td></tr>
 <tr class="separator:a83361916fa78399240ec7b0a03a46475"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65bf547fa2bad9940937db3047ea4b26"><td class="memItemLeft" align="right" valign="top"><a id="a65bf547fa2bad9940937db3047ea4b26" name="a65bf547fa2bad9940937db3047ea4b26"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>EntryUpdatedSignal</b> = <a class="el" href="../../dd/d8d/class_b_t_1_1_thread_safe_signal.html">ThreadSafeSignal</a>&lt;&gt;</td></tr>
+<tr class="separator:a65bf547fa2bad9940937db3047ea4b26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a555a4702538838bd61744399c4c01c5b"><td class="memItemLeft" align="right" valign="top"><a id="a555a4702538838bd61744399c4c01c5b" name="a555a4702538838bd61744399c4c01c5b"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>EntryUpdatedSubscriber</b> = EntryUpdatedSignal::Subscriber</td></tr>
+<tr class="separator:a555a4702538838bd61744399c4c01c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a6a5715c5e681bef2b899f3c54177ac"><td class="memItemLeft" align="right" valign="top"><a id="a6a6a5715c5e681bef2b899f3c54177ac" name="a6a6a5715c5e681bef2b899f3c54177ac"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>EntryUpdatedCallback</b> = EntryUpdatedSignal::CallableFunction</td></tr>
+<tr class="separator:a6a6a5715c5e681bef2b899f3c54177ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -173,6 +182,10 @@ template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a0733879e096350bf7f77d1fb583d325b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>set</b> (const std::string &amp;key, const T &amp;value)</td></tr>
 <tr class="memdesc:a0733879e096350bf7f77d1fb583d325b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the entry with the given key. <br /></td></tr>
 <tr class="separator:a0733879e096350bf7f77d1fb583d325b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a539660ed774f2144308dee30956210d8"><td class="memItemLeft" align="right" valign="top">EntryUpdatedSubscriber&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html#a539660ed774f2144308dee30956210d8">subscribeToEntry</a> (const std::string &amp;key, EntryUpdatedCallback callback)</td></tr>
+<tr class="separator:a539660ed774f2144308dee30956210d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a887801bd0da9db0277327ca10ec35eac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html#a887801bd0da9db0277327ca10ec35eac">notifyEntryUpdated</a> (const std::string &amp;key)</td></tr>
+<tr class="separator:a887801bd0da9db0277327ca10ec35eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3f4058b67571fb02aebe2e71280a1ff"><td class="memItemLeft" align="right" valign="top"><a id="ab3f4058b67571fb02aebe2e71280a1ff" name="ab3f4058b67571fb02aebe2e71280a1ff"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>unset</b> (const std::string &amp;key)</td></tr>
 <tr class="separator:ab3f4058b67571fb02aebe2e71280a1ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -361,6 +374,25 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a id="a887801bd0da9db0277327ca10ec35eac" name="a887801bd0da9db0277327ca10ec35eac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a887801bd0da9db0277327ca10ec35eac">&#9670;&#160;</a></span>notifyEntryUpdated()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void BT::Blackboard::notifyEntryUpdated </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Notify subscribers after directly modifying an entry. Release its lock before calling this function. Raw Entry/AnyPtrLocked mutations do not notify automatically; <a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html#a0733879e096350bf7f77d1fb583d325b" title="Update the entry with the given key.">set()</a>, scripts, JSON import and <a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html#afd93b989bbb7add02e649a039c0c0b5e" title="cloneInto copies the values of the entries into another blackboard. Known limitations:">cloneInto()</a> do. </p>
+
+</div>
+</div>
 <a id="aae60593f6f4a4b94f0542e6a898df295" name="aae60593f6f4a4b94f0542e6a898df295"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aae60593f6f4a4b94f0542e6a898df295">&#9670;&#160;</a></span>setPolymorphicCastRegistry()</h2>
 
@@ -387,6 +419,36 @@ template&lt;typename T &gt; </div>
 
 <p>Set the polymorphic cast registry for this blackboard. </p>
 <p>The registry enables polymorphic shared_ptr conversions during <a class="el" href="../../d0/d51/class_b_t_1_1_blackboard.html#ad536070fc0cc82a4fa1c53e3b2222e58">get()</a>. This is typically set automatically when creating trees via <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html" title="The BehaviorTreeFactory is used to create instances of a TreeNode at run-time.">BehaviorTreeFactory</a>. </p>
+
+</div>
+</div>
+<a id="a539660ed774f2144308dee30956210d8" name="a539660ed774f2144308dee30956210d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a539660ed774f2144308dee30956210d8">&#9670;&#160;</a></span>subscribeToEntry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EntryUpdatedSubscriber BT::Blackboard::subscribeToEntry </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">EntryUpdatedCallback&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Subscribe to successful writes to the entry of a key. Subtree remapping and root keys are resolved at subscription time. If the entry doesn't exist, a generic (<a class="el" href="../../d4/df1/struct_b_t_1_1_any_type_allowed.html">AnyTypeAllowed</a>) one is created: the first strongly typed write sets its type, as usual. The subscription is bound to that entry: unset() drops it and a re-created entry is not observed. No initial notification is sent, and assigning the same value still notifies. Writes compiled against headers older than this API do not notify.</p>
+<p>Callbacks run synchronously on the writer's thread, outside blackboard locks, and may read the latest value. Concurrent writers may invoke a callback concurrently; intermediate values are not retained. Exceptions propagate to the writer after the value has been stored. Resetting the handle prevents future calls but does not wait for a call already in progress. Stop writers before destroying callback targets. </p>
 
 </div>
 </div>

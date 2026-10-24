@@ -19,8 +19,9 @@ var searchData=
   ['statefulactionnode_16',['StatefulActionNode',['../d0/d1f/class_b_t_1_1_stateful_action_node.html',1,'BT']]],
   ['statuschangelogger_17',['StatusChangeLogger',['../d9/dbb/class_b_t_1_1_status_change_logger.html',1,'BT']]],
   ['stdcoutlogger_18',['StdCoutLogger',['../d1/d52/class_b_t_1_1_std_cout_logger.html',1,'BT']]],
-  ['subtree_19',['Subtree',['../d3/d23/struct_b_t_1_1_tree_1_1_subtree.html',1,'BT::Tree']]],
-  ['subtreenode_20',['SubTreeNode',['../df/d34/class_b_t_1_1_sub_tree_node.html',1,'BT']]],
-  ['switchnode_21',['SwitchNode',['../dc/dae/class_b_t_1_1_switch_node.html',1,'BT']]],
-  ['syncactionnode_22',['SyncActionNode',['../da/d73/class_b_t_1_1_sync_action_node.html',1,'BT']]]
+  ['subscription_19',['Subscription',['../de/dfd/class_b_t_1_1_thread_safe_signal_1_1_subscription.html',1,'BT::ThreadSafeSignal']]],
+  ['subtree_20',['Subtree',['../d3/d23/struct_b_t_1_1_tree_1_1_subtree.html',1,'BT::Tree']]],
+  ['subtreenode_21',['SubTreeNode',['../df/d34/class_b_t_1_1_sub_tree_node.html',1,'BT']]],
+  ['switchnode_22',['SwitchNode',['../dc/dae/class_b_t_1_1_switch_node.html',1,'BT']]],
+  ['syncactionnode_23',['SyncActionNode',['../da/d73/class_b_t_1_1_sync_action_node.html',1,'BT']]]
 ];

@@ -56,8 +56,10 @@ var hierarchy =
       [ "BT::StdCoutLogger", "d1/d52/class_b_t_1_1_std_cout_logger.html", null ],
       [ "BT::TreeObserver", "d2/d2b/class_b_t_1_1_tree_observer.html", null ]
     ] ],
+    [ "BT::ThreadSafeSignal< CallableArgs >::Subscription", "de/dfd/class_b_t_1_1_thread_safe_signal_1_1_subscription.html", null ],
     [ "BT::Tree::Subtree", "d3/d23/struct_b_t_1_1_tree_1_1_subtree.html", null ],
     [ "BT::TestNodeConfig", "d6/d58/struct_b_t_1_1_test_node_config.html", null ],
+    [ "BT::ThreadSafeSignal< CallableArgs >", "dd/d8d/class_b_t_1_1_thread_safe_signal.html", null ],
     [ "BT::TickBacktraceEntry", "d2/d50/struct_b_t_1_1_tick_backtrace_entry.html", null ],
     [ "BT::TimerQueue< ClockT, DurationT >", "df/d4c/class_b_t_1_1_timer_queue.html", null ],
     [ "BT::Timestamp", "d0/d59/struct_b_t_1_1_timestamp.html", null ],

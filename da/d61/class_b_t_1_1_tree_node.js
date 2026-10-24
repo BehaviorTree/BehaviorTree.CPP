@@ -18,6 +18,7 @@ var class_b_t_1_1_tree_node =
     [ "setPreTickFunction", "da/d61/class_b_t_1_1_tree_node.html#aebc95976e7923c048021b553c56489b5", null ],
     [ "setStatus", "da/d61/class_b_t_1_1_tree_node.html#ab98b671336cdc496028b52112e21a0ed", null ],
     [ "setTickMonitorCallback", "da/d61/class_b_t_1_1_tree_node.html#afd27f6b1a6b692b113eccc29957deb31", null ],
+    [ "subscribeToInputPort", "da/d61/class_b_t_1_1_tree_node.html#a21f16a5696745956ffeda2b53322a393", null ],
     [ "subscribeToStatusChange", "da/d61/class_b_t_1_1_tree_node.html#afb4606479245153e183b0530e517b3cc", null ],
     [ "tick", "da/d61/class_b_t_1_1_tree_node.html#a15ea206d20defd764035481ceda1de3e", null ],
     [ "UID", "da/d61/class_b_t_1_1_tree_node.html#a891f5c8b5bfe306eba4111beff799c36", null ],

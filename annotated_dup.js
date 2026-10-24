@@ -102,6 +102,7 @@ var annotated_dup =
       [ "TestNode", "d5/d7f/class_b_t_1_1_test_node.html", "d5/d7f/class_b_t_1_1_test_node" ],
       [ "TestNodeConfig", "d6/d58/struct_b_t_1_1_test_node_config.html", "d6/d58/struct_b_t_1_1_test_node_config" ],
       [ "ThreadedAction", "d2/d61/class_b_t_1_1_threaded_action.html", "d2/d61/class_b_t_1_1_threaded_action" ],
+      [ "ThreadSafeSignal", "dd/d8d/class_b_t_1_1_thread_safe_signal.html", "dd/d8d/class_b_t_1_1_thread_safe_signal" ],
       [ "TickBacktraceEntry", "d2/d50/struct_b_t_1_1_tick_backtrace_entry.html", null ],
       [ "TimeoutNode", "d4/d20/class_b_t_1_1_timeout_node.html", null ],
       [ "TimerQueue", "df/d4c/class_b_t_1_1_timer_queue.html", "df/d4c/class_b_t_1_1_timer_queue" ],

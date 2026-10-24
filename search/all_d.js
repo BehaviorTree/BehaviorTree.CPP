@@ -6,5 +6,6 @@ var searchData=
   ['nodeexecutionerror_3',['NodeExecutionError',['../d2/d33/class_b_t_1_1_node_execution_error.html',1,'BT']]],
   ['nodestatistics_4',['NodeStatistics',['../d7/d9d/struct_b_t_1_1_tree_observer_1_1_node_statistics.html',1,'BT::TreeObserver']]],
   ['nodestatus_5',['NodeStatus',['../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e',1,'BT']]],
-  ['nodetype_6',['NodeType',['../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e',1,'BT']]]
+  ['nodetype_6',['NodeType',['../d2/d8d/namespace_b_t.html#a86a6454c13791311dface943d837363e',1,'BT']]],
+  ['notifyentryupdated_7',['notifyEntryUpdated',['../d0/d51/class_b_t_1_1_blackboard.html#a887801bd0da9db0277327ca10ec35eac',1,'BT::Blackboard']]]
 ];
