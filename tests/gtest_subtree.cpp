@@ -1017,8 +1017,8 @@ TEST(SubTree, NestedDuplicateNames_ShouldFail)
   ASSERT_THROW((void)factory.createTreeFromText(xml_text), RuntimeError);
 }
 
-// Regression test: literal numeric values passed to subtrees should preserve
-// their numeric type so that Script expressions can do arithmetic.
+// Regression test (#1121): Script expressions can do arithmetic with literal
+// numeric values passed to subtrees.
 TEST(SubTree, LiteralNumericPortsPreserveType)
 {
   // clang-format off
@@ -1053,6 +1053,62 @@ TEST(SubTree, LiteralNumericPortsPreserveType)
 
   const auto status = tree.tickWhileRunning();
   ASSERT_EQ(status, NodeStatus::SUCCESS);
+}
+
+// Issue #1246: a literal passed to a SubTree stays a string, so ports of different
+// types can read it, and its spelling is preserved.
+TEST(SubTree, LiteralPortsAreReadByAnyPortType)
+{
+  // clang-format off
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+
+    <BehaviorTree ID="MainTree">
+        <SubTree ID="Sub" mode="1" code="007" />
+    </BehaviorTree>
+
+    <BehaviorTree ID="Sub">
+        <Sequence>
+            <ReadString value="{mode}" />
+            <ReadInt value="{mode}" />
+            <ReadDouble value="{mode}" />
+            <ReadString value="{code}" />
+        </Sequence>
+    </BehaviorTree>
+
+</root>
+)";
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  std::vector<std::string> strings;
+  int int_val = 0;
+  double dbl_val = 0;
+  factory.registerSimpleAction("ReadString",
+                               [&](TreeNode& node) {
+                                 strings.push_back(
+                                     node.getInput<std::string>("value").value());
+                                 return NodeStatus::SUCCESS;
+                               },
+                               { InputPort<std::string>("value") });
+  factory.registerSimpleAction("ReadInt",
+                               [&](TreeNode& node) {
+                                 int_val = node.getInput<int>("value").value();
+                                 return NodeStatus::SUCCESS;
+                               },
+                               { InputPort<int>("value") });
+  factory.registerSimpleAction("ReadDouble",
+                               [&](TreeNode& node) {
+                                 dbl_val = node.getInput<double>("value").value();
+                                 return NodeStatus::SUCCESS;
+                               },
+                               { InputPort<double>("value") });
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(strings, (std::vector<std::string>{ "1", "007" }));
+  ASSERT_EQ(int_val, 1);
+  ASSERT_EQ(dbl_val, 1.0);
 }
 
 // Regression test: logical NOT should accept literal boolean values passed to
