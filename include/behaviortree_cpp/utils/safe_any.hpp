@@ -471,7 +471,10 @@ inline nonstd::expected<T, std::string> Any::stringToNumber() const
       double value = 0.0;
       if(parseDouble(str.toStdStringView(), value, /*require_full_consumption=*/false))
       {
-        return static_cast<T>(value);
+        // same range check as the integral branch: a value that does not fit
+        // in a float is an error, like std::from_chars reports above
+        Any temp_any(value);
+        return temp_any.convert<T>();
       }
       return nonstd::make_unexpected("Any failed string to number conversion");
     }

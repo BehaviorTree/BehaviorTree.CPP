@@ -148,6 +148,35 @@ TEST(BasicTypes, DoubleToIntBoundary)
   EXPECT_NO_THROW(bb->set("k", in_range));
 }
 
+TEST(BasicTypes, FloatConversionLimits)
+{
+  // A double beyond the float range has no float representation: the cast is
+  // undefined and used to return an infinity. Reject it like every other
+  // out-of-range narrowing.
+  EXPECT_ANY_THROW((void)BT::Any(1e300).cast<float>());
+  EXPECT_ANY_THROW((void)BT::Any(-1e300).cast<float>());
+
+  // Rounding to float is still accepted, as are values close to the limit.
+  EXPECT_FLOAT_EQ(BT::Any(0.1).cast<float>(), 0.1f);
+  EXPECT_FLOAT_EQ(BT::Any(3.4e38).cast<float>(), 3.4e38f);
+  EXPECT_FLOAT_EQ(BT::Any(-3.4e38).cast<float>(), -3.4e38f);
+
+  // Same path through a blackboard entry holding a double.
+  auto bb = BT::Blackboard::create();
+  bb->set("v", 1e300);
+  EXPECT_ANY_THROW((void)bb->get<float>("v"));
+  bb->set("v", 2.5);
+  EXPECT_FLOAT_EQ(bb->get<float>("v"), 2.5f);
+
+  // The string conversions must agree with std::from_chars<float>, which
+  // reports result_out_of_range for these literals.
+  EXPECT_ANY_THROW((void)convertFromString<float>("1e300"));
+  EXPECT_ANY_THROW((void)convertFromString<float>("-1e300"));
+  EXPECT_FLOAT_EQ(convertFromString<float>("1.5"), 1.5f);
+  EXPECT_ANY_THROW((void)BT::Any(std::string("1e300")).cast<float>());
+  EXPECT_FLOAT_EQ(BT::Any(std::string("1.5")).cast<float>(), 1.5f);
+}
+
 TEST(BasicTypes, ConvertFromString_Bool)
 {
   ASSERT_TRUE(convertFromString<bool>("true"));

@@ -128,6 +128,20 @@ inline void checkTruncation(const From& from)
       throw std::runtime_error("Invalid floating point to integer conversion");
     }
   }
+  // Handle floating point to floating point (e.g. double to float)
+  else if constexpr(std::is_floating_point_v<From> && std::is_floating_point_v<To>)
+  {
+    // Rounding to the narrower type is accepted, but a finite value beyond the
+    // range of To has no representation there: the conversion is undefined and
+    // in practice produces an infinity.
+    if(std::isfinite(from) &&
+       (from > static_cast<From>(std::numeric_limits<To>::max()) ||
+        from < static_cast<From>(std::numeric_limits<To>::lowest())))
+    {
+      throw std::runtime_error("Value outside the numeric limits of the floating point "
+                               "type");
+    }
+  }
   // Handle other conversions
   else
   {
@@ -198,13 +212,7 @@ void convertNumber(const SRC& source, DST& target)
   else if constexpr(std::is_floating_point<SRC>::value ||
                     std::is_floating_point<DST>::value)
   {
-    bool both_float =
-        std::is_floating_point<SRC>::value && std::is_floating_point<DST>::value;
-    // to avoid being too pedantic, let's accept casting between double and float
-    if(!both_float)
-    {
-      checkTruncation<SRC, DST>(source);
-    }
+    checkTruncation<SRC, DST>(source);
     target = static_cast<DST>(source);
   }
 }
