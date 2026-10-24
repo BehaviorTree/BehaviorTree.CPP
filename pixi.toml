@@ -11,6 +11,9 @@ test = "PATH=\"$PATH;$PIXI_PROJECT_ROOT/build/Release\" ctest --test-dir build -
 
 [target.linux-64.tasks]
 test = "./build/tests/behaviortree_cpp_test"
+# With Makefiles, --parallel without a number runs an unbounded make -j that
+# exhausts the memory of the CI runners; bound it to the number of cores.
+build = "mkdir -p build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel $(nproc) --config Release"
 
 [tasks]
 build = "mkdir -p build && cd build && cmake ../ -DCMAKE_BUILD_TYPE=Release && cmake --build . --parallel --config Release"
