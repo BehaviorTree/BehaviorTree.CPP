@@ -303,8 +303,8 @@ float convertFromString<float>(StringView str)
   }
   // std::from_chars<float> reports result_out_of_range for a finite value that
   // does not fit in a float; casting the double would silently give an infinity.
-  if(std::isfinite(result) &&
-     std::fabs(result) > static_cast<double>(std::numeric_limits<float>::max()))
+  // 0x1.ffffffp+127 is FLT_MAX + half an ulp: values below it round to FLT_MAX.
+  if(std::isfinite(result) && std::fabs(result) >= 0x1.ffffffp+127)
   {
     throw RuntimeError(StrCat("Can't convert string [", str, "] to float"));
   }

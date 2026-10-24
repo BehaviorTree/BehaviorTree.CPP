@@ -87,6 +87,29 @@ inline void checkLowerLimit(const From& from)
   }
 }
 
+// Rounding to a narrower floating point type is accepted, but a finite value
+// beyond the range of To has no representation there: the conversion is
+// undefined and in practice produces an infinity.
+template <typename From, typename To>
+inline void checkFloatingPointRange(const From& from)
+{
+  if constexpr(std::numeric_limits<To>::max_exponent <
+               std::numeric_limits<From>::max_exponent)
+  {
+    // Values below max + half an ulp still round to max (e.g. 3.4028235e38,
+    // the usual printout of FLT_MAX); from there on they round to infinity.
+    constexpr int half_ulp_exp =
+        std::numeric_limits<To>::max_exponent - std::numeric_limits<To>::digits - 1;
+    const From limit = static_cast<From>(std::numeric_limits<To>::max()) +
+                       std::ldexp(From(1), half_ulp_exp);
+    if(std::isfinite(from) && std::fabs(from) >= limit)
+    {
+      throw std::runtime_error("Value outside the numeric limits of the floating point "
+                               "type");
+    }
+  }
+}
+
 template <typename From, typename To>
 inline void checkTruncation(const From& from)
 {
@@ -135,16 +158,7 @@ inline void checkTruncation(const From& from)
   // Handle floating point to floating point (e.g. double to float)
   else if constexpr(std::is_floating_point_v<From> && std::is_floating_point_v<To>)
   {
-    // Rounding to the narrower type is accepted, but a finite value beyond the
-    // range of To has no representation there: the conversion is undefined and
-    // in practice produces an infinity.
-    if(std::isfinite(from) &&
-       (from > static_cast<From>(std::numeric_limits<To>::max()) ||
-        from < static_cast<From>(std::numeric_limits<To>::lowest())))
-    {
-      throw std::runtime_error("Value outside the numeric limits of the floating point "
-                               "type");
-    }
+    checkFloatingPointRange<From, To>(from);
   }
   // Handle other conversions
   else

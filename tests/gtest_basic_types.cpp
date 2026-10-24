@@ -180,6 +180,19 @@ TEST(BasicTypes, FloatConversionLimits)
   EXPECT_FLOAT_EQ(BT::Any(3.4e38).cast<float>(), 3.4e38f);
   EXPECT_FLOAT_EQ(BT::Any(-3.4e38).cast<float>(), -3.4e38f);
 
+  // 3.4028235e38 (the usual printout of FLT_MAX) is a bit above FLT_MAX as a
+  // double, but below FLT_MAX + half an ulp, so it rounds to FLT_MAX.
+  constexpr float flt_max = std::numeric_limits<float>::max();
+  EXPECT_EQ(BT::Any(3.4028235e38).cast<float>(), flt_max);
+  EXPECT_EQ(BT::Any(-3.4028235e38).cast<float>(), -flt_max);
+  EXPECT_EQ(convertFromString<float>("3.4028235e38"), flt_max);
+  // FLT_MAX + half an ulp rounds to infinity.
+  EXPECT_ANY_THROW((void)BT::Any(0x1.ffffffp+127).cast<float>());
+  EXPECT_ANY_THROW((void)convertFromString<float>("6.8056473e38"));
+  // Widening never throws, and non-finite values pass through.
+  EXPECT_EQ(BT::Any(flt_max).cast<double>(), double(flt_max));
+  EXPECT_TRUE(std::isinf(BT::Any(std::numeric_limits<double>::infinity()).cast<float>()));
+
   // Same path through a blackboard entry holding a double.
   auto bb = BT::Blackboard::create();
   bb->set("v", 1e300);
