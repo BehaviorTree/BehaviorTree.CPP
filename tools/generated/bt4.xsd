@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <!--Define the common elements-->
+    <xs:simpleType name="blackboardType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\{.*\}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="booleanOrBlackboardType">
+        <xs:union memberTypes="xs:boolean blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="integerOrBlackboardType">
+        <xs:union memberTypes="xs:integer blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="decimalOrBlackboardType">
+        <xs:union memberTypes="xs:decimal blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="stringOrBlackboardType">
+        <xs:union memberTypes="xs:string blackboardType"/>
+    </xs:simpleType>
+    <xs:simpleType name="descriptionType">
+        <xs:restriction base="xs:string">
+            <xs:whiteSpace value="preserve"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="inputPortType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="type" type="xs:string" use="optional"/>
+                <xs:attribute name="default" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="outputPortType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="type" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="inoutPortType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="type" type="xs:string" use="optional"/>
+                <xs:attribute name="default" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:attributeGroup name="preconditionAttributeGroup">
+        <xs:attribute name="_failureIf" type="xs:string" use="optional"/>
+        <xs:attribute name="_skipIf" type="xs:string" use="optional"/>
+        <xs:attribute name="_successIf" type="xs:string" use="optional"/>
+        <xs:attribute name="_while" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="postconditionAttributeGroup">
+        <xs:attribute name="_onSuccess" type="xs:string" use="optional"/>
+        <xs:attribute name="_onFailure" type="xs:string" use="optional"/>
+        <xs:attribute name="_post" type="xs:string" use="optional"/>
+        <xs:attribute name="_onHalted" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="commonAttributeGroup">
+        <xs:attribute name="name" type="xs:string" use="optional"/>
+        <xs:attributeGroup ref="preconditionAttributeGroup"/>
+        <xs:attributeGroup ref="postconditionAttributeGroup"/>
+    </xs:attributeGroup>
+    <xs:complexType name="treeNodesModelNodeType">
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="input_port" type="inputPortType"/>
+                <xs:element name="output_port" type="outputPortType"/>
+                <xs:element name="inout_port" type="inoutPortType"/>
+            </xs:choice>
+            <xs:element name="description" type="descriptionType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="ID" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:group name="treeNodesModelNodeGroup">
+        <xs:choice>
+            <xs:element name="Action" type="treeNodesModelNodeType"/>
+            <xs:element name="Condition" type="treeNodesModelNodeType"/>
+            <xs:element name="Control" type="treeNodesModelNodeType"/>
+            <xs:element name="Decorator" type="treeNodesModelNodeType"/>
+        </xs:choice>
+    </xs:group>
+    <xs:element name="root">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="include"/>
+                    <xs:element ref="BehaviorTree"/>
+                </xs:choice>
+                <xs:element ref="TreeNodesModel" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="BTCPP_format" type="xs:string" use="required"/>
+            <xs:attribute name="main_tree_to_execute" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:group name="oneNodeGroup">
+        <xs:choice>
+            <xs:any namespace="##any" processContents="lax"/>
+        </xs:choice>
+    </xs:group>
+    <xs:element name="include">
+        <xs:complexType>
+            <xs:attribute name="path" type="xs:string" use="required"/>
+            <xs:attribute name="ros_pkg" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="BehaviorTree">
+        <xs:complexType>
+            <xs:group ref="oneNodeGroup"/>
+            <xs:attribute name="ID" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="TreeNodesModel">
+        <xs:complexType>
+            <xs:group ref="treeNodesModelNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="AlwaysFailureType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="AlwaysSuccessType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="AsyncFallbackType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="AsyncSequenceType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="DelayType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="delay_msec" type="integerOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="FallbackType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="ForceFailureType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="ForceSuccessType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="IfThenElseType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="InverterType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="KeepRunningUntilFailureType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="LoopBoolType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="if_empty" default="SUCCESS"/>
+        <xs:attribute name="queue" use="required"/>
+        <xs:attribute name="value" type="blackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="LoopDoubleType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="if_empty" default="SUCCESS"/>
+        <xs:attribute name="queue" use="required"/>
+        <xs:attribute name="value" type="blackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="LoopIntType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="if_empty" default="SUCCESS"/>
+        <xs:attribute name="queue" use="required"/>
+        <xs:attribute name="value" type="blackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="LoopStringType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="if_empty" default="SUCCESS"/>
+        <xs:attribute name="queue" use="required"/>
+        <xs:attribute name="value" type="blackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="ParallelType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="failure_count" type="integerOrBlackboardType" default="1"/>
+        <xs:attribute name="success_count" type="integerOrBlackboardType" default="-1"/>
+    </xs:complexType>
+    <xs:complexType name="ParallelAllType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="max_failures" type="integerOrBlackboardType" default="1"/>
+    </xs:complexType>
+    <xs:complexType name="PreconditionType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="else" default="FAILURE"/>
+        <xs:attribute name="if" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="ReactiveFallbackType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="ReactiveSequenceType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="RepeatType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="num_cycles" type="integerOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="RetryUntilSuccessfulType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="num_attempts" type="integerOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="RunOnceType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="then_skip" type="booleanOrBlackboardType" default="true"/>
+    </xs:complexType>
+    <xs:complexType name="ScriptType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="code" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="ScriptConditionType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="code" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="SequenceType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="SequenceWithMemoryType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:complexType name="SetBlackboardType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="output_key" use="required"/>
+        <xs:attribute name="value" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="SkipUnlessUpdatedType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="entry" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="SleepType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="msec" type="integerOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="SubTreeType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="_autoremap" type="booleanOrBlackboardType" default="false"/>
+        <xs:attribute name="ID" type="xs:string" use="required"/>
+        <xs:anyAttribute processContents="skip"/>
+    </xs:complexType>
+    <xs:complexType name="Switch2Type">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="case_1" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_2" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="variable" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="Switch3Type">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="case_1" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_2" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_3" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="variable" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="Switch4Type">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="case_1" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_2" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_3" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_4" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="variable" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="Switch5Type">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="case_1" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_2" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_3" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_4" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_5" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="variable" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="Switch6Type">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="case_1" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_2" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_3" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_4" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_5" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="case_6" type="stringOrBlackboardType" use="required"/>
+        <xs:attribute name="variable" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="TimeoutType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="msec" type="integerOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="TryCatchType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="catch_on_halt" type="booleanOrBlackboardType" default="false"/>
+    </xs:complexType>
+    <xs:complexType name="UnsetBlackboardType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="key" type="stringOrBlackboardType" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="WaitValueUpdateType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="entry" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="WasEntryUpdatedType">
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="entry" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="WhileDoElseType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
+    <xs:element name="AlwaysFailure" type="AlwaysFailureType"/>
+    <xs:element name="AlwaysSuccess" type="AlwaysSuccessType"/>
+    <xs:element name="AsyncFallback" type="AsyncFallbackType"/>
+    <xs:element name="AsyncSequence" type="AsyncSequenceType"/>
+    <xs:element name="Delay" type="DelayType"/>
+    <xs:element name="Fallback" type="FallbackType"/>
+    <xs:element name="ForceFailure" type="ForceFailureType"/>
+    <xs:element name="ForceSuccess" type="ForceSuccessType"/>
+    <xs:element name="IfThenElse" type="IfThenElseType"/>
+    <xs:element name="Inverter" type="InverterType"/>
+    <xs:element name="KeepRunningUntilFailure" type="KeepRunningUntilFailureType"/>
+    <xs:element name="LoopBool" type="LoopBoolType"/>
+    <xs:element name="LoopDouble" type="LoopDoubleType"/>
+    <xs:element name="LoopInt" type="LoopIntType"/>
+    <xs:element name="LoopString" type="LoopStringType"/>
+    <xs:element name="Parallel" type="ParallelType"/>
+    <xs:element name="ParallelAll" type="ParallelAllType"/>
+    <xs:element name="Precondition" type="PreconditionType"/>
+    <xs:element name="ReactiveFallback" type="ReactiveFallbackType"/>
+    <xs:element name="ReactiveSequence" type="ReactiveSequenceType"/>
+    <xs:element name="Repeat" type="RepeatType"/>
+    <xs:element name="RetryUntilSuccessful" type="RetryUntilSuccessfulType"/>
+    <xs:element name="RunOnce" type="RunOnceType"/>
+    <xs:element name="Script" type="ScriptType"/>
+    <xs:element name="ScriptCondition" type="ScriptConditionType"/>
+    <xs:element name="Sequence" type="SequenceType"/>
+    <xs:element name="SequenceWithMemory" type="SequenceWithMemoryType"/>
+    <xs:element name="SetBlackboard" type="SetBlackboardType"/>
+    <xs:element name="SkipUnlessUpdated" type="SkipUnlessUpdatedType"/>
+    <xs:element name="Sleep" type="SleepType"/>
+    <xs:element name="SubTree" type="SubTreeType"/>
+    <xs:element name="Switch2" type="Switch2Type"/>
+    <xs:element name="Switch3" type="Switch3Type"/>
+    <xs:element name="Switch4" type="Switch4Type"/>
+    <xs:element name="Switch5" type="Switch5Type"/>
+    <xs:element name="Switch6" type="Switch6Type"/>
+    <xs:element name="Timeout" type="TimeoutType"/>
+    <xs:element name="TryCatch" type="TryCatchType"/>
+    <xs:element name="UnsetBlackboard" type="UnsetBlackboardType"/>
+    <xs:element name="WaitValueUpdate" type="WaitValueUpdateType"/>
+    <xs:element name="WasEntryUpdated" type="WasEntryUpdatedType"/>
+    <xs:element name="WhileDoElse" type="WhileDoElseType"/>
+</xs:schema>
