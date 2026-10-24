@@ -126,7 +126,10 @@ Collaboration diagram for BT::Groot2Publisher:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae1a2c877d8fd2a7c5bc69e753b9fa5cc"><td class="memItemLeft" align="right" valign="top"><a id="ae1a2c877d8fd2a7c5bc69e753b9fa5cc" name="ae1a2c877d8fd2a7c5bc69e753b9fa5cc"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Groot2Publisher</b> (const <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html">BT::Tree</a> &amp;tree, unsigned server_port=1667)</td></tr>
+<tr class="memdesc:ae1a2c877d8fd2a7c5bc69e753b9fa5cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Listens on all network interfaces. <br /></td></tr>
 <tr class="separator:ae1a2c877d8fd2a7c5bc69e753b9fa5cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af228aed2c45aa51085b95277f456cd87"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/df5/class_b_t_1_1_groot2_publisher.html#af228aed2c45aa51085b95277f456cd87">Groot2Publisher</a> (const <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html">BT::Tree</a> &amp;tree, unsigned server_port, const std::string &amp;bind_address)</td></tr>
+<tr class="separator:af228aed2c45aa51085b95277f456cd87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f57786d499617cae67aec9cc55d1607"><td class="memItemLeft" align="right" valign="top"><a id="a3f57786d499617cae67aec9cc55d1607" name="a3f57786d499617cae67aec9cc55d1607"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Groot2Publisher</b> (const <a class="el" href="../../da/df5/class_b_t_1_1_groot2_publisher.html">Groot2Publisher</a> &amp;other)=delete</td></tr>
 <tr class="separator:a3f57786d499617cae67aec9cc55d1607"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -200,8 +203,50 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>subscribeToTreeChange
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="../../da/df5/class_b_t_1_1_groot2_publisher.html" title="The Groot2Publisher is used to create an interface between your BT.CPP executor and Groot2.">Groot2Publisher</a> is used to create an interface between your BT.CPP executor and Groot2. </p>
-<p>An inter-process communication mechanism allows the two processes to communicate through a TCP port. The user should provide the port to be used in the constructor. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+<p>An inter-process communication mechanism allows the two processes to communicate through a TCP port. The user should provide the port to be used in the constructor. The publisher binds two ports: server_port and server_port + 1.</p>
+<p>SECURITY: the protocol has no authentication. <a class="el" href="../../d7/df4/class_b_t_1_1_any.html">Any</a> client that can reach these ports can read the tree and its blackboards, and can insert hooks (breakpoints) that replace the result of a node, changing how the tree executes. Do not expose them to untrusted networks; use the bind_address argument to restrict the interface they listen on. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="af228aed2c45aa51085b95277f456cd87" name="af228aed2c45aa51085b95277f456cd87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af228aed2c45aa51085b95277f456cd87">&#9670;&#160;</a></span>Groot2Publisher()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BT::Groot2Publisher::Groot2Publisher </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html">BT::Tree</a> &amp;&#160;</td>
+          <td class="paramname"><em>tree</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>server_port</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>bind_address</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bind_address</td><td>the interface to listen on, in ZeroMQ tcp syntax: an IPv4 address ("127.0.0.1" for local connections only), an interface name ("eth0"), or "*" for all interfaces. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="aa8266d54c77499c29fca5622941a5583" name="aa8266d54c77499c29fca5622941a5583"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa8266d54c77499c29fca5622941a5583">&#9670;&#160;</a></span>setMaxHeartbeatDelay()</h2>
 
