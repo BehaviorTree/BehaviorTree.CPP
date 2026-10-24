@@ -263,7 +263,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     if(!ExceptionFilter::isExpectedException(e))
     {
       std::cerr << "Unexpected top-level exception: " << e.what() << std::endl;
-      return 1;
     }
   }
 

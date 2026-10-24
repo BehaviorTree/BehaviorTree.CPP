@@ -77,16 +77,8 @@ bool CheckStringEquality(const std::string& v1, const std::string& v2,
     auto [ptr, ec] = std::from_chars(str.data(), end, result);
     return ec == std::errc() && ptr == end;
 #else
-    try
-    {
-      std::size_t pos = 0;
-      result = std::stod(str, &pos);
-      return pos == str.size();
-    }
-    catch(...)
-    {
-      return false;
-    }
+    // locale-independent, unlike std::stod (see parseDouble)
+    return parseDouble(str, result, /*require_full_consumption=*/true);
 #endif
   };
   double v1_real = 0;

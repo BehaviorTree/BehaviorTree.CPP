@@ -133,6 +133,26 @@ TEST(Substitution, ParserRejectsMissingReturnStatusAndScript)
   ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(invalid_json), RuntimeError);
 }
 
+TEST(Substitution, ParserRejectsNonIntegerAsyncDelay)
+{
+  // async_delay used to be read with get<int>(), which truncates a real
+  // number and casts an out-of-range one to int (undefined behavior).
+  for(const char* delay : { "1e300", "2.5", "5000000000" })
+  {
+    const std::string json_text = std::string(R"(
+    {
+      "TestNodeConfigs": {
+        "Delayed": { "return_status": "SUCCESS", "async_delay": )") +
+                                  delay + R"( }
+      },
+      "SubstitutionRules": { "actionA": "Delayed" }
+    })";
+
+    BehaviorTreeFactory factory;
+    ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(json_text), RuntimeError) << delay;
+  }
+}
+
 TEST(Substitution, ScriptedReturnStatusFromJson)
 {
   static const char* xml_text = R"(
@@ -545,4 +565,62 @@ TEST(Substitution, StringSubstitutionRegistrationID_Issue930)
 
   // The substituted node should still work correctly
   ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
+// Regression test: a substitution rule must not turn a node into a
+// structurally incompatible type. The XML for a compact leaf (<AlwaysSuccess/>)
+// carries no "ID" attribute and no children, so replacing it with a SubTree
+// (which reads element->Attribute("ID")) or a Decorator (which needs a child)
+// used to segfault at tree construction / first tick. It must now throw.
+TEST(Substitution, IncompatibleTypeSubstitutionThrows)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <AlwaysSuccess name="action_A"/>
+    </BehaviorTree>
+  </root>
+  )";
+
+  // leaf -> SubTree: element has no ID attribute
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.addSubstitutionRule("action_A", "SubTree");
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
+  }
+
+  // leaf -> Decorator: element has no child
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.addSubstitutionRule("action_A", "Inverter");
+    EXPECT_THROW((void)factory.createTree("MainTree"), RuntimeError);
+  }
+
+  // leaf -> leaf stays valid (the common mock case)
+  {
+    BehaviorTreeFactory factory;
+    factory.registerBehaviorTreeFromText(xml_text);
+    factory.registerSimpleAction("MyMock", [](TreeNode&) { return NodeStatus::SUCCESS; });
+    factory.addSubstitutionRule("action_A", "MyMock");
+    Tree tree;
+    ASSERT_NO_THROW(tree = factory.createTree("MainTree"));
+    EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  }
+}
+
+// Destroying a TestNode while its async_delay timer is pending makes
+// ~TimerQueue() run the handler (aborted) during the PImpl deletion. The
+// handler used to reach the PImpl through _p, which std::unique_ptr may have
+// already reset to nullptr at that point (libc++ does).
+TEST(Substitution, DestroyTestNodeWithPendingAsyncDelay)
+{
+  auto test_config = std::make_shared<TestNodeConfig>();
+  test_config->return_status = NodeStatus::SUCCESS;
+  test_config->async_delay = std::chrono::milliseconds(10000);
+
+  auto node = std::make_unique<TestNode>("mock", NodeConfig{}, test_config);
+  ASSERT_EQ(node->executeTick(), NodeStatus::RUNNING);
+  node.reset();
 }

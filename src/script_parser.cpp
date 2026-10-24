@@ -46,6 +46,14 @@ public:
 private:
   std::vector<Token> tokens_;
   size_t current_ = 0;
+  int depth_ = 0;
+
+  // Upper bound on the nesting of the recursive-descent grammar. Each open
+  // paren / unary prefix / right-hand operand adds one parseExpr frame, so a
+  // crafted expression like "((((...0...))))" would otherwise recurse until the
+  // native stack is exhausted. This mirrors the kMaxNestingDepth cap the XML
+  // parser already applies in VerifyXML and recursivelyCreateSubtree.
+  static constexpr int kMaxNestingDepth = 256;
 
   // Binding power constants.  Higher value = tighter binding.
   static constexpr int kAssignmentBP = 2;
@@ -210,14 +218,19 @@ private:
       int64_t val = 0;
       const char* first = tok.text.data();
       const char* last = first + tok.text.size();
-      if(tok.text.size() > 2 && tok.text[0] == '0' &&
-         (tok.text[1] == 'x' || tok.text[1] == 'X'))
+      const bool is_hex = tok.text.size() > 2 && tok.text[0] == '0' &&
+                          (tok.text[1] == 'x' || tok.text[1] == 'X');
+      const auto [ptr, ec] = is_hex ? std::from_chars(first + 2, last, val, 16) :
+                                      std::from_chars(first, last, val, 10);
+      // The tokenizer already guarantees the literal is made of (hex) digits, so
+      // the only remaining failure is result_out_of_range. from_chars leaves val
+      // untouched in that case, which would otherwise turn a literal like
+      // 0xFFFFFFFFFFFFFFFF into a silent 0.
+      if(ec != std::errc() || ptr != last)
       {
-        std::from_chars(first + 2, last, val, 16);
-      }
-      else
-      {
-        std::from_chars(first, last, val, 10);
+        throw RuntimeError(StrCat("Integer literal '", tok.text, "' at position ",
+                                  std::to_string(tok.pos),
+                                  " is out of range for a 64-bit integer"));
       }
       return std::make_shared<Ast::ExprLiteral>(Any(val));
     }
@@ -254,6 +267,18 @@ private:
   /// Main Pratt expression parser
   Ast::expr_ptr parseExpr(int minBP)
   {
+    // Bound the recursion so a deeply nested expression can't overflow the
+    // stack. Every open paren / unary prefix / right-hand operand adds one
+    // parseExpr frame; depth_ is decremented before the normal return below so
+    // it tracks the current nesting rather than the total call count. A parse
+    // failure throws and discards the parser, so the error paths need no reset.
+    if(++depth_ > kMaxNestingDepth)
+    {
+      throw RuntimeError(StrCat("Parse error at position ", std::to_string(peek().pos),
+                                ": expression nesting is too deep (limit ",
+                                std::to_string(kMaxNestingDepth), ")"));
+    }
+
     auto left = parsePrefix();
 
     while(true)
@@ -293,6 +318,7 @@ private:
       left = makeBinary(std::move(left), opTok.type, std::move(right));
     }
 
+    --depth_;
     return left;
   }
 

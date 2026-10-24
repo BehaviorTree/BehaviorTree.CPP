@@ -1,5 +1,7 @@
 #include "behaviortree_cpp/json_export.h"
 
+#include <limits>
+
 namespace BT
 {
 
@@ -72,9 +74,27 @@ JsonExporter::ExpectedEntry JsonExporter::fromJson(const nlohmann::json& source)
     return Entry{ BT::Any(source.get<std::string>()),
                   BT::TypeInfo::Create<std::string>() };
   }
+  // get<int>() silently wraps any value outside the int range, so keep the
+  // width when the number doesn't fit. This lets an int64_t/uint64_t entry
+  // survive an export/import round-trip instead of coming back truncated.
+  if(source.is_number_unsigned())
+  {
+    const uint64_t value = source.get<uint64_t>();
+    if(value <= static_cast<uint64_t>(std::numeric_limits<int>::max()))
+    {
+      return Entry{ BT::Any(static_cast<int>(value)), BT::TypeInfo::Create<int>() };
+    }
+    return Entry{ BT::Any(value), BT::TypeInfo::Create<uint64_t>() };
+  }
   if(source.is_number_integer())
   {
-    return Entry{ BT::Any(source.get<int>()), BT::TypeInfo::Create<int>() };
+    const int64_t value = source.get<int64_t>();
+    if(value >= static_cast<int64_t>(std::numeric_limits<int>::min()) &&
+       value <= static_cast<int64_t>(std::numeric_limits<int>::max()))
+    {
+      return Entry{ BT::Any(static_cast<int>(value)), BT::TypeInfo::Create<int>() };
+    }
+    return Entry{ BT::Any(value), BT::TypeInfo::Create<int64_t>() };
   }
   if(source.is_number_float())
   {
@@ -96,8 +116,14 @@ JsonExporter::ExpectedEntry JsonExporter::fromJson(const nlohmann::json& source)
     }
     if(first_element.is_number_integer())
     {
-      return Entry{ BT::Any(source.get<std::vector<int>>()),
-                    BT::TypeInfo::Create<std::vector<int>>() };
+      // the type comes from the first element only: check every element
+      std::vector<int> values;
+      values.reserve(source.size());
+      for(const auto& element : source)
+      {
+        values.push_back(details::JsonToInteger<int>(element));
+      }
+      return Entry{ BT::Any(values), BT::TypeInfo::Create<std::vector<int>>() };
     }
     if(first_element.is_number_float())
     {

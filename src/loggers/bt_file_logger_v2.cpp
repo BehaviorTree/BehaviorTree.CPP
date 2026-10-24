@@ -100,6 +100,10 @@ FileLogger2::~FileLogger2()
   _p->loop = false;
   _p->queue_cv.notify_one();
   _p->writer_thread.join();
+  // The writer thread checks `loop` between batches; a transition pushed after its last swap
+  // (a haltTree() right before this destructor is the common case) would otherwise never reach
+  // the file. Drain it here, on the destroying thread, after the join.
+  drainQueue();
   _p->file_stream.close();
 }
 
@@ -146,22 +150,35 @@ void FileLogger2::writerLoop()
       // simple way to pop all the transitions from _p->transitions_queue into transitions
       std::swap(transitions, _p->transitions_queue);
     }
-    {
-      const std::scoped_lock file_lock(_p->file_mutex);
-      while(!transitions.empty())
-      {
-        const auto trans = transitions.front();
-        std::array<char, 9> write_buffer{};
-        std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6);
-        std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2);
-        std::memcpy(write_buffer.data() + 8, &trans.status, 1);
-
-        _p->file_stream.write(write_buffer.data(), 9);
-        transitions.pop_front();
-      }
-      _p->file_stream.flush();
-    }
+    writeBatch(transitions);
   }
+}
+
+void FileLogger2::writeBatch(std::deque<Transition>& transitions)
+{
+  const std::scoped_lock file_lock(_p->file_mutex);
+  while(!transitions.empty())
+  {
+    const auto trans = transitions.front();
+    std::array<char, 9> write_buffer{};
+    std::memcpy(write_buffer.data(), &trans.timestamp_usec, 6);
+    std::memcpy(write_buffer.data() + 6, &trans.node_uid, 2);
+    std::memcpy(write_buffer.data() + 8, &trans.status, 1);
+
+    _p->file_stream.write(write_buffer.data(), 9);
+    transitions.pop_front();
+  }
+  _p->file_stream.flush();
+}
+
+void FileLogger2::drainQueue()
+{
+  std::deque<Transition> transitions;
+  {
+    std::unique_lock lock(_p->queue_mutex);
+    std::swap(transitions, _p->transitions_queue);
+  }
+  writeBatch(transitions);
 }
 
 }  // namespace BT

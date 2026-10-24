@@ -15,6 +15,7 @@
 #include "behaviortree_cpp/scripting/any_types.hpp"
 #include "behaviortree_cpp/scripting/script_parser.hpp"
 
+#include <charconv>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -48,6 +49,25 @@ inline double StringToDouble(const Any& value, const Environment& env)
     }
   }
   return value.cast<double>();
+}
+
+// Replace a string holding a whole number (e.g. "42" or "1.5") with that number.
+// Unlike StringToDouble, it rejects numeric prefixes, booleans and enums.
+inline void NumericStringToNumber(Any& value)
+{
+  const auto str = value.cast<std::string>();
+  const char* end = str.data() + str.size();
+  int64_t int_val = 0;
+  const auto [ptr, ec] = std::from_chars(str.data(), end, int_val);
+  double dbl_val = 0;
+  if(ec == std::errc() && ptr == end)
+  {
+    value = Any(int_val);
+  }
+  else if(parseDouble(str, dbl_val, /*require_full_consumption=*/true))
+  {
+    value = Any(dbl_val);
+  }
 }
 
 struct ExprBase
@@ -129,18 +149,38 @@ struct ExprUnaryArithmetic : ExprBase
         case negate:
           return Any(-rv);
         case complement:
-          if(rv > static_cast<double>(std::numeric_limits<int64_t>::max()) ||
-             rv < static_cast<double>(std::numeric_limits<int64_t>::min()))
+          // Use the checked conversion, like the binary bitwise operators do.
+          // A plain static_cast is undefined for NaN and for values at or
+          // beyond the int64_t range: the hand-written comparison used here
+          // before let NaN (every comparison is false) and 2^63 (not greater
+          // than double(INT64_MAX), which rounds up to 2^63) through, and
+          // silently truncated fractional values.
+          try
+          {
+            return Any(static_cast<double>(~rhs_v.cast<int64_t>()));
+          }
+          catch(const std::exception&)
           {
             throw RuntimeError("Number out of range for bitwise operation");
           }
-          return Any(static_cast<double>(~static_cast<int64_t>(rv)));
         case logical_not:
           return Any(static_cast<double>(!static_cast<bool>(rv)));
       }
     }
     else if(rhs_v.isString())
     {
+      if(op == logical_not)
+      {
+        const auto str = rhs_v.cast<std::string>();
+        if(str == "true" || str == "True" || str == "TRUE" || str == "1")
+        {
+          return Any(0.0);
+        }
+        if(str == "false" || str == "False" || str == "FALSE" || str == "0")
+        {
+          return Any(1.0);
+        }
+      }
       throw RuntimeError("Invalid operator for std::string");
     }
     throw RuntimeError("ExprUnaryArithmetic: undefined");
@@ -211,6 +251,20 @@ struct ExprBinaryArithmetic : ExprBase
     if(rhs_v.empty())
     {
       throw RuntimeError(ErrorNotInit("right", opStr()));
+    }
+
+    // A numeric string mixed with a number is used as that number, e.g. the
+    // literal SubTree port int_val="42" in "int_val + 1"
+    if(op == plus || op == minus || op == times || op == div)
+    {
+      if(lhs_v.isString() && rhs_v.isNumber())
+      {
+        NumericStringToNumber(lhs_v);
+      }
+      else if(lhs_v.isNumber() && rhs_v.isString())
+      {
+        NumericStringToNumber(rhs_v);
+      }
     }
 
     if(rhs_v.isNumber() && lhs_v.isNumber())
@@ -542,7 +596,7 @@ struct ExprAssignment : ExprBase
     }
     auto value = rhs->evaluate(env);
 
-    std::scoped_lock lock(entry->entry_mutex);
+    std::unique_lock lock(entry->entry_mutex);
     auto* dst_ptr = &entry->value;
 
     auto errorPrefix = [dst_ptr, &key]() {
@@ -604,7 +658,14 @@ struct ExprAssignment : ExprBase
       }
       entry->sequence_id++;
       entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
-      return *dst_ptr;
+      const Any result = *dst_ptr;
+      auto update_signal = entry->update_signal;
+      lock.unlock();
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
+      return result;
     }
 
     if(dst_ptr->empty())
@@ -660,7 +721,14 @@ struct ExprAssignment : ExprBase
     temp_variable.copyInto(*dst_ptr);
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
-    return *dst_ptr;
+    const Any result = *dst_ptr;
+    auto update_signal = entry->update_signal;
+    lock.unlock();
+    if(update_signal)
+    {
+      update_signal->notify();
+    }
+    return result;
   }
 };
 }  // namespace BT::Ast

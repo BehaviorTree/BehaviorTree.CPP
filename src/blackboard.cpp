@@ -2,8 +2,12 @@
 
 #include "behaviortree_cpp/json_export.h"
 
+#include <algorithm>
+#include <atomic>
+#include <mutex>
 #include <tuple>
 #include <unordered_set>
+#include <vector>
 
 namespace BT
 {
@@ -14,11 +18,135 @@ bool IsPrivateKey(StringView str)
 {
   return str.size() >= 1 && str.data()[0] == '_';
 }
+
+// Blackboard::getAnyLocked() returns an AnyPtrLocked: raw pointers to the value
+// and to the (locked) entry_mutex of an Entry. It does not own the Entry and its
+// layout can not change (ABI), so the only sign that the holder is done is the
+// release of the mutex. Therefore an Entry whose last shared_ptr is dropped
+// (unset(), clear(), cloneInto(), ~Blackboard) while its mutex is still locked
+// is parked here, and destroyed later by the first RetireEntry() that finds it
+// unlocked.
+struct RetiredEntries
+{
+  std::mutex mutex;
+  std::vector<Blackboard::Entry*> entries;
+  std::atomic_size_t count = 0;
+};
+
+RetiredEntries& GetRetiredEntries()
+{
+  // Never destroyed: a Blackboard with static storage duration may be
+  // destroyed after this object during program exit.
+  // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+  static auto* const instance = new RetiredEntries();
+  return *instance;
+}
+
+// No shared_ptr is left when this is called, so nobody can lock the entry
+// anymore: if try_lock() succeeds, the entry is unreachable.
+// Note: the calling thread may be the one holding the AnyPtrLocked. A
+// try_lock() on a std::mutex owned by the caller is formally undefined, but
+// it simply fails on all the supported platforms (pthread: EBUSY).
+bool IsUnlocked(Blackboard::Entry* entry)
+{
+  if(entry->entry_mutex.try_lock())
+  {
+    entry->entry_mutex.unlock();
+    return true;
+  }
+  return false;
+}
+
+// Destroy the parked entries that have been unlocked in the meantime.
+// If "retired" is not null, it is parked first.
+void SweepRetiredEntries(Blackboard::Entry* retired = nullptr) noexcept
+{
+  auto& parked = GetRetiredEntries();
+  std::vector<Blackboard::Entry*> unlocked;
+  try
+  {
+    const std::scoped_lock lock(parked.mutex);
+    if(retired != nullptr)
+    {
+      parked.entries.push_back(retired);
+    }
+    const auto it = std::partition(parked.entries.begin(), parked.entries.end(),
+                                   [](auto* entry) { return !IsUnlocked(entry); });
+    unlocked.assign(it, parked.entries.end());
+    parked.entries.erase(it, parked.entries.end());
+    parked.count = parked.entries.size();
+  }
+  catch(...)  // NOLINT(bugprone-empty-catch)
+  {
+    // Out of memory. Whatever could not be moved to "unlocked" remains parked
+    // (or leaks, in the case of "retired"), which is safe.
+  }
+  // Destroyed outside the lock: the destructor of a stored value may remove
+  // other entries, i.e. call this function again.
+  for(auto* entry : unlocked)
+  {
+    delete entry;  // NOLINT(cppcoreguidelines-owning-memory)
+  }
+}
+
+// Deleter of every shared_ptr<Entry>. Being attached at allocation time, it
+// covers all the removal paths, including those inlined in the user's binary.
+void RetireEntry(Blackboard::Entry* retired) noexcept
+{
+  // Common case: nothing is parked and nobody holds this entry
+  if(GetRetiredEntries().count == 0 && IsUnlocked(retired))
+  {
+    delete retired;  // NOLINT(cppcoreguidelines-owning-memory)
+    return;
+  }
+  SweepRetiredEntries(retired);
+}
+
+std::shared_ptr<Blackboard::Entry> MakeEntry(const TypeInfo& info)
+{
+  return { new Blackboard::Entry(info), &RetireEntry };
+}
 }  // namespace
 
 void Blackboard::enableAutoRemapping(bool remapping)
 {
   autoremapping_ = remapping;
+}
+
+Blackboard::EntryUpdatedSubscriber
+Blackboard::subscribeToEntry(const std::string& key, EntryUpdatedCallback callback)
+{
+  if(!callback)
+  {
+    throw LogicError("subscribeToEntry(): empty callback");
+  }
+  auto entry = getEntry(key);
+  if(!entry)
+  {
+    // Generic, like the entry created by set<std::string>(): the first
+    // strongly typed write sets its type.
+    entry = createEntryImpl(key, PortInfo(PortDirection::INOUT));
+  }
+  const std::scoped_lock lock(entry->entry_mutex);
+  if(!entry->update_signal)
+  {
+    entry->update_signal = std::make_shared<EntryUpdatedSignal>();
+  }
+  return entry->update_signal->subscribe(std::move(callback));
+}
+
+void Blackboard::notifyEntryUpdated(const std::string& key)
+{
+  std::shared_ptr<EntryUpdatedSignal> update_signal;
+  if(auto entry = getEntry(key))
+  {
+    const std::scoped_lock lock(entry->entry_mutex);
+    update_signal = entry->update_signal;
+  }
+  if(update_signal)
+  {
+    update_signal->notify();
+  }
 }
 
 AnyPtrLocked Blackboard::getAnyLocked(const std::string& key)
@@ -137,6 +265,18 @@ void Blackboard::debugMessage() const
   }
 }
 
+std::vector<std::string> Blackboard::getKeyNames() const
+{
+  const std::shared_lock storage_lock(storage_mutex_);
+  std::vector<std::string> out;
+  out.reserve(storage_.size());
+  for(const auto& entry_it : storage_)
+  {
+    out.push_back(entry_it.first);
+  }
+  return out;
+}
+
 std::vector<StringView> Blackboard::getKeys() const
 {
   // Lock storage_mutex_ (shared) to prevent iterator invalidation and
@@ -157,8 +297,10 @@ std::vector<StringView> Blackboard::getKeys() const
 
 void Blackboard::clear()
 {
+  // the entries (i.e. the stored values) are destroyed outside the lock
+  decltype(storage_) removed;
   const std::unique_lock storage_lock(storage_mutex_);
-  storage_.clear();
+  removed.swap(storage_);
 }
 
 void Blackboard::createEntry(const std::string& key, const TypeInfo& info)
@@ -231,6 +373,7 @@ void Blackboard::cloneInto(Blackboard& dst) const
 
   // Step 2: copy entry data under entry_mutex only (BUG-3 fix).
   std::vector<std::pair<std::string, std::shared_ptr<Entry>>> new_entries;
+  std::vector<std::shared_ptr<EntryUpdatedSignal>> update_signals;
 
   for(auto& task : tasks)
   {
@@ -243,12 +386,16 @@ void Blackboard::cloneInto(Blackboard& dst) const
       task.dst->info = task.src->info;
       task.dst->sequence_id++;
       task.dst->stamp = std::chrono::steady_clock::now().time_since_epoch();
+      if(task.dst->update_signal)
+      {
+        update_signals.push_back(task.dst->update_signal);
+      }
     }
     else
     {
       // create new entry from src
       std::scoped_lock src_lock(task.src->entry_mutex);
-      auto new_entry = std::make_shared<Entry>(task.src->info);
+      auto new_entry = MakeEntry(task.src->info);
       new_entry->value = task.src->value;
       new_entry->string_converter = task.src->string_converter;
       new_entries.emplace_back(task.key, std::move(new_entry));
@@ -258,6 +405,8 @@ void Blackboard::cloneInto(Blackboard& dst) const
   // Step 3: insert new entries and remove stale ones under dst.storage_mutex_.
   if(!new_entries.empty() || !keys_to_remove.empty())
   {
+    // the stale entries are destroyed outside the lock
+    std::vector<std::shared_ptr<Entry>> removed;
     const std::unique_lock dst_lock(dst.storage_mutex_);
     for(auto& [key, entry] : new_entries)
     {
@@ -265,8 +414,18 @@ void Blackboard::cloneInto(Blackboard& dst) const
     }
     for(const auto& key : keys_to_remove)
     {
-      dst.storage_.erase(key);
+      if(auto it = dst.storage_.find(key); it != dst.storage_.end())
+      {
+        removed.push_back(std::move(it->second));
+        dst.storage_.erase(it);
+      }
     }
+  }
+  // Publish only after the complete snapshot has been restored and all locks
+  // released, so callbacks can read other restored entries as well.
+  for(const auto& update_signal : update_signals)
+  {
+    update_signal->notify();
   }
 }
 
@@ -282,6 +441,21 @@ Blackboard::Ptr Blackboard::parent()
 std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string& key,
                                                                const TypeInfo& info)
 {
+  // special syntax: "@" always refers to the root blackboard, the same
+  // redirection getEntry() applies. Without it, a key remapped to a root
+  // entry (port="{@foo}") is created here as a literal "@foo" entry that
+  // getEntry() then strips to "foo" and can never find again.
+  if(StartWith(key, '@'))
+  {
+    return rootBlackboard()->createEntryImpl(key.substr(1, key.size() - 1), info);
+  }
+
+  // Bound the lifetime of the entries that were removed while locked
+  if(GetRetiredEntries().count != 0)
+  {
+    SweepRetiredEntries();
+  }
+
   const std::unique_lock storage_lock(storage_mutex_);
   // This function might be called recursively, when we do remapping, because we move
   // to the top scope to find already existing  entries
@@ -327,7 +501,7 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
   }
   // not remapped, not found. Create locally.
 
-  auto entry = std::make_shared<Entry>(info);
+  auto entry = MakeEntry(info);
   // even if empty, let's assign to it a default type
   entry->value = Any(info.type());
   storage_.insert({ key, entry });
@@ -337,9 +511,8 @@ std::shared_ptr<Blackboard::Entry> Blackboard::createEntryImpl(const std::string
 nlohmann::json ExportBlackboardToJSON(const Blackboard& blackboard)
 {
   nlohmann::json dest;
-  for(auto entry_name : blackboard.getKeys())
+  for(const auto& name : blackboard.getKeyNames())
   {
-    const std::string name(entry_name);
     if(auto any_ref = blackboard.getAnyLocked(name))
     {
       if(auto any_ptr = any_ref.get())
@@ -364,8 +537,16 @@ void ImportBlackboardFromJSON(const nlohmann::json& json, Blackboard& blackboard
         entry = blackboard.getEntry(it.key());
       }
       // Lock entry_mutex before writing to prevent data races (BUG-4 fix).
-      std::scoped_lock lk(entry->entry_mutex);
-      entry->value = res->first;
+      std::shared_ptr<Blackboard::EntryUpdatedSignal> update_signal;
+      {
+        std::scoped_lock lk(entry->entry_mutex);
+        entry->value = res->first;
+        update_signal = entry->update_signal;
+      }
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
     }
   }
 }

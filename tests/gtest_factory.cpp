@@ -1,6 +1,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -358,6 +359,24 @@ TEST(
   // should not throw
   std::string path = FilePath("trees/parent_include_child_include_parent.xml");
   Tree tree = factory.createTreeFromFile(path);
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesItself)
+{
+  BehaviorTreeFactory factory;
+  std::string path = FilePath("trees/self_include.xml");
+  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWithCyclicIncludes)
+{
+  BehaviorTreeFactory factory;
+  std::string path = FilePath("trees/parent_include_child_cycle.xml");
+  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+
+  // a failed load must not leave stale state behind in the factory's parser
+  Tree tree = factory.createTreeFromFile(FilePath("trees/parent_include_child.xml"));
   ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
@@ -925,4 +944,19 @@ TEST(WriteTreeSchematron, CustomNodeNotInBuiltinPipe)
   EXPECT_EQ(sch.find("|SaySomething|"), std::string::npos);
   // Builtins must still be present
   EXPECT_NE(sch.find("|Sequence|"), std::string::npos);
+}
+
+TEST(BehaviorTreeFactory, TooManyNodesForUID)
+{
+  // UIDs are 16 bits wide. Past 65535 nodes the counter used to wrap around
+  // and the next nodes got the same UID (and path) as the first ones.
+  Tree tree;
+  std::set<uint16_t> uids;
+  for(int i = 0; i < 65535; i++)
+  {
+    uids.insert(tree.getUID());
+  }
+  EXPECT_EQ(uids.size(), 65535u);
+  EXPECT_EQ(uids.count(0), 0u);
+  EXPECT_THROW((void)tree.getUID(), RuntimeError);
 }

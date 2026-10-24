@@ -42,6 +42,12 @@ NodeStatus TimeoutNode::tick()
           return;
         }
         const std::unique_lock<std::mutex> lk(timeout_mutex_);
+        // halt() may have run between the timer firing and this lock: the
+        // child was already halted and may not exist anymore.
+        if(!timeout_started_)
+        {
+          return;
+        }
         if(child()->status() == NodeStatus::RUNNING)
         {
           child_halted_ = true;
@@ -73,8 +79,14 @@ NodeStatus TimeoutNode::tick()
 
 void TimeoutNode::halt()
 {
-  timeout_started_ = false;
-  timer_.cancelAll();
+  {
+    // The timer handler halts the child on the worker thread while holding
+    // this mutex: wait for it, and make a handler that fires later return
+    // before it touches the child.
+    const std::unique_lock<std::mutex> lk(timeout_mutex_);
+    timeout_started_ = false;
+    timer_.cancelAll();
+  }
   DecoratorNode::halt();
 }
 

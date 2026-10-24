@@ -14,6 +14,9 @@ set( BTCPP_EXTRA_LIBRARIES
 )
 
 ament_export_dependencies(ament_index_cpp)
+if(NOT USE_VENDORED_JSON)
+    ament_export_dependencies(nlohmann_json)
+endif()
 
 # The ROS build farm (bloom/debhelper) configures with
 # -DCMAKE_INSTALL_LIBDIR=lib/<multiarch-triplet>, but ament tooling

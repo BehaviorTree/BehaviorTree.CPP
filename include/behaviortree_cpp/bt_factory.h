@@ -15,7 +15,11 @@
 #define BT_FACTORY_H
 
 #include "behaviortree_cpp/behavior_tree.h"
+#ifdef BTCPP_SYSTEM_JSON
+#include <nlohmann/json.hpp>
+#else
 #include "behaviortree_cpp/contrib/json.hpp"
+#endif
 #include "behaviortree_cpp/contrib/magic_enum.hpp"
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 
@@ -128,6 +132,11 @@ public:
     *
     * @param timeout  duration of the sleep
     * @return         true if the timeout was NOT reached and the signal was received.
+    *
+    * @note On MSVC, std::condition_variable::wait_for() rounds the timeout up to the
+    * system timer resolution (about 15.6 ms), see microsoft/STL#2173. A short sleep, e.g.
+    * in tickWhileRunning(), can take much longer there. Calling timeBeginPeriod(1) once
+    * at startup (Windows API, links winmm) restores a 1 ms resolution.
     *
     * */
   bool sleep(std::chrono::system_clock::duration timeout);
@@ -316,6 +325,10 @@ public:
      *
      * where "tree_id" come from the XML attribute <BehaviorTree ID="tree_id">
      *
+     * If a tree with the same ID is already registered, the new definition
+     * replaces it. A warning is printed when the previous definition came from
+     * a different file (or from the same document); reloading the same file
+     * is silent.
      */
   void registerBehaviorTreeFromFile(const std::filesystem::path& filename);
 
