@@ -25,7 +25,7 @@ NamespaceIndentation: None
 ObjCSpaceBeforeProtocolList: true
 PenaltyBreakBeforeFirstCallParameter: 19
 PenaltyBreakComment: 60
-PenaltyBreakString: 1
+BreakStringLiterals: false
 PenaltyBreakFirstLessLess: 1000
 PenaltyExcessCharacter: 1000
 PenaltyReturnTypeOnItsOwnLine: 90
