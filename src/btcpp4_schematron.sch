@@ -10,9 +10,9 @@
     not require a TreeNodesModel entry (see behaviortree.dev/docs/learn-the-basics/xml_format).
     Built-in node types are excluded - they are always known to the library.
 
-    ##BUILTIN_PIPE## is a placeholder expanded at runtime by writeTreeSchematron()
-    with a pipe-delimited list of all built-in node names derived from the factory,
-    e.g. |AlwaysFailure|AlwaysSuccess|Fallback|Sequence|...|.
+    The pipe-delimited list of built-in node names used by Rule A, e.g.
+    |AlwaysFailure|AlwaysSuccess|Fallback|Sequence|...|, is filled in by
+    writeTreeSchematron() from the built-in nodes of the factory.
 
     The XPath 1.0 idiom  contains('|A|B|C|', concat('|', local-name(), '|'))
     tests set membership without requiring XPath 2.0 sequence literals, keeping

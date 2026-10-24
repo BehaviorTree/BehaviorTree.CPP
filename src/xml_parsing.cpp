@@ -1827,18 +1827,13 @@ std::string writeTreeSchematron(const BehaviorTreeFactory& factory)
   for(std::size_t pos = result.find(placeholder); pos != std::string::npos;
       pos = result.find(placeholder, pos))
   {
-    if(detail::insideXmlComment(result, pos))
-    {
-      pos += placeholder.size();
-      continue;
-    }
     result.replace(pos, placeholder.size(), builtin_pipe);
     pos += builtin_pipe.size();
     ++replacements;
   }
   if(replacements == 0)
     throw RuntimeError("writeTreeSchematron: placeholder '", placeholder,
-                       "' not found outside comments in schematron template");
+                       "' not found in schematron template");
   return result;
 }
 
@@ -1856,17 +1851,5 @@ std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin
   doc.Print(&printer);
   return std::string(printer.CStr(), size_t(printer.CStrSize() - 1));
 }
-
-namespace detail
-{
-bool insideXmlComment(const std::string& s, std::size_t pos)
-{
-  const auto open = s.rfind("<!--", pos);
-  if(open == std::string::npos)
-    return false;
-  const auto close = s.rfind("-->", pos);
-  return close == std::string::npos || close < open;
-}
-}  // namespace detail
 
 }  // namespace BT
