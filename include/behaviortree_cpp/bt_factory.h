@@ -133,6 +133,11 @@ public:
     * @param timeout  duration of the sleep
     * @return         true if the timeout was NOT reached and the signal was received.
     *
+    * @note On MSVC, std::condition_variable::wait_for() rounds the timeout up to the
+    * system timer resolution (about 15.6 ms), see microsoft/STL#2173. A short sleep, e.g.
+    * in tickWhileRunning(), can take much longer there. Calling timeBeginPeriod(1) once
+    * at startup (Windows API, links winmm) restores a 1 ms resolution.
+    *
     * */
   bool sleep(std::chrono::system_clock::duration timeout);
 
