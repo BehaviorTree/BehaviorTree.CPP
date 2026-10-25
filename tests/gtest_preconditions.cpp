@@ -2,6 +2,7 @@
 
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 #include <string>
 
@@ -507,4 +508,123 @@ TEST(Preconditions, SkippedSequence)
   tree.rootBlackboard()->set("skip", false);
   status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+}
+
+TEST(Preconditions, OnStart)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 3> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  // _onStart runs after the other preconditions, and only if the node starts:
+  // TestA is not skipped by the A==1 its own _onStart writes,
+  // TestB and TestC are short-circuited, so their script must not run.
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <Script code="A:=0; B:=0; C:=0"/>
+                <TestA _skipIf="A==1" _onStart="A:=1"/>
+                <TestB _skipIf="A==1" _onStart="B:=1"/>
+                <TestC _successIf="true" _onStart="C:=1"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[1], 0);
+  ASSERT_EQ(counters[2], 0);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("A"), 1);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 0);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("C"), 0);
+}
+
+TEST(Preconditions, OnStartRunsOncePerExecution)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <KeepRunning _onStart="count += 1"/>
+  </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("count", 0);
+
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("count"), 1);
+
+  // after a halt the node is IDLE again, so the script runs once more
+  tree.haltTree();
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("count"), 2);
+}
+
+TEST(Preconditions, OnlyIf)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 3> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  // _onlyIf is the negation of _skipIf; when both are present, either one
+  // can skip the node
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <Script code="A:=1"/>
+                <TestA _onlyIf="A==1"/>
+                <TestB _onlyIf="A==2"/>
+                <TestC _onlyIf="A==1" _skipIf="A==1"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[1], 0);
+  ASSERT_EQ(counters[2], 0);
+}
+
+TEST(Preconditions, OnlyIfNotCheckedWhenRunning)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <KeepRunning _onlyIf="check"/>
+  </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  auto tree = factory.createTreeFromText(xml_text);
+
+  tree.rootBlackboard()->set("check", false);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::SKIPPED);
+
+  tree.rootBlackboard()->set("check", true);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+
+  // unlike _while, _onlyIf is ignored while the node is RUNNING
+  tree.rootBlackboard()->set("check", false);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+}
+
+TEST(Preconditions, NewAttributesAreReserved)
+{
+  EXPECT_TRUE(IsReservedAttribute("_onlyIf"));
+  EXPECT_TRUE(IsReservedAttribute("_onStart"));
+
+  BehaviorTreeFactory factory;
+  const auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find(R"(name="_onlyIf")"), std::string::npos);
+  EXPECT_NE(xsd.find(R"(name="_onStart")"), std::string::npos);
 }
