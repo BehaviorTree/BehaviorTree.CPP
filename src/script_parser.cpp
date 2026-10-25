@@ -14,6 +14,7 @@
 
 #include "behaviortree_cpp/scripting/operators.hpp"
 
+#include <algorithm>
 #include <charconv>
 
 namespace BT
@@ -54,6 +55,15 @@ private:
   // native stack is exhausted. This mirrors the kMaxNestingDepth cap the XML
   // parser already applies in VerifyXML and recursivelyCreateSubtree.
   static constexpr int kMaxNestingDepth = 256;
+
+  // Height of the AST returned by the last parsePrefix() / parseExpr() call.
+  // A flat chain like "1+1+1+..." is parsed by the loop in parseExpr without
+  // recursing, but it builds a left-deep AST that evaluate() and the node
+  // destructors walk recursively, one frame per operator. Bounding the height
+  // bounds that recursion; it is larger than kMaxNestingDepth so that long
+  // flat expressions keep working.
+  int height_ = 0;
+  static constexpr int kMaxExpressionHeight = 1024;
 
   // Binding power constants.  Higher value = tighter binding.
   static constexpr int kAssignmentBP = 2;
@@ -165,18 +175,36 @@ private:
            type == TokenType::StarEqual || type == TokenType::SlashEqual;
   }
 
+  // Height of a node whose children are a subtree of height lhs_height and the
+  // expression parsed last (height_). Throws if the AST gets too tall.
+  int combinedHeight(int lhs_height) const
+  {
+    const int height = std::max(lhs_height, height_) + 1;
+    if(height > kMaxExpressionHeight)
+    {
+      throw RuntimeError(StrCat("Parse error at position ", std::to_string(peek().pos),
+                                ": expression is too long or too deeply nested (limit ",
+                                std::to_string(kMaxExpressionHeight), " levels)"));
+    }
+    return height;
+  }
+
   //--- Parsing ---
 
   /// Prefix: atoms and unary prefix operators
   Ast::expr_ptr parsePrefix()
   {
     const auto& tok = peek();
+    // literals and identifiers are leaves; the cases below that parse a
+    // subexpression overwrite it
+    height_ = 1;
 
     // Unary minus
     if(tok.type == TokenType::Minus)
     {
       advance();
       auto operand = parseExpr(kPrefixBP);
+      height_ = combinedHeight(0);
       return std::make_shared<Ast::ExprUnaryArithmetic>(Ast::ExprUnaryArithmetic::negate,
                                                         std::move(operand));
     }
@@ -185,6 +213,7 @@ private:
     {
       advance();
       auto operand = parseExpr(kPrefixBP);
+      height_ = combinedHeight(0);
       return std::make_shared<Ast::ExprUnaryArithmetic>(
           Ast::ExprUnaryArithmetic::complement, std::move(operand));
     }
@@ -193,6 +222,7 @@ private:
     {
       advance();
       auto operand = parseExpr(kPrefixBP);
+      height_ = combinedHeight(0);
       return std::make_shared<Ast::ExprUnaryArithmetic>(
           Ast::ExprUnaryArithmetic::logical_not, std::move(operand));
     }
@@ -280,6 +310,7 @@ private:
     }
 
     auto left = parsePrefix();
+    int left_height = height_;
 
     while(true)
     {
@@ -294,6 +325,7 @@ private:
       if(isAssignment(tokType))
       {
         left = parseAssignment(std::move(left));
+        left_height = combinedHeight(left_height);
         break;
       }
 
@@ -301,6 +333,7 @@ private:
       if(tokType == TokenType::Question)
       {
         left = parseTernary(std::move(left));
+        left_height = combinedHeight(left_height);
         break;
       }
 
@@ -308,6 +341,7 @@ private:
       if(isComparison(tokType))
       {
         left = parseChainedComparison(std::move(left));
+        left_height = combinedHeight(left_height);
         continue;
       }
 
@@ -316,9 +350,11 @@ private:
       // Right BP = LBP + 1 for left-associativity
       auto right = parseExpr(lbp + 1);
       left = makeBinary(std::move(left), opTok.type, std::move(right));
+      left_height = combinedHeight(left_height);
     }
 
     --depth_;
+    height_ = left_height;
     return left;
   }
 
@@ -358,8 +394,10 @@ private:
   {
     advance();                     // consume '?'
     auto thenExpr = parseExpr(0);  // full expression inside
+    const int then_height = height_;
     expect(TokenType::Colon, "expected ':' in ternary expression");
     auto elseExpr = parseExpr(kTernaryBP);
+    height_ = std::max(then_height, height_);
     return std::make_shared<Ast::ExprIf>(std::move(condition), std::move(thenExpr),
                                          std::move(elseExpr));
   }
@@ -369,13 +407,16 @@ private:
     auto node = std::make_shared<Ast::ExprComparison>();
     node->operands.push_back(std::move(first));
 
+    int max_height = 0;
     while(isComparison(peek().type))
     {
       node->ops.push_back(mapComparisonOp(advance().type));
       // Parse the next operand above comparison level
       // so that arithmetic binds tighter
       node->operands.push_back(parseExpr(kComparisonBP + 1));
+      max_height = std::max(max_height, height_);
     }
+    height_ = max_height;
     return node;
   }
 
