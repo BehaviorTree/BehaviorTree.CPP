@@ -14,6 +14,8 @@ Pre-conditions are evaluated **before** a node's `tick()` method is called. They
 | `_successIf` | IDLE only | If true, return SUCCESS without calling tick() |
 | `_skipIf` | IDLE only | If true, return SKIPPED without calling tick() |
 | `_while` | IDLE and RUNNING | If false when IDLE, return SKIPPED. If false when RUNNING, halt node and return SKIPPED |
+| `_onlyIf` | IDLE only | If false, return SKIPPED without calling tick() (the opposite of `_skipIf`) |
+| `_onStart` | IDLE only | Not a condition: execute the script right before the first tick() |
 
 ### Evaluation Order
 
@@ -22,12 +24,15 @@ When a node has multiple pre-conditions, they are evaluated in this order:
 2. `_successIf`
 3. `_skipIf`
 4. `_while`
+5. `_onlyIf`
+6. `_onStart`
 
-The first condition that triggers will determine the result.
+The first condition that triggers will determine the result. `_onStart` comes last,
+so its script is executed only if the node is actually going to tick.
 
 ### Important: One-time Evaluation
 
-**`_failureIf`, `_successIf`, and `_skipIf` are evaluated only once** when the node transitions from IDLE (or SKIPPED) to another state. They are **NOT re-evaluated** while the node is RUNNING.
+**`_failureIf`, `_successIf`, `_skipIf`, `_onlyIf` and `_onStart` are evaluated only once** when the node transitions from IDLE (or SKIPPED) to another state. They are **NOT re-evaluated** while the node is RUNNING.
 
 This means if you have:
 ```xml
@@ -48,10 +53,12 @@ If `battery_ok` becomes false while `MyAction` is running, the action is interru
 
 ### When to Use Each Pre-condition
 
-- **`_skipIf`**: Skip a node without failing the parent (useful in Sequences)
+- **`_skipIf`** / **`_onlyIf`**: Skip a node without failing the parent (useful in Sequences)
 - **`_failureIf`**: Fail early based on a condition (useful in Fallbacks)
 - **`_successIf`**: Succeed early based on a condition
 - **`_while`**: Guard that must remain true for the entire execution
+- **`_onStart`**: Initialize or reset blackboard entries when the node starts,
+  e.g. `<MyAction _onStart="attempts := 0"/>`
 
 ### The `<Precondition>` Decorator
 

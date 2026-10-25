@@ -48,9 +48,9 @@ using NonPortAttributes = std::unordered_map<std::string, std::string>;
  * @brief Pre-conditions that can be attached to any node via XML attributes.
  *
  * Pre-conditions are evaluated in the order defined by this enum (FAILURE_IF first,
- * then SUCCESS_IF, then SKIP_IF, then WHILE_TRUE).
+ * then SUCCESS_IF, SKIP_IF, WHILE_TRUE, ONLY_IF and finally ON_START).
  *
- * **Important**: FAILURE_IF, SUCCESS_IF, and SKIP_IF are evaluated **only once**
+ * **Important**: all of them except WHILE_TRUE are evaluated **only once**
  * when the node transitions from IDLE (or SKIPPED) to another state.
  * They are NOT re-evaluated while the node is RUNNING.
  *
@@ -62,6 +62,11 @@ using NonPortAttributes = std::unordered_map<std::string, std::string>;
  *   If false when IDLE, return SKIPPED. If false when RUNNING, halt the node
  *   and return SKIPPED. This is the only pre-condition that can interrupt
  *   a running node.
+ * - `_onlyIf="<script>"`: If false when node is IDLE, return SKIPPED immediately
+ *   (the opposite of `_skipIf`).
+ * - `_onStart="<script>"`: Not a condition: the script is executed right before
+ *   the first tick() of the node, i.e. only if none of the pre-conditions above
+ *   returned a status.
  *
  * If you need a condition to be re-evaluated on every tick, use the
  * `<Precondition>` decorator node with `else="RUNNING"` instead of these attributes.
@@ -72,11 +77,14 @@ enum class PreCond
   SUCCESS_IF,
   SKIP_IF,
   WHILE_TRUE,
+  // new values are appended to the end to preserve ABI
+  ONLY_IF,
+  ON_START,
   COUNT_
 };
 
-static const std::array<std::string, 4> PreCondNames = {  //
-  "_failureIf", "_successIf", "_skipIf", "_while"
+static const std::array<std::string, 6> PreCondNames = {  //
+  "_failureIf", "_successIf", "_skipIf", "_while", "_onlyIf", "_onStart"
 };
 
 enum class PostCond

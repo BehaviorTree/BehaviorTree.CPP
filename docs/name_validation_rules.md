@@ -39,7 +39,7 @@ The following ASCII characters are forbidden in **Model Names** and **Port Names
 ### Port Name
 - **Cannot be empty**
 - **Cannot start with a digit**
-- **Cannot be a reserved attribute**: `ID`, `name`, `_description`, `_skipIf`, `_successIf`, `_failureIf`, `_while`, `_onSuccess`, `_onFailure`, `_onHalted`, `_post`, `_autoremap`, `__shared_blackboard`
+- **Cannot be a reserved attribute**: `ID`, `name`, `_description`, `_skipIf`, `_successIf`, `_failureIf`, `_while`, `_onlyIf`, `_onStart`, `_onSuccess`, `_onFailure`, `_onHalted`, `_post`, `_autoremap`, `__shared_blackboard`
 - No forbidden characters (see table above)
 
 ### Instance Name
