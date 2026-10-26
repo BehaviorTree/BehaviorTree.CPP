@@ -721,6 +721,25 @@ TEST(ParserTest, BitwiseComplementRejectsNonIntegers)
             static_cast<double>(~std::numeric_limits<int64_t>::min()));
 }
 
+TEST(ParserTest, AssignStringWhileEntryIsUnset)
+{
+  auto bb = BT::Blackboard::create();
+  bb->set<int>("x", 1);
+  bb->set<std::string>("y", "");
+  BT::Ast::Environment env = { bb, {} };
+
+  // Writing y unsets x, after the assignment to x has already resolved its
+  // entry. The string to int conversion then used to look x up again and
+  // dereference the nullptr returned for the missing entry. Another thread
+  // calling unset() at the wrong time has the same effect.
+  auto subscriber = bb->subscribeToEntry("y", [&bb]() { bb->unset("x"); });
+
+  auto result = BT::ParseScriptAndExecute(env, "x = (y = '42')");
+  ASSERT_TRUE(result.has_value()) << result.error();
+  EXPECT_EQ(result.value().cast<int>(), 42);
+  EXPECT_EQ(bb->getEntry("x"), nullptr);
+}
+
 TEST(ParserTest, TernaryExpressions)
 {
   BT::Ast::Environment env = { BT::Blackboard::create(), {} };

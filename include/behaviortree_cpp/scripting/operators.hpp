@@ -622,9 +622,9 @@ struct ExprAssignment : ExprBase
         // special case: string to other type.
         // Check if we can use the StringConverter
         auto const str = value.cast<std::string>();
-        const auto* entry_info = env.vars->entryInfo(key);
-
-        if(auto converter = entry_info->converter())
+        // Use the entry locked above. Looking the key up again could return
+        // nullptr, or a different entry, if it was unset in the meantime.
+        if(auto converter = entry->info.converter())
         {
           *dst_ptr = converter(str);
         }
