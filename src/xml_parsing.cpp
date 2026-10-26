@@ -1309,8 +1309,24 @@ void addNodeModelToXML(const TreeNodeManifest& model, XMLDocument& doc,
   XMLElement* element = doc.NewElement(toStr(model.type).c_str());
   element->SetAttribute("ID", model.registration_ID.c_str());
 
-  for(const auto& [port_name, port_info] : model.ports)
+  // PortsList is unordered: sort by direction, then by name, so that the
+  // output (and the order shown in Groot2) is deterministic.
+  std::vector<const PortsList::value_type*> sorted_ports;
+  sorted_ports.reserve(model.ports.size());
+  for(const auto& port : model.ports)
   {
+    sorted_ports.push_back(&port);
+  }
+  std::sort(sorted_ports.begin(), sorted_ports.end(),
+            [](const auto* lhs, const auto* rhs) {
+              const auto lhs_dir = lhs->second.direction();
+              const auto rhs_dir = rhs->second.direction();
+              return lhs_dir != rhs_dir ? lhs_dir < rhs_dir : lhs->first < rhs->first;
+            });
+
+  for(const auto* port : sorted_ports)
+  {
+    const auto& [port_name, port_info] = *port;
     XMLElement* port_element = nullptr;
     switch(port_info.direction())
     {
