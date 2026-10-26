@@ -11,6 +11,8 @@
 #if !defined(__cpp_lib_to_chars) || (__cpp_lib_to_chars < 201611L)
 #include <cctype>
 #include <cerrno>
+#include <cmath>
+#include <limits>
 
 #include <locale.h>
 #if defined(__APPLE__)
@@ -299,6 +301,13 @@ float convertFromString<float>(StringView str)
   {
     throw RuntimeError(StrCat("Can't convert string [", str, "] to float"));
   }
+  // std::from_chars<float> reports result_out_of_range for a finite value that
+  // does not fit in a float; casting the double would silently give an infinity.
+  // 0x1.ffffffp+127 is FLT_MAX + half an ulp: values below it round to FLT_MAX.
+  if(std::isfinite(result) && std::fabs(result) >= 0x1.ffffffp+127)
+  {
+    throw RuntimeError(StrCat("Can't convert string [", str, "] to float"));
+  }
   return static_cast<float>(result);
 #endif
 }
@@ -309,7 +318,18 @@ std::vector<int> convertFromString<std::vector<int>>(StringView str)
   if(StartWith(str, "json:"))
   {
     str.remove_prefix(5);
-    return nlohmann::json::parse(str).get<std::vector<int>>();
+    const auto json = nlohmann::json::parse(str);
+    if(!json.is_array())
+    {
+      throw RuntimeError(StrCat("Can't convert string [", str, "] to std::vector<int>"));
+    }
+    std::vector<int> output;
+    output.reserve(json.size());
+    for(const auto& element : json)
+    {
+      output.push_back(details::JsonToInteger<int>(element));
+    }
+    return output;
   }
   auto parts = splitString(str, ';');
   std::vector<int> output;
@@ -611,6 +631,15 @@ char findForbiddenChar(StringView name)
     }
   }
   return '\0';
+}
+
+std::string formatForbiddenChar(char c)
+{
+  if(c < 32 || c == 127)
+  {
+    return "control character (ASCII " + std::to_string(static_cast<int>(c)) + ")";
+  }
+  return std::string("'") + c + "'";
 }
 
 Any convertFromJSON(StringView json_text, std::type_index type)

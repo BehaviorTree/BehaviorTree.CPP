@@ -1,5 +1,6 @@
 #include "action_test_node.h"
 #include "condition_test_node.h"
+#include "test_helper.hpp"
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
@@ -263,4 +264,20 @@ TEST(SwitchStringEquality, RejectsTrailingCharacters)
   EXPECT_FALSE(CheckStringEquality("1.0junk", "1.0", nullptr));
   EXPECT_FALSE(CheckStringEquality("5 ", "5", nullptr));
   EXPECT_FALSE(CheckStringEquality("none", "1", nullptr));
+}
+
+TEST(SwitchStringEquality, RealComparisonIgnoresLocale)
+{
+  using BT::details::CheckStringEquality;
+
+  const ScopedCommaDecimalLocale comma_locale;
+  if(!comma_locale.active())
+  {
+    GTEST_SKIP() << "no locale with ',' as decimal separator on this machine";
+  }
+
+  EXPECT_TRUE(CheckStringEquality("3.50", "3.5", nullptr));
+  EXPECT_TRUE(CheckStringEquality("5", "5.0", nullptr));
+  EXPECT_FALSE(CheckStringEquality("3.5", "3", nullptr));
+  EXPECT_FALSE(CheckStringEquality("0.5", "1", nullptr));
 }

@@ -113,6 +113,42 @@ void Blackboard::enableAutoRemapping(bool remapping)
   autoremapping_ = remapping;
 }
 
+Blackboard::EntryUpdatedSubscriber
+Blackboard::subscribeToEntry(const std::string& key, EntryUpdatedCallback callback)
+{
+  if(!callback)
+  {
+    throw LogicError("subscribeToEntry(): empty callback");
+  }
+  auto entry = getEntry(key);
+  if(!entry)
+  {
+    // Generic, like the entry created by set<std::string>(): the first
+    // strongly typed write sets its type.
+    entry = createEntryImpl(key, PortInfo(PortDirection::INOUT));
+  }
+  const std::scoped_lock lock(entry->entry_mutex);
+  if(!entry->update_signal)
+  {
+    entry->update_signal = std::make_shared<EntryUpdatedSignal>();
+  }
+  return entry->update_signal->subscribe(std::move(callback));
+}
+
+void Blackboard::notifyEntryUpdated(const std::string& key)
+{
+  std::shared_ptr<EntryUpdatedSignal> update_signal;
+  if(auto entry = getEntry(key))
+  {
+    const std::scoped_lock lock(entry->entry_mutex);
+    update_signal = entry->update_signal;
+  }
+  if(update_signal)
+  {
+    update_signal->notify();
+  }
+}
+
 AnyPtrLocked Blackboard::getAnyLocked(const std::string& key)
 {
   if(auto entry = getEntry(key))
@@ -337,6 +373,7 @@ void Blackboard::cloneInto(Blackboard& dst) const
 
   // Step 2: copy entry data under entry_mutex only (BUG-3 fix).
   std::vector<std::pair<std::string, std::shared_ptr<Entry>>> new_entries;
+  std::vector<std::shared_ptr<EntryUpdatedSignal>> update_signals;
 
   for(auto& task : tasks)
   {
@@ -349,6 +386,10 @@ void Blackboard::cloneInto(Blackboard& dst) const
       task.dst->info = task.src->info;
       task.dst->sequence_id++;
       task.dst->stamp = std::chrono::steady_clock::now().time_since_epoch();
+      if(task.dst->update_signal)
+      {
+        update_signals.push_back(task.dst->update_signal);
+      }
     }
     else
     {
@@ -379,6 +420,12 @@ void Blackboard::cloneInto(Blackboard& dst) const
         dst.storage_.erase(it);
       }
     }
+  }
+  // Publish only after the complete snapshot has been restored and all locks
+  // released, so callbacks can read other restored entries as well.
+  for(const auto& update_signal : update_signals)
+  {
+    update_signal->notify();
   }
 }
 
@@ -490,8 +537,16 @@ void ImportBlackboardFromJSON(const nlohmann::json& json, Blackboard& blackboard
         entry = blackboard.getEntry(it.key());
       }
       // Lock entry_mutex before writing to prevent data races (BUG-4 fix).
-      std::scoped_lock lk(entry->entry_mutex);
-      entry->value = res->first;
+      std::shared_ptr<Blackboard::EntryUpdatedSignal> update_signal;
+      {
+        std::scoped_lock lk(entry->entry_mutex);
+        entry->value = res->first;
+        update_signal = entry->update_signal;
+      }
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
     }
   }
 }

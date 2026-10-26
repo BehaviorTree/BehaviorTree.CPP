@@ -1,7 +1,12 @@
 #pragma once
 
 #include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/json_export.h"
+#ifdef BTCPP_SYSTEM_JSON
+#include <nlohmann/json.hpp>
+#else
 #include "behaviortree_cpp/contrib/json.hpp"
+#endif
 
 #include <array>
 #include <condition_variable>
@@ -252,10 +257,11 @@ inline void to_json(nlohmann::json& js, const Hook& bp)
 inline void from_json(const nlohmann::json& js, Hook& bp)
 {
   js.at("enabled").get_to(bp.enabled);
-  js.at("uid").get_to(bp.node_uid);
+  bp.node_uid = BT::details::JsonToInteger<uint16_t>(js.at("uid"));
   js.at("once").get_to(bp.remove_when_done);
-  bp.mode = static_cast<Hook::Mode>(js.at("mode").get<int>());
-  bp.position = static_cast<Hook::Position>(js.at("position").get<int>());
+  bp.mode = static_cast<Hook::Mode>(BT::details::JsonToInteger<int>(js.at("mode")));
+  bp.position = static_cast<Hook::Position>(BT::details::JsonToInteger<int>(js.at("positi"
+                                                                                  "on")));
 
   const std::string desired_value = js.at("desired_status").get<std::string>();
   bp.desired_status = convertFromString<NodeStatus>(desired_value);

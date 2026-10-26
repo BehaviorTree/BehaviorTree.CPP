@@ -110,13 +110,16 @@ public:
   bool operator==(const SimpleString& other) const
   {
     const size_t N = size();
-    return other.size() == N && std::strncmp(data(), other.data(), N) == 0;
+    // memcmp, not strncmp: the content may hold embedded NUL bytes, and strncmp
+    // stops at the first one, reporting two different strings of equal length as
+    // equal. It is also what operator< below compares with.
+    return other.size() == N && std::memcmp(data(), other.data(), N) == 0;
   }
 
   bool operator!=(const SimpleString& other) const
   {
     const size_t N = size();
-    return other.size() != N || std::strncmp(data(), other.data(), N) != 0;
+    return other.size() != N || std::memcmp(data(), other.data(), N) != 0;
   }
 
   bool operator<=(const SimpleString& other) const

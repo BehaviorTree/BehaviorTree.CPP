@@ -14,6 +14,7 @@
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
 #include "behaviortree_cpp/loggers/bt_file_logger_v2.h"
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp/loggers/bt_observer.h"
 #include "behaviortree_cpp/loggers/bt_sqlite_logger.h"
 
 #include <array>
@@ -22,6 +23,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <thread>
 
 #include <gtest/gtest.h>
 
@@ -360,6 +362,33 @@ TEST_F(LoggerTest, MinitraceLogger_TransitionTypes)
   ASSERT_TRUE(std::filesystem::exists(filepath));
 }
 
+TEST_F(LoggerTest, MinitraceLogger_LongNodeName)
+{
+  // The node name goes into a 1024 byte line buffer. A name long enough to
+  // overflow it used to be written out with snprintf's would-be length, which
+  // reads past the buffer and copies stack bytes into the trace file.
+  const std::string long_name(1000, 'A');
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <AlwaysSuccess name=")" +
+                               long_name + R"("/>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  std::string filepath = test_dir + "/trace_long_name.json";
+
+  {
+    MinitraceLogger logger(tree, filepath.c_str());
+    tree.tickWhileRunning();
+    logger.flush();
+  }
+
+  ASSERT_TRUE(std::filesystem::exists(filepath));
+  ASSERT_LT(std::filesystem::file_size(filepath), 4096u);
+}
+
 // ============ SqliteLogger tests ============
 
 TEST_F(LoggerTest, SqliteLogger_Creation_db3)
@@ -500,6 +529,59 @@ TEST_F(LoggerTest, SqliteLogger_MultipleTicks)
   ASSERT_TRUE(std::filesystem::exists(filepath));
 }
 
+// A ThreadedAction completes on its own worker thread, so the logger callback
+// of each instance runs concurrently with the ones invoked by the main thread.
+namespace
+{
+class ConcurrentAction : public BT::ThreadedAction
+{
+public:
+  ConcurrentAction(const std::string& name, const BT::NodeConfig& config)
+    : BT::ThreadedAction(name, config)
+  {}
+
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+
+  BT::NodeStatus tick() override
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    return BT::NodeStatus::SUCCESS;
+  }
+};
+}  // namespace
+
+TEST_F(LoggerTest, SqliteLogger_ConcurrentTransitions)
+{
+  factory.registerNodeType<ConcurrentAction>("ConcurrentAction");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <Parallel>
+            <ConcurrentAction name="A"/>
+            <ConcurrentAction name="B"/>
+          </Parallel>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  std::string filepath = test_dir + "/concurrent.db3";
+
+  {
+    SqliteLogger logger(tree, filepath);
+    for(int i = 0; i < 50; i++)
+    {
+      tree.tickWhileRunning();
+      tree.haltTree();
+    }
+  }
+
+  ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
 // ============ Multiple loggers simultaneously ============
 
 TEST_F(LoggerTest, MultipleLoggers)
@@ -592,4 +674,36 @@ TEST_F(LoggerTest, Logger_DisabledDuringExecution)
   }
 
   ASSERT_TRUE(std::filesystem::exists(filepath));
+}
+
+TEST(TreeObserverTest, NodesWithTheSameName)
+{
+  // Two siblings with the same name have the same fullPath()
+  static const char* xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Sequence>
+          <AlwaysSuccess name="step"/>
+          <AlwaysSuccess name="step"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  std::unique_ptr<TreeObserver> observer;
+  ASSERT_NO_THROW(observer = std::make_unique<TreeObserver>(tree));
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+
+  const auto& nodes = tree.subtrees.front()->nodes;
+  ASSERT_EQ(nodes.size(), 3u);
+  EXPECT_EQ(observer->statistics().size(), 3u);
+  EXPECT_EQ(observer->uidToPath().size(), 3u);
+  for(const auto& node : nodes)
+  {
+    EXPECT_EQ(observer->uidToPath().at(node->UID()), node->fullPath());
+    EXPECT_EQ(observer->getStatistics(node->UID()).success_count, 1u);
+  }
+  EXPECT_EQ(observer->pathToUID().at("step"), nodes[1]->UID());
 }

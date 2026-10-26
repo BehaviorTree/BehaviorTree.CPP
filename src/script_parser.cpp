@@ -218,14 +218,19 @@ private:
       int64_t val = 0;
       const char* first = tok.text.data();
       const char* last = first + tok.text.size();
-      if(tok.text.size() > 2 && tok.text[0] == '0' &&
-         (tok.text[1] == 'x' || tok.text[1] == 'X'))
+      const bool is_hex = tok.text.size() > 2 && tok.text[0] == '0' &&
+                          (tok.text[1] == 'x' || tok.text[1] == 'X');
+      const auto [ptr, ec] = is_hex ? std::from_chars(first + 2, last, val, 16) :
+                                      std::from_chars(first, last, val, 10);
+      // The tokenizer already guarantees the literal is made of (hex) digits, so
+      // the only remaining failure is result_out_of_range. from_chars leaves val
+      // untouched in that case, which would otherwise turn a literal like
+      // 0xFFFFFFFFFFFFFFFF into a silent 0.
+      if(ec != std::errc() || ptr != last)
       {
-        std::from_chars(first + 2, last, val, 16);
-      }
-      else
-      {
-        std::from_chars(first, last, val, 10);
+        throw RuntimeError(StrCat("Integer literal '", tok.text, "' at position ",
+                                  std::to_string(tok.pos),
+                                  " is out of range for a 64-bit integer"));
       }
       return std::make_shared<Ast::ExprLiteral>(Any(val));
     }

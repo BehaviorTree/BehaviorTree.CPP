@@ -1,11 +1,16 @@
 #pragma once
 
 #include "behaviortree_cpp/basic_types.h"
+#ifdef BTCPP_SYSTEM_JSON
+#include <nlohmann/json.hpp>
+#else
 #include "behaviortree_cpp/contrib/json.hpp"
+#endif
 #include "behaviortree_cpp/exceptions.h"
 #include "behaviortree_cpp/utils/locked_reference.hpp"
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 #include "behaviortree_cpp/utils/safe_any.hpp"
+#include "behaviortree_cpp/utils/thread_safe_signal.h"
 
 #include <memory>
 #include <mutex>
@@ -35,6 +40,9 @@ class Blackboard
 {
 public:
   using Ptr = std::shared_ptr<Blackboard>;
+  using EntryUpdatedSignal = ThreadSafeSignal<>;
+  using EntryUpdatedSubscriber = EntryUpdatedSignal::Subscriber;
+  using EntryUpdatedCallback = EntryUpdatedSignal::CallableFunction;
 
 protected:
   // This is intentionally protected. Use Blackboard::create instead
@@ -57,6 +65,12 @@ public:
     uint64_t sequence_id = 0;
     // timestamp since epoch
     std::chrono::nanoseconds stamp = std::chrono::nanoseconds{ 0 };
+
+    // Subscribers of subscribeToEntry(), created on the first subscription.
+    // Protected by entry_mutex. It must remain the last member: Entry is
+    // allocated only inside the library, so appending it keeps the offsets of
+    // the members above (accessed by inline code) unchanged.
+    std::shared_ptr<EntryUpdatedSignal> update_signal;
 
     Entry(const TypeInfo& _info) : info(_info)
     {}
@@ -114,6 +128,30 @@ public:
   /// Update the entry with the given key
   template <typename T>
   void set(const std::string& key, const T& value);
+
+  /** Subscribe to successful writes to the entry of a key.
+   * Subtree remapping and root keys are resolved at subscription time. If the
+   * entry doesn't exist, a generic (AnyTypeAllowed) one is created: the first
+   * strongly typed write sets its type, as usual. The subscription is bound to
+   * that entry: unset() drops it and a re-created entry is not observed.
+   * No initial notification is sent, and assigning the same value still notifies.
+   * Writes compiled against headers older than this API do not notify.
+   *
+   * Callbacks run synchronously on the writer's thread, outside blackboard
+   * locks, and may read the latest value. Concurrent writers may invoke a
+   * callback concurrently; intermediate values are not retained. Exceptions
+   * propagate to the writer after the value has been stored.
+   * Resetting the handle prevents future calls but does not wait for a call
+   * already in progress. Stop writers before destroying callback targets.
+   */
+  [[nodiscard]] EntryUpdatedSubscriber subscribeToEntry(const std::string& key,
+                                                        EntryUpdatedCallback callback);
+
+  /** Notify subscribers after directly modifying an entry. Release its lock
+   * before calling this function. Raw Entry/AnyPtrLocked mutations do not
+   * notify automatically; set(), scripts, JSON import and cloneInto() do.
+   */
+  void notifyEntryUpdated(const std::string& key);
 
   void unset(const std::string& key);
 
@@ -286,15 +324,18 @@ inline void Blackboard::set(const std::string& key, const T& value)
     rootBlackboard()->set(key.substr(1, key.size() - 1), value);
     return;
   }
-  std::shared_lock storage_lock(storage_mutex_);
-
-  // check local storage
-  auto it = storage_.find(key);
-  if(it == storage_.end())
+  // getEntry() follows the remapping to the parent blackboard, exactly like
+  // the readers do. A key that resolves to an existing entry (local or
+  // remapped) must go through the type check below: createEntryImpl() would
+  // follow the same remapping and return the pre-existing entry, and writing
+  // to it blindly bypasses the type lock and the string conversion.
+  auto entry_ptr = getEntry(key);
+  // copied under entry_mutex, notified after releasing it
+  std::shared_ptr<EntryUpdatedSignal> update_signal;
+  if(!entry_ptr)
   {
     // create a new entry
     Any new_value(value);
-    storage_lock.unlock();
     std::shared_ptr<Blackboard::Entry> entry;
     // if a new generic port is created with a string, it's type should be AnyTypeAllowed
     if constexpr(std::is_same_v<std::string, T>)
@@ -314,18 +355,15 @@ inline void Blackboard::set(const std::string& key, const T& value)
     entry->value = new_value;
     entry->sequence_id++;
     entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
+    update_signal = entry->update_signal;
   }
   else
   {
     // this is not the first time we set this entry, we need to check
     // if the type is the same or not.
-    // Copy shared_ptr to prevent use-after-free if another thread
-    // calls unset() while we hold the reference (BUG-2 fix).
-    auto entry_ptr = it->second;
-    storage_lock.unlock();
     Entry& entry = *entry_ptr;
 
-    std::scoped_lock scoped_lock(entry.entry_mutex);
+    std::unique_lock scoped_lock(entry.entry_mutex);
 
     Any& previous_any = entry.value;
     Any new_value(value);
@@ -338,6 +376,12 @@ inline void Blackboard::set(const std::string& key, const T& value)
       entry.sequence_id++;
       entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
       previous_any = std::move(new_value);
+      update_signal = entry.update_signal;
+      scoped_lock.unlock();
+      if(update_signal)
+      {
+        update_signal->notify();
+      }
       return;
     }
 
@@ -392,6 +436,11 @@ inline void Blackboard::set(const std::string& key, const T& value)
     }
     entry.sequence_id++;
     entry.stamp = std::chrono::steady_clock::now().time_since_epoch();
+    update_signal = entry.update_signal;
+  }
+  if(update_signal)
+  {
+    update_signal->notify();
   }
 }
 

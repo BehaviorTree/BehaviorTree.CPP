@@ -1,6 +1,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -361,6 +362,24 @@ TEST(
   ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
 }
 
+TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesItself)
+{
+  BehaviorTreeFactory factory;
+  std::string path = FilePath("trees/self_include.xml");
+  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, CreateTreeFromFileWithCyclicIncludes)
+{
+  BehaviorTreeFactory factory;
+  std::string path = FilePath("trees/parent_include_child_cycle.xml");
+  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+
+  // a failed load must not leave stale state behind in the factory's parser
+  Tree tree = factory.createTreeFromFile(FilePath("trees/parent_include_child.xml"));
+  ASSERT_EQ(NodeStatus::SUCCESS, tree.tickWhileRunning());
+}
+
 TEST(BehaviorTreeFactory, WrongTreeName)
 {
   const char* xmlA = R"(
@@ -460,6 +479,30 @@ TEST(BehaviorTreeFactory, ManifestMethod)
   std::cout << xml << std::endl;
 
   EXPECT_NE(xml.find(expectedXML), std::string::npos);
+}
+
+TEST(BehaviorTreeFactory, WrittenXMLHasLibraryVersion)
+{
+  // "4.11.2" -> "4.11"
+  const std::string version = LibraryVersionString();
+  const std::string major_minor = version.substr(0, version.rfind('.'));
+  const std::string expected = "BTCPP_version=\"" + major_minor + "\"";
+
+  BehaviorTreeFactory factory;
+  EXPECT_NE(writeTreeNodesModelXML(factory).find(expected), std::string::npos);
+
+  auto tree = factory.createTreeFromText(R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <AlwaysSuccess/>
+      </BehaviorTree>
+    </root>)");
+  const auto xml = WriteTreeToXML(tree, false, false);
+  EXPECT_NE(xml.find(expected), std::string::npos);
+
+  // the attribute is ignored by the parser
+  auto reloaded = factory.createTreeFromText(xml);
+  EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
 }
 
 TEST(BehaviorTreeFactory, ReturnByValue)
@@ -776,4 +819,19 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
 
   BehaviorTreeFactory factory;
   EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, TooManyNodesForUID)
+{
+  // UIDs are 16 bits wide. Past 65535 nodes the counter used to wrap around
+  // and the next nodes got the same UID (and path) as the first ones.
+  Tree tree;
+  std::set<uint16_t> uids;
+  for(int i = 0; i < 65535; i++)
+  {
+    uids.insert(tree.getUID());
+  }
+  EXPECT_EQ(uids.size(), 65535u);
+  EXPECT_EQ(uids.count(0), 0u);
+  EXPECT_THROW((void)tree.getUID(), RuntimeError);
 }

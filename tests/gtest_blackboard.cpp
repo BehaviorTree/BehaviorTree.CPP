@@ -743,6 +743,57 @@ TEST(BlackboardTest, BlackboardRestoreSizeMismatch)
   ASSERT_NO_THROW(BlackboardRestore(big_backup, big_tree));
 }
 
+TEST(BlackboardTest, ImportTreeFromJSONMatchesByName)
+{
+  BT::BehaviorTreeFactory factory;
+
+  // The subtrees are created in the order [MainTree, Zeta, Alpha], but the
+  // JSON object is sorted by name: [Alpha, MainTree, Zeta].
+  const std::string xml_text = R"(
+  <root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <Script code=" owner:='main' " />
+        <SubTree ID="Zeta" />
+        <SubTree ID="Alpha" />
+      </Sequence>
+    </BehaviorTree>
+    <BehaviorTree ID="Zeta">
+      <Script code=" owner:='zeta' " />
+    </BehaviorTree>
+    <BehaviorTree ID="Alpha">
+      <Script code=" owner:='alpha'; only_in_alpha:=42 " />
+    </BehaviorTree>
+  </root> )";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(tree.subtrees.size(), 3u);
+
+  const std::vector<std::string> expected_owner = { "main", "zeta", "alpha" };
+
+  // Each blackboard must be restored into the subtree it was exported from.
+  const auto json = ExportTreeToJSON(tree);
+  ImportTreeFromJSON(json, tree);
+
+  for(size_t i = 0; i < tree.subtrees.size(); i++)
+  {
+    const auto& blackboard = tree.subtrees[i]->blackboard;
+    ASSERT_EQ(blackboard->get<std::string>("owner"), expected_owner[i]);
+  }
+  // this entry exists only in the blackboard of the last subtree
+  ASSERT_EQ(tree.subtrees[0]->blackboard->getEntry("only_in_alpha"), nullptr);
+  ASSERT_EQ(tree.subtrees[1]->blackboard->getEntry("only_in_alpha"), nullptr);
+  ASSERT_NE(tree.subtrees[2]->blackboard->getEntry("only_in_alpha"), nullptr);
+
+  // A JSON that doesn't describe one of the subtrees is rejected, instead of
+  // being imported into whichever subtree has the same position.
+  auto renamed = json;
+  renamed["Unknown"] = renamed["MainTree"];
+  renamed.erase("MainTree");
+  ASSERT_THROW(ImportTreeFromJSON(renamed, tree), std::runtime_error);
+}
+
 TEST(BlackboardTest, RootBlackboard)
 {
   BT::BehaviorTreeFactory factory;
@@ -1063,4 +1114,35 @@ TEST(BlackboardTest, GetLockedPortContentWithDefault_Issue942)
 
   // The value should be accessible from the blackboard
   ASSERT_EQ(tree.rootBlackboard()->get<int>("value"), 42);
+}
+
+TEST(BlackboardTest, SetThroughSubtreeRemappingChecksType)
+{
+  // set() must apply the same type check and string conversion when the key
+  // is remapped to the parent blackboard, like <SubTree local="{value}"> does.
+  auto parent_bb = Blackboard::create();
+  parent_bb->set("value", 42);  // strongly typed as int
+
+  auto child_bb = Blackboard::create(parent_bb);
+  child_bb->addSubtreeRemapping("local", "value");
+
+  // a string that can't be converted to int is rejected, as it is on the parent
+  ASSERT_ANY_THROW(parent_bb->set("value", std::string("garbage")));
+  ASSERT_ANY_THROW(child_bb->set("local", std::string("garbage")));
+
+  // the entry must keep both its declared type and its stored type
+  const auto entry = parent_bb->getEntry("value");
+  ASSERT_EQ(entry->info.type(), typeid(int));
+  ASSERT_EQ(entry->value.type(), typeid(int));
+
+  // a convertible string is parsed to the declared type, not stored as string
+  child_bb->set("local", std::string("99"));
+  ASSERT_EQ(entry->value.type(), typeid(int));
+  ASSERT_EQ(parent_bb->get<int>("value"), 99);
+
+  // a safe numeric conversion is accepted, as it is on the parent
+  parent_bb->set("small", static_cast<uint8_t>(1));
+  child_bb->addSubtreeRemapping("local_small", "small");
+  ASSERT_NO_THROW(child_bb->set("local_small", 100));
+  ASSERT_EQ(parent_bb->get<uint8_t>("small"), 100);
 }

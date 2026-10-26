@@ -14,6 +14,11 @@
 #define MINICORO_IMPL
 #include "behaviortree_cpp/action_node.h"
 
+// minicoro.h includes this inside extern "C": include it first, at global scope.
+#ifdef __EMSCRIPTEN__
+#include <emscripten/fiber.h>
+#endif
+
 #include "minicoro.h"
 
 #include <iostream>

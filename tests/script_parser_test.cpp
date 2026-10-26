@@ -98,6 +98,29 @@ TEST(ParserTest, AnyTypes_Failing)
   EXPECT_FALSE(BT::ParseScriptAndExecute(env, "foo").has_value());
 }
 
+TEST(ParserTest, IntegerLiteralOutOfRangeIsRejected)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+
+  // These literals overflow int64_t. std::from_chars leaves its output untouched
+  // on result_out_of_range, so the parser used to accept them and silently
+  // evaluate the literal as 0 (e.g. the all-bits mask 0xFFFFFFFFFFFFFFFF).
+  EXPECT_FALSE(BT::ValidateScript("9223372036854775808"));  // INT64_MAX + 1
+  EXPECT_FALSE(BT::ValidateScript("99999999999999999999999"));
+  EXPECT_FALSE(BT::ValidateScript("0xFFFFFFFFFFFFFFFF"));
+  EXPECT_FALSE(BT::ValidateScript("0x8000000000000000"));
+  EXPECT_FALSE(BT::ParseScriptAndExecute(env, "0xFFFFFFFFFFFFFFFF").has_value());
+
+  // The boundary values that do fit must still parse and keep their value.
+  auto max_val = BT::ParseScriptAndExecute(env, "9223372036854775807");
+  ASSERT_TRUE(max_val.has_value());
+  EXPECT_EQ(max_val.value().cast<int64_t>(), 9223372036854775807LL);
+
+  auto hex_val = BT::ParseScriptAndExecute(env, "0x7FFFFFFFFFFFFFFF");
+  ASSERT_TRUE(hex_val.has_value());
+  EXPECT_EQ(hex_val.value().cast<int64_t>(), 9223372036854775807LL);
+}
+
 TEST(ParserTest, DeeplyNestedScriptIsRejected)
 {
   // A script with thousands of nested parentheses or unary prefixes used to add
@@ -245,6 +268,37 @@ TEST(ParserTest, Equations)
   // we expect string to be casted to number
   EXPECT_EQ(GetResult(" par1:='3'; par2:=3; par1==par2").cast<int>(), 1);
   EXPECT_EQ(GetResult(" par1:='3'; par2:=4; par1!=par2").cast<int>(), 1);
+}
+
+// Issue #1246: a numeric string mixed with a number is used as that number
+TEST(ParserTest, NumericStringArithmetic)
+{
+  BT::Ast::Environment environment = { BT::Blackboard::create(), {} };
+
+  auto GetResult = [&environment](const char* text) -> BT::Any {
+    return GetScriptResult(environment, text);
+  };
+  environment.vars->set("int_str", std::string("42"));
+  environment.vars->set("dbl_str", std::string("1.5"));
+  environment.vars->set("text", std::string("hello"));
+
+  EXPECT_EQ(GetResult("int_str + 1").cast<double>(), 43.0);
+  EXPECT_EQ(GetResult("1 + int_str").cast<double>(), 43.0);
+  EXPECT_EQ(GetResult("int_str - 2").cast<double>(), 40.0);
+  EXPECT_EQ(GetResult("int_str * 2").cast<double>(), 84.0);
+  EXPECT_EQ(GetResult("3 / dbl_str").cast<double>(), 2.0);
+  EXPECT_EQ(GetResult("'1e3' + 1").cast<double>(), 1001.0);
+
+  // the whole string must be a number
+  EXPECT_ANY_THROW(GetResult("text + 1"));
+  EXPECT_ANY_THROW(GetResult("'42abc' + 1"));
+  EXPECT_ANY_THROW(GetResult("'true' + 1"));
+  EXPECT_ANY_THROW(GetResult("' 42' + 1"));
+
+  // unchanged: two strings concatenate, bitwise operators require numbers
+  EXPECT_EQ(GetResult("int_str + int_str").cast<std::string>(), "4242");
+  EXPECT_EQ(GetResult("int_str .. 1").cast<std::string>(), "421");
+  EXPECT_ANY_THROW(GetResult("int_str & 1"));
 }
 
 TEST(ParserTest, NotInitializedComparison)
@@ -645,6 +699,26 @@ TEST(ParserTest, UnaryOperators)
 
   // Unary minus in expressions
   EXPECT_EQ(Parse("10 + -3").value().cast<double>(), 7.0);
+}
+
+TEST(ParserTest, BitwiseComplementRejectsNonIntegers)
+{
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+  auto Parse = [&env](const char* str) { return BT::ParseScriptAndExecute(env, str); };
+
+  // The operand was cast to int64_t after a hand-written range check that
+  // accepted NaN and exactly 2^63 (undefined conversion, reported by UBSan)
+  // and silently truncated fractional values.
+  EXPECT_FALSE(Parse("~(0.0 / 0.0)").has_value());
+  EXPECT_FALSE(Parse("~9223372036854775808.0").has_value());  // 2^63
+  EXPECT_FALSE(Parse("~1.5").has_value());
+  EXPECT_FALSE(Parse("~(1.0 / 0.0)").has_value());
+
+  // Integral values, including the int64_t boundaries, still work.
+  EXPECT_EQ(Parse("~0").value().cast<int64_t>(), ~int64_t(0));
+  EXPECT_EQ(Parse("~(2 * 3)").value().cast<int64_t>(), ~int64_t(6));
+  EXPECT_EQ(Parse("~-9223372036854775808.0").value().cast<double>(),
+            static_cast<double>(~std::numeric_limits<int64_t>::min()));
 }
 
 TEST(ParserTest, TernaryExpressions)

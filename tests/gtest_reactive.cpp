@@ -3,6 +3,10 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/loggers/bt_observer.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 using BT::NodeStatus;
@@ -185,6 +189,83 @@ TEST(Reactive, TwoAsyncNodesInReactiveSequence)
   RegisterTestTick(factory, "Test", counters);
 
   EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+TEST(Reactive, TwoAsyncFallbacksInReactiveSequence)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <AsyncFallback name="first">
+        <TestA/>
+        <TestB/>
+        <TestC/>
+      </AsyncFallback>
+      <AsyncFallback name="second">
+        <TestD/>
+        <TestE/>
+        <TestF/>
+      </AsyncFallback>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  std::array<int, 6> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+TEST(Reactive, AsyncSequenceAndAsyncFallbackInReactiveSequence)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <AsyncSequence name="first">
+        <TestA/>
+        <TestB/>
+      </AsyncSequence>
+      <AsyncFallback name="second">
+        <TestC/>
+        <TestD/>
+      </AsyncFallback>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  std::array<int, 6> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  EXPECT_ANY_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
+}
+
+TEST(Reactive, SingleAsyncChildInReactiveSequenceIsAllowed)
+{
+  static const char* reactive_xml_text = R"(
+<root BTCPP_format="4" >
+  <BehaviorTree ID="MainTree">
+    <ReactiveSequence>
+      <TestA/>
+      <AsyncFallback name="only_async">
+        <TestB/>
+        <TestC/>
+      </AsyncFallback>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>
+)";
+
+  BT::BehaviorTreeFactory factory;
+  std::array<int, 6> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  EXPECT_NO_THROW(auto tree = factory.createTreeFromText(reactive_xml_text));
 }
 
 // ============ Phase 4: Additional Reactive Tests ============
@@ -417,4 +498,186 @@ TEST(Reactive, ReactiveSequence_ReEvaluatesOnEveryTick)
   ASSERT_EQ(status, NodeStatus::SUCCESS);
   // Condition should be ticked multiple times (re-evaluated while Sleep is running)
   ASSERT_GE(condition_tick_count, 2);
+}
+
+namespace
+{
+// Logs onStart() and onHalted(); onStart() returns the given status, onRunning() keeps
+// running.
+class LoggedAction : public BT::StatefulActionNode
+{
+public:
+  LoggedAction(const std::string& name, const BT::NodeConfig& config,
+               std::vector<std::string>* log, NodeStatus start_status)
+    : BT::StatefulActionNode(name, config), log_(log), start_status_(start_status)
+  {}
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+  NodeStatus onStart() override
+  {
+    log_->push_back(name() + ":start");
+    return start_status_;
+  }
+  NodeStatus onRunning() override
+  {
+    return NodeStatus::RUNNING;
+  }
+  void onHalted() override
+  {
+    log_->push_back(name() + ":halted");
+  }
+
+private:
+  std::vector<std::string>* log_;
+  NodeStatus start_status_;
+};
+
+// A coroutine action that completes with SUCCESS on its first tick.
+class LoggedCoroCheck : public BT::CoroActionNode
+{
+public:
+  LoggedCoroCheck(const std::string& name, const BT::NodeConfig& config,
+                  std::vector<std::string>* log)
+    : BT::CoroActionNode(name, config), log_(log)
+  {}
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+  NodeStatus tick() override
+  {
+    log_->push_back(name() + ":start");
+    return NodeStatus::SUCCESS;
+  }
+
+private:
+  std::vector<std::string>* log_;
+};
+
+// Keeps all its children running at once, like nav2's PipelineSequence: every tick it
+// ticks each child and restarts the ones that completed.
+class TickAllChildren : public BT::ControlNode
+{
+public:
+  TickAllChildren(const std::string& name, const BT::NodeConfig& config)
+    : BT::ControlNode(name, config)
+  {}
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+  NodeStatus tick() override
+  {
+    setStatus(NodeStatus::RUNNING);
+    for(size_t i = 0; i < childrenCount(); i++)
+    {
+      if(BT::isStatusCompleted(children_nodes_[i]->executeTick()))
+      {
+        haltChild(i);
+      }
+    }
+    return NodeStatus::RUNNING;
+  }
+};
+
+long countOf(const std::vector<std::string>& log, const std::string& event)
+{
+  return std::count(log.begin(), log.end(), event);
+}
+
+void registerLoggedNodes(BT::BehaviorTreeFactory& factory, std::vector<std::string>* log)
+{
+  factory.registerNodeType<LoggedAction>("QuickSuccess", log, NodeStatus::SUCCESS);
+  factory.registerNodeType<LoggedAction>("QuickFailure", log, NodeStatus::FAILURE);
+  factory.registerNodeType<LoggedAction>("LongAction", log, NodeStatus::RUNNING);
+  factory.registerNodeType<LoggedCoroCheck>("CoroCheck", log);
+  factory.registerNodeType<TickAllChildren>("TickAllChildren");
+}
+}  // namespace
+
+// The children before a RUNNING child are re-ticked on every tick. When they complete
+// immediately (a check implemented as an action), the RUNNING child must keep running:
+// it is not halted and not started again (see #1031 and #1217).
+TEST(Reactive, ReactiveSequence_CompletedSiblingsDoNotRestartRunningChild)
+{
+  BT::BehaviorTreeFactory factory;
+  std::vector<std::string> log;
+  registerLoggedNodes(factory, &log);
+
+  auto tree = factory.createTreeFromText(R"(
+<root BTCPP_format="4">
+  <BehaviorTree>
+    <ReactiveSequence>
+      <QuickSuccess name="Check"/>
+      <CoroCheck name="CoroCheck"/>
+      <LongAction name="Long"/>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>)");
+
+  for(int i = 0; i < 5; i++)
+  {
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  }
+  EXPECT_EQ(countOf(log, "Check:start"), 5);
+  EXPECT_EQ(countOf(log, "CoroCheck:start"), 5);
+  EXPECT_EQ(countOf(log, "Long:start"), 1);
+  EXPECT_EQ(countOf(log, "Long:halted"), 0);
+}
+
+TEST(Reactive, ReactiveFallback_CompletedSiblingsDoNotRestartRunningChild)
+{
+  BT::BehaviorTreeFactory factory;
+  std::vector<std::string> log;
+  registerLoggedNodes(factory, &log);
+
+  auto tree = factory.createTreeFromText(R"(
+<root BTCPP_format="4">
+  <BehaviorTree>
+    <ReactiveFallback>
+      <QuickFailure name="Check"/>
+      <LongAction name="Long"/>
+    </ReactiveFallback>
+  </BehaviorTree>
+</root>)");
+
+  for(int i = 0; i < 5; i++)
+  {
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  }
+  EXPECT_EQ(countOf(log, "Check:start"), 5);
+  EXPECT_EQ(countOf(log, "Long:start"), 1);
+  EXPECT_EQ(countOf(log, "Long:halted"), 0);
+}
+
+// A control node may keep several children running at once (nav2's PipelineSequence).
+// Starting one of them must not halt the others.
+TEST(Reactive, ConcurrentChildrenOfCustomControlAreNotHalted)
+{
+  BT::BehaviorTreeFactory factory;
+  std::vector<std::string> log;
+  registerLoggedNodes(factory, &log);
+
+  auto tree = factory.createTreeFromText(R"(
+<root BTCPP_format="4">
+  <BehaviorTree>
+    <ReactiveSequence>
+      <QuickSuccess name="Guard"/>
+      <TickAllChildren>
+        <QuickSuccess name="Replan"/>
+        <LongAction name="Follow"/>
+      </TickAllChildren>
+    </ReactiveSequence>
+  </BehaviorTree>
+</root>)");
+
+  for(int i = 0; i < 5; i++)
+  {
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  }
+  EXPECT_EQ(countOf(log, "Replan:start"), 5);
+  EXPECT_EQ(countOf(log, "Follow:start"), 1);
+  EXPECT_EQ(countOf(log, "Follow:halted"), 0);
 }
