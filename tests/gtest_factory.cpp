@@ -481,6 +481,30 @@ TEST(BehaviorTreeFactory, ManifestMethod)
   EXPECT_NE(xml.find(expectedXML), std::string::npos);
 }
 
+TEST(BehaviorTreeFactory, WrittenXMLHasLibraryVersion)
+{
+  // "4.11.2" -> "4.11"
+  const std::string version = LibraryVersionString();
+  const std::string major_minor = version.substr(0, version.rfind('.'));
+  const std::string expected = "BTCPP_version=\"" + major_minor + "\"";
+
+  BehaviorTreeFactory factory;
+  EXPECT_NE(writeTreeNodesModelXML(factory).find(expected), std::string::npos);
+
+  auto tree = factory.createTreeFromText(R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <AlwaysSuccess/>
+      </BehaviorTree>
+    </root>)");
+  const auto xml = WriteTreeToXML(tree, false, false);
+  EXPECT_NE(xml.find(expected), std::string::npos);
+
+  // the attribute is ignored by the parser
+  auto reloaded = factory.createTreeFromText(xml);
+  EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
 TEST(BehaviorTreeFactory, ReturnByValue)
 {
   // Issue #937: BehaviorTreeFactory cannot be returned by value from

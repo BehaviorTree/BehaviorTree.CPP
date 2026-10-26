@@ -1454,6 +1454,14 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
     addNodeModelToXML(*model, doc, model_root);
   }
 }
+
+// "major.minor" of this library, written in the [BTCPP_version] attribute of <root>.
+// It is informative only (e.g. for Groot2): the parser ignores it.
+std::string libraryMajorMinorVersion()
+{
+  const std::string version = LibraryVersionString();
+  return version.substr(0, version.rfind('.'));
+}
 }  // namespace
 
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
@@ -1463,6 +1471,7 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
 
   XMLElement* rootXML = doc.NewElement("root");
   rootXML->SetAttribute("BTCPP_format", "4");
+  rootXML->SetAttribute("BTCPP_version", libraryMajorMinorVersion().c_str());
   doc.InsertFirstChild(rootXML);
 
   XMLElement* model_root = doc.NewElement("TreeNodesModel");
@@ -1641,6 +1650,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
         </xs:sequence>
         <xs:attribute name="BTCPP_format" type="xs:string" use="required"/>
         <xs:attribute name="main_tree_to_execute" type="xs:string" use="optional"/>
+        <xs:attribute name="BTCPP_version" type="xs:string" use="optional"/>
       </xs:complexType>
     </xs:element>
   )";
@@ -1765,6 +1775,7 @@ std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin
 
   XMLElement* rootXML = doc.NewElement("root");
   rootXML->SetAttribute("BTCPP_format", 4);
+  rootXML->SetAttribute("BTCPP_version", libraryMajorMinorVersion().c_str());
   doc.InsertFirstChild(rootXML);
 
   addTreeToXML(tree, doc, rootXML, add_metadata, add_builtin_models);
