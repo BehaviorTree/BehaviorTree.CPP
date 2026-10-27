@@ -821,6 +821,60 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
   EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
 }
 
+TEST(BehaviorTreeFactory, RejectedDocumentIsForgotten)
+{
+  // A document that failed to load used to stay in the parser as the "first
+  // opened document", whose root element instantiateTree() reads
+  // main_tree_to_execute from. For a document that did not even parse, that
+  // root element is null.
+  const char* valid_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <AlwaysSuccess/>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  {
+    XMLParser parser(factory);
+    EXPECT_THROW(parser.loadFromText("this is not XML"), RuntimeError);
+    parser.loadFromText(valid_xml);
+    Tree tree = parser.instantiateTree(Blackboard::create());
+    EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
+  }
+  {
+    // the main_tree_to_execute of a rejected document must not be used either
+    const char* rejected_xml = R"(
+    <root BTCPP_format="4" main_tree_to_execute="Rejected">
+      <BehaviorTree ID="Rejected">
+        <NonExistentNodeType/>
+      </BehaviorTree>
+    </root>)";
+    XMLParser parser(factory);
+    EXPECT_THROW(parser.loadFromText(rejected_xml), RuntimeError);
+    parser.loadFromText(valid_xml);
+    Tree tree = parser.instantiateTree(Blackboard::create());
+    EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
+  }
+  {
+    // nothing loaded: an error, not an access to the front of an empty list
+    XMLParser parser(factory);
+    EXPECT_THROW((void)parser.instantiateTree(Blackboard::create()), RuntimeError);
+  }
+
+  // The factory keeps a single parser: a file rejected once poisoned every
+  // later creation that has to fall back to the first document. Here two
+  // trees and no main_tree_to_execute must be reported as such.
+  EXPECT_THROW(factory.registerBehaviorTreeFromText("<root><BehaviorTree>"),
+               RuntimeError);
+  const char* two_trees_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="A"><AlwaysSuccess/></BehaviorTree>
+    <BehaviorTree ID="B"><AlwaysSuccess/></BehaviorTree>
+  </root>)";
+  EXPECT_THROW((void)factory.createTreeFromText(two_trees_xml), RuntimeError);
+}
+
 TEST(BehaviorTreeFactory, TooManyNodesForUID)
 {
   // UIDs are 16 bits wide. Past 65535 nodes the counter used to wrap around
