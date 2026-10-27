@@ -566,6 +566,35 @@ TEST(Decorator, TimeoutHaltWhileTimerIsHaltingTheChild)
   ASSERT_EQ(counters.total.load(), 1);
 }
 
+// Regression test: halting a Sleep cancels its timer, and the canceled handler
+// runs later on the TimerQueue worker thread. When the Sleep was restarted in
+// the meantime, that stale handler used to clear the flag of the new timer, so
+// the restarted Sleep returned SUCCESS long before its duration.
+TEST(Decorator, SleepRestartedAfterHaltWaitsFullDuration)
+{
+  BT::BehaviorTreeFactory factory;
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree ID="MainTree">
+          <Sleep msec="500"/>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+
+  for(int i = 0; i < 20; i++)
+  {
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    tree.haltTree();
+    // restart before the timer thread runs the canceled handler
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    std::this_thread::sleep_for(milliseconds(20));
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING) << "iteration " << i;
+    tree.haltTree();
+  }
+}
+
 // Test KeepRunningUntilFailure decorator
 TEST(Decorator, KeepRunningUntilFailure)
 {
