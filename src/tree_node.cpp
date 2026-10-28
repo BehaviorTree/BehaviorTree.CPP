@@ -13,6 +13,8 @@
 
 #include "behaviortree_cpp/tree_node.h"
 
+#include "behaviortree_cpp/control_node.h"
+
 #include <array>
 #include <atomic>
 #include <cstring>
@@ -51,6 +53,8 @@ struct TreeNode::PImpl
 
   std::array<ScriptFunction, size_t(PreCond::COUNT_)> pre_parsed;
   std::array<ScriptFunction, size_t(PostCond::COUNT_)> post_parsed;
+
+  TreeNode* parent = nullptr;
 };
 
 TreeNode::TreeNode(std::string name, NodeConfig config)
@@ -405,6 +409,16 @@ void TreeNode::setTickMonitorCallback(TickMonitorCallback callback)
 uint16_t TreeNode::UID() const
 {
   return _p->config.uid;
+}
+
+TreeNode* TreeNode::parent() const
+{
+  return _p->parent;
+}
+
+void TreeNode::setParent(TreeNode* parent)
+{
+  _p->parent = parent;
 }
 
 const std::string& TreeNode::fullPath() const

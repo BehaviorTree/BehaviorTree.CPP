@@ -143,6 +143,7 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
   registerNodeType<TimeoutNode>("Timeout");
   registerNodeType<DelayNode>("Delay");
   registerNodeType<RunOnceNode>("RunOnce");
+  registerNodeType<Preempt>("Preempt");
 
   registerNodeType<ForceSuccessNode>("ForceSuccess");
   registerNodeType<ForceFailureNode>("ForceFailure");

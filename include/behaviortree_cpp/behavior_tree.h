@@ -41,6 +41,7 @@
 #include "behaviortree_cpp/decorators/inverter_node.h"
 #include "behaviortree_cpp/decorators/keep_running_until_failure_node.h"
 #include "behaviortree_cpp/decorators/loop_node.h"
+#include "behaviortree_cpp/decorators/preempt.h"
 #include "behaviortree_cpp/decorators/repeat_node.h"
 #include "behaviortree_cpp/decorators/retry_node.h"
 #include "behaviortree_cpp/decorators/run_once_node.h"

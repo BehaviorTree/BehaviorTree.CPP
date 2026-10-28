@@ -193,6 +193,12 @@ public:
 
   virtual NodeType type() const = 0;
 
+  /// Parent of this node in the tree, or nullptr for the root of a subtree.
+  [[nodiscard]] TreeNode* parent() const;
+
+  /// Set by the parent when the node is added to the tree.
+  void setParent(TreeNode* parent);
+
   using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus, NodeStatus>;
   using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
   using StatusChangeCallback = StatusChangeSignal::CallableFunction;
