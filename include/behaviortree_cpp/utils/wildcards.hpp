@@ -1,9 +1,7 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
 #include <string_view>
-#include <vector>
 
 /**
  * @file wildcards.hpp
@@ -14,8 +12,11 @@
  * - '*' matches any sequence of characters (including the empty sequence)
  * - '?' matches any single character
  *
- * The implementation uses recursion with memoization to efficiently handle
- * overlapping subproblems.
+ * The implementation is iterative and uses constant memory: when a mismatch
+ * happens after a '*', only the most recent '*' needs to be retried, one
+ * character further. Neither the recursion depth nor an allocation grows with
+ * the length of the string or of the pattern, so a long node path or filter
+ * cannot exhaust the stack.
  */
 
 inline bool wildcards_match(std::string_view str, std::string_view pattern)
@@ -23,44 +24,40 @@ inline bool wildcards_match(std::string_view str, std::string_view pattern)
   const size_t n = str.size();
   const size_t m = pattern.size();
 
-  // Pre-allocate memo table: -1 = not computed, 0 = false, 1 = true
-  std::vector<int8_t> memo((n + 1) * (m + 1), -1);
+  size_t i = 0;
+  size_t j = 0;
+  // position of the last '*' in the pattern, and of the character in str
+  // that it is currently expected to match up to
+  size_t star = std::string_view::npos;
+  size_t star_i = 0;
 
-  auto get_memo = [&](size_t i, size_t j) -> int8_t& { return memo[i * (m + 1) + j]; };
-
-  auto match = [&](auto& match_ref, size_t i, size_t j) -> bool {
-    if(j == m)
+  while(i < n)
+  {
+    if(j < m && pattern[j] == '*')
     {
-      return i == n;
+      star = j++;
+      star_i = i;
     }
-
-    int8_t& cached = get_memo(i, j);
-    if(cached != -1)
+    else if(j < m && (pattern[j] == '?' || pattern[j] == str[i]))
     {
-      return cached == 1;
+      ++i;
+      ++j;
     }
-
-    bool result = false;
-    if(pattern[j] == '*')
+    else if(star != std::string_view::npos)
     {
-      result = match_ref(match_ref, i, j + 1);
-      if(!result && i < n)
-      {
-        result = match_ref(match_ref, i + 1, j);
-      }
-    }
-    else if(i < n && (pattern[j] == '?' || pattern[j] == str[i]))
-    {
-      result = match_ref(match_ref, i + 1, j + 1);
+      // let the last '*' absorb one more character and retry from there
+      j = star + 1;
+      i = ++star_i;
     }
     else
     {
-      result = false;
+      return false;
     }
-
-    cached = result ? 1 : 0;
-    return result;
-  };
-
-  return match(match, 0, 0);
+  }
+  // the remaining part of the pattern must match the empty string
+  while(j < m && pattern[j] == '*')
+  {
+    ++j;
+  }
+  return j == m;
 }
