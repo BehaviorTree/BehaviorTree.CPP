@@ -258,6 +258,7 @@ namespace nonstd {
 #include <initializer_list>
 #include <memory>
 #include <new>
+#include <string>
 #include <system_error>
 #include <type_traits>
 #include <utility>
@@ -1605,11 +1606,12 @@ public:
 
     explicit bad_expected_access( error_type error )
     : m_error( error )
+    , m_what( make_what( m_error, std::is_convertible< error_type const &, std::string >() ) )
     {}
 
     virtual char const * what() const noexcept override
     {
-        return "bad_expected_access";
+        return ( m_what && !m_what->empty() ) ? m_what->c_str() : "bad_expected_access";
     }
 
     nsel_constexpr14 error_type & error() &
@@ -1637,7 +1639,20 @@ public:
 #endif
 
 private:
+    using what_ptr = std::shared_ptr< const std::string >;
+
+    static what_ptr make_what( error_type const & error, std::true_type )
+    {
+        return std::make_shared< const std::string >( error );
+    }
+
+    static what_ptr make_what( error_type const &, std::false_type )
+    {
+        return what_ptr();
+    }
+
     error_type m_error;
+    what_ptr m_what;
 };
 
 #endif // nsel_CONFIG_NO_EXCEPTIONS
