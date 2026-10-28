@@ -484,6 +484,49 @@ TEST(BasicTypes, Result_Error)
   ASSERT_EQ(result.error(), "error message");
 }
 
+TEST(BasicTypes, Expected_BadAccessMessage)
+{
+  auto bb = Blackboard::create();
+  try
+  {
+    (void)bb->getStamped<int>("missing_key").value();
+    FAIL() << "value() should throw";
+  }
+  catch(const std::exception& ex)
+  {
+    const std::string msg = ex.what();
+    EXPECT_NE(msg.find("Missing key [missing_key]"), std::string::npos) << msg;
+  }
+
+  Expected<int> res = nonstd::make_unexpected(std::string("error message"));
+  try
+  {
+    (void)res.value();
+    FAIL() << "value() should throw";
+  }
+  catch(const nonstd::bad_expected_access<std::string>& ex)
+  {
+    const auto copy = ex;
+    EXPECT_STREQ(copy.what(), "error message");
+    EXPECT_EQ(copy.error(), "error message");
+  }
+}
+
+TEST(BasicTypes, Expected_BadAccessMessageNotString)
+{
+  nonstd::expected<int, int> res = nonstd::make_unexpected(42);
+  try
+  {
+    (void)res.value();
+    FAIL() << "value() should throw";
+  }
+  catch(const nonstd::bad_expected_access<int>& ex)
+  {
+    EXPECT_STREQ(ex.what(), "bad_expected_access");
+    EXPECT_EQ(ex.error(), 42);
+  }
+}
+
 // ============ StringView tests ============
 
 TEST(BasicTypes, StringView_FromString)
