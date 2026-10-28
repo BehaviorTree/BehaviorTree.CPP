@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -14,18 +15,16 @@ namespace BT::test
 
 struct Tracker
 {
-  std::vector<std::string> events;
-  std::atomic<int> running{ 0 };
-  std::atomic<int> max_running{ 0 };
-  std::atomic<int> started_while_running{ 0 };
-
   void onStart(const std::string& name)
   {
     if(running.load() > 0)
     {
       started_while_running++;
     }
-    events.push_back(name + ":start");
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      events_.push_back(name + ":start");
+    }
     const int now = ++running;
     int previous = max_running.load();
     while(now > previous && !max_running.compare_exchange_weak(previous, now))
@@ -35,30 +34,51 @@ struct Tracker
 
   void onHalted(const std::string& name)
   {
-    events.push_back(name + ":halted");
+    {
+      std::lock_guard<std::mutex> lock(mutex_);
+      events_.push_back(name + ":halted");
+    }
     running--;
   }
 
   bool hasEvent(const std::string& event) const
   {
-    return std::find(events.begin(), events.end(), event) != events.end();
+    std::lock_guard<std::mutex> lock(mutex_);
+    return std::find(events_.begin(), events_.end(), event) != events_.end();
   }
 
   [[nodiscard]] size_t indexOf(const std::string& event) const
   {
-    const auto it = std::find(events.begin(), events.end(), event);
-    return it == events.end() ? events.size() : size_t(std::distance(events.begin(), it));
+    std::lock_guard<std::mutex> lock(mutex_);
+    const auto it = std::find(events_.begin(), events_.end(), event);
+    return it == events_.end() ? events_.size() :
+                                 size_t(std::distance(events_.begin(), it));
+  }
+
+  [[nodiscard]] size_t count(const std::string& event) const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return size_t(std::count(events_.begin(), events_.end(), event));
   }
 
   [[nodiscard]] std::string dump() const
   {
+    std::lock_guard<std::mutex> lock(mutex_);
     std::string out;
-    for(const auto& e : events)
+    for(const auto& e : events_)
     {
       out += e + " ";
     }
     return out;
   }
+
+  std::atomic<int> running{ 0 };
+  std::atomic<int> max_running{ 0 };
+  std::atomic<int> started_while_running{ 0 };
+
+private:
+  mutable std::mutex mutex_;
+  std::vector<std::string> events_;
 };
 
 class ForeverAction : public BT::StatefulActionNode
@@ -246,9 +266,7 @@ TEST(Preempt, reactiveFallbackStopsTheOldBranchBeforeStartingTheNewOne)
   EXPECT_EQ(tracker.started_while_running.load(), 0) << tracker.dump();
   EXPECT_LT(tracker.indexOf("GotoKitchen:halted"), tracker.indexOf("GotoCharging:start"))
       << tracker.dump();
-  EXPECT_EQ(
-      std::count(tracker.events.begin(), tracker.events.end(), "GotoKitchen:halted"), 1)
-      << tracker.dump();
+  EXPECT_EQ(tracker.count("GotoKitchen:halted"), 1) << tracker.dump();
 }
 
 TEST(Preempt, actionInsideSubTree)

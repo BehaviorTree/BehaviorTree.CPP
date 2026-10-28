@@ -421,7 +421,6 @@ void TreeNode::setParent(TreeNode* parent)
   _p->parent = parent;
 }
 
-
 const std::string& TreeNode::fullPath() const
 {
   return _p->config.path;

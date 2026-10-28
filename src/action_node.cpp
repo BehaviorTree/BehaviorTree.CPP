@@ -114,7 +114,6 @@ NodeStatus CoroActionNode::executeTick()
   // create a new coroutine, if necessary
   if(_p->coro == nullptr)
   {
-
     // First initialize a `desc` object through `mco_desc_init`.
     _p->desc = mco_desc_init(CoroEntry, 0);
     _p->desc.user_data = this;
@@ -212,7 +211,6 @@ NodeStatus BT::ThreadedAction::executeTick()
   // The other thread is in charge for changing the status
   if(status() == NodeStatus::IDLE)
   {
-
     setStatus(NodeStatus::RUNNING);
     halt_requested_ = false;
     thread_handle_ = std::async(std::launch::async, [this]() {
