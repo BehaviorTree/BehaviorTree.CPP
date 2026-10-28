@@ -64,11 +64,6 @@ public:
 
   virtual void halt() override;
 
-  [[nodiscard]] bool allowsConcurrentChildren() const override
-  {
-    return true;
-  }
-
   size_t successThreshold() const;
   size_t failureThreshold() const;
   void setSuccessThreshold(int threshold);

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "behaviortree_cpp/control_node.h"
+#include "behaviortree_cpp/controls/reactive_control_node.h"
 
 namespace BT
 {
@@ -30,10 +30,10 @@ namespace BT
  *            a single asynchronous child.
  *
  */
-class ReactiveFallback : public ControlNode
+class ReactiveFallback : public ReactiveControlNode
 {
 public:
-  ReactiveFallback(const std::string& name) : ControlNode(name, {})
+  ReactiveFallback(const std::string& name) : ReactiveControlNode(name, {})
   {}
 
   /** A ReactiveFallback is not supposed to have more than a single
@@ -47,7 +47,6 @@ private:
 
   void halt() override;
 
-  int running_child_ = -1;
   static bool throw_if_multiple_running;
 };
 

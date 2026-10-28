@@ -267,7 +267,9 @@ TEST(ReactiveBackchaining, HaltBranchBeforeStartingAnotherAsyncAction)
       <ReactiveSequence>
         <ReactiveFallback>
           <IsBatteryOk/>
-          <GotoCharging/>
+          <Preempt>
+            <GotoCharging/>
+          </Preempt>
         </ReactiveFallback>
         <GotoKitchen/>
       </ReactiveSequence>
@@ -298,7 +300,9 @@ TEST(ReactiveBackchaining, HaltBranchBeforeStartingAnotherAsyncAction)
   EXPECT_EQ(tracker.running_actions, 1);
 
   // The battery runs low while the robot is still moving: the goal must be
-  // cancelled before the charging action is started.
+  // cancelled before the charging action is started. That is what the Preempt
+  // decorator marks: without it the fallback and the reactive sequence above it
+  // cannot tell this switch from a check being re-ticked.
   blackboard->set("battery_ok", false);
   EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING);
 

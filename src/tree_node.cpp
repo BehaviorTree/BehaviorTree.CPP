@@ -421,34 +421,6 @@ void TreeNode::setParent(TreeNode* parent)
   _p->parent = parent;
 }
 
-void TreeNode::haltRunningSiblings()
-{
-  TreeNode* child = this;
-
-  for(TreeNode* ancestor = _p->parent; ancestor != nullptr; ancestor = ancestor->parent())
-  {
-    // A Parallel node is the only one allowed to have several children RUNNING
-    // at the same time, so its other branches must be left untouched.
-    if(ancestor->allowsConcurrentChildren())
-    {
-      return;
-    }
-
-    if(auto* control = dynamic_cast<ControlNode*>(ancestor))
-    {
-      const auto& children = control->children();
-      for(size_t i = 0; i < children.size(); i++)
-      {
-        if(children[i] != child && children[i]->status() == NodeStatus::RUNNING)
-        {
-          control->haltChild(i);
-        }
-      }
-    }
-
-    child = ancestor;
-  }
-}
 
 const std::string& TreeNode::fullPath() const
 {
