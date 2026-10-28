@@ -1,6 +1,7 @@
 #include "test_helper.hpp"
 
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 #include <set>
 
@@ -1263,4 +1264,85 @@ TEST(SubTree, DeclaredUnbindablePortLoadsWhenNotRemapped)
 
   BehaviorTreeFactory factory;
   EXPECT_NO_THROW(factory.createTreeFromText(xml_text));
+}
+
+namespace
+{
+std::vector<const SubTreeNode*> collectSubTreeNodes(const Tree& tree)
+{
+  std::vector<const SubTreeNode*> nodes;
+  tree.applyVisitor([&](const TreeNode* node) {
+    if(const auto* subtree = dynamic_cast<const SubTreeNode*>(node))
+    {
+      nodes.push_back(subtree);
+    }
+  });
+  return nodes;
+}
+}  // namespace
+
+// Issue #1262: WriteTreeToXML dropped the [name] of SubTree nodes
+TEST(SubTree, WriteTreeToXML_KeepsSubTreeName)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <SubTree ID="Worker" name="my_worker"/>
+  </BehaviorTree>
+  <BehaviorTree ID="Worker">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  const auto xml = WriteTreeToXML(tree, false, false);
+  EXPECT_NE(xml.find(R"(name="my_worker")"), std::string::npos) << xml;
+
+  // load the exported XML again: the instance name must survive the round trip
+  BehaviorTreeFactory factory2;
+  factory2.registerBehaviorTreeFromText(xml);
+  auto reloaded = factory2.createTree("MainTree");
+
+  const auto subtrees = collectSubTreeNodes(reloaded);
+  ASSERT_EQ(subtrees.size(), 1);
+  EXPECT_EQ(subtrees[0]->name(), "my_worker");
+  EXPECT_EQ(subtrees[0]->subtreeID(), "Worker");
+  EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
+// A SubTree without [name] must not get one in the exported XML. Otherwise, two
+// SubTrees with the same ID would get the same path and the XML could not be
+// loaded again (see DuplicateSubTreeName_Groot2Issue56).
+TEST(SubTree, WriteTreeToXML_NoNameAttributeIsNotAdded)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SubTree ID="Worker"/>
+      <SubTree ID="Worker"/>
+    </Sequence>
+  </BehaviorTree>
+  <BehaviorTree ID="Worker">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  const auto xml = WriteTreeToXML(tree, false, false);
+  EXPECT_EQ(xml.find(R"(name="Worker")"), std::string::npos) << xml;
+
+  BehaviorTreeFactory factory2;
+  factory2.registerBehaviorTreeFromText(xml);
+  Tree reloaded;
+  ASSERT_NO_THROW(reloaded = factory2.createTree("MainTree"));
+
+  const auto subtrees = collectSubTreeNodes(reloaded);
+  ASSERT_EQ(subtrees.size(), 2);
+  EXPECT_NE(subtrees[0]->fullPath(), subtrees[1]->fullPath());
+  EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
 }
