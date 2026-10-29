@@ -627,7 +627,6 @@ TEST(SubTree, SubtreeModelDefault)
   tree.tickWhileRunning();
 }
 
-
 TEST(SubTree, SubtreeModelDefaultWithAutoremap)
 {
   // clang-format off
