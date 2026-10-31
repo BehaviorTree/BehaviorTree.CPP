@@ -174,6 +174,27 @@ TEST_F(IfThenElseTest, ConditionRunning)
   ASSERT_EQ(counters[0], 1);  // TestA executed
 }
 
+TEST_F(IfThenElseTest, ConditionSkipped)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <IfThenElse>
+            <AlwaysSuccess _skipIf="true"/>
+            <TestA/>
+            <TestB/>
+          </IfThenElse>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickOnce();
+
+  ASSERT_EQ(status, NodeStatus::SKIPPED);
+  ASSERT_EQ(counters[0], 0);
+  ASSERT_EQ(counters[1], 0);
+}
+
 TEST_F(IfThenElseTest, HaltBehavior)
 {
   // Test that halt resets the node properly
