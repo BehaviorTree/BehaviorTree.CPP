@@ -61,11 +61,11 @@ inline nlohmann::json makeHook(uint16_t uid, BT::Monitor::Hook::Mode mode,
 class Client
 {
 public:
-  explicit Client(unsigned port) : socket_(context_, ZMQ_REQ)
+  explicit Client(unsigned port, int timeout_ms = 2000) : socket_(context_, ZMQ_REQ)
   {
     socket_.set(zmq::sockopt::linger, 0);
-    socket_.set(zmq::sockopt::rcvtimeo, 2000);
-    socket_.set(zmq::sockopt::sndtimeo, 2000);
+    socket_.set(zmq::sockopt::rcvtimeo, timeout_ms);
+    socket_.set(zmq::sockopt::sndtimeo, timeout_ms);
     socket_.connect("tcp://127.0.0.1:" + std::to_string(port));
   }
 

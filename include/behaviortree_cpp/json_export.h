@@ -290,8 +290,11 @@ template <typename T>
 {
   static_assert(std::is_integral_v<T> && !std::is_same_v<T, bool>);
   const auto not_an_integer = [&value]() {
-    return RuntimeError(StrCat("JSON value [", value.dump(),
-                               "] is not an integer of type ", BT::demangle(typeid(T))));
+    // dump() recurses once per nesting level and the value may come from an
+    // untrusted JSON text: a deeply nested array would exhaust the stack here.
+    const std::string text = value.is_structured() ? value.type_name() : value.dump();
+    return RuntimeError(StrCat("JSON value [", text, "] is not an integer of type ",
+                               BT::demangle(typeid(T))));
   };
   if(value.is_number_unsigned())
   {

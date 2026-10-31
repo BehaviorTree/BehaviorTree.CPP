@@ -108,7 +108,8 @@ JsonExporter::ExpectedEntry JsonExporter::fromJson(const nlohmann::json& source)
   // basic vectors
   if(source.is_array() && source.size() > 0 && !source.contains("__type"))
   {
-    const auto first_element = source[0];
+    // Not a copy: it would recurse once per nesting level of the untrusted value
+    const auto& first_element = source[0];
     if(first_element.is_string())
     {
       return Entry{ BT::Any(source.get<std::vector<std::string>>()),
