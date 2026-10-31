@@ -168,6 +168,53 @@ TEST(PreconditionsDecorator, ChecksConditionOnce)
   EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
 }
 
+TEST(PreconditionsDecorator, ChecksConditionAfterHalt)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Precondition if="A==0" else="FAILURE">
+          <KeepRunning/>
+        </Precondition>
+      </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("A", 0);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+
+  tree.haltTree();
+  tree.rootBlackboard()->set("A", 1);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::FAILURE);
+}
+
+TEST(PreconditionsDecorator, ChecksConditionAfterSkippedChild)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Precondition if="A==0" else="FAILURE">
+          <KeepRunning _skipIf="skip"/>
+        </Precondition>
+      </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("A", 0);
+  tree.rootBlackboard()->set("skip", true);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::SKIPPED);
+
+  tree.rootBlackboard()->set("A", 1);
+  tree.rootBlackboard()->set("skip", false);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::FAILURE);
+}
+
 TEST(PreconditionsDecorator, CanRunChildrenMultipleTimes)
 {
   BehaviorTreeFactory factory;
