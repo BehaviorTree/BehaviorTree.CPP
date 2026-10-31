@@ -42,6 +42,11 @@ NodeStatus WhileDoElseNode::tick()
   {
     return condition_status;
   }
+  if(condition_status == NodeStatus::SKIPPED)
+  {
+    resetChildren();
+    return condition_status;
+  }
 
   NodeStatus status = NodeStatus::IDLE;
 
