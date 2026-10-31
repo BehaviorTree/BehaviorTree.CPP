@@ -94,6 +94,27 @@ TEST_F(WhileDoElseTest, ConditionFalse_TwoChildren_ReturnsFailure)
   ASSERT_EQ(counters[0], 0);  // TestA not executed
 }
 
+TEST_F(WhileDoElseTest, ConditionSkipped)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <WhileDoElse>
+            <AlwaysSuccess _skipIf="true"/>
+            <TestA/>
+            <TestB/>
+          </WhileDoElse>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  auto status = tree.tickOnce();
+
+  ASSERT_EQ(status, NodeStatus::SKIPPED);
+  ASSERT_EQ(counters[0], 0);
+  ASSERT_EQ(counters[1], 0);
+}
+
 TEST_F(WhileDoElseTest, DoBranchFails)
 {
   // When do-branch fails, WhileDoElse returns FAILURE
