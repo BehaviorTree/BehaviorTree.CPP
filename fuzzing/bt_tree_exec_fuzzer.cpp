@@ -19,16 +19,16 @@
 // node handling on halt-while-RUNNING, out-of-bounds child indexing in control
 // nodes, numeric parsing of attributes, scripting runtime errors.
 
-#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
-
-#include <fuzzer/FuzzedDataProvider.h>
 
 #include <cstdint>
 #include <cstdio>
 #include <string>
 #include <vector>
+
+#include <fuzzer/FuzzedDataProvider.h>
 
 namespace
 {
@@ -40,14 +40,11 @@ const char* kNames[] = { "n1", "act", "cond", "root_task", "aux" };
 
 // Scripts used by Script/ScriptCondition/Precondition/TestNode. All short,
 // terminating and side-effect limited to the blackboard.
-const char* kConditionScripts[] = {
-  "var > 0", "var < 5", "flag", "!flag", "dbl < 10.0", "str == 'abc'",
-  "var == MODE_A"
-};
-const char* kActionScripts[] = {
-  "var = var + 1", "var = 3", "var = var - 1", "str = 'fuzz'",
-  "dbl = var * 0.5", "flag = !flag", "var = MODE_A", "flag = var > 2"
-};
+const char* kConditionScripts[] = { "var > 0",    "var < 5",      "flag",         "!flag",
+                                    "dbl < 10.0", "str == 'abc'", "var == MODE_A" };
+const char* kActionScripts[] = { "var = var + 1", "var = 3",         "var = var - 1",
+                                 "str = 'fuzz'",  "dbl = var * 0.5", "flag = !flag",
+                                 "var = MODE_A",  "flag = var > 2" };
 const char* kLiterals[] = { "1", "2", "true", "false", "1.5", "hello", "{var}" };
 const char* kStatuses[] = { "SUCCESS", "FAILURE", "SKIPPED" };
 
@@ -93,8 +90,7 @@ std::string genLeaf(FuzzedDataProvider& fdp)
       return "<Script code=\"" + pickScript(fdp) + "\"/>";
     case 3:
       return "<ScriptCondition code=\"" + pickCondition(fdp) + "\"/>";
-    case 4:
-    {
+    case 4: {
       if(fdp.ConsumeBool())
       {
         return std::string("<SetBlackboard output_key=\"var2\" value=\"") +
@@ -109,8 +105,7 @@ std::string genLeaf(FuzzedDataProvider& fdp)
       return "<UnsetBlackboard key=\"var2\"/>";
     case 7:
       return "<Script code=\"{txt}\"/>";
-    default:
-    {
+    default: {
       if(fdp.ConsumeBool())
       {
         return "<Script code=\"" + pickScript(fdp) + "\" name=\"" + pickName(fdp) +
@@ -155,9 +150,8 @@ std::string genDecorator(FuzzedDataProvider& fdp, int depth)
     case 3:
       return "<KeepRunningUntilFailure>" + child + "</KeepRunningUntilFailure>";
     case 4:
-      return "<RunOnce then_skip=\"" +
-             std::string(fdp.ConsumeBool() ? "true" : "false") + "\">" + child +
-             "</RunOnce>";
+      return "<RunOnce then_skip=\"" + std::string(fdp.ConsumeBool() ? "true" : "false") +
+             "\">" + child + "</RunOnce>";
     case 5:
       // never -1: that would be an infinite loop
       return "<Repeat num_cycles=\"" +
@@ -170,12 +164,12 @@ std::string genDecorator(FuzzedDataProvider& fdp, int depth)
              "</RetryUntilSuccessful>";
     case 7:
       return "<Timeout msec=\"" +
-             std::to_string(fdp.ConsumeIntegralInRange<unsigned>(1, 50)) + "\">" +
-             child + "</Timeout>";
+             std::to_string(fdp.ConsumeIntegralInRange<unsigned>(1, 50)) + "\">" + child +
+             "</Timeout>";
     case 8:
       return "<Delay delay_msec=\"" +
-             std::to_string(fdp.ConsumeIntegralInRange<unsigned>(1, 10)) + "\">" +
-             child + "</Delay>";
+             std::to_string(fdp.ConsumeIntegralInRange<unsigned>(1, 10)) + "\">" + child +
+             "</Delay>";
     case 9:
       return "<Precondition if=\"" + pickCondition(fdp) + "\" else=\"" +
              std::string(fdp.PickValueInArray(kStatuses)) + "\">" + child +
@@ -214,21 +208,19 @@ std::string genControl(FuzzedDataProvider& fdp, int depth)
     case 4:
       return "<ReactiveFallback>" + genChildrenBody(fdp, depth, n) +
              "</ReactiveFallback>";
-    case 5:
-    {
+    case 5: {
       const size_t children = fdp.ConsumeIntegralInRange<size_t>(1, 3);
       return "<Parallel success_count=\"" +
              std::to_string(fdp.ConsumeIntegralInRange<size_t>(1, children)) +
              "\" failure_count=\"" +
-             std::to_string(fdp.ConsumeIntegralInRange<size_t>(1, children)) +
-             "\">" + genChildrenBody(fdp, depth, children) + "</Parallel>";
+             std::to_string(fdp.ConsumeIntegralInRange<size_t>(1, children)) + "\">" +
+             genChildrenBody(fdp, depth, children) + "</Parallel>";
     }
-    case 6:
-    {
+    case 6: {
       const size_t children = fdp.ConsumeIntegralInRange<size_t>(1, 3);
       return "<ParallelAll failure_count=\"" +
-             std::to_string(fdp.ConsumeIntegralInRange<size_t>(1, children)) +
-             "\">" + genChildrenBody(fdp, depth, children) + "</ParallelAll>";
+             std::to_string(fdp.ConsumeIntegralInRange<size_t>(1, children)) + "\">" +
+             genChildrenBody(fdp, depth, children) + "</ParallelAll>";
     }
     case 7:
       // first child must be the condition branch
@@ -344,7 +336,6 @@ void driveTree(BT::Tree& tree, FuzzedDataProvider& fdp)
   }
 }
 
-
 // A small substitution-rules JSON: replaces matched nodes with TestNodes
 // (bounded async_delay) and uses a wildcard filter so that the wildcard
 // matching code is exercised too.
@@ -382,36 +373,30 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
   {
     switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 2))
     {
-      case 0:
-      {
+      case 0: {
         // plain create + tick
-        const std::string xml =
-            "<root BTCPP_format=\"4\">" + wrapTree("MainTree", genNode(fdp, 0)) +
-            "</root>";
+        const std::string xml = "<root BTCPP_format=\"4\">" +
+                                wrapTree("MainTree", genNode(fdp, 0)) + "</root>";
         auto tree = factory.createTreeFromText(xml, blackboard);
         driveTree(tree, fdp);
         break;
       }
-      case 1:
-      {
+      case 1: {
         // multiple trees in one document + SubTree reference
         const std::string xml =
             "<root BTCPP_format=\"4\">" +
-            wrapTree("MainTree",
-                     "<Sequence><SubTree ID=\"AuxTree\"/>" + genNode(fdp, 0) +
-                         "</Sequence>") +
+            wrapTree("MainTree", "<Sequence><SubTree ID=\"AuxTree\"/>" + genNode(fdp, 0) +
+                                     "</Sequence>") +
             wrapTree("AuxTree", genLeaf(fdp)) + "</root>";
         factory.registerBehaviorTreeFromText(xml);
         auto tree = factory.createTree("MainTree", blackboard);
         driveTree(tree, fdp);
         break;
       }
-      default:
-      {
+      default: {
         // registry + TestNode substitutions (incl. wildcard filter)
-        const std::string xml =
-            "<root BTCPP_format=\"4\">" + wrapTree("MainTree", genNode(fdp, 0)) +
-            "</root>";
+        const std::string xml = "<root BTCPP_format=\"4\">" +
+                                wrapTree("MainTree", genNode(fdp, 0)) + "</root>";
         factory.registerBehaviorTreeFromText(xml);
         factory.loadSubstitutionRuleFromJSON(kSubstitutionJson);
         const auto& names = factory.registeredBehaviorTrees();
@@ -431,4 +416,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
   return 0;
 }
-
