@@ -34,11 +34,11 @@
 #include "behaviortree_cpp/utils/polymorphic_cast_registry.hpp"
 #include "behaviortree_cpp/utils/safe_any.hpp"
 
-#include <fuzzer/FuzzedDataProvider.h>
-
 #include <cstdint>
 #include <memory>
 #include <string>
+
+#include <fuzzer/FuzzedDataProvider.h>
 
 namespace
 {
@@ -169,216 +169,205 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
   // APIs are contained per-iteration and never escape LLVMFuzzerTestOneInput.
   try
   {
-  // ---- Stage 2: Any storage + cross-type cast matrix
-  {
-    BT::Any any;
-    switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 2))
+    // ---- Stage 2: Any storage + cross-type cast matrix
     {
-      case 0:
-        any = BT::Any(text);
-        break;
-      case 1:
-        any = BT::Any(static_cast<int64_t>(text.size()) * 1000000);
-        break;
-      default:
-        any = BT::Any(static_cast<double>(text.size()) * 1.5);
-        break;
-    }
+      BT::Any any;
+      switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 2))
+      {
+        case 0:
+          any = BT::Any(text);
+          break;
+        case 1:
+          any = BT::Any(static_cast<int64_t>(text.size()) * 1000000);
+          break;
+        default:
+          any = BT::Any(static_cast<double>(text.size()) * 1.5);
+          break;
+      }
 
-    (void)any.isNumber();
-    (void)any.isIntegral();
-    (void)any.isString();
+      (void)any.isNumber();
+      (void)any.isIntegral();
+      (void)any.isString();
 
-    switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 5))
-    {
-      case 0:
+      switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 5))
       {
-        auto res = any.tryCast<int64_t>();
-        (void)res.has_value();
-        break;
-      }
-      case 1:
-      {
-        auto res = any.tryCast<uint64_t>();
-        (void)res.has_value();
-        break;
-      }
-      case 2:
-      {
-        auto res = any.tryCast<double>();
-        (void)res.has_value();
-        break;
-      }
-      case 3:
-      {
-        auto res = any.tryCast<std::string>();
-        (void)res.has_value();
-        break;
-      }
-      case 4:
-      {
-        auto res = any.tryCast<int>();
-        (void)res.has_value();
-        break;
-      }
-      default:
-      {
-        // cast<T>() throws RuntimeError on a lossy/invalid cast
-        try
-        {
-          (void)any.cast<uint64_t>();
+        case 0: {
+          auto res = any.tryCast<int64_t>();
+          (void)res.has_value();
+          break;
         }
-        catch(const std::exception&)
-        {
-          // expected on invalid casts
+        case 1: {
+          auto res = any.tryCast<uint64_t>();
+          (void)res.has_value();
+          break;
         }
-        break;
-      }
-    }
-  }
-
-  // ---- Stage 3: polymorphic cast registry
-  {
-    BT::PolymorphicCastRegistry registry;
-    registry.registerCast<Cat, Animal>();
-    registry.registerCast<Dog, Animal>();
-    registry.registerCast<Sphynx, Cat>();
-
-    BT::Any animal_any;
-    switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 3))
-    {
-      case 0:
-        animal_any = BT::Any(AnimalPtr(std::make_shared<Animal>()));
-        break;
-      case 1:
-        animal_any = BT::Any(CatPtr(std::make_shared<Cat>()));
-        break;
-      case 2:
-        animal_any = BT::Any(DogPtr(std::make_shared<Dog>()));
-        break;
-      default:
-        animal_any = BT::Any(SphynxPtr(std::make_shared<Sphynx>()));
-        break;
-    }
-
-    switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 4))
-    {
-      case 0:
-      {
-        auto res = animal_any.tryCastWithRegistry<AnimalPtr>(registry);
-        (void)res.has_value();
-        break;
-      }
-      case 1:
-      {
-        auto res = animal_any.tryCastWithRegistry<CatPtr>(registry);
-        (void)res.has_value();
-        break;
-      }
-      case 2:
-      {
-        auto res = animal_any.tryCastWithRegistry<DogPtr>(registry);
-        (void)res.has_value();
-        break;
-      }
-      case 3:
-      {
-        auto res = animal_any.tryCastWithRegistry<SphynxPtr>(registry);
-        (void)res.has_value();
-        break;
-      }
-      default:
-      {
-        try
-        {
-          auto p = animal_any.cast<CatPtr>();
-          (void)p;
+        case 2: {
+          auto res = any.tryCast<double>();
+          (void)res.has_value();
+          break;
         }
-        catch(const std::exception&)
-        {
-          // expected when the stored type is not Cat-compatible
+        case 3: {
+          auto res = any.tryCast<std::string>();
+          (void)res.has_value();
+          break;
         }
-        break;
+        case 4: {
+          auto res = any.tryCast<int>();
+          (void)res.has_value();
+          break;
+        }
+        default: {
+          // cast<T>() throws RuntimeError on a lossy/invalid cast
+          try
+          {
+            (void)any.cast<uint64_t>();
+          }
+          catch(const std::exception&)
+          {
+            // expected on invalid casts
+          }
+          break;
+        }
       }
     }
 
-    // Blackboard with an attached registry: typed set/get through the
-    // polymorphic path (Issue #943 usage pattern).
-    auto reg2 = std::make_shared<BT::PolymorphicCastRegistry>();
-    reg2->registerCast<Cat, Animal>();
-    reg2->registerCast<Sphynx, Cat>();
-    auto bb_poly = BT::Blackboard::create();
-    bb_poly->setPolymorphicCastRegistry(reg2);
-    bb_poly->set("obj", CatPtr(std::make_shared<Sphynx>()));
-    try
+    // ---- Stage 3: polymorphic cast registry
     {
-      auto up = bb_poly->get<AnimalPtr>("obj");
-      (void)up;
-    }
-    catch(const std::exception&)
-    {
-      // expected when the registry cannot satisfy the cast
-    }
-    try
-    {
-      auto down = bb_poly->get<SphynxPtr>("obj");
-      (void)down;
-    }
-    catch(const std::exception&)
-    {
-      // expected on unsupported downcasts
-    }
-  }
+      BT::PolymorphicCastRegistry registry;
+      registry.registerCast<Cat, Animal>();
+      registry.registerCast<Dog, Animal>();
+      registry.registerCast<Sphynx, Cat>();
 
-  // ---- Stage 4: blackboard typed set/get mismatch matrix
-  {
-    auto bb = BT::Blackboard::create();
-    switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 3))
-    {
-      case 0:
-        bb->set("k", static_cast<int64_t>(text.size()));
-        break;
-      case 1:
-        bb->set("k", static_cast<double>(text.size()));
-        break;
-      case 2:
-        bb->set("k", text);
-        break;
-      default:
-        bb->set("k", !text.empty());
-        break;
-    }
-    const auto fetch = [&bb](auto type_tag) {
-      using T = decltype(type_tag);
+      BT::Any animal_any;
+      switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 3))
+      {
+        case 0:
+          animal_any = BT::Any(AnimalPtr(std::make_shared<Animal>()));
+          break;
+        case 1:
+          animal_any = BT::Any(CatPtr(std::make_shared<Cat>()));
+          break;
+        case 2:
+          animal_any = BT::Any(DogPtr(std::make_shared<Dog>()));
+          break;
+        default:
+          animal_any = BT::Any(SphynxPtr(std::make_shared<Sphynx>()));
+          break;
+      }
+
+      switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 4))
+      {
+        case 0: {
+          auto res = animal_any.tryCastWithRegistry<AnimalPtr>(registry);
+          (void)res.has_value();
+          break;
+        }
+        case 1: {
+          auto res = animal_any.tryCastWithRegistry<CatPtr>(registry);
+          (void)res.has_value();
+          break;
+        }
+        case 2: {
+          auto res = animal_any.tryCastWithRegistry<DogPtr>(registry);
+          (void)res.has_value();
+          break;
+        }
+        case 3: {
+          auto res = animal_any.tryCastWithRegistry<SphynxPtr>(registry);
+          (void)res.has_value();
+          break;
+        }
+        default: {
+          try
+          {
+            auto p = animal_any.cast<CatPtr>();
+            (void)p;
+          }
+          catch(const std::exception&)
+          {
+            // expected when the stored type is not Cat-compatible
+          }
+          break;
+        }
+      }
+
+      // Blackboard with an attached registry: typed set/get through the
+      // polymorphic path (Issue #943 usage pattern).
+      auto reg2 = std::make_shared<BT::PolymorphicCastRegistry>();
+      reg2->registerCast<Cat, Animal>();
+      reg2->registerCast<Sphynx, Cat>();
+      auto bb_poly = BT::Blackboard::create();
+      bb_poly->setPolymorphicCastRegistry(reg2);
+      bb_poly->set("obj", CatPtr(std::make_shared<Sphynx>()));
       try
       {
-        // typed get: mismatched entry type raises RuntimeError (expected)
-        (void)bb->get<T>("k");
+        auto up = bb_poly->get<AnimalPtr>("obj");
+        (void)up;
       }
       catch(const std::exception&)
       {
-        // expected: type mismatch or missing key
+        // expected when the registry cannot satisfy the cast
       }
-    };
-    switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 4))
-    {
-      case 0:
-        fetch(int64_t{});
-        break;
-      case 1:
-        fetch(double{});
-        break;
-      case 2:
-        fetch(std::string{});
-        break;
-      case 3:
-        fetch(bool{});
-        break;
-      default:
-        fetch(int64_t{});  // on a missing key: RuntimeError path
-        break;
+      try
+      {
+        auto down = bb_poly->get<SphynxPtr>("obj");
+        (void)down;
+      }
+      catch(const std::exception&)
+      {
+        // expected on unsupported downcasts
+      }
     }
-  }
+
+    // ---- Stage 4: blackboard typed set/get mismatch matrix
+    {
+      auto bb = BT::Blackboard::create();
+      switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 3))
+      {
+        case 0:
+          bb->set("k", static_cast<int64_t>(text.size()));
+          break;
+        case 1:
+          bb->set("k", static_cast<double>(text.size()));
+          break;
+        case 2:
+          bb->set("k", text);
+          break;
+        default:
+          bb->set("k", !text.empty());
+          break;
+      }
+      const auto fetch = [&bb](auto type_tag) {
+        using T = decltype(type_tag);
+        try
+        {
+          // typed get: mismatched entry type raises RuntimeError (expected)
+          (void)bb->get<T>("k");
+        }
+        catch(const std::exception&)
+        {
+          // expected: type mismatch or missing key
+        }
+      };
+      switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 4))
+      {
+        case 0:
+          fetch(int64_t{});
+          break;
+        case 1:
+          fetch(double{});
+          break;
+        case 2:
+          fetch(std::string{});
+          break;
+        case 3:
+          fetch(bool{});
+          break;
+        default:
+          fetch(int64_t{});  // on a missing key: RuntimeError path
+          break;
+      }
+    }
   }
   catch(const std::exception&)
   {
@@ -388,4 +377,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
   return 0;
 }
-
