@@ -25,24 +25,23 @@
 // XML attribute escaping/unescaping mismatches, logic divergence between
 // export and re-import (lost or duplicated attributes/ports).
 
-#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/blackboard.h"
+#include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
-
-#include <fuzzer/FuzzedDataProvider.h>
 
 #include <cstdint>
 #include <string>
 #include <unordered_map>
+
+#include <fuzzer/FuzzedDataProvider.h>
 
 namespace
 {
 
 constexpr int kMaxDepth = 3;
 
-const char* kConditionScripts[] = {
-  "var > 0", "var < 5", "flag", "!flag", "str == 'abc'", "var == MODE_A"
-};
+const char* kConditionScripts[] = { "var > 0", "var < 5",      "flag",
+                                    "!flag",   "str == 'abc'", "var == MODE_A" };
 const char* kLiterals[] = { "1", "2", "true", "false", "1.5", "hello", "{var}" };
 const char* kStatuses[] = { "SUCCESS", "FAILURE", "SKIPPED" };
 
@@ -165,22 +164,19 @@ std::string genControl(FuzzedDataProvider& fdp, int depth)
       return "<ReactiveSequence>" + genChildrenBody(fdp, depth, n) +
              "</ReactiveSequence>";
     case 2:
-      return "<AsyncSequence>" + genChildrenBody(fdp, depth, n) +
-             "</AsyncSequence>";
+      return "<AsyncSequence>" + genChildrenBody(fdp, depth, n) + "</AsyncSequence>";
     case 3:
       return "<Fallback>" + genChildrenBody(fdp, depth, n) + "</Fallback>";
     case 4:
       return "<ReactiveFallback>" + genChildrenBody(fdp, depth, n) +
              "</ReactiveFallback>";
     case 5:
-      return "<AsyncFallback>" + genChildrenBody(fdp, depth, n) +
-             "</AsyncFallback>";
-    case 6:
-    {
+      return "<AsyncFallback>" + genChildrenBody(fdp, depth, n) + "</AsyncFallback>";
+    case 6: {
       const size_t children = fdp.ConsumeIntegralInRange<size_t>(1, 3);
       return "<Parallel success_count=\"1\" failure_count=\"" +
-             std::to_string(fdp.ConsumeIntegralInRange<size_t>(1, children)) +
-             "\">" + genChildrenBody(fdp, depth, children) + "</Parallel>";
+             std::to_string(fdp.ConsumeIntegralInRange<size_t>(1, children)) + "\">" +
+             genChildrenBody(fdp, depth, children) + "</Parallel>";
     }
     case 7:
       return "<ParallelAll failure_count=\"1\">" + genChildrenBody(fdp, depth, n) +
@@ -204,19 +200,17 @@ std::string wrapTree(const std::string& tree_id, const std::string& body)
 
 // A model section describing two custom nodes: exercises the
 // <TreeNodesModel> reading path when embedded in a full document.
-const char* kModelSection =
-    "<TreeNodesModel>"
-    "<Action ID=\"CustomAct\" description=\"fuzz action\">"
-    "<input_port name=\"p\" type=\"int\" default=\"3\"/>"
-    "<output_port name=\"q\" type=\"string\"/>"
-    "</Action>"
-    "<Condition ID=\"CustomCond\" description=\"fuzz condition\">"
-    "<input_port name=\"c\" type=\"bool\"/>"
-    "</Condition>"
-    "</TreeNodesModel>";
+const char* kModelSection = "<TreeNodesModel>"
+                            "<Action ID=\"CustomAct\" description=\"fuzz action\">"
+                            "<input_port name=\"p\" type=\"int\" default=\"3\"/>"
+                            "<output_port name=\"q\" type=\"string\"/>"
+                            "</Action>"
+                            "<Condition ID=\"CustomCond\" description=\"fuzz condition\">"
+                            "<input_port name=\"c\" type=\"bool\"/>"
+                            "</Condition>"
+                            "</TreeNodesModel>";
 
 }  // namespace
-
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
@@ -233,8 +227,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
   {
     switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 3))
     {
-      case 0:
-      {
+      case 0: {
         // raw fuzz bytes into the parser: error and recovery paths
         const std::string raw = fdp.ConsumeRandomLengthString(size);
         const std::unordered_map<std::string, BT::NodeType> no_nodes;
@@ -242,12 +235,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         factory.registerBehaviorTreeFromText(raw);
         return 0;
       }
-      case 1:
-      {
+      case 1: {
         // single valid tree: export -> re-import -> export
-        const std::string xml =
-            "<root BTCPP_format=\"4\">" + wrapTree("MainTree", genNode(fdp, 0)) +
-            "</root>";
+        const std::string xml = "<root BTCPP_format=\"4\">" +
+                                wrapTree("MainTree", genNode(fdp, 0)) + "</root>";
         factory.registerBehaviorTreeFromText(xml);
         auto blackboard = BT::Blackboard::create();
         auto tree = factory.createTree("MainTree", blackboard);
@@ -262,14 +253,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         (void)BT::WriteTreeToXML(tree2, add_metadata, add_builtin_models);
         break;
       }
-      case 2:
-      {
+      case 2: {
         // two trees with a SubTree reference, then the model + XSD writers
         const std::string xml =
             "<root BTCPP_format=\"4\">" +
-            wrapTree("MainTree",
-                     "<Sequence><SubTree ID=\"Aux\"/>" + genNode(fdp, 0) +
-                         "</Sequence>") +
+            wrapTree("MainTree", "<Sequence><SubTree ID=\"Aux\"/>" + genNode(fdp, 0) +
+                                     "</Sequence>") +
             wrapTree("Aux", genLeaf(fdp)) + "</root>";
         factory.registerBehaviorTreeFromText(xml);
         auto blackboard = BT::Blackboard::create();
@@ -282,12 +271,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         (void)BT::writeTreeXSD(factory);
         break;
       }
-      default:
-      {
+      default: {
         // document that also embeds a <TreeNodesModel> section
         const std::string xml = "<root BTCPP_format=\"4\">" +
-                                wrapTree("MainTree", genNode(fdp, 0)) +
-                                kModelSection + "</root>";
+                                wrapTree("MainTree", genNode(fdp, 0)) + kModelSection +
+                                "</root>";
         factory.registerBehaviorTreeFromText(xml);
         auto blackboard = BT::Blackboard::create();
         auto tree = factory.createTree("MainTree", blackboard);
@@ -306,4 +294,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
   return 0;
 }
-
