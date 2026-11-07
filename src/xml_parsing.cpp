@@ -1364,12 +1364,18 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
 {
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node, XMLElement* parent_elem) {
-    XMLElement* elem = nullptr;
+    XMLElement* elem = doc.NewElement(node.registrationName().c_str());
 
     if(const auto* subtree = dynamic_cast<const SubTreeNode*>(&node))
     {
-      elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("ID", subtree->subtreeID().c_str());
+      // Without [name], the parser uses the ID as instance name and generates a
+      // unique path. Write [name] only when it differs from the ID: writing it
+      // always would make SubTrees with the same ID collide when reloaded.
+      if(node.name() != subtree->subtreeID())
+      {
+        elem->SetAttribute("name", node.name().c_str());
+      }
       if(add_metadata)
       {
         elem->SetAttribute("_fullpath", subtree->config().path.c_str());
@@ -1377,7 +1383,6 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
     }
     else
     {
-      elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("name", node.name().c_str());
     }
 
