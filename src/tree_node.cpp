@@ -158,7 +158,17 @@ NodeStatus TreeNode::executeTick()
 
 void TreeNode::haltNode()
 {
-  halt();
+  try
+  {
+    halt();
+  }
+  catch(...)
+  {
+    // Don't leave the node RUNNING, or the next reset would halt it again
+    // (and throw again, possibly from a destructor).
+    resetStatus();
+    throw;
+  }
 
   const auto& parse_executor = _p->post_parsed[size_t(PostCond::ON_HALTED)];
   if(parse_executor)
