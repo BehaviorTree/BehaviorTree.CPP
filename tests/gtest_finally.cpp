@@ -1,6 +1,9 @@
 #include "behaviortree_cpp/bt_factory.h"
 
+#include <algorithm>
+#include <atomic>
 #include <chrono>
+#include <future>
 #include <stdexcept>
 #include <thread>
 
@@ -726,4 +729,62 @@ TEST_F(FinallyTest, TickedAgainAfterFinishing_SkippedMainDoesNotRunCleanup)
   tree.rootBlackboard()->set("skip", true);
   EXPECT_EQ(node->executeTick(), NodeStatus::SKIPPED);
   EXPECT_EQ(cleanup_count, 1);
+}
+
+TEST_F(FinallyTest, HaltWhileMainThrewAndCleanupRunning_ExceptionIsReported)
+{
+  auto tree = factory.createTreeFromText(R"(
+    <root BTCPP_format="4"><BehaviorTree>
+      <Finally><Throw/><AsyncCleanup/></Finally>
+    </BehaviorTree></root>)");
+
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  testing::internal::CaptureStderr();
+  EXPECT_NO_THROW(tree.haltTree());
+  const std::string err = testing::internal::GetCapturedStderr();
+  EXPECT_NE(err.find("dropping main's exception"), std::string::npos) << err;
+  EXPECT_NE(err.find("boom"), std::string::npos) << err;
+  EXPECT_EQ(cleanup_ticks, 2);
+}
+
+TEST_F(FinallyTest, ConcurrentHaltDuringHaltLoop_DoesNotTickCleanupConcurrently)
+{
+  std::atomic<int> in_tick{ 0 };
+  std::atomic<int> max_in_tick{ 0 };
+  std::atomic<int> ticks{ 0 };
+  std::promise<void> entered;
+  std::promise<void> release;
+  auto release_future = release.get_future();
+  // RUNNING twice, then SUCCESS. The second tick, which runs inside the halt loop, blocks
+  // until released, so the concurrent halt below provably overlaps the loop.
+  factory.registerSimpleCondition("BlockingCleanup", [&](BT::TreeNode&) {
+    const int now = ++in_tick;
+    max_in_tick = std::max(max_in_tick.load(), now);
+    const int tick = ++ticks;
+    if(tick == 2)
+    {
+      entered.set_value();
+      release_future.wait();
+    }
+    --in_tick;
+    return tick < 3 ? NodeStatus::RUNNING : NodeStatus::SUCCESS;
+  });
+  auto tree = factory.createTreeFromText(R"(
+    <root BTCPP_format="4"><BehaviorTree>
+      <Finally halt_timeout_msec="5000"><AlwaysRunning/><BlockingCleanup/></Finally>
+    </BehaviorTree></root>)");
+
+  // The tick thread ticks and then halts, so its halt() runs the loop.
+  std::thread tick_thread([&tree] {
+    EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    tree.haltTree();
+  });
+  entered.get_future().wait();
+  tree.haltTree();
+  release.set_value();
+  tick_thread.join();
+
+  EXPECT_EQ(max_in_tick, 1);
+  EXPECT_EQ(ticks, 3);
+  EXPECT_EQ(tree.rootNode()->status(), NodeStatus::IDLE);
 }

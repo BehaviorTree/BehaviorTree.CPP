@@ -1,5 +1,6 @@
 #include "behaviortree_cpp/controls/finally_node.h"
 
+#include <atomic>
 #include <chrono>
 #include <exception>
 #include <iostream>
@@ -36,6 +37,25 @@ private:
   bool previous_;
 };
 
+// Clears the flag on every exit from halt().
+class ClearOnExit
+{
+public:
+  explicit ClearOnExit(std::atomic<bool>* flag) : flag_(flag)
+  {}
+  ~ClearOnExit()
+  {
+    flag_->store(false);
+  }
+  ClearOnExit(const ClearOnExit&) = delete;
+  ClearOnExit& operator=(const ClearOnExit&) = delete;
+  ClearOnExit(ClearOnExit&&) = delete;
+  ClearOnExit& operator=(ClearOnExit&&) = delete;
+
+private:
+  std::atomic<bool>* flag_;
+};
+
 void printException(std::string_view node_name, const char* context,
                     const std::exception_ptr& exception) noexcept
 {
@@ -61,12 +81,26 @@ FinallyNode::FinallyNode(const std::string& name, const NodeConfig& config)
   setRegistrationID("Finally");
 }
 
-void FinallyNode::halt()
+void FinallyNode::halt() noexcept
 {
-  // halt() also runs from ~Tree(), where a propagating exception terminates, so nothing here throws.
-  const bool foreign =
-      tls_in_foreign_halt || std::this_thread::get_id() != tick_thread_.load();
+  // A halt() that arrives while another one runs, e.g. Tree::haltTree() from a service thread
+  // while the tick thread is in the halt_timeout_msec loop, returns at once without touching
+  // children or state, so cleanup is never ticked concurrently. The first halt() still halts
+  // both children and resets this node when it is done; until then the caller's haltChild()
+  // already shows this node IDLE. Waiting for the first halt() instead would block a timer or
+  // service thread for up to halt_timeout_msec, and deadlock on a re-entrant halt().
+  bool expected = false;
+  if(!halting_.compare_exchange_strong(expected, true))
   {
+    return;
+  }
+  const ClearOnExit clear_halting(&halting_);
+
+  // halt() also runs from ~Tree(), where a propagating exception terminates, so nothing here throws.
+  try
+  {
+    const bool foreign =
+        tls_in_foreign_halt || std::this_thread::get_id() != tick_thread_.load();
     const ForeignHaltScope scope(foreign);
     if(status() == NodeStatus::RUNNING && children_nodes_.size() == 2)
     {
@@ -81,12 +115,30 @@ void FinallyNode::halt()
       haltChildNoThrow(i);
     }
   }
+  catch(...)
+  {
+    printException(name(), "halt() threw", std::current_exception());
+  }
+  if(main_exception_)
+  {
+    printException(name(),
+                   "halted while cleanup ran after main threw, dropping main's exception",
+                   main_exception_);
+  }
   tick_thread_.store(std::thread::id{});
   in_cleanup_ = false;
   main_started_ = false;
   main_status_ = NodeStatus::IDLE;
   main_exception_ = nullptr;
-  resetStatus();
+  try
+  {
+    // Notifies status observers, such as loggers, which may throw.
+    resetStatus();
+  }
+  catch(...)
+  {
+    printException(name(), "resetStatus() threw during halt", std::current_exception());
+  }
 }
 
 void FinallyNode::finishCleanupDuringHalt(bool foreign_thread)
