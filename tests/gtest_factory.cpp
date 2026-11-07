@@ -505,6 +505,49 @@ TEST(BehaviorTreeFactory, WrittenXMLHasLibraryVersion)
   EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
 }
 
+class ActionWithManyPorts : public SyncActionNode
+{
+public:
+  ActionWithManyPorts(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  BT::NodeStatus tick() override
+  {
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { OutputPort<int>("out_b"),       InputPort<int>("in_c"),
+             BidirectionalPort<int>("io_a"), InputPort<int>("in_a"),
+             OutputPort<int>("out_a"),       InputPort<int>("in_b") };
+  }
+};
+
+// Issue #851: PortsList is an unordered_map, so the model must sort the ports
+// itself, otherwise Groot2 shows them in a different order on every build.
+TEST(BehaviorTreeFactory, ModelPortsAreSorted)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithManyPorts>("ActionWithManyPorts");
+
+  const auto xml = writeTreeNodesModelXML(factory, false);
+  const std::vector<std::string> expected_order = {
+    R"(<input_port name="in_a")",   R"(<input_port name="in_b")",
+    R"(<input_port name="in_c")",   R"(<output_port name="out_a")",
+    R"(<output_port name="out_b")", R"(<inout_port name="io_a")"
+  };
+  size_t prev_pos = 0;
+  for(const auto& port : expected_order)
+  {
+    const auto pos = xml.find(port);
+    ASSERT_NE(pos, std::string::npos) << port;
+    EXPECT_GT(pos, prev_pos) << port;
+    prev_pos = pos;
+  }
+}
+
 TEST(BehaviorTreeFactory, ReturnByValue)
 {
   // Issue #937: BehaviorTreeFactory cannot be returned by value from
