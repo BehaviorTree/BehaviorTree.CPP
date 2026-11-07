@@ -691,6 +691,37 @@ TEST(SubTree, SubtreeModelDefaultWithAutoremapParentWins)
   EXPECT_FALSE(root_bb->getEntry("other"));
 }
 
+// Deliberate creation-time rule (#1271): the model default is applied only if no
+// entry named "in_value" exists in the parent blackboard chain when the tree is
+// CREATED. A key written later (here by a Script) does not win; to make the parent
+// value win, set the key in the blackboard before createTree (see test above).
+TEST(SubTree, SubtreeModelDefaultWithAutoremapCreationTimeRule)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Script code="in_value:=7" />
+      <SubTree ID="MySub" _autoremap="true" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <ScriptCondition code="in_value==42" />
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
 class PrintToConsole : public BT::SyncActionNode
 {
 public:
