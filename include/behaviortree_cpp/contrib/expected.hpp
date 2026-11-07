@@ -1606,12 +1606,12 @@ public:
 
     explicit bad_expected_access( error_type error )
     : m_error( error )
-    , m_what( make_what( m_error, std::is_convertible< error_type const &, std::string >() ) )
     {}
 
+    // BT.CPP patch (#1263): report the error message when the error is a string.
     virtual char const * what() const noexcept override
     {
-        return ( m_what && !m_what->empty() ) ? m_what->c_str() : "bad_expected_access";
+        return what_of( m_error );
     }
 
     nsel_constexpr14 error_type & error() &
@@ -1639,20 +1639,18 @@ public:
 #endif
 
 private:
-    using what_ptr = std::shared_ptr< const std::string >;
-
-    static what_ptr make_what( error_type const & error, std::true_type )
+    static char const * what_of( std::string const & error ) noexcept
     {
-        return std::make_shared< const std::string >( error );
+        return error.empty() ? "bad_expected_access" : error.c_str();
     }
 
-    static what_ptr make_what( error_type const &, std::false_type )
+    template< typename T >
+    static char const * what_of( T const & ) noexcept
     {
-        return what_ptr();
+        return "bad_expected_access";
     }
 
     error_type m_error;
-    what_ptr m_what;
 };
 
 #endif // nsel_CONFIG_NO_EXCEPTIONS
