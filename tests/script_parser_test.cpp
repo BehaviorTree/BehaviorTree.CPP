@@ -135,12 +135,59 @@ TEST(ParserTest, DeeplyNestedScriptIsRejected)
   // The depth cap must not reject ordinary scripts: a long flat expression is
   // parsed iteratively (shallow recursion) and light nesting is well within it.
   std::string wide = "1";
-  for(int i = 0; i < 1000; ++i)
+  for(int i = 0; i < 200; ++i)
   {
     wide += "+1";
   }
   EXPECT_TRUE(BT::ValidateScript(wide));
   EXPECT_TRUE(BT::ValidateScript("((((1))))"));
+}
+
+TEST(ParserTest, LongFlatScriptIsRejected)
+{
+  // A flat chain like "1+1+1+..." is parsed without recursion, but it builds a
+  // left-deep AST that is evaluated (and destroyed) recursively, one stack frame
+  // per operator. 100k terms used to overflow the stack (SIGSEGV) when executed.
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+
+  std::string flat = "x := 1";
+  for(int i = 0; i < 100000; ++i)
+  {
+    flat += "+1";
+  }
+  EXPECT_FALSE(BT::ValidateScript(flat));
+  EXPECT_FALSE(BT::ParseScriptAndExecute(env, flat).has_value());
+
+  // Nested chains add up as well: 100 levels of 20 operators each.
+  std::string nested_chain = "1";
+  for(int i = 0; i < 100; ++i)
+  {
+    nested_chain = "(" + nested_chain;
+    for(int j = 0; j < 20; ++j)
+    {
+      nested_chain += "+1";
+    }
+    nested_chain += ")";
+  }
+  EXPECT_FALSE(BT::ValidateScript(nested_chain));
+
+  // The limit is the same as the nesting depth (256): 300 terms are rejected.
+  std::string over = "1";
+  for(int i = 0; i < 300; ++i)
+  {
+    over += "+1";
+  }
+  EXPECT_FALSE(BT::ValidateScript(over));
+
+  // Ordinary long expressions are still accepted and evaluated.
+  std::string wide = "1";
+  for(int i = 0; i < 200; ++i)
+  {
+    wide += "+1";
+  }
+  auto result = BT::ParseScriptAndExecute(env, wide);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(result->cast<int>(), 201);
 }
 
 TEST(ParserTest, Equations)
