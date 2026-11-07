@@ -719,9 +719,9 @@ $(document).ready(function(){initNavTree('dd/dcd/operators_8hpp_source.html','..
 <div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>        <span class="comment">// special case: string to other type.</span></div>
 <div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>        <span class="comment">// Check if we can use the StringConverter</span></div>
 <div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>        <span class="keyword">auto</span> <span class="keyword">const</span> str = value.cast&lt;std::string&gt;();</div>
-<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>        <span class="keyword">const</span> <span class="keyword">auto</span>* entry_info = env.vars-&gt;entryInfo(key);</div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span> </div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>        <span class="keywordflow">if</span>(<span class="keyword">auto</span> converter = entry_info-&gt;converter())</div>
+<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>        <span class="comment">// Use the entry locked above. Looking the key up again could return</span></div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>        <span class="comment">// nullptr, or a different entry, if it was unset in the meantime.</span></div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>        <span class="keywordflow">if</span>(<span class="keyword">auto</span> converter = entry-&gt;info.converter())</div>
 <div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>        {</div>
 <div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>          *dst_ptr = converter(str);</div>
 <div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>        }</div>
