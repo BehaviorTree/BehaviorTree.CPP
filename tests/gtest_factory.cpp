@@ -481,6 +481,73 @@ TEST(BehaviorTreeFactory, ManifestMethod)
   EXPECT_NE(xml.find(expectedXML), std::string::npos);
 }
 
+TEST(BehaviorTreeFactory, WrittenXMLHasLibraryVersion)
+{
+  // "4.11.2" -> "4.11"
+  const std::string version = LibraryVersionString();
+  const std::string major_minor = version.substr(0, version.rfind('.'));
+  const std::string expected = "BTCPP_version=\"" + major_minor + "\"";
+
+  BehaviorTreeFactory factory;
+  EXPECT_NE(writeTreeNodesModelXML(factory).find(expected), std::string::npos);
+
+  auto tree = factory.createTreeFromText(R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <AlwaysSuccess/>
+      </BehaviorTree>
+    </root>)");
+  const auto xml = WriteTreeToXML(tree, false, false);
+  EXPECT_NE(xml.find(expected), std::string::npos);
+
+  // the attribute is ignored by the parser
+  auto reloaded = factory.createTreeFromText(xml);
+  EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
+class ActionWithManyPorts : public SyncActionNode
+{
+public:
+  ActionWithManyPorts(const std::string& name, const NodeConfig& config)
+    : SyncActionNode(name, config)
+  {}
+
+  BT::NodeStatus tick() override
+  {
+    return NodeStatus::SUCCESS;
+  }
+
+  static PortsList providedPorts()
+  {
+    return { OutputPort<int>("out_b"),       InputPort<int>("in_c"),
+             BidirectionalPort<int>("io_a"), InputPort<int>("in_a"),
+             OutputPort<int>("out_a"),       InputPort<int>("in_b") };
+  }
+};
+
+// Issue #851: PortsList is an unordered_map, so the model must sort the ports
+// itself, otherwise Groot2 shows them in a different order on every build.
+TEST(BehaviorTreeFactory, ModelPortsAreSorted)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<ActionWithManyPorts>("ActionWithManyPorts");
+
+  const auto xml = writeTreeNodesModelXML(factory, false);
+  const std::vector<std::string> expected_order = {
+    R"(<input_port name="in_a")",   R"(<input_port name="in_b")",
+    R"(<input_port name="in_c")",   R"(<output_port name="out_a")",
+    R"(<output_port name="out_b")", R"(<inout_port name="io_a")"
+  };
+  size_t prev_pos = 0;
+  for(const auto& port : expected_order)
+  {
+    const auto pos = xml.find(port);
+    ASSERT_NE(pos, std::string::npos) << port;
+    EXPECT_GT(pos, prev_pos) << port;
+    prev_pos = pos;
+  }
+}
+
 TEST(BehaviorTreeFactory, ReturnByValue)
 {
   // Issue #937: BehaviorTreeFactory cannot be returned by value from
@@ -795,6 +862,60 @@ TEST(BehaviorTreeFactory, MalformedXML_UnknownNodeType)
 
   BehaviorTreeFactory factory;
   EXPECT_THROW((void)factory.createTreeFromText(xml), RuntimeError);
+}
+
+TEST(BehaviorTreeFactory, RejectedDocumentIsForgotten)
+{
+  // A document that failed to load used to stay in the parser as the "first
+  // opened document", whose root element instantiateTree() reads
+  // main_tree_to_execute from. For a document that did not even parse, that
+  // root element is null.
+  const char* valid_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <AlwaysSuccess/>
+    </BehaviorTree>
+  </root>)";
+
+  BehaviorTreeFactory factory;
+  {
+    XMLParser parser(factory);
+    EXPECT_THROW(parser.loadFromText("this is not XML"), RuntimeError);
+    parser.loadFromText(valid_xml);
+    Tree tree = parser.instantiateTree(Blackboard::create());
+    EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
+  }
+  {
+    // the main_tree_to_execute of a rejected document must not be used either
+    const char* rejected_xml = R"(
+    <root BTCPP_format="4" main_tree_to_execute="Rejected">
+      <BehaviorTree ID="Rejected">
+        <NonExistentNodeType/>
+      </BehaviorTree>
+    </root>)";
+    XMLParser parser(factory);
+    EXPECT_THROW(parser.loadFromText(rejected_xml), RuntimeError);
+    parser.loadFromText(valid_xml);
+    Tree tree = parser.instantiateTree(Blackboard::create());
+    EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
+  }
+  {
+    // nothing loaded: an error, not an access to the front of an empty list
+    XMLParser parser(factory);
+    EXPECT_THROW((void)parser.instantiateTree(Blackboard::create()), RuntimeError);
+  }
+
+  // The factory keeps a single parser: a file rejected once poisoned every
+  // later creation that has to fall back to the first document. Here two
+  // trees and no main_tree_to_execute must be reported as such.
+  EXPECT_THROW(factory.registerBehaviorTreeFromText("<root><BehaviorTree>"),
+               RuntimeError);
+  const char* two_trees_xml = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="A"><AlwaysSuccess/></BehaviorTree>
+    <BehaviorTree ID="B"><AlwaysSuccess/></BehaviorTree>
+  </root>)";
+  EXPECT_THROW((void)factory.createTreeFromText(two_trees_xml), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, TooManyNodesForUID)

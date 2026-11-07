@@ -76,6 +76,40 @@ void incompleteHookScenario()
   std::exit(EXIT_SUCCESS);
 }
 
+void deeplyNestedHookScenario()
+{
+  BT::BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(R"(
+<root BTCPP_format="4">
+  <BehaviorTree ID="MainTree">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>
+)");
+  auto [publisher, port] = Groot2Test::makePublisher(tree);
+  // Under the sanitizers, parsing the request below takes a few seconds.
+  Groot2Test::Client client(port, 30000);
+
+  // The error for a "uid" that isn't an integer used to dump() the value, which
+  // recurses once per nesting level and overflowed the stack of the server thread.
+  constexpr size_t depth = 100000;
+  const std::string nested = std::string(depth, '[') + std::string(depth, ']');
+  auto error_reply = client.rawRequest(BT::Monitor::RequestType::HOOK_INSERT,
+                                       R"({"uid":)" + nested + R"(,"position":0})");
+  if(error_reply.size() != 2 || error_reply[0].to_string() != "error")
+  {
+    std::exit(EXIT_FAILURE);
+  }
+
+  // The server thread must remain usable after rejecting the nested request.
+  auto valid_reply = client.request(BT::Monitor::RequestType::FULLTREE);
+  if(valid_reply.size() != 2)
+  {
+    std::exit(EXIT_FAILURE);
+  }
+  std::exit(EXIT_SUCCESS);
+}
+
 BT::Tree createTreeWithNamedSubtrees(BT::BehaviorTreeFactory& factory,
                                      const BT::Blackboard::Ptr& main_blackboard)
 {
@@ -205,6 +239,12 @@ TEST(Groot2PublisherIntegration, IncompleteHookRequestDoesNotTerminateServer)
 {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_EXIT(incompleteHookScenario(), ::testing::ExitedWithCode(EXIT_SUCCESS), ".*");
+}
+
+TEST(Groot2PublisherIntegration, DeeplyNestedHookRequestDoesNotTerminateServer)
+{
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_EXIT(deeplyNestedHookScenario(), ::testing::ExitedWithCode(EXIT_SUCCESS), ".*");
 }
 
 TEST(Groot2PublisherIntegration, BindToLoopbackAddress)
