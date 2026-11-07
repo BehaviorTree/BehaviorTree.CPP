@@ -535,6 +535,10 @@ void ImportBlackboardFromJSON(const nlohmann::json& json, Blackboard& blackboard
       {
         blackboard.createEntry(it.key(), res->second);
         entry = blackboard.getEntry(it.key());
+        if(!entry)
+        {
+          continue;  // a concurrent unset() removed it right after createEntry()
+        }
       }
       // Lock entry_mutex before writing to prevent data races (BUG-4 fix).
       std::shared_ptr<Blackboard::EntryUpdatedSignal> update_signal;
