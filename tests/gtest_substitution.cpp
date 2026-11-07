@@ -610,6 +610,22 @@ TEST(Substitution, IncompatibleTypeSubstitutionThrows)
   }
 }
 
+// loadSubstitutionRuleFromJSON() used to copy these two sections of the JSON, and
+// copying a json recurses once per nesting level.
+TEST(Substitution, DeeplyNestedJsonDoesNotExhaustStack)
+{
+  constexpr size_t depth = 100000;
+  const std::string nested = std::string(depth, '[') + std::string(depth, ']');
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.loadSubstitutionRuleFromJSON(R"({"TestNodeConfigs":)" + nested +
+                                                    R"(,"SubstitutionRules":{}})"),
+               RuntimeError);
+  EXPECT_THROW(
+      factory.loadSubstitutionRuleFromJSON(R"({"SubstitutionRules":)" + nested + "}"),
+      std::exception);
+}
+
 // Destroying a TestNode while its async_delay timer is pending makes
 // ~TimerQueue() run the handler (aborted) during the PImpl deletion. The
 // handler used to reach the PImpl through _p, which std::unique_ptr may have

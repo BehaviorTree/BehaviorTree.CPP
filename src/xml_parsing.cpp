@@ -46,6 +46,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <filesystem>
+#include <iterator>
 #include <map>
 #include <unordered_map>
 
@@ -245,6 +246,25 @@ struct XMLParser::PImpl
 
   void loadDocImpl(XMLDocument* doc, bool add_includes);
 
+  // Load the document just appended to opened_documents. A document that is
+  // rejected (XML error, invalid tree) registers no tree, so forget it again:
+  // it would otherwise remain the "first opened document" that
+  // instantiateTree() reads main_tree_to_execute from, and a document that
+  // did not parse has no root element at all.
+  void loadLastDocImpl(bool add_includes)
+  {
+    const auto doc_it = std::prev(opened_documents.end());
+    try
+    {
+      loadDocImpl(doc_it->get(), add_includes);
+    }
+    catch(...)
+    {
+      opened_documents.erase(doc_it);
+      throw;
+    }
+  }
+
   std::list<std::unique_ptr<XMLDocument> > opened_documents;
   std::map<std::string, const XMLElement*> tree_roots;
   std::unordered_map<std::string, std::string> tree_sources;
@@ -304,7 +324,7 @@ void XMLParser::loadFromFile(const std::filesystem::path& filepath, bool add_inc
   _p->current_path = std::filesystem::absolute(filepath.parent_path());
   _p->include_stack = { IncludeKey(std::filesystem::absolute(filepath)) };
 
-  _p->loadDocImpl(doc, add_includes);
+  _p->loadLastDocImpl(add_includes);
 }
 
 void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
@@ -315,7 +335,7 @@ void XMLParser::loadFromText(const std::string& xml_text, bool add_includes)
   doc->Parse(xml_text.c_str(), xml_text.size());
 
   _p->include_stack.clear();
-  _p->loadDocImpl(doc, add_includes);
+  _p->loadLastDocImpl(add_includes);
 }
 
 std::vector<std::string> XMLParser::registeredBehaviorTrees() const
@@ -448,7 +468,7 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 
     include_stack.push_back(std::move(include_key));
     next_doc->LoadFile(file_path.string().c_str());
-    loadDocImpl(next_doc, add_includes);
+    loadLastDocImpl(add_includes);
     include_stack.pop_back();
 
     // reset current path to the previous value
@@ -745,6 +765,10 @@ Tree XMLParser::instantiateTree(const Blackboard::Ptr& root_blackboard,
   // or the one in the FIRST document opened
   if(main_tree_ID.empty())
   {
+    if(_p->opened_documents.empty())
+    {
+      throw RuntimeError("XMLParser::instantiateTree: no XML document was loaded");
+    }
     XMLElement* first_xml_root = _p->opened_documents.front()->RootElement();
 
     if(auto main_tree_attribute = first_xml_root->Attribute("main_tree_to_execute"))
@@ -1309,8 +1333,24 @@ void addNodeModelToXML(const TreeNodeManifest& model, XMLDocument& doc,
   XMLElement* element = doc.NewElement(toStr(model.type).c_str());
   element->SetAttribute("ID", model.registration_ID.c_str());
 
-  for(const auto& [port_name, port_info] : model.ports)
+  // PortsList is unordered: sort by direction, then by name, so that the
+  // output (and the order shown in Groot2) is deterministic.
+  std::vector<const PortsList::value_type*> sorted_ports;
+  sorted_ports.reserve(model.ports.size());
+  for(const auto& port : model.ports)
   {
+    sorted_ports.push_back(&port);
+  }
+  std::sort(sorted_ports.begin(), sorted_ports.end(),
+            [](const auto* lhs, const auto* rhs) {
+              const auto lhs_dir = lhs->second.direction();
+              const auto rhs_dir = rhs->second.direction();
+              return lhs_dir != rhs_dir ? lhs_dir < rhs_dir : lhs->first < rhs->first;
+            });
+
+  for(const auto* port : sorted_ports)
+  {
+    const auto& [port_name, port_info] = *port;
     XMLElement* port_element = nullptr;
     switch(port_info.direction())
     {
@@ -1364,12 +1404,18 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
 {
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node, XMLElement* parent_elem) {
-    XMLElement* elem = nullptr;
+    XMLElement* elem = doc.NewElement(node.registrationName().c_str());
 
     if(const auto* subtree = dynamic_cast<const SubTreeNode*>(&node))
     {
-      elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("ID", subtree->subtreeID().c_str());
+      // Without [name], the parser uses the ID as instance name and generates a
+      // unique path. Write [name] only when it differs from the ID: writing it
+      // always would make SubTrees with the same ID collide when reloaded.
+      if(node.name() != subtree->subtreeID())
+      {
+        elem->SetAttribute("name", node.name().c_str());
+      }
       if(add_metadata)
       {
         elem->SetAttribute("_fullpath", subtree->config().path.c_str());
@@ -1377,7 +1423,6 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
     }
     else
     {
-      elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("name", node.name().c_str());
     }
 
