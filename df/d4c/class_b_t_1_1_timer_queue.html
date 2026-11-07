@@ -102,6 +102,8 @@ $(document).ready(function(){initNavTree('df/d4c/class_b_t_1_1_timer_queue.html'
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a3dcb0a60b5152a7b6358464200cbe7ed"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d4c/class_b_t_1_1_timer_queue.html#a3dcb0a60b5152a7b6358464200cbe7ed">stop</a> ()</td></tr>
+<tr class="separator:a3dcb0a60b5152a7b6358464200cbe7ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab95a86842b3bee5395931409cd1abbe"><td class="memItemLeft" align="right" valign="top"><a id="aab95a86842b3bee5395931409cd1abbe" name="aab95a86842b3bee5395931409cd1abbe"></a>
 uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>add</b> (std::chrono::milliseconds milliseconds, std::function&lt; void(bool)&gt; handler)</td></tr>
 <tr class="memdesc:aab95a86842b3bee5395931409cd1abbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a new timer. <br /></td></tr>
@@ -127,6 +129,35 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>cancelAll</b> ()</t
 <a class="el" href="../../df/d4c/class_b_t_1_1_timer_queue.html">TimerQueue</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="../../df/d4c/class_b_t_1_1_timer_queue.html">TimerQueue</a> &amp;&amp;)=delete</td></tr>
 <tr class="separator:ad61f24f5e43729dbeeb674af0e856fd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a3dcb0a60b5152a7b6358464200cbe7ed" name="a3dcb0a60b5152a7b6358464200cbe7ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3dcb0a60b5152a7b6358464200cbe7ed">&#9670;&#160;</a></span>stop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ClockT  = std::chrono::steady_clock, typename DurationT  = std::chrono::steady_clock::duration&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="../../df/d4c/class_b_t_1_1_timer_queue.html">BT::TimerQueue</a>&lt; ClockT, DurationT &gt;::stop </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Cancels all timers, runs their handlers (aborted=true) and joins the worker thread: after it returns no handler is running or will run. Idempotent. Timers added after <a class="el" href="../../df/d4c/class_b_t_1_1_timer_queue.html#a3dcb0a60b5152a7b6358464200cbe7ed">stop()</a> are never executed. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/behaviortree_cpp/utils/<a class="el" href="../../d2/dbf/timer__queue_8h_source.html">timer_queue.h</a></li>
 </ul>

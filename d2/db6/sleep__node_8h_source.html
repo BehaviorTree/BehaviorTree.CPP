@@ -117,36 +117,38 @@ $(document).ready(function(){initNavTree('d2/db6/sleep__node_8h_source.html','..
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>  ~SleepNode() <span class="keyword">override</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>  {</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <a class="code hl_function" href="../../d0/d1f/class_b_t_1_1_stateful_action_node.html#a8206f68b132a2cf682e4189e19e65ba7">halt</a>();</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>  }</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>  SleepNode(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>  SleepNode(<a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp; operator=(<a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> <a class="code hl_function" href="../../d9/d33/class_b_t_1_1_sleep_node.html#abb3c35a140738ca2d43d1f5498972435">onStart</a>() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>  <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> <a class="code hl_function" href="../../d9/d33/class_b_t_1_1_sleep_node.html#afe9eb80f065e48cb68b9c571b090939b">onRunning</a>() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d9/d33/class_b_t_1_1_sleep_node.html#af323f98260e2854ff5beb56963df0652">onHalted</a>() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="keyword">static</span> PortsList providedPorts()</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  {</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordflow">return</span> { InputPort&lt;<span class="keywordtype">unsigned</span>&gt;(<span class="stringliteral">&quot;msec&quot;</span>) };</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  }</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  uint64_t timer_id_ = 0;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="comment">// Join the timer thread first: timer_ is the first member, so it is destroyed</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="comment">// after delay_mutex_ and timer_waiting_, which its handler touches.</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    timer_.stop();</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <a class="code hl_function" href="../../d0/d1f/class_b_t_1_1_stateful_action_node.html#a8206f68b132a2cf682e4189e19e65ba7">halt</a>();</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  }</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  SleepNode(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp; operator=(<span class="keyword">const</span> <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  SleepNode(<a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  <a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp; operator=(<a class="code hl_class" href="../../d9/d33/class_b_t_1_1_sleep_node.html">SleepNode</a>&amp;&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> <a class="code hl_function" href="../../d9/d33/class_b_t_1_1_sleep_node.html#abb3c35a140738ca2d43d1f5498972435">onStart</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  <a class="code hl_enumeration" href="../../d2/d8d/namespace_b_t.html#a1414a8362678cd4081eeb30b72845b4e">NodeStatus</a> <a class="code hl_function" href="../../d9/d33/class_b_t_1_1_sleep_node.html#afe9eb80f065e48cb68b9c571b090939b">onRunning</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d9/d33/class_b_t_1_1_sleep_node.html#af323f98260e2854ff5beb56963df0652">onHalted</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  <span class="keyword">static</span> PortsList providedPorts()</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  {</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keywordflow">return</span> { InputPort&lt;<span class="keywordtype">unsigned</span>&gt;(<span class="stringliteral">&quot;msec&quot;</span>) };</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  }</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  std::atomic_bool timer_waiting_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  std::mutex delay_mutex_;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="comment">// Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed</span></div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="comment">// before delay_mutex_ and timer_waiting_, which the timer handler touches.</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  TimerQueue&lt;&gt; timer_;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>};</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>}  <span class="comment">// namespace BT</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="comment">// Member order is frozen for ABI compatibility: do not reorder.</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  TimerQueue&lt;&gt; timer_;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  uint64_t timer_id_ = 0;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  std::atomic_bool timer_waiting_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  std::mutex delay_mutex_;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>};</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>}  <span class="comment">// namespace BT</span></div>
 <div class="ttc" id="aclass_b_t_1_1_sleep_node_html"><div class="ttname"><a href="../../d9/d33/class_b_t_1_1_sleep_node.html">BT::SleepNode</a></div><div class="ttdoc">Sleep for a certain amount of time. Consider also using the decorator &lt;Delay&gt;</div><div class="ttdef"><b>Definition:</b> sleep_node.h:17</div></div>
 <div class="ttc" id="aclass_b_t_1_1_sleep_node_html_abb3c35a140738ca2d43d1f5498972435"><div class="ttname"><a href="../../d9/d33/class_b_t_1_1_sleep_node.html#abb3c35a140738ca2d43d1f5498972435">BT::SleepNode::onStart</a></div><div class="ttdeci">NodeStatus onStart() override</div></div>
 <div class="ttc" id="aclass_b_t_1_1_sleep_node_html_af323f98260e2854ff5beb56963df0652"><div class="ttname"><a href="../../d9/d33/class_b_t_1_1_sleep_node.html#af323f98260e2854ff5beb56963df0652">BT::SleepNode::onHalted</a></div><div class="ttdeci">void onHalted() override</div></div>
