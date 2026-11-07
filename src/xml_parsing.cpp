@@ -1208,6 +1208,18 @@ void BT::XMLParser::PImpl::recursivelyCreateSubtree(
         for(const auto& [port_name, port_info] : subtree_model_ports)
         {
           auto it = subtree_remapping.find(port_name);
+          const auto& default_value = port_info.defaultValueString();
+          // _autoremap shares the port with the parent key of the same name; if
+          // that key doesn't exist (yet), an input port gets its literal default
+          // (#1271). NOTE: checked at creation time, so a parent key created
+          // later (e.g. by a Script) is shadowed by the default.
+          if(it == subtree_remapping.end() && do_autoremap &&
+             port_info.direction() == PortDirection::INPUT && !default_value.empty() &&
+             !TreeNode::isBlackboardPointer(default_value) &&
+             !new_bb->getEntry(port_name))
+          {
+            subtree_remapping.insert({ port_name, default_value });
+          }
           // don't override existing remapping
           if(it == subtree_remapping.end() && !do_autoremap)
           {

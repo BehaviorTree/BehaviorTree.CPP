@@ -595,6 +595,133 @@ TEST(SubTree, SubtreeModels)
   tree.tickWhileRunning();
 }
 
+TEST(SubTree, SubtreeModelDefault)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute = "MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SubTree ID="MySub" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <Sequence>
+      <ScriptCondition code="in_value==42" />
+    </Sequence>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+}
+
+TEST(SubTree, SubtreeModelDefaultWithAutoremap)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute = "MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SubTree ID="MySub" _autoremap="true" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <Sequence>
+      <ScriptCondition code="in_value==42" />
+    </Sequence>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+}
+
+// With _autoremap, a parent key of the same name wins over the model default
+// (#1271), and the default stays local to the SubTree.
+TEST(SubTree, SubtreeModelDefaultWithAutoremapParentWins)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+      <input_port name="other" default="43"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <SubTree ID="MySub" _autoremap="true" />
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <ScriptCondition code="in_value==7 &amp;&amp; other==43" />
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto root_bb = Blackboard::create();
+  root_bb->set("in_value", 7);
+  auto tree = factory.createTreeFromText(xml_text, root_bb);
+  EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  EXPECT_FALSE(root_bb->getEntry("other"));
+}
+
+// Deliberate creation-time rule (#1271): the model default is applied only if no
+// entry named "in_value" exists in the parent blackboard chain when the tree is
+// CREATED. A key written later (here by a Script) does not win; to make the parent
+// value win, set the key in the blackboard before createTree (see test above).
+TEST(SubTree, SubtreeModelDefaultWithAutoremapCreationTimeRule)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Script code="in_value:=7" />
+      <SubTree ID="MySub" _autoremap="true" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <ScriptCondition code="in_value==42" />
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
 class PrintToConsole : public BT::SyncActionNode
 {
 public:
