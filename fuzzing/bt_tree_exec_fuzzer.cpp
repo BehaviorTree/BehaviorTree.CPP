@@ -1,6 +1,6 @@
 // Fuzz target: bt_tree_exec_fuzzer
 //
-// Threat model (see fuzzing/README.md and the coverage-pipeline report):
+// Threat model:
 // Behavior trees are frequently loaded from untrusted sources (files, network
 // APIs, editor payloads). The existing bt_fuzzer covers XML *parsing* only:
 // it never ticks a tree, so the whole execution engine (control nodes,
@@ -235,12 +235,9 @@ std::string genControl(FuzzedDataProvider& fdp, int depth)
       return "<Switch2 variable=\"{var}\" case_1=\"1\" case_2=\"2\">" +
              genChildrenBody(fdp, depth, 3) + "</Switch2>";
     default:
-      // btcpp-1 (findings/bt_tree_exec_fuzzer): TryCatchNode::halt() executes
-      // its catch child when catch_on_halt is true; a throwing catch child
-      // (e.g. a SetBlackboard type conflict on hostile input) then escapes
-      // haltTree() and aborts the process via the noexcept Tree destructor.
-      // Until upstream fixes that, only catch_on_halt="false" is generated;
-      // the attribute is still present for parser coverage.
+      // catch_on_halt="true" is not generated yet: TryCatchNode::halt() ticks
+      // the catch child, and if that throws, Tree::~Tree() calls
+      // std::terminate. Enable it once that upstream bug is fixed.
       return "<TryCatch catch_on_halt=\"false\">" +
              genChildrenBody(fdp, depth, fdp.ConsumeIntegralInRange<size_t>(2, 3)) +
              "</TryCatch>";
@@ -259,16 +256,8 @@ std::string wrapTree(const std::string& tree_id, const std::string& body)
 // trees like KeepRunningUntilFailure[AlwaysSuccess], which the grammar is
 // allowed to generate.
 //
-// btcpp-1 routing (see findings/bt_tree_exec_fuzzer/README.md): every tick and
-// halt is wrapped, so a BT exception raised by a hostile tree is contained here
-// and is NEVER in flight while the Tree object is destructed. Tree::~Tree()
-// calls haltTree() in an implicitly-noexcept context; an exception escaping it
-// (observed: NodeExecutionError from a SetBlackboard type conflict re-thrown
-// during unwinding) aborts the process via std::terminate. That abort is a
-// real upstream defect, not a harness artifact; containing the exception here
-// constructs valid API usage while continuing to fuzz the same surface.
-namespace
-{
+// Every tick and halt is wrapped, so that no exception escapes from the Tree
+// destructor, which calls haltTree() and would std::terminate (upstream bug).
 void safeHaltTree(BT::Tree& tree)
 {
   try
@@ -277,19 +266,16 @@ void safeHaltTree(BT::Tree& tree)
   }
   catch(const std::exception&)
   {
-    // btcpp-1 routing: never let a BT exception escape this scope.
+    // a node threw while halting: see the comment above
   }
 }
-}  // namespace
 
 void driveTree(BT::Tree& tree, FuzzedDataProvider& fdp)
 {
   const unsigned ticks = fdp.ConsumeIntegralInRange<unsigned>(1, kMaxTicks);
   const unsigned halt_at = fdp.ConsumeIntegralInRange<unsigned>(0, ticks);
-  // The bool is still consumed (corpus inputs stay byte-stable) but the
-  // wakeup-aware tick is deliberately not used, see the comment below.
-  const bool wakeup_aware = fdp.ConsumeBool();
-  (void)wakeup_aware;
+  // unused, but consumed so that the seed corpus keeps its meaning
+  (void)fdp.ConsumeBool();
   for(unsigned i = 1; i <= ticks; i++)
   {
     BT::NodeStatus status;
@@ -307,8 +293,7 @@ void driveTree(BT::Tree& tree, FuzzedDataProvider& fdp)
     }
     catch(const std::exception&)
     {
-      // btcpp-1 routing: contain node errors on hostile input so that no
-      // exception is ever in flight while the Tree is destructed.
+      // node errors on hostile input are expected
       safeHaltTree(tree);
       return;
     }
@@ -330,7 +315,7 @@ void driveTree(BT::Tree& tree, FuzzedDataProvider& fdp)
     }
     catch(const std::exception&)
     {
-      // btcpp-1 routing: contain node errors on hostile input.
+      // node errors on hostile input are expected
     }
     safeHaltTree(tree);
   }
