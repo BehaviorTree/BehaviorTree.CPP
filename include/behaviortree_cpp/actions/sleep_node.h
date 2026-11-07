@@ -20,6 +20,9 @@ public:
 
   ~SleepNode() override
   {
+    // Join the timer thread first: timer_ is the first member, so it is destroyed
+    // after delay_mutex_ and timer_waiting_, which its handler touches.
+    timer_.stop();
     halt();
   }
 
@@ -40,13 +43,12 @@ public:
   }
 
 private:
+  // Member order is frozen for ABI compatibility: do not reorder.
+  TimerQueue<> timer_;
   uint64_t timer_id_ = 0;
 
   std::atomic_bool timer_waiting_ = false;
   std::mutex delay_mutex_;
-  // Keep last: ~TimerQueue() joins the worker thread, so this must be destroyed
-  // before delay_mutex_ and timer_waiting_, which the timer handler touches.
-  TimerQueue<> timer_;
 };
 
 }  // namespace BT

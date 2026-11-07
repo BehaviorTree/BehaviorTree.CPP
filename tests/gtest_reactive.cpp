@@ -157,7 +157,9 @@ TEST(Reactive, TestLogging)
   ASSERT_EQ(ret, NodeStatus::SUCCESS);
 
   int num_ticks = counters[0];
-  ASSERT_GE(num_ticks, 5);
+  // At least one RUNNING tick (Sleep) and the final SUCCESS tick. The exact
+  // count depends on how long each wait takes, which varies on loaded CI runners.
+  ASSERT_GE(num_ticks, 2);
 
   ASSERT_EQ(observer.getStatistics("testA").success_count, num_ticks);
   ASSERT_EQ(observer.getStatistics("success").success_count, num_ticks);

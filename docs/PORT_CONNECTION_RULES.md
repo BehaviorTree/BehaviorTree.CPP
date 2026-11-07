@@ -179,6 +179,12 @@ InputPort<Point2D>("pointE", R"(json:{"x":9,"y":10})", "description")
 
 **Test reference:** `gtest_ports.cpp`
 
+## SubTree Model Defaults with `_autoremap`
+
+A `<SubTree>` entry in `<TreeNodesModel>` can declare an `input_port` with a literal `default`. With `_autoremap="true"`, that default is applied **only if no entry with that name exists in the parent blackboard chain at the moment the tree is created**. If the key is missing at that point, the literal default is stored in the SubTree's own blackboard and shadows the parent: a value written to the parent later (for instance by a `<Script>` that runs before the SubTree) is **not** seen by the SubTree. To make the parent value win, create the key in the blackboard before `createTree()` (e.g. `bb->set("in_value", 7)`), or remap the port explicitly (`in_value="{in_value}"`). Output and bidirectional ports and `{key}` defaults are not affected.
+
+**Test reference:** `gtest_subtree.cpp` - `SubtreeModelDefaultWithAutoremap`, `SubtreeModelDefaultWithAutoremapParentWins`, `SubtreeModelDefaultWithAutoremapCreationTimeRule` tests
+
 ## Validation Timeline
 
 ### At Tree Creation (XML Parsing)

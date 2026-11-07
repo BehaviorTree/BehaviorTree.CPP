@@ -106,7 +106,7 @@ endfunction()
 
 # Function to add fuzzing targets - compatible with both local and OSS-Fuzz builds
 function(add_fuzzing_targets)
-  set(FUZZERS bt_fuzzer script_fuzzer bb_fuzzer)
+  set(FUZZERS bt_fuzzer script_fuzzer bb_fuzzer bt_tree_exec_fuzzer)
 
   foreach(fuzzer ${FUZZERS})
     add_executable(${fuzzer} fuzzing/${fuzzer}.cpp)
