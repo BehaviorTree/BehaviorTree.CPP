@@ -135,7 +135,7 @@ TEST(ParserTest, DeeplyNestedScriptIsRejected)
   // The depth cap must not reject ordinary scripts: a long flat expression is
   // parsed iteratively (shallow recursion) and light nesting is well within it.
   std::string wide = "1";
-  for(int i = 0; i < 1000; ++i)
+  for(int i = 0; i < 200; ++i)
   {
     wide += "+1";
   }
@@ -171,15 +171,23 @@ TEST(ParserTest, LongFlatScriptIsRejected)
   }
   EXPECT_FALSE(BT::ValidateScript(nested_chain));
 
+  // The limit is the same as the nesting depth (256): 300 terms are rejected.
+  std::string over = "1";
+  for(int i = 0; i < 300; ++i)
+  {
+    over += "+1";
+  }
+  EXPECT_FALSE(BT::ValidateScript(over));
+
   // Ordinary long expressions are still accepted and evaluated.
   std::string wide = "1";
-  for(int i = 0; i < 1000; ++i)
+  for(int i = 0; i < 200; ++i)
   {
     wide += "+1";
   }
   auto result = BT::ParseScriptAndExecute(env, wide);
   ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(result->cast<int>(), 1001);
+  EXPECT_EQ(result->cast<int>(), 201);
 }
 
 TEST(ParserTest, Equations)

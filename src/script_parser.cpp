@@ -60,10 +60,11 @@ private:
   // A flat chain like "1+1+1+..." is parsed by the loop in parseExpr without
   // recursing, but it builds a left-deep AST that evaluate() and the node
   // destructors walk recursively, one frame per operator. Bounding the height
-  // bounds that recursion; it is larger than kMaxNestingDepth so that long
-  // flat expressions keep working.
+  // bounds that recursion. It uses the same limit as kMaxNestingDepth: each
+  // level of evaluate() can take about 1 KB of stack in an unoptimized MSVC
+  // build, so 1024 levels overflowed the 1 MB default stack on Windows.
   int height_ = 0;
-  static constexpr int kMaxExpressionHeight = 1024;
+  static constexpr int kMaxExpressionHeight = kMaxNestingDepth;
 
   // Binding power constants.  Higher value = tighter binding.
   static constexpr int kAssignmentBP = 2;
