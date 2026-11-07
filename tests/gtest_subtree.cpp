@@ -661,6 +661,36 @@ TEST(SubTree, SubtreeModelDefaultWithAutoremap)
   tree.tickWhileRunning();
 }
 
+// With _autoremap, a parent key of the same name wins over the model default
+// (#1271), and the default stays local to the SubTree.
+TEST(SubTree, SubtreeModelDefaultWithAutoremapParentWins)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+      <input_port name="other" default="43"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <SubTree ID="MySub" _autoremap="true" />
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <ScriptCondition code="in_value==7 &amp;&amp; other==43" />
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto root_bb = Blackboard::create();
+  root_bb->set("in_value", 7);
+  auto tree = factory.createTreeFromText(xml_text, root_bb);
+  EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  EXPECT_FALSE(root_bb->getEntry("other"));
+}
+
 class PrintToConsole : public BT::SyncActionNode
 {
 public:
