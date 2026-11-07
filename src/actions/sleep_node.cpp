@@ -25,12 +25,16 @@ NodeStatus SleepNode::onStart()
   timer_waiting_ = true;
 
   timer_id_ = timer_.add(std::chrono::milliseconds(msec), [this](bool aborted) {
-    const std::unique_lock<std::mutex> lk(delay_mutex_);
-    if(!aborted)
+    // An aborted handler runs later on the timer thread, possibly after
+    // onStart() armed a new timer: it must not clear timer_waiting_, which
+    // onHalted() already did.
+    if(aborted)
     {
-      emitWakeUpSignal();
+      return;
     }
+    const std::unique_lock<std::mutex> lk(delay_mutex_);
     timer_waiting_ = false;
+    emitWakeUpSignal();
   });
 
   return NodeStatus::RUNNING;
