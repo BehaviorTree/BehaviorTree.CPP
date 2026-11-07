@@ -57,16 +57,7 @@ void ControlNode::haltChild(size_t i)
   auto* child = children_nodes_[i];
   if(child->status() == NodeStatus::RUNNING)
   {
-    try
-    {
-      child->haltNode();
-    }
-    catch(...)
-    {
-      // Don't leave the child RUNNING, or the next reset would halt it again.
-      child->resetStatus();
-      throw;
-    }
+    child->haltNode();
   }
   child->resetStatus();
 }

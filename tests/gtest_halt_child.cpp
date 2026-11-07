@@ -76,10 +76,47 @@ TEST(ControlNodeHaltChild, ThrowingHaltIsNotRepeated)
     </BehaviorTree></root>)");
 
   EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
-  auto* node = static_cast<HaltsChild*>(tree.rootNode());
+  auto* node = dynamic_cast<HaltsChild*>(tree.rootNode());
   EXPECT_THROW(node->halt(), std::runtime_error);
   EXPECT_EQ(halts, 1);
   EXPECT_NO_THROW(node->halt());
   EXPECT_EQ(halts, 1);
   EXPECT_EQ(tree.subtrees[0]->nodes[1]->status(), NodeStatus::IDLE);
+}
+
+namespace
+{
+// Built-in parents halt their children via resetChildren()/resetChild(), not
+// haltChild(): the failed child must end up IDLE there too.
+void checkBuiltinParentThrowingHalt(const char* body)
+{
+  int halts = 0;
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<ThrowOnHalt>("ThrowOnHalt", &halts);
+  auto tree =
+      factory.createTreeFromText(std::string(R"(<root BTCPP_format="4"><BehaviorTree>)") +
+                                 body + "</BehaviorTree></root>");
+
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  EXPECT_ANY_THROW(tree.haltTree());
+  EXPECT_EQ(halts, 1);
+  for(const auto& node : tree.subtrees[0]->nodes)
+  {
+    EXPECT_EQ(node->status(), NodeStatus::IDLE) << node->name();
+  }
+  EXPECT_NO_THROW(tree.haltTree());
+  EXPECT_EQ(halts, 1);
+  // ~Tree() calls haltTree() again: it must not throw (-> terminate).
+}
+}  // namespace
+
+TEST(ControlNodeHaltChild, ThrowingHaltInSequence)
+{
+  checkBuiltinParentThrowingHalt("<Sequence><ThrowOnHalt/></Sequence>");
+}
+
+TEST(ControlNodeHaltChild, ThrowingHaltInRetryDecorator)
+{
+  checkBuiltinParentThrowingHalt(
+      R"(<RetryUntilSuccessful num_attempts="3"><ThrowOnHalt/></RetryUntilSuccessful>)");
 }
