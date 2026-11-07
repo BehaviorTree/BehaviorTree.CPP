@@ -119,6 +119,8 @@ var namespace_b_t =
       [ "SUCCESS_IF", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228aa2bdf3dce93474f3805380b16d3f8ed1", null ],
       [ "SKIP_IF", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228a485e24d172e1b00a832da44d01e2d671", null ],
       [ "WHILE_TRUE", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228ac1ea5352b6d6e5f451cbfe3e4199cec9", null ],
+      [ "ONLY_IF", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228a9e6214dacf3a27be9c00eddc748b48b4", null ],
+      [ "ON_START", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228aeef0e67172436f77962c496df07d20d9", null ],
       [ "COUNT_", "d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228a6bc642fb244f024a69b6669e1762bb15", null ]
     ] ],
     [ "BidirectionalPort", "d2/d8d/namespace_b_t.html#aa5246156c75012e4106eb05bc9c3cf47", null ],

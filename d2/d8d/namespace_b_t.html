@@ -466,7 +466,9 @@ Enumerations</h2></td></tr>
 , <b>SKIP_IF</b>
 , <b>WHILE_TRUE</b>
 , <br />
-&#160;&#160;<b>COUNT_</b>
+&#160;&#160;<b>ONLY_IF</b>
+, <b>ON_START</b>
+, <b>COUNT_</b>
 <br />
  }</td></tr>
 <tr class="memdesc:a9a300ae4685c319c4027015e7e031228"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pre-conditions that can be attached to any node via XML attributes.  <a href="../../d2/d8d/namespace_b_t.html#a9a300ae4685c319c4027015e7e031228">More...</a><br /></td></tr>
@@ -1005,8 +1007,8 @@ else{
 </div><div class="memdoc">
 
 <p>Pre-conditions that can be attached to any node via XML attributes. </p>
-<p>Pre-conditions are evaluated in the order defined by this enum (FAILURE_IF first, then SUCCESS_IF, then SKIP_IF, then WHILE_TRUE).</p>
-<p><b>Important</b>: FAILURE_IF, SUCCESS_IF, and SKIP_IF are evaluated <b>only once</b> when the node transitions from IDLE (or SKIPPED) to another state. They are NOT re-evaluated while the node is RUNNING.</p>
+<p>Pre-conditions are evaluated in the order defined by this enum (FAILURE_IF first, then SUCCESS_IF, SKIP_IF, WHILE_TRUE, ONLY_IF and finally ON_START).</p>
+<p><b>Important</b>: all of them except WHILE_TRUE are evaluated <b>only once</b> when the node transitions from IDLE (or SKIPPED) to another state. They are NOT re-evaluated while the node is RUNNING.</p>
 <ul>
 <li><code>_failureIf="&lt;script&gt;"</code>: If true when node is IDLE, return FAILURE immediately (node's tick() is not called).</li>
 <li><code>_successIf="&lt;script&gt;"</code>: If true when node is IDLE, return SUCCESS immediately (node's tick() is not called).</li>
@@ -1014,6 +1016,8 @@ else{
 <li><p class="startli"><code>_while="&lt;script&gt;"</code>: Checked both on IDLE and RUNNING states.</p>
 <p class="startli">If false when IDLE, return SKIPPED. If false when RUNNING, halt the node and return SKIPPED. This is the only pre-condition that can interrupt a running node.</p>
 </li>
+<li><code>_onlyIf="&lt;script&gt;"</code>: If false when node is IDLE, return SKIPPED immediately (the opposite of <code>_skipIf</code>).</li>
+<li><code>_onStart="&lt;script&gt;"</code>: Not a condition: the script is executed right before the first tick() of the node, i.e. only if none of the pre-conditions above returned a status.</li>
 </ul>
 <p>If you need a condition to be re-evaluated on every tick, use the <code>&lt;Precondition&gt;</code> decorator node with <code>else="RUNNING"</code> instead of these attributes. </p>
 
