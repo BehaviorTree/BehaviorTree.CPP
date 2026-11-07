@@ -215,8 +215,8 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
 {
   Ast::Environment env = { config().blackboard, config().enums };
 
-  // Check pre-conditions in order: FAILURE_IF, SUCCESS_IF, SKIP_IF, WHILE_TRUE.
-  // IMPORTANT: _failureIf, _successIf, and _skipIf are evaluated ONLY when the
+  // Check pre-conditions in the order of the PreCond enum.
+  // IMPORTANT: all of them, except _while, are evaluated ONLY when the
   // node is IDLE or SKIPPED. They are NOT re-evaluated while the node is RUNNING.
   for(size_t index = 0; index < size_t(PreCond::COUNT_); index++)
   {
@@ -227,31 +227,45 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
     }
 
     const auto preID = static_cast<PreCond>(index);
+    auto is_true = [&]() { return parse_executor(env).cast<bool>(); };
 
-    // _failureIf, _successIf, _skipIf: only checked when IDLE or SKIPPED
     // _while: checked here AND also when RUNNING (see below)
     if(_p->status == NodeStatus::IDLE || _p->status == NodeStatus::SKIPPED)
     {
-      // what to do if the condition is true
-      if(parse_executor(env).cast<bool>())
+      switch(preID)
       {
-        if(preID == PreCond::FAILURE_IF)
-        {
-          return NodeStatus::FAILURE;
-        }
-        if(preID == PreCond::SUCCESS_IF)
-        {
-          return NodeStatus::SUCCESS;
-        }
-        if(preID == PreCond::SKIP_IF)
-        {
-          return NodeStatus::SKIPPED;
-        }
-      }
-      // if the conditions is false
-      else if(preID == PreCond::WHILE_TRUE)
-      {
-        return NodeStatus::SKIPPED;
+        case PreCond::FAILURE_IF:
+          if(is_true())
+          {
+            return NodeStatus::FAILURE;
+          }
+          break;
+        case PreCond::SUCCESS_IF:
+          if(is_true())
+          {
+            return NodeStatus::SUCCESS;
+          }
+          break;
+        case PreCond::SKIP_IF:
+          if(is_true())
+          {
+            return NodeStatus::SKIPPED;
+          }
+          break;
+        case PreCond::WHILE_TRUE:
+        case PreCond::ONLY_IF:
+          if(!is_true())
+          {
+            return NodeStatus::SKIPPED;
+          }
+          break;
+        case PreCond::ON_START:
+          // the last one: no precondition returned a status, so the node proceeds
+          // to tick(). A pre-tick callback (e.g. Groot2) may still substitute the result.
+          parse_executor(env);
+          break;
+        case PreCond::COUNT_:
+          break;
       }
     }
     else if(_p->status == NodeStatus::RUNNING && preID == PreCond::WHILE_TRUE)
