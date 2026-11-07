@@ -1309,8 +1309,24 @@ void addNodeModelToXML(const TreeNodeManifest& model, XMLDocument& doc,
   XMLElement* element = doc.NewElement(toStr(model.type).c_str());
   element->SetAttribute("ID", model.registration_ID.c_str());
 
-  for(const auto& [port_name, port_info] : model.ports)
+  // PortsList is unordered: sort by direction, then by name, so that the
+  // output (and the order shown in Groot2) is deterministic.
+  std::vector<const PortsList::value_type*> sorted_ports;
+  sorted_ports.reserve(model.ports.size());
+  for(const auto& port : model.ports)
   {
+    sorted_ports.push_back(&port);
+  }
+  std::sort(sorted_ports.begin(), sorted_ports.end(),
+            [](const auto* lhs, const auto* rhs) {
+              const auto lhs_dir = lhs->second.direction();
+              const auto rhs_dir = rhs->second.direction();
+              return lhs_dir != rhs_dir ? lhs_dir < rhs_dir : lhs->first < rhs->first;
+            });
+
+  for(const auto* port : sorted_ports)
+  {
+    const auto& [port_name, port_info] = *port;
     XMLElement* port_element = nullptr;
     switch(port_info.direction())
     {
@@ -1364,12 +1380,18 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
 {
   std::function<void(const TreeNode&, XMLElement*)> addNode;
   addNode = [&](const TreeNode& node, XMLElement* parent_elem) {
-    XMLElement* elem = nullptr;
+    XMLElement* elem = doc.NewElement(node.registrationName().c_str());
 
     if(const auto* subtree = dynamic_cast<const SubTreeNode*>(&node))
     {
-      elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("ID", subtree->subtreeID().c_str());
+      // Without [name], the parser uses the ID as instance name and generates a
+      // unique path. Write [name] only when it differs from the ID: writing it
+      // always would make SubTrees with the same ID collide when reloaded.
+      if(node.name() != subtree->subtreeID())
+      {
+        elem->SetAttribute("name", node.name().c_str());
+      }
       if(add_metadata)
       {
         elem->SetAttribute("_fullpath", subtree->config().path.c_str());
@@ -1377,7 +1399,6 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
     }
     else
     {
-      elem = doc.NewElement(node.registrationName().c_str());
       elem->SetAttribute("name", node.name().c_str());
     }
 
@@ -1454,6 +1475,14 @@ void addTreeToXML(const Tree& tree, XMLDocument& doc, XMLElement* rootXML,
     addNodeModelToXML(*model, doc, model_root);
   }
 }
+
+// "major.minor" of this library, written in the [BTCPP_version] attribute of <root>.
+// It is informative only (e.g. for Groot2): the parser ignores it.
+std::string libraryMajorMinorVersion()
+{
+  const std::string version = LibraryVersionString();
+  return version.substr(0, version.rfind('.'));
+}
 }  // namespace
 
 std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
@@ -1463,6 +1492,7 @@ std::string writeTreeNodesModelXML(const BehaviorTreeFactory& factory,
 
   XMLElement* rootXML = doc.NewElement("root");
   rootXML->SetAttribute("BTCPP_format", "4");
+  rootXML->SetAttribute("BTCPP_version", libraryMajorMinorVersion().c_str());
   doc.InsertFirstChild(rootXML);
 
   XMLElement* model_root = doc.NewElement("TreeNodesModel");
@@ -1643,6 +1673,7 @@ std::string writeTreeXSD(const BehaviorTreeFactory& factory)
         </xs:sequence>
         <xs:attribute name="BTCPP_format" type="xs:string" use="required"/>
         <xs:attribute name="main_tree_to_execute" type="xs:string" use="optional"/>
+        <xs:attribute name="BTCPP_version" type="xs:string" use="optional"/>
       </xs:complexType>
     </xs:element>
   )";
@@ -1767,6 +1798,7 @@ std::string WriteTreeToXML(const Tree& tree, bool add_metadata, bool add_builtin
 
   XMLElement* rootXML = doc.NewElement("root");
   rootXML->SetAttribute("BTCPP_format", 4);
+  rootXML->SetAttribute("BTCPP_version", libraryMajorMinorVersion().c_str());
   doc.InsertFirstChild(rootXML);
 
   addTreeToXML(tree, doc, rootXML, add_metadata, add_builtin_models);
