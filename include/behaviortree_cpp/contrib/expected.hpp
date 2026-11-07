@@ -258,6 +258,7 @@ namespace nonstd {
 #include <initializer_list>
 #include <memory>
 #include <new>
+#include <string>
 #include <system_error>
 #include <type_traits>
 #include <utility>
@@ -1607,9 +1608,10 @@ public:
     : m_error( error )
     {}
 
+    // BT.CPP patch (#1263): report the error message when the error is a string.
     virtual char const * what() const noexcept override
     {
-        return "bad_expected_access";
+        return what_of( m_error );
     }
 
     nsel_constexpr14 error_type & error() &
@@ -1637,6 +1639,17 @@ public:
 #endif
 
 private:
+    static char const * what_of( std::string const & error ) noexcept
+    {
+        return error.empty() ? "bad_expected_access" : error.c_str();
+    }
+
+    template< typename T >
+    static char const * what_of( T const & ) noexcept
+    {
+        return "bad_expected_access";
+    }
+
     error_type m_error;
 };
 

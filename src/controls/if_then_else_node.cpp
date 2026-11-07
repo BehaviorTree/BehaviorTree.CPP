@@ -45,6 +45,11 @@ NodeStatus IfThenElseNode::tick()
     {
       return condition_status;
     }
+    if(condition_status == NodeStatus::SKIPPED)
+    {
+      resetChildren();
+      return condition_status;
+    }
     if(condition_status == NodeStatus::SUCCESS)
     {
       child_idx_ = 1;

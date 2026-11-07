@@ -551,7 +551,8 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
   // substitution rules that map to already-registered node types.
   if(json.contains("TestNodeConfigs"))
   {
-    auto test_configs = json.at("TestNodeConfigs");
+    // Not a copy: it would recurse once per nesting level of the JSON text
+    const auto& test_configs = json.at("TestNodeConfigs");
     for(auto const& [name, test_config] : test_configs.items())
     {
       auto& config = configs[name];
@@ -595,7 +596,7 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
     }
   }
 
-  auto substitutions = json.at("SubstitutionRules");
+  const auto& substitutions = json.at("SubstitutionRules");
   for(auto const& [node_name, test] : substitutions.items())
   {
     auto test_name = test.get<std::string>();
