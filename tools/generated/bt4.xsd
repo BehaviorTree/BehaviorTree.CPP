@@ -51,6 +51,8 @@
     </xs:complexType>
     <xs:attributeGroup name="preconditionAttributeGroup">
         <xs:attribute name="_failureIf" type="xs:string" use="optional"/>
+        <xs:attribute name="_onlyIf" type="xs:string" use="optional"/>
+        <xs:attribute name="_onStart" type="xs:string" use="optional"/>
         <xs:attribute name="_skipIf" type="xs:string" use="optional"/>
         <xs:attribute name="_successIf" type="xs:string" use="optional"/>
         <xs:attribute name="_while" type="xs:string" use="optional"/>
@@ -96,6 +98,7 @@
             </xs:sequence>
             <xs:attribute name="BTCPP_format" type="xs:string" use="required"/>
             <xs:attribute name="main_tree_to_execute" type="xs:string" use="optional"/>
+            <xs:attribute name="BTCPP_version" type="xs:string" use="optional"/>
         </xs:complexType>
     </xs:element>
     <xs:group name="oneNodeGroup">
