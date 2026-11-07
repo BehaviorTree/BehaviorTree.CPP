@@ -86,6 +86,8 @@ enum class PreCond
 static const std::array<std::string, 6> PreCondNames = {  //
   "_failureIf", "_successIf", "_skipIf", "_while", "_onlyIf", "_onStart"
 };
+static_assert(PreCondNames.size() == size_t(PreCond::COUNT_),
+              "PreCondNames must have one entry per PreCond");
 
 enum class PostCond
 {
@@ -100,6 +102,8 @@ enum class PostCond
 static const std::array<std::string, 4> PostCondNames = {  //
   "_onHalted", "_onFailure", "_onSuccess", "_post"
 };
+static_assert(PostCondNames.size() == size_t(PostCond::COUNT_),
+              "PostCondNames must have one entry per PostCond");
 
 template <>
 [[nodiscard]] std::string toStr<BT::PostCond>(const BT::PostCond& cond);

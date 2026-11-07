@@ -28,7 +28,8 @@ When a node has multiple pre-conditions, they are evaluated in this order:
 6. `_onStart`
 
 The first condition that triggers will determine the result. `_onStart` comes last,
-so its script is executed only if the node is actually going to tick.
+so its script is executed only if no other pre-condition has short-circuited the node.
+If both `_skipIf` and `_onlyIf` are present, either one can skip the node.
 
 ### Important: One-time Evaluation
 
@@ -59,6 +60,19 @@ If `battery_ok` becomes false while `MyAction` is running, the action is interru
 - **`_while`**: Guard that must remain true for the entire execution
 - **`_onStart`**: Initialize or reset blackboard entries when the node starts,
   e.g. `<MyAction _onStart="attempts := 0"/>`
+
+### Notes on `_onStart`
+
+- It runs **every time the node starts from IDLE**, not once per tree execution. Inside a
+  `Retry` or `Repeat`, the child goes back to IDLE after each iteration, so
+  `_onStart="attempts := 0"` is re-executed on every iteration.
+  Likewise, a node placed before a RUNNING sibling in a `ReactiveSequence` is halted and
+  re-ticked from IDLE on every tick, so its `_onStart` runs on every tick.
+- It runs just before `tick()`, but a pre-tick callback (see `setPreTickFunction()`, used for
+  instance by Groot2 breakpoints and status injection) may still substitute the result after
+  `_onStart` has run, in which case `tick()` is not called.
+- `ThreadedAction` does not evaluate any pre-condition, `_onlyIf` and `_onStart` included:
+  it runs `tick()` in its own thread, bypassing the pre/post-condition checks.
 
 ### The `<Precondition>` Decorator
 

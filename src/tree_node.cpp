@@ -250,7 +250,8 @@ Expected<NodeStatus> TreeNode::checkPreConditions()
           }
           break;
         case PreCond::ON_START:
-          // the last one: reaching it means that the node is going to tick
+          // the last one: no precondition returned a status, so the node proceeds
+          // to tick(). A pre-tick callback (e.g. Groot2) may still substitute the result.
           parse_executor(env);
           break;
         case PreCond::COUNT_:
