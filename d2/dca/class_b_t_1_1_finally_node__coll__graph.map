@@ -1,0 +1,6 @@
+<map id="BT::FinallyNode" name="BT::FinallyNode">
+<area shape="rect" id="node1" title="The Finally node ticks its first child (&quot;main&quot;) and then ticks its second child (&quot;cleanup&quot;),..." alt="" coords="7,256,130,281"/>
+<area shape="rect" id="node2" href="$d6/ddb/class_b_t_1_1_control_node.html" title="The ControlNode is the base class for nodes that can have multiple children." alt="" coords="5,181,132,207"/>
+<area shape="rect" id="node3" href="$da/d61/class_b_t_1_1_tree_node.html" title="Abstract base class for Behavior Tree Nodes." alt="" coords="15,5,122,31"/>
+<area shape="rect" id="node4" title=" " alt="" coords="85,93,303,119"/>
+</map>

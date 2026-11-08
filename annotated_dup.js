@@ -42,6 +42,7 @@ var annotated_dup =
       [ "EntryUpdatedDecorator", "d1/d7b/class_b_t_1_1_entry_updated_decorator.html", null ],
       [ "FallbackNode", "dc/da6/class_b_t_1_1_fallback_node.html", "dc/da6/class_b_t_1_1_fallback_node" ],
       [ "FileLogger2", "d2/d7b/class_b_t_1_1_file_logger2.html", "d2/d7b/class_b_t_1_1_file_logger2" ],
+      [ "FinallyNode", "df/d19/class_b_t_1_1_finally_node.html", "df/d19/class_b_t_1_1_finally_node" ],
       [ "ForceFailureNode", "d4/d8c/class_b_t_1_1_force_failure_node.html", null ],
       [ "ForceSuccessNode", "d7/db8/class_b_t_1_1_force_success_node.html", null ],
       [ "Groot2Publisher", "da/df5/class_b_t_1_1_groot2_publisher.html", "da/df5/class_b_t_1_1_groot2_publisher" ],

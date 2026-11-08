@@ -69,6 +69,7 @@ var hierarchy =
     [ "BT::TreeNode", "da/d61/class_b_t_1_1_tree_node.html", [
       [ "BT::ControlNode", "d6/ddb/class_b_t_1_1_control_node.html", [
         [ "BT::FallbackNode", "dc/da6/class_b_t_1_1_fallback_node.html", null ],
+        [ "BT::FinallyNode", "df/d19/class_b_t_1_1_finally_node.html", null ],
         [ "BT::IfThenElseNode", "d8/d08/class_b_t_1_1_if_then_else_node.html", null ],
         [ "BT::ManualSelectorNode", "dc/d0b/class_b_t_1_1_manual_selector_node.html", null ],
         [ "BT::ParallelAllNode", "d3/d02/class_b_t_1_1_parallel_all_node.html", null ],
