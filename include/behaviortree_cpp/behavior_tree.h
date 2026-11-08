@@ -25,6 +25,7 @@
 #include "behaviortree_cpp/actions/updated_action.h"
 #include "behaviortree_cpp/condition_node.h"
 #include "behaviortree_cpp/controls/fallback_node.h"
+#include "behaviortree_cpp/controls/finally_node.h"
 #include "behaviortree_cpp/controls/if_then_else_node.h"
 #include "behaviortree_cpp/controls/parallel_all_node.h"
 #include "behaviortree_cpp/controls/parallel_node.h"
