@@ -146,6 +146,11 @@
         <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
         <xs:attributeGroup ref="commonAttributeGroup"/>
     </xs:complexType>
+    <xs:complexType name="FinallyType">
+        <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+        <xs:attribute name="halt_timeout_msec" type="integerOrBlackboardType" default="0"/>
+    </xs:complexType>
     <xs:complexType name="ForceFailureType">
         <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
         <xs:attributeGroup ref="commonAttributeGroup"/>
@@ -348,6 +353,7 @@
     <xs:element name="AsyncSequence" type="AsyncSequenceType"/>
     <xs:element name="Delay" type="DelayType"/>
     <xs:element name="Fallback" type="FallbackType"/>
+    <xs:element name="Finally" type="FinallyType"/>
     <xs:element name="ForceFailure" type="ForceFailureType"/>
     <xs:element name="ForceSuccess" type="ForceSuccessType"/>
     <xs:element name="IfThenElse" type="IfThenElseType"/>

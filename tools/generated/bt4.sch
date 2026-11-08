@@ -23,7 +23,7 @@
 
     <!-- Rule A: compact-notation custom nodes (element name IS the registration ID) -->
     <sch:rule context="/root/BehaviorTree//*[
-        not(contains('|AlwaysFailure|AlwaysSuccess|AsyncFallback|AsyncSequence|Delay|Fallback|ForceFailure|ForceSuccess|IfThenElse|Inverter|KeepRunningUntilFailure|LoopBool|LoopDouble|LoopInt|LoopString|Parallel|ParallelAll|Precondition|ReactiveFallback|ReactiveSequence|Repeat|RetryUntilSuccessful|RunOnce|Script|ScriptCondition|Sequence|SequenceWithMemory|SetBlackboard|SkipUnlessUpdated|Sleep|SubTree|Switch2|Switch3|Switch4|Switch5|Switch6|Timeout|TryCatch|UnsetBlackboard|WaitValueUpdate|WasEntryUpdated|WhileDoElse|', concat('|', local-name(), '|'))) and
+        not(contains('|AlwaysFailure|AlwaysSuccess|AsyncFallback|AsyncSequence|Delay|Fallback|Finally|ForceFailure|ForceSuccess|IfThenElse|Inverter|KeepRunningUntilFailure|LoopBool|LoopDouble|LoopInt|LoopString|Parallel|ParallelAll|Precondition|ReactiveFallback|ReactiveSequence|Repeat|RetryUntilSuccessful|RunOnce|Script|ScriptCondition|Sequence|SequenceWithMemory|SetBlackboard|SkipUnlessUpdated|Sleep|SubTree|Switch2|Switch3|Switch4|Switch5|Switch6|Timeout|TryCatch|UnsetBlackboard|WaitValueUpdate|WasEntryUpdated|WhileDoElse|', concat('|', local-name(), '|'))) and
         local-name() != 'Action' and local-name() != 'Condition' and
         local-name() != 'Control' and local-name() != 'Decorator' and
         local-name() != 'SubTree'
