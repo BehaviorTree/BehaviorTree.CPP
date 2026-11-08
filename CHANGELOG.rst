@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.11.0 (2026-11-08)
+-------------------
 * Feature: advanced xml validation (`#1146 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1146>`_)
 * add Finally control node for guaranteed cleanup (`#1229 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1229>`_)
   * Behavior change: "Finally" is now a built-in node ID, so an application that
