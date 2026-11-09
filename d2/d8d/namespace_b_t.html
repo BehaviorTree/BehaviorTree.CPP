@@ -867,8 +867,14 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>VerifyXML</b> (const 
 <tr class="memdesc:a7f653b41d3df395036c6245ef3265424"><td class="mdescLeft">&#160;</td><td class="mdescRight">writeTreeNodesModelXML generates an XMl that contains the manifests in the &lt;TreeNodesModel&gt;  <br /></td></tr>
 <tr class="separator:a7f653b41d3df395036c6245ef3265424"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a415454b3b6fe0ce36db71ef677c13a4e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d8d/namespace_b_t.html#a415454b3b6fe0ce36db71ef677c13a4e">writeTreeXSD</a> (const <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html">BehaviorTreeFactory</a> &amp;factory)</td></tr>
-<tr class="memdesc:a415454b3b6fe0ce36db71ef677c13a4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">writeTreeXSD generates an XSD for the nodes defined in the factory  <br /></td></tr>
+<tr class="memdesc:a415454b3b6fe0ce36db71ef677c13a4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">writeTreeXSD generates an XSD for the nodes defined in the factory.  <br /></td></tr>
 <tr class="separator:a415454b3b6fe0ce36db71ef677c13a4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a785cd70c5eb6ea9fc2d4c983630e58c2"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d8d/namespace_b_t.html#a785cd70c5eb6ea9fc2d4c983630e58c2">writeTreeXSD</a> (const <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html">BehaviorTreeFactory</a> &amp;factory, bool generic)</td></tr>
+<tr class="memdesc:a785cd70c5eb6ea9fc2d4c983630e58c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">writeTreeXSD generates an XSD for the nodes defined in the factory.  <br /></td></tr>
+<tr class="separator:a785cd70c5eb6ea9fc2d4c983630e58c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba268826b50e701ef2cc2217b0dac5f1"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d8d/namespace_b_t.html#aba268826b50e701ef2cc2217b0dac5f1">writeTreeSchematron</a> (const <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html">BehaviorTreeFactory</a> &amp;factory)</td></tr>
+<tr class="memdesc:aba268826b50e701ef2cc2217b0dac5f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">writeTreeSchematron generates an ISO Schematron schema for BehaviorTree.CPP XML files.  <br /></td></tr>
+<tr class="separator:aba268826b50e701ef2cc2217b0dac5f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a84d486b78c9a316e997bd3cc799f75"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d8d/namespace_b_t.html#a4a84d486b78c9a316e997bd3cc799f75">WriteTreeToXML</a> (const <a class="el" href="../../d1/d79/class_b_t_1_1_tree.html">Tree</a> &amp;tree, bool add_metadata, bool add_builtin_models)</td></tr>
 <tr class="memdesc:a4a84d486b78c9a316e997bd3cc799f75"><td class="mdescLeft">&#160;</td><td class="mdescRight">WriteTreeToXML create a string that contains the XML that corresponds to a given tree. When using this function with a logger, you should probably set both add_metadata and add_builtin_models to true.  <br /></td></tr>
 <tr class="separator:a4a84d486b78c9a316e997bd3cc799f75"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1763,6 +1769,39 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a id="aba268826b50e701ef2cc2217b0dac5f1" name="aba268826b50e701ef2cc2217b0dac5f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba268826b50e701ef2cc2217b0dac5f1">&#9670;&#160;</a></span>writeTreeSchematron()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string BT::writeTreeSchematron </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html">BehaviorTreeFactory</a> &amp;&#160;</td>
+          <td class="paramname"><em>factory</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>writeTreeSchematron generates an ISO Schematron schema for BehaviorTree.CPP XML files. </p>
+<p>XSD alone cannot express cross-reference constraints. This Schematron complements <a class="el" href="../../d2/d8d/namespace_b_t.html#a415454b3b6fe0ce36db71ef677c13a4e" title="writeTreeXSD generates an XSD for the nodes defined in the factory.">writeTreeXSD()</a> with three rule patterns:</p><ul>
+<li>treeNodesModel: every custom (non-built-in) node element appearing in a BehaviorTree body must have a matching TreeNodesModel entry (required by Groot2 for port display and editing).</li>
+<li>subtreeResolution: every &lt;SubTree ID="X"&gt; must resolve to a &lt;BehaviorTree ID="X"&gt; in the same file (relaxed when  is present).</li>
+<li>rootStructure: main_tree_to_execute must name an existing BehaviorTree.</li>
+</ul>
+<p>The built-in node list is derived from factory.builtinNodes() so that the schema stays in sync as new built-ins are added.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">factory</td><td>factory from which the built-in node names are taken; a default-constructed <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html" title="The BehaviorTreeFactory is used to create instances of a TreeNode at run-time.">BehaviorTreeFactory</a> suffices for most uses.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>string containing the Schematron XML (queryBinding="xslt", compatible with xsltproc and lxml.isoschematron). </dd></dl>
+
+</div>
+</div>
 <a id="a4a84d486b78c9a316e997bd3cc799f75" name="a4a84d486b78c9a316e997bd3cc799f75"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4a84d486b78c9a316e997bd3cc799f75">&#9670;&#160;</a></span>WriteTreeToXML()</h2>
 
@@ -1809,7 +1848,7 @@ template&lt;typename T &gt; </div>
 </div>
 </div>
 <a id="a415454b3b6fe0ce36db71ef677c13a4e" name="a415454b3b6fe0ce36db71ef677c13a4e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a415454b3b6fe0ce36db71ef677c13a4e">&#9670;&#160;</a></span>writeTreeXSD()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a415454b3b6fe0ce36db71ef677c13a4e">&#9670;&#160;</a></span>writeTreeXSD() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1824,14 +1863,52 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>writeTreeXSD generates an XSD for the nodes defined in the factory </p>
+<p>writeTreeXSD generates an XSD for the nodes defined in the factory. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">factory</td><td>the factory with the registered types</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>string containing the XML. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>string containing the XSD XML (strict, closed-vocabulary schema). </dd></dl>
+
+</div>
+</div>
+<a id="a785cd70c5eb6ea9fc2d4c983630e58c2" name="a785cd70c5eb6ea9fc2d4c983630e58c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a785cd70c5eb6ea9fc2d4c983630e58c2">&#9670;&#160;</a></span>writeTreeXSD() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string BT::writeTreeXSD </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../d6/dcd/class_b_t_1_1_behavior_tree_factory.html">BehaviorTreeFactory</a> &amp;&#160;</td>
+          <td class="paramname"><em>factory</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>generic</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>writeTreeXSD generates an XSD for the nodes defined in the factory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">factory</td><td>the factory with the registered types </td></tr>
+    <tr><td class="paramname">generic</td><td>if true, oneNodeGroup uses xs:any processContents="lax" instead of a closed xs:choice, allowing unknown custom node elements to pass validation. Top-level xs:element declarations are also emitted so that lax processing can still resolve and validate the known built-in node types.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>string containing the XSD XML. </dd></dl>
 
 </div>
 </div>

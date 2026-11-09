@@ -151,6 +151,8 @@ var namespace_b_t =
     [ "toStr", "d2/d8d/namespace_b_t.html#acdc7285d759ccee669271f9884941cf9", null ],
     [ "ValidateScript", "d2/d8d/namespace_b_t.html#a28330518fc63ccc458b55303d05b18d1", null ],
     [ "writeTreeNodesModelXML", "d2/d8d/namespace_b_t.html#a7f653b41d3df395036c6245ef3265424", null ],
+    [ "writeTreeSchematron", "d2/d8d/namespace_b_t.html#aba268826b50e701ef2cc2217b0dac5f1", null ],
     [ "WriteTreeToXML", "d2/d8d/namespace_b_t.html#a4a84d486b78c9a316e997bd3cc799f75", null ],
-    [ "writeTreeXSD", "d2/d8d/namespace_b_t.html#a415454b3b6fe0ce36db71ef677c13a4e", null ]
+    [ "writeTreeXSD", "d2/d8d/namespace_b_t.html#a415454b3b6fe0ce36db71ef677c13a4e", null ],
+    [ "writeTreeXSD", "d2/d8d/namespace_b_t.html#a785cd70c5eb6ea9fc2d4c983630e58c2", null ]
 ];
