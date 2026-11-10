@@ -49,7 +49,8 @@ public:
     {
       const std::scoped_lock lock(mutex_);
       removeExpired();
-      subscribers = subscribers_;
+      // Copy-construct the snapshot to avoid a GCC 15 -Wnull-dereference false positive.
+      subscribers = decltype(subscribers)(subscribers_);
     }
     for(const auto& weak_subscriber : subscribers)
     {
