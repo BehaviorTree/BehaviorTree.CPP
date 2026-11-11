@@ -2,6 +2,122 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.11.0 (2026-11-08)
+-------------------
+* Feature: advanced xml validation (`#1146 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1146>`_)
+* add Finally control node for guaranteed cleanup (`#1229 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1229>`_)
+  * Behavior change: "Finally" is now a built-in node ID, so an application that
+    registers its own node with that ID gets a duplicate-registration error.
+* Add _onlyIf and _onStart preconditions (`#820 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/820>`_, `#895 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/895>`_) (`#1261 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1261>`_)
+  * Behavior change: the attribute names `_onlyIf` and `_onStart` are now reserved.
+    Before, they were stored silently as non-port attributes and did nothing.
+* test: don't assume a tick rate in Reactive.TestLogging (`#1285 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1285>`_)
+* null-check the entry in ImportBlackboardFromJSON after createEntry (`#1284 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1284>`_)
+* Restore 4.10.0 ABI of Sleep/Delay/Timeout nodes; ignore stale timer handlers (`#1283 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1283>`_)
+* add unit test for subtree with default values and autoremap enabled (`#1272 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1272>`_)
+  * Behavior change: for a modelled input port with a literal default that is not
+    explicitly remapped, the default is now set in the SubTree blackboard if no entry with
+    that name exists in the parent blackboard when the tree is created (creation-time
+    rule, documented in PORT_CONNECTION_RULES.md). A parent key created only at runtime
+    (e.g. by a Script) is shadowed by the default.
+* bound the AST height of flat script expressions (`#1259 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1259>`_)
+  * Behavior change: a single script expression with more than ~255 chained operators is
+    now rejected when the tree is created.
+* reset a child's status when its halt() throws in ControlNode::haltChild (`#1273 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1273>`_)
+* OSS-Fuzz: Add new fuzzer/corpus/dict targets tree exec (`#1277 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1277>`_)
+* fix: bad_expected_access::what() returns the error message (`#1269 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1269>`_)
+* Propagate skipped conditions in IfThenElse and WhileDoElse (`#1276 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1276>`_)
+* Reset Precondition state between activations (`#1275 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1275>`_)
+* forget a rejected XML document in XMLParser (`#1266 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1266>`_)
+* ignore aborted timer handler in SleepNode (`#1267 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1267>`_)
+* fix stack overflow on nested JSON in JsonToInteger and fromJson (`#1274 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1274>`_)
+* make wildcards_match iterative to avoid stack overflow (`#1270 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1270>`_)
+* use the locked entry in script assignment string conversion (`#1265 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1265>`_)
+* Sort ports in the TreeNodesModel XML (`#851 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/851>`_) (`#1260 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1260>`_)
+* fix: keep the name of SubTree nodes in WriteTreeToXML (`#1262 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1262>`_) (`#1268 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1268>`_)
+* Bump prefix-dev/setup-pixi from 0.11.2 to 0.11.3 (`#1280 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1280>`_)
+* feat: write the library version as BTCPP_version in the <root> of generated XML (`#1264 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1264>`_)
+* test: a reactive node must not restart its RUNNING child (`#1258 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1258>`_)
+* Add input port update subscriptions (`#1247 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1247>`_)
+* store SubTree literals as strings again; coerce numeric strings in script arithmetic (`#1246 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1246>`_) (`#1254 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1254>`_)
+  * Behavior change compared to 4.9.1 - 4.10.0, back to pre-4.9.1 behavior: two literal
+    operands are strings ("1" + "2" is "12", "10" < "2" compares text), and compound
+    assignment, unary minus, bitwise and logic operators on such a literal require an
+    explicit number again.
+* Allow a custom "__type" name in the JsonExporter lambda converters (`#1255 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1255>`_)
+* Document the MSVC timer resolution caveat of Tree::sleep (`#1257 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1257>`_)
+* Include emscripten/fiber.h at global scope before minicoro.h (`#1256 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1256>`_)
+* clang-format: never split string literals (`#1253 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1253>`_)
+* Warn when a BehaviorTree ID replaces one registered from another source (`#1133 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1133>`_)
+  * Behavior change: a new "Warning: BehaviorTree ID [...] replaces ..." line on stdout in
+    the cases above; no other change.
+* Fix Reactive Sequence async control node validation (`#1183 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1183>`_)
+  * Behavior change: a ReactiveSequence with two or more direct children among
+    AsyncSequence / AsyncFallback, at least one of them an AsyncFallback, now fails to
+    load, like two AsyncSequence already did.
+* pixi: bound the parallel build on Linux (`#1252 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1252>`_)
+* reject non-integer JSON numbers where an integer is expected (`#1240 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1240>`_)
+  * Behavior change: int-vector elements, async_delay and Groot2 hook fields that are
+    fractional, NaN, boolean or out of range now throw instead of being silently truncated
+    or wrapped.
+* reject out-of-range values in the double to float conversions (`#1249 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1249>`_)
+  * Behavior change: reading a finite double with |x| >= FLT_MAX + half an ulp as float
+    now throws instead of returning an infinity.
+* throw instead of wrapping the 16-bit UID counter in Tree::getUID (`#1244 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1244>`_)
+  * Behavior change: creating a tree with more than 65535 nodes now throws instead of
+    succeeding with duplicate UIDs.
+* fix overflow in the integer to floating point safe-cast checks (`#1238 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1238>`_)
+* range-check uint16_t in the Any string to number fallback (`#1242 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1242>`_)
+* fix null _p access in the TestNode async_delay timer handler (`#1243 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1243>`_)
+* fix TimeoutNode halting the child concurrently with its timer thread (`#1241 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1241>`_)
+* Bump prefix-dev/setup-pixi from 0.10.1 to 0.11.2 (`#1245 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1245>`_)
+* Groot2Publisher: add a constructor that takes the bind address (`#1251 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1251>`_)
+* XMLParser: detect cyclic <include> instead of overflowing the stack (`#1250 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1250>`_)
+* TreeObserver: don't throw when two nodes have the same path (`#1234 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1234>`_)
+* fix data race in SetBlackboardNode copying a blackboard entry (`#1236 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1236>`_)
+* fix data race in SqliteLogger::callback (`#1237 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1237>`_)
+* fix undefined double to int64 cast in the script complement operator (`#1239 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1239>`_)
+* Add USE_VENDORED_JSON option to use the system nlohmann_json (fixes `#959 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/959>`_) (`#1235 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1235>`_)
+* Validate model names in explicit XML node syntax (fixes `#1220 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1220>`_) (`#1231 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1231>`_)
+  * Behavior change: the ID of explicit <Action>, <Condition>, <Decorator> and <Control>
+    elements is now checked with the same model-name rules as the compact form, so an ID
+    with a forbidden character (e.g. ID="My.Action") or the reserved name Root, which
+    loaded before, now throws.
+* fuzzing: don't return 1 from bb_fuzzer on unexpected exceptions (fixes `#1224 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1224>`_) (`#1233 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1233>`_)
+* apply type checks in Blackboard::set when the key is remapped (`#1232 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1232>`_)
+  * Behavior change: writes through a SubTree remapping now follow the same type rules as
+    local writes. An unconvertible string written into a strongly typed parent entry
+    throws instead of being stored as a std::string, and a remapped write locks the type
+    of a weakly typed (AnyTypeAllowed) parent entry, as a local write already did.
+* Report a declared port whose name cannot be bound (fixes `#1215 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1215>`_) (`#1216 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1216>`_)
+* match subtrees by name in ImportTreeFromJSON (`#1227 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1227>`_)
+* fix SimpleString equality for content with embedded NUL bytes (`#1230 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1230>`_)
+* check from_chars result for integer literals in script parser (`#1214 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1214>`_)
+* clamp snprintf result before using it as fwrite length (`#1185 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1185>`_)
+* fix locale-dependent std::stod fallback in Any and SwitchNode (`#1218 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1218>`_)
+* Say that duplicate SubTree names are checked across the whole tree (fixes `#1219 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1219>`_) (`#1222 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1222>`_)
+* Name the forbidden character in the port name error (fixes `#1221 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1221>`_) (`#1223 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1223>`_)
+* Bump actions/setup-python from 6 to 7 (`#1179 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1179>`_)
+* DecoratorNode: don't discard the result of an asynchronous child (`#1206 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1206>`_)
+* CI: run the Windows tests through ctest with --repeat until-pass (`#1205 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1205>`_)
+* docs: clarify that Precondition is evaluated once per activation, not every tick (`#1204 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1204>`_)
+* add Blackboard::getKeyNames() and deprecate getKeys() (`#1203 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1203>`_)
+* fix use-after-free of a blackboard entry held by getAnyLocked (alternative to `#1181 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1181>`_) (`#1202 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1202>`_)
+* Bump prefix-dev/setup-pixi from 0.10.0 to 0.10.1 (`#1190 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1190>`_)
+* haltTree() from another thread now stops tickWhileRunning() (fixes `#686 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/686>`_) (`#1201 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1201>`_)
+* fix FileLogger2: drain the transition queue in the destructor after joining the writer thread (`#1198 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1198>`_)
+* fix TimerQueue shutdown race that left cancelled items in the queue (`#1200 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1200>`_)
+* validate substituted node type in instantiateTreeNode (`#1193 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1193>`_)
+* fix: typo Slop->Slot and mark Signal::subscribe() [[nodiscard]] (`#1199 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1199>`_)
+* Fix logical not for string-backed booleans (`#1191 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1191>`_)
+* preserve integer width in JsonExporter::fromJson (`#1186 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1186>`_)
+* fix use-after-free of the timer node mutex on destruction (`#1180 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1180>`_)
+* fix unbounded recursion in the script expression parser (`#1174 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1174>`_)
+* Fix library version in CMake subprojects (`#1188 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1188>`_)
+* fix @ root remapping in Blackboard::createEntryImpl (`#1192 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1192>`_)
+* validate backup size in BlackboardRestore (`#1182 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1182>`_)
+* Contributors: Arthur Chan, Aysha Afrah Ziya, Azer Ben Ali, DV (David Vadovszki), Davide Faconti, Golitsin Vyacheslav, Igor Stadnyk, Jonas Otto, KImanalieva, Lim Jooyoung, Nikola Kachmaryk, Varun Kumar, Victor Voronin, dependabot[bot], ktyang, simobenziane
+
 4.10.0 (2026-07-24)
 -------------------
 * reject trailing characters in SwitchNode numeric comparison (`#1178 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1178>`_)

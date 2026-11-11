@@ -2,6 +2,7 @@
 
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 #include <string>
 
@@ -166,6 +167,53 @@ TEST(PreconditionsDecorator, ChecksConditionOnce)
   // Finish running the tree, the else condition should not be hit.
   tree.rootBlackboard()->set("B", 1);
   EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
+}
+
+TEST(PreconditionsDecorator, ChecksConditionAfterHalt)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Precondition if="A==0" else="FAILURE">
+          <KeepRunning/>
+        </Precondition>
+      </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("A", 0);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+
+  tree.haltTree();
+  tree.rootBlackboard()->set("A", 1);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::FAILURE);
+}
+
+TEST(PreconditionsDecorator, ChecksConditionAfterSkippedChild)
+{
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+      <BehaviorTree ID="MainTree">
+        <Precondition if="A==0" else="FAILURE">
+          <KeepRunning _skipIf="skip"/>
+        </Precondition>
+      </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("A", 0);
+  tree.rootBlackboard()->set("skip", true);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::SKIPPED);
+
+  tree.rootBlackboard()->set("A", 1);
+  tree.rootBlackboard()->set("skip", false);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::FAILURE);
 }
 
 TEST(PreconditionsDecorator, CanRunChildrenMultipleTimes)
@@ -507,4 +555,297 @@ TEST(Preconditions, SkippedSequence)
   tree.rootBlackboard()->set("skip", false);
   status = tree.tickWhileRunning();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+}
+
+TEST(Preconditions, OnStart)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 3> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  // _onStart runs after the other preconditions, and only if the node starts:
+  // TestA is not skipped by the A==1 its own _onStart writes,
+  // TestB and TestC are short-circuited, so their script must not run.
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <Script code="A:=0; B:=0; C:=0"/>
+                <TestA _skipIf="A==1" _onStart="A:=1"/>
+                <TestB _skipIf="A==1" _onStart="B:=1"/>
+                <TestC _successIf="true" _onStart="C:=1"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[1], 0);
+  ASSERT_EQ(counters[2], 0);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("A"), 1);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("B"), 0);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("C"), 0);
+}
+
+TEST(Preconditions, OnStartRunsOncePerExecution)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <KeepRunning _onStart="count += 1"/>
+  </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("count", 0);
+
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("count"), 1);
+
+  // after a halt the node is IDLE again, so the script runs once more
+  tree.haltTree();
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("count"), 2);
+}
+
+TEST(Preconditions, OnlyIf)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 3> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  // _onlyIf is the negation of _skipIf; when both are present, either one
+  // can skip the node
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <Sequence>
+                <Script code="A:=1"/>
+                <TestA _onlyIf="A==1"/>
+                <TestB _onlyIf="A==2"/>
+                <TestC _onlyIf="A==1" _skipIf="A==1"/>
+            </Sequence>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(counters[1], 0);
+  ASSERT_EQ(counters[2], 0);
+}
+
+TEST(Preconditions, OnlyIfNotCheckedWhenRunning)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <KeepRunning _onlyIf="check"/>
+  </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  auto tree = factory.createTreeFromText(xml_text);
+
+  tree.rootBlackboard()->set("check", false);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::SKIPPED);
+
+  tree.rootBlackboard()->set("check", true);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+
+  // unlike _while, _onlyIf is ignored while the node is RUNNING
+  tree.rootBlackboard()->set("check", false);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+}
+
+TEST(Preconditions, NewAttributesAreReserved)
+{
+  EXPECT_TRUE(IsReservedAttribute("_onlyIf"));
+  EXPECT_TRUE(IsReservedAttribute("_onStart"));
+
+  BehaviorTreeFactory factory;
+  const auto xsd = writeTreeXSD(factory);
+  EXPECT_NE(xsd.find(R"(name="_onlyIf")"), std::string::npos);
+  EXPECT_NE(xsd.find(R"(name="_onStart")"), std::string::npos);
+}
+
+TEST(Preconditions, OnlyIfFalseDoesNotRunOnStart)
+{
+  BehaviorTreeFactory factory;
+  std::array<int, 1> counters{};
+  RegisterTestTick(factory, "Test", counters);
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4" >
+        <BehaviorTree ID="MainTree">
+            <TestA _onlyIf="go" _onStart="starts += 1"/>
+        </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("starts", 0);
+
+  tree.rootBlackboard()->set("go", false);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::SKIPPED);
+  ASSERT_EQ(counters[0], 0);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("starts"), 0);
+
+  tree.rootBlackboard()->set("go", true);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(tree.rootBlackboard()->get<int>("starts"), 1);
+}
+
+TEST(Preconditions, OnStartRunsAgainAfterWhileInterruption)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <KeepRunning _while="go" _onStart="starts += 1" _onHalted="halted += 1"/>
+  </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  auto tree = factory.createTreeFromText(xml_text);
+  auto bb = tree.rootBlackboard();
+  bb->set("starts", 0);
+  bb->set("halted", 0);
+  bb->set("go", true);
+
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(bb->get<int>("starts"), 1);
+
+  // _while becomes false: the node is halted and _onStart is not executed
+  bb->set("go", false);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::SKIPPED);
+  ASSERT_EQ(bb->get<int>("halted"), 1);
+  ASSERT_EQ(bb->get<int>("starts"), 1);
+
+  // _while is true again: the node restarts, so _onStart is executed again
+  bb->set("go", true);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(bb->get<int>("starts"), 2);
+}
+
+TEST(Preconditions, OnlyIfAndOnStartOnSubTreeUseParentBlackboard)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <Sequence>
+        <SubTree ID="Child" _onlyIf="go" _onStart="starts += 1"/>
+      </Sequence>
+    </BehaviorTree>
+    <BehaviorTree ID="Child">
+      <TestA/>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  std::array<int, 1> counters{};
+  RegisterTestTick(factory, "Test", counters);
+  factory.registerBehaviorTreeFromText(xml_text);
+  auto tree = factory.createTree("Main");
+  auto parent_bb = tree.rootBlackboard();
+  parent_bb->set("starts", 0);
+
+  // The scripts of the <SubTree> element are evaluated on the blackboard of the
+  // parent tree, not on the one of the child tree (which can't even see "go").
+  parent_bb->set("go", false);
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SKIPPED);
+  ASSERT_EQ(counters[0], 0);
+  ASSERT_EQ(parent_bb->get<int>("starts"), 0);
+
+  parent_bb->set("go", true);
+  ASSERT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  ASSERT_EQ(counters[0], 1);
+  ASSERT_EQ(parent_bb->get<int>("starts"), 1);
+
+  ASSERT_EQ(tree.subtrees.size(), 2u);
+  ASSERT_EQ(tree.subtrees[1]->blackboard->getEntry("starts"), nullptr);
+}
+
+TEST(Preconditions, OnStartRunsOnEveryTickInReactiveSequence)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+  <BehaviorTree>
+    <ReactiveSequence>
+      <AlwaysOk _onStart="starts += 1"/>
+      <KeepRunning/>
+    </ReactiveSequence>
+  </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  factory.registerNodeType<KeepRunning>("KeepRunning");
+  factory.registerSimpleCondition("AlwaysOk",
+                                  [](TreeNode&) { return NodeStatus::SUCCESS; });
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.rootBlackboard()->set("starts", 0);
+
+  // ReactiveSequence halts the siblings of the RUNNING child, so the condition
+  // goes back to IDLE and "starts" again on each tick
+  for(int i = 1; i <= 3; i++)
+  {
+    ASSERT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    ASSERT_EQ(tree.rootBlackboard()->get<int>("starts"), i);
+  }
+}
+
+TEST(Preconditions, OnlyIfAndOnStartSurviveWriteTreeToXML)
+{
+  static constexpr auto xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+      <Sequence>
+        <TestA _onlyIf="go" _onStart="starts += 1"/>
+        <TestB _onlyIf="!go"/>
+      </Sequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  // tick the tree once with the given "go". Returns {A, B, starts}
+  auto run = [](const std::string& xml, bool go) {
+    BehaviorTreeFactory factory;
+    std::array<int, 2> counters{};
+    RegisterTestTick(factory, "Test", counters);
+    auto tree = factory.createTreeFromText(xml);
+    tree.rootBlackboard()->set("starts", 0);
+    tree.rootBlackboard()->set("go", go);
+    EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+    return std::array<int, 3>{ counters[0], counters[1],
+                               tree.rootBlackboard()->get<int>("starts") };
+  };
+
+  BehaviorTreeFactory factory;
+  std::array<int, 2> counters{};
+  RegisterTestTick(factory, "Test", counters);
+  auto tree = factory.createTreeFromText(xml_text);
+  const auto exported = WriteTreeToXML(tree, false, false);
+
+  EXPECT_NE(exported.find(R"(_onlyIf="go")"), std::string::npos);
+  EXPECT_NE(exported.find(R"(_onlyIf="!go")"), std::string::npos);
+  EXPECT_NE(exported.find(R"(_onStart="starts += 1")"), std::string::npos);
+
+  for(const bool go : { true, false })
+  {
+    EXPECT_EQ(run(exported, go), run(xml_text, go));
+  }
+  EXPECT_EQ(run(exported, true), (std::array<int, 3>{ 1, 0, 1 }));
+  EXPECT_EQ(run(exported, false), (std::array<int, 3>{ 0, 1, 0 }));
 }

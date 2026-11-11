@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.10.0 LANGUAGES C CXX)
+project(behaviortree_cpp VERSION 4.11.0 LANGUAGES C CXX)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -188,6 +188,7 @@ list(APPEND BT_SOURCE
     src/controls/sequence_node.cpp
     src/controls/sequence_with_memory_node.cpp
     src/controls/switch_node.cpp
+    src/controls/finally_node.cpp
     src/controls/try_catch_node.cpp
     src/controls/while_do_else_node.cpp
 
@@ -218,6 +219,18 @@ if (WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
     list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
 endif()
+
+# Embed src/btcpp4_schematron.sch as a C++ string constant.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch"
+)
+
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch" BTCPP_SCHEMATRON_TEMPLATE)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/schematron_template.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/schematron_template.gen.h"
+    @ONLY
+)
 
 if (BTCPP_SHARED_LIBS)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -261,6 +274,7 @@ target_include_directories(${BTCPP_LIBRARY}
         $<INSTALL_INTERFACE:include>
     PRIVATE
         ${BTCPP_EXTRA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
     )
 
 target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${PROJECT_VERSION}")
