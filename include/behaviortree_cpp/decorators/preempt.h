@@ -45,12 +45,10 @@ namespace BT
  *     <GotoKitchen/>
  *   </ReactiveSequence>
  *
- * On its first tick, before ticking its child, it halts the RUNNING child of
- * every reactive ancestor it is not itself inside. Children of a Parallel are
- * left alone: that node is allowed to keep several of them RUNNING, so halting
- * them because a sibling branch moved on would be wrong.
- *
- * The name is a placeholder.
+ * On the first tick of each activation, before ticking its child, it halts the
+ * RUNNING child of every reactive ancestor it is not itself inside. Children of a
+ * Parallel are left alone: that node is allowed to keep several of them RUNNING,
+ * so halting them because a sibling branch moved on would be wrong.
  */
 class Preempt : public DecoratorNode
 {
