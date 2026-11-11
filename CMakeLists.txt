@@ -171,6 +171,7 @@ list(APPEND BT_SOURCE
     src/actions/updated_action.cpp
 
     src/decorators/delay_node.cpp
+    src/decorators/preempt.cpp
     src/decorators/inverter_node.cpp
     src/decorators/repeat_node.cpp
     src/decorators/retry_node.cpp

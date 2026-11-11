@@ -205,6 +205,9 @@ public:
 
   virtual NodeType type() const = 0;
 
+  /// Parent of this node in the tree, or nullptr for the root of a subtree.
+  [[nodiscard]] TreeNode* parent() const;
+
   using StatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeStatus, NodeStatus>;
   using StatusChangeSubscriber = StatusChangeSignal::Subscriber;
   using StatusChangeCallback = StatusChangeSignal::CallableFunction;
@@ -463,8 +466,14 @@ protected:
   T parseString(const std::string& str) const;
 
 private:
+  friend class ControlNode;
+  friend class DecoratorNode;
+
   struct PImpl;
   std::unique_ptr<PImpl> _p;
+
+  /// Set by ControlNode and DecoratorNode when the node is added to the tree.
+  void setParent(TreeNode* parent);
 
   Expected<NodeStatus> checkPreConditions();
   void checkPostConditions(NodeStatus status);

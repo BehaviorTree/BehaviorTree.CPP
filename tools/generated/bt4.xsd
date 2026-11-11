@@ -216,6 +216,10 @@
         <xs:attribute name="else" default="FAILURE"/>
         <xs:attribute name="if" type="stringOrBlackboardType" use="required"/>
     </xs:complexType>
+    <xs:complexType name="PreemptType">
+        <xs:group ref="oneNodeGroup" minOccurs="1" maxOccurs="1"/>
+        <xs:attributeGroup ref="commonAttributeGroup"/>
+    </xs:complexType>
     <xs:complexType name="ReactiveFallbackType">
         <xs:group ref="oneNodeGroup" minOccurs="0" maxOccurs="unbounded"/>
         <xs:attributeGroup ref="commonAttributeGroup"/>
@@ -366,6 +370,7 @@
     <xs:element name="Parallel" type="ParallelType"/>
     <xs:element name="ParallelAll" type="ParallelAllType"/>
     <xs:element name="Precondition" type="PreconditionType"/>
+    <xs:element name="Preempt" type="PreemptType"/>
     <xs:element name="ReactiveFallback" type="ReactiveFallbackType"/>
     <xs:element name="ReactiveSequence" type="ReactiveSequenceType"/>
     <xs:element name="Repeat" type="RepeatType"/>
