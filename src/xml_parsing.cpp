@@ -253,15 +253,27 @@ struct XMLParser::PImpl
   // it would otherwise remain the "first opened document" that
   // instantiateTree() reads main_tree_to_execute from, and a document that
   // did not parse has no root element at all.
+  //
+  // Rollback is per load call, not per document: <include> makes one call
+  // register trees from several documents, and if the root document is
+  // rejected the included ones have already registered theirs. Restore the
+  // state from before the call, which also puts back a tree that this call
+  // redefined - its element lives in the document about to be erased.
   void loadLastDocImpl(bool add_includes)
   {
     const auto doc_it = std::prev(opened_documents.end());
+    const auto roots_before = tree_roots;
+    const auto sources_before = tree_sources;
+    const int suffix_before = suffix_count;
     try
     {
       loadDocImpl(doc_it->get(), add_includes);
     }
     catch(...)
     {
+      tree_roots = roots_before;
+      tree_sources = sources_before;
+      suffix_count = suffix_before;
       opened_documents.erase(doc_it);
       throw;
     }
