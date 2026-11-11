@@ -450,18 +450,18 @@ TEST(Preempt, parallelInsideTheNewBranchKeepsItsChildrenRunning)
 // 1. battery low: charging starts, kitchen is halted;
 // 2. charging completes, battery is OK, so the kitchen runs again;
 // 3. battery low once more: the kitchen must be halted before charging restarts.
-TEST(Preempt, preemptsAgainAfterTheBranchCompleted)
+static void runThreePhases(const std::string& fallback_tag)
 {
-  static const char* xml_text = R"(
+  const std::string xml_text = R"(
   <root BTCPP_format="4">
     <BehaviorTree ID="Main">
       <ReactiveSequence>
-        <ReactiveFallback>
+        <FALLBACK_TAG>
           <BatteryOk/>
           <Preempt>
             <Finishing name="GotoCharging"/>
           </Preempt>
-        </ReactiveFallback>
+        </FALLBACK_TAG>
         <Forever name="GotoKitchen"/>
       </ReactiveSequence>
     </BehaviorTree>
@@ -471,7 +471,11 @@ TEST(Preempt, preemptsAgainAfterTheBranchCompleted)
   BehaviorTreeFactory factory;
   Tracker tracker;
   registerNodes(factory, tracker);
-  auto tree = factory.createTreeFromText(xml_text);
+
+  std::string xml = xml_text;
+  xml.replace(xml.find("FALLBACK_TAG"), strlen("FALLBACK_TAG"), fallback_tag);
+  xml.replace(xml.find("FALLBACK_TAG"), strlen("FALLBACK_TAG"), fallback_tag);
+  auto tree = factory.createTreeFromText(xml);
 
   auto bb = tree.subtrees.front()->blackboard;
   bb->set("battery_ok", true);
@@ -501,6 +505,16 @@ TEST(Preempt, preemptsAgainAfterTheBranchCompleted)
             tracker.indexOf("GotoCharging:start", 1))
       << tracker.dump();
   EXPECT_EQ(tracker.max_running.load(), 1) << tracker.dump();
+}
+
+TEST(Preempt, preemptsAgainWithReactiveFallback)
+{
+  runThreePhases("ReactiveFallback");
+}
+
+TEST(Preempt, preemptsAgainWithPlainFallback)
+{
+  runThreePhases("Fallback");
 }
 
 // A branch that already completed leaves nothing for the reactive ancestor to
