@@ -473,8 +473,11 @@ static void runThreePhases(const std::string& fallback_tag)
   registerNodes(factory, tracker);
 
   std::string xml = xml_text;
-  xml.replace(xml.find("FALLBACK_TAG"), strlen("FALLBACK_TAG"), fallback_tag);
-  xml.replace(xml.find("FALLBACK_TAG"), strlen("FALLBACK_TAG"), fallback_tag);
+  const std::string tag = "FALLBACK_TAG";
+  for(auto pos = xml.find(tag); pos != std::string::npos; pos = xml.find(tag, pos + 1))
+  {
+    xml.replace(pos, tag.size(), fallback_tag);
+  }
   auto tree = factory.createTreeFromText(xml);
 
   auto bb = tree.subtrees.front()->blackboard;
