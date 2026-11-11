@@ -422,9 +422,6 @@ protected:
   friend class ControlNode;
   friend class Tree;
 
-  /// Set by ControlNode and DecoratorNode when the node is added to the tree.
-  void setParent(TreeNode* parent);
-
   [[nodiscard]] NodeConfig& config();
 
   /// Method to be implemented by the user
@@ -457,8 +454,14 @@ protected:
   T parseString(const std::string& str) const;
 
 private:
+  friend class ControlNode;
+  friend class DecoratorNode;
+
   struct PImpl;
   std::unique_ptr<PImpl> _p;
+
+  /// Set by ControlNode and DecoratorNode when the node is added to the tree.
+  void setParent(TreeNode* parent);
 
   Expected<NodeStatus> checkPreConditions();
   void checkPostConditions(NodeStatus status);
