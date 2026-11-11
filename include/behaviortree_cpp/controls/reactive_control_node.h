@@ -28,11 +28,10 @@ namespace BT
  * @brief Common base of the control nodes that tick their children in order and stop
  * at the first one that returns RUNNING (ReactiveSequence, ReactiveFallback).
  *
- * It exists so that a node outside the reactive node can ask it to let go of its
- * running child without knowing which of the two it is, and so that the index stays
- * consistent with the child that is actually RUNNING.
+ * It exists so that a node outside the reactive node can ask it to let go of the
+ * branches it is running without knowing which of the two it is.
  *
- * Deliberately not virtual: the class adds state and two non-virtual accessors only,
+ * Deliberately not virtual: the class adds state and one non-virtual accessor only,
  * so no vtable of an existing node changes.
  */
 class ReactiveControlNode : public ControlNode
@@ -42,24 +41,22 @@ public:
     : ControlNode(name, config)
   {}
 
-  /// Index of the child that returned RUNNING, or -1 if there is none.
-  [[nodiscard]] int runningChild() const
-  {
-    return running_child_;
-  }
-
-  /** Halt the child that is currently RUNNING, if any, and forget it.
+  /** Halt every child that is RUNNING, except the one the caller is inside.
    *
-   * Used by Preempt: the reactive ancestor cannot halt that child on its own,
-   * because from its point of view the child is still the one it has to tick.
+   * Used by Preempt: the ancestor cannot tell by index which branch has to go,
+   * because the index is only updated by its own tick(), and the halting happens
+   * below it. Asking the children for their status cannot go stale.
    */
-  void haltRunningChild()
+  void haltRunningChild(const TreeNode* excluded)
   {
-    if(running_child_ >= 0 && static_cast<size_t>(running_child_) < childrenCount())
-    {
-      haltChild(static_cast<size_t>(running_child_));
-    }
     running_child_ = -1;
+    for(size_t i = 0; i < childrenCount(); i++)
+    {
+      if(children()[i] != excluded && children()[i]->status() == NodeStatus::RUNNING)
+      {
+        haltChild(i);
+      }
+    }
   }
 
 protected:

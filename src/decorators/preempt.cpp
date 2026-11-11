@@ -26,38 +26,29 @@ namespace BT
 {
 NodeStatus Preempt::tick()
 {
-  // A new branch starts now: let go of whatever the reactive ancestors were
-  // still running before the child below us begins.
-  if(!started_)
+  // A new branch starts now: let go of whatever the reactive ancestors are
+  // still running before the child below us begins. status() is IDLE again
+  // whenever a parent resets a completed node, so this also covers a second
+  // preemption after the child returned SUCCESS or FAILURE.
+  if(status() == NodeStatus::IDLE)
   {
-    started_ = true;
     haltPreviousBranch();
   }
   return child()->executeTick();
 }
 
-void Preempt::halt()
-{
-  started_ = false;
-  DecoratorNode::halt();
-}
-
 void Preempt::haltPreviousBranch()
 {
   // Walk up the tree keeping track of the child we came from: a reactive
-  // ancestor may only be told to let go when the child it has RUNNING is not
-  // the one we are inside. If it were, halting it would halt ourselves.
+  // ancestor is only asked to let go of the children that are not on our path,
+  // so it never halts the branch we are about to start.
   TreeNode* child_on_path = this;
 
   for(TreeNode* ancestor = parent(); ancestor != nullptr; ancestor = ancestor->parent())
   {
     if(auto* reactive = dynamic_cast<ReactiveControlNode*>(ancestor))
     {
-      const int running = reactive->runningChild();
-      if(running >= 0 && reactive->child(static_cast<size_t>(running)) != child_on_path)
-      {
-        reactive->haltRunningChild();
-      }
+      reactive->haltRunningChild(child_on_path);
     }
     child_on_path = ancestor;
   }

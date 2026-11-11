@@ -41,18 +41,32 @@ struct Tracker
     running--;
   }
 
+  /// A node that returns SUCCESS or FAILURE is reset, not halted.
+  void onCompleted()
+  {
+    running--;
+  }
+
   bool hasEvent(const std::string& event) const
   {
     std::lock_guard<std::mutex> lock(mutex_);
     return std::find(events_.begin(), events_.end(), event) != events_.end();
   }
 
-  [[nodiscard]] size_t indexOf(const std::string& event) const
+  [[nodiscard]] size_t indexOf(const std::string& event, size_t occurrence = 0) const
   {
     std::lock_guard<std::mutex> lock(mutex_);
-    const auto it = std::find(events_.begin(), events_.end(), event);
-    return it == events_.end() ? events_.size() :
-                                 size_t(std::distance(events_.begin(), it));
+    auto it = events_.begin();
+    while(true)
+    {
+      it = std::find(it, events_.end(), event);
+      if(it == events_.end() || occurrence-- == 0)
+      {
+        return it == events_.end() ? events_.size() :
+                                     size_t(std::distance(events_.begin(), it));
+      }
+      ++it;
+    }
   }
 
   [[nodiscard]] size_t count(const std::string& event) const
@@ -102,6 +116,40 @@ public:
   NodeStatus onRunning() override
   {
     return NodeStatus::RUNNING;
+  }
+
+  void onHalted() override
+  {
+    tracker_->onHalted(name());
+  }
+
+private:
+  Tracker* tracker_;
+};
+
+/// Runs for one tick, then reports SUCCESS, so the branch above it completes.
+class FinishingAction : public BT::StatefulActionNode
+{
+public:
+  FinishingAction(const std::string& name, const BT::NodeConfig& config, Tracker* tracker)
+    : BT::StatefulActionNode(name, config), tracker_(tracker)
+  {}
+
+  static BT::PortsList providedPorts()
+  {
+    return {};
+  }
+
+  NodeStatus onStart() override
+  {
+    tracker_->onStart(name());
+    return NodeStatus::RUNNING;
+  }
+
+  NodeStatus onRunning() override
+  {
+    tracker_->onCompleted();
+    return NodeStatus::SUCCESS;
   }
 
   void onHalted() override
@@ -174,6 +222,10 @@ static void registerNodes(BehaviorTreeFactory& factory, Tracker& tracker)
   factory.registerBuilder<ForeverThreadedAction>(
       "ForeverThreaded", [&tracker](const std::string& name, const NodeConfig& config) {
         return std::make_unique<ForeverThreadedAction>(name, config, &tracker);
+      });
+  factory.registerBuilder<FinishingAction>(
+      "Finishing", [&tracker](const std::string& name, const NodeConfig& config) {
+        return std::make_unique<FinishingAction>(name, config, &tracker);
       });
 }
 
@@ -392,6 +444,114 @@ TEST(Preempt, parallelInsideTheNewBranchKeepsItsChildrenRunning)
   EXPECT_EQ(tracker.running.load(), 2) << tracker.dump();
   EXPECT_FALSE(tracker.hasEvent("GotoCharging:halted")) << tracker.dump();
   EXPECT_FALSE(tracker.hasEvent("OpenDoor:halted")) << tracker.dump();
+}
+
+// The preemption has to work again after the branch that preempted has completed:
+// 1. battery low: charging starts, kitchen is halted;
+// 2. charging completes, battery is OK, so the kitchen runs again;
+// 3. battery low once more: the kitchen must be halted before charging restarts.
+TEST(Preempt, preemptsAgainAfterTheBranchCompleted)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <ReactiveSequence>
+        <ReactiveFallback>
+          <BatteryOk/>
+          <Preempt>
+            <Finishing name="GotoCharging"/>
+          </Preempt>
+        </ReactiveFallback>
+        <Forever name="GotoKitchen"/>
+      </ReactiveSequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  Tracker tracker;
+  registerNodes(factory, tracker);
+  auto tree = factory.createTreeFromText(xml_text);
+
+  auto bb = tree.subtrees.front()->blackboard;
+  bb->set("battery_ok", true);
+
+  // phase 1: the kitchen is running, then the battery goes low
+  EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING);
+  ASSERT_TRUE(tracker.hasEvent("GotoKitchen:start")) << tracker.dump();
+
+  bb->set("battery_ok", false);
+  EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING);
+  ASSERT_TRUE(tracker.hasEvent("GotoCharging:start")) << tracker.dump();
+
+  // phase 2: charging completes, the battery check passes again, kitchen restarts
+  for(int i = 0; i < 4 && tracker.count("GotoKitchen:start") < 2; i++)
+  {
+    EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING) << tracker.dump();
+  }
+  ASSERT_EQ(tracker.count("GotoKitchen:start"), 2) << tracker.dump();
+  EXPECT_EQ(tracker.running.load(), 1) << tracker.dump();
+
+  // phase 3: low again, and the second preemption has to halt the kitchen first
+  bb->set("battery_ok", false);
+  EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING);
+
+  EXPECT_EQ(tracker.started_while_running.load(), 0) << tracker.dump();
+  EXPECT_LT(tracker.indexOf("GotoKitchen:halted", 1),
+            tracker.indexOf("GotoCharging:start", 1))
+      << tracker.dump();
+  EXPECT_EQ(tracker.max_running.load(), 1) << tracker.dump();
+}
+
+// A branch that already completed leaves nothing for the reactive ancestor to
+// remember: RS[Fallback[Cond, Preempt[A]], B] must still halt B before A restarts.
+TEST(Preempt, siblingThatCompletedIsStillPreempted)
+{
+  static const char* xml_text = R"(
+  <root BTCPP_format="4">
+    <BehaviorTree ID="Main">
+      <ReactiveSequence>
+        <Fallback>
+          <BatteryOk/>
+          <Preempt>
+            <Finishing name="GotoCharging"/>
+          </Preempt>
+        </Fallback>
+        <Forever name="GotoKitchen"/>
+      </ReactiveSequence>
+    </BehaviorTree>
+  </root>
+  )";
+
+  BehaviorTreeFactory factory;
+  Tracker tracker;
+  registerNodes(factory, tracker);
+  auto tree = factory.createTreeFromText(xml_text);
+
+  auto bb = tree.subtrees.front()->blackboard;
+  bb->set("battery_ok", true);
+
+  EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tracker.count("GotoKitchen:start"), 1) << tracker.dump();
+
+  bb->set("battery_ok", false);
+  EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING);
+  ASSERT_EQ(tracker.count("GotoCharging:start"), 1) << tracker.dump();
+
+  // charging finished, the fallback fails again, the kitchen is back in charge
+  for(int i = 0; i < 4 && tracker.count("GotoKitchen:start") < 2; i++)
+  {
+    EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING) << tracker.dump();
+  }
+  ASSERT_EQ(tracker.count("GotoKitchen:start"), 2) << tracker.dump();
+
+  bb->set("battery_ok", false);
+  EXPECT_EQ(tree.tickExactlyOnce(), NodeStatus::RUNNING);
+
+  EXPECT_EQ(tracker.started_while_running.load(), 0) << tracker.dump();
+  EXPECT_LT(tracker.indexOf("GotoKitchen:halted", 1),
+            tracker.indexOf("GotoCharging:start", 1))
+      << tracker.dump();
 }
 
 }  // namespace BT::test

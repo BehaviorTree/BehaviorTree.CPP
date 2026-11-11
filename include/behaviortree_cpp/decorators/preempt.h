@@ -75,11 +75,7 @@ public:
 private:
   NodeStatus tick() override;
 
-  void halt() override;
-
   void haltPreviousBranch();
-
-  bool started_ = false;
 };
 
 }  // namespace BT

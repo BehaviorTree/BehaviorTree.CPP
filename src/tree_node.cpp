@@ -13,8 +13,6 @@
 
 #include "behaviortree_cpp/tree_node.h"
 
-#include "behaviortree_cpp/control_node.h"
-
 #include <array>
 #include <atomic>
 #include <cstring>
