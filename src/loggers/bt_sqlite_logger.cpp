@@ -185,7 +185,7 @@ void SqliteLogger::callback(Duration timestamp, const TreeNode& node,
     const std::scoped_lock lk(queue_mutex_);
     monotonic_timestamp_ = std::max(monotonic_timestamp_ + 1, tm_usec);
 
-    long elapsed_time = 0;
+    int64_t elapsed_time = 0;
 
     if(prev_status == NodeStatus::IDLE && status == NodeStatus::RUNNING)
     {

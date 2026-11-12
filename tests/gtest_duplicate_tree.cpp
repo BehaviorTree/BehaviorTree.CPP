@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <tuple>
 
 #include <gtest/gtest.h>
 
@@ -155,8 +156,8 @@ TEST(DuplicateBehaviorTreeId, RepeatedInlineTextIsSilent)
   BehaviorTreeFactory factory;
   const std::string xml = minimalTreeXml("MainTree");
   const auto output = captureStdout([&] {
-    (void)factory.createTreeFromText(xml);
-    (void)factory.createTreeFromText(xml);
+    std::ignore = factory.createTreeFromText(xml);
+    std::ignore = factory.createTreeFromText(xml);
   });
   EXPECT_FALSE(hasWarning(output)) << output;
 }

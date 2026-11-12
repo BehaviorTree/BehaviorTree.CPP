@@ -23,6 +23,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <thread>
 
 #include <gtest/gtest.h>
@@ -328,8 +329,9 @@ TEST_F(LoggerTest, MinitraceLogger_JsonContent)
   std::ifstream file(filepath);
   ASSERT_TRUE(file.is_open());
 
-  std::string content((std::istreambuf_iterator<char>(file)),
-                      std::istreambuf_iterator<char>());
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  const std::string content = buffer.str();
 
   // Minitrace JSON should contain traceEvents
   ASSERT_NE(content.find("traceEvents"), std::string::npos);

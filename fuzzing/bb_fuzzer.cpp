@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <thread>
+#include <tuple>
 #include <vector>
 
 #include <fuzzer/FuzzedDataProvider.h>
@@ -94,7 +95,7 @@ private:
           break;
         case 6: {
           // Try to get non-existent key
-          (void)bb->get<int>(generateKey());
+          std::ignore = bb->get<int>(generateKey());
           break;
         }
       }
@@ -112,16 +113,16 @@ private:
             bb->unset(existing_key);
             break;
           case 1:
-            (void)bb->getEntry(existing_key);
+            std::ignore = bb->getEntry(existing_key);
             break;
           case 2:
-            (void)bb->get<int>(existing_key);
+            std::ignore = bb->get<int>(existing_key);
             break;
           case 3:
-            (void)bb->get<double>(existing_key);
+            std::ignore = bb->get<double>(existing_key);
             break;
           case 4:
-            (void)bb->get<std::string>(existing_key);
+            std::ignore = bb->get<std::string>(existing_key);
             break;
         }
       }

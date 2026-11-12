@@ -900,7 +900,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
             {
               port_model.converter()(port_value);
             }
-            catch(std::exception& ex)
+            catch(const std::exception&)
             {
               auto msg = StrCat("The port with name \"", port_name, "\" and value \"",
                                 port_value, "\" can not be converted to ",
