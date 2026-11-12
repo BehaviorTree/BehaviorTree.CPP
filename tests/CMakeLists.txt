@@ -61,6 +61,7 @@ set(BT_TESTS
   gtest_plugin_issue953.cpp
   gtest_blackboard_thread_safety.cpp
   gtest_xml_null_subtree_id.cpp
+  gtest_xml_include_rollback.cpp
 
   script_parser_test.cpp
   test_helper.hpp

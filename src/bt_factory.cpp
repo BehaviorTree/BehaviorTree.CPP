@@ -720,7 +720,20 @@ std::shared_ptr<WakeUpSignal> Tree::wakeUpSignal() const
 
 Tree::~Tree()
 {
-  haltTree();
+  // Halting may throw (e.g. TryCatch catch_on_halt ticks its catch child), and
+  // an exception escaping a destructor calls std::terminate (issue #1281).
+  try
+  {
+    haltTree();
+  }
+  catch(const std::exception& ex)
+  {
+    std::cerr << "[Tree::~Tree]: haltTree() threw: " << ex.what() << std::endl;
+  }
+  catch(...)
+  {
+    std::cerr << "[Tree::~Tree]: haltTree() threw an unknown exception" << std::endl;
+  }
 }
 
 NodeStatus Tree::tickExactlyOnce()
