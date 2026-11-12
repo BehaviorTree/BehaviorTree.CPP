@@ -154,7 +154,7 @@ public:
    */
   [[nodiscard]] std::shared_ptr<WakeUpSignal> wakeUpSignal() const;
 
-  ~Tree() noexcept;
+  ~Tree();
 
   /// Tick the root of the tree once, even if a node invoked
   /// emitWakeUpSignal()

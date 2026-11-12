@@ -248,22 +248,18 @@ struct XMLParser::PImpl
 
   void loadDocImpl(XMLDocument* doc, bool add_includes);
 
-  // Load the document just appended to opened_documents. A document that is
-  // rejected (XML error, invalid tree) registers no tree, so forget it again:
-  // it would otherwise remain the "first opened document" that
-  // instantiateTree() reads main_tree_to_execute from, and a document that
-  // did not parse has no root element at all.
-  //
-  // Rollback is per load call, not per document: <include> makes one call
-  // register trees from several documents, and if the root document is
-  // rejected the included ones have already registered theirs. Restore the
-  // state from before the call, which also puts back a tree that this call
-  // redefined - its element lives in the document about to be erased.
+  // Load the document just appended to opened_documents, all or nothing.
+  // Through <include>, one call loads several documents: on failure restore
+  // the state from before the call and drop every document it opened, so none
+  // stays the "first opened document" instantiateTree() reads
+  // main_tree_to_execute from (issues #1266, #1282).
   void loadLastDocImpl(bool add_includes)
   {
     const auto doc_it = std::prev(opened_documents.end());
-    const auto roots_before = tree_roots;
-    const auto sources_before = tree_sources;
+    auto roots_before = tree_roots;
+    auto sources_before = tree_sources;
+    auto models_before = subtree_models;
+    auto path_before = current_path;
     const int suffix_before = suffix_count;
     try
     {
@@ -271,10 +267,12 @@ struct XMLParser::PImpl
     }
     catch(...)
     {
-      tree_roots = roots_before;
-      tree_sources = sources_before;
+      tree_roots = std::move(roots_before);
+      tree_sources = std::move(sources_before);
+      subtree_models = std::move(models_before);
+      current_path = std::move(path_before);
       suffix_count = suffix_before;
-      opened_documents.erase(doc_it);
+      opened_documents.erase(doc_it, opened_documents.end());
       throw;
     }
   }
@@ -478,7 +476,8 @@ void XMLParser::PImpl::loadDocImpl(XMLDocument* doc, bool add_includes)
 
     include_stack.push_back(std::move(include_key));
     next_doc->LoadFile(file_path.string().c_str());
-    loadLastDocImpl(add_includes);
+    // no rollback here: the top-level load call undoes the whole load
+    loadDocImpl(next_doc, add_includes);
     include_stack.pop_back();
 
     // reset current path to the previous value

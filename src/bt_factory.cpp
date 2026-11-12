@@ -718,18 +718,22 @@ std::shared_ptr<WakeUpSignal> Tree::wakeUpSignal() const
   return wake_up_;
 }
 
-Tree::~Tree() noexcept
+Tree::~Tree()
 {
-  // A destructor that lets an exception escape calls std::terminate, and a
-  // node is allowed to throw while halting - TryCatch with catch_on_halt
-  // ticks its catch child, and ticking may throw. Swallow it: there is no
-  // caller left to report to, and the tree is being destroyed anyway.
+  // Halting may throw (e.g. TryCatch catch_on_halt ticks its catch child), and
+  // an exception escaping a destructor calls std::terminate (issue #1281).
   try
   {
     haltTree();
   }
+  catch(const std::exception& ex)
+  {
+    std::cerr << "[Tree::~Tree]: haltTree() threw: " << ex.what() << std::endl;
+  }
   catch(...)
-  {}
+  {
+    std::cerr << "[Tree::~Tree]: haltTree() threw an unknown exception" << std::endl;
+  }
 }
 
 NodeStatus Tree::tickExactlyOnce()

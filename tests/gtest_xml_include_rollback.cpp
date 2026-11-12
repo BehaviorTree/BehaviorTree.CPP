@@ -1,200 +1,116 @@
-/* Copyright (C) 2024 Davide Faconti - All Rights Reserved
- *
- * Test for the rollback in XMLParser::loadFromFile(): a load call that is
- * rejected must not leave the trees registered by the documents it pulled in
- * through <include>.
- */
+/* A load call rejected after an <include> must leave the parser as it was
+ * before the call (issue #1282). */
+
+#include "test_helper.hpp"
 
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
-#include <filesystem>
-#include <fstream>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 using namespace BT;
+using Names = std::vector<std::string>;
 
 namespace
 {
-class TempDir
+std::string treeXml(const std::string& body)
 {
-public:
-  TempDir()
-  {
-    _path = std::filesystem::temp_directory_path() /
-            ("bt_xmlparser_" + std::to_string(::getpid()) + "_" +
-             std::to_string(reinterpret_cast<uintptr_t>(this)));
-    std::filesystem::create_directories(_path);
-  }
+  return R"(<root BTCPP_format="4">)" + body + "</root>";
+}
 
-  ~TempDir()
-  {
-    std::error_code ec;
-    std::filesystem::remove_all(_path, ec);
-  }
-
-  std::filesystem::path write(const std::string& name, const std::string& content) const
-  {
-    const auto path = _path / name;
-    std::ofstream out(path);
-    out << content;
-    return path;
-  }
-
-  const std::filesystem::path& path() const
-  {
-    return _path;
-  }
-
-private:
-  std::filesystem::path _path;
-};
-
-bool contains(const std::vector<std::string>& names, const std::string& name)
+std::string tree(const std::string& tree_id, const std::string& node)
 {
-  return std::find(names.begin(), names.end(), name) != names.end();
+  return R"(<BehaviorTree ID=")" + tree_id + R"("><)" + node + "/></BehaviorTree>";
+}
+
+// main.xml includes a valid sub.xml, then defines MainTree with `main_node`
+std::filesystem::path writeMainWithInclude(const TempSubdir& dir,
+                                           const std::string& main_node)
+{
+  writeFile(dir.path / "sub.xml", treeXml(tree("FromInclude", "AlwaysSuccess")));
+  const auto main_xml = dir.path / "main.xml";
+  writeFile(main_xml,
+            treeXml(R"(<include path="sub.xml"/>)" + tree("MainTree", main_node)));
+  return main_xml;
 }
 }  // namespace
 
-// The included document is valid and registers a tree; the including document
-// is rejected afterwards. Before the fix only the rejected document was
-// dropped, so the tree from the include stayed registered even though the
-// load call as a whole failed.
 TEST(XMLParserTest, RejectedIncludeKeepsNoTree)
 {
-  TempDir dir;
-  dir.write("sub.xml", R"(<root BTCPP_format="4">
-    <BehaviorTree ID="FromInclude">
-      <AlwaysSuccess />
-    </BehaviorTree>
-  </root>)");
-
-  const auto main_xml = dir.write("main.xml", R"(<root BTCPP_format="4">
-    <include path="sub.xml"/>
-    <BehaviorTree ID="MainTree">
-      <NotARegisteredNode />
-    </BehaviorTree>
-  </root>)");
+  TempSubdir dir;
+  const auto main_xml = writeMainWithInclude(dir, "NotARegisteredNode");
 
   BehaviorTreeFactory factory;
   XMLParser parser(factory);
-
   EXPECT_THROW(parser.loadFromFile(main_xml), std::exception);
-
-  const auto registered = parser.registeredBehaviorTrees();
-  EXPECT_FALSE(contains(registered, "FromInclude"))
-      << "a rejected load call must not leave the included tree registered";
-  EXPECT_FALSE(contains(registered, "MainTree"));
+  EXPECT_EQ(parser.registeredBehaviorTrees(), Names{});
 }
 
-// The same for loadFromText(), which shares the rollback path.
 TEST(XMLParserTest, RejectedInlineIncludesKeepNoTree)
 {
-  TempDir dir;
-  dir.write("sub.xml", R"(<root BTCPP_format="4">
-    <BehaviorTree ID="FromInclude">
-      <AlwaysSuccess />
-    </BehaviorTree>
-  </root>)");
+  TempSubdir dir;
+  writeFile(dir.path / "sub.xml", treeXml(tree("FromInclude", "AlwaysSuccess")));
+  const auto text = treeXml(R"(<include path=")" + (dir.path / "sub.xml").string() +
+                            R"("/>)" + tree("MainTree", "NotARegisteredNode"));
 
   BehaviorTreeFactory factory;
   XMLParser parser(factory);
-
-  const std::string text = R"(<root BTCPP_format="4">
-    <include path=")" + dir.path().string() +
-                           R"(/sub.xml"/>
-    <BehaviorTree ID="MainTree">
-      <NotARegisteredNode />
-    </BehaviorTree>
-  </root>)";
-
   EXPECT_THROW(parser.loadFromText(text), std::exception);
-  EXPECT_FALSE(contains(parser.registeredBehaviorTrees(), "FromInclude"));
+  EXPECT_EQ(parser.registeredBehaviorTrees(), Names{});
 }
 
-// A load call that succeeds must still register everything, includes included.
 TEST(XMLParserTest, AcceptedIncludeKeepsItsTree)
 {
-  TempDir dir;
-  dir.write("sub.xml", R"(<root BTCPP_format="4">
-    <BehaviorTree ID="FromInclude">
-      <AlwaysSuccess />
-    </BehaviorTree>
-  </root>)");
-
-  const auto main_xml = dir.write("main.xml", R"(<root BTCPP_format="4">
-    <include path="sub.xml"/>
-    <BehaviorTree ID="MainTree">
-      <AlwaysSuccess />
-    </BehaviorTree>
-  </root>)");
+  TempSubdir dir;
+  const auto main_xml = writeMainWithInclude(dir, "AlwaysSuccess");
 
   BehaviorTreeFactory factory;
   XMLParser parser(factory);
   parser.loadFromFile(main_xml);
-
-  const auto registered = parser.registeredBehaviorTrees();
-  EXPECT_TRUE(contains(registered, "FromInclude"));
-  EXPECT_TRUE(contains(registered, "MainTree"));
+  EXPECT_EQ(parser.registeredBehaviorTrees(), (Names{ "FromInclude", "MainTree" }));
 }
 
-// A rejected load that redefined a tree must put the previous definition back:
-// the new element lives in the document that is about to be erased, so leaving
-// it in place would leave tree_roots pointing into freed memory.
+// The rejected load's documents must all be dropped: a leftover included
+// document would become the first one, and its main_tree_to_execute would be
+// picked for a later file that does not name its main tree.
+TEST(XMLParserTest, RejectedIncludeIsNotTheFirstDocument)
+{
+  TempSubdir dir;
+  writeFile(dir.path / "sub.xml",
+            R"(<root BTCPP_format="4" main_tree_to_execute="FromInclude">)" +
+                tree("FromInclude", "AlwaysSuccess") + "</root>");
+  const auto main_xml = dir.path / "main.xml";
+  writeFile(main_xml, treeXml(R"(<include path="sub.xml"/>)" +
+                              tree("MainTree", "NotARegisteredNode")));
+
+  BehaviorTreeFactory factory;
+  EXPECT_THROW(factory.registerBehaviorTreeFromFile(main_xml), std::exception);
+
+  // two trees and no main_tree_to_execute: ambiguous, must be rejected
+  const auto ambiguous =
+      treeXml(tree("A", "AlwaysSuccess") + tree("FromInclude", "AlwaysFailure"));
+  EXPECT_THROW(std::ignore = factory.createTreeFromText(ambiguous), RuntimeError);
+}
+
+// A tree redefined by a valid include of a rejected file must get its
+// previous definition back: the redefining document is erased.
 TEST(XMLParserTest, RejectedRedefinitionRestoresPreviousTree)
 {
-  TempDir dir;
-  const auto good = dir.write("good.xml", R"(<root BTCPP_format="4">
-    <BehaviorTree ID="Shared">
-      <AlwaysSuccess/>
-    </BehaviorTree>
-  </root>)");
-
-  const auto bad = dir.write("bad.xml", R"(<root BTCPP_format="4">
-    <BehaviorTree ID="Shared">
-      <NotARegisteredNode />
-    </BehaviorTree>
-  </root>)");
-
-  // Use the factory's own parser: createTree() reads that one's tree_roots,
-  // so this exercises the same state a user would hit.
-  BehaviorTreeFactory factory;
-  factory.registerBehaviorTreeFromFile(good);
-
-  EXPECT_THROW(factory.registerBehaviorTreeFromFile(bad), std::exception);
-
-  // The first definition must still be usable, not just present by name.
-  EXPECT_NO_THROW({
-    auto tree = factory.createTree("Shared");
-    EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
-  });
-}
-
-// Trees registered by an earlier, successful load must survive a later
-// rejected one.
-TEST(XMLParserTest, RollbackKeepsEarlierTrees)
-{
-  TempDir dir;
-  const auto good = dir.write("good.xml", R"(<root BTCPP_format="4">
-    <BehaviorTree ID="Good">
-      <AlwaysSuccess />
-    </BehaviorTree>
-  </root>)");
-
-  const auto bad = dir.write("bad.xml", R"(<root BTCPP_format="4">
-    <BehaviorTree ID="Bad">
-      <NotARegisteredNode />
-    </BehaviorTree>
-  </root>)");
+  TempSubdir dir;
+  writeFile(dir.path / "good.xml", treeXml(tree("Shared", "AlwaysSuccess")));
+  writeFile(dir.path / "redefine.xml", treeXml(tree("Shared", "AlwaysFailure")));
+  writeFile(dir.path / "main.xml", treeXml(R"(<include path="redefine.xml"/>)" +
+                                           tree("MainTree", "NotARegisteredNode")));
 
   BehaviorTreeFactory factory;
-  XMLParser parser(factory);
-  parser.loadFromFile(good);
+  factory.registerBehaviorTreeFromFile(dir.path / "good.xml");
+  EXPECT_THROW(factory.registerBehaviorTreeFromFile(dir.path / "main.xml"),
+               std::exception);
 
-  EXPECT_THROW(parser.loadFromFile(bad), std::exception);
-
-  const auto registered = parser.registeredBehaviorTrees();
-  EXPECT_TRUE(contains(registered, "Good"));
-  EXPECT_FALSE(contains(registered, "Bad"));
+  auto tree_instance = factory.createTree("Shared");
+  EXPECT_EQ(tree_instance.tickOnce(), NodeStatus::SUCCESS);
 }

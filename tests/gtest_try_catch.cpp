@@ -14,6 +14,8 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 
+#include <stdexcept>
+
 #include <gtest/gtest.h>
 
 using BT::NodeStatus;
@@ -339,6 +341,36 @@ TEST_F(TryCatchTest, CatchOnHalt_Enabled)
   // Halt while try-block is RUNNING; catch_on_halt is true
   tree.haltTree();
   ASSERT_EQ(catch_count, 1);  // Catch executed on halt
+}
+
+// Destroying a RUNNING tree halts it; a catch child that throws during that
+// halt must not escape Tree::~Tree() and call std::terminate (issue #1281).
+TEST_F(TryCatchTest, CatchOnHalt_ThrowInDestructorDoesNotTerminate)
+{
+  factory.registerSimpleCondition("AlwaysRunning",
+                                  [](BT::TreeNode&) { return NodeStatus::RUNNING; });
+  int catch_ticks = 0;
+  factory.registerSimpleAction("ThrowingCatch",
+                               [&catch_ticks](BT::TreeNode&) -> NodeStatus {
+                                 catch_ticks++;
+                                 throw std::runtime_error("thrown while halting");
+                               });
+
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <TryCatch catch_on_halt="true">
+            <AlwaysRunning/>
+            <ThrowingCatch/>
+          </TryCatch>
+       </BehaviorTree>
+    </root>)";
+
+  {
+    auto tree = factory.createTreeFromText(xml_text);
+    EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  }
+  EXPECT_EQ(catch_ticks, 1);
 }
 
 TEST_F(TryCatchTest, CatchOnHalt_NotTriggeredWhenAlreadyInCatch)
