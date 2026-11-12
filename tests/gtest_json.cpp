@@ -2,6 +2,9 @@
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/json_export.h"
 
+#include <tuple>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 //----------- Custom types ----------
@@ -482,4 +485,16 @@ TEST_F(JsonTest, VectorOfCustomTypes)
 
   ASSERT_EQ(poses[1].pos, poses_out[1].pos);
   ASSERT_EQ(poses[1].rot, poses_out[1].rot);
+}
+
+// The converters read the stored value through details::anyRef, which must
+// throw instead of dereferencing nullptr on an empty or mismatched BT::Any.
+TEST(JsonExporterDetails, AnyRefThrowsOnTypeMismatch)
+{
+  const std::vector<int> vec = { 1, 2, 3 };
+  EXPECT_EQ(BT::details::anyRef<std::vector<int>>(BT::Any(vec)), vec);
+  EXPECT_THROW(std::ignore = BT::details::anyRef<std::vector<int>>(BT::Any()),
+               BT::LogicError);
+  EXPECT_THROW(std::ignore = BT::details::anyRef<std::vector<double>>(BT::Any(vec)),
+               BT::LogicError);
 }
