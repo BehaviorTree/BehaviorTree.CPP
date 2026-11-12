@@ -345,32 +345,39 @@ TEST_F(TryCatchTest, CatchOnHalt_Enabled)
 
 // Destroying a RUNNING tree halts it; a catch child that throws during that
 // halt must not escape Tree::~Tree() and call std::terminate (issue #1281).
+// Covers both a std::exception and any other thrown type.
 TEST_F(TryCatchTest, CatchOnHalt_ThrowInDestructorDoesNotTerminate)
 {
   factory.registerSimpleCondition("AlwaysRunning",
                                   [](BT::TreeNode&) { return NodeStatus::RUNNING; });
   int catch_ticks = 0;
-  factory.registerSimpleAction("ThrowingCatch",
-                               [&catch_ticks](BT::TreeNode&) -> NodeStatus {
-                                 catch_ticks++;
-                                 throw std::runtime_error("thrown while halting");
-                               });
+  factory.registerSimpleAction("ThrowStd", [&catch_ticks](BT::TreeNode&) -> NodeStatus {
+    catch_ticks++;
+    throw std::runtime_error("thrown while halting");
+  });
+  factory.registerSimpleAction("ThrowInt", [&catch_ticks](BT::TreeNode&) -> NodeStatus {
+    catch_ticks++;
+    throw 42;
+  });
 
-  const std::string xml_text = R"(
-    <root BTCPP_format="4">
-       <BehaviorTree>
-          <TryCatch catch_on_halt="true">
-            <AlwaysRunning/>
-            <ThrowingCatch/>
-          </TryCatch>
-       </BehaviorTree>
-    </root>)";
-
+  for(const std::string catch_node : { "ThrowStd", "ThrowInt" })
   {
-    auto tree = factory.createTreeFromText(xml_text);
-    EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    const std::string xml_text = R"(
+      <root BTCPP_format="4">
+         <BehaviorTree>
+            <TryCatch catch_on_halt="true">
+              <AlwaysRunning/>
+              <)" + catch_node + R"(/>
+            </TryCatch>
+         </BehaviorTree>
+      </root>)";
+
+    {
+      auto tree = factory.createTreeFromText(xml_text);
+      EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    }
   }
-  EXPECT_EQ(catch_ticks, 1);
+  EXPECT_EQ(catch_ticks, 2);
 }
 
 TEST_F(TryCatchTest, CatchOnHalt_NotTriggeredWhenAlreadyInCatch)
