@@ -152,7 +152,8 @@ TEST(SimpleStringTest, CopyAssignmentToDefault)
 TEST(SimpleStringTest, SelfCopyAssignment)
 {
   SimpleString s("test");
-  s = s;
+  const auto& alias = s;  // hide the self-assignment from -Wself-assign
+  s = alias;
   EXPECT_EQ(s.size(), 4);
   EXPECT_STREQ(s.data(), "test");
 }
@@ -215,7 +216,8 @@ TEST(SimpleStringTest, MoveAssignmentToDefault)
 TEST(SimpleStringTest, SelfMoveAssignment)
 {
   SimpleString s("test");
-  s = std::move(s);
+  auto& alias = s;  // hide the self-move from -Wself-move
+  s = std::move(alias);
   EXPECT_EQ(s.size(), 4);
   EXPECT_STREQ(s.data(), "test");
 }

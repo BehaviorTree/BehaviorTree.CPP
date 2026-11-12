@@ -20,9 +20,14 @@ jobs:
           # which configures with -DCMAKE_INSTALL_LIBDIR=lib/<multiarch>.
           # AFTER_SCRIPT asserts that the library is still installed to
           # $prefix/lib, as required by ament tooling (see issue #1175).
+          # Release: downstream packages (e.g. Nav2) build our headers with
+          # -Werror on this GCC; -Wnull-dereference only fires with
+          # optimization enabled (see issue #1288).
           - ROS_DISTRO: lyrical
             ROS_REPO: main
-            TARGET_CMAKE_ARGS: -DCMAKE_INSTALL_LIBDIR=lib/x86_64-linux-gnu
+            TARGET_CMAKE_ARGS: >-
+              -DCMAKE_INSTALL_LIBDIR=lib/x86_64-linux-gnu
+              -DCMAKE_BUILD_TYPE=Release
             AFTER_SCRIPT: >-
               lib=$(find "$BASEDIR/target_ws/install" -name libbehaviortree_cpp.so);
               echo "libbehaviortree_cpp.so installed at: ${lib:-NOT FOUND}";

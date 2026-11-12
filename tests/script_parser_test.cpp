@@ -3,6 +3,8 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/scripting/operators.hpp"
 
+#include <tuple>
+
 #include <gtest/gtest.h>
 
 #include "../sample_nodes/dummy_nodes.h"
@@ -233,7 +235,7 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(GetResult("y | x").cast<double>(), (5 | 3));
   EXPECT_EQ(GetResult("y ^ x").cast<double>(), (5 ^ 3));
 
-  EXPECT_ANY_THROW(auto res = GetResult("y ^ 5.1").cast<double>());
+  EXPECT_ANY_THROW(std::ignore = GetResult("y ^ 5.1").cast<double>());
 
   // test string variables
   EXPECT_EQ(GetResult("A:='hello'; B:=' '; C:='world'; A+B+C").cast<std::string>(), "hell"

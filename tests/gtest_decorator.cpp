@@ -100,7 +100,7 @@ struct TimeoutAndRetry : testing::Test
   BT::TimeoutNode timeout_root;
   BT::SyncActionTest action;
 
-  TimeoutAndRetry() : timeout_root("deadline", 9), retry("retry", 1000), action("action")
+  TimeoutAndRetry() : retry("retry", 1000), timeout_root("deadline", 9), action("action")
   {
     timeout_root.setChild(&retry);
     retry.setChild(&action);

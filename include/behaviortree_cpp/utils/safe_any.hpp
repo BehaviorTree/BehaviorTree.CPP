@@ -265,8 +265,7 @@ inline bool ValidCast(const SRC& val)
         {
           return false;
         }
-        SRC back_conv = static_cast<SRC>(as_float);
-        return back_conv == val;
+        // the round-trip check below completes the test
       }
     }
     // Handle conversion to integral

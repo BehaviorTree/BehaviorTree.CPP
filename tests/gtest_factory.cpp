@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -114,7 +115,8 @@ TEST(BehaviorTreeFactory, NotRegisteredNode)
 {
   BehaviorTreeFactory factory;
   ASSERT_ANY_THROW((void)factory.createTreeFromText(xml_text));
-  ASSERT_ANY_THROW(std::make_shared<BT::Tree>(factory.createTreeFromText(xml_text)));
+  ASSERT_ANY_THROW(std::ignore =
+                       std::make_shared<BT::Tree>(factory.createTreeFromText(xml_text)));
 }
 
 TEST(BehaviorTreeFactory, XMLParsingOrder)
@@ -366,14 +368,14 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesItself)
 {
   BehaviorTreeFactory factory;
   std::string path = FilePath("trees/self_include.xml");
-  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+  ASSERT_THROW(std::ignore = factory.createTreeFromFile(path), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, CreateTreeFromFileWithCyclicIncludes)
 {
   BehaviorTreeFactory factory;
   std::string path = FilePath("trees/parent_include_child_cycle.xml");
-  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+  ASSERT_THROW(std::ignore = factory.createTreeFromFile(path), RuntimeError);
 
   // a failed load must not leave stale state behind in the factory's parser
   Tree tree = factory.createTreeFromFile(FilePath("trees/parent_include_child.xml"));

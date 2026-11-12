@@ -60,16 +60,19 @@ TEST(Substitution, Parser)
   ASSERT_EQ(rules.count("actionD"), 1);
 
   auto configA = std::get_if<TestNodeConfig>(&rules.at("actionA"));
+  ASSERT_NE(configA, nullptr);
   ASSERT_EQ(configA->return_status, NodeStatus::SUCCESS);
   ASSERT_EQ(configA->async_delay, std::chrono::milliseconds(2000));
   ASSERT_EQ(configA->post_script, "msg ='message SUBSTITUED'");
 
   auto configB = std::get_if<TestNodeConfig>(&rules.at("actionB"));
+  ASSERT_NE(configB, nullptr);
   ASSERT_EQ(configB->return_status, NodeStatus::FAILURE);
   ASSERT_EQ(configB->async_delay, std::chrono::milliseconds(0));
   ASSERT_TRUE(configB->post_script.empty());
 
   auto configScript = std::get_if<TestNodeConfig>(&rules.at("actionD"));
+  ASSERT_NE(configScript, nullptr);
   ASSERT_FALSE(configScript->return_status_script.empty());
   ASSERT_EQ(configScript->return_status_script, "(mock_should_fail == true) ? FAILURE : "
                                                 "SUCCESS");
@@ -139,17 +142,17 @@ TEST(Substitution, ParserRejectsNonIntegerAsyncDelay)
   // number and casts an out-of-range one to int (undefined behavior).
   for(const char* delay : { "1e300", "2.5", "5000000000" })
   {
-    const std::string json_text = std::string(R"(
+    const std::string bad_json = std::string(R"(
     {
       "TestNodeConfigs": {
         "Delayed": { "return_status": "SUCCESS", "async_delay": )") +
-                                  delay + R"( }
+                                 delay + R"( }
       },
       "SubstitutionRules": { "actionA": "Delayed" }
     })";
 
     BehaviorTreeFactory factory;
-    ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(json_text), RuntimeError) << delay;
+    ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(bad_json), RuntimeError) << delay;
   }
 }
 
@@ -639,4 +642,26 @@ TEST(Substitution, DestroyTestNodeWithPendingAsyncDelay)
   auto node = std::make_unique<TestNode>("mock", NodeConfig{}, test_config);
   ASSERT_EQ(node->executeTick(), NodeStatus::RUNNING);
   node.reset();
+}
+
+// The constructor taking TestNodeConfig by value is deprecated but still
+// public: keep it working (it delegates to the shared_ptr overload).
+TEST(Substitution, DeprecatedTestNodeConstructor)
+{
+  BT::TestNodeConfig test_config;
+  test_config.return_status = BT::NodeStatus::FAILURE;
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  BT::TestNode node("test", BT::NodeConfig{}, test_config);
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
+  EXPECT_EQ(node.executeTick(), BT::NodeStatus::FAILURE);
 }

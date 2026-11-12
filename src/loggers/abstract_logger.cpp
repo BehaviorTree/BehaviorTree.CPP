@@ -90,7 +90,7 @@ void StatusChangeLogger::handleStatusChange(TimePoint timestamp, const TreeNode&
   // Copy state under lock, then release before calling user code
   // This prevents recursive mutex locking when multiple nodes change status
   bool should_callback = false;
-  Duration adjusted_timestamp;
+  Duration adjusted_timestamp{};
   {
     std::unique_lock lk(_p->callback_mutex);
     if(_p->enabled && (status != NodeStatus::IDLE || _p->show_transition_to_idle))

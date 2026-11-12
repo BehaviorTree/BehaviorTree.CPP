@@ -52,7 +52,7 @@ int main()
   // a certain set of transitions happened as expected
   BT::TreeObserver observer(tree);
 
-  std::map<int, std::string> UID_to_path;
+  std::map<uint16_t, std::string> UID_to_path;
 
   // Print the unique ID and the corresponding human readable path
   // Path is also expected to be unique.
@@ -64,7 +64,7 @@ int main()
   tree.tickWhileRunning();
 
   // You can access a specific statistic, using is full path or the UID
-  const auto& last_action_stats = observer.getStatistics("last_action");
+  [[maybe_unused]] const auto& last_action_stats = observer.getStatistics("last_action");
   assert(last_action_stats.transitions_count > 0);
 
   std::cout << "----------------" << std::endl;

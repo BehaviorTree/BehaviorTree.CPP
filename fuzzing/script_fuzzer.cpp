@@ -50,7 +50,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
           if(result.isNumber())
           {
-            volatile auto num = result.cast<double>();
+            [[maybe_unused]] volatile auto num = result.cast<double>();
           }
 
           env.vars->set("result", result);

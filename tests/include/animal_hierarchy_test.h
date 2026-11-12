@@ -3,13 +3,14 @@
 #include <memory>
 #include <string>
 
-// Animal hierarchy for testing polymorphic port connections
-//
-//         Animal
-//        /      \
-//      Cat      Dog
-//       |
-//    Sphynx
+/* Animal hierarchy for testing polymorphic port connections
+
+         Animal
+        /      \
+      Cat      Dog
+       |
+    Sphynx
+*/
 
 class Animal
 {

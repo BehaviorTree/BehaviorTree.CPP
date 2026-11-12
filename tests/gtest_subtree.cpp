@@ -4,6 +4,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <set>
+#include <tuple>
 
 #include <gtest/gtest.h>
 
@@ -1344,7 +1345,7 @@ TEST(SubTree, DeclaredPortNameThatCannotBeBound)
 </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
+  EXPECT_THROW(std::ignore = factory.createTreeFromText(xml_text), RuntimeError);
 }
 
 // The same underscore attribute on a SubTree that does not declare it is not a
@@ -1367,7 +1368,7 @@ TEST(SubTree, UndeclaredUnderscoreAttributeIsNotAPort)
 </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_NO_THROW(factory.createTreeFromText(xml_text));
+  EXPECT_NO_THROW(std::ignore = factory.createTreeFromText(xml_text));
 }
 
 // A declared port nobody remaps stays inert and keeps loading, so existing trees
@@ -1390,7 +1391,7 @@ TEST(SubTree, DeclaredUnbindablePortLoadsWhenNotRemapped)
 </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_NO_THROW(factory.createTreeFromText(xml_text));
+  EXPECT_NO_THROW(std::ignore = factory.createTreeFromText(xml_text));
 }
 
 namespace

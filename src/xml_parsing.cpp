@@ -297,10 +297,6 @@ private:
   void loadSubtreeModel(const XMLElement* xml_root);
 };
 
-#if defined(__linux) || defined(__linux__)
-#pragma GCC diagnostic pop
-#endif
-
 XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new PImpl(factory))
 {}
 
@@ -904,7 +900,7 @@ TreeNode::Ptr XMLParser::PImpl::createNodeFromXML(const XMLElement* element,
             {
               port_model.converter()(port_value);
             }
-            catch(std::exception& ex)
+            catch(const std::exception&)
             {
               auto msg = StrCat("The port with name \"", port_name, "\" and value \"",
                                 port_value, "\" can not be converted to ",

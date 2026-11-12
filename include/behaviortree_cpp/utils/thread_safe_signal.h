@@ -45,12 +45,13 @@ public:
 
   void notify(CallableArgs... args)
   {
-    std::vector<std::weak_ptr<Subscription>> subscribers;
-    {
+    // Copy-construct the snapshot: copy-assigning the vector triggers a
+    // -Wnull-dereference false positive in GCC 15 at -O2 (issue #1288).
+    const auto subscribers = [this] {
       const std::scoped_lock lock(mutex_);
       removeExpired();
-      subscribers = subscribers_;
-    }
+      return subscribers_;
+    }();
     for(const auto& weak_subscriber : subscribers)
     {
       if(auto subscriber = weak_subscriber.lock())

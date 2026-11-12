@@ -426,17 +426,20 @@ TEST(Parallel, FailingParallel)
   BT::TestNodeConfig good_config;
   good_config.async_delay = std::chrono::milliseconds(200);
   good_config.return_status = NodeStatus::SUCCESS;
-  factory.registerNodeType<BT::TestNode>("GoodTest", good_config);
+  factory.registerNodeType<BT::TestNode>(
+      "GoodTest", std::make_shared<BT::TestNodeConfig>(good_config));
 
   BT::TestNodeConfig bad_config;
   bad_config.async_delay = std::chrono::milliseconds(100);
   bad_config.return_status = NodeStatus::FAILURE;
-  factory.registerNodeType<BT::TestNode>("BadTest", bad_config);
+  factory.registerNodeType<BT::TestNode>(
+      "BadTest", std::make_shared<BT::TestNodeConfig>(bad_config));
 
   BT::TestNodeConfig slow_config;
   slow_config.async_delay = std::chrono::milliseconds(300);
   slow_config.return_status = NodeStatus::SUCCESS;
-  factory.registerNodeType<BT::TestNode>("SlowTest", slow_config);
+  factory.registerNodeType<BT::TestNode>(
+      "SlowTest", std::make_shared<BT::TestNodeConfig>(slow_config));
 
   auto tree = factory.createTreeFromText(xml_text);
   BT::TreeObserver observer(tree);
@@ -458,12 +461,14 @@ TEST(Parallel, ParallelAll)
   BT::TestNodeConfig good_config;
   good_config.async_delay = std::chrono::milliseconds(300);
   good_config.return_status = NodeStatus::SUCCESS;
-  factory.registerNodeType<BT::TestNode>("GoodTest", good_config);
+  factory.registerNodeType<BT::TestNode>(
+      "GoodTest", std::make_shared<BT::TestNodeConfig>(good_config));
 
   BT::TestNodeConfig bad_config;
   bad_config.async_delay = std::chrono::milliseconds(100);
   bad_config.return_status = NodeStatus::FAILURE;
-  factory.registerNodeType<BT::TestNode>("BadTest", bad_config);
+  factory.registerNodeType<BT::TestNode>(
+      "BadTest", std::make_shared<BT::TestNodeConfig>(bad_config));
 
   {
     const char* xml_text = R"(

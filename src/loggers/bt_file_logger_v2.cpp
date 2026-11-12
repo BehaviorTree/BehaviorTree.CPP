@@ -113,7 +113,7 @@ void FileLogger2::callback(Duration timestamp, const TreeNode& node,
   Transition trans{};
   trans.timestamp_usec = uint64_t(ToUsec(timestamp - _p->first_timestamp));
   trans.node_uid = node.UID();
-  trans.status = static_cast<uint64_t>(status);
+  trans.status = static_cast<uint8_t>(status);
   {
     const std::scoped_lock lock(_p->queue_mutex);
     _p->transitions_queue.push_back(trans);
