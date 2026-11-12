@@ -2,6 +2,24 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Roll back a rejected XML load as a whole, and keep Tree's destructor from throwing (`#1289 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1289>`_)
+  Fixes `#1282 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1282>`_ and `#1281 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1281>`_.
+  * Behavior change: when a load call fails, the trees registered by its valid
+    <include> files are dropped too, and a tree it redefined gets its previous
+    definition back. Before, they stayed registered.
+  * Tree::~Tree() no longer calls std::terminate when halting throws (e.g. a TryCatch
+    with catch_on_halt="true"); the exception is printed to stderr.
+* Fix GCC 15 -Wnull-dereference in public headers; always build with -Werror (`#1290 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1290>`_)
+  Fixes `#1288 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1288>`_.
+  * The library, tests and examples always build with -Wall -Wextra -Wpedantic
+    -Wnull-dereference -Werror (MSVC: /W4 /WX). This applies only to in-tree
+    targets; it is not exported to downstream packages.
+  * Behavior change: JsonExporter throws LogicError when a BT::Any does not hold the
+    type its converter expects. Before, this was a null dereference (undefined behavior).
+* Contributors: Davide Faconti, Marco Matteo Bassa, 渠超胜
+
 4.11.0 (2026-11-08)
 -------------------
 * Feature: advanced xml validation (`#1146 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1146>`_)
