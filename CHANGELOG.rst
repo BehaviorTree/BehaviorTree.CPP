@@ -2,8 +2,8 @@
 Changelog for package behaviortree_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.11.1 (2026-11-12)
+-------------------
 * Roll back a rejected XML load as a whole, and keep Tree's destructor from throwing (`#1289 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1289>`_)
   Fixes `#1282 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1282>`_ and `#1281 <https://github.com/BehaviorTree/BehaviorTree.CPP/issues/1281>`_.
   * Behavior change: when a load call fails, the trees registered by its valid
