@@ -376,7 +376,7 @@ TEST_F(TryCatchTest, AsyncCatchCompletesInsideSequence)
   // The catch child returns RUNNING for 5 ticks, then SUCCESS.
   // Verify that the Sequence keeps ticking TryCatch, which keeps
   // ticking the catch child until it completes.
-  const int kRunningTicks = 5;
+  static constexpr int kRunningTicks = 5;
   int catch_ticks = 0;
   factory.registerSimpleCondition("AsyncCleanup", [&catch_ticks](BT::TreeNode&) {
     catch_ticks++;
