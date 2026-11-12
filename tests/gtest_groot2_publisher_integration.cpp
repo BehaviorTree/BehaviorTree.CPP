@@ -207,7 +207,7 @@ TEST(Groot2PublisherIntegration, HookRequestRejectsNonIntegerUid)
 
   // get<uint16_t>() used to wrap uid + 65536 and truncate uid + 0.5 to the uid
   // of the node, and to cast 1e300 out of range (undefined behavior).
-  for(const nlohmann::json bad_uid :
+  for(const nlohmann::json& bad_uid :
       { nlohmann::json(uid + 65536), nlohmann::json(uid + 0.5), nlohmann::json(1e300) })
   {
     auto hook = Groot2Test::makeHook(uid, BT::Monitor::Hook::Mode::REPLACE,

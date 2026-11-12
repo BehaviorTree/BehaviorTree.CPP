@@ -366,14 +366,14 @@ TEST(BehaviorTreeFactory, CreateTreeFromFileWhichIncludesItself)
 {
   BehaviorTreeFactory factory;
   std::string path = FilePath("trees/self_include.xml");
-  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+  ASSERT_THROW((void)factory.createTreeFromFile(path), RuntimeError);
 }
 
 TEST(BehaviorTreeFactory, CreateTreeFromFileWithCyclicIncludes)
 {
   BehaviorTreeFactory factory;
   std::string path = FilePath("trees/parent_include_child_cycle.xml");
-  ASSERT_THROW(factory.createTreeFromFile(path), RuntimeError);
+  ASSERT_THROW((void)factory.createTreeFromFile(path), RuntimeError);
 
   // a failed load must not leave stale state behind in the factory's parser
   Tree tree = factory.createTreeFromFile(FilePath("trees/parent_include_child.xml"));

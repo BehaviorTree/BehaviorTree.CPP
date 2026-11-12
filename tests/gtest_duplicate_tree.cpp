@@ -155,8 +155,8 @@ TEST(DuplicateBehaviorTreeId, RepeatedInlineTextIsSilent)
   BehaviorTreeFactory factory;
   const std::string xml = minimalTreeXml("MainTree");
   const auto output = captureStdout([&] {
-    factory.createTreeFromText(xml);
-    factory.createTreeFromText(xml);
+    (void)factory.createTreeFromText(xml);
+    (void)factory.createTreeFromText(xml);
   });
   EXPECT_FALSE(hasWarning(output)) << output;
 }

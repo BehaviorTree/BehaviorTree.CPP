@@ -110,13 +110,13 @@ TEST(Any, Cast)
   // Signed int.
   {
     Any a(42);
-    EXPECT_ANY_THROW(auto res = a.cast<bool>());
+    EXPECT_ANY_THROW((void)a.cast<bool>());
     EXPECT_EQ(a.cast<int>(), 42);
     EXPECT_EQ(a.cast<double>(), 42.0);
     EXPECT_EQ(a.cast<std::string>(), "42");
 
     Any b(-43);
-    EXPECT_ANY_THROW(auto res = b.cast<bool>());
+    EXPECT_ANY_THROW((void)b.cast<bool>());
     EXPECT_EQ(b.cast<int>(), -43);
     EXPECT_EQ(b.cast<double>(), -43.0);
     EXPECT_EQ(b.cast<std::string>(), "-43");
@@ -139,7 +139,7 @@ TEST(Any, Cast)
   // unsigned int.
   {
     Any a(43u);
-    EXPECT_ANY_THROW(auto res = a.cast<bool>());
+    EXPECT_ANY_THROW((void)a.cast<bool>());
     EXPECT_EQ(a.cast<unsigned int>(), 43u);
     EXPECT_EQ(a.cast<int>(), 43);
     EXPECT_EQ(a.cast<double>(), 43.0);
@@ -182,7 +182,7 @@ TEST(Any, Cast)
     EXPECT_TRUE(b.cast<bool>());
     EXPECT_EQ(typeid(b.cast<bool>()), typeid(bool));
     // EXPECT_EQ(b.cast<int>(), 44);?
-    EXPECT_ANY_THROW(auto res = b.cast<int>());
+    EXPECT_ANY_THROW((void)b.cast<int>());
     EXPECT_EQ(b.cast<double>(), 44.1);
 #if __cpp_lib_to_chars >= 201611L
     const std::string b_str = b.cast<std::string>();
@@ -196,13 +196,13 @@ TEST(Any, Cast)
     Any c(44.9);
     EXPECT_TRUE(c.cast<bool>());
     // EXPECT_EQ(c.cast<int>(), 44);?
-    EXPECT_ANY_THROW(auto res = c.cast<int>());
+    EXPECT_ANY_THROW((void)c.cast<int>());
     EXPECT_EQ(c.cast<double>(), 44.9);
 
     Any d(-45.0);
     EXPECT_TRUE(c.cast<bool>());
     // EXPECT_EQ(c.cast<int>(), -45);?
-    EXPECT_ANY_THROW(auto res = c.cast<int>());
+    EXPECT_ANY_THROW((void)c.cast<int>());
 
     Any e(0.0);
     EXPECT_FALSE(e.cast<bool>());
@@ -212,18 +212,18 @@ TEST(Any, Cast)
   // String.
   {
     Any a(std::string{ "fifty" });
-    EXPECT_ANY_THROW(auto res = a.cast<bool>());
-    EXPECT_ANY_THROW(auto res = a.cast<int>());
-    EXPECT_ANY_THROW(auto res = a.cast<double>());
+    EXPECT_ANY_THROW((void)a.cast<bool>());
+    EXPECT_ANY_THROW((void)a.cast<int>());
+    EXPECT_ANY_THROW((void)a.cast<double>());
     EXPECT_EQ(a.cast<std::string>(), "fifty");
 
     Any b(std::string{ "true" });
     // EXPECT_TRUE(b.cast<bool>());?
-    EXPECT_ANY_THROW(auto res = b.cast<bool>());
+    EXPECT_ANY_THROW((void)b.cast<bool>());
 
     Any c(std::string{ "false" });
     // EXPECT_FALSE(c.cast<bool>());?
-    EXPECT_ANY_THROW(auto res = c.cast<bool>());
+    EXPECT_ANY_THROW((void)c.cast<bool>());
 
     Any d(std::string{ "0" });
     // EXPECT_FALSE(d.cast<bool>());?
@@ -236,12 +236,12 @@ TEST(Any, Cast)
     EXPECT_EQ(e.cast<double>(), 1.0);
 
     Any f(std::string{ "51" });
-    EXPECT_ANY_THROW(auto res = f.cast<bool>());
+    EXPECT_ANY_THROW((void)f.cast<bool>());
     EXPECT_EQ(f.cast<int>(), 51);
     EXPECT_EQ(f.cast<double>(), 51.0);
 
     Any g(std::string{ "51.1" });
-    EXPECT_ANY_THROW(auto res = g.cast<bool>());
+    EXPECT_ANY_THROW((void)g.cast<bool>());
     EXPECT_EQ(g.cast<int>(), 51);
     EXPECT_DOUBLE_EQ(g.cast<double>(), 51.1);
   }
@@ -267,18 +267,18 @@ TEST(Any, StringToNumberIgnoresLocale)
   EXPECT_DOUBLE_EQ(Any(std::string("-0.25")).cast<double>(), -0.25);
   EXPECT_FLOAT_EQ(Any(std::string("1.5e2")).cast<float>(), 150.0f);
   EXPECT_EQ(Any(std::string("42")).cast<int>(), 42);
-  EXPECT_ANY_THROW(auto res = Any(std::string("fifty")).cast<double>());
+  EXPECT_ANY_THROW((void)Any(std::string("fifty")).cast<double>());
 }
 
 TEST(Any, StringToUint16IsRangeChecked)
 {
   // A string that doesn't fit in uint16_t must be rejected, not wrapped.
   EXPECT_EQ(Any(std::string("65535")).cast<uint16_t>(), 65535);
-  EXPECT_ANY_THROW(auto res = Any(std::string("65536")).cast<uint16_t>());
-  EXPECT_ANY_THROW(auto res = Any(std::string("70000")).cast<uint16_t>());
-  EXPECT_ANY_THROW(auto res = Any(std::string("-1")).cast<uint16_t>());
+  EXPECT_ANY_THROW((void)Any(std::string("65536")).cast<uint16_t>());
+  EXPECT_ANY_THROW((void)Any(std::string("70000")).cast<uint16_t>());
+  EXPECT_ANY_THROW((void)Any(std::string("-1")).cast<uint16_t>());
 
   auto bb = Blackboard::create();
   bb->set("value", std::string("70000"));
-  EXPECT_ANY_THROW(auto res = bb->get<uint16_t>("value"));
+  EXPECT_ANY_THROW((void)bb->get<uint16_t>("value"));
 }

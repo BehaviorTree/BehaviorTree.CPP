@@ -378,15 +378,14 @@ TEST_F(TryCatchTest, AsyncCatchCompletesInsideSequence)
   // ticking the catch child until it completes.
   const int kRunningTicks = 5;
   int catch_ticks = 0;
-  factory.registerSimpleCondition("AsyncCleanup",
-                                  [&catch_ticks, kRunningTicks](BT::TreeNode&) {
-                                    catch_ticks++;
-                                    if(catch_ticks <= kRunningTicks)
-                                    {
-                                      return NodeStatus::RUNNING;
-                                    }
-                                    return NodeStatus::SUCCESS;
-                                  });
+  factory.registerSimpleCondition("AsyncCleanup", [&catch_ticks](BT::TreeNode&) {
+    catch_ticks++;
+    if(catch_ticks <= kRunningTicks)
+    {
+      return NodeStatus::RUNNING;
+    }
+    return NodeStatus::SUCCESS;
+  });
 
   const std::string xml_text = R"(
     <root BTCPP_format="4">

@@ -376,6 +376,7 @@ TEST(Preconditions, Issue585)
   tree.tickWhileRunning();
 
   auto coro = dynamic_cast<CoroTestNode*>(tree.subtrees.front()->nodes.back().get());
+  ASSERT_NE(coro, nullptr);
   ASSERT_EQ(coro->times_ticked, 0);
 }
 

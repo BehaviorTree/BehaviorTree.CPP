@@ -297,10 +297,6 @@ private:
   void loadSubtreeModel(const XMLElement* xml_root);
 };
 
-#if defined(__linux) || defined(__linux__)
-#pragma GCC diagnostic pop
-#endif
-
 XMLParser::XMLParser(const BehaviorTreeFactory& factory) : _p(new PImpl(factory))
 {}
 

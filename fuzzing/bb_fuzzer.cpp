@@ -94,7 +94,7 @@ private:
           break;
         case 6: {
           // Try to get non-existent key
-          bb->get<int>(generateKey());
+          (void)bb->get<int>(generateKey());
           break;
         }
       }
@@ -112,16 +112,16 @@ private:
             bb->unset(existing_key);
             break;
           case 1:
-            bb->getEntry(existing_key);
+            (void)bb->getEntry(existing_key);
             break;
           case 2:
-            bb->get<int>(existing_key);
+            (void)bb->get<int>(existing_key);
             break;
           case 3:
-            bb->get<double>(existing_key);
+            (void)bb->get<double>(existing_key);
             break;
           case 4:
-            bb->get<std::string>(existing_key);
+            (void)bb->get<std::string>(existing_key);
             break;
         }
       }

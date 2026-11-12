@@ -288,15 +288,23 @@ target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
 if(MSVC)
     target_compile_options(${BTCPP_LIBRARY} PRIVATE "/source-charset:utf-8")
-else()
-    if(ENABLE_DEBUG)
-        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra -g3 -ggdb3 -O0 -fno-omit-frame-pointer)
-    else()
-        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
-    endif()
+elseif(ENABLE_DEBUG)
+    target_compile_options(${BTCPP_LIBRARY} PRIVATE -g3 -ggdb3 -O0 -fno-omit-frame-pointer)
 endif()
 
 add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
+
+# Downstream projects (e.g. Nav2) compile our public headers with -Werror, so
+# the library and every target below that instantiates them must be
+# warning-free (issue #1288). -Wnull-dereference only fires with optimization.
+# Set after the 3rdparty subdirectories, so vendored code is not affected.
+if(MSVC)
+    set(BTCPP_WARNING_FLAGS /W4 /WX /permissive-)
+else()
+    set(BTCPP_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wnull-dereference -Werror)
+endif()
+target_compile_options(${BTCPP_LIBRARY} PRIVATE ${BTCPP_WARNING_FLAGS})
+add_compile_options(${BTCPP_WARNING_FLAGS})
 
 # Add fuzzing targets
 if(ENABLE_FUZZING)

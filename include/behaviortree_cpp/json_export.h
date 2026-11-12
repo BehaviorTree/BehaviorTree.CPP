@@ -17,6 +17,22 @@
 namespace BT
 {
 
+namespace details
+{
+// Reference to the value of type T stored in entry; throws instead of
+// dereferencing nullptr when entry is empty or holds another type.
+template <typename T>
+const T& anyRef(const BT::Any& entry)
+{
+  const T* ptr = const_cast<BT::Any&>(entry).castPtr<T>();
+  if(ptr == nullptr)
+  {
+    throw LogicError("JsonExporter: BT::Any does not contain a ", demangle(typeid(T)));
+  }
+  return *ptr;
+}
+}  // namespace details
+
 /**
 *  To add new type to the JSON library, you should follow these instructions:
 *    https://json.nlohmann.me/features/arbitrary_types/
@@ -181,7 +197,7 @@ inline void JsonExporter::addConverter()
   type_names_.insert({ BT::demangle(typeid(T)), BT::TypeInfo::Create<T>() });
 
   ToJonConverter to_converter = [](const BT::Any& entry, nlohmann::json& dst) {
-    dst = *const_cast<BT::Any&>(entry).castPtr<T>();
+    dst = details::anyRef<T>(entry);
   };
   to_json_converters_.insert({ typeid(T), to_converter });
 
@@ -194,7 +210,7 @@ inline void JsonExporter::addConverter()
 
   //---- include vectors of T
   ToJonConverter to_array_converter = [](const BT::Any& entry, nlohmann::json& dst) {
-    dst = *const_cast<BT::Any&>(entry).castPtr<std::vector<T>>();
+    dst = details::anyRef<std::vector<T>>(entry);
   };
   to_json_converters_.insert({ typeid(std::vector<T>), to_array_converter });
 
@@ -225,7 +241,7 @@ JsonExporter::addConverter(std::function<void(const T&, nlohmann::json&)> func,
   //---------------------------------------------
   // add the vector<T> converter (must be created before moving converter)
   auto vector_converter = [converter](const BT::Any& entry, nlohmann::json& json) {
-    auto& vec = *const_cast<BT::Any&>(entry).castPtr<std::vector<T>>();
+    const auto& vec = details::anyRef<std::vector<T>>(entry);
     for(const auto& item : vec)
     {
       nlohmann::json item_json;

@@ -65,7 +65,7 @@ inline TreeNodeManifest CreateManifest(const std::string& ID,
 #endif
 
 #else
-#define BTCPP_EXPORT static
+#define BTCPP_EXPORT [[maybe_unused]] static
 #endif
 /* Use this macro to automatically register one or more custom Nodes
 * into a factory. For instance:

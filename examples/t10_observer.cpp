@@ -64,7 +64,7 @@ int main()
   tree.tickWhileRunning();
 
   // You can access a specific statistic, using is full path or the UID
-  const auto& last_action_stats = observer.getStatistics("last_action");
+  [[maybe_unused]] const auto& last_action_stats = observer.getStatistics("last_action");
   assert(last_action_stats.transitions_count > 0);
 
   std::cout << "----------------" << std::endl;

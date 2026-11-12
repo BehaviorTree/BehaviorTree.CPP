@@ -78,7 +78,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
       std::string random_xml = fdp.ConsumeRandomLengthString(size - 1);
       try
       {
-        factory.createTreeFromText(random_xml);
+        (void)factory.createTreeFromText(random_xml);
       }
       catch(const std::exception&)
       {}
@@ -105,7 +105,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
       switch(fdp.ConsumeIntegralInRange<int>(0, 2))
       {
         case 0:
-          factory.createTreeFromText(xml, blackboard);
+          (void)factory.createTreeFromText(xml, blackboard);
           break;
         case 1:
           BT::VerifyXML(xml, {});
@@ -114,7 +114,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
           factory.registerBehaviorTreeFromText(xml);
           if(!factory.registeredBehaviorTrees().empty())
           {
-            factory.createTree(factory.registeredBehaviorTrees().front(), blackboard);
+            (void)factory.createTree(factory.registeredBehaviorTrees().front(),
+                                     blackboard);
           }
           break;
       }

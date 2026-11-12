@@ -60,16 +60,19 @@ TEST(Substitution, Parser)
   ASSERT_EQ(rules.count("actionD"), 1);
 
   auto configA = std::get_if<TestNodeConfig>(&rules.at("actionA"));
+  ASSERT_NE(configA, nullptr);
   ASSERT_EQ(configA->return_status, NodeStatus::SUCCESS);
   ASSERT_EQ(configA->async_delay, std::chrono::milliseconds(2000));
   ASSERT_EQ(configA->post_script, "msg ='message SUBSTITUED'");
 
   auto configB = std::get_if<TestNodeConfig>(&rules.at("actionB"));
+  ASSERT_NE(configB, nullptr);
   ASSERT_EQ(configB->return_status, NodeStatus::FAILURE);
   ASSERT_EQ(configB->async_delay, std::chrono::milliseconds(0));
   ASSERT_TRUE(configB->post_script.empty());
 
   auto configScript = std::get_if<TestNodeConfig>(&rules.at("actionD"));
+  ASSERT_NE(configScript, nullptr);
   ASSERT_FALSE(configScript->return_status_script.empty());
   ASSERT_EQ(configScript->return_status_script, "(mock_should_fail == true) ? FAILURE : "
                                                 "SUCCESS");
