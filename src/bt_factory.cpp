@@ -729,8 +729,7 @@ Tree::~Tree() noexcept
     haltTree();
   }
   catch(...)
-  {
-  }
+  {}
 }
 
 NodeStatus Tree::tickExactlyOnce()

@@ -113,6 +113,8 @@ TEST(TreeDestructorTest, HaltStillRuns)
   auto tree = factory.createTreeFromText(xml_text);
   EXPECT_EQ(tree.tickOnce(), NodeStatus::SUCCESS);
   // Scoped, so the destructor runs here and the test can observe it.
-  EXPECT_NO_THROW({ auto scoped = factory.createTreeFromText(xml_text);
-                    scoped.tickOnce(); });
+  EXPECT_NO_THROW({
+    auto scoped = factory.createTreeFromText(xml_text);
+    scoped.tickOnce();
+  });
 }

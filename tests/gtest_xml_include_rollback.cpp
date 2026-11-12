@@ -8,10 +8,10 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
-#include <gtest/gtest.h>
-
 #include <filesystem>
 #include <fstream>
+
+#include <gtest/gtest.h>
 
 using namespace BT;
 
@@ -102,7 +102,8 @@ TEST(XMLParserTest, RejectedInlineIncludesKeepNoTree)
   XMLParser parser(factory);
 
   const std::string text = R"(<root BTCPP_format="4">
-    <include path=")" + dir.path().string() + R"(/sub.xml"/>
+    <include path=")" + dir.path().string() +
+                           R"(/sub.xml"/>
     <BehaviorTree ID="MainTree">
       <NotARegisteredNode />
     </BehaviorTree>
