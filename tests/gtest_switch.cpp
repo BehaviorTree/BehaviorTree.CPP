@@ -32,7 +32,6 @@ struct SwitchTest : testing::Test
     input.insert(std::make_pair("case_1", "1"));
     input.insert(std::make_pair("case_2", "42"));
 
-    BT::NodeConfig simple_switch_config_;
     simple_switch_config_.blackboard = bb;
     simple_switch_config_.input_ports = input;
 

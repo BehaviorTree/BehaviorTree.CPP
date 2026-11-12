@@ -142,17 +142,17 @@ TEST(Substitution, ParserRejectsNonIntegerAsyncDelay)
   // number and casts an out-of-range one to int (undefined behavior).
   for(const char* delay : { "1e300", "2.5", "5000000000" })
   {
-    const std::string json_text = std::string(R"(
+    const std::string bad_json = std::string(R"(
     {
       "TestNodeConfigs": {
         "Delayed": { "return_status": "SUCCESS", "async_delay": )") +
-                                  delay + R"( }
+                                 delay + R"( }
       },
       "SubstitutionRules": { "actionA": "Delayed" }
     })";
 
     BehaviorTreeFactory factory;
-    ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(json_text), RuntimeError) << delay;
+    ASSERT_THROW(factory.loadSubstitutionRuleFromJSON(bad_json), RuntimeError) << delay;
   }
 }
 

@@ -126,7 +126,8 @@ TEST(CoroTest, do_action_timeout)
 
   // Action takes longer than timeout -> should fail
   SimpleCoroAction node(LONG_ACTION_DURATION, false, "Action", node_config_);
-  BT::TimeoutNode timeout("TimeoutAction", TIMEOUT_DURATION.count());
+  BT::TimeoutNode timeout("TimeoutAction",
+                          static_cast<unsigned>(TIMEOUT_DURATION.count()));
 
   timeout.setChild(&node);
 
@@ -150,7 +151,7 @@ TEST(CoroTest, sequence_child)
   // First action completes, second gets halted by timeout
   SimpleCoroAction actionA(MEDIUM_ACTION_DURATION, false, "action_A", node_config_);
   SimpleCoroAction actionB(MEDIUM_ACTION_DURATION, false, "action_B", node_config_);
-  BT::TimeoutNode timeout("timeout", SEQUENCE_TIMEOUT.count());
+  BT::TimeoutNode timeout("timeout", static_cast<unsigned>(SEQUENCE_TIMEOUT.count()));
   BT::SequenceNode sequence("sequence");
 
   timeout.setChild(&sequence);

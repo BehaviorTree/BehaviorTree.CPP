@@ -4,6 +4,7 @@
 #include "behaviortree_cpp/loggers/bt_observer.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -584,7 +585,7 @@ public:
   }
 };
 
-long countOf(const std::vector<std::string>& log, const std::string& event)
+std::ptrdiff_t countOf(const std::vector<std::string>& log, const std::string& event)
 {
   return std::count(log.begin(), log.end(), event);
 }

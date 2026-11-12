@@ -299,7 +299,10 @@ add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
 # warning-free (issue #1288). -Wnull-dereference only fires with optimization.
 # Set after the 3rdparty subdirectories, so vendored code is not affected.
 if(MSVC)
-    set(BTCPP_WARNING_FLAGS /W4 /WX /permissive-)
+    # C4702 (unreachable code) is a code-generation warning that fires on
+    # instantiation-dependent `if constexpr` tails; GCC/Clang have no
+    # equivalent in -Wall -Wextra.
+    set(BTCPP_WARNING_FLAGS /W4 /WX /permissive- /wd4702)
 else()
     set(BTCPP_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wnull-dereference -Werror)
 endif()

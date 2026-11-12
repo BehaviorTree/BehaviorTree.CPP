@@ -115,7 +115,8 @@ TEST(BehaviorTreeFactory, NotRegisteredNode)
 {
   BehaviorTreeFactory factory;
   ASSERT_ANY_THROW((void)factory.createTreeFromText(xml_text));
-  ASSERT_ANY_THROW(std::make_shared<BT::Tree>(factory.createTreeFromText(xml_text)));
+  ASSERT_ANY_THROW(std::ignore =
+                       std::make_shared<BT::Tree>(factory.createTreeFromText(xml_text)));
 }
 
 TEST(BehaviorTreeFactory, XMLParsingOrder)
