@@ -643,3 +643,25 @@ TEST(Substitution, DestroyTestNodeWithPendingAsyncDelay)
   ASSERT_EQ(node->executeTick(), NodeStatus::RUNNING);
   node.reset();
 }
+
+// The constructor taking TestNodeConfig by value is deprecated but still
+// public: keep it working (it delegates to the shared_ptr overload).
+TEST(Substitution, DeprecatedTestNodeConstructor)
+{
+  BT::TestNodeConfig test_config;
+  test_config.return_status = BT::NodeStatus::FAILURE;
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  BT::TestNode node("test", BT::NodeConfig{}, test_config);
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
+  EXPECT_EQ(node.executeTick(), BT::NodeStatus::FAILURE);
+}
