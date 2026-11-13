@@ -1,7 +1,9 @@
 
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 
+#ifndef MTR_ENABLED
 #define MTR_ENABLED true
+#endif
 #include "minitrace.h"
 
 namespace BT
