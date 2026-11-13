@@ -16,6 +16,7 @@ option(BTCPP_SQLITE_LOGGING "Add SQLite logging." ON)
 option(BTCPP_ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BTCPP_ENABLE_UBSAN "Enable Undefined Behavior Sanitizer" OFF)
 option(BTCPP_ENABLE_TSAN "Enable Thread Sanitizer" OFF)
+option(BTCPP_ENABLE_WARNING_AS_ERROR "Specify whether to treat warnings on compile as errors." ON)
 
 option(USE_V3_COMPATIBLE_NAMES  "Use some alias to compile more easily old 3.x code" OFF)
 option(ENABLE_FUZZING "Enable fuzzing builds" OFF)
@@ -294,17 +295,19 @@ endif()
 
 add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
 
-# Downstream projects (e.g. Nav2) compile our public headers with -Werror, so
-# the library and every target below that instantiates them must be
-# warning-free (issue #1288). -Wnull-dereference only fires with optimization.
-# Set after the 3rdparty subdirectories, so vendored code is not affected.
-if(MSVC)
-    # C4702 (unreachable code) is a code-generation warning that fires on
-    # instantiation-dependent `if constexpr` tails; GCC/Clang have no
-    # equivalent in -Wall -Wextra.
-    set(BTCPP_WARNING_FLAGS /W4 /WX /permissive- /wd4702)
-else()
-    set(BTCPP_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wnull-dereference -Werror)
+if(BTCPP_ENABLE_WARNING_AS_ERROR)
+    # Downstream projects (e.g. Nav2) compile our public headers with -Werror, so
+    # the library and every target below that instantiates them must be
+    # warning-free (issue #1288). -Wnull-dereference only fires with optimization.
+    # Set after the 3rdparty subdirectories, so vendored code is not affected.
+    if(MSVC)
+        # C4702 (unreachable code) is a code-generation warning that fires on
+        # instantiation-dependent `if constexpr` tails; GCC/Clang have no
+        # equivalent in -Wall -Wextra.
+        set(BTCPP_WARNING_FLAGS /W4 /WX /permissive- /wd4702)
+    else()
+        set(BTCPP_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wnull-dereference -Werror)
+    endif()
 endif()
 target_compile_options(${BTCPP_LIBRARY} PRIVATE ${BTCPP_WARNING_FLAGS})
 add_compile_options(${BTCPP_WARNING_FLAGS})
