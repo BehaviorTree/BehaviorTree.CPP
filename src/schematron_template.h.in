@@ -1,0 +1,7 @@
+// Auto-generated from src/btcpp4_schematron.sch — do not edit directly.
+// To update: edit src/btcpp4_schematron.sch and re-run CMake.
+namespace BT { namespace detail {
+static const char* const schematron_template =
+R"BTCPP4SCH(@BTCPP_SCHEMATRON_TEMPLATE@)BTCPP4SCH";
+} // namespace detail
+} // namespace BT

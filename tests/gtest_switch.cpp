@@ -12,36 +12,6 @@
 using BT::NodeStatus;
 using std::chrono::milliseconds;
 
-namespace
-{
-
-const char* xml_text = R"(
-
-<root BTCPP_format="4" >
-
-    <BehaviorTree ID="MainTree">
-        <Switch3 name="simple_switch" variable="{my_var}"  case_1="1" case_2="42 case_3="666" >
-            <AsyncActionTest name="action_1"/>
-            <AsyncActionTest name="action_42"/>
-            <AsyncActionTest name="action_666"/>
-            <AsyncActionTest name="action_default"/>
-        </Switch3>
-    </BehaviorTree>
-</root>
-        )";
-
-BT::NodeStatus TickWhileRunning(BT::TreeNode& node)
-{
-  auto status = node.executeTick();
-  while(status == BT::NodeStatus::RUNNING)
-  {
-    status = node.executeTick();
-  }
-  return status;
-}
-
-}  // namespace
-
 struct SwitchTest : testing::Test
 {
   using Switch2 = BT::SwitchNode<2>;
@@ -62,7 +32,6 @@ struct SwitchTest : testing::Test
     input.insert(std::make_pair("case_1", "1"));
     input.insert(std::make_pair("case_2", "42"));
 
-    BT::NodeConfig simple_switch_config_;
     simple_switch_config_.blackboard = bb;
     simple_switch_config_.input_ports = input;
 

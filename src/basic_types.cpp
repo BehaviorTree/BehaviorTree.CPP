@@ -166,7 +166,7 @@ T ConvertWithBoundCheck(StringView str)
     throw RuntimeError(
         StrCat("Value out of bound when converting [", str, "] to integer"));
   }
-  return res;
+  return static_cast<T>(res);
 }
 }  // namespace
 

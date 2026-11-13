@@ -83,7 +83,7 @@ TEST(PostConditions, Issue601)
 
   BehaviorTreeFactory factory;
   auto tree = factory.createTreeFromText(xml_text);
-  const auto status = tree.tickWhileRunning();
+  tree.tickWhileRunning();
 
   ASSERT_EQ(tree.rootBlackboard()->get<std::string>("test"), "halted");
 }

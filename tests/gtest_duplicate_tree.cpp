@@ -1,11 +1,12 @@
 /* Copyright (C) 2026 - duplicate BehaviorTree ID registration tests */
 
+#include "test_helper.hpp"
+
 #include "behaviortree_cpp/bt_factory.h"
 
-#include <chrono>
 #include <filesystem>
-#include <fstream>
 #include <string>
+#include <tuple>
 
 #include <gtest/gtest.h>
 
@@ -13,35 +14,6 @@ using namespace BT;
 
 namespace
 {
-class TempSubdir
-{
-public:
-  TempSubdir()
-  {
-    const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
-    path = std::filesystem::temp_directory_path() /
-           ("bt_duplicate_tree_" + std::to_string(stamp));
-    std::filesystem::create_directories(path);
-  }
-
-  ~TempSubdir()
-  {
-    std::error_code ec;
-    std::filesystem::remove_all(path, ec);
-  }
-
-  std::filesystem::path path;
-
-  TempSubdir(const TempSubdir&) = delete;
-  TempSubdir& operator=(const TempSubdir&) = delete;
-};
-
-void writeFile(const std::filesystem::path& p, const std::string& content)
-{
-  std::ofstream out(p.string());
-  out << content;
-}
-
 std::string minimalTreeXml(const std::string& tree_id, const std::string& node = "AlwaysS"
                                                                                  "uccess")
 {
@@ -155,8 +127,8 @@ TEST(DuplicateBehaviorTreeId, RepeatedInlineTextIsSilent)
   BehaviorTreeFactory factory;
   const std::string xml = minimalTreeXml("MainTree");
   const auto output = captureStdout([&] {
-    factory.createTreeFromText(xml);
-    factory.createTreeFromText(xml);
+    std::ignore = factory.createTreeFromText(xml);
+    std::ignore = factory.createTreeFromText(xml);
   });
   EXPECT_FALSE(hasWarning(output)) << output;
 }

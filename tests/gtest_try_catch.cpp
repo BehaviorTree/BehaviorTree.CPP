@@ -14,6 +14,8 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 
+#include <stdexcept>
+
 #include <gtest/gtest.h>
 
 using BT::NodeStatus;
@@ -341,6 +343,43 @@ TEST_F(TryCatchTest, CatchOnHalt_Enabled)
   ASSERT_EQ(catch_count, 1);  // Catch executed on halt
 }
 
+// Destroying a RUNNING tree halts it; a catch child that throws during that
+// halt must not escape Tree::~Tree() and call std::terminate (issue #1281).
+// Covers both a std::exception and any other thrown type.
+TEST_F(TryCatchTest, CatchOnHalt_ThrowInDestructorDoesNotTerminate)
+{
+  factory.registerSimpleCondition("AlwaysRunning",
+                                  [](BT::TreeNode&) { return NodeStatus::RUNNING; });
+  int catch_ticks = 0;
+  factory.registerSimpleAction("ThrowStd", [&catch_ticks](BT::TreeNode&) -> NodeStatus {
+    catch_ticks++;
+    throw std::runtime_error("thrown while halting");
+  });
+  factory.registerSimpleAction("ThrowInt", [&catch_ticks](BT::TreeNode&) -> NodeStatus {
+    catch_ticks++;
+    throw 42;
+  });
+
+  for(const std::string catch_node : { "ThrowStd", "ThrowInt" })
+  {
+    const std::string xml_text = R"(
+      <root BTCPP_format="4">
+         <BehaviorTree>
+            <TryCatch catch_on_halt="true">
+              <AlwaysRunning/>
+              <)" + catch_node + R"(/>
+            </TryCatch>
+         </BehaviorTree>
+      </root>)";
+
+    {
+      auto tree = factory.createTreeFromText(xml_text);
+      EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    }
+  }
+  EXPECT_EQ(catch_ticks, 2);
+}
+
 TEST_F(TryCatchTest, CatchOnHalt_NotTriggeredWhenAlreadyInCatch)
 {
   int catch_ticks = 0;
@@ -376,17 +415,16 @@ TEST_F(TryCatchTest, AsyncCatchCompletesInsideSequence)
   // The catch child returns RUNNING for 5 ticks, then SUCCESS.
   // Verify that the Sequence keeps ticking TryCatch, which keeps
   // ticking the catch child until it completes.
-  const int kRunningTicks = 5;
+  static constexpr int kRunningTicks = 5;
   int catch_ticks = 0;
-  factory.registerSimpleCondition("AsyncCleanup",
-                                  [&catch_ticks, kRunningTicks](BT::TreeNode&) {
-                                    catch_ticks++;
-                                    if(catch_ticks <= kRunningTicks)
-                                    {
-                                      return NodeStatus::RUNNING;
-                                    }
-                                    return NodeStatus::SUCCESS;
-                                  });
+  factory.registerSimpleCondition("AsyncCleanup", [&catch_ticks](BT::TreeNode&) {
+    catch_ticks++;
+    if(catch_ticks <= kRunningTicks)
+    {
+      return NodeStatus::RUNNING;
+    }
+    return NodeStatus::SUCCESS;
+  });
 
   const std::string xml_text = R"(
     <root BTCPP_format="4">

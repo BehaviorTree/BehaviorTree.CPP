@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16.3) # version on Ubuntu Focal
 
-project(behaviortree_cpp VERSION 4.10.0 LANGUAGES C CXX)
+project(behaviortree_cpp VERSION 4.11.1 LANGUAGES C CXX)
 
 # create compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -187,6 +187,7 @@ list(APPEND BT_SOURCE
     src/controls/sequence_node.cpp
     src/controls/sequence_with_memory_node.cpp
     src/controls/switch_node.cpp
+    src/controls/finally_node.cpp
     src/controls/try_catch_node.cpp
     src/controls/while_do_else_node.cpp
 
@@ -217,6 +218,18 @@ if (WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
     list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
 endif()
+
+# Embed src/btcpp4_schematron.sch as a C++ string constant.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch"
+)
+
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/btcpp4_schematron.sch" BTCPP_SCHEMATRON_TEMPLATE)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/schematron_template.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/schematron_template.gen.h"
+    @ONLY
+)
 
 if (BTCPP_SHARED_LIBS)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -260,6 +273,7 @@ target_include_directories(${BTCPP_LIBRARY}
         $<INSTALL_INTERFACE:include>
     PRIVATE
         ${BTCPP_EXTRA_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
     )
 
 target_compile_definitions(${BTCPP_LIBRARY} PUBLIC BTCPP_LIBRARY_VERSION="${PROJECT_VERSION}")
@@ -274,15 +288,26 @@ target_compile_features(${BTCPP_LIBRARY} PUBLIC cxx_std_17)
 
 if(MSVC)
     target_compile_options(${BTCPP_LIBRARY} PRIVATE "/source-charset:utf-8")
-else()
-    if(ENABLE_DEBUG)
-        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra -g3 -ggdb3 -O0 -fno-omit-frame-pointer)
-    else()
-        target_compile_options(${BTCPP_LIBRARY} PRIVATE -Wall -Wextra)
-    endif()
+elseif(ENABLE_DEBUG)
+    target_compile_options(${BTCPP_LIBRARY} PRIVATE -g3 -ggdb3 -O0 -fno-omit-frame-pointer)
 endif()
 
 add_library(BT::${BTCPP_LIBRARY} ALIAS ${BTCPP_LIBRARY})
+
+# Downstream projects (e.g. Nav2) compile our public headers with -Werror, so
+# the library and every target below that instantiates them must be
+# warning-free (issue #1288). -Wnull-dereference only fires with optimization.
+# Set after the 3rdparty subdirectories, so vendored code is not affected.
+if(MSVC)
+    # C4702 (unreachable code) is a code-generation warning that fires on
+    # instantiation-dependent `if constexpr` tails; GCC/Clang have no
+    # equivalent in -Wall -Wextra.
+    set(BTCPP_WARNING_FLAGS /W4 /WX /permissive- /wd4702)
+else()
+    set(BTCPP_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wnull-dereference -Werror)
+endif()
+target_compile_options(${BTCPP_LIBRARY} PRIVATE ${BTCPP_WARNING_FLAGS})
+add_compile_options(${BTCPP_WARNING_FLAGS})
 
 # Add fuzzing targets
 if(ENABLE_FUZZING)

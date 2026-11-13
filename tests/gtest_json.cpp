@@ -2,6 +2,9 @@
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/json_export.h"
 
+#include <tuple>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 //----------- Custom types ----------
@@ -389,6 +392,26 @@ TEST_F(JsonTest, IntegerValuesAreRangeChecked)
                BT::RuntimeError);
 }
 
+// nlohmann::json parses and destroys a nested value iteratively, but dumping and
+// copying it recurse once per nesting level, so a short text can exhaust the stack.
+TEST_F(JsonTest, DeeplyNestedValueDoesNotExhaustStack)
+{
+  using nlohmann::json;
+  constexpr size_t depth = 100000;
+  const std::string nested = std::string(depth, '[') + std::string(depth, ']');
+
+  // The error message used to include value.dump()
+  ASSERT_THROW(std::ignore = BT::details::JsonToInteger<int>(json::parse(nested)),
+               BT::RuntimeError);
+  ASSERT_THROW(std::ignore = BT::convertFromString<std::vector<int>>("json:" + nested),
+               BT::RuntimeError);
+
+  // fromJson() used to copy the first element to pick the type of the array
+  auto blackboard = BT::Blackboard::create();
+  BT::ImportBlackboardFromJSON(json::parse(R"({"nested":)" + nested + "}"), *blackboard);
+  ASSERT_FALSE(blackboard->getEntry("nested"));
+}
+
 TEST_F(JsonTest, VectorSring)
 {
   BT::JsonExporter& exporter = BT::JsonExporter::get();
@@ -462,4 +485,16 @@ TEST_F(JsonTest, VectorOfCustomTypes)
 
   ASSERT_EQ(poses[1].pos, poses_out[1].pos);
   ASSERT_EQ(poses[1].rot, poses_out[1].rot);
+}
+
+// The converters read the stored value through details::anyRef, which must
+// throw instead of dereferencing nullptr on an empty or mismatched BT::Any.
+TEST(JsonExporterDetails, AnyRefThrowsOnTypeMismatch)
+{
+  const std::vector<int> vec = { 1, 2, 3 };
+  EXPECT_EQ(BT::details::anyRef<std::vector<int>>(BT::Any(vec)), vec);
+  EXPECT_THROW(std::ignore = BT::details::anyRef<std::vector<int>>(BT::Any()),
+               BT::LogicError);
+  EXPECT_THROW(std::ignore = BT::details::anyRef<std::vector<double>>(BT::Any(vec)),
+               BT::LogicError);
 }

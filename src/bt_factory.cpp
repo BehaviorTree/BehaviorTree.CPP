@@ -134,6 +134,7 @@ BehaviorTreeFactory::BehaviorTreeFactory() : _p(new PImpl)
   registerNodeType<IfThenElseNode>("IfThenElse");
   registerNodeType<WhileDoElseNode>("WhileDoElse");
   registerNodeType<TryCatchNode>("TryCatch");
+  registerNodeType<FinallyNode>("Finally");
 
   registerNodeType<InverterNode>("Inverter");
 
@@ -551,7 +552,8 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
   // substitution rules that map to already-registered node types.
   if(json.contains("TestNodeConfigs"))
   {
-    auto test_configs = json.at("TestNodeConfigs");
+    // Not a copy: it would recurse once per nesting level of the JSON text
+    const auto& test_configs = json.at("TestNodeConfigs");
     for(auto const& [name, test_config] : test_configs.items())
     {
       auto& config = configs[name];
@@ -595,7 +597,7 @@ void BehaviorTreeFactory::loadSubstitutionRuleFromJSON(const std::string& json_t
     }
   }
 
-  auto substitutions = json.at("SubstitutionRules");
+  const auto& substitutions = json.at("SubstitutionRules");
   for(auto const& [node_name, test] : substitutions.items())
   {
     auto test_name = test.get<std::string>();
@@ -718,7 +720,20 @@ std::shared_ptr<WakeUpSignal> Tree::wakeUpSignal() const
 
 Tree::~Tree()
 {
-  haltTree();
+  // Halting may throw (e.g. TryCatch catch_on_halt ticks its catch child), and
+  // an exception escaping a destructor calls std::terminate (issue #1281).
+  try
+  {
+    haltTree();
+  }
+  catch(const std::exception& ex)
+  {
+    std::cerr << "[Tree::~Tree]: haltTree() threw: " << ex.what() << std::endl;
+  }
+  catch(...)
+  {
+    std::cerr << "[Tree::~Tree]: haltTree() threw an unknown exception" << std::endl;
+  }
 }
 
 NodeStatus Tree::tickExactlyOnce()

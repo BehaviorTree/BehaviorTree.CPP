@@ -3,6 +3,8 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/scripting/operators.hpp"
 
+#include <tuple>
+
 #include <gtest/gtest.h>
 
 #include "../sample_nodes/dummy_nodes.h"
@@ -135,12 +137,59 @@ TEST(ParserTest, DeeplyNestedScriptIsRejected)
   // The depth cap must not reject ordinary scripts: a long flat expression is
   // parsed iteratively (shallow recursion) and light nesting is well within it.
   std::string wide = "1";
-  for(int i = 0; i < 1000; ++i)
+  for(int i = 0; i < 200; ++i)
   {
     wide += "+1";
   }
   EXPECT_TRUE(BT::ValidateScript(wide));
   EXPECT_TRUE(BT::ValidateScript("((((1))))"));
+}
+
+TEST(ParserTest, LongFlatScriptIsRejected)
+{
+  // A flat chain like "1+1+1+..." is parsed without recursion, but it builds a
+  // left-deep AST that is evaluated (and destroyed) recursively, one stack frame
+  // per operator. 100k terms used to overflow the stack (SIGSEGV) when executed.
+  BT::Ast::Environment env = { BT::Blackboard::create(), {} };
+
+  std::string flat = "x := 1";
+  for(int i = 0; i < 100000; ++i)
+  {
+    flat += "+1";
+  }
+  EXPECT_FALSE(BT::ValidateScript(flat));
+  EXPECT_FALSE(BT::ParseScriptAndExecute(env, flat).has_value());
+
+  // Nested chains add up as well: 100 levels of 20 operators each.
+  std::string nested_chain = "1";
+  for(int i = 0; i < 100; ++i)
+  {
+    nested_chain = "(" + nested_chain;
+    for(int j = 0; j < 20; ++j)
+    {
+      nested_chain += "+1";
+    }
+    nested_chain += ")";
+  }
+  EXPECT_FALSE(BT::ValidateScript(nested_chain));
+
+  // The limit is the same as the nesting depth (256): 300 terms are rejected.
+  std::string over = "1";
+  for(int i = 0; i < 300; ++i)
+  {
+    over += "+1";
+  }
+  EXPECT_FALSE(BT::ValidateScript(over));
+
+  // Ordinary long expressions are still accepted and evaluated.
+  std::string wide = "1";
+  for(int i = 0; i < 200; ++i)
+  {
+    wide += "+1";
+  }
+  auto result = BT::ParseScriptAndExecute(env, wide);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(result->cast<int>(), 201);
 }
 
 TEST(ParserTest, Equations)
@@ -186,7 +235,7 @@ TEST(ParserTest, Equations)
   EXPECT_EQ(GetResult("y | x").cast<double>(), (5 | 3));
   EXPECT_EQ(GetResult("y ^ x").cast<double>(), (5 ^ 3));
 
-  EXPECT_ANY_THROW(auto res = GetResult("y ^ 5.1").cast<double>());
+  EXPECT_ANY_THROW(std::ignore = GetResult("y ^ 5.1").cast<double>());
 
   // test string variables
   EXPECT_EQ(GetResult("A:='hello'; B:=' '; C:='world'; A+B+C").cast<std::string>(), "hell"
@@ -719,6 +768,25 @@ TEST(ParserTest, BitwiseComplementRejectsNonIntegers)
   EXPECT_EQ(Parse("~(2 * 3)").value().cast<int64_t>(), ~int64_t(6));
   EXPECT_EQ(Parse("~-9223372036854775808.0").value().cast<double>(),
             static_cast<double>(~std::numeric_limits<int64_t>::min()));
+}
+
+TEST(ParserTest, AssignStringWhileEntryIsUnset)
+{
+  auto bb = BT::Blackboard::create();
+  bb->set<int>("x", 1);
+  bb->set<std::string>("y", "");
+  BT::Ast::Environment env = { bb, {} };
+
+  // Writing y unsets x, after the assignment to x has already resolved its
+  // entry. The string to int conversion then used to look x up again and
+  // dereference the nullptr returned for the missing entry. Another thread
+  // calling unset() at the wrong time has the same effect.
+  auto subscriber = bb->subscribeToEntry("y", [&bb]() { bb->unset("x"); });
+
+  auto result = BT::ParseScriptAndExecute(env, "x = (y = '42')");
+  ASSERT_TRUE(result.has_value()) << result.error();
+  EXPECT_EQ(result.value().cast<int>(), 42);
+  EXPECT_EQ(bb->getEntry("x"), nullptr);
 }
 
 TEST(ParserTest, TernaryExpressions)

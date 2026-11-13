@@ -85,6 +85,14 @@ public:
 
   ~TimerQueue()
   {
+    stop();
+  }
+
+  //! Cancels all timers, runs their handlers (aborted=true) and joins the worker
+  //! thread: after it returns no handler is running or will run. Idempotent.
+  //! Timers added after stop() are never executed.
+  void stop()
+  {
     // Cancel before raising m_finish: once the worker sees the flag, every
     // item is already due, so its final checkWork() drains the whole queue.
     cancelAll();

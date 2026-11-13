@@ -60,6 +60,12 @@ public:
   }
 
 private:
+  void halt() override
+  {
+    _children_running = false;
+    DecoratorNode::halt();
+  }
+
   virtual BT::NodeStatus tick() override
   {
     loadExecutor();
@@ -72,8 +78,7 @@ private:
 
     // Only check the 'if' script if we haven't started ticking the children yet.
     Ast::Environment env = { config().blackboard, config().enums };
-    bool tick_children =
-        _children_running || (_children_running = _executor(env).cast<bool>());
+    bool tick_children = _children_running || _executor(env).cast<bool>();
 
     if(!tick_children)
     {
@@ -81,10 +86,10 @@ private:
     }
 
     auto const child_status = child_node_->executeTick();
+    _children_running = (child_status == NodeStatus::RUNNING);
     if(isStatusCompleted(child_status))
     {
       resetChild();
-      _children_running = false;
     }
     return child_status;
   }

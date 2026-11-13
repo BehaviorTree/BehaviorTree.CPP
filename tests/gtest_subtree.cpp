@@ -1,8 +1,10 @@
 #include "test_helper.hpp"
 
 #include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 #include <set>
+#include <tuple>
 
 #include <gtest/gtest.h>
 
@@ -592,6 +594,133 @@ TEST(SubTree, SubtreeModels)
   BehaviorTreeFactory factory;
   auto tree = factory.createTreeFromText(xml_text);
   tree.tickWhileRunning();
+}
+
+TEST(SubTree, SubtreeModelDefault)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute = "MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SubTree ID="MySub" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <Sequence>
+      <ScriptCondition code="in_value==42" />
+    </Sequence>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+}
+
+TEST(SubTree, SubtreeModelDefaultWithAutoremap)
+{
+  // clang-format off
+
+  static const char* xml_text = R"(
+<root main_tree_to_execute = "MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SubTree ID="MySub" _autoremap="true" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <Sequence>
+      <ScriptCondition code="in_value==42" />
+    </Sequence>
+  </BehaviorTree>
+</root>
+ )";
+
+  // clang-format on
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  tree.tickWhileRunning();
+}
+
+// With _autoremap, a parent key of the same name wins over the model default
+// (#1271), and the default stays local to the SubTree.
+TEST(SubTree, SubtreeModelDefaultWithAutoremapParentWins)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+      <input_port name="other" default="43"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <SubTree ID="MySub" _autoremap="true" />
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <ScriptCondition code="in_value==7 &amp;&amp; other==43" />
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto root_bb = Blackboard::create();
+  root_bb->set("in_value", 7);
+  auto tree = factory.createTreeFromText(xml_text, root_bb);
+  EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
+  EXPECT_FALSE(root_bb->getEntry("other"));
+}
+
+// Deliberate creation-time rule (#1271): the model default is applied only if no
+// entry named "in_value" exists in the parent blackboard chain when the tree is
+// CREATED. A key written later (here by a Script) does not win; to make the parent
+// value win, set the key in the blackboard before createTree (see test above).
+TEST(SubTree, SubtreeModelDefaultWithAutoremapCreationTimeRule)
+{
+  static const char* xml_text = R"(
+<root main_tree_to_execute="MainTree" BTCPP_format="4">
+  <TreeNodesModel>
+    <SubTree ID="MySub">
+      <input_port name="in_value" default="42"/>
+    </SubTree>
+  </TreeNodesModel>
+
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Script code="in_value:=7" />
+      <SubTree ID="MySub" _autoremap="true" />
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="MySub">
+    <ScriptCondition code="in_value==42" />
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+  EXPECT_EQ(tree.tickWhileRunning(), NodeStatus::SUCCESS);
 }
 
 class PrintToConsole : public BT::SyncActionNode
@@ -1216,7 +1345,7 @@ TEST(SubTree, DeclaredPortNameThatCannotBeBound)
 </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_THROW(factory.createTreeFromText(xml_text), RuntimeError);
+  EXPECT_THROW(std::ignore = factory.createTreeFromText(xml_text), RuntimeError);
 }
 
 // The same underscore attribute on a SubTree that does not declare it is not a
@@ -1239,7 +1368,7 @@ TEST(SubTree, UndeclaredUnderscoreAttributeIsNotAPort)
 </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_NO_THROW(factory.createTreeFromText(xml_text));
+  EXPECT_NO_THROW(std::ignore = factory.createTreeFromText(xml_text));
 }
 
 // A declared port nobody remaps stays inert and keeps loading, so existing trees
@@ -1262,5 +1391,86 @@ TEST(SubTree, DeclaredUnbindablePortLoadsWhenNotRemapped)
 </root>)";
 
   BehaviorTreeFactory factory;
-  EXPECT_NO_THROW(factory.createTreeFromText(xml_text));
+  EXPECT_NO_THROW(std::ignore = factory.createTreeFromText(xml_text));
+}
+
+namespace
+{
+std::vector<const SubTreeNode*> collectSubTreeNodes(const Tree& tree)
+{
+  std::vector<const SubTreeNode*> nodes;
+  tree.applyVisitor([&](const TreeNode* node) {
+    if(const auto* subtree = dynamic_cast<const SubTreeNode*>(node))
+    {
+      nodes.push_back(subtree);
+    }
+  });
+  return nodes;
+}
+}  // namespace
+
+// Issue #1262: WriteTreeToXML dropped the [name] of SubTree nodes
+TEST(SubTree, WriteTreeToXML_KeepsSubTreeName)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <SubTree ID="Worker" name="my_worker"/>
+  </BehaviorTree>
+  <BehaviorTree ID="Worker">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  const auto xml = WriteTreeToXML(tree, false, false);
+  EXPECT_NE(xml.find(R"(name="my_worker")"), std::string::npos) << xml;
+
+  // load the exported XML again: the instance name must survive the round trip
+  BehaviorTreeFactory factory2;
+  factory2.registerBehaviorTreeFromText(xml);
+  auto reloaded = factory2.createTree("MainTree");
+
+  const auto subtrees = collectSubTreeNodes(reloaded);
+  ASSERT_EQ(subtrees.size(), 1);
+  EXPECT_EQ(subtrees[0]->name(), "my_worker");
+  EXPECT_EQ(subtrees[0]->subtreeID(), "Worker");
+  EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
+}
+
+// A SubTree without [name] must not get one in the exported XML. Otherwise, two
+// SubTrees with the same ID would get the same path and the XML could not be
+// loaded again (see DuplicateSubTreeName_Groot2Issue56).
+TEST(SubTree, WriteTreeToXML_NoNameAttributeIsNotAdded)
+{
+  static const char* xml_text = R"(
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <SubTree ID="Worker"/>
+      <SubTree ID="Worker"/>
+    </Sequence>
+  </BehaviorTree>
+  <BehaviorTree ID="Worker">
+    <AlwaysSuccess/>
+  </BehaviorTree>
+</root>)";
+
+  BehaviorTreeFactory factory;
+  auto tree = factory.createTreeFromText(xml_text);
+
+  const auto xml = WriteTreeToXML(tree, false, false);
+  EXPECT_EQ(xml.find(R"(name="Worker")"), std::string::npos) << xml;
+
+  BehaviorTreeFactory factory2;
+  factory2.registerBehaviorTreeFromText(xml);
+  Tree reloaded;
+  ASSERT_NO_THROW(reloaded = factory2.createTree("MainTree"));
+
+  const auto subtrees = collectSubTreeNodes(reloaded);
+  ASSERT_EQ(subtrees.size(), 2);
+  EXPECT_NE(subtrees[0]->fullPath(), subtrees[1]->fullPath());
+  EXPECT_EQ(reloaded.tickWhileRunning(), NodeStatus::SUCCESS);
 }

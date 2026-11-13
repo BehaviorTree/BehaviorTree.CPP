@@ -3,8 +3,11 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <string>
 
 #if !defined(_WIN32)
@@ -83,6 +86,38 @@ inline void RegisterTestTick(BT::BehaviorTreeFactory& factory,
     int* counter_ptr = &(tick_counters[i]);
     factory.registerSimpleAction(str, std::bind(&TestTick, counter_ptr));
   }
+}
+
+/// A fresh directory under the system temp dir, removed with its content at
+/// the end of the scope.
+class TempSubdir
+{
+public:
+  TempSubdir()
+  {
+    const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+    path = std::filesystem::temp_directory_path() / ("bt_test_" + std::to_string(stamp));
+    std::filesystem::create_directories(path);
+  }
+
+  ~TempSubdir()
+  {
+    std::error_code ec;
+    std::filesystem::remove_all(path, ec);
+  }
+
+  std::filesystem::path path;
+
+  TempSubdir(const TempSubdir&) = delete;
+  TempSubdir& operator=(const TempSubdir&) = delete;
+  TempSubdir(TempSubdir&&) = delete;
+  TempSubdir& operator=(TempSubdir&&) = delete;
+};
+
+inline void writeFile(const std::filesystem::path& p, const std::string& content)
+{
+  std::ofstream out(p.string());
+  out << content;
 }
 
 #endif  // TEST_HELPER_HPP

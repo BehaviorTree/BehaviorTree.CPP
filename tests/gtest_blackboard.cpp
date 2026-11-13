@@ -337,7 +337,19 @@ TEST(BlackboardTest, AnyPtrLockedSurvivesClear)
   auto locked = blackboard->getAnyLocked("value");
   ASSERT_TRUE(bool(locked));
 
-  blackboard->clear();
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+  blackboard->clear();  // deprecated, but still under test
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
   ASSERT_TRUE(blackboard->getKeyNames().empty());
   ASSERT_EQ(locked.get()->cast<int>(), 42);
 }
