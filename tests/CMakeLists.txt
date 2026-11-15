@@ -42,6 +42,7 @@ set(BT_TESTS
   gtest_loop.cpp
   gtest_reactive.cpp
   gtest_reactive_backchaining.cpp
+  gtest_preempt.cpp
   gtest_sequence.cpp
   gtest_skipping.cpp
   gtest_substitution.cpp

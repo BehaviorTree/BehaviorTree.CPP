@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "behaviortree_cpp/control_node.h"
+#include "behaviortree_cpp/controls/reactive_control_node.h"
 
 namespace BT
 {
@@ -30,10 +30,10 @@ namespace BT
  *            asynchronous child.
  *
  */
-class ReactiveSequence : public ControlNode
+class ReactiveSequence : public ReactiveControlNode
 {
 public:
-  ReactiveSequence(const std::string& name) : ControlNode(name, {})
+  ReactiveSequence(const std::string& name) : ReactiveControlNode(name, {})
   {}
 
   /** A ReactiveSequence is not supposed to have more than a single
@@ -46,8 +46,6 @@ private:
   BT::NodeStatus tick() override;
 
   void halt() override;
-
-  int running_child_ = -1;
 
   static bool throw_if_multiple_running;
 };
