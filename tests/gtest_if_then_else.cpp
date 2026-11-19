@@ -94,6 +94,53 @@ TEST_F(IfThenElseTest, ConditionFalse_TwoChildren_ReturnsFailure)
   ASSERT_EQ(counters[0], 0);  // TestA not executed
 }
 
+// The header says "If you have only 2 children, this node will return FAILURE
+// whenever the statement returns FAILURE. This is equivalent to add
+// AlwaysFailure as 3rd child.". Check for children reset in both cases.
+TEST_F(IfThenElseTest, ConditionFalse_ThreeChildren_ResetsCondition)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <IfThenElse>
+            <AlwaysFailure/>  <!-- condition -->
+            <TestA/>          <!-- then -->
+            <AlwaysFailure/>  <!-- else -->
+          </IfThenElse>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::FAILURE);
+
+  const auto* node = dynamic_cast<const BT::ControlNode*>(tree.rootNode());
+  ASSERT_NE(node, nullptr);
+  EXPECT_EQ(node->child(0)->status(), NodeStatus::IDLE);  // condition
+  EXPECT_EQ(node->child(1)->status(), NodeStatus::IDLE);  // then
+  EXPECT_EQ(node->child(2)->status(), NodeStatus::IDLE);  // else
+}
+
+TEST_F(IfThenElseTest, ConditionFalse_TwoChildren_ResetsCondition)
+{
+  const std::string xml_text = R"(
+    <root BTCPP_format="4">
+       <BehaviorTree>
+          <IfThenElse>
+            <AlwaysFailure/>  <!-- condition -->
+            <TestA/>          <!-- then -->
+          </IfThenElse>
+       </BehaviorTree>
+    </root>)";
+
+  auto tree = factory.createTreeFromText(xml_text);
+  ASSERT_EQ(tree.tickOnce(), NodeStatus::FAILURE);
+
+  const auto* node = dynamic_cast<const BT::ControlNode*>(tree.rootNode());
+  ASSERT_NE(node, nullptr);
+  EXPECT_EQ(node->child(0)->status(), NodeStatus::IDLE);  // condition
+  EXPECT_EQ(node->child(1)->status(), NodeStatus::IDLE);  // then
+}
+
 TEST_F(IfThenElseTest, ThenBranchFails)
 {
   // When then-branch fails, IfThenElse returns FAILURE
