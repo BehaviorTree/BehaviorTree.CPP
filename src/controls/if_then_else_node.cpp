@@ -62,6 +62,7 @@ NodeStatus IfThenElseNode::tick()
       }
       else
       {
+        resetChildren();
         return condition_status;
       }
     }
