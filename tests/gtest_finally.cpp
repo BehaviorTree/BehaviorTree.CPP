@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <future>
 #include <stdexcept>
 #include <thread>
@@ -786,5 +787,84 @@ TEST_F(FinallyTest, ConcurrentHaltDuringHaltLoop_DoesNotTickCleanupConcurrently)
 
   EXPECT_EQ(max_in_tick, 1);
   EXPECT_EQ(ticks, 3);
+  EXPECT_EQ(tree.rootNode()->status(), NodeStatus::IDLE);
+}
+
+namespace
+{
+class CallbackCleanup : public AsyncMain
+{
+public:
+  CallbackCleanup(const std::string& name, const BT::NodeConfig& config, int* halts,
+                  std::function<NodeStatus()> on_running)
+    : AsyncMain(name, config, halts, false, false), on_running_(std::move(on_running))
+  {}
+
+  NodeStatus onRunning() override
+  {
+    return on_running_();
+  }
+
+private:
+  std::function<NodeStatus()> on_running_;
+};
+
+constexpr auto halt_test_tree = R"(
+  <root BTCPP_format="4"><BehaviorTree>
+    <Finally halt_timeout_msec="5000"><AlwaysRunning/><CallbackCleanup/></Finally>
+  </BehaviorTree></root>)";
+}  // namespace
+
+TEST_F(FinallyTest, ConcurrentHaltDuringHaltLoop_DoesNotHaltRunningCleanup)
+{
+  int cleanup_halts = 0;
+  std::promise<void> entered;
+  std::promise<void> release;
+  auto entered_future = entered.get_future();
+  auto release_future = release.get_future();
+  factory.registerNodeType<CallbackCleanup>("CallbackCleanup", &cleanup_halts, [&] {
+    entered.set_value();
+    release_future.wait();
+    return NodeStatus::SUCCESS;
+  });
+  auto tree = factory.createTreeFromText(halt_test_tree);
+
+  auto first_halt = std::async(std::launch::async, [&] {
+    EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+    tree.haltTree();
+  });
+
+  const auto timeout = std::chrono::seconds(2);
+  if(entered_future.wait_for(timeout) != std::future_status::ready)
+  {
+    release.set_value();
+    first_halt.get();
+    FAIL() << "The first halt did not enter cleanup";
+  }
+  auto second_halt = std::async(std::launch::async, [&] { tree.haltTree(); });
+  const bool returned_during_cleanup =
+      second_halt.wait_for(timeout) == std::future_status::ready;
+  release.set_value();
+  second_halt.get();
+  first_halt.get();
+
+  EXPECT_TRUE(returned_during_cleanup);
+  EXPECT_EQ(cleanup_halts, 0);
+  EXPECT_EQ(tree.rootNode()->status(), NodeStatus::IDLE);
+}
+
+TEST_F(FinallyTest, ReentrantHaltDuringHaltLoop_DoesNotHaltRunningCleanup)
+{
+  int cleanup_halts = 0;
+  BT::Tree tree;
+  factory.registerNodeType<CallbackCleanup>("CallbackCleanup", &cleanup_halts, [&] {
+    tree.haltTree();
+    return NodeStatus::SUCCESS;
+  });
+  tree = factory.createTreeFromText(halt_test_tree);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  tree.haltTree();
+
+  EXPECT_EQ(cleanup_halts, 0);
   EXPECT_EQ(tree.rootNode()->status(), NodeStatus::IDLE);
 }
