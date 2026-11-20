@@ -671,19 +671,46 @@ void Tree::initialize()
 // NOLINTNEXTLINE(readability-make-member-function-const)
 void Tree::haltTree()
 {
-  if(rootNode() == nullptr)
+  auto* root = rootNode();
+  if(root == nullptr)
   {
     return;
   }
+
+  auto& halting = root->treeHaltFlag();
+  if(halting.exchange(true))
+  {
+    return;
+  }
+  // Release the guard even if a node's halt callback throws.
+  class ResetHaltFlag
+  {
+  public:
+    explicit ResetHaltFlag(std::atomic_bool& flag) : flag_(flag)
+    {}
+    ~ResetHaltFlag()
+    {
+      flag_.store(false);
+    }
+    ResetHaltFlag(const ResetHaltFlag&) = delete;
+    ResetHaltFlag& operator=(const ResetHaltFlag&) = delete;
+    ResetHaltFlag(ResetHaltFlag&&) = delete;
+    ResetHaltFlag& operator=(ResetHaltFlag&&) = delete;
+
+  private:
+    std::atomic_bool& flag_;
+  };
+  const ResetHaltFlag reset_halting(halting);
+
   // the halt should propagate to all the node if the nodes
   // have been implemented correctly
-  rootNode()->haltNode();
+  root->haltNode();
 
   //but, just in case.... this should be no-op
   auto visitor = [](BT::TreeNode* node) { node->haltNode(); };
-  BT::applyRecursiveVisitor(rootNode(), visitor);
+  BT::applyRecursiveVisitor(root, visitor);
 
-  rootNode()->resetStatus();
+  root->resetStatus();
 
   // interrupt the sleep of tickWhileRunning(), if called from another thread
   if(wake_up_)

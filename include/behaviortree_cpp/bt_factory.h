@@ -122,6 +122,8 @@ public:
 
   void initialize();
 
+  /// Halt the tree and wake tickWhileRunning(). Concurrent or reentrant calls
+  /// return immediately while the first call is still halting the tree.
   void haltTree();
 
   [[nodiscard]] TreeNode* rootNode() const;

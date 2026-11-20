@@ -20,6 +20,7 @@
 #include "behaviortree_cpp/utils/strcat.hpp"
 #include "behaviortree_cpp/utils/wakeup_signal.hpp"
 
+#include <atomic>
 #include <charconv>
 #include <exception>
 #include <map>
@@ -469,6 +470,8 @@ private:
 
   Expected<NodeStatus> checkPreConditions();
   void checkPostConditions(NodeStatus status);
+
+  std::atomic_bool& treeHaltFlag();
 
   /// The method used to interrupt the execution of a RUNNING node.
   /// Only Async nodes that may return RUNNING should implement it.

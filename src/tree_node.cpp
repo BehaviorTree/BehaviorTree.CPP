@@ -30,6 +30,8 @@ struct TreeNode::PImpl
   const std::string name;
 
   NodeStatus status = NodeStatus::IDLE;
+  // Tree::haltTree() uses this only on the root node.
+  std::atomic_bool tree_halting{ false };
 
   std::condition_variable state_condition_variable;
 
@@ -176,6 +178,11 @@ void TreeNode::haltNode()
     Ast::Environment env = { config().blackboard, config().enums };
     parse_executor(env);
   }
+}
+
+std::atomic_bool& TreeNode::treeHaltFlag()
+{
+  return _p->tree_halting;
 }
 
 void TreeNode::setStatus(NodeStatus new_status)

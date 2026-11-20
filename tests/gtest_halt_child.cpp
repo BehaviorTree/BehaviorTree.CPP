@@ -106,6 +106,9 @@ void checkBuiltinParentThrowingHalt(const char* body)
   }
   EXPECT_NO_THROW(tree.haltTree());
   EXPECT_EQ(halts, 1);
+  EXPECT_EQ(tree.tickOnce(), NodeStatus::RUNNING);
+  EXPECT_THROW(tree.haltTree(), std::runtime_error);
+  EXPECT_EQ(halts, 2);
   // ~Tree() calls haltTree() again: it must not throw (-> terminate).
 }
 }  // namespace
