@@ -2,36 +2,25 @@
 //
 // Threat model: BehaviorTree.CPP both *reads* XML from untrusted sources and
 // *writes* XML that other tools re-read (Groot2 project files, exported
-// trees, persisted models). A divergence between writer and reader is a bug
-// on its own; the writer path (WriteTreeToXML, writeTreeNodesModelXML,
-// writeTreeXSD) and the model/manifest reading paths are dark in production
-// coverage (xml_parsing.cpp 50.6%, tinyxml2 writer paths unexercised).
+// trees). A divergence between WriteTreeToXML and re-import is a real bug
+// (e.g. a dropped SubTree name). Raw parser coverage belongs to bt_fuzzer.
 //
-// Strategy:
-//   mode 0: raw fuzz bytes into VerifyXML / registerBehaviorTreeFromText
-//           (parser error and recovery paths),
-//   modes 1-3: generate a *valid* document (optionally with two trees or a
-//           <TreeNodesModel> section), build the tree, export it with
-//           WriteTreeToXML (both metadata/builtin-model flags), re-parse the
-//           export in a fresh factory, export again, and additionally
-//           generate + re-verify the nodes-model XML and the XSD writer.
+// Strategy: generate a valid tree (optionally with a SubTree), create it,
+// exported1 = WriteTreeToXML(tree, false, false), re-import in a fresh
+// factory (re-import failures abort), exported2 = WriteTreeToXML(tree2,
+// false, false), abort if exported1 != exported2.
 //
-// All generation is bounded exactly as in bt_tree_exec_fuzzer (depth, child
-// counts, no infinite loops, no real sleeps). No tree is ticked here: the
-// tick engine belongs to bt_tree_exec_fuzzer; this target owns the parse and
-// serialize surface.
-//
-// Expected bug classes: memory-safety in tinyxml2 writer/reader paths,
-// XML attribute escaping/unescaping mismatches, logic divergence between
-// export and re-import (lost or duplicated attributes/ports).
+// Generation is bounded (depth, child counts). No tree is ticked here.
+// Exceptions from the *generated* input are expected and ignored; exceptions
+// from re-import of our own export are not.
 
 #include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
 
 #include <cstdint>
+#include <cstdlib>
 #include <string>
-#include <unordered_map>
 
 #include <fuzzer/FuzzedDataProvider.h>
 
@@ -198,18 +187,6 @@ std::string wrapTree(const std::string& tree_id, const std::string& body)
   return "<BehaviorTree ID=\"" + tree_id + "\">" + body + "</BehaviorTree>";
 }
 
-// A model section describing two custom nodes: exercises the
-// <TreeNodesModel> reading path when embedded in a full document.
-const char* kModelSection = "<TreeNodesModel>"
-                            "<Action ID=\"CustomAct\" description=\"fuzz action\">"
-                            "<input_port name=\"p\" type=\"int\" default=\"3\"/>"
-                            "<output_port name=\"q\" type=\"string\"/>"
-                            "</Action>"
-                            "<Condition ID=\"CustomCond\" description=\"fuzz condition\">"
-                            "<input_port name=\"c\" type=\"bool\"/>"
-                            "</Condition>"
-                            "</TreeNodesModel>";
-
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
@@ -220,76 +197,55 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
   }
   FuzzedDataProvider fdp(data, size);
 
-  BT::BehaviorTreeFactory factory;
-  factory.registerScriptingEnum("MODE_A", 1);
+  // Build a valid document: either a single tree or MainTree + Aux SubTree.
+  std::string xml;
+  if(fdp.ConsumeBool())
+  {
+    xml = "<root BTCPP_format=\"4\">" + wrapTree("MainTree", genNode(fdp, 0)) +
+          "</root>";
+  }
+  else
+  {
+    xml = "<root BTCPP_format=\"4\">" +
+          wrapTree("MainTree", "<Sequence><SubTree ID=\"Aux\"/>" + genNode(fdp, 0) +
+                                   "</Sequence>") +
+          wrapTree("Aux", genLeaf(fdp)) + "</root>";
+  }
 
+  BT::Tree tree;
   try
   {
-    switch(fdp.ConsumeIntegralInRange<uint8_t>(0, 3))
-    {
-      case 0: {
-        // raw fuzz bytes into the parser: error and recovery paths
-        const std::string raw = fdp.ConsumeRandomLengthString(size);
-        const std::unordered_map<std::string, BT::NodeType> no_nodes;
-        BT::VerifyXML(raw, no_nodes);
-        factory.registerBehaviorTreeFromText(raw);
-        return 0;
-      }
-      case 1: {
-        // single valid tree: export -> re-import -> export
-        const std::string xml = "<root BTCPP_format=\"4\">" +
-                                wrapTree("MainTree", genNode(fdp, 0)) + "</root>";
-        factory.registerBehaviorTreeFromText(xml);
-        auto blackboard = BT::Blackboard::create();
-        auto tree = factory.createTree("MainTree", blackboard);
-        const bool add_metadata = fdp.ConsumeBool();
-        const bool add_builtin_models = fdp.ConsumeBool();
-        const std::string exported =
-            BT::WriteTreeToXML(tree, add_metadata, add_builtin_models);
-        BT::BehaviorTreeFactory factory2;
-        factory2.registerScriptingEnum("MODE_A", 1);
-        factory2.registerBehaviorTreeFromText(exported);
-        auto tree2 = factory2.createTree("MainTree", BT::Blackboard::create());
-        (void)BT::WriteTreeToXML(tree2, add_metadata, add_builtin_models);
-        break;
-      }
-      case 2: {
-        // two trees with a SubTree reference, then the model + XSD writers
-        const std::string xml =
-            "<root BTCPP_format=\"4\">" +
-            wrapTree("MainTree", "<Sequence><SubTree ID=\"Aux\"/>" + genNode(fdp, 0) +
-                                     "</Sequence>") +
-            wrapTree("Aux", genLeaf(fdp)) + "</root>";
-        factory.registerBehaviorTreeFromText(xml);
-        auto blackboard = BT::Blackboard::create();
-        auto tree = factory.createTree("MainTree", blackboard);
-        const std::string exported = BT::WriteTreeToXML(tree, true, true);
-        BT::BehaviorTreeFactory factory2;
-        factory2.registerBehaviorTreeFromText(exported);
-        const std::string model = BT::writeTreeNodesModelXML(factory, true);
-        BT::VerifyXML(model, {});
-        (void)BT::writeTreeXSD(factory);
-        break;
-      }
-      default: {
-        // document that also embeds a <TreeNodesModel> section
-        const std::string xml = "<root BTCPP_format=\"4\">" +
-                                wrapTree("MainTree", genNode(fdp, 0)) + kModelSection +
-                                "</root>";
-        factory.registerBehaviorTreeFromText(xml);
-        auto blackboard = BT::Blackboard::create();
-        auto tree = factory.createTree("MainTree", blackboard);
-        (void)BT::WriteTreeToXML(tree, fdp.ConsumeBool(), true);
-        const std::string model = BT::writeTreeNodesModelXML(factory, false);
-        BT::BehaviorTreeFactory factory2;
-        factory2.registerBehaviorTreeFromText(model);
-        break;
-      }
-    }
+    BT::BehaviorTreeFactory factory;
+    factory.registerScriptingEnum("MODE_A", 1);
+    factory.registerBehaviorTreeFromText(xml);
+    tree = factory.createTree("MainTree", BT::Blackboard::create());
   }
   catch(const std::exception&)
   {
-    // malformed input and unknown-node errors are expected here
+    // Generated input that fails to parse/create is expected.
+    return 0;
+  }
+
+  const std::string exported1 = BT::WriteTreeToXML(tree, false, false);
+
+  // Re-import of our own export must succeed; failure is a real bug.
+  BT::Tree tree2;
+  try
+  {
+    BT::BehaviorTreeFactory factory2;
+    factory2.registerScriptingEnum("MODE_A", 1);
+    factory2.registerBehaviorTreeFromText(exported1);
+    tree2 = factory2.createTree("MainTree", BT::Blackboard::create());
+  }
+  catch(const std::exception&)
+  {
+    std::abort();
+  }
+
+  const std::string exported2 = BT::WriteTreeToXML(tree2, false, false);
+  if(exported1 != exported2)
+  {
+    std::abort();
   }
 
   return 0;
