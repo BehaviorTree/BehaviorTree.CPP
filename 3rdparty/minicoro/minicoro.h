@@ -1337,6 +1337,10 @@ static void _mco_jumpout(mco_coro* co) {
 }
 
 /* Reverse engineered Fiber struct, used to get stack base. */
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4324)  /* CONTEXT forces alignment padding; benign. */
+#endif
 typedef struct _mco_fiber {
   LPVOID param;                /* fiber param */
   void* except;                /* saved exception handlers list */
@@ -1348,6 +1352,9 @@ typedef struct _mco_fiber {
   LPFIBER_START_ROUTINE start; /* start routine */
   void **fls_slots;            /* fiber storage slots */
 } _mco_fiber;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 static mco_result _mco_create_context(mco_coro* co, mco_desc* desc) {
   /* Determine the context address. */
