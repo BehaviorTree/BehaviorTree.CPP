@@ -14,6 +14,8 @@
 #define MINICORO_IMPL
 #include "behaviortree_cpp/action_node.h"
 
+#include "behaviortree_cpp/basic_types.h"
+
 // minicoro.h includes this inside extern "C": include it first, at global scope.
 #ifdef __EMSCRIPTEN__
 #include <emscripten/fiber.h>
@@ -21,6 +23,7 @@
 
 #include "minicoro.h"
 
+#include <exception>
 #include <iostream>
 
 using namespace BT;
@@ -207,6 +210,25 @@ void StatefulActionNode::halt()
 NodeStatus BT::ThreadedAction::executeTick()
 {
   using lock_type = std::unique_lock<std::mutex>;
+
+  // This method overrides TreeNode::executeTick(), so it must handle the
+  // pre-conditions (_skipIf, _failureIf, _successIf, _while) and the
+  // post-conditions itself, as TreeNode::executeTick() does.
+  if(auto precond = checkPreConditions())
+  {
+    const NodeStatus precond_status = precond.value();
+    if(isStatusCompleted(precond_status))
+    {
+      checkPostConditions(precond_status);
+    }
+    // preserve the IDLE state if skipped, but communicate SKIPPED to parent
+    if(precond_status != NodeStatus::SKIPPED)
+    {
+      setStatus(precond_status);
+    }
+    return precond_status;
+  }
+
   //send signal to other thread.
   // The other thread is in charge for changing the status
   if(status() == NodeStatus::IDLE)
@@ -236,16 +258,24 @@ NodeStatus BT::ThreadedAction::executeTick()
     });
   }
 
-  const lock_type l(mutex_);
-  if(exptr_)
+  NodeStatus new_status = NodeStatus::IDLE;
   {
-    // The official interface of std::exception_ptr does not define any move
-    // semantics. Thus, we copy and reset exptr_ manually.
-    const auto exptr_copy = exptr_;
-    exptr_ = nullptr;
-    std::rethrow_exception(exptr_copy);
+    const lock_type l(mutex_);
+    if(exptr_)
+    {
+      // The official interface of std::exception_ptr does not define any move
+      // semantics. Thus, we copy and reset exptr_ manually.
+      const auto exptr_copy = exptr_;
+      exptr_ = nullptr;
+      std::rethrow_exception(exptr_copy);
+    }
+    new_status = status();
   }
-  return status();
+  if(isStatusCompleted(new_status))
+  {
+    checkPostConditions(new_status);
+  }
+  return new_status;
 }
 
 void ThreadedAction::halt()
